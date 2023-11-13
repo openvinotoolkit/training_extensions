@@ -1,0 +1,756 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Improve Small Object Detection with Image Tiling &#8212; OpenVINO™ Training Extensions 1.4.4 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/tiling';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="API" href="../../reference/api/index.html" />
+    <link rel="prev" title="Fast Data Loading" href="fast_data_loading.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/cli_commands.html">OpenVINO™ Training Extensions CLI commands</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/base/index.html">Base Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../tutorials/base/how_to_train/index.html">How to train, validate, export and optimize the model</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/classification.html">Classification  model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/detection.html">Object Detection model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/instance_segmentation.html">Instance Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_classification.html">Action Classification model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_detection.html">Action Detection model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/deploy.html">How to deploy the model and use demo in exportable code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/explain.html">How to explain the model behavior</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/semi_sl.html">Use Semi-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/self_sl.html">Use Self-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/backbones.html">Backbone Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/api_tutorial.html">Utilize OpenVINO™ Training Extensions APIs in your project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hpo_tutorial.html">Simple HPO Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/object_detection/object_detection.html">Object Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../algorithms/anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/action/action_classification.html">Action Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/action/action_detection.html">Action Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../algorithms/visual_prompting/index.html">Visual Prompting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Additional Features</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="noisy_label_detection.html">Noisy Label Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Improve Small Object Detection with Image Tiling</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/api/index.html">API</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/api/configuration/index.html">Configuration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/entities/index.html">Entities</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/entities/general.html">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/entities/shapes.html">Shapes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/entities/interfaces.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/usecases/index.html">Usecases</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/usecases/adapters.html">Adapters</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/usecases/evaluation.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/usecases/exportable_code.html">Exportable Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/usecases/reporting.html">Reporting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/usecases/tasks.html">Task interfaces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/algorithm/index.html">Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/algorithm/action/index.html">Action</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/action/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/action/adapters/mmaction.html">mmaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/action/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/action/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/action/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/algorithm/anomaly/index.html">Anomaly</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/anomaly/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/anomaly/adapters/config.html">Config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/anomaly/adapters/data.html">Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/anomaly/adapters/callbacks.html">Callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/anomaly/adapters/logger.html">Logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/anomaly/adapters/exportable_code.html">Exportable Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/anomaly/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/anomaly/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-22"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/anomaly/tools.html">Tools</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-23"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/algorithm/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-24"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/classification/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-25"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/classification/adapters/mmcls.html">mmclassification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/classification/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/classification/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-26"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/classification/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-27"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/classification/utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-28"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/algorithm/detection/index.html">Detection</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-29"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/detection/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/detection/adapters/mmdet.html">mmdetection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/detection/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/detection/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/detection/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-32"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/detection/utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-33"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/algorithm/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-34"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/segmentation/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-35"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/segmentation/adapters/mmseg.html">mmsegmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/algorithm/segmentation/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/segmentation/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-36"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/algorithm/segmentation/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-37"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/core/index.html">Core</a><input class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-38"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/core/data.html">Data</a><input class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-39"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/core/ov/index.html">OpenVINO</a><input class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-40"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/core/ov/graph.html">Graph</a><input class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-41"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/core/ov/models.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-42"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/core/ov/ops.html">OPS</a><input class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/hpo/hpo.html">HPO</a><input class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/mpa/index.html">Model Preparation Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+  </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="improve-small-object-detection-with-image-tiling">
+<h1>Improve Small Object Detection with Image Tiling<a class="headerlink" href="#improve-small-object-detection-with-image-tiling" title="Permalink to this heading">#</a></h1>
+<p>The OpenVINO Training Extensions introduces the concept of image tiling to enhance the accuracy of detection algorithms and instance segmentation algorithms, particularly for small and densely packed objects in high-resolution images.</p>
+<p>Image tiling involves dividing the original full-resolution image into multiple smaller tiles or patches. This division allows objects within the tiles to appear larger in relation to the tile size, effectively addressing the challenge of objects becoming nearly invisible in deeper layers of feature maps due to downsampling operations. Image tiling proves especially beneficial for datasets where objects can be as small as 20 by 20 pixels in a 4K image.</p>
+<p>However, it’s important to consider the trade-off associated with image tiling. Dividing a single image sample into several tiles increases the number of samples for training, evaluation, and testing. This trade-off impacts the execution speed, as processing more images requires additional computational resources. To strike a balance between patch size and computational efficiency, the OpenVINO Training  incorporates tile dataset samples and adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.</p>
+<p>By leveraging image tiling, the OpenVINO Training Extensions empowers detection and instance segmentation algorithms to effectively detect and localize small and crowded objects in large-resolution images, ultimately leading to improved overall performance and accuracy.</p>
+<section id="tiling-strategies">
+<h2>Tiling Strategies<a class="headerlink" href="#tiling-strategies" title="Permalink to this heading">#</a></h2>
+<p>Below we provided an example of tiling used on one of the image from <a class="reference external" href="https://captain-whu.github.io/DOTA/dataset.html">DOTA</a>.</p>
+<a class="reference internal image-reference" href="../../../_images/dota_tiling_example.jpg"><img alt="this image uploaded from this `source &lt;https://captain-whu.github.io/DOTA/dataset.html&gt;`_" src="../../../_images/dota_tiling_example.jpg" style="width: 800px;" /></a>
+<p>In this example, the full image is cropped into 9 tiles. During training, only the tiles with annotations (bounding boxes or masks) are used for training.</p>
+<p>During evaluation in training, only the tiles with annotations are used for evaluation, and evaluation is performed at the tile level.</p>
+<p>During testing, each tile is processed and predicted separately. The tiles are then stitched back together to form the full image, and the tile predictions are merged to form the full image prediction.</p>
+<p>The tiling strategy is implemented in the OpenVINO Training Extensions through the following steps:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">Training</span><span class="p">:</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">ImageTilingDataset</span> <span class="k">with</span> <span class="n">annotated</span> <span class="n">tiles</span> <span class="o">-&gt;</span> <span class="n">Train</span> <span class="k">with</span> <span class="n">annotated</span> <span class="n">tile</span> <span class="n">images</span> <span class="o">-&gt;</span> <span class="n">Evaluate</span> <span class="n">on</span> <span class="n">annotated</span> <span class="n">tiles</span>
+<span class="o">*</span> <span class="n">Testing</span><span class="p">:</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">ImageTilingDataset</span> <span class="n">including</span> <span class="nb">all</span> <span class="n">tiles</span> <span class="o">-&gt;</span> <span class="n">Test</span> <span class="k">with</span> <span class="nb">all</span> <span class="n">tile</span> <span class="n">images</span> <span class="o">-&gt;</span> <span class="n">Stitching</span> <span class="o">-&gt;</span> <span class="n">Merge</span> <span class="n">tile</span><span class="o">-</span><span class="n">level</span> <span class="n">predictions</span> <span class="o">-&gt;</span> <span class="n">Full</span> <span class="n">Image</span> <span class="n">Prediction</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While running <cite>ote eval</cite> on models trained with tiling enabled, the evaluation will be performed on all tiles, this process includes merging all the tile-level prediction.
+The below context will be provided during evaluation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span class="p">]</span> <span class="mi">650</span><span class="o">/</span><span class="mi">650</span><span class="p">,</span> <span class="mf">17.2</span> <span class="n">task</span><span class="o">/</span><span class="n">s</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="mi">38</span><span class="n">s</span><span class="p">,</span> <span class="n">ETA</span><span class="p">:</span>     <span class="mi">0</span><span class="n">s</span>
+<span class="o">====</span> <span class="n">merge</span><span class="p">:</span> <span class="mf">7.326097726821899</span> <span class="n">sec</span> <span class="o">====</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="enable-tiling-via-otx-training-cli">
+<h2>Enable Tiling via OTX Training CLI<a class="headerlink" href="#enable-tiling-via-otx-training-cli" title="Permalink to this heading">#</a></h2>
+<p>Currently, tiling is supported for both detection and instance segmentation models. Please refer to <a class="reference internal" href="../algorithms/object_detection/object_detection.html"><span class="doc">Object Detection</span></a> and <a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html"><span class="doc">Instance Segmentation</span></a> for more details.</p>
+<p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code> parameter to 1. Here’s an example of enabling tiling for the SSD model template:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To learn how to deploy the trained model and run the exported demo, refer to <a class="reference internal" href="../../tutorials/base/deploy.html"><span class="doc">How to deploy the model and use demo in exportable code</span></a>.</p>
+<p>To learn how to run the demo in CLI and visualize results, refer to <a class="reference internal" href="../../tutorials/base/demo.html"><span class="doc">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</span></a>.</p>
+</div>
+</section>
+<section id="enable-tiling-via-otx-build">
+<h2>Enable Tiling via OTX Build<a class="headerlink" href="#enable-tiling-via-otx-build" title="Permalink to this heading">#</a></h2>
+<p>Here’s another way of enabling tiling for the SSD model template using the workspace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">build</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span>
+</pre></div>
+</div>
+<p>The above command will create a workspace folder with the necessary files for training under <code class="docutils literal notranslate"><span class="pre">otx-workspace-DETECTION</span></code>.</p>
+<p>You can then train the model with tiling enabled using the following command without specifying any data-related paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span>
+<span class="n">otx</span> <span class="n">train</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Alternatively, you can update the <code class="docutils literal notranslate"><span class="pre">tiling_parameters</span></code> in <code class="docutils literal notranslate"><span class="pre">configuration.yaml</span></code> file under the workspace folder to configure tiling parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hyper_parameters</span><span class="p">:</span>
+  <span class="n">parameter_overrides</span><span class="p">:</span>
+    <span class="n">tiling_parameters</span><span class="p">:</span>
+      <span class="n">enable_tiling</span><span class="p">:</span>
+        <span class="n">default_value</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>And then train the model with tiling enabled using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span>
+</pre></div>
+</div>
+<section id="tile-size-and-tile-overlap-optimization">
+<h3>Tile Size and Tile Overlap Optimization<a class="headerlink" href="#tile-size-and-tile-overlap-optimization" title="Permalink to this heading">#</a></h3>
+<p>By default, the OpenVINO Training Extensions automatically optimize tile size and tile overlap to ensure efficient execution without compromising accuracy.</p>
+<p>To strike a balance between patch size and computational efficiency, the OpenVINO Training Extensions incorporate adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.</p>
+<p>Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels.</p>
+<p>This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model. The object size to tile size ratio can also be configured with <code class="docutils literal notranslate"><span class="pre">tiling_parameters.object_tile_ratio</span></code> parameter.</p>
+<p>Here’s an example of setting the object size ratio to 5%:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
+    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>          \  <span class="c1"># enable tiling</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">1</span> \  <span class="c1"># enable automatic tiling parameter optimization</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">object_tile_ratio</span> <span class="mf">0.05</span>   \  <span class="c1"># set the object size ratio to 5%</span>
+</pre></div>
+</div>
+<p>After determining the tile size, the tile overlap is computed by dividing the largest object size in the training dataset by the adaptive tile size.
+This calculation ensures that the largest object on the border of a tile is not split into two tiles and is covered by adjacent tiles.</p>
+<p>You can also manually configure the tile overlap using <code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_overlap</span> <span class="pre">parameter</span></code> parameter. For more details, please refer to the section on <a class="reference internal" href="#manual-tiling-parameter-configuration">Manual Tiling Parameter Configuration</a> .</p>
+</section>
+<section id="tiling-sampling-strategy">
+<h3>Tiling Sampling Strategy<a class="headerlink" href="#tiling-sampling-strategy" title="Permalink to this heading">#</a></h3>
+<p>To accelerate the training process, the OpenVINO Training Extensions introduces a tile sampling strategy. This strategy involves randomly sampling a percentage of tile images from the dataset to be used for training.</p>
+<p>Since training and validation on all tiles from a high-resolution image dataset can be time-consuming, sampling the tile dataset can significantly reduce the training and validation time.</p>
+<p>It’s important to note that sampling is applied to the training and validation datasets, not the test dataset.</p>
+<p>This can be configured with <code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_sampling_ratio</span></code> parameter. Here’s an example of setting the tile sampling ratio to 50%:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
+    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>           \  <span class="c1"># enable tiling</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">1</span>  \  <span class="c1"># enable automatic tiling parameter optimization</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_sampling_ratio</span> <span class="mf">0.5</span>   \  <span class="c1"># set the tile sampling ratio to 50%</span>
+</pre></div>
+</div>
+</section>
+<section id="manual-tiling-parameter-configuration">
+<h3>Manual Tiling Parameter Configuration<a class="headerlink" href="#manual-tiling-parameter-configuration" title="Permalink to this heading">#</a></h3>
+<p>Users can disable adaptive tiling and customize the tiling process by setting the following parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
+    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>          \  <span class="c1"># enable tiling</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">0</span> \  <span class="c1"># disable automatic tiling parameter optimization</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_size</span> <span class="mi">512</span>            \  <span class="c1"># tile size configured to 512x512</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_overlap</span> <span class="mf">0.1</span>         \  <span class="c1"># 10% overlap between tiles</span>
+</pre></div>
+</div>
+<p>By specifying these parameters, automatic tiling parameter optimization is disabled, and the tile size is configured to 512x512 pixels with a 10% overlap between tiles.</p>
+<p>The following parameters can be configured to customize the tiling process:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code>: Enable or disable tiling (0 or 1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_adaptive_params</span></code>: Enable or disable adaptive tiling parameter optimization (0 or 1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.object_tile_ratio</span></code>: Ratio of average object size to tile size (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_size</span></code>: Tile edge length in pixels (integer between 100 and 4096)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_overlap</span></code>: The overlap between adjacent tiles as a percentage (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_sampling_ratio</span></code>: The percentage of tiles to sample from the dataset (float between 0.0 and 1.0)</p></li>
+</ul>
+</section>
+</section>
+<section id="run-tiling-on-openvino-exported-model">
+<h2>Run Tiling on OpenVINO Exported Model<a class="headerlink" href="#run-tiling-on-openvino-exported-model" title="Permalink to this heading">#</a></h2>
+<p>After training a model with tiling enabled, you can export the model to OpenVINO IR format using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_trained_model</span><span class="o">&gt;/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> <span class="o">--</span><span class="n">output</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>After exporting the model, you can run inference on the exported model using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ote</span> <span class="nb">eval</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">test</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;/</span><span class="n">openvino</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When tiling is enabled, there is a trade-off between speed and accuracy as it increases the number of images to be processed.
+As a result, longer training and inference times are expected. If you encounter GPU out of memory errors,
+you can mitigate the issue by reducing the number of batches through the command-line interface (CLI) or
+by adjusting the batch size value in <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file located in the workspace.</p>
+</div>
+</section>
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="fast_data_loading.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Fast Data Loading</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="../../reference/api/index.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">API</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#tiling-strategies">
+   Tiling Strategies
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-training-cli">
+   Enable Tiling via OTX Training CLI
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-build">
+   Enable Tiling via OTX Build
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tile-size-and-tile-overlap-optimization">
+     Tile Size and Tile Overlap Optimization
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tiling-sampling-strategy">
+     Tiling Sampling Strategy
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#manual-tiling-parameter-configuration">
+     Manual Tiling Parameter Configuration
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#run-tiling-on-openvino-exported-model">
+   Run Tiling on OpenVINO Exported Model
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../_sources/guide/explanation/additional_features/tiling.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

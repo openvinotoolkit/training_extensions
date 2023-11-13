@@ -1,0 +1,2911 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; OpenVINO™ Training Extensions 1.4.4 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.accuracy.Accuracy">Accuracy (class in otx.api.usecases.evaluation.accuracy)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelCategory.ACCURACY">ACCURACY (otx.api.entities.model_template.ModelCategory attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.accuracy.Accuracy.accuracy">accuracy (otx.api.usecases.evaluation.accuracy.Accuracy property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Action">Action (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules.action">action (otx.api.configuration.UIRules attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.ACTION_CLASSIFICATION">ACTION_CLASSIFICATION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ACTION_CLASSIFICATION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.ACTION_DETECTION">ACTION_DETECTION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ACTION_DETECTION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/algorithm/action/configs.html#otx.algorithms.action.configs.base.ActionConfig">ActionConfig (class in otx.algorithms.action.configs.base)</a>
+</li>
+      <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader">ActionOVClsDataLoader (class in otx.algorithms.action.adapters.openvino.dataloader)</a>
+</li>
+      <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader">ActionOVDemoDataLoader (class in otx.algorithms.action.adapters.openvino.dataloader)</a>
+</li>
+      <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader">ActionOVDetDataLoader (class in otx.algorithms.action.adapters.openvino.dataloader)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelStatus.ACTIVE">ACTIVE (otx.api.entities.model_template.ModelStatus attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.FloatType.ACTIVE_SCORE">ACTIVE_SCORE (otx.api.entities.metadata.FloatType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ACTIVELEARNING">ACTIVELEARNING (otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.add_child">add_child() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.add_child">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.add_edge">add_edge() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.add_edge">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.add_edge">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.add_edges">add_edges() (otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.add_group">add_group() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.add_labels_to_group_by_group_name">add_labels_to_group_by_group_name() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.add_node">add_node() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.add_node">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.add_node">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader.add_prediction">add_prediction() (otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader method)</a>
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader.add_prediction">(otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader method)</a>
+</li>
+        <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader.add_prediction">(otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules.add_rule">add_rule() (otx.api.configuration.UIRules method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MultiScorePerformance.additional_scores">additional_scores (otx.api.entities.metrics.MultiScorePerformance property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.alpha">alpha (otx.api.entities.color.ColorEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.AND">AND (otx.api.configuration.Operator attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation">Annotation (class in otx.api.entities.annotation)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind.ANNOTATION">ANNOTATION (otx.api.entities.annotation.AnnotationSceneKind attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.annotation_scene">annotation_scene (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.annotations">annotations (otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity (class in otx.api.entities.annotation)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind">AnnotationSceneKind (class in otx.api.entities.annotation)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.ANOMALY_CLASSIFICATION">ANOMALY_CLASSIFICATION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ANOMALY_CLASSIFICATION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.ANOMALY_DETECTION">ANOMALY_DETECTION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ANOMALY_DETECTION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.ANOMALY_SEGMENTATION">ANOMALY_SEGMENTATION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ANOMALY_SEGMENTATION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores">AnomalyDetectionScores (class in otx.api.usecases.evaluation.anomaly_metrics)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance">AnomalyLocalizationPerformance (class in otx.api.usecases.evaluation.anomaly_metrics)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores">AnomalyLocalizationScores (class in otx.api.usecases.evaluation.anomaly_metrics)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores">AnomalySegmentationScores (class in otx.api.usecases.evaluation.anomaly_metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.append">append() (otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.append_annotation">append_annotation() (otx.api.entities.annotation.AnnotationSceneEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.append_annotations">append_annotations() (otx.api.entities.annotation.AnnotationSceneEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.append_annotations">(otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.append_label">append_label() (otx.api.entities.annotation.Annotation method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.append_labels">append_labels() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.append_metadata_item">append_metadata_item() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.application">application (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ModelLifecycle.ARCHITECTURE">ARCHITECTURE (otx.api.configuration.ModelLifecycle attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.are_exclusive">are_exclusive() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.coordinate.Coordinate.as_int_tuple">as_int_tuple() (otx.api.entities.coordinate.Coordinate method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.coordinate.Coordinate.as_tuple">as_tuple() (otx.api.entities.coordinate.Coordinate method)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.auto_config">auto_config() (otx.hpo.HyperBand method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelCategory.BALANCE">BALANCE (otx.api.entities.model_template.ModelCategory attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationType.BAR">BAR (otx.api.entities.metrics.VisualizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.BarChartInfo">BarChartInfo (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.BarMetricsGroup">BarMetricsGroup (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.EntryPoints.base">base (otx.api.entities.model_template.EntryPoints attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelFormat.BASE_FRAMEWORK">BASE_FRAMEWORK (otx.api.entities.model.ModelFormat attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.base_model_path">base_model_path (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.base_path">base_path (otx.api.entities.model_template.HyperParameterData attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold">best_confidence_threshold (otx.api.usecases.evaluation.f_measure.FMeasure property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold">best_nms_threshold (otx.api.usecases.evaluation.f_measure.FMeasure property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.Color.bgr_tuple">bgr_tuple (otx.api.entities.color.Color property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.blue">blue (otx.api.entities.color.ColorEntity property)</a>
+</li>
+      <li><a href="guide/reference/algorithm/segmentation/configs.html#otx.algorithms.segmentation.configs.base.Models.BlurSegmentation">BlurSegmentation (otx.algorithms.segmentation.configs.base.Models attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union">bounding_box_intersection_over_union() (in module otx.api.usecases.evaluation.f_measure)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index">box_class_index (otx.api.usecases.evaluation.f_measure.FMeasure attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index">box_score_index (otx.api.usecases.evaluation.f_measure.FMeasure attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback">Callback (class in otx.api.usecases.reporting)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback">(class in otx.api.usecases.reporting.callback)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.capabilities">capabilities (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.InstantiationType.CLASS">CLASS (otx.api.entities.model_template.InstantiationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.DatasetRequirements.classes">classes (otx.api.entities.model_template.DatasetRequirements attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.CLASSIFICATION">CLASSIFICATION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.CLASSIFICATION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/algorithm/classification/configs.html#otx.algorithms.classification.configs.ClassificationConfig">ClassificationConfig (class in otx.algorithms.classification.configs)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.clear_topological_cache">clear_topological_cache() (otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.clip_to_visible_region">clip_to_visible_region() (otx.api.entities.shapes.rectangle.Rectangle method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.Color">Color (class in otx.api.entities.color)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.color">color (otx.api.entities.label.LabelEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.color">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity">ColorEntity (class in otx.api.entities.color)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.ColorPalette">ColorPalette (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixChartInfo.column_header">column_header (otx.api.entities.metrics.MatrixChartInfo attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetric.column_labels">column_labels (otx.api.entities.metrics.MatrixMetric property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_accuracy">compute_accuracy() (otx.api.usecases.evaluation.metrics_helper.MetricsHelper static method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_detection_scores">compute_anomaly_detection_scores() (otx.api.usecases.evaluation.metrics_helper.MetricsHelper static method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_segmentation_scores">compute_anomaly_segmentation_scores() (otx.api.usecases.evaluation.metrics_helper.MetricsHelper static method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_dice_averaged_over_pixels">compute_dice_averaged_over_pixels() (otx.api.usecases.evaluation.metrics_helper.MetricsHelper static method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.compute_dice_using_intersection_and_cardinality">compute_dice_using_intersection_and_cardinality() (otx.api.usecases.evaluation.dice.DiceAverage class method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_f_measure">compute_f_measure() (otx.api.usecases.evaluation.metrics_helper.MetricsHelper static method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset">compute_unnormalized_confusion_matrices_from_resultset() (in module otx.api.usecases.evaluation.accuracy)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.computes_representations">computes_representations() (otx.api.entities.model_template.ModelTemplate method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.computes_uncertainty_score">computes_uncertainty_score() (otx.api.entities.model_template.ModelTemplate method)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.config_to_bytes">config_to_bytes() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelConfiguration.configurable_parameters">configurable_parameters (otx.api.entities.model.ModelConfiguration attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableEnum">ConfigurableEnum (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableParameters">ConfigurableParameters (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.configuration">configuration (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.contains_any">contains_any() (otx.api.entities.annotation.AnnotationSceneEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.Shape.contains_center">contains_center() (otx.api.entities.shapes.shape.Shape method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity.contains_center">(otx.api.entities.shapes.shape.ShapeEntity method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.convert">convert() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.coordinate.Coordinate">Coordinate (class in otx.api.entities.coordinate)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CountMetric">CountMetric (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TargetDevice.CPU">CPU (otx.api.entities.model_template.TargetDevice attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.create">create() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.creation_date">creation_date (otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.creation_date">(otx.api.entities.label.LabelEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.creation_date">(otx.api.entities.model.ModelEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.creation_date">(otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.creation_date">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.CROP">CROP (otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.crop_numpy_array">crop_numpy_array() (otx.api.entities.shapes.rectangle.Rectangle method)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.TrialStatus.CUDAOOM">CUDAOOM (otx.hpo.TrialStatus attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CurveMetric">CurveMetric (class in otx.api.entities.metrics)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.data">data (otx.api.entities.model_template.HyperParameterData property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.IDataSource.data">(otx.api.usecases.adapters.model_adapter.IDataSource property)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter.data">(otx.api.usecases.adapters.model_adapter.ModelAdapter property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter.data_source">data_source (otx.api.usecases.adapters.model_adapter.ModelAdapter property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskFamily.DATASET">DATASET (otx.api.entities.model_template.TaskFamily attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.DATASET">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.dataset_requirements">dataset_requirements (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity">DatasetEntity (class in otx.api.entities.datasets)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity">DatasetItemEntity (class in otx.api.entities.dataset_item)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntityWithID">DatasetItemEntityWithID (class in otx.api.entities.dataset_item)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetIterator">DatasetIterator (class in otx.api.entities.datasets)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose">DatasetPurpose (class in otx.api.entities.datasets)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.DatasetRequirements">DatasetRequirements (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DateMetric.date">date (otx.api.entities.metrics.DateMetric attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DateMetric">DateMetric (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.ColorPalette.DEFAULT">DEFAULT (otx.api.entities.metrics.ColorPalette attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ExportableCodePaths.default">default (otx.api.entities.model_template.ExportableCodePaths attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.default_progress_callback">default_progress_callback() (in module otx.api.entities.inference_parameters)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.optimization_parameters.default_progress_callback">(in module otx.api.entities.optimization_parameters)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.default_progress_callback">(in module otx.api.entities.train_parameters)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.optimization_parameters.default_save_model_callback">default_save_model_callback() (in module otx.api.entities.optimization_parameters)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.default_save_model_callback">(in module otx.api.entities.train_parameters)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.DefaultModelParameters">DefaultModelParameters (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.delete_data">delete_data() (otx.api.entities.model.ModelEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.denormalize_wrt_roi_shape">denormalize_wrt_roi_shape() (otx.api.entities.shapes.ellipse.Ellipse method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Point.denormalize_wrt_roi_shape">(otx.api.entities.shapes.polygon.Point method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Polygon.denormalize_wrt_roi_shape">(otx.api.entities.shapes.polygon.Polygon method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.denormalize_wrt_roi_shape">(otx.api.entities.shapes.rectangle.Rectangle method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity.denormalize_wrt_roi_shape">(otx.api.entities.shapes.shape.ShapeEntity method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.dependencies">dependencies (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.Dependency">Dependency (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelStatus.DEPRECATED">DEPRECATED (otx.api.entities.model_template.ModelStatus attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.descendants">descendants() (otx.api.entities.graph.Graph method)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.DefaultModelParameters.description">description (otx.api.configuration.DefaultModelParameters attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.Dependency.destination">destination (otx.api.entities.model_template.Dependency attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.DETECTION">DETECTION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.DETECTION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/algorithm/detection/configs.html#otx.algorithms.detection.configs.base.DetectionConfig">DetectionConfig (class in otx.algorithms.detection.configs.base)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.diagonal">diagonal (otx.api.entities.shapes.rectangle.Rectangle property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.dice_per_label">dice_per_label (otx.api.usecases.evaluation.dice.DiceAverage property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage">DiceAverage (class in otx.api.usecases.evaluation.dice)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Action.DISABLE_EDITING">DISABLE_EDITING (otx.api.configuration.Action attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros">divide_arrays_with_possible_zeros() (in module otx.api.usecases.evaluation.basic_operations)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain">Domain (class in otx.api.entities.label)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.domain">domain (otx.api.entities.label.LabelEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskInfo.domain">(otx.api.entities.model_template.TaskInfo attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.domain">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig">DraemAnomalyBaseConfig (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters">DraemAnomalyBaseConfig.LearningParameters (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters">DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DurationMetric">DurationMetric (class in otx.api.entities.metrics)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.edges">edges (otx.api.entities.graph.Graph property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.edges">(otx.api.entities.interfaces.graph_interface.IGraph property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.editor_name">editor_name (otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse">Ellipse (class in otx.api.entities.shapes.ellipse)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeType.ELLIPSE">ELLIPSE (otx.api.entities.shapes.shape.ShapeType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.FloatType.EMBEDDING_VALUE">EMBEDDING_VALUE (otx.api.entities.metadata.FloatType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroupType.EMPTY_LABEL">EMPTY_LABEL (otx.api.entities.label_schema.LabelGroupType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters.enable_async_inference">enable_async_inference (otx.api.entities.inference_parameters.InferenceParameters attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Action.ENABLE_EDITING">ENABLE_EDITING (otx.api.configuration.Action attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.EntryPoints">EntryPoints (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.entrypoints">entrypoints (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.EQUAL_TO">EQUAL_TO (otx.api.configuration.Operator attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind.EVALUATION">EVALUATION (otx.api.entities.annotation.AnnotationSceneKind attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose.EVALUATION">(otx.api.entities.datasets.DatasetPurpose attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultsetPurpose.EVALUATION">(otx.api.entities.resultset.ResultsetPurpose attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroupType.EXCLUSIVE">EXCLUSIVE (otx.api.entities.label_schema.LabelGroupType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters.explain_predicted_classes">explain_predicted_classes (otx.api.entities.inference_parameters.InferenceParameters attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters.explainer">explainer (otx.api.entities.inference_parameters.InferenceParameters attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.exportable_code">exportable_code (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.exportable_code_adapter">exportable_code_adapter (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.exportable_code_paths">exportable_code_paths (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter">ExportableCodeAdapter (class in otx.api.usecases.adapters.model_adapter)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ExportableCodePaths">ExportableCodePaths (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.url.URL.extension">extension (otx.api.entities.url.URL property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure">f_measure (otx.api.usecases.evaluation.f_measure.FMeasure property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence">f_measure_per_confidence (otx.api.usecases.evaluation.f_measure.FMeasure property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label">f_measure_per_label (otx.api.usecases.evaluation.f_measure.FMeasure property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms">f_measure_per_nms (otx.api.usecases.evaluation.f_measure.FMeasure property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.OptimizationMethod.FILTER_PRUNING">FILTER_PRUNING (otx.api.entities.model.OptimizationMethod attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.find_cliques">find_cliques() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.find_cliques">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.find_in_edges">find_in_edges() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.find_in_edges">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.find_out_edges">find_out_edges() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.find_out_edges">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.flatten_config_values">flatten_config_values() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.FloatType.FLOAT">FLOAT (otx.api.entities.metadata.FloatType attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.FloatMetadata">FloatMetadata (class in otx.api.entities.metadata)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.FloatType">FloatType (class in otx.api.entities.metadata)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskFamily.FLOW_CONTROL">FLOW_CONTROL (otx.api.entities.model_template.TaskFamily attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure">FMeasure (class in otx.api.usecases.evaluation.f_measure)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelPrecision.FP16">FP16 (otx.api.entities.model.ModelPrecision attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelPrecision.FP32">FP32 (otx.api.entities.model.ModelPrecision attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.fps_throughput">fps_throughput (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.framework">framework (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter.from_file_storage">from_file_storage (otx.api.usecases.adapters.model_adapter.ModelAdapter property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.Color.from_hex_str">from_hex_str() (otx.api.entities.color.Color class method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.from_hex_str">(otx.api.entities.color.ColorEntity class method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.from_labels">from_labels() (otx.api.entities.label_schema.LabelSchemaEntity class method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DurationMetric.from_seconds">from_seconds() (otx.api.entities.metrics.DurationMetric static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.generate_full_box">generate_full_box() (otx.api.entities.shapes.rectangle.Rectangle class method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose.GENERATING_OUTPUT">GENERATING_OUTPUT (otx.api.entities.datasets.DatasetPurpose attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.GeometryException">GeometryException</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_ancestors">get_ancestors() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.get_ancestors">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.get_annotations">get_annotations() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.get_area">get_area() (otx.api.entities.shapes.ellipse.Ellipse method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Polygon.get_area">(otx.api.entities.shapes.polygon.Polygon method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.get_area">(otx.api.entities.shapes.rectangle.Rectangle method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.Shape.get_area">(otx.api.entities.shapes.shape.Shape method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity.get_area">(otx.api.entities.shapes.shape.ShapeEntity method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.get_best_config">get_best_config() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_children">get_children() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.get_children">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableEnum.get_class_info">get_class_info() (otx.api.configuration.ConfigurableEnum class method)</a>
+</li>
+      <li><a href="guide/reference/algorithm/classification/utils.html#otx.algorithms.classification.utils.get_cls_deploy_config">get_cls_deploy_config() (in module otx.algorithms.classification.utils)</a>
+</li>
+      <li><a href="guide/reference/algorithm/classification/utils.html#otx.algorithms.classification.utils.get_cls_inferencer_configuration">get_cls_inferencer_configuration() (in module otx.algorithms.classification.utils)</a>
+</li>
+      <li><a href="guide/reference/algorithm/classification/utils.html#otx.algorithms.classification.utils.get_cls_model_api_configuration">get_cls_model_api_configuration() (in module otx.algorithms.classification.utils)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.get_data">get_data() (otx.api.entities.model.ModelEntity method)</a>
+</li>
+      <li><a href="guide/reference/core/data.html#otx.core.data.adapter.get_dataset_adapter">get_dataset_adapter() (in module otx.core.data.adapter)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_descendants">get_descendants() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.get_descendants">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DurationMetric.get_duration_string">get_duration_string() (otx.api.entities.metrics.DurationMetric method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.get_evenly_distributed_ellipse_coordinates">get_evenly_distributed_ellipse_coordinates() (otx.api.entities.shapes.ellipse.Ellipse method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_exclusive_groups">get_exclusive_groups() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.get_graph">get_graph() (otx.api.entities.graph.Graph method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_group_containing_label">get_group_containing_label() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_groups">get_groups() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/algorithm/classification/utils.html#otx.algorithms.classification.utils.get_hierarchical_label_list">get_hierarchical_label_list() (in module otx.algorithms.classification.utils)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment.get_hyper_parameters">get_hyper_parameters() (otx.api.entities.task_environment.TaskEnvironment method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities">get_intersections_and_cardinalities() (in module otx.api.usecases.evaluation.basic_operations)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.get_iou_matrix">get_iou_matrix() (in module otx.api.usecases.evaluation.f_measure)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.get_label">get_label() (otx.api.entities.scored_label.ScoredLabel method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_label_group_by_name">get_label_group_by_name() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.get_label_ids">get_label_ids() (otx.api.entities.annotation.Annotation method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.get_label_ids">(otx.api.entities.annotation.AnnotationSceneEntity method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_label_ids">(otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelConfiguration.get_label_schema">get_label_schema() (otx.api.entities.model.ModelConfiguration method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.get_labels">get_labels() (otx.api.entities.annotation.Annotation method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.get_labels">(otx.api.entities.annotation.AnnotationSceneEntity method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.get_labels">(otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_labels">(otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment.get_labels">(otx.api.entities.task_environment.TaskEnvironment method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_labels_exclusive_to">get_labels_exclusive_to() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.get_labels_in_topological_order">get_labels_in_topological_order() (otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/adapters/logger.html#otx.algorithms.anomaly.adapters.anomalib.logger.get_logger">get_logger() (in module otx.algorithms.anomaly.adapters.anomalib.logger)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.get_metadata">get_metadata() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.get_metadata_by_name_and_model">get_metadata_by_name_and_model() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment.get_model_configuration">get_model_configuration() (otx.api.entities.task_environment.TaskEnvironment method)</a>
+</li>
+      <li><a href="guide/reference/algorithm/classification/utils.html#otx.algorithms.classification.utils.get_multihead_class_info">get_multihead_class_info() (in module otx.algorithms.classification.utils)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.get_n_false_negatives">get_n_false_negatives() (in module otx.api.usecases.evaluation.f_measure)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableEnum.get_names">get_names() (otx.api.configuration.ConfigurableEnum class method)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.get_next_sample">get_next_sample() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/algorithm/action/adapters/openvino.html#otx.algorithms.action.adapters.openvino.dataloader.get_ovdataloader">get_ovdataloader() (in module otx.algorithms.action.adapters.openvino.dataloader)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_parent">get_parent() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.get_parent">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.accuracy.Accuracy.get_performance">get_performance() (otx.api.usecases.evaluation.accuracy.Accuracy method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores.get_performance">(otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.get_performance">(otx.api.usecases.evaluation.dice.DiceAverage method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.get_performance">(otx.api.usecases.evaluation.f_measure.FMeasure method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider.get_performance">(otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.get_progress">get_progress() (otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.get_progress">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.get_progress">(otx.hpo.HyperBand method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.get_roi_labels">get_roi_labels() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.get_shapes_labels">get_shapes_labels() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.get_siblings">get_siblings() (otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.get_siblings_in_group">get_siblings_in_group() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.get_subset">get_subset() (otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableEnum.get_values">get_values() (otx.api.configuration.ConfigurableEnum class method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.gigaflops">gigaflops (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.global_score">global_score (otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TargetDevice.GPU">GPU (otx.api.entities.model_template.TargetDevice attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph">Graph (class in otx.api.entities.graph)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.GREATER_THAN">GREATER_THAN (otx.api.configuration.Operator attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.green">green (otx.api.entities.color.ColorEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.ground_truth_dataset">ground_truth_dataset (otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.InstantiationType.GRPC">GRPC (otx.api.entities.model_template.InstantiationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.grpc_address">grpc_address (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.has_edge_between">has_edge_between() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.has_edge_between">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.has_overrides">has_overrides (otx.api.entities.model_template.HyperParameterData property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.has_score_metric">has_score_metric() (otx.api.entities.resultset.ResultSetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.has_valid_configurable_parameters">has_valid_configurable_parameters (otx.api.entities.model_template.HyperParameterData property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.has_xai">has_xai (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.DefaultModelParameters.header">header (otx.api.configuration.DefaultModelParameters attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixChartInfo.header">(otx.api.entities.metrics.MatrixChartInfo attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.height">height (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.image.Image.height">(otx.api.entities.image.Image property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMedia2DEntity.height">(otx.api.entities.media.IMedia2DEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.result_media.ResultMediaEntity.height">(otx.api.entities.result_media.ResultMediaEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.height">(otx.api.entities.shapes.ellipse.Ellipse property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.height">(otx.api.entities.shapes.rectangle.Rectangle property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.Color.hex_str">hex_str (otx.api.entities.color.Color property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.hex_str">(otx.api.entities.color.ColorEntity property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Action.HIDE">HIDE (otx.api.configuration.Action attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.url.URL.host">host (otx.api.entities.url.URL property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.hotkey">hotkey (otx.api.entities.label.LabelEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.hotkey">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.hpo">hpo (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.hyper_parameters">hyper_parameters (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand">HyperBand (class in otx.hpo)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData">HyperParameterData (class in otx.api.entities.model_template)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.id.ID">ID (class in otx.api.entities.id)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableParameters.id">id (otx.api.configuration.ConfigurableParameters attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.id">(otx.api.entities.annotation.Annotation property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.id">(otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.id">(otx.api.entities.label.LabelEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroup.id">(otx.api.entities.label_schema.LabelGroup property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.id">(otx.api.entities.model.ModelEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.id">(otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.id">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.id_">id_ (otx.api.entities.annotation.Annotation property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.id_">(otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntityWithID.id_">(otx.api.entities.dataset_item.DatasetItemEntityWithID property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.id_">(otx.api.entities.label.LabelEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.id_">(otx.api.entities.model.ModelEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.id_">(otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.id_">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.IDataSource">IDataSource (class in otx.api.usecases.adapters.model_adapter)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.ignored_labels">ignored_labels (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph">IGraph (class in otx.api.entities.interfaces.graph_interface)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.image.Image">Image (class in otx.api.entities.image)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMedia2DEntity">IMedia2DEntity (class in otx.api.entities.media)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMediaEntity">IMediaEntity (class in otx.api.entities.media)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.IMetadata">IMetadata (class in otx.api.entities.metadata)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ModelLifecycle.INFERENCE">INFERENCE (otx.api.configuration.ModelLifecycle attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose.INFERENCE">(otx.api.entities.datasets.DatasetPurpose attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.inference_targets">inference_targets (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters">InferenceParameters (class in otx.api.entities.inference_parameters)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.InfoMetric">InfoMetric (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.initial_weights">initial_weights (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.INSTANCE_SEGMENTATION">INSTANCE_SEGMENTATION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.INSTANCE_SEGMENTATION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.instantiation">instantiation (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.InstantiationType">InstantiationType (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelPrecision.INT4">INT4 (otx.api.entities.model.ModelPrecision attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelPrecision.INT8">INT8 (otx.api.entities.model.ModelPrecision attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind.INTERMEDIATE">INTERMEDIATE (otx.api.entities.annotation.AnnotationSceneKind attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.intersection_box">intersection_box() (in module otx.api.usecases.evaluation.basic_operations)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.f_measure.intersection_box">(in module otx.api.usecases.evaluation.f_measure)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.intersection_over_union">intersection_over_union() (in module otx.api.usecases.evaluation.basic_operations)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.Shape.intersects">intersects() (otx.api.entities.shapes.shape.Shape method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity.intersects">(otx.api.entities.shapes.shape.ShapeEntity method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider">IPerformanceProvider (class in otx.api.usecases.evaluation.performance_provider_interface)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskInfo.is_anomaly">is_anomaly (otx.api.entities.model_template.TaskInfo attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.is_default_for_task">is_default_for_task (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.is_done">is_done() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.is_empty">is_empty (otx.api.entities.label.LabelEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.is_empty">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters.is_evaluation">is_evaluation (otx.api.entities.inference_parameters.InferenceParameters attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.is_full_box">is_full_box() (otx.api.entities.shapes.rectangle.Rectangle static method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskInfo.is_global">is_global (otx.api.entities.model_template.TaskInfo attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskInfo.is_local">is_local (otx.api.entities.model_template.TaskInfo attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.is_optimized">is_optimized() (otx.api.entities.model.ModelEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroup.is_single_label">is_single_label() (otx.api.entities.label_schema.LabelGroup method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.is_stalling">is_stalling() (otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.is_stalling">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.is_task_global">is_task_global() (otx.api.entities.model_template.ModelTemplate method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.is_trainable">is_trainable (otx.api.entities.model_template.ModelTemplate attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskInfo.is_trainable">(otx.api.entities.model_template.TaskInfo attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.kind">kind (otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.ColorPalette.LABEL">LABEL (otx.api.entities.metrics.ColorPalette attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity">LabelEntity (class in otx.api.entities.label)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroup">LabelGroup (class in otx.api.entities.label_schema)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroupDoesNotExistException">LabelGroupDoesNotExistException</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroupExistsException">LabelGroupExistsException</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroupType">LabelGroupType (class in otx.api.entities.label_schema)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity">LabelSchemaEntity (class in otx.api.entities.label_schema)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.LabelSource">LabelSource (class in otx.api.entities.scored_label)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree">LabelTree (class in otx.api.entities.label_schema)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.latency">latency (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.LESS_THAN">LESS_THAN (otx.api.configuration.Operator attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationType.LINE">LINE (otx.api.entities.metrics.VisualizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.LineChartInfo">LineChartInfo (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.LineMetricsGroup">LineMetricsGroup (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.load_parameters">load_parameters() (otx.api.entities.model_template.HyperParameterData method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.local_score">local_score (otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MACRO">MACRO (otx.api.usecases.evaluation.averaging.MetricAverageMethod attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.major_axis">major_axis (otx.api.entities.shapes.ellipse.Ellipse property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.manually_set_data_and_validate">manually_set_data_and_validate() (otx.api.entities.model_template.HyperParameterData method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationType.MATRIX">MATRIX (otx.api.entities.metrics.VisualizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetric.matrix_values">matrix_values (otx.api.entities.metrics.MatrixMetric property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixChartInfo">MatrixChartInfo (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetric">MatrixMetric (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetricsGroup">MatrixMetricsGroup (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.max_nodes">max_nodes (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.media">media (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.merge_a_into_b">merge_a_into_b() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.MetadataItemEntity">MetadataItemEntity (class in otx.api.entities.metadata)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod">MetricAverageMethod (class in otx.api.usecases.evaluation.averaging)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MetricEntity">MetricEntity (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MetricsGroup">MetricsGroup (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper">MetricsHelper (class in otx.api.usecases.evaluation.metrics_helper)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MICRO">MICRO (otx.api.usecases.evaluation.averaging.MetricAverageMethod attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroup.minimum_label_id">minimum_label_id (otx.api.entities.label_schema.LabelGroup property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.minor_axis">minor_axis (otx.api.entities.shapes.ellipse.Ellipse property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelOptimizationType.MO">MO (otx.api.entities.model.ModelOptimizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.model">model (otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.model_adapters">model_adapters (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.model_category">model_category (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.model_format">model_format (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.LabelSource.model_id">model_id (otx.api.entities.scored_label.LabelSource attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.model_optimization_methods">model_optimization_methods (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.model_size_reduction">model_size_reduction (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.model_status">model_status (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.LabelSource.model_storage_id">model_storage_id (otx.api.entities.scored_label.LabelSource attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.model_template_id">model_template_id (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.model_template_path">model_template_path (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter">ModelAdapter (class in otx.api.usecases.adapters.model_adapter)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelCategory">ModelCategory (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelConfiguration">ModelConfiguration (class in otx.api.entities.model)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity">ModelEntity (class in otx.api.entities.model)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelFormat">ModelFormat (class in otx.api.entities.model)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ModelLifecycle">ModelLifecycle (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelOptimizationMethod">ModelOptimizationMethod (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelOptimizationType">ModelOptimizationType (class in otx.api.entities.model)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelPrecision">ModelPrecision (class in otx.api.entities.model)</a>
+</li>
+      <li><a href="guide/reference/algorithm/segmentation/configs.html#otx.algorithms.segmentation.configs.base.Models">Models (class in otx.algorithms.segmentation.configs.base)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelStatus">ModelStatus (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate">ModelTemplate (class in otx.api.entities.model_template)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/adapters/openvino.html#module-otx.algorithms.action.adapters.openvino.dataloader">otx.algorithms.action.adapters.openvino.dataloader</a>
+</li>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs">otx.algorithms.action.configs</a>
+</li>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs.base">otx.algorithms.action.configs.base</a>
+</li>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs.classification">otx.algorithms.action.configs.classification</a>
+</li>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs.detection">otx.algorithms.action.configs.detection</a>
+</li>
+        <li><a href="guide/reference/algorithm/anomaly/adapters/logger.html#module-otx.algorithms.anomaly.adapters.anomalib.logger">otx.algorithms.anomaly.adapters.anomalib.logger</a>
+</li>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs">otx.algorithms.anomaly.configs</a>
+</li>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.base">otx.algorithms.anomaly.configs.base</a>
+</li>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.classification">otx.algorithms.anomaly.configs.classification</a>
+</li>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.detection">otx.algorithms.anomaly.configs.detection</a>
+</li>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.segmentation">otx.algorithms.anomaly.configs.segmentation</a>
+</li>
+        <li><a href="guide/reference/algorithm/classification/configs.html#module-otx.algorithms.classification.configs">otx.algorithms.classification.configs</a>
+</li>
+        <li><a href="guide/reference/algorithm/classification/utils.html#module-otx.algorithms.classification.utils">otx.algorithms.classification.utils</a>
+</li>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs">otx.algorithms.detection.configs</a>
+</li>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.base">otx.algorithms.detection.configs.base</a>
+</li>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.detection">otx.algorithms.detection.configs.detection</a>
+</li>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.instance_segmentation">otx.algorithms.detection.configs.instance_segmentation</a>
+</li>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.rotated_detection">otx.algorithms.detection.configs.rotated_detection</a>
+</li>
+        <li><a href="guide/reference/algorithm/segmentation/configs.html#module-otx.algorithms.segmentation.configs">otx.algorithms.segmentation.configs</a>
+</li>
+        <li><a href="guide/reference/algorithm/segmentation/configs.html#module-otx.algorithms.segmentation.configs.base">otx.algorithms.segmentation.configs.base</a>
+</li>
+        <li><a href="guide/reference/api/configuration/index.html#module-otx.api.configuration">otx.api.configuration</a>
+</li>
+        <li><a href="guide/reference/api/configuration/index.html#module-otx.api.configuration.helper">otx.api.configuration.helper</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.annotation">otx.api.entities.annotation</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.color">otx.api.entities.color</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.coordinate">otx.api.entities.coordinate</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.dataset_item">otx.api.entities.dataset_item</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.datasets">otx.api.entities.datasets</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.graph">otx.api.entities.graph</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.id">otx.api.entities.id</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.image">otx.api.entities.image</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.inference_parameters">otx.api.entities.inference_parameters</a>
+</li>
+        <li><a href="guide/reference/api/entities/interfaces.html#module-otx.api.entities.interfaces.graph_interface">otx.api.entities.interfaces.graph_interface</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.label">otx.api.entities.label</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.label_schema">otx.api.entities.label_schema</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.media">otx.api.entities.media</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.metadata">otx.api.entities.metadata</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.metrics">otx.api.entities.metrics</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.model">otx.api.entities.model</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.model_template">otx.api.entities.model_template</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.optimization_parameters">otx.api.entities.optimization_parameters</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.result_media">otx.api.entities.result_media</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.resultset">otx.api.entities.resultset</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.scored_label">otx.api.entities.scored_label</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.ellipse">otx.api.entities.shapes.ellipse</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.polygon">otx.api.entities.shapes.polygon</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.rectangle">otx.api.entities.shapes.rectangle</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.shape">otx.api.entities.shapes.shape</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.subset">otx.api.entities.subset</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.task_environment">otx.api.entities.task_environment</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.tensor">otx.api.entities.tensor</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.train_parameters">otx.api.entities.train_parameters</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.url">otx.api.entities.url</a>
+</li>
+        <li><a href="guide/reference/api/usecases/index.html#module-otx.api.usecases">otx.api.usecases</a>
+</li>
+        <li><a href="guide/reference/api/usecases/index.html#module-otx.api.usecases.adapters">otx.api.usecases.adapters</a>
+</li>
+        <li><a href="guide/reference/api/usecases/adapters.html#module-otx.api.usecases.adapters.model_adapter">otx.api.usecases.adapters.model_adapter</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.accuracy">otx.api.usecases.evaluation.accuracy</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.anomaly_metrics">otx.api.usecases.evaluation.anomaly_metrics</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.averaging">otx.api.usecases.evaluation.averaging</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.basic_operations">otx.api.usecases.evaluation.basic_operations</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.dice">otx.api.usecases.evaluation.dice</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.f_measure">otx.api.usecases.evaluation.f_measure</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.metrics_helper">otx.api.usecases.evaluation.metrics_helper</a>
+</li>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.performance_provider_interface">otx.api.usecases.evaluation.performance_provider_interface</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#module-otx.api.usecases.reporting">otx.api.usecases.reporting</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#module-otx.api.usecases.reporting.callback">otx.api.usecases.reporting.callback</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#module-otx.api.usecases.reporting.time_monitor_callback">otx.api.usecases.reporting.time_monitor_callback</a>
+</li>
+        <li><a href="guide/reference/api/usecases/tasks.html#module-otx.api.usecases.tasks">otx.api.usecases.tasks</a>
+</li>
+        <li><a href="guide/reference/core/data.html#module-otx.core.data">otx.core.data</a>
+</li>
+        <li><a href="guide/reference/core/data.html#module-otx.core.data.adapter">otx.core.data.adapter</a>
+</li>
+        <li><a href="guide/reference/core/data.html#module-otx.core.data.manager">otx.core.data.manager</a>
+</li>
+        <li><a href="guide/reference/hpo/hpo.html#module-otx.hpo">otx.hpo</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.MultiDiGraph">MultiDiGraph (class in otx.api.entities.graph)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MultiScorePerformance">MultiScorePerformance (class in otx.api.entities.metrics)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.LabelEntity.name">name (otx.api.entities.label.LabelEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.IMetadata.name">(otx.api.entities.metadata.IMetadata property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MetricEntity.name">(otx.api.entities.metrics.MetricEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationInfo.name">(otx.api.entities.metrics.VisualizationInfo attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.name">(otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel.name">(otx.api.entities.scored_label.ScoredLabel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.natural_sort_label_id">natural_sort_label_id() (in module otx.api.entities.label_schema)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.neighbors">neighbors() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.neighbors">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelOptimizationType.NNCF">NNCF (otx.api.entities.model.ModelOptimizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.EntryPoints.nncf">nncf (otx.api.entities.model_template.EntryPoints attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.nodes">nodes (otx.api.entities.graph.Graph property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.nodes">(otx.api.entities.interfaces.graph_interface.IGraph property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ModelLifecycle.NONE">NONE (otx.api.configuration.ModelLifecycle attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind.NONE">(otx.api.entities.annotation.AnnotationSceneKind attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelOptimizationType.NONE">(otx.api.entities.model.ModelOptimizationType attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.InstantiationType.NONE">(otx.api.entities.model_template.InstantiationType attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.NONE">(otx.api.entities.subset.Subset attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetric.normalize">normalize() (otx.api.entities.metrics.MatrixMetric method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Point.normalize_wrt_roi">normalize_wrt_roi() (otx.api.entities.shapes.polygon.Point method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.normalize_wrt_roi_shape">normalize_wrt_roi_shape() (otx.api.entities.shapes.ellipse.Ellipse method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Polygon.normalize_wrt_roi_shape">(otx.api.entities.shapes.polygon.Polygon method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.normalize_wrt_roi_shape">(otx.api.entities.shapes.rectangle.Rectangle method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity.normalize_wrt_roi_shape">(otx.api.entities.shapes.shape.ShapeEntity method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.NOT">NOT (otx.api.configuration.Operator attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.NULL">NULL (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.NULL">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.NullAnnotationSceneEntity">NullAnnotationSceneEntity (class in otx.api.entities.annotation)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.NullMetric">NullMetric (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.NullModelTemplate">NullModelTemplate (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.NullPerformance">NullPerformance (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.NullUIRules">NullUIRules (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.num_labels">num_labels (otx.api.entities.graph.Graph property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.num_labels">(otx.api.entities.label_schema.LabelTree property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.num_nodes">num_nodes() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.num_nodes">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.NumberPerLabel">NumberPerLabel (in module otx.api.usecases.evaluation.basic_operations)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.numpy">numpy (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.image.Image.numpy">(otx.api.entities.image.Image property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMedia2DEntity.numpy">(otx.api.entities.media.IMedia2DEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.result_media.ResultMediaEntity.numpy">(otx.api.entities.result_media.ResultMediaEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.tensor.TensorEntity.numpy">(otx.api.entities.tensor.TensorEntity property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_batch_begin">on_batch_begin() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_batch_begin">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_batch_end">on_batch_end() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_batch_end">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_epoch_begin">on_epoch_begin() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_epoch_begin">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_epoch_begin">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_begin">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_epoch_end">on_epoch_end() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_epoch_end">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_epoch_end">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_end">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_test_batch_begin">on_test_batch_begin() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_batch_begin">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_test_batch_begin">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_begin">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_test_batch_end">on_test_batch_end() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_batch_end">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_test_batch_end">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_end">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_test_begin">on_test_begin() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_begin">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_test_end">on_test_end() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_end">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_train_batch_begin">on_train_batch_begin() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_batch_begin">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_batch_begin">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_begin">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_train_batch_end">on_train_batch_end() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_batch_end">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_batch_end">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_end">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_train_begin">on_train_begin() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_begin">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_begin">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_begin">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.on_train_end">on_train_end() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_end">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_end">(otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback method)</a>
+</li>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_end">(otx.api.usecases.reporting.TimeMonitorCallback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelFormat.ONNX">ONNX (otx.api.entities.model.ModelFormat attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelOptimizationType.ONNX">(otx.api.entities.model.ModelOptimizationType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelFormat.OPENVINO">OPENVINO (otx.api.entities.model.ModelFormat attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.EntryPoints.openvino">openvino (otx.api.entities.model_template.EntryPoints attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ExportableCodePaths.openvino">(otx.api.entities.model_template.ExportableCodePaths attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelOptimizationMethod.OPENVINO">OPENVINO (otx.api.entities.model_template.ModelOptimizationMethod attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator">Operator (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Rule.operator">operator (otx.api.configuration.Rule attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules.operator">(otx.api.configuration.UIRules attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.optimization_methods">optimization_methods (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.optimization_objectives">optimization_objectives (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.optimization_type">optimization_type (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.OptimizationMethod">OptimizationMethod (class in otx.api.entities.model)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters">OptimizationParameters (class in otx.api.entities.optimization_parameters)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.OR">OR (otx.api.configuration.Operator attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelCategory.OTHER">OTHER (otx.api.entities.model_template.ModelCategory attribute)</a>
+</li>
+      <li>
+    otx.algorithms.action.adapters.openvino.dataloader
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/adapters/openvino.html#module-otx.algorithms.action.adapters.openvino.dataloader">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.action.configs
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.action.configs.base
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.action.configs.classification
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs.classification">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.action.configs.detection
+
+      <ul>
+        <li><a href="guide/reference/algorithm/action/configs.html#module-otx.algorithms.action.configs.detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.anomaly.adapters.anomalib.logger
+
+      <ul>
+        <li><a href="guide/reference/algorithm/anomaly/adapters/logger.html#module-otx.algorithms.anomaly.adapters.anomalib.logger">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.anomaly.configs
+
+      <ul>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.anomaly.configs.base
+
+      <ul>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.anomaly.configs.classification
+
+      <ul>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.classification">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.anomaly.configs.detection
+
+      <ul>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.anomaly.configs.segmentation
+
+      <ul>
+        <li><a href="guide/reference/algorithm/anomaly/configs.html#module-otx.algorithms.anomaly.configs.segmentation">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.classification.configs
+
+      <ul>
+        <li><a href="guide/reference/algorithm/classification/configs.html#module-otx.algorithms.classification.configs">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.classification.utils
+
+      <ul>
+        <li><a href="guide/reference/algorithm/classification/utils.html#module-otx.algorithms.classification.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.detection.configs
+
+      <ul>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.detection.configs.base
+
+      <ul>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.detection.configs.detection
+
+      <ul>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.detection.configs.instance_segmentation
+
+      <ul>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.instance_segmentation">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.detection.configs.rotated_detection
+
+      <ul>
+        <li><a href="guide/reference/algorithm/detection/configs.html#module-otx.algorithms.detection.configs.rotated_detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.segmentation.configs
+
+      <ul>
+        <li><a href="guide/reference/algorithm/segmentation/configs.html#module-otx.algorithms.segmentation.configs">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algorithms.segmentation.configs.base
+
+      <ul>
+        <li><a href="guide/reference/algorithm/segmentation/configs.html#module-otx.algorithms.segmentation.configs.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.configuration
+
+      <ul>
+        <li><a href="guide/reference/api/configuration/index.html#module-otx.api.configuration">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.configuration.helper
+
+      <ul>
+        <li><a href="guide/reference/api/configuration/index.html#module-otx.api.configuration.helper">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    otx.api.entities.annotation
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.annotation">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.color
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.color">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.coordinate
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.coordinate">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.dataset_item
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.dataset_item">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.datasets
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.datasets">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.graph
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.graph">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.id
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.id">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.image
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.image">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.inference_parameters
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.inference_parameters">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.interfaces.graph_interface
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#module-otx.api.entities.interfaces.graph_interface">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.label
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.label">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.label_schema
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.label_schema">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.media
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.media">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.metadata
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.metadata">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.metrics
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.metrics">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.model
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.model">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.model_template
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.model_template">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.optimization_parameters
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.optimization_parameters">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.result_media
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.result_media">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.resultset
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.resultset">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.scored_label
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.scored_label">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.shapes.ellipse
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.ellipse">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.shapes.polygon
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.polygon">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.shapes.rectangle
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.rectangle">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.shapes.shape
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#module-otx.api.entities.shapes.shape">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.subset
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.subset">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.task_environment
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.task_environment">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.tensor
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.tensor">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.train_parameters
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.train_parameters">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.entities.url
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#module-otx.api.entities.url">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/index.html#module-otx.api.usecases">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.adapters
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/index.html#module-otx.api.usecases.adapters">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.adapters.model_adapter
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/adapters.html#module-otx.api.usecases.adapters.model_adapter">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.accuracy
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.accuracy">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.anomaly_metrics
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.anomaly_metrics">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.averaging
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.averaging">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.basic_operations
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.basic_operations">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.dice
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.dice">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.f_measure
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.f_measure">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.metrics_helper
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.metrics_helper">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.evaluation.performance_provider_interface
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.performance_provider_interface">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.reporting
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#module-otx.api.usecases.reporting">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.reporting.callback
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#module-otx.api.usecases.reporting.callback">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.reporting.time_monitor_callback
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#module-otx.api.usecases.reporting.time_monitor_callback">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.api.usecases.tasks
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/tasks.html#module-otx.api.usecases.tasks">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.data
+
+      <ul>
+        <li><a href="guide/reference/core/data.html#module-otx.core.data">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.data.adapter
+
+      <ul>
+        <li><a href="guide/reference/core/data.html#module-otx.core.data.adapter">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.data.manager
+
+      <ul>
+        <li><a href="guide/reference/core/data.html#module-otx.core.data.manager">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.hpo
+
+      <ul>
+        <li><a href="guide/reference/hpo/hpo.html#module-otx.hpo">module</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.overall_dice">overall_dice (otx.api.usecases.evaluation.dice.DiceAverage property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig">PadimAnomalyBaseConfig (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters">PadimAnomalyBaseConfig.LearningParameters (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Rule.parameter">parameter (otx.api.configuration.Rule attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.parameter_overrides">parameter_overrides (otx.api.entities.model_template.HyperParameterData attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.parse_model_template">parse_model_template() (in module otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.parse_model_template_from_dict">parse_model_template_from_dict() (in module otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.image.Image.path">path (otx.api.entities.image.Image property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMedia2DEntity.path">(otx.api.entities.media.IMedia2DEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.url.URL.path">(otx.api.entities.url.URL property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.Performance">Performance (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.performance">performance (otx.api.entities.model.ModelEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.performance">(otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.performance_improvement">performance_improvement (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Point">Point (class in otx.api.entities.shapes.polygon)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Polygon">Polygon (class in otx.api.entities.shapes.polygon)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeType.POLYGON">POLYGON (otx.api.entities.shapes.shape.ShapeType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelOptimizationType.POT">POT (otx.api.entities.model.ModelOptimizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.precision">precision (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.accuracy.precision_metrics_group">precision_metrics_group() (in module otx.api.usecases.evaluation.accuracy)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.precision_per_class">precision_per_class() (in module otx.api.usecases.evaluation.basic_operations)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind.PREDICTION">PREDICTION (otx.api.entities.annotation.AnnotationSceneKind attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.prediction_dataset">prediction_dataset (otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultsetPurpose.PREEVALUATION">PREEVALUATION (otx.api.entities.resultset.ResultsetPurpose attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.previous_revision">previous_revision (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.previous_trained_revision">previous_trained_revision (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MultiScorePerformance.primary_score">primary_score (otx.api.entities.metrics.MultiScorePerformance property)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.print_result">print_result() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters.process_saliency_maps">process_saliency_maps (otx.api.entities.inference_parameters.InferenceParameters attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.PSEUDOLABELED">PSEUDOLABELED (otx.api.entities.subset.Subset attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.purpose">purpose (otx.api.entities.datasets.DatasetEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity.purpose">(otx.api.entities.resultset.ResultSetEntity property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.OptimizationMethod.QUANTIZATION">QUANTIZATION (otx.api.entities.model.OptimizationMethod attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationType.RADIAL_BAR">RADIAL_BAR (otx.api.entities.metrics.VisualizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.Color.random">random() (otx.api.entities.color.Color class method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.random">(otx.api.entities.color.ColorEntity class method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.TrialStatus.READY">READY (otx.hpo.TrialStatus attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.accuracy.recall_metrics_group">recall_metrics_group() (in module otx.api.usecases.evaluation.accuracy)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/evaluation.html#otx.api.usecases.evaluation.basic_operations.recall_per_class">recall_per_class() (in module otx.api.usecases.evaluation.basic_operations)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle">Rectangle (class in otx.api.entities.shapes.rectangle)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeType.RECTANGLE">RECTANGLE (otx.api.entities.shapes.shape.ShapeType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.ColorEntity.red">red (otx.api.entities.color.ColorEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.url.URL.relative_path">relative_path (otx.api.entities.url.URL property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.remove">remove() (otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.remove_at_indices">remove_at_indices() (otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.remove_edges">remove_edges() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/interfaces.html#otx.api.entities.interfaces.graph_interface.IGraph.remove_edges">(otx.api.entities.interfaces.graph_interface.IGraph method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelGroup.remove_label">remove_label() (otx.api.entities.label_schema.LabelGroup method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.remove_node">remove_node() (otx.api.entities.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.remove_node">(otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.report_score">report_score() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.id.ID.representation">representation (otx.api.entities.id.ID property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_greedily">resolve_labels_greedily() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_probabilistic">resolve_labels_probabilistic() (otx.api.entities.label_schema.LabelSchemaEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.result_media.ResultMediaEntity">ResultMediaEntity (class in otx.api.entities.result_media)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultSetEntity">ResultSetEntity (class in otx.api.entities.resultset)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultsetPurpose">ResultsetPurpose (class in otx.api.entities.resultset)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters.resume">resume (otx.api.entities.optimization_parameters.OptimizationParameters attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.TrainParameters.resume">(otx.api.entities.train_parameters.TrainParameters attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.color.Color.rgb_tuple">rgb_tuple (otx.api.entities.color.Color property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.roi">roi (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.roi_numpy">roi_numpy() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.image.Image.roi_numpy">(otx.api.entities.image.Image method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMedia2DEntity.roi_numpy">(otx.api.entities.media.IMedia2DEntity method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.ROTATED_DETECTION">ROTATED_DETECTION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.ROTATED_DETECTION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixChartInfo.row_header">row_header (otx.api.entities.metrics.MatrixChartInfo attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetric.row_labels">row_labels (otx.api.entities.metrics.MatrixMetric property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Rule">Rule (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.NullUIRules.rules">rules (otx.api.configuration.NullUIRules attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules.rules">(otx.api.configuration.UIRules attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.run_hpo_loop">run_hpo_loop() (in module otx.hpo)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.TrialStatus.RUNNING">RUNNING (otx.hpo.TrialStatus attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters.save_model">save_model() (otx.api.entities.optimization_parameters.OptimizationParameters method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.TrainParameters.save_model">(otx.api.entities.train_parameters.TrainParameters method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.HyperBand.save_results">save_results() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.url.URL.scheme">scheme (otx.api.entities.url.URL property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.Performance.score">score (otx.api.entities.metrics.Performance property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.ScoredLabel">ScoredLabel (class in otx.api.entities.scored_label)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.ScoreMetric">ScoreMetric (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/algorithm/segmentation/configs.html#otx.algorithms.segmentation.configs.base.Models.Segmentation">Segmentation (otx.algorithms.segmentation.configs.base.Models attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label.Domain.SEGMENTATION">SEGMENTATION (otx.api.entities.label.Domain attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.SEGMENTATION">(otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/algorithm/segmentation/configs.html#otx.algorithms.segmentation.configs.base.SegmentationConfig">SegmentationConfig (class in otx.algorithms.segmentation.configs.base)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.set_data">set_data() (otx.api.entities.model.ModelEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.Graph.set_graph">set_graph() (otx.api.entities.graph.Graph method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment.set_hyper_parameters">set_hyper_parameters() (otx.api.entities.task_environment.TaskEnvironment method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.set_labels">set_labels() (otx.api.entities.annotation.Annotation method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.set_metadata">set_metadata() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.set_model">set_model() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.set_model">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.Callback.set_params">set_params() (otx.api.usecases.reporting.Callback method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.callback.Callback.set_params">(otx.api.usecases.reporting.callback.Callback method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.Dependency.sha256">sha256 (otx.api.entities.model_template.Dependency attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.Shape">Shape (class in otx.api.entities.shapes.shape)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.Annotation.shape">shape (otx.api.entities.annotation.Annotation property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.tensor.TensorEntity.shape">(otx.api.entities.tensor.TensorEntity property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity">ShapeEntity (class in otx.api.entities.shapes.shape)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.shapes">shapes (otx.api.entities.annotation.AnnotationSceneEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeType">ShapeType (class in otx.api.entities.shapes.shape)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Action.SHOW">SHOW (otx.api.configuration.Action attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.Dependency.size">size (otx.api.entities.model_template.Dependency attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.size">(otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.sort_items">sort_items() (otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.Dependency.source">source (otx.api.entities.model_template.Dependency attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelCategory.SPEED">SPEED (otx.api.entities.model_template.ModelCategory attribute)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig">STFPMAnomalyBaseConfig (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters">STFPMAnomalyBaseConfig.LearningParameters (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/algorithm/anomaly/configs.html#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters">STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters (class in otx.algorithms.anomaly.configs.base)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.TrialStatus.STOP">STOP (otx.hpo.TrialStatus attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.subgraph">subgraph() (otx.api.entities.label_schema.LabelTree method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset">Subset (class in otx.api.entities.subset)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.subset">subset (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.substitute_parameter_overrides">substitute_parameter_overrides() (otx.api.entities.model_template.HyperParameterData method)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.substitute_values">substitute_values() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.substitute_values_for_lifecycle">substitute_values_for_lifecycle() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.summary">summary (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.supports_auto_hpo">supports_auto_hpo() (otx.api.entities.model_template.ModelTemplate method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.tags">tags (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.target_device">target_device (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.target_device_type">target_device_type (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TargetDevice">TargetDevice (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.task_family">task_family (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose.TASK_INFERENCE">TASK_INFERENCE (otx.api.entities.datasets.DatasetPurpose attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneKind.TASK_PREDICTION">TASK_PREDICTION (otx.api.entities.annotation.AnnotationSceneKind attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.task_type">task_type (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.task_type_sort_priority">task_type_sort_priority (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.task_type_to_label_domain">task_type_to_label_domain() (in module otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment">TaskEnvironment (class in otx.api.entities.task_environment)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskFamily">TaskFamily (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskInfo">TaskInfo (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType">TaskType (class in otx.api.entities.model_template)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose.TEMPORARY_DATASET">TEMPORARY_DATASET (otx.api.entities.datasets.DatasetPurpose attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.tensor.TensorEntity">TensorEntity (class in otx.api.entities.tensor)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelOptimizationMethod.TENSORRT">TENSORRT (otx.api.entities.model_template.ModelOptimizationMethod attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.resultset.ResultsetPurpose.TEST">TEST (otx.api.entities.resultset.ResultsetPurpose attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ModelLifecycle.TESTING">TESTING (otx.api.configuration.ModelLifecycle attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.TESTING">(otx.api.entities.subset.Subset attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationType.TEXT">TEXT (otx.api.entities.metrics.VisualizationType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.TextChartInfo">TextChartInfo (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.TextMetricsGroup">TextMetricsGroup (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskType.TILE">TILE (otx.api.entities.model_template.TaskType attribute)</a>
+</li>
+      <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.TimeMonitorCallback">TimeMonitorCallback (class in otx.api.usecases.reporting)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback">(class in otx.api.usecases.reporting.time_monitor_callback)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Rule.to_dict">to_dict() (otx.api.configuration.Rule method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules.to_dict">(otx.api.configuration.UIRules method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.graph.MultiDiGraph.topological_sort">topological_sort() (otx.api.entities.graph.MultiDiGraph method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.train_dataset">train_dataset (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ModelLifecycle.TRAINING">TRAINING (otx.api.configuration.ModelLifecycle attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetPurpose.TRAINING">(otx.api.entities.datasets.DatasetPurpose attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.TRAINING">(otx.api.entities.subset.Subset attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.training_duration">training_duration (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.training_targets">training_targets (otx.api.entities.model_template.ModelTemplate attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.TrainParameters">TrainParameters (class in otx.api.entities.train_parameters)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.TrialStatus">TrialStatus (class in otx.hpo)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.ConfigurableParameters.type">type (otx.api.configuration.ConfigurableParameters attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Rule.type">(otx.api.configuration.Rule attribute)</a>
+</li>
+        <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules.type">(otx.api.configuration.UIRules attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.label_schema.LabelTree.type">(otx.api.entities.label_schema.LabelTree property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationInfo.type">(otx.api.entities.metrics.VisualizationInfo property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity.type">(otx.api.entities.shapes.shape.ShapeEntity property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CountMetric.type">type() (otx.api.entities.metrics.CountMetric static method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CurveMetric.type">(otx.api.entities.metrics.CurveMetric static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DateMetric.type">(otx.api.entities.metrics.DateMetric static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.DurationMetric.type">(otx.api.entities.metrics.DurationMetric static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.InfoMetric.type">(otx.api.entities.metrics.InfoMetric static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MatrixMetric.type">(otx.api.entities.metrics.MatrixMetric static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.MetricEntity.type">(otx.api.entities.metrics.MetricEntity static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.NullMetric.type">(otx.api.entities.metrics.NullMetric static method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.ScoreMetric.type">(otx.api.entities.metrics.ScoreMetric static method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.UIRules">UIRules (class in otx.api.configuration)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.UNASSIGNED">UNASSIGNED (otx.api.entities.subset.Subset attribute)</a>
+</li>
+      <li><a href="guide/reference/hpo/hpo.html#otx.hpo.TrialStatus.UNKNOWN">UNKNOWN (otx.hpo.TrialStatus attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.UNLABELED">UNLABELED (otx.api.entities.subset.Subset attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TargetDevice.UNSPECIFIED">UNSPECIFIED (otx.api.entities.model_template.TargetDevice attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.VideoMetadata.update">update() (otx.api.entities.metadata.VideoMetadata method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters.update_progress">update_progress() (otx.api.entities.inference_parameters.InferenceParameters method)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters.update_progress">(otx.api.entities.optimization_parameters.OptimizationParameters method)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.TrainParameters.update_progress">(otx.api.entities.train_parameters.TrainParameters method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.train_parameters.UpdateProgressCallback">UpdateProgressCallback (class in otx.api.entities.train_parameters)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.url.URL">URL (class in otx.api.entities.url)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.scored_label.LabelSource.user_id">user_id (otx.api.entities.scored_label.LabelSource attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.helper.validate">validate() (in module otx.api.configuration.helper)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.subset.Subset.VALIDATION">VALIDATION (otx.api.entities.subset.Subset attribute)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Rule.value">value (otx.api.configuration.Rule attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CountMetric.value">(otx.api.entities.metrics.CountMetric attribute)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.InfoMetric.value">(otx.api.entities.metrics.InfoMetric attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.version">version (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metadata.VideoMetadata">VideoMetadata (class in otx.api.entities.metadata)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TaskFamily.VISION">VISION (otx.api.entities.model_template.TaskFamily attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationInfo">VisualizationInfo (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.VisualizationType">VisualizationType (class in otx.api.entities.metrics)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model_template.TargetDevice.VPU">VPU (otx.api.entities.model_template.TargetDevice attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.model.ModelEntity.weight_paths">weight_paths (otx.api.entities.model.ModelEntity property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.width">width (otx.api.entities.dataset_item.DatasetItemEntity property)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.image.Image.width">(otx.api.entities.image.Image property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.media.IMedia2DEntity.width">(otx.api.entities.media.IMedia2DEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/general.html#otx.api.entities.result_media.ResultMediaEntity.width">(otx.api.entities.result_media.ResultMediaEntity property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.width">(otx.api.entities.shapes.ellipse.Ellipse property)</a>
+</li>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle.width">(otx.api.entities.shapes.rectangle.Rectangle property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.datasets.DatasetEntity.with_empty_annotations">with_empty_annotations() (otx.api.entities.datasets.DatasetEntity method)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity.wrap">wrap() (otx.api.entities.dataset_item.DatasetItemEntity method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.coordinate.Coordinate.x">x (otx.api.entities.coordinate.Coordinate attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Point.x">(otx.api.entities.shapes.polygon.Point attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.LineChartInfo.x_axis_label">x_axis_label (otx.api.entities.metrics.LineChartInfo attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.x_center">x_center (otx.api.entities.shapes.ellipse.Ellipse property)</a>
+</li>
+      <li><a href="guide/reference/api/configuration/index.html#otx.api.configuration.Operator.XOR">XOR (otx.api.configuration.Operator attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CurveMetric.xs">xs (otx.api.entities.metrics.CurveMetric property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.coordinate.Coordinate.y">y (otx.api.entities.coordinate.Coordinate attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.polygon.Point.y">(otx.api.entities.shapes.polygon.Point attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.LineChartInfo.y_axis_label">y_axis_label (otx.api.entities.metrics.LineChartInfo attribute)</a>
+</li>
+      <li><a href="guide/reference/api/entities/shapes.html#otx.api.entities.shapes.ellipse.Ellipse.y_center">y_center (otx.api.entities.shapes.ellipse.Ellipse property)</a>
+</li>
+      <li><a href="guide/reference/api/entities/general.html#otx.api.entities.metrics.CurveMetric.ys">ys (otx.api.entities.metrics.CurveMetric property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

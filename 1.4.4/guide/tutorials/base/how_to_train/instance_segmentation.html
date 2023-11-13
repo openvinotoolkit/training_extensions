@@ -1,0 +1,927 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Instance Segmentation model &#8212; OpenVINO™ Training Extensions 1.4.4 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/how_to_train/instance_segmentation';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Semantic Segmentation model" href="semantic_segmentation.html" />
+    <link rel="prev" title="Object Detection model" href="detection.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/cli_commands.html">OpenVINO™ Training Extensions CLI commands</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Base Tutorials</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">How to train, validate, export and optimize the model</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="classification.html">Classification  model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detection.html">Object Detection model</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Instance Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semantic_segmentation.html">Semantic Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="anomaly_detection.html">Anomaly Detection Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="action_classification.html">Action Classification model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="action_detection.html">Action Detection model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deploy.html">How to deploy the model and use demo in exportable code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explain.html">How to explain the model behavior</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/semi_sl.html">Use Semi-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/self_sl.html">Use Self-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/backbones.html">Backbone Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/api_tutorial.html">Utilize OpenVINO™ Training Extensions APIs in your project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/hpo_tutorial.html">Simple HPO Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../explanation/algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/object_detection/object_detection.html">Object Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/action/action_classification.html">Action Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/action/action_detection.html">Action Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/algorithms/visual_prompting/index.html">Visual Prompting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../explanation/additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/noisy_label_detection.html">Noisy Label Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/tiling.html">Improve Small Object Detection with Image Tiling</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/api/index.html">API</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/configuration/index.html">Configuration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/api/entities/index.html">Entities</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/entities/general.html">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/entities/shapes.html">Shapes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/entities/interfaces.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/api/usecases/index.html">Usecases</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/usecases/adapters.html">Adapters</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/api/usecases/evaluation.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/usecases/exportable_code.html">Exportable Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/usecases/reporting.html">Reporting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/usecases/tasks.html">Task interfaces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/algorithm/index.html">Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/algorithm/action/index.html">Action</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/action/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/action/adapters/mmaction.html">mmaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/action/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/action/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/action/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/algorithm/anomaly/index.html">Anomaly</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/anomaly/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/anomaly/adapters/config.html">Config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/anomaly/adapters/data.html">Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/anomaly/adapters/callbacks.html">Callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/anomaly/adapters/logger.html">Logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/anomaly/adapters/exportable_code.html">Exportable Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/anomaly/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/anomaly/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-22"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/anomaly/tools.html">Tools</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-23"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/algorithm/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-24"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/classification/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-25"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/classification/adapters/mmcls.html">mmclassification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/classification/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/classification/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-26"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/classification/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-27"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/classification/utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-28"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/algorithm/detection/index.html">Detection</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-29"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/detection/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/detection/adapters/mmdet.html">mmdetection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/detection/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/detection/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/detection/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-32"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/detection/utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-33"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/algorithm/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-34"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/segmentation/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-35"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/segmentation/adapters/mmseg.html">mmsegmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/algorithm/segmentation/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/segmentation/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-36"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/algorithm/segmentation/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-37"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/core/index.html">Core</a><input class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-38"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/core/data.html">Data</a><input class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-39"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/core/ov/index.html">OpenVINO</a><input class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-40"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/core/ov/graph.html">Graph</a><input class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-41"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/core/ov/models.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-42"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/core/ov/ops.html">OPS</a><input class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/hpo/hpo.html">HPO</a><input class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/mpa/index.html">Model Preparation Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+  </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="instance-segmentation-model">
+<h1>Instance Segmentation model<a class="headerlink" href="#instance-segmentation-model" title="Permalink to this heading">#</a></h1>
+<p>This tutorial reveals end-to-end solution from installation to model export and optimization for instance segmentation task on a specific example.
+On this page, we show how to train, validate, export and optimize Mask-RCNN model on a toy dataset.</p>
+<p>To learn more about Instance Segmentation task, refer to <a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html"><span class="doc">Instance Segmentation</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To learn deeper how to manage training process of the model including additional parameters and its modification.</p>
+<p>To learn how to deploy the trained model, refer to: <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model and use demo in exportable code</span></a>.</p>
+<p>To learn how to run the demo and visualize results, refer to: <a class="reference internal" href="../demo.html"><span class="doc">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</span></a>.</p>
+</div>
+<p>The process has been tested on the following configuration.</p>
+<ul class="simple">
+<li><p>Ubuntu 20.04</p></li>
+<li><p>NVIDIA GeForce RTX 3090</p></li>
+<li><p>Intel(R) Core(TM) i9-11900</p></li>
+<li><p>CUDA Toolkit 11.7</p></li>
+</ul>
+<section id="setup-virtual-environment">
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this heading">#</a></h2>
+<p>1. You can follow the installation process from a <a class="reference internal" href="../../../get_started/installation.html"><span class="doc">quick start guide</span></a>
+to create a universal virtual environment for OpenVINO™ Training Extensions.</p>
+<p>2. Activate your virtual
+environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="c1"># or by this line, if you created an environment, using tox</span>
+<span class="o">.</span> <span class="n">venv</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+</section>
+<section id="dataset-preparation">
+<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, we support the following instance segmentation dataset formats:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://cocodataset.org/#format-data">COCO</a></p></li>
+</ul>
+</div>
+<p>1. Clone a repository with
+<a class="reference external" href="https://github.com/thsant/wgisd">WGISD dataset</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">data</span> <span class="p">;</span> <span class="n">cd</span> <span class="n">data</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">thsant</span><span class="o">/</span><span class="n">wgisd</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">wgisd</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="mi">6910</span><span class="n">edc5ae3aae8c20062941b1641821f0c30127</span>
+</pre></div>
+</div>
+<p>This dataset contains images of grapevines with the annotation for different varieties of grapes.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">CDY</span></code> - Chardonnay</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CFR</span></code> - Cabernet Franc</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CSV</span></code> - Cabernet Sauvignon</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SVB</span></code> - Sauvignon Blanc</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SYH</span></code> - Syrah</p></li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<a class="reference internal image-reference" href="../../../../_images/wgisd_dataset_sample.jpg"><img alt="this image uploaded from this `source &lt;https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg&gt;`_" src="../../../../_images/wgisd_dataset_sample.jpg" style="width: 600px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>2. Check the file structure of downloaded dataset,
+we will need the following file structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wgisd
+├── annotations/
+    ├── instances_train.json
+    ├── instances_val.json
+    (Optional)
+    └── instances_test.json
+├──images/
+    (Optional)
+    ├── train
+    ├── val
+    └── test
+(There may be more extra unrelated folders)
+</pre></div>
+</div>
+<p>We can do that by running these commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># format images folder</span>
+<span class="n">mv</span> <span class="n">data</span> <span class="n">images</span>
+
+<span class="c1"># format annotations folder</span>
+<span class="n">mv</span> <span class="n">coco_annotations</span> <span class="n">annotations</span>
+
+<span class="c1"># rename annotations to meet *_train.json pattern</span>
+<span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">train_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">annotations</span><span class="o">/</span><span class="n">instances_train</span><span class="o">.</span><span class="n">json</span>
+<span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">test_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">annotations</span><span class="o">/</span><span class="n">instances_val</span><span class="o">.</span><span class="n">json</span>
+
+<span class="n">cd</span> <span class="o">../..</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We can use this dataset in the detection tutorial. refer to <a class="reference internal" href="detection.html"><span class="doc">Object Detection model</span></a>.</p>
+</div>
+</section>
+<section id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
+<p>1. First of all, you need to choose which instance segmentation model you want to train.
+The list of supported templates for instance segmentation is available with the command line below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html"><span class="doc">Explanation section</span></a>.</p>
+<p>To modify the architecture of supported models with various backbones, please refer to the <a class="reference internal" href="../../advanced/backbones.html"><span class="doc">advanced tutorial for backbone replacement</span></a>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --template --task instance_segmentation
+
++-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
+|          TASK         |                               ID                               |           NAME           |                                             BASE PATH                                             |
++-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
+| INSTANCE_SEGMENTATION |    Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50     |    MaskRCNN-ResNet50     |     src/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml    |
+| INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml |
+| INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt        | MaskRCNN-ConvNeXt        | src/otx/algorithms/detection/configs/instance_segmentation/convnext_maskrcnn/template.yaml        |
++-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
+</pre></div>
+</div>
+<p>2. We need to create
+OpenVINO™ Training Extensions workspace first.</p>
+<p>Let’s prepare an OpenVINO™ Training Extensions instance segmentation workspace running the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --task instance_segmentation
+
+[*] Workspace Path: otx-workspace-INSTANCE_SEGMENTATION
+[*] Load Model Template ID: Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50
+[*] Load Model Name: MaskRCNN-ResNet50
+[*]     - Updated: otx-workspace-INSTANCE_SEGMENTATION/model.py
+[*]     - Updated: otx-workspace-INSTANCE_SEGMENTATION/data_pipeline.py
+[*]     - Updated: otx-workspace-INSTANCE_SEGMENTATION/tile_pipeline.py
+[*]     - Updated: otx-workspace-INSTANCE_SEGMENTATION/deployment.py
+[*]     - Updated: otx-workspace-INSTANCE_SEGMENTATION/hpo_config.yaml
+[*]     - Updated: otx-workspace-INSTANCE_SEGMENTATION/compression_config.json
+[*] Update data configuration file to: otx-workspace-INSTANCE_SEGMENTATION/data.yaml
+
+(otx) ...$ cd ./otx-workspace-INSTANCE_SEGMENTATION
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default model for instance segmentation is MaskRCNN-ResNet50.
+If you want to use a different model, use the commands below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --task instance_segmentation --model &lt;Model-Name&gt;
+</pre></div>
+</div>
+</div>
+<p>It will create <strong>otx-workspace-INSTANCE_SEGMENTATION</strong> with all necessary configs for MaskRCNN-ResNet50, prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands launch and splitted dataset.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> with TEMPLATE allows you to run the training directly without <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>.</p>
+<p>However, this requires <code class="docutils literal notranslate"><span class="pre">--train-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code> in the command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 \
+                  --train-data-roots &lt;data_root_path&gt;/wgisd \
+                  --val-data-roots &lt;data_root_path&gt;/wgisd \
+                  params --learning_parameters.num_iters 8
+</pre></div>
+</div>
+<p>The command above also creates an <code class="docutils literal notranslate"><span class="pre">otx-workspace-INSTANCE_SEGMENTATION</span></code>, just like running build. This also updates <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> with data-specific commands.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Note, that we can’t run CLI commands for instance segmentation via model name, since the same models are utilized for different algorithm and the behavior can be unpredictable.
+Please, use the template path or template ID instead.</p>
+</div>
+<p>To simplify the command line functions calling, we may create a <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file with annotations info and pass it as a <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter.
+The content of the <code class="docutils literal notranslate"><span class="pre">otx-workspace-INSTANCE_SEGMENTATION/data.yaml</span></code> for dataset should have absolute paths and will be similar to that:</p>
+<p>Check <code class="docutils literal notranslate"><span class="pre">otx-workspace-INSTANCE_SEGMENTATION/data.yaml</span></code> to ensure, which data subsets will be used for training and validation, and update it if necessary.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">:</span>
+<span class="n">train</span><span class="p">:</span>
+  <span class="n">ann</span><span class="o">-</span><span class="n">files</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">data_root_path</span><span class="o">&gt;/</span><span class="n">wgisd</span>
+<span class="n">val</span><span class="p">:</span>
+  <span class="n">ann</span><span class="o">-</span><span class="n">files</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">data_root_path</span><span class="o">&gt;/</span><span class="n">wgisd</span>
+<span class="n">test</span><span class="p">:</span>
+  <span class="n">ann</span><span class="o">-</span><span class="n">files</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="n">null</span>
+<span class="n">unlabeled</span><span class="p">:</span>
+  <span class="n">file</span><span class="o">-</span><span class="nb">list</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="n">null</span>
+</pre></div>
+</div>
+<p>3. To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
+command in our workspace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) .../otx-workspace-INSTANCE_SEGMENTATION$ otx train
+
+...
+2023-04-26 10:55:29,312 | INFO : Update LrUpdaterHook patience: 3 -&gt; 3
+2023-04-26 10:55:29,312 | INFO : Update CheckpointHook interval: 1 -&gt; 2
+2023-04-26 10:55:29,312 | INFO : Update EvalHook interval: 1 -&gt; 2
+2023-04-26 10:55:29,312 | INFO : Update EarlyStoppingHook patience: 10 -&gt; 5
+2023-04-26 10:55:46,681 | INFO : Epoch [1][28/28] lr: 5.133e-04, eta: 2:54:03, time: 1.055, data_time: 0.658, memory: 7521, current_iters: 27, loss_rpn_cls: 0.2227, loss_rpn_bbox: 0.1252, loss_cls: 1.0220, acc: 77.4606, loss_bbox: 0.7682, loss_mask: 1.1534, loss: 3.2915, grad_norm: 14.0078
+
+...
+2023-04-26 11:32:36,162 | INFO : called evaluate()
+2023-04-26 11:32:36,511 | INFO : F-measure after evaluation: 0.5576271186440678
+2023-04-26 11:32:36,511 | INFO : Evaluation completed
+Performance(score: 0.5576271186440678, dashboard: (1 metric groups))
+otx train time elapsed:  0:20:23.541362
+</pre></div>
+</div>
+<p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 20 minutes with full dataset.</p>
+<p>4. <code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
+<p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file in your workplace or via the command line.</p>
+<p>For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">params</span> <span class="o">--</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">batch_size</span> <span class="mi">4</span> \
+        <span class="o">--</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">num_iters</span> <span class="mi">100</span> \
+        <span class="o">--</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">enable_early_stopping</span> <span class="n">false</span>
+</pre></div>
+</div>
+<p>5. The training results are <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> files located in <code class="docutils literal notranslate"><span class="pre">outputs/**_train/models</span></code> folder,
+while training logs can be found in the <code class="docutils literal notranslate"><span class="pre">outputs/**_train/logs</span></code> dir.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> - a model snapshot</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> - a label schema used in training, created from a dataset</p></li>
+</ul>
+<p>These are needed as inputs for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  <code class="docutils literal notranslate"><span class="pre">deploy</span></code> and <code class="docutils literal notranslate"><span class="pre">demo</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">outputs/**/logs/**/tf_logs</span></code>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace-INSTANCE_SEGMENTATION
+├── outputs/
+    ├── 20230403_134256_train/
+        ├── logs/
+        ├── models/
+            ├── weights.pth
+            └── label_schema.json
+        └── cli_report.log
+    ├── latest_trained_model
+        ├── logs/
+        ├── models/
+        └── cli_report.log
+...
+</pre></div>
+</div>
+<p>After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
+</section>
+<section id="validation">
+<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h2>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
+model on a specific dataset.</p>
+<p>The eval function receives test annotation information and model snapshot, trained in the previous step.
+Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be located in the same folder as the model snapshot.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a F-measure for instance segmentation.</p>
+<p>2. The command below will run validation on our dataset
+and save performance results in <code class="docutils literal notranslate"><span class="pre">outputs/**_eval/performance.json</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots &lt;data_root_path&gt;/wgisd
+</pre></div>
+</div>
+<p>We will get a similar to this validation output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+
+<span class="mi">2023</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">26</span> <span class="mi">12</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">856</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Inference</span> <span class="n">completed</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">26</span> <span class="mi">12</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">856</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">called</span> <span class="n">evaluate</span><span class="p">()</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">26</span> <span class="mi">12</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">28</span><span class="p">,</span><span class="mi">453</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">F</span><span class="o">-</span><span class="n">measure</span> <span class="n">after</span> <span class="n">evaluation</span><span class="p">:</span> <span class="mf">0.5576271186440678</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">26</span> <span class="mi">12</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">28</span><span class="p">,</span><span class="mi">453</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Evaluation</span> <span class="n">completed</span>
+<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.5576271186440678</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can omit <code class="docutils literal notranslate"><span class="pre">--test-data-roots</span></code> if you are currently inside a workspace and have test-data stuff written in <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code>.</p>
+<p>Also, if you’re inside a workspace and <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> exists in <code class="docutils literal notranslate"><span class="pre">outputs/latest_train_model/models</span></code> dir,
+you can omit <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> as well, assuming those weights are the default as <code class="docutils literal notranslate"><span class="pre">latest_train_model/models/weights.pth</span></code>.</p>
+</div>
+<p>The output of <code class="docutils literal notranslate"><span class="pre">./outputs/**_eval/performance.json</span></code> consists of a dict with target metric name and its value.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;f-measure&quot;</span><span class="p">:</span> <span class="mf">0.5576271186440678</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="export">
+<h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the
+OpenVINO™ Intermediate Representation (IR) format.</p>
+<p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+<p>2. We can run the below command line to export the trained model
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">outputs/**_export/openvino</span></code> folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>if you’re inside a workspace and <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> exists in <code class="docutils literal notranslate"><span class="pre">outputs/latest_train_model/models</span></code> dir,
+you can omit <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> as well, assuming those weights are the default as <code class="docutils literal notranslate"><span class="pre">latest_train_model/models/weights.pth</span></code>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export
+
+...
+[ SUCCESS ] Generated IR version 11 model.
+[ SUCCESS ] XML file: otx-workspace-INSTANCE_SEGMENTATION/outputs/20230426_124738_export/logs/model.xml
+[ SUCCESS ] BIN file: otx-workspace-INSTANCE_SEGMENTATION/outputs/20230426_124738_export/logs/model.bin
+
+2023-04-26 12:47:48,293 - mmdeploy - INFO - Successfully exported OpenVINO model: outputs/20230426_124738_export/logs/model_ready.xml
+2023-04-26 12:47:48,670 | INFO : Exporting completed
+</pre></div>
+</div>
+</section>
+<section id="optimization">
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
+<p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
+It uses NNCF or POT depending on the model format.</p>
+<p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
+<p>2. Command example for optimizing
+a PyTorch model (<cite>.pth</cite>) with OpenVINO™ <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>if you’re inside a workspace and <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> exists in <code class="docutils literal notranslate"><span class="pre">outputs/latest_train_model/models</span></code> dir,
+you can omit <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> as well (nncf only), assuming those weights are the default as <code class="docutils literal notranslate"><span class="pre">latest_train_model/models/weights.pth</span></code>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize
+</pre></div>
+</div>
+<p>3.  Command example for optimizing
+OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml
+</pre></div>
+</div>
+<p>Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<p>4. Now we have fully trained, optimized and exported an
+efficient model representation ready-to-use instance segmentation model.</p>
+<p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>
+</section>
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="detection.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Object Detection model</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="semantic_segmentation.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Semantic Segmentation model</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setup-virtual-environment">
+   Setup virtual environment
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset-preparation">
+   Dataset preparation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training">
+   Training
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#validation">
+   Validation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#export">
+   Export
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#optimization">
+   Optimization
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../../_sources/guide/tutorials/base/how_to_train/instance_segmentation.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
