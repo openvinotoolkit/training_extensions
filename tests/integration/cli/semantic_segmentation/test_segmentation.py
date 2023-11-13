@@ -86,6 +86,7 @@ MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
     Path("src/otx/algorithms/segmentation/configs") / "ocr_lite_hrnet_18_mod2" / "template.yaml"
 )
+
 # add integration test for semi-sl with new SegNext model and prototype based approach
 segnext_template = parse_model_template(
     Path("src/otx/algorithms/segmentation/configs") / "ham_segnext_s" / "template.yaml"
@@ -242,5 +243,5 @@ class TestSegmentationCLI:
     def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
         adapting_num_workers_args = copy.deepcopy(args)
         adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
-        tmp_dir_path = tmp_dir_path / f"segmentation_auto_adapt_num_workers"
+        tmp_dir_path = tmp_dir_path / "segmentation_auto_adapt_num_workers"
         otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)

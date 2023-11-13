@@ -37,11 +37,35 @@ All notable changes to this project will be documented in this file.
 - OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch>=1.13.1
 - NNCF QAT optimization is disabled for MaskRCNN models due to CUDA runtime error in ROIAlign kernel on torch==2.0.1
 
+## \[v1.4.4\]
+
+### Enhancements
+
+- Update ModelAPI configuration(<https://github.com/openvinotoolkit/training_extensions/pull/2564>)
+- Add Anomaly modelAPI changes (<https://github.com/openvinotoolkit/training_extensions/pull/2563>)
+- Update Image numpy access (<https://github.com/openvinotoolkit/training_extensions/pull/2586>)
+
+### Bug fixes
+
+- Fix IBLoss enablement with DeiT-Tiny when class incremental training (<https://github.com/openvinotoolkit/training_extensions/pull/2595>)
+- Fix mmcls bug not wrapping model in DataParallel on CPUs (<https://github.com/openvinotoolkit/training_extensions/pull/2601>)
+- Fix h-label loss normalization issue w/ exclusive label group of singe label (<https://github.com/openvinotoolkit/training_extensions/pull/2604>)
+- Fix division by zero in class incremental learning for classification (<https://github.com/openvinotoolkit/training_extensions/pull/2606>)
+- Fix saliency maps calculation issue for detection models (<https://github.com/openvinotoolkit/training_extensions/pull/2609>)
+- Fix h-label bug of missing parent labels in output (<https://github.com/openvinotoolkit/training_extensions/pull/2626>)
+
+## \[v1.4.3\]
+
+### Enhancements
+
+- Re-introduce adaptive scheduling for training (<https://github.com/openvinotoolkit/training_extensions/pull/2541>)
+
 ## \[v1.4.2\]
 
 ### Enhancements
 
-- Bump datumaro version to 1.5.0rc0 (<https://github.com/openvinotoolkit/training_extensions/pull/2470>)
+- Upgrade nncf version to 2.6.0 (<https://github.com/openvinotoolkit/training_extensions/pull/2459>)
+- Bump datumaro version to 1.5.0 (<https://github.com/openvinotoolkit/training_extensions/pull/2470>, <https://github.com/openvinotoolkit/training_extensions/pull/2502>)
 - Set tox version constraint (<https://github.com/openvinotoolkit/training_extensions/pull/2472>)
 - Add model category attributes to model template (<https://github.com/openvinotoolkit/training_extensions/pull/2439>)
 
@@ -305,7 +329,7 @@ All notable changes to this project will be documented in this file.
 - Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
 - Introduce `build` command to customize task or model configurations in isolated workspace
 - Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
-- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/introduction.html)
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/1.0.0/guide/get_started/introduction.html)
 - Improve training performance by introducing enhanced loss for the few-shot transfer
 
 ### Bug fixes

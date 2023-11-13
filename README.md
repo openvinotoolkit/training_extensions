@@ -5,8 +5,8 @@
 ---
 
 [Key Features](#key-features) •
-[Installation](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html) •
-[Documentation](https://openvinotoolkit.github.io/training_extensions/latest/index.html) •
+[Installation](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/installation.html) •
+[Documentation](https://openvinotoolkit.github.io/training_extensions/stable/index.html) •
 [License](#license)
 
 [![PyPI](https://img.shields.io/pypi/v/otx)](https://pypi.org/project/otx)
@@ -55,7 +55,7 @@ OpenVINO™ Training Extensions supports the following computer vision tasks:
 - **Action recognition** including action classification and detection
 - **Anomaly recognition** tasks including anomaly classification, detection and segmentation
 
-OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/algorithms/index.html):
+OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/algorithms/index.html):
 
 - **Supervised**, incremental training, which includes class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
@@ -75,7 +75,7 @@ OpenVINO™ Training Extensions provides the following usability features:
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/installation.html).
 
 Note: Python 3.8, 3.9 and 3.10 were tested, along with Ubuntu 18.04, 20.04 and 22.04.
 
@@ -91,7 +91,7 @@ Note: Python 3.8, 3.9 and 3.10 were tested, along with Ubuntu 18.04, 20.04 and 2
 - `otx demo` allows one to apply a trained model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario.
 - `otx explain` runs explain algorithm on the provided data and outputs images with the saliency maps to show how your model makes predictions.
 
-You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/cli_commands.html).
+You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/cli_commands.html).
 
 ---
 

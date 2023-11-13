@@ -119,7 +119,6 @@ class OTXClassificationTask(OTXTask, ABC):
 
         if self._task_environment.model is not None:
             self._load_model()
-
         if hasattr(self._hyperparams.learning_parameters, "input_size"):
             input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
         else:
@@ -129,7 +128,7 @@ class OTXClassificationTask(OTXTask, ABC):
     def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
         """Check whether the current training mode is multi-label or not."""
         # NOTE: In the current Geti, multi-label should have `___` symbol for all group names.
-        find_multilabel_symbol = ["___" in i.name for i in label_groups]
+        find_multilabel_symbol = ["___" in getattr(i, "name", "") for i in label_groups]
         return (
             (len(label_groups) > 1) and (len(label_groups) == len(all_labels)) and (False not in find_multilabel_symbol)
         )

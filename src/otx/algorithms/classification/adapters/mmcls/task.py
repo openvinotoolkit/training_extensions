@@ -170,6 +170,7 @@ class MMClassificationTask(OTXClassificationTask):
         elif self._hierarchical:
             options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
+            options_for_patch_datasets["label_schema"] = self._task_environment.label_schema
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:
             options_for_patch_datasets["type"] = "SelfSLDataset"
@@ -365,6 +366,10 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        if not torch.cuda.is_available():
+            # NOTE: mmcls does not wrap models w/ DP for CPU training not like mmdet
+            # Raw DataContainer "img_metas" is exposed, which results in errors
+            model = build_data_parallel(model, cfg, distributed=False)
         model.train()
 
         if cfg.distributed:
