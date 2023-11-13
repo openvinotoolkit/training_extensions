@@ -43,7 +43,7 @@ class ValueDifferenceError(Exception):
         super().__init__(f"{value1} and {value2} should be same.")
 
 
-def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
+def print_map_summary(
     mean_ap: float | list,
     results: list[dict],
     dataset: list[str] | None = None,
@@ -162,9 +162,9 @@ def mask_iou(det: tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, iou_th
         return ious
     # NOTE: further speed optimization (vectorization) could be done here
     for coord in np.argwhere(ious):
-        m, n = coord
-        det_bbox, det_mask = sanitize_coordinates(det_bboxes[m], img_h, img_w), det_masks[m]
-        gt_bbox, gt_mask = sanitize_coordinates(gt_bboxes.numpy()[n], img_h, img_w), gt_masks[n]
+        x, y = coord
+        det_bbox, det_mask = sanitize_coordinates(det_bboxes[x], img_h, img_w), det_masks[x]
+        gt_bbox, gt_mask = sanitize_coordinates(gt_bboxes.numpy()[y], img_h, img_w), gt_masks[y]
         # add padding to det_mask and gt_mask so that they have the same size
         min_x1 = min(det_bbox[0], gt_bbox[0])
         min_y1 = min(det_bbox[1], gt_bbox[1])
@@ -182,11 +182,11 @@ def mask_iou(det: tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, iou_th
         gt_mask = gt_mask.to_ndarray()
         if det_mask.shape != gt_mask.shape:
             raise ValueDifferenceError(det_mask.shape, gt_mask.shape)
-        ious[m, n] = np.sum(det_mask & gt_mask) / np.sum(det_mask | gt_mask)
+        ious[x, y] = np.sum(det_mask & gt_mask) / np.sum(det_mask | gt_mask)
     return ious
 
 
-def tpfpmiou_func(  # pylint: disable=too-many-locals
+def compare_gts_and_predicitons(
     det: tuple[np.ndarray, (BitmapMasks | list)],
     gt_masks: PolygonMasks,
     cls_scores: np.ndarray,
@@ -203,11 +203,11 @@ def tpfpmiou_func(  # pylint: disable=too-many-locals
     Returns:
         Tuple[np.ndarray, np.ndarray, float]: tp, fp, miou for each image
     """
-    num_dets = len(det[0])  # M
-    num_gts = len(gt_masks)  # N
+    num_dets = len(det[0])  # M: number of prediction
+    num_gts = len(gt_masks)  # N: number of gt
 
-    tp = np.zeros(num_dets, dtype=np.float32)  # pylint: disable=invalid-name
-    fp = np.zeros(num_dets, dtype=np.float32)  # pylint: disable=invalid-name
+    tp = np.zeros(num_dets, dtype=np.float32)
+    fp = np.zeros(num_dets, dtype=np.float32)
     gt_covered_iou = np.zeros(num_gts, dtype=np.float32)
 
     if len(gt_masks) == 0:
@@ -223,11 +223,11 @@ def tpfpmiou_func(  # pylint: disable=too-many-locals
     # for each det, which gt overlaps most with it
     ious_argmax = ious.argmax(axis=1)
     # sort all dets in descending order by scores
-    sort_inds = np.argsort(-cls_scores)
+    sorted_inds = np.argsort(-cls_scores)
 
     gt_covered = np.zeros(num_gts, dtype=bool)
     # if no area range is specified, gt_area_ignore is all False
-    for i in sort_inds:
+    for i in sorted_inds:
         if ious_max[i] >= iou_thr:
             matched_gt = ious_argmax[i]
             if not gt_covered[matched_gt]:
@@ -248,7 +248,7 @@ class OTXDetMetric(VOCMetric):
 
     nproc = 4
 
-    def get_gt_instance_masks(self, annotation: list[dict]) -> list[list]:
+    def get_gt_instance_masks(self, annotations: list[dict]) -> list[list]:
         """Format ground truth instance mask annotation.
 
         Args:
@@ -259,12 +259,12 @@ class OTXDetMetric(VOCMetric):
         """
         cls_anno_list: list[list] = [[] for _ in range(self.num_classes)]
         for class_id in range(self.num_classes):
-            for ann in annotation:
-                gt_inds = ann["labels"] == class_id
+            for annotation in annotations:
+                gt_inds = annotation["labels"] == class_id
                 polygon_masks = []
                 if gt_inds.any():
                     gt_inds = np.where(gt_inds == 1)[0]
-                    polygon_masks = ann["masks"][gt_inds]
+                    polygon_masks = annotation["masks"][gt_inds]
                 cls_anno_list[class_id].append(polygon_masks)
         return cls_anno_list
 
@@ -281,9 +281,9 @@ class OTXDetMetric(VOCMetric):
         """
         cls_scores = [img_res[0][class_id][..., -1] for img_res in det_results]
         cls_dets: list[tuple] = []
-        for det in det_results:
-            det_bboxes = det[0][class_id][:, :4]
-            det_masks = det[1][class_id]
+        for det_result in det_results:
+            det_bboxes = det_result[0][class_id][:, :4]
+            det_masks = det_result[1][class_id]
             if len(det_masks) == 0:
                 cls_dets.append(([], []))
             else:
@@ -329,27 +329,27 @@ class OTXDetMetric(VOCMetric):
 
                 # compute tp and fp for each image with multiple processes
                 tpfpmiou = p.starmap(
-                    tpfpmiou_func,
+                    compare_gts_and_predicitons,
                     zip(cls_dets, cls_gts, cls_scores, [iou_thr for _ in range(num_imgs)]),
                 )
-                tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
+                tp, fp, miou = tuple(zip(*tpfpmiou))
 
                 # sort all det bboxes by score, also sort tp and fp
                 np_cls_scores = np.hstack(cls_scores)
                 num_dets = np_cls_scores.shape[0]
                 num_gts = np.sum([len(cls_gts) for cls_gts in cls_gts])
                 sort_inds = np.argsort(np_cls_scores)[::-1]
-                tp = np.hstack(tp)[sort_inds]  # pylint: disable=invalid-name
-                fp = np.hstack(fp)[sort_inds]  # pylint: disable=invalid-name
+                tp = np.hstack(tp)[sort_inds]
+                fp = np.hstack(fp)[sort_inds]
                 # calculate recall and precision with tp and fp
-                tp = np.cumsum(tp)  # pylint: disable=invalid-name
-                fp = np.cumsum(fp)  # pylint: disable=invalid-name
+                tp = np.cumsum(tp)
+                fp = np.cumsum(fp)
                 eps = np.finfo(np.float32).eps
                 recalls = tp / np.maximum(num_gts, eps)
                 precisions = tp / np.maximum((tp + fp), eps)
                 miou = np.mean(np.stack(miou))
                 # calculate AP
-                ap = average_precision(recalls, precisions, "area")  # pylint: disable=invalid-name
+                ap = average_precision(recalls, precisions, "area")
                 eval_results.append(
                     {
                         "num_gts": num_gts,
@@ -402,7 +402,7 @@ class OTXDetMetric(VOCMetric):
         eval_results = OrderedDict()
         gts, preds = zip(*results)
         mean_aps = []
-        for iou_thr in self.iou_thrs:  # pylint: disable=redefined-argument-from-local
+        for iou_thr in self.iou_thrs:
             print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
             if self.dataset_meta["domain"] == Domain.DETECTION:
                 mean_ap, _ = eval_map(
@@ -422,7 +422,7 @@ class OTXDetMetric(VOCMetric):
         eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
         return eval_results
 
-    def process(self, data_batch: dict, data_samples: Sequence[dict]) -> None:  # noqa: ARG002
+    def process(self, data_batch: dict, data_samples: Sequence[dict]) -> None:
         """Process one batch of data samples and predictions.
 
         The processed results should be stored in ``self.results``, which will be used to
@@ -433,11 +433,13 @@ class OTXDetMetric(VOCMetric):
             data_samples (Sequence[dict]): A batch of data samples that
                 contain annotations and predictions.
         """
+        del data_batch  # This variable is not used.
+
         for data_sample in data_samples:
             gt = copy.deepcopy(data_sample)
             gt_instances = gt["gt_instances"]
             gt_ignore_instances = gt["ignored_instances"]
-            ann = {
+            annotations = {
                 "labels": gt_instances["labels"].cpu().numpy(),
                 "bboxes": gt_instances["bboxes"].cpu().numpy(),
                 "bboxes_ignore": gt_ignore_instances["bboxes"].cpu().numpy(),
@@ -450,20 +452,20 @@ class OTXDetMetric(VOCMetric):
             pred_labels = pred["labels"].cpu().numpy()
 
             if self.dataset_meta["domain"] == Domain.INSTANCE_SEGMENTATION:
-                ann["masks"] = gt_instances["masks"]
-                ann["masks_ignore"] = gt_ignore_instances["masks"]
+                annotations["masks"] = gt_instances["masks"]
+                annotations["masks_ignore"] = gt_ignore_instances["masks"]
                 pred_masks = np.array([encode_mask_results(mask)[0] for mask in pred["masks"]])
 
-            dets = []
+            detections = []
             masks = []
             for label in range(len(self.dataset_meta["classes"])):
                 index = np.where(pred_labels == label)[0]
                 pred_bbox_scores = np.hstack([pred_bboxes[index], pred_scores[index].reshape((-1, 1))])
-                dets.append(pred_bbox_scores)
+                detections.append(pred_bbox_scores)
                 if self.dataset_meta["domain"] == Domain.INSTANCE_SEGMENTATION:
                     masks.append(pred_masks[index].tolist())
 
             if self.dataset_meta["domain"] == Domain.INSTANCE_SEGMENTATION:
-                self.results.append((ann, (dets, masks)))
+                self.results.append((annotations, (detections, masks)))
             else:
-                self.results.append((ann, dets))
+                self.results.append((annotations, detections))

@@ -1,4 +1,5 @@
 """Backbone of pytorchcv for mmdetection backbones."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,17 +9,19 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
+import torch
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmdet.registry import MODELS
 from mmengine.dist import get_dist_info
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
-from torch import Tensor, distributed, nn
+from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.v2.api.utils.logger import get_logger
 
 # ruff: noqa: SLF001
+logger = get_logger()
 
 
 def replace_activation(model: nn.Module, activation_cfg: dict) -> nn.Module:
@@ -44,20 +47,19 @@ def replace_norm(model: nn.Module, cfg: dict) -> nn.Module:
     return model
 
 
-def multioutput_forward(self: nn.Module, x: Tensor) -> list[Tensor]:
+def multioutput_forward(self: nn.Module, x: torch.Tensor) -> list[torch.Tensor]:
     """Multioutput forward function for new model (copy from mmdet older)."""
-    outputs = []
-    y = x
+    outputs: list[torch.Tensor] = []
 
     last_stage = max(self.out_indices)
     for i, stage in enumerate(self.features):
-        y = stage(y)
-        s_verbose = str(i) + " " + str(y.shape)
+        x = stage(x)
+        s_verbose = str(i) + " " + str(x.shape)
         if i in self.out_indices:
-            outputs.append(y)
+            outputs.append(x)
             s_verbose += "*"
         if self.verbose:
-            print(s_verbose)
+            logger.debug(s_verbose)
         if i == last_stage:
             break
 
@@ -98,8 +100,6 @@ def init_weights(self: nn.Module, pretrained: bool = True) -> None:
 
 def generate_backbones() -> None:
     """Generate backbones of pytorchcv funtion."""
-    logger = get_logger()
-
     for model_name, model_getter in _models.items():
 
         def closure(model_name: str, model_getter: Callable) -> nn.Module:
@@ -120,7 +120,7 @@ def generate_backbones() -> None:
                     **kwargs,
                 ) -> None:
                     super().__init__()
-                    models_cache_root = kwargs.get("root", Path("~/.torch/models"))
+                    models_cache_root = kwargs.get("root", Path.home() / ".torch" / "models")
                     is_pretrained = kwargs.get("pretrained", False)
                     logger.warning(
                         f"Init model {model_name}, pretrained={is_pretrained}, models cache {models_cache_root}",

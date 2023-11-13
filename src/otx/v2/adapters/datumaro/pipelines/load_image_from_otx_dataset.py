@@ -141,11 +141,11 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         else:
             self._resize_shape = None
 
-    def _create_load_ann_op(self, cfg: dict | None) -> BaseTransform | None:
+    def _create_load_ann_op(self, cfg: dict | None = None) -> BaseTransform | None:
         """Creates annotation loading operation."""
         raise NotImplementedError
 
-    def _create_resize_op(self, cfg: dict | None) -> BaseTransform | None:
+    def _create_resize_op(self, cfg: dict | None = None) -> BaseTransform | None:
         """Creates resize operation."""
         raise NotImplementedError
 
@@ -207,18 +207,18 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         cached_results = self._load_cache(_results)
         if cached_results:
             return cached_results
-        if not self.eval_mode:
+        if self.eval_mode:
             _results = self._load_img(_results)
-            _results = self._load_ann_if_any(_results)
-            if _results is not None:
-                _results.pop("dataset_item", None)
             _results = self._resize_img_ann_if_any(_results)
+            _results = self._load_ann_if_any(_results)
         else:
             _results = self._load_img(_results)
-            _results = self._resize_img_ann_if_any(_results)
             _results = self._load_ann_if_any(_results)
-            if _results is not None:
-                _results.pop("dataset_item", None)
+            _results = self._resize_img_ann_if_any(_results)
+
+        # Common post-processing steps
+        if _results is not None:
+            _results.pop("dataset_item", None)
         if isinstance(_results, dict):
             self._save_cache(_results)
         return _results

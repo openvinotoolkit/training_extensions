@@ -4,7 +4,7 @@
 #
 
 import math
-from typing import Optional, Sequence, Dict
+from typing import Optional, Sequence
 
 from mmengine.hooks import CheckpointHook, Hook
 from mmengine.registry import HOOKS
@@ -53,7 +53,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         enable_adaptive_interval_hook=False,
         enable_eval_before_run=False,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         self.max_interval = max_interval
@@ -68,7 +68,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         self._initialized = False
         self._original_interval = None
 
-    def before_train_iter(self, runner: Runner, batch_idx: int, data_batch: Sequence[Dict]):
+    def before_train_iter(self, runner: Runner, batch_idx: int, data_batch: Sequence[dict]):
         """Before train iter."""
         if self.enable_eval_before_run and not self._initialized:
             runner.val_loop.run()
@@ -105,7 +105,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval
 
-    def update_validation_interval(self, runner: Runner, adaptive_interval: int):
+    def update_validation_interval(self, runner: Runner, adaptive_interval: int) -> None:
         """Update validation interval of training loop."""
         # make sure evaluation is done at last to save best checkpoint
         limit = runner.max_epochs if isinstance(runner.train_loop, EpochBasedTrainLoop) else runner.max_iters

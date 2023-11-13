@@ -1,4 +1,5 @@
 """Cross Focal Loss for ignore labels."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,8 +13,6 @@ from mmdet.registry import MODELS
 from torch import nn
 from torch.nn import functional
 
-# pylint: disable=too-many-arguments, too-many-locals, too-many-instance-attributes, unused-argument
-
 
 def cross_sigmoid_focal_loss(
     inputs: torch.Tensor,
@@ -24,30 +23,30 @@ def cross_sigmoid_focal_loss(
     gamma: float = 2.0,
     reduction: str = "mean",
     avg_factor: int | torch.Tensor | None = None,
-    use_vfl: bool = False,
+    use_varifocal_loss: bool = False,
     valid_label_mask: list[torch.Tensor] | None = None,
 ) -> torch.Tensor:
     """Cross Focal Loss for ignore labels.
 
     Args:
         inputs: inputs Tensor (N * C).
-        targets: targets Tensor (N), if use_vfl, then Tensor (N * C).
+        targets: targets Tensor (N), if use_varifocal_loss, then Tensor (N * C).
         weight: weight Tensor (N), consists of (binarized label schema * weight).
         num_classes: number of classes for training.
         alpha: focal loss alpha.
         gamma: focal loss gamma.
         reduction: default = mean.
         avg_factor: average factors.
-        use_vfl: check use vfl.
+        use_varifocal_loss: check use varifocal.
         valid_label_mask: ignore label mask.
     """
     cross_mask = inputs.new_ones(inputs.shape, dtype=torch.int8)
     if valid_label_mask is not None:
-        neg_mask = targets.sum(axis=1) == 0 if use_vfl else targets == num_classes
-        neg_idx = neg_mask.nonzero(as_tuple=True)[0]
-        cross_mask[neg_idx] = valid_label_mask[neg_idx].type(torch.int8)
+        negative_mask = targets.sum(axis=1) == 0 if use_varifocal_loss else targets == num_classes
+        negative_idx = negative_mask.nonzero(as_tuple=True)[0]
+        cross_mask[negative_idx] = valid_label_mask[negative_idx].type(torch.int8)
 
-    if use_vfl:
+    if use_varifocal_loss:
         calculate_loss_func = varifocal_loss
     elif torch.cuda.is_available() and inputs.is_cuda:
         calculate_loss_func = sigmoid_focal_loss
@@ -112,7 +111,7 @@ class CrossSigmoidFocalLoss(nn.Module):
         weight: torch.Tensor | None = None,
         reduction_override: str | None = None,
         avg_factor: int | None = None,
-        use_vfl: bool = False,
+        use_varifocal_loss: bool = False,
         valid_label_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Forward funtion of CrossSigmoidFocalLoss.
@@ -123,7 +122,7 @@ class CrossSigmoidFocalLoss(nn.Module):
             weight (torch.Tensor): Weight for loss
             reduction_override (str | None): Override for reduction
             avg_factor (int | None): Value for average the loss
-            use_vfl (bool): Whether use vfl
+            use_varifocal_loss (bool): Whether use varifocal
             valid_label_mask (torch.Tensor): Mask for valid labels
         """
         reduction = reduction_override if reduction_override else self.reduction
@@ -136,7 +135,7 @@ class CrossSigmoidFocalLoss(nn.Module):
             gamma=self.gamma,
             reduction=reduction,
             avg_factor=avg_factor,
-            use_vfl=use_vfl,
+            use_varifocal_loss=use_varifocal_loss,
             valid_label_mask=valid_label_mask,
         )
 

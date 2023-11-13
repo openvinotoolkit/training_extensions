@@ -101,12 +101,11 @@ class OTXDetDataset(BaseDetDataset):
         new_classes = dataset_cfg.pop("new_classes", [])
         self.otx_dataset = otx_dataset
         self.labels = labels
-        self.CLASSES = [label.name for label in labels]
         self.domain = self.labels[0].domain
         self.test_mode = test_mode
         self.max_refetch = max_refetch
 
-        self._metainfo = {"classes": self.CLASSES, "domain": self.domain}
+        self._metainfo = {"classes": [label.name for label in labels], "domain": self.domain}
 
         # Instead of using list data_infos as in BaseDetDataset, this implementation of dataset
         # uses a proxy class with overriden __len__ and __getitem__; this proxy class

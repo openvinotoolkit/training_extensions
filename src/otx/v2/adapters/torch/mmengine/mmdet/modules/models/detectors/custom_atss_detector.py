@@ -1,4 +1,5 @@
 """OTX ATSS Class for mmdetection detectors."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -47,7 +48,15 @@ class CustomATSS(ATSS):
         chkpt_dict: dict,
         prefix: str,
     ) -> None:
-        """Modify input state_dict according to class name matching before weight loading."""
+        """Modify input state_dict according to class name matching before weight loading.
+
+        Args:
+            model (nn.Module): CustomATSS detector.
+            model_classes (list[str]): Classes from dataset.
+            chkpt_classes (list[str]): Classes from pretrained weights.
+            chkpt_dict (dict): Checkpoint dictionary from pretrained weights.
+            prefix (str): Prefix for converting model's param name to checkpoint's param_name.
+        """
         logger.info(f"----------------- CustomATSS.load_state_dict_pre_hook() called w/ prefix: {prefix}")
 
         # Dst to src mapping index
@@ -57,10 +66,7 @@ class CustomATSS(ATSS):
         logger.info(f"{chkpt_classes} -> {model_classes} ({model2chkpt})")
 
         model_dict = model.state_dict()
-        param_names = [
-            "bbox_head.atss_cls.weight",
-            "bbox_head.atss_cls.bias",
-        ]
+        param_names = ["bbox_head.atss_cls.weight", "bbox_head.atss_cls.bias"]
         for model_name in param_names:
             chkpt_name = prefix + model_name
             if model_name not in model_dict or chkpt_name not in chkpt_dict:

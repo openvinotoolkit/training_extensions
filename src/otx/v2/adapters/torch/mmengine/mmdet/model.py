@@ -32,15 +32,15 @@ def get_model(
     """Return a PyTorch model for training.
 
     Args:
-        model (Union[str, Config, Dict]): The model to use for training. Can be a string representing the model name,
+        model (str, Config, dict): The model to use for training. Can be a string representing the model name,
             a Config object, or a dictionary.
-        num_classes (Optional[int], optional): The number of classes in the dataset. Defaults to None.
-        channel_last (bool, optional): Whether to use channel last memory format. Defaults to False.
+        num_classes (int, None, optional): The number of classes in the dataset. Defaults to None.
+        channel_last (bool): Whether to use channel last memory format. Defaults to False.
 
     Returns:
         torch.nn.Module: The PyTorch model for training.
     """
-    model_name = None
+    model_name: str | None = None
     if isinstance(model, dict):
         model_cfg = Config(cfg_dict=model)
     elif isinstance(model, str):

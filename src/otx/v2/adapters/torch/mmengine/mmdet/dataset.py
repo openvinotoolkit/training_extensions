@@ -11,9 +11,7 @@ if TYPE_CHECKING:
     from torch.utils.data import Dataset as TorchDataset
 
 from otx.v2.adapters.torch.mmengine.dataset import MMXDataset
-from otx.v2.adapters.torch.mmengine.mmdet.modules.datasets import (
-    OTXDetDataset,
-)
+from otx.v2.adapters.torch.mmengine.mmdet.modules.datasets import OTXDetDataset
 from otx.v2.adapters.torch.mmengine.mmdet.registry import MMDetRegistry
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
@@ -21,19 +19,19 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline(subset: str = "train", semisl: bool = False) -> list:
+def get_default_pipeline(subset: str = "train", is_semisl: bool = False) -> list:
     """Returns the default pipeline for training a model.
 
     Args:
         subset (str): Subset of default pipeline
-        semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
+        is_semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
 
     Returns:
-        Union[Dict, List]: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
+        list: The default pipeline as a dictionary or list, depending on whether `is_semisl` is True or False.
     """
-    err_msg = "SemiSL is not implemented in MMDet task."
-    if semisl:
-        raise NotImplementedError(err_msg)
+    message = "SemiSL is not implemented in MMDet task."
+    if is_semisl:
+        raise NotImplementedError(message)
 
     default_pipeline = {
         "train": [
@@ -115,27 +113,26 @@ class MMDetDataset(MMXDataset):
         r"""MMDet's Dataset class.
 
         Args:
-            task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load.
+            task (TaskType | str | None, optional): The task type of the dataset want to load.
                 Defaults to None.
-            train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load.
+            train_type (TrainType | str | None, optional): The train type of the dataset want to load.
                 Defaults to None.
-            train_data_roots (Optional[str], optional): The root address of the dataset to be used for training.
+            train_data_roots (str | None, optional): The root address of the dataset to be used for training.
                 Defaults to None.
-            train_ann_files (Optional[str], optional): Location of the annotation file for the dataset
-                to be used for training. Defaults to None.
-            val_data_roots (Optional[str], optional): The root address of the dataset
+            train_ann_files (str | None, optional): Location of the annotation file for the dataset
+            val_data_roots (str | None, optional): The root address of the dataset
                 to be used for validation. Defaults to None.
-            val_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+            val_ann_files (str | None, optional): Location of the annotation file for the dataset
                 to be used for validation. Defaults to None.
-            test_data_roots (Optional[str], optional): The root address of the dataset
+            test_data_roots (str | None, optional): The root address of the dataset
                 to be used for testing. Defaults to None.
-            test_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+            test_ann_files (str | None, optional): Location of the annotation file for the dataset
                 to be used for testing. Defaults to None.
-            unlabeled_data_roots (Optional[str], optional): The root address of the unlabeled dataset
+            unlabeled_data_roots (str | None, optional): The root address of the unlabeled dataset
                 to be used for training. Defaults to None.
-            unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared.
+            unlabeled_file_list (str | None, optional): The file where the list of unlabeled images is declared.
                 Defaults to None.
-            data_format (Optional[str], optional): The format of the dataset. Defaults to None.
+            data_format (str | None, optional): The format of the dataset. Defaults to None.
         """
         super().__init__(
             task,
@@ -166,16 +163,16 @@ class MMDetDataset(MMXDataset):
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[list, dict]]): The pipeline to use for the dataset.
+            pipeline (list | None, optional]): The pipeline to use for the dataset.
                 Defaults to None.
-            config (Optional[Union[str, dict]]): The configuration to use for the dataset.
+            config (dict | None, optional): The configuration to use for the dataset.
                 Defaults to None.
 
         Returns:
-            Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
+            TorchDataset | None, optional: The built TorchDataset object, or None if the dataset is empty.
         """
         dataset_config = config.get("dataset", config) if config is not None else {}
         if pipeline is None and "pipeline" not in dataset_config:
-            semisl = subset == "unlabeled"
-            pipeline = get_default_pipeline(subset, semisl=semisl)
+            is_semisl = subset == "unlabeled"
+            pipeline = get_default_pipeline(subset, is_semisl=is_semisl)
         return super()._build_dataset(subset, pipeline, config)

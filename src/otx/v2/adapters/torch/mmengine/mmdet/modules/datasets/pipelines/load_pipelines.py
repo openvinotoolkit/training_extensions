@@ -26,17 +26,13 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
     """Load and resize image & annotation with cache support."""
 
-    def _create_load_ann_op(self, cfg: dict | None) -> Callable | None:
+    def _create_load_ann_op(self, cfg: dict | None = None) -> Callable | None:
         """Creates resize operation."""
-        if cfg is None:
-            return None
-        return TRANSFORMS.build(cfg)
+        return TRANSFORMS.build(cfg) if cfg else None
 
-    def _create_resize_op(self, cfg: dict | None) -> Callable | None:
+    def _create_resize_op(self, cfg: dict | None = None) -> Callable | None:
         """Creates resize operation."""
-        if cfg is None:
-            return None
-        return TRANSFORMS.build(cfg)
+        return TRANSFORMS.build(cfg) if cfg else None
 
 
 @TRANSFORMS.register_module()

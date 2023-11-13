@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Dict
+from __future__ import annotations
 
 import pytest
 from mmengine.config import Config
 
 
 @pytest.fixture
-def fxt_cfg_custom_atss(num_classes: int = 3) -> Dict:
+def fxt_cfg_custom_atss(num_classes: int = 3) -> dict:
     train_cfg = Config(
         dict(
             assigner=dict(type="ATSSAssigner", topk=9),
@@ -73,8 +73,8 @@ def fxt_cfg_custom_atss(num_classes: int = 3) -> Dict:
             loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=1.0),
             loss_bbox=dict(type="GIoULoss", loss_weight=2.0),
             loss_centerness=dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
-            use_qfl=False,
-            qfl_cfg=dict(type="QualityFocalLoss", use_sigmoid=True, beta=2.0, loss_weight=1.0),
+            use_qualified_focal_loss=False,
+            qualified_focal_loss_cfg=dict(type="QualityFocalLoss", use_sigmoid=True, beta=2.0, loss_weight=1.0),
         ),
         train_cfg=train_cfg,
     )

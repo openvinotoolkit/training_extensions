@@ -64,8 +64,8 @@ model:
       type: CrossEntropyLoss
       use_sigmoid: true
       loss_weight: 1.0
-    use_qfl: false
-    qfl_cfg:
+    use_qualified_focal_loss: false
+    qualified_focal_loss_cfg:
       type: QualityFocalLoss
       use_sigmoid: true
       beta: 2.0

@@ -1,4 +1,5 @@
 """Cross Dataset Detector head for Ignore labels."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -36,6 +37,27 @@ class CrossDatasetDetectorHead:
         This method is almost the same as `AnchorHead.get_targets()`. Besides
         returning the targets as the parent method does, it also returns the
         anchors as the first element of the returned tuple.
+
+        Args:
+            anchor_list (list[list[Tensor]]): Multi level anchors of each
+                image. The outer list indicates images, and the inner list
+                corresponds to feature levels of the image. Each element of
+                the inner list is a tensor of shape (num_anchors, 4).
+            valid_flag_list (list[list[Tensor]]): Multi level valid flags of
+                each image. The outer list indicates images, and the inner list
+                corresponds to feature levels of the image. Each element of
+                the inner list is a tensor of shape (num_anchors, )
+            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            batch_img_metas (list[dict]): Meta information of each image, e.g.,
+                image size, scaling factor, etc.
+            batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
+                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
+                data that is ignored during training and testing.
+                Defaults to None.
+            unmap_outputs (bool): Whether to map outputs back to the original
+                set of anchors. Defaults to True.
         """
         num_imgs = len(batch_img_metas)
 
@@ -100,16 +122,16 @@ class CrossDatasetDetectorHead:
         self,
         img_metas: list[dict],
         all_labels: list[Tensor],
-        use_bg: bool = False,
+        use_background: bool = False,
     ) -> list[Tensor]:
         """Getter function valid_label_mask."""
-        num_classes = self.num_classes + 1 if use_bg else self.num_classes
+        num_classes = self.num_classes + 1 if use_background else self.num_classes
         valid_label_mask = []
         for i, meta in enumerate(img_metas):
             mask = torch.Tensor([1 for _ in range(num_classes)])
             if "ignored_labels" in meta and len(meta["ignored_labels"]) > 0:
                 mask[meta["ignored_labels"]] = 0
-                if use_bg:
+                if use_background:
                     mask[self.num_classes] = 0
             mask = mask.repeat(len(all_labels[i]), 1)
             valid_label_mask.append(mask)

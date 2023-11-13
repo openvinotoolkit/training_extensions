@@ -4,7 +4,7 @@
 import torch
 from torch import nn
 
-from otx.v2.adapters.torch.mmengine.mmdet.modules.models.backbones.imgclsmob import (
+from otx.v2.adapters.torch.mmengine.mmdet.modules.models.backbones.pytorchcv_backbones import (
     replace_activation,
     replace_norm,
     multioutput_forward,
@@ -43,7 +43,7 @@ def test_replace_activation():
 
 def test_replace_norm(mocker):
     mocker.patch(
-        "otx.v2.adapters.torch.mmengine.mmdet.modules.models.backbones.imgclsmob.build_norm_layer",
+        "otx.v2.adapters.torch.mmengine.mmdet.modules.models.backbones.pytorchcv_backbones.build_norm_layer",
         return_value=[None, nn.BatchNorm1d(100)],
     )
     cfg = {"type": "BatchNorm1d"}
@@ -95,7 +95,7 @@ def test_train():
 
 
 def test_generate_backbones(mocker):
-    modules = []
+    modules: list[nn.Module] = []
 
     def mock_register_module(name, module):
         modules.append([name, module])

@@ -25,15 +25,11 @@ logger = get_logger()
 class MMDetEngine(MMXEngine):
     """The MMDetEngine class is responsible for running inference on pre-trained models."""
 
-    def __init__(
-        self,
-        work_dir: str | Path | None = None,
-    ) -> None:
+    def __init__(self, work_dir: str | Path | None = None) -> None:
         """Initialize a new instance of the MMDetEngine class.
 
         Args:
-            work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
-            config (Optional[Union[Dict, Config, str]], optional): The configuration for the engine. Defaults to None.
+            work_dir (str | Path, optional): The working directory for the engine. Defaults to None.
         """
         super().__init__(work_dir=work_dir)
         self.registry = MMDetRegistry()
@@ -72,38 +68,40 @@ class MMDetEngine(MMXEngine):
         checkpoint: str | Path | None = None,
         pipeline: dict | list | None = None,
         device: str | (torch.device | None) = None,
-        task: str | None = None,  # noqa: ARG002
+        task: str | None = None,
         batch_size: int = 1,
         **kwargs,
     ) -> list[dict]:
         """Runs inference on the given input image(s) using the specified model and checkpoint.
 
         Args:
-            model (Optional[Union[torch.nn.Module, Dict, str]], optional): The model to use for inference. Can be a
+            model (torch.nn.Module, dict, str, None, optional): The model to use for inference. Can be a
                 PyTorch module, a dictionary containing the model configuration, or a string representing the path to
                 the model checkpoint file. Defaults to None.
-            img (Optional[Union[str, np.ndarray, list]], optional): The input image(s) to run inference on. Can be a
+            img (str, np.ndarray, list, None, optional): The input image(s) to run inference on. Can be a
                 string representing the path to the image file, a NumPy array containing the image data, or a list of
                 NumPy arrays containing multiple images. Defaults to None.
-            checkpoint (Optional[Union[str, Path]], optional): The path to the checkpoint file to use for inference.
+            checkpoint (str, Path, None, optional): The path to the checkpoint file to use for inference.
                 Defaults to None.
-            pipeline (Optional[Union[Dict, List]], optional): The data pipeline to use for inference. Can be a
+            pipeline (dict, list, None, optional): The data pipeline to use for inference. Can be a
                 dictionary containing the pipeline configuration, or a list of dictionaries containing multiple
                 pipeline configurations. Defaults to None.
-            device (Union[str, torch.device, None], optional): The device to use for inference. Can be a string
+            device (str, torch.device, None, optional): The device to use for inference. Can be a string
                 representing the device name (e.g. 'cpu' or 'cuda'), a PyTorch device object, or None to use the
                 default device. Defaults to None.
-            task (Optional[str], optional): The type of task to perform. Defaults to None.
-            batch_size (int, optional): The batch size to use for inference. Defaults to 1.
+            task (str, None, optional): The type of task to perform. Defaults to None.
+            batch_size (int): The batch size to use for inference. Defaults to 1.
             **kwargs: Additional keyword arguments to pass to the inference function.
 
         Returns:
-            List[Dict]: A list of dictionaries containing the inference results.
+            list[dict]: A list of dictionaries containing the inference results.
         """
         import cv2
         from mmcv.transforms import Compose
         from mmdet.apis import DetInferencer, inference_detector
         from mmengine.model import BaseModel
+
+        del task  # This variable is not used.
 
         # Model config need data_pipeline of test_dataloader
         # Update pipelines
@@ -152,7 +150,7 @@ class MMDetEngine(MMXEngine):
         task: str | None = "ObjectDetection",
         codebase: str | None = "mmdet",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | None = None,  # File path only?
+        deploy_config: str | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
         **kwargs,
@@ -160,17 +158,17 @@ class MMDetEngine(MMXEngine):
         """Export a PyTorch model to a specified format for deployment.
 
         Args:
-            model (Optional[Union[torch.nn.Module, str, Config]]): The PyTorch model to export.
-            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for exporting.
-            precision (Optional[str]): The precision to use for exporting.
+            model (torch.nn.Module, str, Config, None, optional): The PyTorch model to export.
+            checkpoint (str, Path, None, optional): The path to the checkpoint file to use for exporting.
+            precision (str, None, optional): The precision to use for exporting.
                 Can be one of ["float16", "fp16", "float32", "fp32"].
-            task (Optional[str]): The task for which the model is being exported. Defaults to "Classification".
-            codebase (Optional[str]): The codebase for the model being exported. Defaults to "mmdet".
+            task (str, None, optional): The task for which the model is being exported. Defaults to "Classification".
+            codebase (str, None, optional): The codebase for the model being exported. Defaults to "mmdet".
             export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
-            deploy_config (Optional[str]): The path to the deployment configuration file to use for exporting.
+            deploy_config (str, None, optional): The path to the deployment configuration file to use for exporting.
                 File path only.
             device (str): The device to use for exporting. Defaults to "cpu".
-            input_shape (Optional[Tuple[int, int]]): The input shape of the model being exported.
+            input_shape (tuple[int, int], None, optional): The input shape of the model being exported.
             **kwargs: Additional keyword arguments to pass to the export function.
 
         Returns:
@@ -189,13 +187,18 @@ class MMDetEngine(MMXEngine):
             **kwargs,
         )
 
-    def _update_codebase_config(self, codebase: str | None, task: str | None, deploy_config_dict: dict) -> None:
+    def _update_codebase_config(
+        self,
+        deploy_config_dict: dict,
+        codebase: str | None = None,
+        task: str | None = None,
+    ) -> None:
         """Update specific codebase config.
 
         Args:
+            deploy_config_dict(dict): Config dict for deployment
             codebase(str): mmX codebase framework
             task(str): mmdeploy task
-            deploy_config_dict(dict): Config dict for deployment
         """
         codebase = codebase if codebase is not None else self.registry.name
         codebase_config = {

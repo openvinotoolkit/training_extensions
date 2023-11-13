@@ -4,10 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import json
 import logging
 import random
-from typing import Any, Dict, List, Sequence, Tuple, Optional
+from typing import Any, Sequence
 
 import numpy as np
 
@@ -46,11 +48,30 @@ class MockPipeline:
     It returns its inputs.
     """
 
-    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, results: dict[str, Any]) -> dict[str, Any]:
         return results
 
 
-def generate_det_dataset(task_type, number_of_images=1, image_width=640, image_height=480):
+def generate_det_dataset(
+    task_type: TaskType,
+    number_of_images: int = 1,
+    image_width: int = 640,
+    image_height: int = 480
+) -> tuple(DatasetEntity, list[LabelEntity]):
+    """Generate sample detection dataset entity.
+
+    Args:
+        task_type (TaskType): TaskType of dataset. Type.DETECTION, Type.INSTACNE_SEGMENTATION.
+        number_of_images (int): Length of dataset.
+            Defaults to 1.
+        image_width (int): Width of image.
+            Defaults ot 640.
+        image_height (int): Height of image.
+            Defaults to 480.
+
+    Returns:
+        DatasetEntity, list[LabelEntity]
+    """
     classes = ("rectangle", "ellipse", "triangle")
     label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
 
@@ -79,7 +100,14 @@ def generate_det_dataset(task_type, number_of_images=1, image_width=640, image_h
 
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:
-    """Return proper label domain given task type."""
+    """Return proper label domain given task type.
+
+    Args:
+        task_type (TaskType): TaskType of label domain.
+
+    Returns:
+        Domain
+    """
     if task_type == TaskType.DETECTION:
         return Domain.DETECTION
     if task_type == TaskType.INSTANCE_SEGMENTATION:
@@ -87,10 +115,15 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
     return Domain.ROTATED_DETECTION
 
 
-def generate_labels(length: int, domain: Domain) -> List[LabelEntity]:
-    """Generate list of LabelEntity given length and domain."""
+def generate_labels(length: int, domain: Domain) -> list[LabelEntity]:
+    """Generate list of LabelEntity given length and domain.
 
-    output: List[LabelEntity] = []
+    Args:
+        length(int): Length of label list.
+        domain(Domain): Domain of label.
+    """
+
+    output: list[LabelEntity] = []
     for i in range(length):
         output.append(LabelEntity(name=f"{i + 1}", domain=domain, id=ID(i + 1)))
     return output
@@ -100,35 +133,38 @@ def generate_random_annotated_image(
     image_width: int,
     image_height: int,
     labels: Sequence[LabelEntity],
-    min_size=50,
-    max_size=250,
-    shape: Optional[str] = None,
+    min_size: int = 50,
+    max_size: int = 250,
+    shape: str | None = None,
     max_shapes: int = 10,
-    intensity_range: List[Tuple[int, int]] = None,
-    random_seed: Optional[int] = None,
+    intensity_range: list[tuple[int, int]] | None = None,
+    random_seed: int | None = None,
     use_mask_as_annotation: bool = False,
-) -> Tuple[np.ndarray, List[Annotation]]:
+) -> tuple[np.ndarray, list[Annotation]]:
     """
     Generate a random image with the corresponding annotation entities.
 
-    :param intensity_range: Intensity range for RGB channels ((r_min, r_max), (g_min, g_max), (b_min, b_max))
-    :param max_shapes: Maximum amount of shapes in the image
-    :param shape: {"rectangle", "ellipse", "triangle"}
-    :param image_height: Height of the image
-    :param image_width: Width of the image
-    :param labels: Task Labels that should be applied to the respective shape
-    :param min_size: Minimum size of the shape(s)
-    :param max_size: Maximum size of the shape(s)
-    :param random_seed: Seed to initialize the random number generator
-    :param use_mask_as_annotation: If True, masks will be added in annotation
-    :return: uint8 array, list of shapes
+    Args:
+        intensity_range (int): Intensity range for RGB channels ((r_min, r_max), (g_min, g_max), (b_min, b_max))
+        max_shapes (int): Maximum amount of shapes in the image
+        shape (str, None, optional): {"rectangle", "ellipse", "triangle"}
+        image_height (int): Height of the image
+        image_width (int): Width of the image
+        labels (Sequence[LabelEntity]): Task Labels that should be applied to the respective shape
+        min_size (int): Minimum size of the shape(s)
+        max_size (int): Maximum size of the shape(s)
+        random_seed (int | None): Seed to initialize the random number generator
+        use_mask_as_annotation (bool): If True, masks will be added in annotation
+
+    Return:
+        uint8 array, list of shapes
     """
     from skimage.draw import random_shapes, rectangle
 
     if intensity_range is None:
         intensity_range = [(100, 200)]
 
-    image1: Optional[np.ndarray] = None
+    image1: np.ndarray | None = None
     sc_labels = []
     # Sporadically, it might happen there is no shape in the image, especially on low-res images.
     # It'll retry max 5 times until we see a shape, and otherwise raise a runtime error
@@ -153,7 +189,7 @@ def generate_random_annotated_image(
     if image1 is None:
         raise RuntimeError("Was not able to generate a random image that contains any shapes")
 
-    annotations: List[Annotation] = []
+    annotations: list[Annotation] = []
     for sc_label in sc_labels:
         sc_label_name = sc_label[0]
         sc_label_shape_r = sc_label[1][0]

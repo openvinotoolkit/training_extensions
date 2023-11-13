@@ -1,3 +1,5 @@
+"""Api tests for mmdet detection task."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -32,7 +34,7 @@ def test_model_api() -> None:
     assert isinstance(otx_model, torch.nn.Module)
 
 
-MODELS: list = list_models("otx*")
+MODELS: list[str] = list_models("otx*")
 
 
 class TestMMDetAPI:
@@ -91,7 +93,7 @@ class TestMMDetAPI:
         engine = Engine(work_dir=tmp_dir_path)
         built_model = get_model(model=model, num_classes=dataset.num_classes)
 
-        # Train (1 epochs)
+        # Train (1 epoch)
         results = engine.train(
             model=built_model,
             train_dataloader=dataset.train_dataloader(),

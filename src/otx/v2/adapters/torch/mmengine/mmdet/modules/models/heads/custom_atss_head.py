@@ -28,26 +28,34 @@ from otx.v2.adapters.torch.mmengine.mmdet.modules.models.heads.cross_dataset_det
 
 EPS = 1e-12
 
-# pylint: disable=too-many-arguments, too-many-locals,
-
 
 @MODELS.register_module()
 class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
-    """CustomATSSHead for OTX template."""
+    """CustomATSSHead for OTX template.
+
+    Args:
+        bg_loss_weight (float): Weight for background loss.
+            Defaults to -1.0.
+        use_qualified_focal_loss (bool): Whether use of qualified focal loss.
+            Defaults to False.
+        qualified_focal_loss_cfg (dict, None, optional): Config for qualified focal loss.
+            Defaults to None.
+        kwargs: Additional args for parents classes.
+    """
 
     def __init__(
         self,
         *args,
         bg_loss_weight: float = -1.0,
-        use_qfl: bool = False,
-        qfl_cfg: dict | None = None,
+        use_qualified_focal_loss: bool = False,
+        qualified_focal_loss_cfg: dict | None = None,
         **kwargs,
     ) -> None:
         """Init of CustomATSSHead."""
-        if use_qfl:
+        if use_qualified_focal_loss:
             kwargs["loss_cls"] = (
-                qfl_cfg
-                if qfl_cfg
+                qualified_focal_loss_cfg
+                if qualified_focal_loss_cfg
                 else {
                     "type": "QualityFocalLoss",
                     "use_sigmoid": True,
@@ -57,7 +65,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             )
         super().__init__(*args, **kwargs)
         self.bg_loss_weight = bg_loss_weight
-        self.use_qfl = use_qfl
+        self.use_qualified_focal_loss = use_qualified_focal_loss
 
     def loss_by_feat(
         self,
@@ -181,25 +189,25 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         valid_label_mask = valid_label_mask.reshape(-1, self.cls_out_channels)
 
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-        pos_inds = self._get_pos_inds(labels)
+        positive_indices = self._get_pos_inds(labels)
 
-        if self.use_qfl:
+        if self.use_qualified_focal_loss:
             quality = label_weights.new_zeros(labels.shape)
 
-        if len(pos_inds) > 0:
-            pos_bbox_targets = bbox_targets[pos_inds]
-            pos_bbox_pred = bbox_pred[pos_inds]
-            pos_anchors = anchors[pos_inds]
-            pos_centerness = centerness[pos_inds]
+        if len(positive_indices) > 0:
+            pos_bbox_targets = bbox_targets[positive_indices]
+            pos_bbox_pred = bbox_pred[positive_indices]
+            pos_anchors = anchors[positive_indices]
+            pos_centerness = centerness[positive_indices]
 
             centerness_targets = self.centerness_target(pos_anchors, pos_bbox_targets)
             if self.reg_decoded_bbox:
                 pos_bbox_pred = self.bbox_coder.decode(pos_anchors, pos_bbox_pred)
 
-            if self.use_qfl:
-                quality[pos_inds] = bbox_overlaps(pos_bbox_pred.detach(), pos_bbox_targets, is_aligned=True).clamp(
-                    min=1e-6,
-                )
+            if self.use_qualified_focal_loss:
+                quality[positive_indices] = bbox_overlaps(
+                    pos_bbox_pred.detach(), pos_bbox_targets, is_aligned=True,
+                ).clamp(min=1e-6)
 
             # regression loss
             loss_bbox = self._get_loss_bbox(pos_bbox_targets, pos_bbox_pred, centerness_targets)
@@ -217,7 +225,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             neg_indices = labels == self.num_classes
             label_weights[neg_indices] = self.bg_loss_weight
 
-        if self.use_qfl:
+        if self.use_qualified_focal_loss:
             labels = (labels, quality)  # For quality focal loss arg spec
 
         # classification loss
@@ -271,6 +279,27 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         anchors as the first element of the returned tuple.
         However, if the detector's head loss uses CrossSigmoidFocalLoss,
         the labels_weights_list consists of (binarized label schema * weights) of batch images
+
+        Args:
+            anchor_list (list[list[Tensor]]): Multi level anchors of each
+                image. The outer list indicates images, and the inner list
+                corresponds to feature levels of the image. Each element of
+                the inner list is a tensor of shape (num_anchors, 4).
+            valid_flag_list (list[list[Tensor]]): Multi level valid flags of
+                each image. The outer list indicates images, and the inner list
+                corresponds to feature levels of the image. Each element of
+                the inner list is a tensor of shape (num_anchors, )
+            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            batch_img_metas (list[dict]): Meta information of each image, e.g.,
+                image size, scaling factor, etc.
+            batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
+                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
+                data that is ignored during training and testing.
+                Defaults to None.
+            unmap_outputs (bool): Whether to map outputs back to the original
+                set of anchors. Defaults to True.
         """
         return self.get_atss_targets(
             anchor_list,
