@@ -13,6 +13,7 @@ from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.apis.onnx import export
 from mmdeploy.backend.openvino.onnx2openvino import from_onnx
 from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
+from mmengine.structures import BaseDataElement
 
 from otx.v2.api.utils.logger import get_logger
 
@@ -87,6 +88,8 @@ class Exporter:
         input_tensor = torch.randn(input_shape)
         input_metas = self.deploy_cfg.backend_config.get("input_metas", None)
         input_metas["data_samples"] = input_tensor
+        if input_metas is None:
+            input_metas = {"data_samples": [BaseDataElement()] * input_shape[0], "mode": "predict"}
         return input_tensor, input_metas
 
     def export(self) -> dict[str, dict[str, str]]:
