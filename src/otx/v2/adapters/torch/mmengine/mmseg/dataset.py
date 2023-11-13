@@ -35,6 +35,7 @@ def get_default_pipeline(subset: str) -> list:
     Returns:
         list: The list of processing steps to be applied to the data.
     """
+    # TODO (Eugene): Implement LoadResizeDataFromOTXDataset in second phase.
     if subset == "train":
         return [
             {"type": "LoadImageFromOTXDataset"},
