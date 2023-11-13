@@ -19,7 +19,6 @@ from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -31,6 +30,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     EigenCamHook,
     FeatureVectorHook,
     ReciproCAMHook,
+    ViTFeatureVectorHook,
     ViTReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -226,7 +226,6 @@ class MMClassificationTask(OTXClassificationTask):
             )
         )
 
-        dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
         self._init_task()
@@ -275,16 +274,16 @@ class MMClassificationTask(OTXClassificationTask):
         forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook]
         if model_type == "VisionTransformer":
             forward_explainer_hook = ViTReciproCAMHook(feature_model)
-        elif (
-            not dump_saliency_map or model_type in TRANSFORMER_BACKBONES
-        ):  # TODO: remove latter "or" condition after resolving Issue#2098
+        elif not dump_saliency_map:
             forward_explainer_hook = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if (
-            not dump_features or model_type in TRANSFORMER_BACKBONES
-        ):  # TODO: remove latter "or" condition after resolving Issue#2098
-            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+
+        feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook]
+        if model_type == "VisionTransformer":
+            feature_vector_hook = ViTFeatureVectorHook(feature_model)
+        elif not dump_saliency_map:
+            feature_vector_hook = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
 
@@ -537,11 +536,6 @@ class MMClassificationTask(OTXClassificationTask):
 
         export_options["precision"] = str(precision)
         export_options["type"] = str(export_format)
-
-        # [TODO] Enable dump_features for ViT backbones
-        model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
-        if model_type in TRANSFORMER_BACKBONES:
-            dump_features = False
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
