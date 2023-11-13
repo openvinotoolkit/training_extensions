@@ -150,7 +150,7 @@ class MMDetEngine(MMXEngine):
         task: str | None = "ObjectDetection",
         codebase: str | None = "mmdet",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | None = None,
+        deploy_config: str | dict | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
         **kwargs,
@@ -165,7 +165,8 @@ class MMDetEngine(MMXEngine):
             task (str, None, optional): The task for which the model is being exported. Defaults to "Classification".
             codebase (str, None, optional): The codebase for the model being exported. Defaults to "mmdet".
             export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
-            deploy_config (str, None, optional): The path to the deployment configuration file to use for exporting.
+            deploy_config (str, dict, None, optional): The path to the deployment configuration file
+                to use for exporting.
                 File path only.
             device (str): The device to use for exporting. Defaults to "cpu".
             input_shape (tuple[int, int], None, optional): The input shape of the model being exported.

@@ -4,8 +4,11 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 from mmengine.registry import TRANSFORMS
+
+if TYPE_CHECKING:
+    from mmcv.transforms import BaseTransform
 
 import otx.v2.adapters.datumaro.pipelines.load_image_from_otx_dataset as load_image_base
 
@@ -19,6 +22,6 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
     """Load and resize image & annotation with cache support."""
 
-    def _create_resize_op(self, cfg) -> Callable | None:
+    def _create_resize_op(self, cfg: dict | None = None) -> BaseTransform | None:
         """Creates resize operation."""
         return TRANSFORMS.build(cfg)
