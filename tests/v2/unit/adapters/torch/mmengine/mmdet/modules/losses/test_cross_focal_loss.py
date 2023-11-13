@@ -1,3 +1,5 @@
+"""Unit tests of otx/v2/adapters/torch/mmengine/mmdet/modules/losses/cross_focal_loss.py"""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
