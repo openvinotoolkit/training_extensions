@@ -1,4 +1,4 @@
-"""OTX adapters.torch.mmengine.mmpretrain.Engine API."""
+"""OTX adapters.torch.mmengine.mmseg.Engine API."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -24,12 +24,9 @@ logger = get_logger()
 
 
 class MMSegEngine(MMXEngine):
-    """The MMPretrainEngine class is responsible for running inference on pre-trained models."""
+    """The MMSegmentation class is responsible for running inference on pre-trained models."""
 
-    def __init__(
-        self,
-        work_dir: str | Path | None = None,
-    ) -> None:
+    def __init__(self, work_dir: str | Path | None = None) -> None:
         """Initialize a new instance of the MMPretrainEngine class.
 
         Args:
@@ -38,8 +35,8 @@ class MMSegEngine(MMXEngine):
         """
         super().__init__(work_dir=work_dir)
         self.registry = MMSegmentationRegistry()
-        self.visualizer = {"name": "visualizer", "type": "SegLocalVisualizer"}
-        self.evaluator = {"type": "IoUMetric", "iou_metrics": ["mDice"]}
+        self.visualizer_cfg = {"name": "visualizer", "type": "SegLocalVisualizer"}
+        self.evaluator_cfg = {"type": "IoUMetric", "iou_metrics": ["mDice"]}
 
     def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
         """Update the configuration of the runner with the provided arguments.
@@ -53,13 +50,13 @@ class MMSegEngine(MMXEngine):
         """
         config, update_check = super()._update_config(func_args, **kwargs)
         if getattr(config, "val_dataloader", None) and not hasattr(config.val_evaluator, "type"):
-            config.val_evaluator = self.evaluator
+            config.val_evaluator = self.evaluator_cfg
             config.val_cfg = {"type": "ValLoop"}
         if getattr(config, "test_dataloader", None) and not hasattr(config.test_evaluator, "type"):
-            config.test_evaluator = self.evaluator
+            config.test_evaluator = self.evaluator_cfg
             config.test_cfg = {"type": "TestLoop"}
         if hasattr(config, "visualizer") and config.visualizer.type not in VISUALIZERS:
-            config.visualizer = self.visualizer
+            config.visualizer = self.visualizer_cfg
         return config, update_check
 
     def predict(
@@ -114,11 +111,7 @@ class MMSegEngine(MMXEngine):
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
 
-        inferencer = MMSegInferencer(
-            model=config,
-            weights=checkpoint,
-            device=device,
-        )
+        inferencer = MMSegInferencer(model=config, weights=checkpoint, device=device)
 
         return inferencer(img, batch_size=batch_size, **kwargs)
 
@@ -138,17 +131,16 @@ class MMSegEngine(MMXEngine):
         """Export a PyTorch model to a specified format for deployment.
 
         Args:
-            model (Optional[Union[torch.nn.Module, str, Config]]): The PyTorch model to export.
-            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for exporting.
-            precision (Optional[str]): The precision to use for exporting.
-                Can be one of ["float16", "fp16", "float32", "fp32"].
-            task (Optional[str]): The task for which the model is being exported. Defaults to "Classification".
-            codebase (Optional[str]): The codebase for the model being exported. Defaults to "mmpretrain".
+            model (torch.nn.Module | str | Config | None): The PyTorch model to export.
+            checkpoint (str | Path | None): The path to the checkpoint file to use for exporting.
+            precision (str | None): The precision to use for exporting.
+            task (str | None): The task for which the model is being exported. Defaults to "Segmentation".
+            codebase (str | None): The codebase for the model being exported. Defaults to "mmseg".
             export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
-            deploy_config (Optional[str]): The path to the deployment configuration file to use for exporting.
+            deploy_config (str | None): The path to the deployment configuration file to use for exporting.
                 File path only.
             device (str): The device to use for exporting. Defaults to "cpu".
-            input_shape (Optional[Tuple[int, int]]): The input shape of the model being exported.
+            input_shape (tuple[int, int] | None): The input shape of the model being exported.
             **kwargs: Additional keyword arguments to pass to the export function.
 
         Returns:

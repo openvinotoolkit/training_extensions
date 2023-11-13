@@ -18,24 +18,7 @@ if TYPE_CHECKING:
 
 @HEADS.register_module()
 class OTXFCNHead(FCNHead):
-    """OTXFCNHead is a fully convolutional network head used in OTX.
-
-    Args:
-        enable_aggregator (bool): Whether to enable the Lite-HRNet aggregator.
-        aggregator_min_channels (int, optional): Minimum number of channels for the aggregator.
-        aggregator_merge_norm (str, optional): Type of normalization to use for the aggregator.
-        aggregator_use_concat (bool): Whether to use concatenation for the aggregator.
-        *args: Variable length argument list.
-        **kwargs: Arbitrary keyword arguments.
-
-    Attributes:
-        aggregator (IterativeAggregator): The Lite-HRNet aggregator.
-        in_channels (int): Number of input channels.
-        input_transform (dict): Input transformation.
-        in_index (int): Index of input.
-        ignore_index (int): Index to ignore.
-
-    """
+    """OTXFCNHead is a fully convolutional network head used in OTX."""
 
     def __init__(
         self,

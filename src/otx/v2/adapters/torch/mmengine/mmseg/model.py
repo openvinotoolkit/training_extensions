@@ -58,13 +58,13 @@ def get_model(
     """Return a PyTorch model for training.
 
     Args:
-        model (Union[str, Config, Dict]): The model to use for pretraining. Can be a string representing the model name,
+        model (str | Config | dict): The model to use for pretraining. Can be a string representing the model name,
             a Config object, or a dictionary.
-        pretrained (Union[str, bool], optional): Whether to use a pretrained model. Defaults to False.
-        num_classes (Optional[int], optional): The number of classes in the dataset. Defaults to None.
+        pretrained (str | bool | None, optional): Whether to use a pretrained model. Defaults to False.
+        num_classes (int | None, optional): The number of classes in the dataset. Defaults to None.
         device (str | torch.device | None): Transfer the model to the target
             device. Defaults to None.
-        url_mapping (Tuple[str, str], optional): The mapping of pretrained
+        url_mapping (Tuple[str, str] | None, optional): The mapping of pretrained
             checkpoint link. For example, load checkpoint from a local dir
             instead of download by ``('https://.*/', './checkpoint')``.
             Defaults to None.
@@ -158,12 +158,12 @@ def list_models(pattern: str | None = None) -> list[str]:
     """Returns a list of available models for training.
 
     Args:
-        pattern (Optional[str]): A string pattern to filter the list of available models. Defaults to None.
+        pattern (str | None): A string pattern to filter the list of available models. Defaults to None.
 
     Returns:
-        List[str]: A sorted list of available models for pretraining.
+        list[str]: A sorted list of available models for pretraining.
     """
-    model_list = []
+    model_list: list[str] = []
     model_list.extend(list(MODEL_CONFIGS.keys()))
 
     if pattern is not None:

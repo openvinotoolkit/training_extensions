@@ -1,10 +1,11 @@
 """Asymmetric position attention module."""
+
 # Copyright (c) 2019 MendelXu
 # SPDX-License-Identifier: Apache-2.0
-#
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 from __future__ import annotations
 
 import torch
@@ -15,7 +16,6 @@ from torch import nn
 from .psp_layer import PSPModule
 
 
-# pylint: disable=too-many-instance-attributes
 class AsymmetricPositionAttentionModule(nn.Module):
     """AsymmetricPositionAttentionModule.
 
@@ -45,12 +45,6 @@ class AsymmetricPositionAttentionModule(nn.Module):
             norm_cfg (dict, optional): Dictionary to configure the normalization layers.
                 If not specified, defaults to `{"type": "BN"}`.
 
-        Attributes:
-            query_key (ConvModule): Convolutional module for the query and key projections.
-            key_psp (PSPModule): Pyramid pooling module for the key tensor.
-            value (ConvModule): Convolutional module for the value projection.
-            value_psp (PSPModule): Pyramid pooling module for the value tensor.
-            out_conv (ConvModule): Convolutional module for the output tensor.
         """
         super().__init__()
 

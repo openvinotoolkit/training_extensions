@@ -1,3 +1,5 @@
+"""Integration API tests for MMSeg."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -79,7 +81,7 @@ class TestMMSegAPI:
         Steps:
         1. Setup Engine
         2. Build Model from model name
-        3. Training (1 epochs)
+        3. Training (1 epoch)
         4. Validation & Testing
         5. Prediction with single image
         6. Export Openvino IR Model

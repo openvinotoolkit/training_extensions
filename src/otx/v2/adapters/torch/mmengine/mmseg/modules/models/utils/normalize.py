@@ -1,7 +1,7 @@
 """Normalization."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 from typing import Callable
 
@@ -15,13 +15,14 @@ class OnnxLpNormalization(torch.autograd.Function):
 
     @staticmethod
     def forward(
-        ctx: Callable,  # noqa: ARG004
+        ctx: Callable,
         x: torch.Tensor,
         axis: int = 0,
-        p: int = 2,  # noqa: ARG004
+        p: int = 2,
         eps: float = 1e-12,
     ) -> torch.Tensor:
         """Forward."""
+        del ctx, p  # These args are not used.
         denom = x.norm(2, axis, True).clamp_min(eps).expand_as(x)
         return x / denom
 
@@ -31,9 +32,10 @@ class OnnxLpNormalization(torch.autograd.Function):
         x: torch.Tensor,
         axis: int = 0,
         p: int = 2,
-        eps: float = 1e-12,  # noqa: ARG004
+        eps: float = 1e-12,
     ) -> torch.Graph:
         """Symbolic onnxLpNormalization."""
+        del eps  # These args are not used.
         return g.op("LpNormalization", x, axis_i=int(axis), p_i=int(p))
 
 

@@ -1,10 +1,11 @@
 """Local attention module."""
+
 # Copyright (C) 2019-2021 Xiangtai Lee
 # SPDX-License-Identifier: MIT
-#
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 from __future__ import annotations
 
 import torch.nn.functional
@@ -27,11 +28,6 @@ class LocalAttentionModule(nn.Module):
         norm_cfg (dict | None): Optional configuration dictionary for the normalization layers. If None, batch
             normalization is used by default.
 
-        Attributes:
-            dwconv1 (ConvModule): The first depthwise separable convolutional layer.
-            dwconv2 (ConvModule): The second depthwise separable convolutional layer.
-            dwconv3 (ConvModule): The third depthwise separable convolutional layer.
-            sigmoid_spatial (nn.Sigmoid): The sigmoid activation function used to compute the spatial attention maps.
         """
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}

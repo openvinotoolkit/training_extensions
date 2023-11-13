@@ -1,10 +1,10 @@
 """Channel shuffle method."""
+
 # Copyright (c) 2018-2020 Open-MMLab.
 # SPDX-License-Identifier: Apache-2.0
-#
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 import torch
 

@@ -1,18 +1,7 @@
 """Base MMDataset for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
@@ -73,12 +62,6 @@ class OTXSegDataset(BaseCDDataset):
             pipeline (list | None, optional): Data processing pipeline. Defaults to None.
             **kwargs: Additional keyword arguments.
 
-        Attributes:
-            otx_dataset (DatasetEntity): The OTX dataset being used.
-            empty_label (list | None): Empty label.
-            labels (list[LabelEntity]): List of label entities.
-            serialize_data (None): OTX has its own data caching mechanism.
-            _fully_initialized (bool): Whether the dataset has been fully initialized.
         """
         self.otx_dataset = otx_dataset
         self.empty_label = empty_label

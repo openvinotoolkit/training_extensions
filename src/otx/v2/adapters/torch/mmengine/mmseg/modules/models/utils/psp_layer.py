@@ -1,10 +1,11 @@
 """PSP module."""
+
 # Copyright (c) 2019 MendelXu
 # SPDX-License-Identifier: Apache-2.0
-#
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 from __future__ import annotations
 
 from typing import ClassVar

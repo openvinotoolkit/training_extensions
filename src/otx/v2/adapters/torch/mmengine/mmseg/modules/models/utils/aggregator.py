@@ -1,7 +1,7 @@
 """Aggregators."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ from torch import nn
 from otx.v2.adapters.torch.mmengine.mmseg.modules.models.utils.normalize import normalize
 
 
-# pylint: disable=invalid-name
 class IterativeAggregator(nn.Module):
     """IterativeAggregator.
 
@@ -138,7 +137,7 @@ class IterativeAggregator(nn.Module):
         """Forward."""
         x = x[::-1]
 
-        y_list = []
+        y_list: list[torch.Tensor] = []
         last_x = None
         for i, s in enumerate(x):
             if self.expanders[i] is not None:
