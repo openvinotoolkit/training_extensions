@@ -123,7 +123,7 @@ class MMSegEngine(MMXEngine):
         task: str | None = "Segmentation",
         codebase: str | None = "mmseg",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | None = None,
+        deploy_config: str | dict | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
         **kwargs,
