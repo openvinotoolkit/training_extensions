@@ -35,6 +35,7 @@ model:
   return_extra_metrics: false
   # zero-shot
   default_threshold_reference: 0.3
+  default_threshold_target: 0.65
 
 # PL Trainer Args. Don't add extra parameter here.
 trainer:

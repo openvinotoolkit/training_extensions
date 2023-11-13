@@ -245,7 +245,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         logger.info("Performing inference on the validation set using the base torch model.")
         self.model = self.load_model(otx_model=self.task_environment.model)
-        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
+        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset, train_type=self.train_type)
 
         logger.info("Inference Configs '%s'", self.config)
 
