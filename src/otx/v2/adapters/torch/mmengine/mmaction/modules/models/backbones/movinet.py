@@ -386,14 +386,14 @@ def same_padding(
         pad_along_height = max(filter_height - stride_h, 0)
     else:
         pad_along_height = max(filter_height - (in_height % stride_h), 0)
-        
+
     if in_width % stride_w == 0:
         pad_along_width = max(filter_width - stride_w, 0)
     else:
         pad_along_width = max(filter_width - (in_width % stride_w), 0)
     pad_top = pad_along_height // 2
     pad_bottom = pad_along_height - pad_top
-    
+
     pad_left = pad_along_width // 2
     pad_right = pad_along_width - pad_left
     padding_pad = (pad_left, pad_right, pad_top, pad_bottom)
@@ -558,8 +558,8 @@ class MoViNet(nn.Module):
             conv_type (str, optional): A string indicating the type of convolutional layer
                 to use. Can be "2d" or "3d". Defaults to "3d".
             tf_like (bool, optional): A boolean indicating whether to use TensorFlow like
-                convolution padding or not since Tensorflow used different operation for the conv and padding. 
-                Defaults to False. 
+                convolution padding or not since Tensorflow used different operation for the conv and padding.
+                Defaults to False.
 
         Attributes:
             conv1 (ConvBlock3D): A convolutional block for the first layer.

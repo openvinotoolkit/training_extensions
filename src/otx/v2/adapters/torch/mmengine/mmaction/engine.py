@@ -40,7 +40,7 @@ class MMActionEngine(MMXEngine):
         super().__init__(work_dir=work_dir)
         self.registry = MMActionRegistry()
 
-    def _update_eval_config(self, evaluator_config: dict | None) -> dict | None:
+    def _update_eval_config(self, evaluator_config: dict | list[dict] | None) -> dict | list[dict] | None:
         if evaluator_config is None or not evaluator_config:
             evaluator_config = {
                 "type": "AccMetric",
@@ -220,7 +220,7 @@ class MMActionEngine(MMXEngine):
             codebase = codebase if codebase is not None else self.registry.name
             codebase_config = {"type": codebase, "task": task}
             deploy_config_dict["codebase_config"] = codebase_config
-        
+
         # if_config update
         if ir_config is None:
             ir_config = {

@@ -119,6 +119,7 @@ class MMActionDataset(MMXDataset):
         data_format: str | None = None,
     ) -> None:
         r"""MMAction's Dataset class.
+
         Args:
             task (TaskType | str | None, optional): The task type of the dataset want to load.
                 Defaults to None.
