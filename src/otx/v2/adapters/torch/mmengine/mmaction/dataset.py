@@ -41,7 +41,7 @@ def get_default_pipeline(subset: str) -> list:
         raise ValueError(msg)
 
     default_pipeline = {
-        "train":[
+        "train": [
             {
                 "type": "SampleFrames",
                 "clip_len": 8,
@@ -165,6 +165,8 @@ class MMActionDataset(MMXDataset):
         self.initialize = True
 
     def _get_sub_task_dataset(self) -> TorchDataset:
+        # ruff: noqa: TD002, TD003, FIX002
+        #TODO: will be added the OTXActionDetDataset
         return OTXActionClsDataset
 
     def _build_dataset(

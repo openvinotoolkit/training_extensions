@@ -14,18 +14,15 @@ from mmaction.registry import VISUALIZERS
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmaction.registry import MMActionRegistry
-from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
+from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE as IS_MMDEPLOY_AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
     import numpy as np
 
-
 logger = get_logger()
 
-MMACTION_DEFAULT_CONFIG_PATH = "src/otx/v2/configs/action_classification/otx_mmaction_classification_default.yaml"
-MMACTION_DEFAULT_CONFIG = Config.fromfile(MMACTION_DEFAULT_CONFIG_PATH)
 
 class MMActionEngine(MMXEngine):
     """The MMActionEngine class is responsible for running inference on pre-trained models."""
@@ -167,7 +164,7 @@ class MMActionEngine(MMXEngine):
         Returns:
             dict: A dictionary containing information about the exported model.
         """
-        if not AVAILABLE:
+        if not IS_MMDEPLOY_AVAILABLE:
             msg = "MMXEngine's export is dependent on mmdeploy."
             raise ModuleNotFoundError(msg)
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config

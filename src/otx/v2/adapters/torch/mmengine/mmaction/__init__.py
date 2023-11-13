@@ -16,9 +16,6 @@ try:
 
     register_all_modules(init_default_scope=True)
 
-    import os
-    os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
-
     from .dataset import MMActionDataset as Dataset
     from .engine import MMActionEngine as Engine
     from .model import get_model, list_models
