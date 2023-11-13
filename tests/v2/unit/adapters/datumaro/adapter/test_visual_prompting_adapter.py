@@ -6,14 +6,14 @@
 
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
+from datumaro.components.annotation import Mask, Polygon
+from datumaro.components.media import Image
 
 import numpy as np
 import pytest
 from otx.v2.adapters.datumaro.adapter.visual_prompting_dataset_adapter import (
     VisualPromptingDatasetAdapter,
 )
-from otx.v2.api.entities.image import Image
-from otx.v2.api.entities.shapes.polygon import Polygon
 
 from tests.v2.unit.adapters.datumaro.test_helpers import (
     TASK_NAME_TO_DATA_ROOT,
@@ -33,9 +33,9 @@ class TestVisualPromptingDatasetAdapter:
     @pytest.mark.parametrize(
         ("data_format", "use_mask", "expected_shape"),
         [
-            ("coco", True, Image),
+            ("coco", True, Mask),
             ("coco", False, Polygon),
-            ("voc", True, Image),
+            ("voc", True, Mask),
             ("voc", False, Polygon),
         ],
     )
@@ -49,11 +49,13 @@ class TestVisualPromptingDatasetAdapter:
             use_mask=use_mask,
         )
 
-        results = dataset_adapter.get_otx_dataset()
+        _ = dataset_adapter.get_label_schema()
+        datasets = dataset_adapter.get_otx_dataset()
 
-        assert len(results) > 0
-        for result in results:
-            assert isinstance(result.media, Image)
-            assert isinstance(result.media.numpy, np.ndarray)
-            for annotation in result.annotation_scene.annotations:
-                assert isinstance(annotation.shape, expected_shape)
+        assert len(datasets) > 0
+        for _, dataset in datasets.items():
+            for item in dataset:
+                assert isinstance(item.media, Image)
+                assert isinstance(item.media.data, np.ndarray)
+                for annotation in item.annotations:
+                    assert isinstance(annotation, expected_shape)

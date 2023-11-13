@@ -68,7 +68,7 @@ class TestVisaulPromptAPI:
             max_epochs=1,
         )
         assert "model" in results
-        assert "checkpoint" in  results
+        assert "checkpoint" in results
         assert isinstance(results["model"], torch.nn.Module)
         assert isinstance(results["checkpoint"], str)
         assert Path(results["checkpoint"]).exists()

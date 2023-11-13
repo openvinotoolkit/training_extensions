@@ -4,19 +4,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations 
+
 from typing import Any, Dict, List, Union
 
-from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories
+from datumaro.components.dataset import Dataset as DatumDataset
 
-from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
@@ -25,56 +22,21 @@ from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
     """Classification adapter inherited from DatumaroDatasetAdapter.
 
-    It converts DatumaroDataset -> DatasetEntity
-    for multi-class, multi-label, and hierarchical-label classification tasks
+    It returns DatumaroDataset for multi-class, multi-label, and
+    hierarchical-label classification tasks.
     """
 
-    def _get_dataset_items(self, fake_ann: bool = False) -> List[DatasetItemEntityWithID]:
-        # Set the DatasetItemEntityWithID
-        dataset_items: List[DatasetItemEntityWithID] = []
-        for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    image = self.datum_media_2_otx_media(datumaro_item.media)
-                    if not fake_ann:
-                        datumaro_labels = []
-                        for ann in datumaro_item.annotations:
-                            if ann.type == DatumAnnotationType.label:
-                                datumaro_labels.append(ann.label)
-                    else:
-                        datumaro_labels = [0]  # fake label
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
+        """Get DatumaroDataset for Classification."""
+        return self.dataset
 
-                    shapes = self._get_cls_shapes(datumaro_labels)
-                    dataset_item = DatasetItemEntityWithID(
-                        image,
-                        self._get_ann_scene_entity(shapes),
-                        subset=subset,
-                        id_=datumaro_item.id,
-                    )
-
-                    dataset_items.append(dataset_item)
-        return dataset_items
-
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Classification."""
-        # Prepare label information
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get Label Schema."""
         label_information = self._prepare_label_information(self.dataset)
         self.category_items = label_information["category_items"]
         self.label_groups = label_information["label_groups"]
         self.label_entities = label_information["label_entities"]
-        dataset_items = self._get_dataset_items()
-        return DatasetEntity(items=dataset_items)
 
-    def _get_cls_shapes(self, datumaro_labels: List[int]) -> List[Annotation]:
-        """Converts a list of datumaro labels to Annotation object."""
-        otx_labels = []
-        for d_label in datumaro_labels:
-            otx_labels.append(ScoredLabel(label=self.label_entities[d_label], probability=1.0))
-
-        return [Annotation(Rectangle.generate_full_box(), labels=otx_labels)]
-
-    def get_label_schema(self) -> LabelSchemaEntity:
-        """Get Label Schema."""
         return self._generate_classification_label_schema(
             self.category_items,
             self.label_groups,
@@ -136,20 +98,24 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
     """SelfSLClassification adapter inherited from ClassificationDatasetAdapter.
 
     It creates fake annotations to work with DatumaroDataset w/o labels
-    and converts it to DatasetEntity for Self-SL classification pretraining
+    for Self-SL classification pretraining
     """
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Self-SL Classification."""
-        # Prepare label information
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get Label Schema."""
         if not self.dataset[Subset.TRAINING].categories():
             label_information = self._prepare_fake_label_information()
-            self.category_items = label_information["category_items"]
-            self.label_groups = label_information["label_groups"]
-            self.label_entities = label_information["label_entities"]
-            dataset_items = self._get_dataset_items(fake_ann=True)
-            return DatasetEntity(items=dataset_items)
-        return super().get_otx_dataset()
+        else:
+            label_information = self._prepare_label_information(self.dataset)
+        self.category_items = label_information["category_items"]
+        self.label_groups = label_information["label_groups"]
+        self.label_entities = label_information["label_entities"]
+        return self._generate_default_label_schema(self.label_entities)
+
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
+        """Return DatumDataset with fake annotations (label_id=0) for Self-SL Classification."""
+        self._get_dataset_items(fake_ann=True)
+        return self.dataset
 
     def _prepare_fake_label_information(self) -> Dict[str, Any]:
         label_categories_list = DatumLabelCategories.from_iterable(["fake_label"])
@@ -158,3 +124,10 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
         # LabelEntities
         label_entities = [LabelEntity(name="fake_label", domain=self.domain, is_empty=False, id=ID(0))]
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
+
+    def _get_dataset_items(self, fake_ann: bool = False):       
+        """Modify DatumDataset with fake_annotation (label_id=0) for Self-SL Classification."""
+        for _, subset_data in self.dataset.items():
+            for item in subset_data:
+                if fake_ann:
+                    item.annotations = [0]

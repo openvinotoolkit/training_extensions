@@ -9,7 +9,6 @@ from otx.v2.adapters.datumaro.adapter.classification_dataset_adapter import (
     ClassificationDatasetAdapter,
     SelfSLClassificationDatasetAdapter,
 )
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 
@@ -58,8 +57,8 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
     def test_get_label_schema(self) -> None:
         _ = self.train_dataset_adapter.get_otx_dataset()
@@ -82,7 +81,7 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TRAINING in multilabel_train_dataset_adapter.dataset
         assert Subset.VALIDATION in multilabel_train_dataset_adapter.dataset
 
-        assert isinstance(multilabel_train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(multilabel_train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(multilabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
         multilabel_test_dataset_adapter = ClassificationDatasetAdapter(
@@ -90,7 +89,7 @@ class TestOTXClassificationDatasetAdapter:
         )
 
         assert Subset.TESTING in multilabel_test_dataset_adapter.dataset
-        assert isinstance(multilabel_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(multilabel_test_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(multilabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
     def test_hierarchical_label(self) -> None:
@@ -107,7 +106,7 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TRAINING in hlabel_train_dataset_adapter.dataset
         assert Subset.VALIDATION in hlabel_train_dataset_adapter.dataset
 
-        assert isinstance(hlabel_train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(hlabel_train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(hlabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
         label_tree = hlabel_train_dataset_adapter.get_label_schema().label_tree
@@ -122,7 +121,7 @@ class TestOTXClassificationDatasetAdapter:
         )
 
         assert Subset.TESTING in hlabel_test_dataset_adapter.dataset
-        assert isinstance(hlabel_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(hlabel_test_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(hlabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
         label_tree = hlabel_test_dataset_adapter.get_label_schema().label_tree
@@ -156,10 +155,10 @@ class TestSelfSLClassificationDatasetAdapter:
 
     def test_get_otx_dataset(self) -> None:
         dataset_imagenet = self.train_dataset_adapter_imagenet.get_otx_dataset()
-        assert isinstance(dataset_imagenet, DatasetEntity)
+        assert isinstance(dataset_imagenet, dict)
         assert len(self.train_dataset_adapter_imagenet.get_label_schema().get_labels(False)) == 2
         dataset_only_images = self.train_dataset_adapter_images_only.get_otx_dataset()
-        assert isinstance(dataset_only_images, DatasetEntity)
+        assert isinstance(dataset_only_images, dict)
         lables = self.train_dataset_adapter_images_only.get_label_schema().get_labels(False)
         assert len(lables) == 1
         assert lables[0].name == "fake_label"

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+from datumaro.components.dataset import Dataset as DatumDataset
 import numpy as np
 import pytest
 from otx.v2.adapters.torch.lightning.modules.datasets.pipelines import (
@@ -21,6 +22,7 @@ from otx.v2.adapters.torch.lightning.modules.datasets.visual_prompting_dataset i
     OTXVisualPromptingDataset,
     get_transform,
 )
+from otx.v2.api.entities.subset import Subset
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -54,13 +56,13 @@ def std() -> list[float]:
 
 
 @pytest.fixture()
-def dataset_polygon() -> DatasetEntity:
+def dataset_polygon() -> dict[Subset, DatumDataset]:
     """Set dataset with polygon."""
     return generate_visual_prompting_dataset(use_mask=False)
 
 
 @pytest.fixture()
-def dataset_mask() -> DatasetEntity:
+def dataset_mask() -> dict[Subset, DatumDataset]:
     """Set dataset with mask."""
     return generate_visual_prompting_dataset(use_mask=True)
 
@@ -85,8 +87,8 @@ class TestOTXVIsualPromptingDataset:
             "otx.v2.adapters.torch.lightning.modules.datasets.visual_prompting_dataset.get_transform",
             return_value=transform,
         )
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, image_size, mean, std)
-        assert len(otx_dataset) == 4
+        otx_dataset = OTXVisualPromptingDataset(dataset_polygon.get(Subset.TRAINING), image_size, mean, std)
+        assert len(otx_dataset) == 1
 
     @pytest.mark.parametrize("use_mask", [False, True])
     def test_getitem(
@@ -98,7 +100,7 @@ class TestOTXVIsualPromptingDataset:
             return_value=transform,
         )
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXVisualPromptingDataset(dataset=dataset, image_size=image_size, mean=mean, std=std)
+        otx_dataset = OTXVisualPromptingDataset(dataset=dataset.get(Subset.TRAINING), image_size=image_size, mean=mean, std=std)
 
         item = otx_dataset[0]
 
@@ -106,11 +108,12 @@ class TestOTXVIsualPromptingDataset:
         expected_keys = {"index", "original_size", "images", "path", "gt_masks", "bboxes", "points", "labels"}
         assert set(item.keys()) == expected_keys
 
+        expected_item = dataset.get(Subset.TRAINING).get(0)
         # Check specific values in the item
+
         assert item["index"] == 0
-        assert (item["images"] == dataset[0].media.numpy).all()
-        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
-        assert item["path"] == dataset[0].media.path
+        assert item["original_size"] == expected_item.media.data.shape[:2]
+        assert item["path"] == expected_item.media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
         assert isinstance(item["bboxes"], np.ndarray)

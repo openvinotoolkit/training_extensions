@@ -23,6 +23,7 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
 
 if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
     from mmengine.registry import Registry
     from torch.utils.data import DataLoader as TorchDataLoader
     from torch.utils.data import Dataset as TorchDataset
@@ -132,9 +133,9 @@ class MMXDataset(BaseTorchDataset):
             msg = f"{subset} is not supported subset"
             raise ValueError(msg)
 
-        otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
+        otx_dataset: DatumDataset = self.dataset_entity.get(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
-        if len(otx_dataset) < 1:
+        if not otx_dataset or len(otx_dataset) < 1:
             return None
 
         # Case without config

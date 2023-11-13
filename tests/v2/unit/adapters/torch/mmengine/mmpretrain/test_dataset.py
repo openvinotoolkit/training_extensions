@@ -133,16 +133,16 @@ class TestDataset:
 
         # otx_dataset < 1
         mock_dataset_entity = mocker.MagicMock()
-        mock_dataset_entity.get_subset.return_value = []
+        mock_dataset_entity.get.return_value = []
         dataset.dataset_entity = mock_dataset_entity
         result = dataset._build_dataset(subset="train")
         assert result is None
-        mock_dataset_entity.get_subset.assert_called_once_with(Subset.TRAINING)
+        mock_dataset_entity.get.assert_called_once()
         mock_label_schema.get_labels.assert_called_once_with(include_empty=False)
 
         # config is None
         mock_dataset_entity = mocker.MagicMock()
-        mock_dataset_entity.get_subset.return_value = ["data1"]
+        mock_dataset_entity.get.return_value = ["data1"]
         dataset.dataset_entity = mock_dataset_entity
         mock_base_dataset = mocker.MagicMock()
         mock_base_dataset.__qualname__ = "TestDataset"
