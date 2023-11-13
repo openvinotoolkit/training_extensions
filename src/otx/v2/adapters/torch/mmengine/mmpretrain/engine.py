@@ -156,10 +156,9 @@ class MMPTEngine(MMXEngine):
         task: str | None = "Classification",
         codebase: str | None = "mmpretrain",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | None = None,  # File path only?
+        deploy_config: str | dict | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
-        **kwargs,
     ) -> dict:
         """Export a PyTorch model to a specified format for deployment.
 
@@ -171,11 +170,9 @@ class MMPTEngine(MMXEngine):
             task (Optional[str]): The task for which the model is being exported. Defaults to "Classification".
             codebase (Optional[str]): The codebase for the model being exported. Defaults to "mmpretrain".
             export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
-            deploy_config (Optional[str]): The path to the deployment configuration file to use for exporting.
-                File path only.
+            deploy_config (Optional[str, dict]): The path to the deploy config to use for exporting. Defaults to None.
             device (str): The device to use for exporting. Defaults to "cpu".
             input_shape (Optional[Tuple[int, int]]): The input shape of the model being exported.
-            **kwargs: Additional keyword arguments to pass to the export function.
 
         Returns:
             dict: A dictionary containing information about the exported model.
@@ -190,5 +187,4 @@ class MMPTEngine(MMXEngine):
             deploy_config=deploy_config,
             device=device,
             input_shape=input_shape,
-            **kwargs,
         )
