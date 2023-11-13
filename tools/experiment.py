@@ -26,16 +26,16 @@ from rich.console import Console
 from rich.table import Table
 
 from otx.cli.utils.experiment import set_arguments_to_cmd
-from .build import main as otx_build
-from .demo import main as otx_demo
-from .deploy import main as otx_deploy
-from .eval import main as otx_eval
-from .explain import main as otx_explain
-from .export import main as otx_export
-from .find import main as otx_find
-from .optimize import main as otx_optimize
-from .train import main as otx_train
-from .run import main as otx_run
+from otx.cli.tools.build import main as otx_build
+from otx.cli.tools.demo import main as otx_demo
+from otx.cli.tools.deploy import main as otx_deploy
+from otx.cli.tools.eval import main as otx_eval
+from otx.cli.tools.explain import main as otx_explain
+from otx.cli.tools.export import main as otx_export
+from otx.cli.tools.find import main as otx_find
+from otx.cli.tools.optimize import main as otx_optimize
+from otx.cli.tools.train import main as otx_train
+from otx.cli.tools.run import main as otx_run
 
 __all__ = [
     "otx_demo",

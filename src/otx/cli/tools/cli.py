@@ -28,7 +28,6 @@ from .export import main as otx_export
 from .find import main as otx_find
 from .optimize import main as otx_optimize
 from .train import main as otx_train
-from .experiment import main as otx_experiment
 from .run import main as otx_run
 
 __all__ = [
@@ -41,7 +40,6 @@ __all__ = [
     "otx_train",
     "otx_optimize",
     "otx_build",
-    "otx_experiment",
     "otx_run",
 ]
 
