@@ -12,13 +12,13 @@ from .asymmetric_position_attention import AsymmetricPositionAttentionModule
 from .channel_shuffle import channel_shuffle
 from .local_attention import LocalAttentionModule
 from .normalize import normalize
-from .psp_layer import PSPModule
+from .psp_layer import PyramidSceneParsing
 
 __all__ = [
     "IterativeAggregator",
     "channel_shuffle",
     "LocalAttentionModule",
-    "PSPModule",
+    "PyramidSceneParsing",
     "AsymmetricPositionAttentionModule",
     "normalize",
 ]

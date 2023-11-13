@@ -14,7 +14,7 @@ import torch
 from torch import nn
 
 
-class PSPModule(nn.Module):
+class PyramidSceneParsing(nn.Module):
     """Pyramid Scene Parsing module (PSP module) implementation. Reference: https://github.com/MendelXu/ANN."""
 
     methods: ClassVar = {"max": nn.AdaptiveMaxPool2d, "avg": nn.AdaptiveAvgPool2d}

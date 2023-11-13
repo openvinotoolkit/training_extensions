@@ -13,7 +13,7 @@ import torch.nn.functional
 from mmcv.cnn import ConvModule
 from torch import nn
 
-from .psp_layer import PSPModule
+from .psp_layer import PyramidSceneParsing
 
 
 class AsymmetricPositionAttentionModule(nn.Module):
@@ -69,7 +69,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
-        self.key_psp = PSPModule(psp_size, method="max")
+        self.key_psp = PyramidSceneParsing(psp_size, method="max")
 
         self.value = ConvModule(
             in_channels=self.in_channels,
@@ -81,7 +81,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
-        self.value_psp = PSPModule(psp_size, method="max")
+        self.value_psp = PyramidSceneParsing(psp_size, method="max")
 
         self.out_conv = ConvModule(
             in_channels=self.value_channels,
