@@ -34,11 +34,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self.default_threshold_reference = config.model.default_threshold_reference
         self.default_threshold_target = config.model.default_threshold_target
         self._initialize_reference()
-        if "reference_feats" in state_dict:
-            self.reference_feats = state_dict.pop("reference_feats")
-            
-        if "reference_prompts" in state_dict:
-            self.reference_prompts = state_dict.pop("reference_prompts")
+        if state_dict:
+            if "reference_feats" in state_dict:
+                self.reference_feats = state_dict.pop("reference_feats")
+                
+            if "reference_prompts" in state_dict:
+                self.reference_prompts = state_dict.pop("reference_prompts")
 
         super().__init__(config, state_dict)
     
