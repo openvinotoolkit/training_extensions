@@ -6,17 +6,19 @@
 
 from __future__ import annotations 
 
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories
+from datumaro.components.annotation import Label as DatumLabel
 from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.annotation import Categories as DatumCategories
 
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 
-from .datumaro_dataset_adapter import DatumaroDatasetAdapter
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter, LabelInformationType
 
 
 class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
@@ -32,11 +34,6 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
-        label_information = self._prepare_label_information(self.dataset)
-        self.category_items = label_information["category_items"]
-        self.label_groups = label_information["label_groups"]
-        self.label_entities = label_information["label_entities"]
-
         return self._generate_classification_label_schema(
             self.category_items,
             self.label_groups,
@@ -100,34 +97,30 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
     It creates fake annotations to work with DatumaroDataset w/o labels
     for Self-SL classification pretraining
     """
-
-    def get_label_schema(self) -> LabelSchemaEntity:
-        """Get Label Schema."""
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         if not self.dataset[Subset.TRAINING].categories():
             label_information = self._prepare_fake_label_information()
-        else:
-            label_information = self._prepare_label_information(self.dataset)
-        self.category_items = label_information["category_items"]
-        self.label_groups = label_information["label_groups"]
-        self.label_entities = label_information["label_entities"]
-        return self._generate_default_label_schema(self.label_entities)
-
+            self.label_entities: list[LabelEntity] = label_information["label_entities"]  
+            self.category_items: list[DatumCategories] = label_information["category_items"]
+            self.label_groups: list[DatumLabelCategories] = label_information["label_groups"]
+    
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Return DatumDataset with fake annotations (label_id=0) for Self-SL Classification."""
         self._get_dataset_items(fake_ann=True)
         return self.dataset
-
-    def _prepare_fake_label_information(self) -> Dict[str, Any]:
-        label_categories_list = DatumLabelCategories.from_iterable(["fake_label"])
-        category_items = label_categories_list.items
-        label_groups = label_categories_list.label_groups
-        # LabelEntities
-        label_entities = [LabelEntity(name="fake_label", domain=self.domain, is_empty=False, id=ID(0))]
-        return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
     def _get_dataset_items(self, fake_ann: bool = False):       
         """Modify DatumDataset with fake_annotation (label_id=0) for Self-SL Classification."""
         for _, subset_data in self.dataset.items():
             for item in subset_data:
                 if fake_ann:
-                    item.annotations = [0]
+                    item.annotations = [DatumLabel(0)]
+
+    def _prepare_fake_label_information(self) -> LabelInformationType:
+        """Prepare the fake label information."""
+        label_categories_list = DatumLabelCategories.from_iterable(["fake_label"])
+        category_items: list[DatumCategories] = label_categories_list.items
+        label_groups: list[DatumLabelCategories] = label_categories_list.label_groups
+        label_entities: list[LabelEntity] = [LabelEntity(name="fake_label", domain=self.domain, is_empty=False, id=ID(0))]
+        return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}

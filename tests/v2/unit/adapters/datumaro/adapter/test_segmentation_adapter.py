@@ -15,6 +15,7 @@ from otx.v2.adapters.datumaro.adapter.segmentation_dataset_adapter import (
 )
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.subset import Subset
+from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from pytest_mock.plugin import MockerFixture
 
 from tests.v2.unit.adapters.datumaro.test_helpers import (
@@ -62,6 +63,9 @@ class TestOTXSegmentationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
+        assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        
         assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
 

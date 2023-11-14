@@ -76,10 +76,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
         # TODO (Eugene): this part needs refactoring and could be reused for both visual prompting and segmentation
         # CVS-124394
 
-        # Prepare label information
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
-
         used_labels: set[int] = set()
         # TODO (Eugene): self.updated_label_id - unnecessary class variable and unclear naming
         # CVS-124394
