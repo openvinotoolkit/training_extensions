@@ -87,7 +87,6 @@ class LoadAnnotationFromOTXDataset:
     def _get_annotation_mmdet_format(
         dataset_item: DatasetItem,
         labels: list[LabelEntity],
-        domain: Domain,
         min_size: int = -1,
     ) -> dict:
         """Function to convert a OTX annotation to mmdetection format.
@@ -98,7 +97,6 @@ class LoadAnnotationFromOTXDataset:
         Args:
             dataset_item: DatasetItem for which to get annotations
             labels: List of labels that are used in the task
-            domain: Domain of dataset item entity; Detection, Instance Segmentation, Rotated Detection
             min_size: Minimum bbox or mask size for positive annotation
         Return
             dict: annotation information dict in mmdet format
@@ -121,7 +119,6 @@ class LoadAnnotationFromOTXDataset:
 
             gt_bboxes.append(box.points)
             # Instance segmentation case will be resloved.
-            del domain
             gt_polygons = None
             gt_labels.append(box.label)
             gt_ann_ids.append((dataset_item.id, box.id))
@@ -165,7 +162,7 @@ class LoadAnnotationFromOTXDataset:
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results.pop("dataset_item")  # Prevent unnecessary deepcopy
         label_list = results.pop("ann_info")["label_list"]
-        ann_info = self._get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
+        ann_info = self._get_annotation_mmdet_format(dataset_item, label_list, self.min_size)
         if self.with_bbox:
             results = self._load_bboxes(results, ann_info)
         if self.with_label:
