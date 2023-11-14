@@ -72,7 +72,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
             dataset[Subset.TESTING] = DatumDataset.import_from(test_data_roots, format="image_dir")
         return dataset
 
-    def _prepare_label_information(self) -> LabelInformationType:
+    def _prepare_label_information(self, datumaro_dataset: dict[Subset, DatumDataset]) -> LabelInformationType:
         """Prepare LabelEntity List."""
         normal_label = LabelEntity(id=ID(0), name="Normal", domain=self.domain)
         abnormal_label = LabelEntity(
