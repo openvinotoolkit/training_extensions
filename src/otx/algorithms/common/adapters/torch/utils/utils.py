@@ -3,8 +3,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Union, Dict
 from pathlib import Path
+from typing import Dict, Union
 
 import torch
 from torch.nn import Module

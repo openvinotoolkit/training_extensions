@@ -43,13 +43,11 @@ from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.detection.adapters.mmdet.apis.simple_train_xpu import train_detector_debug
 from otx.algorithms.detection.adapters.mmdet.apis.train import (
     monkey_patched_nms,
     monkey_patched_roi_align,
-    train_detector
-)
-from otx.algorithms.detection.adapters.mmdet.apis.simple_train_xpu import (
-    train_detector_debug
+    train_detector,
 )
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,

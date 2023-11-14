@@ -11,23 +11,16 @@ import tqdm
 from mmcv.ops.nms import NMSop
 import mmcv
 from mmcv.ops.roi_align import RoIAlign
-from mmcv.runner import (
-    DistSamplerSeedHook,
-    EpochBasedRunner,
-    OptimizerHook,
-    build_runner,
-    get_dist_info,
-)
 from mmcv.engine import single_gpu_test
 from mmcv.utils import ext_loader
-from mmdet.core import DistEvalHook, EvalHook, build_optimizer
+from mmdet.core import build_optimizer
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
-from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
+from mmdet.utils import compat_cfg, get_root_logger
 from mmdet.utils.util_distribution import build_dp, dp_factory
 from torchvision.ops import nms as tv_nms
 from torchvision.ops import roi_align as tv_roi_align
 
-from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 from otx.algorithms.common.adapters.torch.utils.utils import ModelDebugger
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
@@ -71,7 +64,7 @@ def train_detector_debug(model, dataset, cfg, distributed=False, validate=False,
 
     # put model on gpus
     if cfg.device == "xpu":
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
+        model = XPUDataParallel(model, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
         model.to(f"xpu:{cfg.gpu_ids[0]}")
         # patch mmdetection NMS and ROI Align with torchvision
         NMSop.forward = monkey_patched_nms
@@ -106,6 +99,7 @@ def train_detector_debug(model, dataset, cfg, distributed=False, validate=False,
             cur_iter = num_iter_per_epoch * epoch + i
             with model_debugger(iter=cur_iter):
                 losses = model(return_loss=True, **data)
+                # parse loss (sum up)
                 for name, loss_ in losses.items():
                     if not name.startswith("loss"):
                         continue
@@ -113,7 +107,11 @@ def train_detector_debug(model, dataset, cfg, distributed=False, validate=False,
                         for sub_loss in loss_:
                             total_loss += sub_loss
                     else:
-                        total_loss += loss_
+                        # mask loss
+                        if len(loss_.shape) > 0:
+                            total_loss += loss_.squeeze(0)
+                        else:
+                            total_loss += loss_
                 total_loss.backward()
             print(f"loss_iter_{cur_iter}: ", total_loss)
             optimizer.step()
