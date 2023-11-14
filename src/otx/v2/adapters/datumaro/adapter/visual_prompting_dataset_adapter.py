@@ -59,13 +59,6 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
             **kwargs,
         )
 
-    def get_label_schema(self) -> LabelSchemaEntity:
-        """Get Label Schema."""
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
-
-        return super()._generate_default_label_schema(self.label_entities)
-
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
         used_labels: List[int] = []
