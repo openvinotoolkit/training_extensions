@@ -10,14 +10,14 @@ from typing import Any
 import numpy as np
 from mmaction.registry import TRANSFORMS
 
-from otx.api.entities.datasets import DatasetEntity
+from datumaro.components.dataset import Dataset as DatumDataset
 
 
 @TRANSFORMS.register_module(force=True)
 class OTXRawFrameDecode:
     """Load and decode frames with given indices."""
 
-    otx_dataset: DatasetEntity
+    otx_dataset: DatumDataset
 
     def __call__(self, results: dict[str, Any]) -> dict[str, Any]:
         """Call function of RawFrameDecode."""
@@ -25,6 +25,9 @@ class OTXRawFrameDecode:
 
     def _decode_from_list(self, results: dict[str, Any]) -> dict:
         """Generate numpy array list from list of DatasetItemEntity."""
+        for data in self.otx_dataset:
+            print(data)
+        breakpoint()
         imgs = [self.otx_dataset[int(index)].media.numpy for index in results["frame_inds"]]
 
         results["imgs"] = imgs

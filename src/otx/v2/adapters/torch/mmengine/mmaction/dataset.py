@@ -53,7 +53,7 @@ def get_default_pipeline(subset: str) -> list:
             {"type": "FormatShape", "input_format": "NCTHW"},
             {"type": "PackActionInputs"},
         ],
-        "val":[
+        "val": [
             {
                 "type": "SampleFrames",
                 "clip_len": 8,
@@ -67,7 +67,7 @@ def get_default_pipeline(subset: str) -> list:
             {"type": "FormatShape", "input_format": "NCTHW"},
             {"type": "PackActionInputs"},
         ],
-        "test":[
+        "test": [
             {
                 "type": "SampleFrames",
                 "clip_len": 8,

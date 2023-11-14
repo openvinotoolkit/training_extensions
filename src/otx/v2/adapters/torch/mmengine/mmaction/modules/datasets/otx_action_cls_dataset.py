@@ -8,13 +8,14 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
+from datumaro.components.dataset import Dataset as DatumDataset
+
 import numpy as np
 from mmaction.datasets.rawframe_dataset import RawframeDataset
 from mmaction.registry import DATASETS
 from mmengine.dataset import Compose
 
 from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets.pipelines import OTXRawFrameDecode
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
 
 
@@ -23,7 +24,7 @@ class OTXActionClsDataset(RawframeDataset):
     """Wrapper that allows using a OTX dataset to train mmaction models."""
     def __init__(
         self,
-        otx_dataset: DatasetEntity,
+        otx_dataset: DatumDataset,
         labels: list[LabelEntity],
         pipeline: Sequence[dict],
         test_mode: bool = False,
@@ -32,7 +33,7 @@ class OTXActionClsDataset(RawframeDataset):
         """OTXActionClassificationDataset.
 
         Args:
-            otx_dataset (DatasetEntity): DatasetEntity that includes the img, annotation, meta.
+            otx_dataset (DatumDataset): Datumarodataset that includes the img, annotation, meta.
             labels (list[LabelEntity]): LabelEntitities that include the label information.
             pipeline (Sequence[dict]): A sequence of data transforms.
             test_mode (bool, optional): Store True when building test or validation dataset. Defaults to False.
@@ -69,22 +70,23 @@ class OTXActionClsDataset(RawframeDataset):
         video_info: dict = {}
         start_index = 0
         for idx, item in enumerate(self.otx_dataset):
-            metadata = item.get_metadata()[0].data
+            video_id = item.attributes.get("video_id")
 
-            if metadata.video_id not in video_info:
-
-                label = int(item.get_roi_labels(self.labels)[0].id) if len(item.get_annotations()) > 0 else None
-                ignored_labels = np.array([self.label_idx[label.id] for label in item.ignored_labels])
-                video_info[metadata.video_id] = {
+            if video_id not in video_info:
+                # Will consider the multi-label case
+                label = item.annotations[0].label
+                ignored_labels = item.attributes.get("ignored_labels", [])
+                video_info[video_id] = {
                     "total_frames": 1,
                     "start_index": idx,
                     "label": label,
                     "ignored_labels": ignored_labels,
                     "modality": self.modality,
+                    "item_ids": [item.id]
                 }
-                start_index = idx
             else:
-                video_info[metadata.video_id]["total_frames"] += 1
-                video_info[metadata.video_id]["start_index"] = start_index
-
+                video_info[video_id]["total_frames"] += 1
+                video_info[video_id]["start_index"] = start_index
+                video_info[video_id]["item_ids"].append(item.id)
+            
         self.video_info.update(video_info)
