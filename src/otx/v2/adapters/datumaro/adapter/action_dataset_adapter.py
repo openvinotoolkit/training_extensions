@@ -153,8 +153,6 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
-        if not hasattr(self, "label_entities"):
-            super().get_label_schema()
         # Detection use index 0 as a background category
         for label_entity in self.label_entities:
             label_entity.id = ID(int(label_entity.id) + 1)
