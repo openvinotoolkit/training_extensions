@@ -13,6 +13,7 @@ from otx.algorithms.common.utils.logger import get_logger
 from copy import deepcopy
 from collections import defaultdict
 from otx.api.entities.scored_label import ScoredLabel
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 
 logger = get_logger()
 
@@ -129,14 +130,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 sim = self.postprocess_masks(sim, image.shape[2:], kwargs["padding"][0], kwargs["original_size"][0]).squeeze()
                 
                 threshold = 0.85 * sim.max() if num_classes > 1 else self.default_threshold_target
-                points_scores, bg_coords = self._point_selection(sim, (h_img, w_img), threshold)
+                points_scores, bg_coords = self._point_selection(sim, kwargs["original_size"][0], threshold)
                 if points_scores is None:
                     # skip if there is no point with score > threshold
                     continue
 
                 for x, y, score in points_scores:
                     is_done = False
-                    for pm in predicted_masks.values():
+                    for pm in predicted_masks[label]:
                         # check if that point is already assigned
                         if pm[int(y), int(x)] > 0:
                             is_done = True
@@ -144,8 +145,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     if is_done:
                         continue
                     
-                    point_coords = torch.cat((torch.tensor([[x, y]], device=bg_coords.device), bg_coords), dim=0)
-                    point_labels = torch.tensor([1] + [0] * len(bg_coords), dtype=torch.int32)
+                    point_coords = torch.cat((torch.tensor([[x, y]], device=bg_coords.device), bg_coords), dim=0).unsqueeze(0)
+                    point_coords = ResizeLongestSide.apply_coords(point_coords, kwargs["original_size"][0], h_img)
+                    point_labels = torch.tensor([1] + [0] * len(bg_coords), dtype=torch.int32).unsqueeze(0)
                     mask = self(
                         image_embeddings=target_embeddings,
                         input_prompts={"points": (point_coords, point_labels)},
@@ -178,28 +180,29 @@ class ZeroShotSegmentAnything(SegmentAnything):
         # masks, scores, logits = self._predict_mask(image_embeddings, input_prompts, images.shape[2:], **kwargs)
         
         # First-step prediction
-        masks, scores, logits = self._predict_mask(image_embeddings, input_prompts, image_shape, multimask_output=False, **kwargs)
+        _, _, logits = self._predict_mask(image_embeddings, input_prompts, image_shape, multimask_output=False, **kwargs)
         best_idx = 0
 
         # Cascaded Post-refinement-1
-        input_prompts.update({"masks": logits[best_idx: best_idx + 1, :, :]})
+        input_prompts.update({"masks": logits[:, best_idx: best_idx + 1, :, :]})
         masks, scores, logits = self._predict_mask(image_embeddings, input_prompts, image_shape, multimask_output=True, **kwargs)
         best_idx = torch.argmax(scores)
 
         # Cascaded Post-refinement-2
-        y, x = torch.nonzero(masks[best_idx])
+        coords = torch.nonzero(masks[0, best_idx])
+        y, x = coords[:,0], coords[:,1]
         x_min = x.min()
         x_max = x.max()
         y_min = y.min()
         y_max = y.max()
         input_prompts.update({
-            "masks": logits[best_idx: best_idx + 1, :, :],
-            "box": torch.tensor([x_min, y_min, x_max, y_max])
+            "masks": logits[:, best_idx: best_idx + 1, :, :],
+            "box": torch.tensor([x_min, y_min, x_max, y_max], device=logits.device)
         })
-        masks, scores, logits = self._predict_mask(image_embeddings, input_prompts, image_shape, multimask_output=True, **kwargs)
+        masks, scores, _ = self._predict_mask(image_embeddings, input_prompts, image_shape, multimask_output=True, **kwargs)
         best_idx = torch.argmax(scores)
         
-        return masks[best_idx]
+        return masks[0, best_idx]
     
     def training_step(self, batch, batch_idx) -> None:
         """Learn"""
