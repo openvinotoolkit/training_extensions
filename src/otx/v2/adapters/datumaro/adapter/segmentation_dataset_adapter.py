@@ -76,8 +76,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
-        if not hasattr(self, "label_entities"):
-            super().get_label_schema()
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
         self.updated_label_id: Dict[int, int] = {}

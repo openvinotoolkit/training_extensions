@@ -118,8 +118,6 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Classification."""
-        if not hasattr(self, "label_entities"):
-            super().get_label_schema()
         dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():

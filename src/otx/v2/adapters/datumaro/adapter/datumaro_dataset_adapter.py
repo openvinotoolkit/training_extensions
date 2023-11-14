@@ -10,8 +10,8 @@ import os
 from abc import abstractmethod
 from copy import deepcopy
 from difflib import get_close_matches
-from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
+from typing import Any, Dict, Union, List
 
 import cv2
 import datumaro
@@ -19,6 +19,7 @@ import numpy as np
 from datumaro.components.annotation import Annotation as DatumAnnotation
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import Categories as DatumCategories
+from datumaro.components.annotation import LabelCategories as DatumLabelCategories
 from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.components.dataset import DatasetSubset as DatumDatasetSubset
 from datumaro.components.dataset import eager_mode
@@ -33,7 +34,6 @@ from otx.v2.api.entities.annotation import (
     AnnotationSceneKind,
     NullAnnotationSceneEntity,
 )
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import LabelEntity
@@ -45,7 +45,7 @@ from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 
-
+LabelInformationType = Dict[str, Union[List[LabelEntity], List[DatumCategories]]]
 class DatumaroDatasetAdapter(BaseDatasetAdapter):
     """Base dataset adapter for all of downstream tasks to use Datumaro.
 
@@ -53,16 +53,16 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
 
     Args:
-        task_type [TaskType]: type of the task
-        train_data_roots (Optional[str]): Path for training data
-        train_ann_files (Optional[str]): Path for training annotation file
-        val_data_roots (Optional[str]): Path for validation data
-        val_ann_files (Optional[str]): Path for validation annotation file
-        test_data_roots (Optional[str]): Path for test data
-        test_ann_files (Optional[str]): Path for test annotation file
-        unlabeled_data_roots (Optional[str]): Path for unlabeled data
-        unlabeled_file_list (Optional[str]): Path of unlabeled file list
-        encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+        task_type (TaskType): type of the task
+        train_data_roots (str | None): Path for training data
+        train_ann_files (str | None): Path for training annotation file
+        val_data_roots (str | None): Path for validation data
+        val_ann_files (str | None): Path for validation annotation file
+        test_data_roots (str | None): Path for test data
+        test_ann_files (str | None): Path for test annotation file
+        unlabeled_data_roots (str | None): Path for unlabeled data
+        unlabeled_file_list (str | None): Path of unlabeled file list
+        encryption_key (str | None): Encryption key to load an encrypted dataset
                                         (only required for DatumaroBinary format)
 
     Since all adapters can be used for training and validation,
@@ -76,16 +76,16 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
     def __init__(
         self,
         task_type: TaskType,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        cache_config: Optional[dict] = None,
-        encryption_key: Optional[str] = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        cache_config: dict | None = None,
+        encryption_key: str | None = None,
         use_mask: bool = False,
         **kwargs,
     ) -> None:
@@ -113,36 +113,39 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             # cache these subsets only
             if subset in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
                 self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
-
-        self.category_items: List[DatumCategories]
-        self.label_groups: List[str]
-        self.label_entities: List[LabelEntity]
+        
+        label_information: LabelInformationType = self._prepare_label_information(self.dataset)
+        
+        self.label_entities: list[LabelEntity] = label_information["label_entities"]  
+        self.category_items: list[DatumCategories] = label_information["category_items"]
+        self.label_groups: list[DatumLabelCategories] = label_information["label_groups"]
+        
         self.label_schema: LabelSchemaEntity
 
     def _import_datasets(
         self,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        encryption_key: Optional[str] = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        encryption_key: str | None = None,
     ) -> dict[Subset, DatumDataset]:
         """Import datasets by using Datumaro.import_from() method.
 
         Args:
-            train_data_roots (Optional[str]): Path for training data
-            train_ann_files (Optional[str]): Path for training annotation files
-            val_data_roots (Optional[str]): Path for validation data
-            val_ann_files (Optional[str]): Path for validation annotation files
-            test_data_roots (Optional[str]): Path for test data
-            test_ann_files (Optional[str]): Path for test annotation files
-            unlabeled_data_roots (Optional[str]): Path for unlabeled data
-            unlabeled_file_list (Optional[str]): Path for unlabeled file list
-            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+            train_data_roots (str | None): Path for training data
+            train_ann_files (str | None): Path for training annotation files
+            val_data_roots (str | None): Path for validation data
+            val_ann_files (str | None): Path for validation annotation files
+            test_data_roots (str | None): Path for test data
+            test_ann_files (str | None): Path for test annotation files
+            unlabeled_data_roots (str | None): Path for unlabeled data
+            unlabeled_file_list (str | None): Path for unlabeled file list
+            encryption_key (str | None): Encryption key to load an encrypted dataset
                                             (DatumaroBinary format)
 
         Returns:
@@ -176,9 +179,9 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
     def _import_dataset(
         self,
-        data_roots: Optional[str],
-        ann_files: Optional[str],
-        encryption_key: Optional[str],
+        data_roots: str | None,
+        ann_files: str | None,
+        encryption_key: str | None,
         mode: Subset,
     ) -> DatumDataset:
         # Find self.data_type and task_type
@@ -219,8 +222,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
         return self._generate_default_label_schema(self.label_entities)
 
     def _get_subset_data(self, subset: str, dataset: DatumDataset) -> DatumDatasetSubset:
@@ -245,7 +246,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
         raise ValueError("Can't find proper dataset.")
 
-    def _detect_dataset_format(self, path: Optional[str]) -> str:
+    def _detect_dataset_format(self, path: str | None) -> str:
         """Detect dataset format (ImageNet, COCO, ...)."""
         return datumaro.Environment().detect_dataset(path=path)
 
@@ -255,7 +256,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         return empty_group
 
-    def _generate_default_label_schema(self, label_entities: List[LabelEntity]) -> LabelSchemaEntity:
+    def _generate_default_label_schema(self, label_entities: list[LabelEntity]) -> LabelSchemaEntity:
         """Generate Default Label Schema for Multi-class Classification, Detecion, Etc."""
         label_schema = LabelSchemaEntity()
         main_group = LabelGroup(
@@ -269,7 +270,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
     def _prepare_label_information(
         self,
         datumaro_dataset: dict[Subset, DatumDataset],
-    ) -> Dict[str, Any]:
+    ) -> LabelInformationType:
         # Get datumaro category information
         if Subset.TRAINING in datumaro_dataset:
             label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumAnnotationType.label, None)
@@ -279,8 +280,8 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             )
         else:
             label_categories_list = datumaro_dataset[Subset.TESTING].categories().get(DatumAnnotationType.label, None)
-        category_items = label_categories_list.items
-        label_groups = label_categories_list.label_groups
+        category_items = label_categories_list.items if label_categories_list is not None else []
+        label_groups = label_categories_list.label_groups if label_categories_list is not None else []
 
         # LabelEntities
         label_entities = [
@@ -300,7 +301,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         """To filter out the abrnormal bbox."""
         return x1 < x2 and y1 < y2
 
-    def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
+    def _select_data_type(self, data_candidates: list[str] | str) -> str:
         """Select specific type among candidates.
 
         Args:
@@ -311,8 +312,8 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         """
         return data_candidates[0]
 
-    def _get_ann_scene_entity(self, shapes: List[Annotation]) -> AnnotationSceneEntity:
-        annotation_scene: Optional[AnnotationSceneEntity] = None
+    def _get_ann_scene_entity(self, shapes: list[Annotation]) -> AnnotationSceneEntity:
+        annotation_scene: AnnotationSceneEntity | None = None
         if len(shapes) == 0:
             annotation_scene = NullAnnotationSceneEntity()
         else:
@@ -412,7 +413,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         for item in copy_dataset:
             if item.id not in file_list:
                 unlabeled_dataset.remove(item.id, item.subset)
-
+    
     @staticmethod
     def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
         """Convert Datumaro media to OTX media."""

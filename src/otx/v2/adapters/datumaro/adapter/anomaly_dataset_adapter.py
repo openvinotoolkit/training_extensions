@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -15,17 +15,17 @@ from datumaro.components.annotation import Bbox as DatumBbox
 from datumaro.components.annotation import Label as DatumLabel
 from datumaro.components.annotation import Mask as DatumMask
 from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.annotation import Categories as DatumCategories
 
 from otx.v2.adapters.torch.modules.utils.mask_to_bbox import mask2bbox
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
-from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
+LabelInformationType = Dict[str, Union[List[LabelEntity], List[DatumCategories]]]
 
 class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from DatumaroDatasetAdapter."""
@@ -72,7 +72,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
             dataset[Subset.TESTING] = DatumDataset.import_from(test_data_roots, format="image_dir")
         return dataset
 
-    def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
+    def _prepare_label_information(self) -> LabelInformationType:
         """Prepare LabelEntity List."""
         normal_label = LabelEntity(id=ID(0), name="Normal", domain=self.domain)
         abnormal_label = LabelEntity(
@@ -81,13 +81,14 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
             domain=self.domain,
             is_anomalous=True,
         )
-        return [normal_label, abnormal_label]
+        return {
+            "category_items": [],
+            "label_groups": [],
+            "label_entities": [normal_label, abnormal_label]
+        }
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
-        normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        self.label_entities = [normal_label, abnormal_label]
-
         return super()._generate_default_label_schema(self.label_entities)
 
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
