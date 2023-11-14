@@ -3,26 +3,18 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+from __future__ import annotations
 
 import os
 import os.path as osp
-from typing import Dict, List, Optional
+from typing import Dict, TYPE_CHECKING
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
-from datumaro.components.annotation import Bbox as DatumBbox
 from datumaro.components.dataset import Dataset as DatumDataset
 
-from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.label_schema import LabelSchemaEntity
-from otx.v2.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.v2.api.entities.subset import Subset
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
-
 
 class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
     """BaseDataset Adpater for Action tasks inherited by DatumaroDatasetAdapter."""

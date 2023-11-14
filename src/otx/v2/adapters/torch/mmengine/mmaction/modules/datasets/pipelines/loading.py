@@ -5,13 +5,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import numpy as np
 from mmaction.registry import TRANSFORMS
 
-from datumaro.components.dataset import Dataset as DatumDataset
-
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
 
 @TRANSFORMS.register_module(force=True)
 class OTXRawFrameDecode:
@@ -25,10 +25,10 @@ class OTXRawFrameDecode:
 
     def _decode_from_list(self, results: dict[str, Any]) -> dict:
         """Generate numpy array list from list of DatasetItemEntity."""
-        for data in self.otx_dataset:
-            print(data)
-        breakpoint()
-        imgs = [self.otx_dataset[int(index)].media.numpy for index in results["frame_inds"]]
+        imgs = []
+        for index in results["frame_inds"]:
+            item_id = results["item_ids"][index]
+            imgs.append(self.otx_dataset.get(id=item_id, subset="annotations").media.data)
 
         results["imgs"] = imgs
         results["original_shape"] = imgs[0].shape[:2]

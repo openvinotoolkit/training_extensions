@@ -9,8 +9,6 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 from datumaro.components.dataset import Dataset as DatumDataset
-
-import numpy as np
 from mmaction.datasets.rawframe_dataset import RawframeDataset
 from mmaction.registry import DATASETS
 from mmengine.dataset import Compose
@@ -82,11 +80,11 @@ class OTXActionClsDataset(RawframeDataset):
                     "label": label,
                     "ignored_labels": ignored_labels,
                     "modality": self.modality,
-                    "item_ids": [item.id]
+                    "item_ids": [item.id],
                 }
             else:
                 video_info[video_id]["total_frames"] += 1
                 video_info[video_id]["start_index"] = start_index
                 video_info[video_id]["item_ids"].append(item.id)
-            
+
         self.video_info.update(video_info)
