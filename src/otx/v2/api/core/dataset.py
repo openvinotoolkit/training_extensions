@@ -315,8 +315,10 @@ class BaseDataset:
             unlabeled_data_roots=self.unlabeled_data_roots,
             unlabeled_file_list=self.unlabeled_file_list,
         )
-        self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
         self.dataset_entity: dict[Subset, DatumDataset] = self.dataset_adapter.get_otx_dataset()
+        # NOTE: sequence matters as label_entities is changed in get_otx_dataset()
+        # I'd suggest not to tamper with labels in get_otx_dataset() as unexpected behavior may occur
+        self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
 
     @abstractmethod
     def subset_dataloader(  # noqa: ANN201

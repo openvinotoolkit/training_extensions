@@ -91,7 +91,8 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                         if self.use_mask:
                             # use masks loaded in datumaro as-is
                             if self.data_type == "common_semantic_segmentation":
-                                if new_label := self.updated_label_id.get(annotation.label, None):
+                                new_label = self.updated_label_id.get(annotation.label, None)
+                                if new_label is not None:
                                     annotation.label = new_label
                                 else:
                                     continue

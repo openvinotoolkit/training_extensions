@@ -5,12 +5,15 @@
 
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
+
 from mmseg.datasets import BaseCDDataset
 
 from otx.v2.adapters.torch.mmengine.mmseg.registry import DATASETS
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
+
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
 
 
 def check_and_convert_to_tuple(pipeline: list[dict] | None) -> list[dict] | None:
@@ -47,7 +50,7 @@ class OTXSegDataset(BaseCDDataset):
 
     def __init__(
         self,
-        otx_dataset: DatasetEntity,
+        otx_dataset: DatumDataset,
         labels: list[LabelEntity],
         empty_label: list | None = None,
         pipeline: list | None = None,
@@ -81,6 +84,9 @@ class OTXSegDataset(BaseCDDataset):
         )
         self.serialize_data = None  # OTX has its own data caching mechanism
         self._fully_initialized = True
+        # TODO (Eugene): item_ids is unnecessary, DatumaroDataset should support indexing
+        # CVS-124394
+        self.item_ids = [(item.id, item.subset) for item in self.otx_dataset]
 
     def __len__(self) -> int:
         """Return the number of items in the dataset.
@@ -91,17 +97,16 @@ class OTXSegDataset(BaseCDDataset):
         return len(self.otx_dataset)
 
     def prepare_data(self, idx: int) -> dict:
+        # TODO (Eugene): this part could be reused from the base class
+        # CVS-124394
         """Get item from dataset."""
         dataset = self.otx_dataset
-        item = dataset[idx]
-        ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
+        item = dataset.get(id=self.item_ids[idx][0], subset=self.item_ids[idx][1])
+        ignored_labels = item.attributes.get("ignored_labels", [])
 
         data_info = {
             "dataset_item": item,
-            "width": item.width,
-            "height": item.height,
             "index": idx,
-            "ann_info": {"labels": self.labels},
             "ignored_labels": ignored_labels,
             "seg_fields": [],
         }

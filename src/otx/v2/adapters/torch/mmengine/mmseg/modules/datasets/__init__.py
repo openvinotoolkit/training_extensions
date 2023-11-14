@@ -4,10 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .otx_datasets import OTXSegDataset
-from .pipeline import LoadAnnotationFromOTXDataset, get_annotation_mmseg_format
+from .pipeline import LoadAnnotationFromOTXDataset
 
 __all__ = [
-    "get_annotation_mmseg_format",
     "OTXSegDataset",
     "LoadAnnotationFromOTXDataset",
 ]
