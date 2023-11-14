@@ -37,6 +37,7 @@ from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
     InferenceCallback,
+    ZeroShotInferenceCallback,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import (
     get_visual_promtping_config,
@@ -510,6 +511,31 @@ class ZeroShotTask(InferenceTask):
 
         # save resulting model
         self.save_model(output_model)
+        
+    def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
+        """Perform inference on a dataset.
+
+        Args:
+            dataset (DatasetEntity): Dataset to infer.
+            inference_parameters (InferenceParameters): Inference parameters.
+
+        Returns:
+            DatasetEntity: Output dataset with predictions.
+        """
+        logger.info("Performing inference on the validation set using the base torch model.")
+        self.model = self.load_model(otx_model=self.task_environment.model)
+        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset, train_type=self.train_type)
+
+        logger.info("Inference Configs '%s'", self.config)
+
+        # Callbacks
+        inference_callback = ZeroShotInferenceCallback(otx_dataset=dataset, label_schema=self.task_environment.label_schema)
+        callbacks = [TQDMProgressBar(), inference_callback]
+
+        self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
+        self.trainer.predict(model=self.model, datamodule=datamodule)
+
+        return inference_callback.otx_dataset
         
     def export(
         self,
