@@ -160,34 +160,13 @@ def get_old_new_img_indices(
     _dataset_label_schema_map = {label.name: label for label in labels}
     new_classes: list[int] = [int(_dataset_label_schema_map[new_class].id) for new_class in new_classes]
     for i, item in enumerate(dataset):
-        labels = get_labels(item)
-        contain_new_class = False
-        for cls in new_classes:
-            if cls in labels:
-                contain_new_class = True
-                break
+        labels = list(set(annotation.label for annotation in item.annotations))
+        contain_new_class = any(cls in labels for cls in new_classes)
         if contain_new_class:
             ids_new.append(i)
         else:
             ids_old.append(i)
     return {"old": ids_old, "new": ids_new}
-
-
-def get_labels(item: DatumDatasetItem):
-    """Return label ids of datumaro item.
-
-        Args:
-            item (DatasetItem): Input item.
-
-        Returns:
-            list[int]: Ids of item.
-    """
-    labels = []
-    for annotation in item.annotations:
-        if annotation.label not in labels:
-            labels.append(annotation.label)
-
-    return labels
 
 
 def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.ndarray:

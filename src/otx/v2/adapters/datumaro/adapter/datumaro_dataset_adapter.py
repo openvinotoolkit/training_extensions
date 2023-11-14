@@ -113,13 +113,13 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             # cache these subsets only
             if subset in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
                 self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
-        
+
         label_information: LabelInformationType = self._prepare_label_information(self.dataset)
-        
-        self.label_entities: list[LabelEntity] = label_information["label_entities"]  
+
+        self.label_entities: list[LabelEntity] = label_information["label_entities"]
         self.category_items: list[DatumCategories] = label_information["category_items"]
         self.label_groups: list[DatumLabelCategories] = label_information["label_groups"]
-        
+
         self.label_schema: LabelSchemaEntity
 
     def _import_datasets(
@@ -222,8 +222,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
         return self._generate_default_label_schema(self.label_entities)
 
     def _get_subset_data(self, subset: str, dataset: DatumDataset) -> DatumDatasetSubset:

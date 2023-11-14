@@ -27,27 +27,26 @@ class DetectionDatasetAdapter(DatumaroDatasetAdapter):
         # Prepare label information
         used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    converted_annotations = []
-                    for annotation in datumaro_item.annotations:
-                        if (
-                            self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
-                            and annotation.type == DatumAnnotationType.polygon
-                        ) and self._is_normal_polygon(annotation):
+            for datumaro_item in subset_data:
+                converted_annotations = []
+                for annotation in datumaro_item.annotations:
+                    if (
+                        self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
+                        and annotation.type == DatumAnnotationType.polygon
+                    ) and self._is_normal_polygon(annotation):
+                        converted_annotations.append(annotation)
+                    if self.task_type is TaskType.DETECTION and annotation.type == DatumAnnotationType.bbox:
+                        if self._is_normal_bbox(
+                            annotation.points[0],
+                            annotation.points[1],
+                            annotation.points[2],
+                            annotation.points[3],
+                        ):
                             converted_annotations.append(annotation)
-                        if self.task_type is TaskType.DETECTION and annotation.type == DatumAnnotationType.bbox:
-                            if self._is_normal_bbox(
-                                annotation.points[0],
-                                annotation.points[1],
-                                annotation.points[2],
-                                annotation.points[3],
-                            ):
-                                converted_annotations.append(annotation)
 
-                        if annotation.label not in used_labels:
-                            used_labels.append(annotation.label)
-                        datumaro_item.annotations = converted_annotations
+                    if annotation.label not in used_labels:
+                        used_labels.append(annotation.label)
+                datumaro_item.annotations = converted_annotations
 
         self.remove_unused_label_entities(used_labels)
         return self.dataset
