@@ -118,9 +118,8 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Classification."""
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
-
+        if not hasattr(self, "label_entities"):
+            super().get_label_schema()
         dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
@@ -156,9 +155,8 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
-
+        if not hasattr(self, "label_entities"):
+            super().get_label_schema()
         # Detection use index 0 as a background category
         for label_entity in self.label_entities:
             label_entity.id = ID(int(label_entity.id) + 1)

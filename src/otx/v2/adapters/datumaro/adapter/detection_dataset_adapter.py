@@ -24,9 +24,8 @@ class DetectionDatasetAdapter(DatumaroDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Detection."""
-        # Prepare label information
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
+        if not hasattr(self, "label_entities"):
+            super().get_label_schema()
         dataset_items: List[DatasetItemEntityWithID] = []
         used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
@@ -59,5 +58,6 @@ class DetectionDatasetAdapter(DatumaroDatasetAdapter):
                             id_=datumaro_item.id,
                         )
                         dataset_items.append(dataset_item)
+        
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)

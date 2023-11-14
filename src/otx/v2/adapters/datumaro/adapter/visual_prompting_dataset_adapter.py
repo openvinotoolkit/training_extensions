@@ -68,6 +68,8 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
 
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
+        if not hasattr(self, "label_entities"):
+            self.get_label_schema()
         used_labels: List[int] = []
         self.updated_label_id: Dict[int, int] = {}
 
