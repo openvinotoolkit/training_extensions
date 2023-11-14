@@ -1,10 +1,10 @@
-furo
-myst-parser
+furo==2023.3.*
+myst-parser==1.0.*
 sphinx==5.3.0
 pydata-sphinx-theme==0.12.0
-sphinx-tabs
-sphinx-panels
+sphinx-tabs==3.4.*
+sphinx-panels==0.4.*
 sphinx-copybutton==0.5.0
-sphinx-autoapi
-sphinxemoji
-nbsphinx
+sphinx-autoapi==2.1.*
+sphinxemoji==0.2.*
+nbsphinx==0.9.*
