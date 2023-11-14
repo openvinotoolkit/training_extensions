@@ -45,7 +45,7 @@ class LoadImageFromOTXDataset:
         if "cache_key" in results:
             return results["cache_key"]
         d_item = results["dataset_item"]
-        results["cache_key"] = d_item.media.path, d_item.annotations[0].id
+        results["cache_key"] = d_item.media.path, d_item.id
         return results["cache_key"]
 
     def _get_memcache_handler(self) -> MemCacheHandlerBase:

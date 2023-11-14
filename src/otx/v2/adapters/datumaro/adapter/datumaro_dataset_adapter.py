@@ -222,6 +222,8 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
+        label_information = self._prepare_label_information(self.dataset)
+        self.label_entities = label_information["label_entities"]
         return self._generate_default_label_schema(self.label_entities)
 
     def _get_subset_data(self, subset: str, dataset: DatumDataset) -> DatumDatasetSubset:

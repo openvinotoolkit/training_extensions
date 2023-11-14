@@ -14,6 +14,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from otx.algorithms.detection.utils import generate_label_schema
+from otx.v2.adapters.datumaro.adapter.detection_dataset_adapter import DetectionDatasetAdapter
 from otx.v2.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
 from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.v2.api.entities.datasets import DatasetEntity
@@ -54,49 +55,22 @@ class MockPipeline:
 
 def generate_det_dataset(
     task_type: TaskType,
-    number_of_images: int = 1,
-    image_width: int = 640,
-    image_height: int = 480
 ) -> tuple(DatasetEntity, list[LabelEntity]):
     """Generate sample detection dataset entity.
 
     Args:
         task_type (TaskType): TaskType of dataset. Type.DETECTION, Type.INSTACNE_SEGMENTATION.
-        number_of_images (int): Length of dataset.
-            Defaults to 1.
-        image_width (int): Width of image.
-            Defaults ot 640.
-        image_height (int): Height of image.
-            Defaults to 480.
 
     Returns:
         DatasetEntity, list[LabelEntity]
     """
-    classes = ("rectangle", "ellipse", "triangle")
-    label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
+    train_data_roots = "./tests/assets/car_tree_bug"
+    val_data_roots = "./tests/assets/car_tree_bug"
+    datumaro_adapter = DetectionDatasetAdapter(task_type, train_data_roots, val_data_roots)
+    labels = datumaro_adapter.get_label_schema().get_groups()[0].labels
+    dataset = datumaro_adapter.get_otx_dataset()[Subset.TRAINING]
 
-    items = []
-    for idx in range(number_of_images):
-        if idx < 30:
-            subset = Subset.VALIDATION
-        else:
-            subset = Subset.TRAINING
-        image_numpy, annos = generate_random_annotated_image(
-            image_width=image_width,
-            image_height=image_height,
-            labels=label_schema.get_labels(False),
-        )
-        # Convert shapes according to task
-        for anno in annos:
-            if task_type == TaskType.DETECTION:
-                anno.shape = ShapeFactory.shape_as_rectangle(anno.shape)
-            elif task_type == TaskType.INSTANCE_SEGMENTATION:
-                anno.shape = ShapeFactory.shape_as_polygon(anno.shape)
-        image = Image(data=image_numpy)
-        annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annos)
-        items.append(DatasetItemEntityWithID(media=image, annotation_scene=annotation_scene, subset=subset))
-    dataset = DatasetEntity(items)
-    return dataset, dataset.get_labels()
+    return dataset, labels
 
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:

@@ -5,14 +5,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
-import numpy as np
 from mmcv.transforms import Compose
 from mmdet.datasets import BaseDetDataset
 from mmdet.registry import DATASETS
 
-from otx.v2.api.entities.datasets import DatasetEntity
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
+
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.utils.data_utils import get_old_new_img_indices
 
@@ -44,10 +45,11 @@ class OTXDetDataset(BaseDetDataset):
             labels (List[LabelEntity]): List of LabelEntity
         """
 
-        def __init__(self, otx_dataset: DatasetEntity, labels: list[LabelEntity]) -> None:
+        def __init__(self, otx_dataset: DatumDataset, labels: list[LabelEntity]) -> None:
             self.otx_dataset = otx_dataset
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
+            self.item_ids = [(item.id, item.subset) for item in self.otx_dataset]
 
         def __len__(self) -> int:
             return len(self.otx_dataset)
@@ -59,15 +61,11 @@ class OTXDetDataset(BaseDetDataset):
             the objects in the image
             """
             dataset = self.otx_dataset
-            item = dataset[index]
-            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
-
-            height, width = item.height, item.width
+            item = dataset.get(id=self.item_ids[index][0], subset=self.item_ids[index][1])
+            ignored_labels = item.attributes.get("ignored_labels", [])
 
             return {
                 "dataset_item": item,
-                "width": width,
-                "height": height,
                 "index": index,
                 "ann_info": {"label_list": self.labels},
                 "ignored_labels": ignored_labels,
@@ -78,7 +76,7 @@ class OTXDetDataset(BaseDetDataset):
 
     def __init__(
         self,
-        otx_dataset: DatasetEntity,
+        otx_dataset: DatumDataset,
         labels: list[LabelEntity],
         pipeline: Sequence[dict],
         test_mode: bool = False,

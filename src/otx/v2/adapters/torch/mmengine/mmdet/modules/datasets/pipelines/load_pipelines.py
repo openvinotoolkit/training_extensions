@@ -6,16 +6,17 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 from mmdet.registry import TRANSFORMS
 from mmdet.structures.mask.structures import PolygonMasks
 
+if TYPE_CHECKING:
+    from datumaro.components.dataset_base import DatasetItem
+
 import otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.pipelines as load_image_base
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.label import Domain, LabelEntity
-from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 
 @TRANSFORMS.register_module()
@@ -84,7 +85,7 @@ class LoadAnnotationFromOTXDataset:
 
     @staticmethod
     def _get_annotation_mmdet_format(
-        dataset_item: DatasetItemEntity,
+        dataset_item: DatasetItem,
         labels: list[LabelEntity],
         domain: Domain,
         min_size: int = -1,
@@ -102,35 +103,28 @@ class LoadAnnotationFromOTXDataset:
         Return
             dict: annotation information dict in mmdet format
         """
-        width, height = dataset_item.width, dataset_item.height
-
         # load annotations for item
         gt_bboxes = []
         gt_labels = []
-        gt_polygons = []
+        gt_polygons: list | None = []
         gt_ann_ids = []
 
-        label_idx = {label.id: i for i, label in enumerate(labels)}
+        width, height = dataset_item.media.data.shape[:2]
+        _labels: list[int] = [int(label.id) for label in labels]
 
-        for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
-            box = ShapeFactory.shape_as_rectangle(annotation.shape)
-
-            if min(box.width * width, box.height * height) < min_size:
+        for box in dataset_item.annotations:
+            if box.label not in _labels:
                 continue
 
-            class_indices = [
-                label_idx[label.id] for label in annotation.get_labels(include_empty=False) if label.domain == domain
-            ]
+            if min(box.w, box.h) < min_size:
+                continue
 
-            n = len(class_indices)
-            gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
-            if domain != Domain.DETECTION:
-                polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-                polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
-                gt_polygons.extend([[polygon] for _ in range(n)])
-            gt_labels.extend(class_indices)
-            item_id = getattr(dataset_item, "id_", None)
-            gt_ann_ids.append((item_id, annotation.id_))
+            gt_bboxes.append(box.points)
+            # Instance segmentation case will be resloved.
+            del domain
+            gt_polygons = None
+            gt_labels.append(box.label)
+            gt_ann_ids.append((dataset_item.id, box.id))
 
         if len(gt_bboxes) > 0:
             ann_info = {

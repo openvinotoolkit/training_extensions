@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List
+from typing import Dict, List
 
+from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 
 from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 
@@ -19,43 +19,35 @@ from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 class DetectionDatasetAdapter(DatumaroDatasetAdapter):
     """Detection adapter inherited from DatumaroDatasetAdapter.
 
-    It converts DatumaroDataset --> DatasetEntity for object detection, and instance segmentation tasks
+    It converts annotataion format of DatumDataset for object detection, and instance segmentation tasks
     """
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Detection."""
-        dataset_items: List[DatasetItemEntityWithID] = []
+    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+        """Convert DatumaroDataset's annotation for Detection."""
+        # Prepare label information
         used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    image = self.datum_media_2_otx_media(datumaro_item.media)
-                    shapes = []
-                    for ann in datumaro_item.annotations:
+                    converted_annotations = []
+                    for annotation in datumaro_item.annotations:
                         if (
                             self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
-                            and ann.type == DatumAnnotationType.polygon
-                        ) and self._is_normal_polygon(ann):
-                            shapes.append(self._get_polygon_entity(ann, image.width, image.height))
-                        if self.task_type is TaskType.DETECTION and ann.type == DatumAnnotationType.bbox:
-                            if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
-                                shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
+                            and annotation.type == DatumAnnotationType.polygon
+                        ) and self._is_normal_polygon(annotation):
+                            converted_annotations.append(annotation)
+                        if self.task_type is TaskType.DETECTION and annotation.type == DatumAnnotationType.bbox:
+                            if self._is_normal_bbox(
+                                annotation.points[0],
+                                annotation.points[1],
+                                annotation.points[2],
+                                annotation.points[3],
+                            ):
+                                converted_annotations.append(annotation)
 
-                        if ann.label not in used_labels:
-                            used_labels.append(ann.label)
+                        if annotation.label not in used_labels:
+                            used_labels.append(annotation.label)
+                        datumaro_item.annotations = converted_annotations
 
-                    if (
-                        len(shapes) > 0
-                        or subset == Subset.UNLABELED
-                        or (subset != Subset.TRAINING and len(datumaro_item.annotations) == 0)
-                    ):
-                        dataset_item = DatasetItemEntityWithID(
-                            image,
-                            self._get_ann_scene_entity(shapes),
-                            subset=subset,
-                            id_=datumaro_item.id,
-                        )
-                        dataset_items.append(dataset_item)
-        
         self.remove_unused_label_entities(used_labels)
-        return DatasetEntity(items=dataset_items)
+        return self.dataset

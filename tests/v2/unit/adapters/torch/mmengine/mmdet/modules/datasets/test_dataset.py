@@ -8,7 +8,7 @@ import pytest
 
 from otx.v2.adapters.torch.mmengine.mmdet.modules.datasets.dataset import OTXDetDataset
 from otx.api.entities.model_template import TaskType
-from tests.unit.algorithms.detection.test_helpers import (
+from tests.v2.unit.adapters.torch.mmengine.mmdet.test_helpers import (
     generate_det_dataset,
 )
 
@@ -38,8 +38,6 @@ class TestOTXDetDataset:
         sample = proxy[0]
         assert len(otx_dataset) == len(proxy)
         assert "dataset_item" in sample
-        assert "width" in sample
-        assert "height" in sample
         assert "index" in sample
         assert "ann_info" in sample
         assert "ignored_labels" in sample
