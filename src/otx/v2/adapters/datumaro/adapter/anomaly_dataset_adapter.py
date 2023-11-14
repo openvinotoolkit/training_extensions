@@ -23,9 +23,7 @@ from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 
-from .datumaro_dataset_adapter import DatumaroDatasetAdapter
-
-LabelInformationType = Dict[str, Union[List[LabelEntity], List[DatumCategories]]]
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter, LabelInformationType
 
 class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from DatumaroDatasetAdapter."""

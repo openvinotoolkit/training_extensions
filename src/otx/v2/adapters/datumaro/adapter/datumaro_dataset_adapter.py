@@ -413,7 +413,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         for item in copy_dataset:
             if item.id not in file_list:
                 unlabeled_dataset.remove(item.id, item.subset)
-    
+
     @staticmethod
     def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
         """Convert Datumaro media to OTX media."""
