@@ -102,12 +102,6 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
 
         return dataset
 
-    def get_label_schema(self) -> LabelSchemaEntity:
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
-        self._generate_default_label_schema(self.label_entities)
-        return super().get_label_schema()
-    
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatasetEntity.
 
@@ -123,7 +117,6 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
                     video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
                     datumaro_item.attributes['video_id'] = video_name
                     datumaro_item.attributes['frame_idx'] = int(frame_idx)
-                    
         return self.dataset
 
 

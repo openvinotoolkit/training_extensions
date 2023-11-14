@@ -62,8 +62,8 @@ class TestOTXDetectionDatasetAdapter:
         )
 
         assert Subset.TESTING in det_test_dataset_adapter.dataset
-        assert isinstance(det_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(det_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(det_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
 
     def test_get_subset_data(self) -> None:
         class MockDataset:
@@ -169,5 +169,5 @@ class TestOTXDetectionDatasetAdapter:
         )
 
         assert Subset.TESTING in instance_seg_test_dataset_adapter.dataset
-        assert isinstance(instance_seg_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(instance_seg_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(instance_seg_test_dataset_adapter.get_otx_dataset(), DatasetEntity)

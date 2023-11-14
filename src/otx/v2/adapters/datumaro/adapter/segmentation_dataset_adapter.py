@@ -76,10 +76,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
-        # Prepare label information
-        label_information = self._prepare_label_information(self.dataset)
-        self.label_entities = label_information["label_entities"]
-
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
         self.updated_label_id: Dict[int, int] = {}
