@@ -5,8 +5,8 @@
 ---
 
 [Key Features](#key-features) •
-[Installation](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/installation.html) •
-[Documentation](https://openvinotoolkit.github.io/training_extensions/stable/index.html) •
+[Installation](https://openvinotoolkit.github.io/training_extensions/1.5.0/guide/get_started/installation.html) •
+[Documentation](https://openvinotoolkit.github.io/training_extensions/1.5.0/index.html) •
 [License](#license)
 
 [![PyPI](https://img.shields.io/pypi/v/otx)](https://pypi.org/project/otx)
@@ -42,7 +42,7 @@ If you are an experienced user, you can configure your own model based on [torch
 
 Furthermore, OpenVINO™ Training Extensions provides automatic configuration for ease of use.
 The framework will analyze your dataset and identify the most suitable model and figure out the best input size setting and other hyper-parameters.
-The development team is continuously extending this [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html) functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
+The development team is continuously extending this [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/auto_configuration.html) functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
 
 ### Key Features
 
@@ -55,7 +55,7 @@ OpenVINO™ Training Extensions supports the following computer vision tasks:
 - **Action recognition** including action classification and detection
 - **Anomaly recognition** tasks including anomaly classification, detection and segmentation
 
-OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/algorithms/index.html):
+OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/1.5.0/guide/explanation/algorithms/index.html):
 
 - **Supervised**, incremental training, which includes class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
@@ -63,11 +63,11 @@ OpenVINO™ Training Extensions supports the [following learning methods](https:
 
 OpenVINO™ Training Extensions provides the following usability features:
 
-- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model with appropriate input size to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model with appropriate input size to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 - [Datumaro](https://openvinotoolkit.github.io/datumaro/stable/index.html) data frontend: OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We are constantly working to extend supported formats to give more freedom of datasets format choice.
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Mixed-precision training** to save GPUs memory and use larger batch sizes
-- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 
 ---
 
@@ -75,7 +75,7 @@ OpenVINO™ Training Extensions provides the following usability features:
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/installation.html).
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/1.5.0/guide/get_started/installation.html).
 
 Note: Python 3.8, 3.9 and 3.10 were tested, along with Ubuntu 18.04, 20.04 and 22.04.
 
@@ -91,7 +91,7 @@ Note: Python 3.8, 3.9 and 3.10 were tested, along with Ubuntu 18.04, 20.04 and 2
 - `otx demo` allows one to apply a trained model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario.
 - `otx explain` runs explain algorithm on the provided data and outputs images with the saliency maps to show how your model makes predictions.
 
-You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/cli_commands.html).
+You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/1.5.0/guide/get_started/cli_commands.html).
 
 ---
 
