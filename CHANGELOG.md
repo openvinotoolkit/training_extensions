@@ -2,18 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## \[v1.5.0 - unreleased\]
+## \[v1.5.0\]
 
 ### New features
 
-- Enable configurable confidence threshold for otx eval and export(<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
+- Enable configurable confidence threshold for otx eval and export (<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
 - Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
-- Enable FeatureVectorHook to support action tasks(<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
+- Enable FeatureVectorHook to support action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
 - Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
-- Add a new feature to configure input size(<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
+- Add a new feature to configure input size (<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
 - Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
-- Add a new object detector Lite-DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
-- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task(<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
+- Add a new object detector Lite-DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
+- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task (<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
 - Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2485>)
 - Add new argument to track resource usage in train command (<https://github.com/openvinotoolkit/training_extensions/pull/2500>)
 - Add Self-SL for semantic segmentation of SegNext families (<https://github.com/openvinotoolkit/training_extensions/pull/2215>)
