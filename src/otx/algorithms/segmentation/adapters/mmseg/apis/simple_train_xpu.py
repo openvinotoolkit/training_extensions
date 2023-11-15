@@ -77,14 +77,28 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
+    iter_per_epoch = len(train_data_loaders[0])
+    max_epochs = cfg.runner.max_epochs
+
     # make lr updater
-    del cfg.lr_config["policy"]
-    lr_updater = ReduceLROnPlateauLrUpdaterHook(optimizer=optimizer, **cfg.lr_config)
+    lr_updater_policy =  cfg.lr_config.pop("policy")
+    if lr_updater_policy == "poly":
+        lr_updater = PolyLrUpdaterHook(
+            optimizer=optimizer,
+            iter_per_epoch=iter_per_epoch,
+            max_epochs=max_epochs,
+            max_iters = max_epochs * iter_per_epoch,
+            **cfg.lr_config
+        )
+    elif lr_updater_policy == "ReduceLROnPlateau":
+        lr_updater = ReduceLROnPlateauLrUpdater(optimizer=optimizer, iter_per_epoch=iter_per_epoch, **cfg.lr_config)
+    else:
+        raise RuntimeError("Unknow lr updater. Use either poly or ReduceLROnPlateau.")
+    lr_updater.before_run()
 
     # Simple training loop
-    iter_per_epoch = len(train_data_loaders[0])
     iter_idx = 0
-    for epoch in range(cfg.runner.max_epochs):
+    for epoch in range(max_epochs):
         # train
         logger.info(f"Epoch #{epoch+1} training starts")
         lr_updater.register_progress(epoch, iter_idx)
@@ -180,7 +194,183 @@ def save_checkpoint(model, optim, out_dir: Union[str, Path], epoch: int, max_kee
                 break
 
 
-class ReduceLROnPlateauLrUpdaterHook:
+class LrUpdater:
+    """LR Scheduler in MMCV.
+
+    Args:
+        by_epoch (bool): LR changes epoch by epoch
+        warmup (string): Type of warmup used. It can be None(use no warmup),
+            'constant', 'linear' or 'exp'
+        warmup_iters (int): The number of iterations or epochs that warmup
+            lasts
+        warmup_ratio (float): LR used at the beginning of warmup equals to
+            warmup_ratio * initial_lr
+        warmup_by_epoch (bool): When warmup_by_epoch == True, warmup_iters
+            means the number of epochs that warmup lasts, otherwise means the
+            number of iteration that warmup lasts
+    """
+
+    def __init__(self,
+                 optimizer,
+                 iter_per_epoch,
+                 by_epoch: bool = True,
+                 warmup: Optional[str] = None,
+                 warmup_iters: int = 0,
+                 warmup_ratio: float = 0.1,
+                 warmup_by_epoch: bool = False) -> None:
+        # validate the "warmup" argument
+        if warmup is not None:
+            if warmup not in ['constant', 'linear', 'exp']:
+                raise ValueError(
+                    f'"{warmup}" is not a supported type for warming up, valid'
+                    ' types are "constant", "linear" and "exp"')
+        if warmup is not None:
+            assert warmup_iters > 0, \
+                '"warmup_iters" must be a positive integer'
+            assert 0 < warmup_ratio <= 1.0, \
+                '"warmup_ratio" must be in range (0,1]'
+
+        self.optimizer = optimizer
+        self.iter_per_epoch = iter_per_epoch
+        self.by_epoch = by_epoch
+        self.warmup = warmup
+        self.warmup_iters: Optional[int] = warmup_iters
+        self.warmup_ratio = warmup_ratio
+        self.warmup_by_epoch = warmup_by_epoch
+
+        if self.warmup_by_epoch:
+            self.warmup_epochs: Optional[int] = self.warmup_iters
+            self.warmup_iters = None
+        else:
+            self.warmup_epochs = None
+
+        self.base_lr: Union[list, dict] = []  # initial lr for all param groups
+        self.regular_lr: list = []  # expected lr if no warming up is performed
+        self.current_iter = None
+        self.current_epoch = None
+        self.current_score = None
+
+    def register_progress(self, epoch, iter):
+        self.current_epoch = epoch
+        self.current_iter = iter
+
+    def register_score(self, score):
+        self.current_score = score
+
+    def _set_lr(self,  lr_groups):
+        if isinstance(self.optimizer, dict):
+            for k, optim in self.optimizer.items():
+                for param_group, lr in zip(optim.param_groups, lr_groups[k]):
+                    param_group['lr'] = lr
+        else:
+            for param_group, lr in zip(self.optimizer.param_groups,
+                                       lr_groups):
+                param_group['lr'] = lr
+
+    def get_lr(self, base_lr: float):
+        raise NotImplementedError
+
+    def get_regular_lr(self):
+        if isinstance(self.optimizer, dict):
+            lr_groups = {}
+            for k in self.optimizer.keys():
+                _lr_group = [
+                    self.get_lr(_base_lr)
+                    for _base_lr in self.base_lr[k]
+                ]
+                lr_groups.update({k: _lr_group})
+
+            return lr_groups
+        else:
+            return [self.get_lr(_base_lr) for _base_lr in self.base_lr]
+
+    def get_warmup_lr(self, cur_iters: int):
+
+        def _get_warmup_lr(cur_iters, regular_lr):
+            if self.warmup == 'constant':
+                warmup_lr = [_lr * self.warmup_ratio for _lr in regular_lr]
+            elif self.warmup == 'linear':
+                k = (1 - cur_iters / self.warmup_iters) * (1 -
+                                                           self.warmup_ratio)
+                warmup_lr = [_lr * (1 - k) for _lr in regular_lr]
+            elif self.warmup == 'exp':
+                k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+                warmup_lr = [_lr * k for _lr in regular_lr]
+            return warmup_lr
+
+        if isinstance(self.regular_lr, dict):
+            lr_groups = {}
+            for key, regular_lr in self.regular_lr.items():
+                lr_groups[key] = _get_warmup_lr(cur_iters, regular_lr)
+            return lr_groups
+        else:
+            return _get_warmup_lr(cur_iters, self.regular_lr)
+
+    def before_run(self):
+        # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,
+        # it will be set according to the optimizer params
+        if isinstance(self.optimizer, dict):
+            self.base_lr = {}
+            for k, optim in self.optimizer.items():
+                for group in optim.param_groups:
+                    group.setdefault('initial_lr', group['lr'])
+                _base_lr = [
+                    group['initial_lr'] for group in optim.param_groups
+                ]
+                self.base_lr.update({k: _base_lr})
+        else:
+            for group in self.optimizer.param_groups:  # type: ignore
+                group.setdefault('initial_lr', group['lr'])
+            self.base_lr = [
+                group['initial_lr']
+                for group in self.optimizer.param_groups  # type: ignore
+            ]
+
+    def before_train_epoch(self):
+        if self.warmup_iters is None:
+            epoch_len = self.iter_per_epoch  # type: ignore
+            self.warmup_iters = self.warmup_epochs * epoch_len  # type: ignore
+
+        if not self.by_epoch:
+            return
+
+        self.regular_lr = self.get_regular_lr()
+        self._set_lr(self.regular_lr)
+
+    def before_train_iter(self):
+        cur_iter = self.current_iter
+        assert isinstance(self.warmup_iters, int)
+        if not self.by_epoch:
+            self.regular_lr = self.get_regular_lr()
+            if self.warmup is None or cur_iter >= self.warmup_iters:
+                self._set_lr(self.regular_lr)
+            else:
+                warmup_lr = self.get_warmup_lr(cur_iter)
+                self._set_lr(warmup_lr)
+        elif self.by_epoch:
+            if self.warmup is None or cur_iter > self.warmup_iters:
+                return
+            elif cur_iter == self.warmup_iters:
+                self._set_lr(self.regular_lr)
+            else:
+                warmup_lr = self.get_warmup_lr(cur_iter)
+                self._set_lr(warmup_lr)
+
+    def get_regular_lr(self):
+        if isinstance(self.optimizer, dict):
+            lr_groups = {}
+            for k in self.optimizer.keys():
+                _lr_group = [
+                    self.get_lr(_base_lr)
+                    for _base_lr in self.base_lr[k]
+                ]
+                lr_groups.update({k: _lr_group})
+
+            return lr_groups
+        else:
+            return [self.get_lr(_base_lr) for _base_lr in self.base_lr]
+
+class ReduceLROnPlateauLrUpdater(LrUpdater):
     """Reduce learning rate when a metric has stopped improving.
 
     Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates.
@@ -215,7 +405,6 @@ class ReduceLROnPlateauLrUpdaterHook:
 
     def __init__(
         self,
-        optimizer,
         min_lr: float,
         interval: int,
         metric: str = "bbox_mAP",
@@ -223,38 +412,9 @@ class ReduceLROnPlateauLrUpdaterHook:
         factor: float = 0.1,
         patience: int = 3,
         iteration_patience: int = 300,
-        by_epoch: bool = True,
-        warmup: Optional[str] = None,
-        warmup_iters: int = 0,
-        warmup_ratio: float = 0.1,
-        warmup_by_epoch: bool = False) -> None:
-        self.optimizer = optimizer
-        # validate the "warmup" argument
-        if warmup is not None:
-            if warmup not in ['constant', 'linear', 'exp']:
-                raise ValueError(
-                    f'"{warmup}" is not a supported type for warming up, valid'
-                    ' types are "constant", "linear" and "exp"')
-        if warmup is not None:
-            assert warmup_iters > 0, \
-                '"warmup_iters" must be a positive integer'
-            assert 0 < warmup_ratio <= 1.0, \
-                '"warmup_ratio" must be in range (0,1]'
-
-        self.by_epoch = by_epoch
-        self.warmup = warmup
-        self.warmup_iters: Optional[int] = warmup_iters
-        self.warmup_ratio = warmup_ratio
-        self.warmup_by_epoch = warmup_by_epoch
-
-        if self.warmup_by_epoch:
-            self.warmup_epochs: Optional[int] = self.warmup_iters
-            self.warmup_iters = None
-        else:
-            self.warmup_epochs = None
-
-        self.base_lr: Union[list, dict] = []  # initial lr for all param groups
-        self.regular_lr: list = []  # expected lr if no warming up is performed
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
         self.interval = interval
         self.min_lr = min_lr
         self.factor = factor
@@ -268,18 +428,8 @@ class ReduceLROnPlateauLrUpdaterHook:
         self.base_lr: List[float] = []
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
-        self.current_iter = None
-        self.current_epoch = None
-        self.current_score = None
 
         self.before_run()
-
-    def register_progress(self, epoch, iter):
-        self.current_epoch = epoch
-        self.current_iter = iter
-
-    def register_score(self, score):
-        self.current_score = score
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
@@ -381,69 +531,26 @@ class ReduceLROnPlateauLrUpdaterHook:
         self.current_lr = -1.0
         self.best_score = self.init_value_map[self.rule]
 
-    def _set_lr(self, lr_groups):
-        if isinstance(self.optimizer, dict):
-            for k, optim in self.optimizer.items():
-                for param_group, lr in zip(optim.param_groups, lr_groups[k]):
-                    param_group['lr'] = lr
+class PolyLrUpdaterHook(LrUpdater):
+
+    def __init__(self,
+                 power: float = 1.,
+                 min_lr: float = 0.,
+                 max_epochs = None,
+                 max_iters = None,
+                 **kwargs) -> None:
+        self.power = power
+        self.min_lr = min_lr
+        self.max_epochs = max_epochs
+        self.max_iters = max_iters
+        super().__init__(**kwargs)
+
+    def get_lr(self, base_lr: float):
+        if self.by_epoch:
+            progress = self.current_epoch
+            max_progress = self.max_epochs
         else:
-            for param_group, lr in zip(self.optimizer.param_groups,
-                                       lr_groups):
-                param_group['lr'] = lr
-
-    def get_regular_lr(self):
-        if isinstance(self.optimizer, dict):
-            lr_groups = {}
-            for k in self.optimizer.keys():
-                _lr_group = [
-                    self.get_lr(_base_lr)
-                    for _base_lr in self.base_lr[k]
-                ]
-                lr_groups.update({k: _lr_group})
-
-            return lr_groups
-        else:
-            return [self.get_lr(_base_lr) for _base_lr in self.base_lr]
-
-    def get_warmup_lr(self, cur_iters: int):
-
-        def _get_warmup_lr(cur_iters, regular_lr):
-            if self.warmup == 'constant':
-                warmup_lr = [_lr * self.warmup_ratio for _lr in regular_lr]
-            elif self.warmup == 'linear':
-                k = (1 - cur_iters / self.warmup_iters) * (1 -
-                                                           self.warmup_ratio)
-                warmup_lr = [_lr * (1 - k) for _lr in regular_lr]
-            elif self.warmup == 'exp':
-                k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
-                warmup_lr = [_lr * k for _lr in regular_lr]
-            return warmup_lr
-
-        if isinstance(self.regular_lr, dict):
-            lr_groups = {}
-            for key, regular_lr in self.regular_lr.items():
-                lr_groups[key] = _get_warmup_lr(cur_iters, regular_lr)
-            return lr_groups
-        else:
-            return _get_warmup_lr(cur_iters, self.regular_lr)
-
-    def before_train_epoch(self):
-        if self.warmup_iters is None:
-            self.warmup_iters = self.warmup_epochs
-
-        if not self.by_epoch:
-            return
-
-        self.regular_lr = self.get_regular_lr()
-        self._set_lr(self.regular_lr)
-
-    def before_train_iter(self):
-        cur_iter = self.current_iter
-        assert isinstance(self.warmup_iters, int)
-        if self.warmup is None or cur_iter > self.warmup_iters:
-            return
-        elif cur_iter == self.warmup_iters:
-            self._set_lr(self.regular_lr)
-        else:
-            warmup_lr = self.get_warmup_lr(cur_iter)
-            self._set_lr(warmup_lr)
+            progress = self.current_iter
+            max_progress = self.max_iters
+        coeff = (1 - progress / max_progress)**self.power
+        return (base_lr - self.min_lr) * coeff + self.min_lr
