@@ -60,15 +60,6 @@ jobs:
         with:
           text: ${{ github.ref }}
           regex: '^refs/heads/releases/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+rc[0-9]+|rc[0-9]+)?$'
-      - name: Upload package distributions to github
-        if: ${{ steps.check-tag.outputs.match != '' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/*
-          tag: ${{ github.ref }}
-          overwrite: true
-          file_glob: true
       - name: Check dist contents
         run: twine check dist/*
       - name: Publish package dist to internal PyPI
