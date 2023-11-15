@@ -23,7 +23,7 @@ train_dataloader:
           poly2mask: false
         resize_cfg:
           type: Resize
-          scale: !!python/tuple [512, 512]
+          scale: !!python/tuple [1024, 1024]
           keep_ratio: false
           downscale_only: true
         enable_memcache: true
@@ -55,12 +55,13 @@ val_dataloader:
       - type: LoadResizeDataFromOTXDataset
         load_ann_cfg:
           type: LoadAnnotationFromOTXDataset
+          domain: instance_segmentation
           with_bbox: true
           with_mask: true
           poly2mask: false
         resize_cfg:
           type: Resize
-          scale: !!python/tuple [512, 512]
+          scale: !!python/tuple [1024, 1024]
           keep_ratio: false
         enable_memcache: true
         eval_mode: true
@@ -83,7 +84,7 @@ test_dataloader:
     pipeline:
       - type: LoadImageFromOTXDataset
       - type: Resize
-        scale: !!python/tuple [512, 512]
+        scale: !!python/tuple [1024, 1024]
         keep_ratio: false
       - type: LoadAnnotationFromOTXDataset
         with_bbox: true
