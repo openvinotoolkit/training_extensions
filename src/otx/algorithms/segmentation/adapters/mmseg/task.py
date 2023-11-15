@@ -40,6 +40,7 @@ from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.apis.train import train_segmentor
+from otx.algorithms.segmentation.adapters.mmseg.apis import train_segmentor_debug
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     IncrSegmentationConfigurer,
     SegmentationConfigurer,
@@ -367,7 +368,8 @@ class MMSegmentationTask(OTXSegmentationTask):
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
-        train_segmentor(
+        # train_segmentor(
+        train_segmentor_debug(
             model,
             datasets,
             cfg,
