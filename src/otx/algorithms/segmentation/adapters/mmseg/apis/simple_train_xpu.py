@@ -18,6 +18,7 @@ from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import get_root_logger
 from mmseg.utils.util_distribution import build_dp, dp_factory
 
+from otx.algorithms.common.adapters.torch.utils.utils import ModelDebugger
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 dp_factory["xpu"] = XPUDataParallel
@@ -96,6 +97,9 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
         raise RuntimeError("Unknow lr updater. Use either poly or ReduceLROnPlateau.")
     lr_updater.before_run()
 
+    # debugging tool to save tensors with weights and gradients
+    model_debugger = ModelDebugger(model, enabled=True, save_dir="./debug_folder", max_iters=2)
+
     # Simple training loop
     iter_idx = 0
     for epoch in range(max_epochs):
@@ -106,18 +110,18 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
         lr_updater.before_train_epoch()
 
         for i, data_batch in enumerate(train_data_loaders[0]):
-            # forward
             lr_updater.register_progress(epoch, iter_idx)
             lr_updater.before_train_iter()
-            train_loss = model(**data_batch, return_loss=True)
-            loss, log_vars = parse_losses(train_loss)
-            iter_idx += 1
 
-            # backward & optimization
-            optimizer.zero_grad()
-            loss.backward()
+            with model_debugger(iter=iter_idx):
+                train_loss = model(**data_batch, return_loss=True)
+                loss, log_vars = parse_losses(train_loss)
+
+                optimizer.zero_grad()
+                loss.backward()
             optimizer.step()
 
+            iter_idx += 1
             if (i+1) % 10 == 0 or i+1 == iter_per_epoch: # progress log
                 logger.info(
                     f"[{i+1} / {iter_per_epoch}] " + \
