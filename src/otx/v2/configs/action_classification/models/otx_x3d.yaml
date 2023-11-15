@@ -14,7 +14,6 @@ model:
     dropout_ratio: 0.5
     fc1_bias: false
     average_clips: prob
-  train_cfg: None
   data_preprocessor:
     type: ActionDataPreprocessor
     mean:
