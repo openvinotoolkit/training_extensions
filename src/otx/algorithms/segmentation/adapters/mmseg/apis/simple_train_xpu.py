@@ -26,8 +26,6 @@ logger = get_root_logger(logging.INFO)
 
 def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
     """Launch segmentor training."""
-    # prepare data loaders
-    dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
@@ -45,31 +43,12 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
         }
     )
 
-    # The specific dataloader settings
+    # prepare train data loaders
+    dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
     train_loader_cfg = {**loader_cfg, **cfg.data.get("train_dataloader", {})}
-    data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
+    train_data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
-    # put model on devices
-    if cfg.device == "xpu":
-        use_autocast = bool(cfg.get("fp16_", False))
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
-        model.to(f"xpu:{cfg.gpu_ids[0]}")
-    else:
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
-
-    # build runner
-    optimizer = build_optimizer(model, cfg.optimizer)
-
-    if cfg.device == "xpu":
-        fp16_cfg = cfg.get("fp16_", None)
-        if fp16_cfg is not None:
-            dtype = torch.bfloat16
-        else:
-            dtype = torch.float32
-        model.train()
-        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
-
-    # register eval hooks
+    # prepare val data loaders
     if validate:
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
         # The specific dataloader settings
@@ -81,26 +60,43 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
         }
         val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
 
-    # make lr updater hook
+
+    # put model on devices
+    if cfg.device == "xpu":
+        is_fp16 = bool(cfg.get("fp16_", False))
+        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=is_fp16)
+        model.to(f"xpu:{cfg.gpu_ids[0]}")
+    else:
+        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
+
+    # build runner
+    optimizer = build_optimizer(model, cfg.optimizer)
+
+    if cfg.device == "xpu":
+        dtype = torch.bfloat16 if is_fp16 else torch.float32
+        model.train()
+        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
+
+    # make lr updater
     del cfg.lr_config["policy"]
     lr_updater = ReduceLROnPlateauLrUpdaterHook(optimizer=optimizer, **cfg.lr_config)
 
-    iter_per_epoch = len(data_loaders[0])
-
     # Simple training loop
+    iter_per_epoch = len(train_data_loaders[0])
     iter_idx = 0
     for epoch in range(cfg.runner.max_epochs):
-        # train step
+        # train
         logger.info(f"Epoch #{epoch+1} training starts")
         lr_updater.register_progress(epoch, iter_idx)
         model.train()
         lr_updater.before_train_epoch()
-        for i, data_batch in enumerate(data_loaders[0]):
+
+        for i, data_batch in enumerate(train_data_loaders[0]):
+            # forward
             lr_updater.register_progress(epoch, iter_idx)
             lr_updater.before_train_iter()
             train_loss = model(**data_batch, return_loss=True)
             loss, log_vars = parse_losses(train_loss)
-            # train_outputs = model.train_step(data_batch, optimizer)
             iter_idx += 1
 
             # backward & optimization
@@ -108,16 +104,16 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
             loss.backward()
             optimizer.step()
 
-            if (i+1) % 10 == 0:
+            if (i+1) % 10 == 0 or i+1 == iter_per_epoch: # progress log
                 logger.info(
                     f"[{i+1} / {iter_per_epoch}] " + \
                     " / ".join([f"{key} : {val}" for key, val in log_vars.items()])
                 )
 
-        # eval step
-        model.eval()
-        logger.info(f"Epoch #{epoch + 1} evaluation starts")
+        # eval
         if validate:
+            model.eval()
+            logger.info(f"Epoch #{epoch + 1} evaluation starts")
             eval_result = single_gpu_test(model, val_dataloader, show=False)
             eval_res = val_dataloader.dataset.evaluate(eval_result, logger=logger, metric='mDice', show_log=True)
             lr_updater.register_score(eval_res["mDice"])
