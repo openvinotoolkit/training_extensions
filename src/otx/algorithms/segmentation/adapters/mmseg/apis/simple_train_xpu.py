@@ -5,6 +5,7 @@
 
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
+from collections import OrderedDict
 from math import inf
 from typing import Union, Optional, List
 from pathlib import Path
@@ -82,7 +83,7 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
 
     # make lr updater hook
     del cfg.lr_config["policy"]
-    lr_hook = ReduceLROnPlateauLrUpdaterHook(optimizer=optimizer, **cfg.lr_config)
+    lr_updater = ReduceLROnPlateauLrUpdaterHook(optimizer=optimizer, **cfg.lr_config)
 
     iter_per_epoch = len(data_loaders[0])
 
@@ -91,24 +92,26 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
     for epoch in range(cfg.runner.max_epochs):
         # train step
         logger.info(f"Epoch #{epoch+1} training starts")
-        lr_hook.register_progress(epoch, iter_idx)
+        lr_updater.register_progress(epoch, iter_idx)
         model.train()
-        lr_hook.before_train_epoch()
+        lr_updater.before_train_epoch()
         for i, data_batch in enumerate(data_loaders[0]):
-            lr_hook.register_progress(epoch, iter_idx)
-            lr_hook.before_train_iter()
-            train_outputs = model.train_step(data_batch, optimizer)
+            lr_updater.register_progress(epoch, iter_idx)
+            lr_updater.before_train_iter()
+            train_loss = model(**data_batch, return_loss=True)
+            loss, log_vars = parse_losses(train_loss)
+            # train_outputs = model.train_step(data_batch, optimizer)
             iter_idx += 1
 
             # backward & optimization
             optimizer.zero_grad()
-            train_outputs['loss'].backward()
+            loss.backward()
             optimizer.step()
 
             if (i+1) % 10 == 0:
                 logger.info(
-                    f"[{i+1:^3}/ {iter_per_epoch:^3} ] " + \
-                    " / ".join([f"{key} : {val}" for key, val in train_outputs['log_vars'].items()])
+                    f"[{i+1} / {iter_per_epoch}] " + \
+                    " / ".join([f"{key} : {val}" for key, val in log_vars.items()])
                 )
 
         # eval step
@@ -117,9 +120,42 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
         if validate:
             eval_result = single_gpu_test(model, val_dataloader, show=False)
             eval_res = val_dataloader.dataset.evaluate(eval_result, logger=logger, metric='mDice', show_log=True)
-            lr_hook.register_score(eval_res["mDice"])
+            lr_updater.register_score(eval_res["mDice"])
 
         save_checkpoint(model, optimizer, cfg.work_dir, epoch+1)
+
+
+def parse_losses(losses):
+    """Parse the raw outputs (losses) of the network.
+
+    Args:
+        losses (dict): Raw output of the network, which usually contain
+            losses and other necessary information.
+
+    Returns:
+        tuple[Tensor, dict]: (loss, log_vars), loss is the loss tensor
+            which may be a weighted sum of all losses, log_vars contains
+            all the variables to be sent to the logger.
+    """
+    log_vars = OrderedDict()
+    for loss_name, loss_value in losses.items():
+        if isinstance(loss_value, torch.Tensor):
+            log_vars[loss_name] = loss_value.mean()
+        elif isinstance(loss_value, list):
+            log_vars[loss_name] = sum(_loss.mean() for _loss in loss_value)
+        else:
+            raise TypeError(
+                f'{loss_name} is not a tensor or list of tensors')
+
+    loss = sum(_value for _key, _value in log_vars.items()
+                if 'loss' in _key)
+
+    log_vars['loss'] = loss
+    for loss_name, loss_value in log_vars.items():
+        # reduce loss when distributed training
+        log_vars[loss_name] = loss_value.item()
+
+    return loss, log_vars
 
 
 def save_checkpoint(model, optim, out_dir: Union[str, Path], epoch: int, max_keep_ckpts=1):
