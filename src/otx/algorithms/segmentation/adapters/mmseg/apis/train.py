@@ -120,7 +120,7 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             eval_res = val_dataloader.dataset.evaluate(eval_result, logger=logger, metric='mDice', show_log=True)
             lr_hook.register_score(eval_res["mDice"])
 
-        save_checkpoint(model, optimizer, cfg.work_dir, epoch)
+        save_checkpoint(model, optimizer, cfg.work_dir, epoch+1)
 
 
 def save_checkpoint(model, optim, out_dir: Union[str, Path], epoch: int, max_keep_ckpts=1):
@@ -136,7 +136,7 @@ def save_checkpoint(model, optim, out_dir: Union[str, Path], epoch: int, max_kee
     dst_file = out_dir / 'latest.pth'
     if dst_file.exists():
         dst_file.unlink()
-    dst_file.symlink_to(filepath)
+    dst_file.symlink_to(filename)
 
     # remove other checkpoints
     if max_keep_ckpts > 0:
