@@ -94,6 +94,11 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
 
         return dataset
 
+
+
+class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
+    """Action classification adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
+    
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatasetEntity.
 
@@ -109,12 +114,31 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
                     video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
                     datumaro_item.attributes['video_id'] = video_name
                     datumaro_item.attributes['frame_idx'] = int(frame_idx)
+                    datumaro_item.attributes['is_empty_frame'] = False
         return self.dataset
-
-
-class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
-    """Action classification adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
 
 
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
+        """Get DatasetEntity.
+
+        Args:
+            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
+
+        Returns:
+            DatasetEntity:
+        """
+        for _, subset_data in self.dataset.items():
+            for _, datumaro_items in subset_data.subsets().items():
+                for datumaro_item in datumaro_items:
+                    is_empty_frame = False
+                    for annotation in datumaro_item.annotations:
+                        if self.label_entities[annotation.label].name == self.EMPTY_FRAME_LABEL_NAME:
+                            is_empty_frame = True
+                    video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
+                    datumaro_item.attributes['video_id'] = video_name
+                    datumaro_item.attributes['frame_idx'] = int(frame_idx.split('_')[-1])
+                    datumaro_item.attributes['is_empty_frame'] = is_empty_frame
+        return self.dataset
+

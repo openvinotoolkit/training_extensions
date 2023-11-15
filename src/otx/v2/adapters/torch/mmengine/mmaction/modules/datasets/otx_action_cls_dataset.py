@@ -6,9 +6,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
-from datumaro.components.dataset import Dataset as DatumDataset
 from mmaction.datasets.rawframe_dataset import RawframeDataset
 from mmaction.registry import DATASETS
 from mmengine.dataset import Compose
@@ -16,6 +15,8 @@ from mmengine.dataset import Compose
 from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets.pipelines import OTXRawFrameDecode
 from otx.v2.api.entities.label import LabelEntity
 
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
 
 @DATASETS.register_module()
 class OTXActionClsDataset(RawframeDataset):

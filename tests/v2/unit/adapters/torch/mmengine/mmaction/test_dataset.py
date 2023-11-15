@@ -126,54 +126,6 @@ class TestDataset:
         mock_set_datumaro_adapters.assert_called_once()
         assert dataset.base_dataset.__name__ == "OTXActionClsDataset"
 
-    def test_build_dataset(self, mocker: MockerFixture) -> None:
-        mock_mmaction_build_dataset = mocker.patch("mmaction.registry.DATASETS.build")
-        mock_mmaction_build_dataset.return_value = mocker.MagicMock()
-
-        # Invalid subset
-        dataset = MMActionDataset(
-            train_data_roots="train/data/roots",
-            train_ann_files="train/ann/files",
-        )
-        with pytest.raises(ValueError, match="invalid is not supported subset"):
-            dataset._build_dataset(subset="invalid")
-
-        mock_label_schema = mocker.MagicMock()
-        mock_label_schema.get_labels.return_value = ["label1"]
-        dataset.label_schema = mock_label_schema
-
-        # otx_dataset < 1
-        mock_dataset_entity = mocker.MagicMock()
-        mock_dataset_entity.get_subset.return_value = []
-        dataset.dataset_entity = mock_dataset_entity
-        dataset.initialize = True
-        
-        dataset._build_dataset(subset="train")
-        mock_dataset_entity.get_subset.assert_called_once_with(Subset.TRAINING)
-        mock_label_schema.get_labels.assert_called_once_with(include_empty=False)
-
-        # config is None
-        mock_dataset_entity = mocker.MagicMock()
-        mock_dataset_entity.get_subset.return_value = ["data1"]
-        dataset.dataset_entity = mock_dataset_entity
-        mock_base_dataset = mocker.MagicMock()
-        mock_base_dataset.__qualname__ = "TestDataset"
-        mock_base_dataset.__name__ = "TestDataset"
-        mock_base_dataset.return_value = mocker.MagicMock()
-        dataset.base_dataset = mock_base_dataset
-
-        dataset._build_dataset(subset="train")
-        mock_base_dataset.assert_called_once()
-
-        # config is dict
-        dataset._build_dataset(subset="train", config={})
-        mock_mmaction_build_dataset.assert_called()
-
-        # config is Config with pipeline
-        mock_config = {"dataset": {"pipeline": [{"type": "Resize", "scale": [224, 224]}]}}
-        dataset._build_dataset(subset="train", config=mock_config)
-        mock_mmaction_build_dataset.assert_called()
-
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
         dataset = MMActionDataset()

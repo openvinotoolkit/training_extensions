@@ -37,7 +37,7 @@ class TestOTXActionClsDataset:
         self.video_len = 3
         self.frame_len = 3
         self.labels = generate_labels(3, Domain.ACTION_CLASSIFICATION)
-        self.otx_dataset = generate_action_cls_otx_dataset(self.video_len, self.frame_len, self.labels)
+        self.otx_dataset = generate_action_cls_otx_dataset(self.video_len, self.frame_len)
         self.pipeline = get_default_pipeline(subset="test")
 
     @e2e_pytest_unit

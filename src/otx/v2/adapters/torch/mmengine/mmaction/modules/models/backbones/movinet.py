@@ -263,13 +263,13 @@ class ConvBlock3D(nn.Module):
         """Forward function of ConvBlock3D."""
         if self.tf_like:
             x = same_padding(
-                x,
-                x.shape[-2],
-                x.shape[-1],
-                self.stride[-2],
-                self.stride[-1],
-                self.kernel_size[-2],
-                self.kernel_size[-1],
+                x=x,
+                in_height=x.shape[-2],
+                in_width=x.shape[-1],
+                stride_h=self.stride[-2],
+                stride_w=self.stride[-1],
+                filter_height=self.kernel_size[-2],
+                filter_width=self.kernel_size[-1],
             )
         shape_with_buffer = x.shape
         if self.conv_type == "2plus1d":
@@ -364,7 +364,13 @@ def _make_divisible(value: float, divisor: int, min_value: int | None = None) ->
 
 
 def same_padding(
-    x: Tensor, in_height: int, in_width: int, stride_h: int, stride_w: int, filter_height: int, filter_width: int,
+    x: Tensor, 
+    in_height: int, 
+    in_width: int, 
+    stride_h: int, 
+    stride_w: int, 
+    filter_height: int, 
+    filter_width: int,
 ) -> Tensor:
     """Applies padding to the input tensor to ensure that the output tensor size is the same as the input tensor size.
 
