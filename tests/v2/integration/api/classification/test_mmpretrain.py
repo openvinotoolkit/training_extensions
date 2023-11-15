@@ -10,6 +10,7 @@ from otx.v2.adapters.torch.mmengine.mmpretrain import Dataset, Engine, get_model
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
+from mmpretrain.utils import register_all_modules
 
 def test_model_api() -> None:
     """
@@ -64,6 +65,7 @@ class TestMMPretrainAPI:
             Returns:
                 None
             """
+            register_all_modules(init_default_scope=True)
             assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=32, val_data_size=32, test_data_size=32)
 
     @pytest.mark.parametrize("model", MODELS)
