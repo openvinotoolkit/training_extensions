@@ -144,15 +144,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
 
         return is_removed
 
-    def get_label_schema(self) -> LabelSchemaEntity:
-        """Get Label Schema."""
-        # TODO (Eugene): move this to base class
-        # CVS-124394
-        if getattr(self, "label_entities", None) is None:
-            label_information = self._prepare_label_information(self.dataset)
-            self.label_entities = label_information["label_entities"]
-        return super()._generate_default_label_schema(self.label_entities)
-
 
 class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     """Self-SL for segmentation adapter inherited from SegmentationDatasetAdapter."""
