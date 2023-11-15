@@ -73,12 +73,12 @@ def get_model(
     """
     model_name = None
     model_cfg = None
-    
+
     if isinstance(model, dict):
         model_cfg = Config(cfg_dict={"model": model}) if not model.get("model") else Config(cfg_dict=model)
     elif isinstance(model, str):
         if Path(model).is_file():
-            config = Config.fromfile(filename=model)
+            model_cfg = Config.fromfile(filename=model)
         else:
             model_name = model
 
@@ -95,7 +95,7 @@ def get_model(
     if model_cfg is None:
         msg = "model must be a string representing the model name, a Config object, or a dictionary."
         raise ValueError(msg)
-    
+
     if num_classes is not None:
         replace_num_classes(model_cfg, num_classes)
 
