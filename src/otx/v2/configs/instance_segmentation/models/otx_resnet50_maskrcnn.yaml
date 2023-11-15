@@ -1,4 +1,5 @@
 model:
+  type: CustomMaskRCNN
   train_cfg:
     rpn:
       assigner:
@@ -72,7 +73,6 @@ model:
       type: BN
       requires_grad: true
     norm_eval: true
-  type: CustomMaskRCNN
   data_preprocessor:
     type: DetDataPreprocessor
     mean: [123.675, 116.28, 103.53]

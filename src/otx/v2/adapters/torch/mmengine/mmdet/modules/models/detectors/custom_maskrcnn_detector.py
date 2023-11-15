@@ -12,6 +12,7 @@ from mmdet.models.detectors.mask_rcnn import MaskRCNN
 from mmdet.registry import MODELS
 
 if TYPE_CHECKING:
+    from mmdet.utils import ConfigType, OptConfigType, OptMultiConfig
     from torch import Tensor, nn
 
 from otx.v2.adapters.torch.modules.utils.task_adapt import map_class_names
@@ -26,15 +27,41 @@ logger = get_logger()
 class CustomMaskRCNN(MaskRCNN):
     """CustomMaskRCNN Class for mmdetection detectors."""
 
-    def __init__(self, *args, task_adapt: dict | None = None, **kwargs) -> None:
+    def __init__(
+        self,
+        backbone: ConfigType,
+        rpn_head: ConfigType,
+        roi_head: ConfigType,
+        train_cfg: OptConfigType,
+        test_cfg: OptConfigType,
+        neck: OptConfigType = None,
+        data_preprocessor: OptConfigType = None,
+        init_cfg: OptMultiConfig = None,
+        task_adapt: dict | None = None,
+    ) -> None:
         """Initialize CustomMaskRCNN.
 
         Args:
-            args: arguments for initializing MaskRCNN.
-            kwargs: kwargs for initializing MaskRCNN.
+            backbone (ConfigType): Config for detector's backbone
+            rpn_head (ConfigType): Config for detector's rpn_head
+            roi_head (ConfigType): Config for detector's roi_head
+            train_cfg (OptConfigType): Hyperparams for training
+            test_cfg (OptConfigType): Hyperparams for testing
+            neck (ConfigType): Config for detector's neck
+            data_preprocessor (ConfigType): Config for detector's data_preprocessor
+            init_cfg (ConfigType): Hyperparams for initialization
             task_adapt (dict | None): Dictionary contains model classses and checkpoint classes information.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            rpn_head=rpn_head,
+            roi_head=roi_head,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            init_cfg=init_cfg,
+            data_preprocessor=data_preprocessor,
+        )
 
         # Hook for class-sensitive weight loading
         if task_adapt:
