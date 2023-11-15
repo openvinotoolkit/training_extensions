@@ -364,12 +364,12 @@ def _make_divisible(value: float, divisor: int, min_value: int | None = None) ->
 
 
 def same_padding(
-    x: Tensor, 
-    in_height: int, 
-    in_width: int, 
-    stride_h: int, 
-    stride_w: int, 
-    filter_height: int, 
+    x: Tensor,
+    in_height: int,
+    in_width: int,
+    stride_h: int,
+    stride_w: int,
+    filter_height: int,
     filter_width: int,
 ) -> Tensor:
     """Applies padding to the input tensor to ensure that the output tensor size is the same as the input tensor size.
