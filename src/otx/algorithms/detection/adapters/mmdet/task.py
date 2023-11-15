@@ -43,6 +43,7 @@ from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.detection.adapters.mmdet.apis.simple_train_xpu import train_detector_debug
 from otx.algorithms.detection.adapters.mmdet.apis.train import (
     monkey_patched_nms,
     monkey_patched_roi_align,
@@ -263,7 +264,7 @@ class MMDetectionTask(OTXDetectionTask):
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
-            train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            train_func = partial(train_detector_debug, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(
                 train_func,
                 cfg,
@@ -272,7 +273,7 @@ class MMDetectionTask(OTXDetectionTask):
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
-        train_detector(
+        train_detector_debug(
             model,
             datasets,
             cfg,

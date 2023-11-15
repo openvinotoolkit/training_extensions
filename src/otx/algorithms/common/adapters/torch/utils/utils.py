@@ -3,8 +3,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Union, Dict
 from pathlib import Path
+from typing import Dict, Union
 
 import torch
 from torch.nn import Module
@@ -52,25 +52,48 @@ def convert_sync_batchnorm(model: Module):
 
 
 class ModelDebugger:
-    def __init__(self, model: torch.nn.Module, save_dir: Union[Path, str]):
+    def __init__(self, model: torch.nn.Module, enabled: bool, save_dir: Union[Path, str], max_iters: int = 1):
+        """Helps to debug model and saves model weights, forward output and gradients during given maximum number of iterations.
+
+        Args:
+            model (Module): model to train and debug.
+            save_dir (Path, str): path where to save ".pth" tensors
+            max_iters (int): maximum number of iterations during which is needed to save the meta info of the model.
+        """
         self._model = model
+        self.enabled = enabled
+        self.iter = 0
+        self.max_iters = max_iters
         self._save_dir = Path(save_dir)
+        self._save_dir.mkdir(parents=True, exist_ok=True)
         self._forward_output = {}
         self._gradient = {}
+        if self.enabled:
+            self._register_hook()
 
     def __enter__(self):
-        torch.save(self._model.state_dict(), self._save_dir / "init_model.pth")
-        self._register_hook()
+        if not self.enabled:
+            return
+        if self.iter < self.max_iters:
+            torch.save(self._model.state_dict(), self._save_dir / f"model_weights_iter_{self.iter}.pth")
+
+    def __call__(self, iter):
+        self.iter = iter
+        return self
 
     def __exit__(self, *args, **kwargs):
-        if self._forward_output:
-            torch.save(self._forward_output, self._save_dir / "forward_output.pth")
-        
-        for name, params in self._model.named_parameters():
-            self.save_tensor_to_dict(self._gradient, name, params.grad)
+        if not self.enabled:
+            return
+        if self.iter < self.max_iters:
+            if self._forward_output:
+                torch.save(self._forward_output, self._save_dir / f"forward_output_per_layer_iter_{self.iter}.pth")
 
-        if self._gradient:
-            torch.save(self._gradient, self._save_dir / "grad.pth")
+            for name, params in self._model.named_parameters():
+                if params.grad is not None:
+                    self.save_tensor_to_dict(self._gradient, name, params.grad)
+
+            if self._gradient:
+                torch.save(self._gradient, self._save_dir / f"gradients_per_layer_iter_{self.iter}.pth")
 
     def _register_hook(self):
         for name, layer in self._model.named_modules():
@@ -78,7 +101,8 @@ class ModelDebugger:
             layer.register_forward_hook(self.save_outputs_hook)
 
     def save_outputs_hook(self, module, _, output):
-        self.save_tensor_to_dict(self._forward_output, module.__name__, output)
+        if self.iter < self.max_iters:
+            self.save_tensor_to_dict(self._forward_output, module.__name__, output)
 
     @staticmethod
     def save_tensor_to_dict(dict_val: Dict, name: str, tensor):
