@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Object Detection &#8212; OpenVINO™ Training Extensions 1.5.0rc0 documentation</title>
+    <title>Object Detection &#8212; OpenVINO™ Training Extensions 1.5.0 documentation</title>
   
   
   
@@ -426,7 +426,9 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../../release_notes/index.html">Releases</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
 </ul>
 
   </div>
@@ -598,6 +600,40 @@ In addition, we added a YOLOX variants to support users’ diverse situations.</
 </table>
 <p><a class="reference external" href="https://arxiv.org/abs/2010.04159">Deformable_DETR</a> is <a class="reference external" href="https://arxiv.org/abs/2005.12872">DETR</a> based model, and it solves slow convergence problem of DETR. <a class="reference external" href="https://arxiv.org/abs/2203.03605">DINO</a> improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO.
 <a class="reference external" href="https://arxiv.org/abs/2303.07335">Lite-DINO</a> is efficient structure for DINO. It reduces FLOPS of transformer’s encoder which takes the highest computational costs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For using experimental templates, you should specify full path of experimental template. Ex) otx build src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml –task detection</p>
+</div>
+<p>In addition to these models, we supports experimental models for object detection. These experimental models will be changed to official models within a few releases.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Template ID</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Complexity (GFLOPs)</p></th>
+<th class="head"><p>Model size (MB)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml">Custom_Object_Detection_Gen3_Deformable_DETR</a></p></td>
+<td><p>Deformable_DETR</p></td>
+<td><p>165</p></td>
+<td><p>157.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml">Custom_Object_Detection_Gen3_DINO</a></p></td>
+<td><p>DINO</p></td>
+<td><p>235</p></td>
+<td><p>182.0</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml">Custom_Object_Detection_Gen3_ResNeXt101_ATSS</a></p></td>
+<td><p>ResNeXt101-ATSS</p></td>
+<td><p>434.75</p></td>
+<td><p>344.0</p></td>
+</tr>
+</tbody>
+</table>
+<p><a class="reference external" href="https://arxiv.org/abs/2010.04159">Deformable_DETR</a> is <a class="reference external" href="https://arxiv.org/abs/2005.12872">DETR</a> based model, and it solves slow convergence problem of DETR. <a class="reference external" href="https://arxiv.org/abs/2203.03605">DINO</a> improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO.
+Although transformer based models show notable performance on various object detection benchmark, CNN based model still show good performance with proper latency.
+Therefore, we added a new experimental CNN based method, ResNeXt101-ATSS. ATSS still shows good performance among <a class="reference external" href="https://arxiv.org/abs/1708.02002">RetinaNet</a> based models. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For using experimental templates, you should specify full path of experimental template. Ex) otx build src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml –task detection</p>

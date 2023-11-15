@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Hierarchical Classification &#8212; OpenVINO™ Training Extensions 1.5.0rc0 documentation</title>
+    <title>Hierarchical Classification &#8212; OpenVINO™ Training Extensions 1.5.0 documentation</title>
   
   
   
@@ -426,7 +426,9 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../../release_notes/index.html">Releases</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
 </ul>
 
   </div>
@@ -477,7 +479,7 @@ obtain its predictions, and after performing the <strong>argmax</strong> operati
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
 <p id="hierarchical-dataset">For hierarchical image classification, we created our custom dataset format that is supported by <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
-An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_h-label">sample</a>.</p>
+An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/datumaro_h-label">sample</a>.</p>
 <p>To use OpenVINO™ Training Extensions with this format, it is required to pass dataset root paths directly to the CLI command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx {train, optimize} --template &lt;model_template&gt; \
                         --train-data-roots &lt;path_to_train_data_root&gt; \
