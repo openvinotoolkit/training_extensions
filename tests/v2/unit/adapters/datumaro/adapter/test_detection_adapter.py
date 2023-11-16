@@ -5,9 +5,10 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from datumaro.components.dataset import Dataset as DatumDataset
+
 from otx.v2.adapters.datumaro.adapter.detection_dataset_adapter import DetectionDatasetAdapter
 from otx.v2.api.entities.annotation import NullAnnotationSceneEntity
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 
@@ -43,27 +44,29 @@ class TestOTXDetectionDatasetAdapter:
         assert Subset.TRAINING in det_train_dataset_adapter.dataset
         assert Subset.VALIDATION in det_train_dataset_adapter.dataset
 
-        det_train_dataset = det_train_dataset_adapter.get_otx_dataset()
         det_train_label_schema = det_train_dataset_adapter.get_label_schema()
-        assert isinstance(det_train_dataset, DatasetEntity)
+        det_train_dataset = det_train_dataset_adapter.get_otx_dataset()[Subset.TRAINING]
+        assert isinstance(det_train_dataset, DatumDataset)
         assert isinstance(det_train_label_schema, LabelSchemaEntity)
-
-        # In the test data, there is a empty_label image.
-        # So, has_empty_label should be True
-        has_empty_label = False
-        for train_data in det_train_dataset:
-            if isinstance(train_data.annotation_scene, NullAnnotationSceneEntity):
-                has_empty_label = True
-        assert has_empty_label is True
 
         det_test_dataset_adapter = DetectionDatasetAdapter(
             task_type=task_type,
             test_data_roots=test_data_roots,
         )
 
+        # In the test data, there is a empty_label image.
+        # So, has_empty_label should be True
+        det_test_label_schema = det_test_dataset_adapter.get_label_schema()
+        det_test_dataset = det_test_dataset_adapter.get_otx_dataset()[Subset.TESTING]
+        has_empty_label = False
+        for test_data in det_test_dataset:
+            if len(test_data.annotations) == 0:
+                has_empty_label = True
+        assert has_empty_label is True
+
         assert Subset.TESTING in det_test_dataset_adapter.dataset
-        assert isinstance(det_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(det_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(det_test_label_schema, LabelSchemaEntity)
+        assert isinstance(det_test_dataset, DatumDataset)
 
     def test_get_subset_data(self) -> None:
         class MockDataset:
@@ -150,24 +153,26 @@ class TestOTXDetectionDatasetAdapter:
         assert Subset.TRAINING in instance_seg_train_dataset_adapter.dataset
         assert Subset.VALIDATION in instance_seg_train_dataset_adapter.dataset
 
-        instance_seg_otx_train_data = instance_seg_train_dataset_adapter.get_otx_dataset()
         instance_seg_otx_train_label_schema = instance_seg_train_dataset_adapter.get_label_schema()
-        assert isinstance(instance_seg_otx_train_data, DatasetEntity)
+        instance_seg_otx_train_data = instance_seg_train_dataset_adapter.get_otx_dataset()[Subset.TRAINING]
+        assert isinstance(instance_seg_otx_train_data, DatumDataset)
         assert isinstance(instance_seg_otx_train_label_schema, LabelSchemaEntity)
-
-        # In the test data, there is a empty_label image.
-        # So, has_empty_label should be True
-        has_empty_label = False
-        for train_data in instance_seg_otx_train_data:
-            if isinstance(train_data.annotation_scene, NullAnnotationSceneEntity):
-                has_empty_label = True
-        assert has_empty_label is True
 
         instance_seg_test_dataset_adapter = DetectionDatasetAdapter(
             task_type=task_type,
             test_data_roots=test_data_roots,
         )
 
+        instance_seg_otx_test_label_schema = instance_seg_test_dataset_adapter.get_label_schema()
+        instance_seg_otx_test_data = instance_seg_test_dataset_adapter.get_otx_dataset()[Subset.TESTING]
+
+        # In the test data, there is a empty_label image.
+        # So, has_empty_label should be True
+        has_empty_label = False
+        for test_data in instance_seg_otx_test_data:
+            if len(test_data.annotations) == 0:
+                has_empty_label = True
+        assert has_empty_label is True
         assert Subset.TESTING in instance_seg_test_dataset_adapter.dataset
-        assert isinstance(instance_seg_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(instance_seg_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(instance_seg_otx_test_data, DatumDataset)
+        assert isinstance(instance_seg_otx_test_label_schema, LabelSchemaEntity)

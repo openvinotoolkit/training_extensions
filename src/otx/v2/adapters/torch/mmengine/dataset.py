@@ -286,12 +286,10 @@ class MMXDataset(BaseTorchDataset):
         elif config is not None:
             _config = config
 
-        dataloader_config = _config.get(f"{subset}_dataloader", None)
-
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self._build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
+        subset_dataset = self._build_dataset(subset=subset, pipeline=subset_pipeline, config=_config)
         if batch_size is None:
             batch_size = _config.get("batch_size", 2)
         if num_workers is None:

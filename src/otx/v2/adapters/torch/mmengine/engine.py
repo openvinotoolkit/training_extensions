@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import shutil
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -73,8 +74,6 @@ class MMXEngine(Engine):
     This class is a subclass of the otx.v2.api.core.engine.Engine class and provides additional functionality
     for training and evaluating PyTorch models using the MMEngine framework.
     """
-    default_config = DEFAULT_CONFIG
-
     def __init__(
         self,
         work_dir: str | Path | None = None,
@@ -85,6 +84,8 @@ class MMXEngine(Engine):
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
         """
         super().__init__(work_dir=work_dir)
+        # Engine's configuration should not affect to DEFAULT_CONFIG
+        self.default_config = deepcopy(DEFAULT_CONFIG)
         self.runner: Runner
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
@@ -580,10 +581,11 @@ class MMXEngine(Engine):
             deploy_config_dict = {}
 
         # CODEBASE_COFIG Update
-        if "codebase_config" not in deploy_config_dict:
-            codebase = codebase if codebase is not None else self.registry.name
-            codebase_config = {"type": codebase, "task": task}
-            deploy_config_dict["codebase_config"] = codebase_config
+        if codebase_config is None:
+            self._update_codebase_config(
+                codebase=codebase, task=task, deploy_config_dict=deploy_config_dict,
+            )
+
         # IR_COFIG Update
         if "ir_config" not in deploy_config_dict:
             ir_config = {
@@ -614,7 +616,10 @@ class MMXEngine(Engine):
         data_preprocessor = self.dumped_config.get("model", {}).get("data_preprocessor", None)
         mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
         std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
-        to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
+        data_preprocessor = self.dumped_config.get("model", {}).get("data_preprocessor", {})
+        mean = data_preprocessor.get("mean", [123.675, 116.28, 103.53])
+        std = data_preprocessor.get("std", [58.395, 57.12, 57.375])
+        to_rgb = data_preprocessor.get("bgr_to_rgb", data_preprocessor.get("to_rgb", False))
         patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
         if not deploy_config_dict.backend_config.get("model_inputs", []):
             if input_shape is None:
@@ -633,3 +638,20 @@ class MMXEngine(Engine):
         )
 
         return exporter.export()
+
+    def _update_codebase_config(
+        self,
+        deploy_config_dict: dict,
+        codebase: str | None = None,
+        task: str | None = None,
+    ) -> None:
+        """Update specific codebase config.
+
+        Args:
+            deploy_config_dict(dict): Config dict for deployment
+            codebase(str): mmX codebase framework
+            task(str): mmdeploy task
+        """
+        codebase = codebase if codebase is not None else self.registry.name
+        codebase_config = {"type": codebase, "task": task}
+        deploy_config_dict["codebase_config"] = codebase_config
