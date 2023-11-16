@@ -10,7 +10,7 @@ from mmcv.parallel import is_module_wrapper
 from mmcv.runner import HOOKS, BaseRunner, Hook
 from mmcv.runner.hooks.ema import EMAHook
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

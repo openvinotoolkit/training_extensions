@@ -29,9 +29,9 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 from otx.algorithms.common.tasks.base_task import OnHookInitialized
 from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

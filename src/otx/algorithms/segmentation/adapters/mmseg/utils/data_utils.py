@@ -25,7 +25,6 @@ import tqdm
 from mmseg.datasets.custom import CustomDataset
 from skimage.segmentation import felzenszwalb
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -38,6 +37,7 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.subset import Subset
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

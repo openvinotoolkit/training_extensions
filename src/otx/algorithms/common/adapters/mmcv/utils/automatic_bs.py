@@ -11,7 +11,7 @@ import numpy as np
 from torch.cuda import is_available as cuda_available
 
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

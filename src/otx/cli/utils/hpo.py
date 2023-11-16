@@ -5,7 +5,6 @@
 #
 
 import json
-import logging
 import os
 import re
 import shutil
@@ -31,8 +30,9 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
 from otx.hpo import HyperBand, TrialStatus, run_hpo_loop
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _check_hpo_enabled_task(task_type):
@@ -713,6 +713,7 @@ class Trainer:
         score_report_callback = self._prepare_score_report_callback(task)
         task.train(dataset=dataset, output_model=output_model, train_parameters=score_report_callback)
         self._finalize_trial(task)
+        self._delete_unused_model_weight()
 
     def _prepare_hyper_parameter(self):
         return create(self._model_template.hyper_parameters.data)
@@ -787,6 +788,21 @@ class Trainer:
 
     def _get_weight_dir_path(self) -> Path:
         return self._hpo_workdir / "weight" / self._hp_config["id"]
+
+    def _delete_unused_model_weight(self):
+        """Delete model weights except best and latest model weight."""
+        for json_file in self._hpo_workdir.rglob("*.json"):
+            if not json_file.stem.isnumeric():
+                continue
+            trial_num = json_file.stem
+            weight_dir = self._hpo_workdir / "weight" / trial_num
+            if not weight_dir.exists():
+                continue
+            latest_model_weight = self._task.get_latest_weight(weight_dir)
+            best_model_weight = get_best_hpo_weight(self._hpo_workdir, trial_num)
+            for each_model_weight in weight_dir.iterdir():
+                if str(each_model_weight) not in [latest_model_weight, best_model_weight]:
+                    each_model_weight.unlink()
 
 
 def run_trial(

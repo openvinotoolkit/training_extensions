@@ -26,5 +26,5 @@ training_targets:
   - CPU
 
 # Computational Complexity
-gigaflops: 487
-size: 374
+gigaflops: 483.71
+size: 362

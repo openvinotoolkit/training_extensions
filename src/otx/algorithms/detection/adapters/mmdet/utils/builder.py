@@ -8,11 +8,11 @@ from typing import Optional, Union
 
 import torch
 from mmcv.runner import load_checkpoint
-from mmcv.utils import Config, ConfigDict, get_logger
+from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms.common.utils.logger import LEVEL
+from otx.utils.logger import LEVEL, get_logger
 
-logger = get_logger("mmdet")
+logger = get_logger()
 
 
 def build_detector(

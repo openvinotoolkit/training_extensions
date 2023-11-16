@@ -10,7 +10,6 @@ import numpy as np
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base.configuration import DetectionConfig
 from otx.api.entities.annotation import (
     Annotation,
@@ -27,6 +26,7 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

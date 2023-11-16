@@ -584,13 +584,40 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
     if task_type == "visual_prompting":
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        xml_paths = [
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
+        ]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_image_encoder.yml",
+            ),
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_decoder.yml",
+            ),
+        ]
     else:
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
-    path_to_ref_data = os.path.join(
-        otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
-    )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
+        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
+            )
+        ]
+
+    for xml_path, path_to_ref_data in zip(xml_paths, paths_to_ref_data):
+        _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):

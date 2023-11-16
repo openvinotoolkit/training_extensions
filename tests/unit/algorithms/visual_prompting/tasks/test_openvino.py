@@ -7,8 +7,8 @@
 from copy import deepcopy
 from typing import Optional
 
+import os
 import numpy as np
-import pathlib
 import pytest
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 import torch
@@ -308,11 +308,11 @@ class TestOpenVINOVisualPromptingTask:
         """Test optimize."""
 
         def patch_save_model(model, output_xml):
+            output_bin = output_xml.replace(".xml", ".bin")
             with open(output_xml, "wb") as f:
-                f.write(b"compressed_image_encoder_xml")
-            bin_path = pathlib.Path(output_xml).parent / pathlib.Path(str(pathlib.Path(output_xml).stem) + ".bin")
-            with open(bin_path, "wb") as f:
-                f.write(b"compressed_image_encoder_bin")
+                f.write(f"compressed_{os.path.basename(output_xml)}".encode("utf-8"))
+            with open(output_bin, "wb") as f:
+                f.write(f"compressed_{os.path.basename(output_bin)}".encode("utf-8"))
 
         dataset = generate_visual_prompting_dataset()
         output_model = deepcopy(self.task_environment.model)
@@ -322,19 +322,27 @@ class TestOpenVINOVisualPromptingTask:
         self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model", autospec=True)
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.serialize", new=patch_save_model)
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
         fake_quantize = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.nncf.quantize", autospec=True)
 
         self.visual_prompting_ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
 
-        fake_quantize.assert_called_once()
-        # check if only image encoder was compressed
+        fake_quantize.assert_called()
+        assert fake_quantize.call_count == 2
+
         assert (
             self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.xml")
-            == b"compressed_image_encoder_xml"
+            == b"compressed_visual_prompting_image_encoder.xml"
         )
         assert (
             self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.bin")
-            == b"compressed_image_encoder_bin"
+            == b"compressed_visual_prompting_image_encoder.bin"
         )
-        assert self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.xml") == b"decoder_xml"
-        assert self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.bin") == b"decoder_bin"
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.xml")
+            == b"compressed_visual_prompting_decoder.xml"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.bin")
+            == b"compressed_visual_prompting_decoder.bin"
+        )
