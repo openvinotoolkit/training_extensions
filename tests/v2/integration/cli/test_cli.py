@@ -37,6 +37,8 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
         "--data.val_data_roots", TASK_CONFIGURATION[task]["val_data_roots"],
         "--max_epochs", "1",
         "--seed", "1234",
+        "--deterministic", "False",  # some torch.Opset does not support deterministic
+
     ]
     rc, stdout, _ = check_run(command_line)
     assert rc == 0

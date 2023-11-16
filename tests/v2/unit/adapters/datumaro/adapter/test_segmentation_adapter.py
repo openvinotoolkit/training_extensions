@@ -13,15 +13,16 @@ from otx.v2.adapters.datumaro.adapter.segmentation_dataset_adapter import (
     SegmentationDatasetAdapter,
     SelfSLSegmentationDatasetAdapter,
 )
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from pytest_mock.plugin import MockerFixture
-
+from datumaro.components.dataset import Dataset as DatumDataset
 from tests.v2.unit.adapters.datumaro.test_helpers import (
     TASK_NAME_TO_DATA_ROOT,
     TASK_NAME_TO_TASK_TYPE,
 )
+
+
 
 if TYPE_CHECKING:
     from otx.v2.api.entities.task_type import TaskType
@@ -65,9 +66,9 @@ class TestOTXSegmentationDatasetAdapter:
     def test_get_otx_dataset(self) -> None:
         assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
         assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
 
 class TestSelfSLSegmentationDatasetAdapter:

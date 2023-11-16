@@ -315,6 +315,8 @@ class BaseDataset:
             unlabeled_data_roots=self.unlabeled_data_roots,
             unlabeled_file_list=self.unlabeled_file_list,
         )
+        # TODO (Eugene): get_otx_dataset still keeps un-used labels or it could remove used labels by accident.
+        # CVS-124394
         self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
         self.dataset_entity: dict[Subset, DatumDataset] = self.dataset_adapter.get_otx_dataset()
 

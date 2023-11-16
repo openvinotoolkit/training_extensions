@@ -1,0 +1,103 @@
+# Basic Information for Config
+framework: mmseg
+
+data:
+  task: Segmentation
+  train_type: Incremental
+
+model:
+  name: otx_lite_hrnet_s_mod2
+
+train_dataloader:
+  batch_size: 8
+  num_workers: 2
+  dataset:
+    type: OTXSegDataset
+    pipeline:
+      - type: LoadImageFromOTXDataset
+      - type: LoadAnnotationFromOTXDataset
+        _scope_: mmseg
+      - type: RandomResize
+        scale: !!python/tuple [544, 544]
+        ratio_range: !!python/tuple [0.5, 2.0]
+      - type: RandomCrop
+        crop_size: !!python/tuple [512, 512]
+        cat_max_ratio: 0.75
+        _scope_: mmseg
+      - type: RandomFlip
+        prob: 0.5
+        direction: horizontal
+      - type: PackSegInputs
+        _scope_: mmseg
+
+val_dataloader:
+  batch_size: 8
+  num_workers: 2
+  dataset:
+    type: OTXSegDataset
+    pipeline:
+      - type: LoadImageFromOTXDataset
+      - type: Resize
+        scale: !!python/tuple [544, 544]
+      - type: LoadAnnotationFromOTXDataset
+        _scope_: mmseg
+      - type: PackSegInputs
+        _scope_: mmseg
+
+test_dataloader:
+  batch_size: 8
+  num_workers: 2
+  dataset:
+    type: OTXSegDataset
+    pipeline:
+      - type: LoadImageFromOTXDataset
+      - type: Resize
+        scale: !!python/tuple [544, 544]
+      - type: LoadAnnotationFromOTXDataset
+        _scope_: mmseg
+      - type: PackSegInputs
+        _scope_: mmseg
+
+# Hooks
+default_hooks:
+  logger:
+    type: LoggerHook
+    interval: 100
+  timer:
+    type: IterTimerHook
+  checkpoint:
+    interval: 1
+    max_keep_ckpts: 1
+    save_best: auto
+    type: CheckpointHook
+custom_hooks:
+  - type: EarlyStoppingHook
+    monitor: accuracy/top1
+    patience: 3
+  - type: AdaptiveRepeatDataHook
+
+param_scheduler:
+  type: CosineAnnealingLR
+
+# visualization configs
+visualizer:
+  name: visualizer
+  type: SegLocalVisualizer
+
+# Optimizer
+optimizer:
+  type: SGD
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0005
+
+# OTX Training Configs
+max_epochs: 10
+max_iters: null
+val_interval: 1
+seed: 1234
+deterministic: false
+precision: float32
+
+val_cfg:
+  type: ValLoop

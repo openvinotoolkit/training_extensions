@@ -5,33 +5,7 @@ data:
   train_type: Incremental
 
 model:
-  type: Recognizer3D
   name: otx_x3d
-  backbone:
-    type: X3D
-    gamma_w: 1
-    gamma_b: 2.25
-    gamma_d: 2.2
-  cls_head:
-    type: X3DHead
-    in_channels: 432
-    num_classes: 400
-    spatial_type: avg
-    dropout_ratio: 0.5
-    fc1_bias: false
-    average_clips: prob
-  data_preprocessor:
-    type: ActionDataPreprocessor
-    mean:
-      - 0.0
-      - 0.0
-      - 0.0
-    std:
-      - 255.0
-      - 255.0
-      - 255.0
-    to_rgb: False
-    format_shape: NCTHW
 
 train_dataloader:
   batch_size: 10
@@ -128,15 +102,11 @@ visualizer:
 # Evaluation
 val_evaluator:
   type: AccMetric
-  metric_list: !!python/tuple
-    - top_k_accuracy
-    - mean_class_accuracy
+  metric_list: top_k_accuracy
 
 test_evaluator:
   type: AccMetric
-  metric_list: !!python/tuple
-    - top_k_accuracy
-    - mean_class_accuracy
+  metric_list: top_k_accuracy
 
 # Optimizer
 optim_wrapper:

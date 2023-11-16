@@ -28,6 +28,7 @@ class OTXActionClsDataset(RawframeDataset):
         pipeline: Sequence[dict],
         test_mode: bool = False,
         modality: str = "RGB",  # [RGB, FLOW(Optical flow)]
+        **kwargs,
     ) -> None:
         """OTXActionClassificationDataset.
 
@@ -41,11 +42,18 @@ class OTXActionClsDataset(RawframeDataset):
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
-        self.CLASSES = [label.name for label in labels]
+        self.classes = [label.name for label in labels]
+        self.num_classes = len(self.classes)
         self.test_mode = test_mode
         self.modality = modality
         self.video_info: dict[str, Any] = {}
         self._update_meta_data()
+        
+        test_mode = kwargs.get("test_mode", False)
+
+        for transform in pipeline:
+            if transform['type'] == "Resize" and isinstance(transform['scale'], list):
+                transform['scale'] = tuple(transform['scale'])
 
         self.pipeline = Compose(pipeline)
         for transform in self.pipeline.transforms:

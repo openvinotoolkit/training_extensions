@@ -1,4 +1,4 @@
-"""OTX adapters.torch.mmengine.mmaction Model APIs."""
+"""OTX adapters.torch.mmengine.mmseg Model APIs."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -12,19 +12,19 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from mmaction.registry import MODELS
+if TYPE_CHECKING:
+    import torch
 
+from otx.v2.adapters.torch.mmengine.mmseg.registry import MODELS
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 from otx.v2.api.utils.logger import get_logger
 
-if TYPE_CHECKING:
-    import torch
-
 logger = get_logger()
 
-MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/action_classification/models"
+MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/segmentation/models"
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
+
 
 def replace_num_classes(d: Config | dict, num_classes: int) -> None:
     """Recursively replaces the value of 'num_classes' in a nested dictionary with the given num_classes.
@@ -46,6 +46,7 @@ def replace_num_classes(d: Config | dict, num_classes: int) -> None:
                 if isinstance(item, dict):
                     replace_num_classes(item, num_classes)
 
+
 def get_model(
     model: str | (Config | dict),
     pretrained: str | bool | None = False,
@@ -57,13 +58,13 @@ def get_model(
     """Return a PyTorch model for training.
 
     Args:
-        model (Union[str, Config, Dict]): The model to use for pretraining. Can be a string representing the model name,
+        model (str | Config | dict): The model to use for pretraining. Can be a string representing the model name,
             a Config object, or a dictionary.
-        pretrained (Union[str, bool], optional): Whether to use a pretrained model. Defaults to False.
-        num_classes (Optional[int], optional): The number of classes in the dataset. Defaults to None.
-                device (str | torch.device | None): Transfer the model to the target
+        pretrained (str | bool | None, optional): Whether to use a pretrained model. Defaults to False.
+        num_classes (int | None, optional): The number of classes in the dataset. Defaults to None.
+        device (str | torch.device | None): Transfer the model to the target
             device. Defaults to None.
-        url_mapping (Tuple[str, str], optional): The mapping of pretrained
+        url_mapping (Tuple[str, str] | None, optional): The mapping of pretrained
             checkpoint link. For example, load checkpoint from a local dir
             instead of download by ``('https://.*/', './checkpoint')``.
             Defaults to None.
@@ -74,7 +75,6 @@ def get_model(
     """
     model_name = None
     model_cfg = None
-
     if isinstance(model, dict):
         model_cfg = Config(cfg_dict={"model": model}) if not model.get("model") else Config(cfg_dict=model)
     elif isinstance(model, str):
@@ -82,8 +82,6 @@ def get_model(
             model_cfg = Config.fromfile(filename=model)
         else:
             model_name = model
-    elif isinstance(model, Config):
-        model_cfg = model
 
     if isinstance(model_cfg, Config) and hasattr(model_cfg, "model") and hasattr(model_cfg.model, "name"):
         model_name = model_cfg.model.pop("name")
@@ -98,9 +96,11 @@ def get_model(
     if model_cfg is None:
         msg = "model must be a string representing the model name, a Config object, or a dictionary."
         raise ValueError(msg)
+
     if num_classes is not None:
         replace_num_classes(model_cfg, num_classes)
 
+    metainfo = None
     if pretrained is True and "load_from" in model_cfg:
         pretrained = model_cfg.load_from
 
@@ -115,14 +115,14 @@ def get_model(
     model_cfg.model.setdefault("data_preprocessor", model_cfg.get("data_preprocessor", None))
 
     if not hasattr(model_cfg, "model"):
-        model_cfg["_scope_"] = "mmaction"
+        model_cfg["_scope_"] = "mmseg"
     else:
-        model_cfg["model"]["_scope_"] = "mmaction"
+        model_cfg["model"]["_scope_"] = "mmseg"
 
     from mmengine.registry import DefaultScope
 
-    with DefaultScope.overwrite_default_scope("mmaction"):
-        action_model = MODELS.build(model_cfg.model)
+    with DefaultScope.overwrite_default_scope("mmseg"):
+        seg_model = MODELS.build(model_cfg.model)
 
     dataset_meta = {}
     if pretrained:
@@ -132,7 +132,7 @@ def get_model(
 
         if url_mapping is not None:
             pretrained = re.sub(url_mapping[0], url_mapping[1], pretrained)
-        checkpoint = load_checkpoint(action_model, pretrained, map_location="cpu")
+        checkpoint = load_checkpoint(seg_model, pretrained, map_location="cpu")
         if "dataset_meta" in checkpoint.get("meta", {}):
             # mmseg 1.x
             dataset_meta = checkpoint["meta"]["dataset_meta"]
@@ -141,35 +141,32 @@ def get_model(
             dataset_meta = {"classes": checkpoint["meta"]["CLASSES"]}
 
     if device is not None:
-        action_model.to(device)
+        seg_model.to(device)
 
-    action_model._dataset_meta = dataset_meta  # noqa: SLF001
-    action_model._config = model_cfg  # noqa: SLF001
-    action_model.eval()
+    seg_model._dataset_meta = dataset_meta  # noqa: SLF001
+    seg_model._config = model_cfg  # noqa: SLF001
+    seg_model._metainfo = metainfo  # noqa: SLF001
+    seg_model.eval()
 
-    source_config = copy.deepcopy(action_model._config.model)  # noqa: SLF001
+    source_config = copy.deepcopy(seg_model._config.model)  # noqa: SLF001
     source_config.name = model_name
-    action_model.config_dict = Config.to_dict(source_config)
-
-    return action_model
+    seg_model.config_dict = Config.to_dict(source_config)
+    return seg_model
 
 
 def list_models(pattern: str | None = None) -> list[str]:
     """Returns a list of available models for training.
 
     Args:
-        pattern (Optional[str]): A string pattern to filter the list of available models. Defaults to None.
-        **kwargs: Additional keyword arguments to pass to the underlying model listing functions.
+        pattern (str | None): A string pattern to filter the list of available models. Defaults to None.
 
     Returns:
-        List[str]: A sorted list of available models for pretraining.
+        list[str]: A sorted list of available models for pretraining.
     """
     model_list: list[str] = []
-    # Add OTX Custom models
     model_list.extend(list(MODEL_CONFIGS.keys()))
 
     if pattern is not None:
         # Always match keys with any postfix.
-        model_list = list(set(fnmatch.filter(model_list, pattern + "*")))
-
+        return sorted(set(fnmatch.filter(model_list, pattern + "*")))
     return sorted(model_list)

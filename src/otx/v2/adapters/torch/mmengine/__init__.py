@@ -11,7 +11,10 @@ DEBUG = None
 try:
     import mmengine
 
+    from . import modules
+
     VERSION = mmengine.__version__
+    __all__ = ["modules"]
 except ImportError as e:
     AVAILABLE = False
     DEBUG = e
