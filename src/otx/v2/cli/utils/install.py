@@ -37,7 +37,9 @@ MM_REQUIREMENTS = [
 
 # NOTE: We might need to move this to a more centralized location and use it for other modules as well.
 # NOTE: In this case, requirement fileanames are to be renamed.
-SUPPORTED_TASKS = ["classification", "anomaly", "visual_prompt", "detection"]
+
+SUPPORTED_TASKS = ["classification", "anomaly", "visual_prompt", "detection", "segmentation"]
+
 
 
 def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:

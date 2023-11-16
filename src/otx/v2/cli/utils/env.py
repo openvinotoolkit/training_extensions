@@ -28,6 +28,13 @@ REQUIRED_ADAPTERS_PER_TASK = {
         "datumaro",
         "torch.lightning",
     ],
+    "segmentation": [
+        "openvino",
+        "datumaro",
+        "torch.mmengine",
+        "torch.mmengine.mmseg",
+        "torch.mmengine.mmdeploy",
+    ],
     "detection": [
         "openvino",
         "datumaro",

@@ -24,6 +24,13 @@ TASK_CONFIGURATION = {
         "sample": "tests/assets/car_tree_bug/images/train/Slide6.PNG",
         "models": ["otx_tiny_vit"],
     },
+    "segmentation": {
+        "train_data_roots": "tests/assets/common_semantic_segmentation_dataset/train",
+        "val_data_roots": "tests/assets/common_semantic_segmentation_dataset/val",
+        "test_data_roots": "tests/assets/common_semantic_segmentation_dataset/val",
+        "sample": "tests/assets/common_semantic_segmentation_dataset/train/images/0001.png",
+        "models": ["otx_lite_hrnet_s_mod2"],
+    },
     "detection": {
         "train_data_roots": "tests/assets/car_tree_bug",
         "val_data_roots": "tests/assets/car_tree_bug",
