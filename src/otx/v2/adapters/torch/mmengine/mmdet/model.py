@@ -22,8 +22,10 @@ logger = get_logger()
 
 DETECTION_MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/detection/models"
 INSTANCE_SEG_MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/instance_segmentation/models"
-MODEL_CONFIGS = get_files_dict(DETECTION_MODEL_CONFIG_PATH) | \
-    get_files_dict(INSTANCE_SEG_MODEL_CONFIG_PATH)
+MODEL_CONFIGS = {
+    **get_files_dict(DETECTION_MODEL_CONFIG_PATH),
+    **get_files_dict(INSTANCE_SEG_MODEL_CONFIG_PATH),
+}
 
 
 def get_model(
