@@ -16,7 +16,7 @@ import yaml
 import dataclasses
 from abc import ABC, abstractmethod
 from copy import copy, deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from itertools import product
@@ -48,6 +48,11 @@ __all__ = [
     "otx_build",
 ]
 
+OUTPUT_FILE_NAME = {
+    "export" : "openvino.bin",
+    "optimize" : "weights.pth",
+}
+
 
 def get_args() -> str:
     """Parses command line arguments."""
@@ -55,19 +60,6 @@ def get_args() -> str:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-f", "--file", type=str, required=True)
     return parser.parse_args()
-
-
-def get_exp_recipe() -> Dict:
-    args = get_args() 
-    file_path = args.file
-
-    if not os.path.exists(file_path):
-        raise RuntimeError(f"{file_path} doesn't exist.")
-
-    with open(file_path, "r") as f:
-        exp_recipe = yaml.safe_load(f)
-
-    return exp_recipe
 
 
 def parse_time_delta_fmt(time_str: str, format: str) -> timedelta:
@@ -431,8 +423,8 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 @dataclass
 class Command:
     """Command dataclass."""
-    command: List[str] = []
-    variable: Dict[str, str] = {}
+    command: List[str] = field(default_factory=list)
+    variable: Dict[str, str] = field(default_factory=dict)
 
 
 class ExpRecipeParser:
@@ -575,11 +567,22 @@ def run_otx_command(command_ins: Command, repeat_idx: int) -> Optional[Dict]:
     workspace = Path("_".join(command_var.values()).replace('/', '_') + f"_repeat_{repeat_idx}")
     command_var["repeat"] = str(repeat_idx)
 
+    previous_cmd_entry = None
     for command in command_ins.command:
         command = command.split()
+        set_arguments_to_cmd(command, "--workspace", str(workspace))
         if command[1] == "train":
-            set_arguments_to_cmd(command, "--workspace", str(workspace), 2)
-            set_arguments_to_cmd(command, "--seed", str(repeat_idx), command.index("train")+1)
+            set_arguments_to_cmd(command, "--seed", str(repeat_idx))
+        elif command[1] == "eval":
+            if previous_cmd_entry in OUTPUT_FILE_NAME:
+                file_path = find_model_path(previous_cmd_entry, workspace)
+                if file_path is None:
+                    continue
+                set_arguments_to_cmd(command, "--load-weights", str(file_path))
+                output_path = str(file_path.parents[1])
+            else:
+                output_path = str(workspace / "outputs" / "latest_trained_model")
+            set_arguments_to_cmd(command, "--output", output_path)
 
         sys.argv = [" ".join(command[:2])] + command[2:]
         try:
@@ -589,11 +592,31 @@ def run_otx_command(command_ins: Command, repeat_idx: int) -> Optional[Dict]:
         
         if command[1] == "train":
             organize_exp_result(workspace, command_var)
+            
+        previous_cmd_entry = command[1]
+
+
+def find_model_path(cmd_entry: str, workspace: Path):
+    output_dir = list((workspace / "outputs").glob(f"*{cmd_entry}"))
+    if not output_dir:
+        print(
+            f"'otx {cmd_entry}' was executed right before, but there is no output directory. "
+            "Evaluating the model is skipped."
+        )
+        return None
+    file_path = list(output_dir[0].rglob(OUTPUT_FILE_NAME[cmd_entry]))
+    if not file_path:
+        print(
+            f"'otx {cmd_entry}' was executed right before, but {OUTPUT_FILE_NAME[cmd_entry]} can't be found. "
+            "Evaluating the model is skipped."
+        )
+        return None
+    return file_path[0]
 
 
 def main():
-    exp_recipe = get_exp_recipe()
-    run_experiment_recipe(exp_recipe)
+    args = get_args()
+    run_experiment_recipe(args.file)
 
     return dict(retcode=0)
 
