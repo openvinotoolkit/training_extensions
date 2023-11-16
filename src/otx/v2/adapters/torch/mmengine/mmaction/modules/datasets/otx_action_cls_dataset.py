@@ -48,7 +48,7 @@ class OTXActionClsDataset(RawframeDataset):
         self.modality = modality
         self.video_info: dict[str, Any] = {}
         self._update_meta_data()
-        
+
         test_mode = kwargs.get("test_mode", False)
 
         for transform in pipeline:
