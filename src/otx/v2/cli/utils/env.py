@@ -34,6 +34,12 @@ REQUIRED_ADAPTERS_PER_TASK = {
         "torch.mmengine",
         "torch.mmengine.mmseg",
         "torch.mmengine.mmdeploy",
+    "detection": [
+        "openvino",
+        "datumaro",
+        "torch.mmengine",
+        "torch.mmengine.mmdet",
+        "torch.mmengine.mmdeploy",
     ],
 }
 
@@ -151,7 +157,7 @@ def check_torch_cuda() -> tuple[float | None, bool]:
     Returns:
         tuple[Optional[float], bool]: The version of torch and the value of cuda.is_available().
     """
-    has_torch = importlib.util.find_spec("torch")
+    has_torch = importlib.util.find_spec("torch")  # type: ignore[attr-defined]
     if not has_torch:
         return None, False
     torch_module = importlib.import_module("torch")

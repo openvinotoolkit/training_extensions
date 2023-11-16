@@ -107,7 +107,6 @@ visual_prompt = [
     "timm==0.6.12",
     "scikit-image",
 ]
-
 segmentation = [
     "mmsegmentation==1.2.1",
     "mmdeploy",
@@ -118,6 +117,15 @@ segmentation = [
     "ftfy==6.1.1",
     "regex==2023.10.3",
     "scikit-image==0.21.0",
+]
+detection = [
+    "mmpretrain==1.0.*",
+    "mmdet==3.1.0",
+    "mmdeploy",
+    "timm==0.6.12",
+    "pytorchcv",
+    "yapf<0.40.0",
+    "scikit-image",
 ]
 
 [project.scripts]

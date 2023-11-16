@@ -14,4 +14,5 @@ ADAPTERS = [
     "torch.mmengine.mmdeploy",
     "torch.mmengine.mmpretrain",
     "torch.mmengine.mmseg",
+    "torch.mmengine.mmdet",
 ]

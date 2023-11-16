@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-
 TASK_CONFIGURATION = {
     "classification": {
         "train_data_roots": "tests/assets/classification_dataset_class_incremental",
@@ -32,4 +31,11 @@ TASK_CONFIGURATION = {
         "sample": "tests/assets/common_semantic_segmentation_dataset/train/images/0001.png",
         "models": ["otx_lite_hrnet_s_mod2"],
     },
+    "detection": {
+        "train_data_roots": "tests/assets/car_tree_bug",
+        "val_data_roots": "tests/assets/car_tree_bug",
+        "test_data_roots": "tests/assets/car_tree_bug",
+        "sample": "tests/assets/car_tree_bug/images/val/Slide5.PNG",
+        "models": ["otx_mobilenetv2-atss"],
+    }
 }

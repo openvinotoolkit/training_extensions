@@ -5,9 +5,12 @@
 from __future__ import annotations
 
 from tempfile import TemporaryDirectory
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from mmcv.transforms import BaseTransform
 
 from otx.v2.adapters.datumaro.caching.mem_cache_handler import (
     MemCacheHandlerBase,
@@ -42,7 +45,7 @@ class LoadImageFromOTXDataset:
         if "cache_key" in results:
             return results["cache_key"]
         d_item = results["dataset_item"]
-        results["cache_key"] = d_item.media.path, d_item.annotations[0].id
+        results["cache_key"] = d_item.media.path, d_item.id
         return results["cache_key"]
 
     def _get_memcache_handler(self) -> MemCacheHandlerBase:
@@ -116,8 +119,10 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         self,
         load_ann_cfg: dict | None = None,
         resize_cfg: dict | None = None,
+        eval_mode: bool = False,
         **kwargs,
     ):
+        self.eval_mode = eval_mode
         self._enable_outer_memcache = kwargs.get("enable_memcache", True)
         kwargs["enable_memcache"] = False  # will use outer cache
         super().__init__(**kwargs)
@@ -125,18 +130,21 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         self._downscale_only = resize_cfg.pop("downscale_only", False) if resize_cfg else False
         self._resize_op = self._create_resize_op(resize_cfg)
         if self._resize_op is not None and resize_cfg is not None:
-            self._resize_shape = resize_cfg.get("size", resize_cfg.get("img_scale"))
+            self._resize_shape = resize_cfg.get("scale", None)
             if isinstance(self._resize_shape, int):
                 self._resize_shape = (self._resize_shape, self._resize_shape)
+            if isinstance(self._resize_shape, list):
+                self._resize_shape = tuple(self._resize_shape)
             assert isinstance(self._resize_shape, tuple), f"Random scale is not supported by {self.__class__.__name__}"
+            self._resize_op.scale = self._resize_shape
         else:
             self._resize_shape = None
 
-    def _create_load_ann_op(self, cfg: dict | None) -> Callable:
+    def _create_load_ann_op(self, cfg: dict | None = None) -> BaseTransform | None:
         """Creates annotation loading operation."""
         raise NotImplementedError
 
-    def _create_resize_op(self, cfg: dict | None) -> Callable:
+    def _create_resize_op(self, cfg: dict | None = None) -> BaseTransform | None:
         """Creates resize operation."""
         raise NotImplementedError
 
@@ -198,11 +206,18 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         cached_results = self._load_cache(_results)
         if cached_results:
             return cached_results
-        _results = self._load_img(_results)
-        _results = self._load_ann_if_any(_results)
+        if self.eval_mode:
+            _results = self._load_img(_results)
+            _results = self._resize_img_ann_if_any(_results)
+            _results = self._load_ann_if_any(_results)
+        else:
+            _results = self._load_img(_results)
+            _results = self._load_ann_if_any(_results)
+            _results = self._resize_img_ann_if_any(_results)
+
+        # Common post-processing steps
         if _results is not None:
             _results.pop("dataset_item", None)
-        _results = self._resize_img_ann_if_any(_results)
         if isinstance(_results, dict):
             self._save_cache(_results)
         return _results

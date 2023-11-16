@@ -38,6 +38,7 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
         "--max_epochs", "1",
         "--seed", "1234",
         "--deterministic", "False",  # some torch.Opset does not support deterministic
+
     ]
     rc, stdout, _ = check_run(command_line)
     assert rc == 0

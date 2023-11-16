@@ -21,6 +21,8 @@ from typing import Dict, List, Optional, Union
 
 import cv2
 import numpy as np
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.dataset_base import DatasetItem as DatumDatasetItem
 
 from otx.v2.api.entities.annotation import NullAnnotationSceneEntity
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
@@ -145,7 +147,7 @@ def get_cls_img_indices(labels: List[LabelEntity], dataset: DatasetEntity) -> Di
 def get_old_new_img_indices(
     labels: List[LabelEntity],
     new_classes: List[str],
-    dataset: DatasetEntity,
+    dataset: DatumDataset,
 ) -> Dict[str, list]:
     """Function for getting old & new indices of dataset.
 
@@ -156,9 +158,11 @@ def get_old_new_img_indices(
     """
     ids_old, ids_new = [], []
     _dataset_label_schema_map = {label.name: label for label in labels}
-    new_classes = [_dataset_label_schema_map[new_class] for new_class in new_classes]
+    new_classes: list[int] = [int(_dataset_label_schema_map[new_class].id) for new_class in new_classes]
     for i, item in enumerate(dataset):
-        if item.annotation_scene.contains_any(new_classes):
+        labels = list(set(annotation.label for annotation in item.annotations))
+        contain_new_class = any(cls in labels for cls in new_classes)
+        if contain_new_class:
             ids_new.append(i)
         else:
             ids_old.append(i)
@@ -228,7 +232,7 @@ def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.nda
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if img.shape[-1] == 4:
             img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
-    
+
     if to_float32:
         img = img.astype(np.float32)
 
