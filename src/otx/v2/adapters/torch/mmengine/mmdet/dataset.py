@@ -20,25 +20,17 @@ from otx.v2.api.utils.type_utils import str_to_task_type
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-<<<<<<< HEAD
-def get_default_pipeline(subset: str = "train", is_semisl: bool = False) -> list:
-=======
 def get_default_pipeline(
     subset: str = "train",
-    semisl: bool = False,
+    is_semisl: bool = False,
     task: TaskType | str = TaskType.DETECTION,
 ) -> list:
->>>>>>> 16577551b (Update for api tests)
     """Returns the default pipeline for training a model.
 
     Args:
         subset (str): Subset of default pipeline
-<<<<<<< HEAD
         is_semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
-=======
-        semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
         task (TaskType, str): Task type of the dataset. Detection or Instance segmentation.
->>>>>>> 16577551b (Update for api tests)
 
     Returns:
         list: The default pipeline as a dictionary or list, depending on whether `is_semisl` is True or False.

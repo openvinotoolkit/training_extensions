@@ -240,7 +240,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
             cfg=rcnn_train_cfg,
         )
 
-        valid_label_mask = self.get_valid_label_mask(img_metas=batch_img_metas, all_labels=labels, use_bg=True)
+        valid_label_mask = self.get_valid_label_mask(img_metas=batch_img_metas, all_labels=labels, use_background=True)
         valid_label_mask = [i.to(labels[0].device) for i in valid_label_mask]
 
         if concat:
@@ -275,7 +275,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
                     label_weights,
                     avg_factor=avg_factor,
                     reduction_override=reduction_override,
-                    use_bg=True,
+                    use_background=True,
                     valid_label_mask=valid_label_mask,
                 )
             else:

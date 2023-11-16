@@ -9,6 +9,7 @@ import copy
 from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
+from datumaro.components.annotation import Polygon
 from mmdet.registry import TRANSFORMS
 from mmdet.structures.mask.structures import PolygonMasks
 
@@ -102,32 +103,42 @@ class LoadAnnotationFromOTXDataset:
             dict: annotation information dict in mmdet format
         """
         # load annotations for item
-        gt_bboxes = []
-        gt_labels = []
-        gt_polygons: list | None = []
-        gt_ann_ids = []
+        gt_bboxes: list[list[float]] = []
+        gt_labels: list[int] = []
+        gt_polygons: list[list[np.array]] = []
+        gt_ann_ids: list[tuple[str, int]] = []
 
-        width, height = dataset_item.media.data.shape[:2]
+        image_height, image_width = dataset_item.media.data.shape[:2]
         _labels: list[int] = [int(label.id) for label in labels]
 
-        for box in dataset_item.annotations:
-            if box.label not in _labels:
+        for annotation in dataset_item.annotations:
+            if annotation.label not in _labels:
                 continue
 
-            if min(box.w, box.h) < min_size:
+            if isinstance(annotation, Polygon):
+                gt_polygons.append([np.asarray(annotation.points)])
+                bbox = annotation.get_bbox()
+                annotation_width = bbox[2]
+                annotation_height = bbox[3]
+                # [x1, y1, w, h] -> [x1, y1, x2, y2]
+                bbox = [bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]]
+            else:
+                bbox = annotation.points
+                annotation_width = annotation.w
+                annotation_height = annotation.h
+
+            if min(annotation_width, annotation_height) < min_size:
                 continue
 
-            gt_bboxes.append(box.points)
-            # Instance segmentation case will be resloved.
-            gt_polygons = None
-            gt_labels.append(box.label)
-            gt_ann_ids.append((dataset_item.id, box.id))
+            gt_bboxes.append(bbox)
+            gt_labels.append(annotation.label)
+            gt_ann_ids.append((dataset_item.id, annotation.id))
 
         if len(gt_bboxes) > 0:
             ann_info = {
                 "bboxes": np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
                 "labels": np.array(gt_labels, dtype=int),
-                "masks": PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
+                "masks": PolygonMasks(gt_polygons, height=image_height, width=image_width) if gt_polygons else [],
                 "ann_ids": gt_ann_ids,
             }
         else:
