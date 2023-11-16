@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from itertools import product
-from typing import Union, Dict, List, Any
+from typing import Union, Dict, List, Any, Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -35,7 +35,6 @@ from otx.cli.tools.export import main as otx_export
 from otx.cli.tools.find import main as otx_find
 from otx.cli.tools.optimize import main as otx_optimize
 from otx.cli.tools.train import main as otx_train
-from otx.cli.tools.run import main as otx_run
 
 __all__ = [
     "otx_demo",
@@ -47,7 +46,6 @@ __all__ = [
     "otx_train",
     "otx_optimize",
     "otx_build",
-    "otx_run",
 ]
 
 
@@ -430,69 +428,107 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 
     draw_rich_table(headers, rows, "Experiment Summary")
 
+@dataclass
+class Command:
+    """Command dataclass."""
+    command: List[str] = []
+    variable: Dict[str, str] = {}
 
-def replace_var_in_str(
-    variable: Dict[str, Union[str, List[str]]],
-    target: str,
-    keep_variable: bool = False,
-) -> Union[str, List[str], Dict[str, str]]:
-    replace_pat = re.compile(r"\$\{(\w+)\}")
-    key_found = [x for x in set(replace_pat.findall(target)) if x in variable]
-    if not key_found:
+
+class ExpRecipeParser:
+    def __init__(self, recipe_file: Union[str, Path]):
+        if not os.path.exists(recipe_file):
+            raise RuntimeError(f"{recipe_file} doesn't exist.")
+
+        with open(recipe_file, "r") as f:
+            self._exp_recipe: Dict = yaml.safe_load(f)
+        constants = self._exp_recipe.get("constants", {})
+        self._cvt_number_to_str(constants)
+        self._constants: Dict[str, str] = constants
+        self._variables: Optional[Dict[str, str]] = None
+        self._commands: Optional[List[Command]] = None
+        self.output_path: Path = Path(self._exp_recipe.get(
+            "output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        ))
+        self.repeat: int = self._exp_recipe.get("repeat", 1)
+        self._replace_pat = re.compile(r"\$\{(\w+)\}")
+
+    @property
+    def constants(self) -> Dict[str, str]:
+        return self._constants
+
+    @property
+    def variables(self) -> Dict[str, Union[str, List[str]]]:
+        if self._variables is None:
+            variables = self._exp_recipe.get("variables", {})
+            self._cvt_number_to_str(variables)
+            self._variables = self._replace_var_in_target(self.constants, variables)
+        return self._variables
+
+    @property
+    def commands(self) -> List[Command]:
+        if self._commands is None:
+            command = self._exp_recipe.get("command", [])
+            if isinstance(command, str):
+                command = [command]
+            command = self._replace_var_in_target(self.constants, command)
+            var_combinations = self._product_all_cases(self.variables, command)
+            if not var_combinations:
+                self._commands = [Command(command=command)]
+            
+            command_arr = []
+            for var_combination in var_combinations:
+                command_arr.append(Command(self._replace_var_in_target(var_combination, command), var_combination))
+            self._commands = command_arr
+        return self._commands
+
+    def _product_all_cases(
+        self,
+        variable: Dict[str, Union[str, List[str]]],
+        target_str: Union[str, List[str]],
+    ) -> List[Dict[str, str]]:
+        if isinstance(target_str, str):
+            target_str = [target_str]
+        found_keys = []
+        for each_str in target_str:
+            found_keys.extend([x for x in set(self._replace_pat.findall(each_str)) if x in variable])
+        if not found_keys:
+            return []
+
+        values_of_found_key = []
+        for key in found_keys:
+            if isinstance(variable[key], list):
+                values_of_found_key.append(variable[key])
+            else:
+                values_of_found_key.append([variable[key]])
+
+        all_cases = []
+        for value_of_key_found in product(*values_of_found_key):
+            all_cases.append(dict(zip(found_keys, value_of_key_found)))
+
+        return all_cases
+
+    def _replace_var_in_target(
+        self,
+        variable: Dict[str, str],
+        target: Union[str, List, Dict],
+    ) -> Union[str, List, Dict]:
+        if isinstance(target, str):
+            for key, val in variable.items():
+                target = target.replace(f"${{{key}}}", val)
+        elif isinstance(target, list):
+            for i in range(len(target)):
+                target[i] = self._replace_var_in_target(variable, target[i])
+        elif isinstance(target, dict):
+            for key in target.keys():
+                target[key] = self._replace_var_in_target(variable, target[key])
+        else:
+            raise TypeError(f"{type(target)} isn't supported type. Please use str, list or dict type.")
+
         return target
 
-    ret = []
-    values_of_key_found = []
-    for key in key_found:
-        if isinstance(variable[key], list):
-            values_of_key_found.append(variable[key])
-        else:
-            values_of_key_found.append([variable[key]])
-
-    for value_of_key_found in product(*values_of_key_found):
-        replaced_target = copy(target)
-        for key, val in zip(key_found, value_of_key_found):
-            replaced_target = replaced_target.replace(f"${{{key}}}", val)
-
-        if keep_variable:
-            ret.append({
-                "variable" : {key_found[i] : val for i, val in enumerate(value_of_key_found)},
-                "command" : replaced_target
-            })
-        else:
-            ret.append(replaced_target)
-
-    if not keep_variable and len(ret) == 1:
-        return ret[0]
-    return ret
-
-
-def map_variable(
-    variable: Dict[str, Union[str, List[str]]],
-    target_dict: Dict[str, Union[str, List[str]]],
-    target_key: str,
-    keep_variable: bool = False,
-):
-    target = target_dict[target_key]
-    if isinstance(target, list):
-        new_arr = []
-        for each_str in target:
-            str_replaced = replace_var_in_str(variable, each_str, keep_variable)
-            if isinstance(str_replaced, str):
-                new_arr.append(str_replaced)
-            else:
-                new_arr.extend(str_replaced)
-            
-        target_dict[target_key] = new_arr
-    elif isinstance(target, str):
-        target_dict[target_key] = replace_var_in_str(variable, target, keep_variable)
-
-
-def get_command_list(exp_recipe: Dict) -> Dict[str, str]:
-    constants: Dict = exp_recipe.get("constants", {})
-    variables: Dict = exp_recipe.get("variables", {})
-
-    def cvt_int_2_str(target: Dict):
+    @staticmethod
+    def _cvt_number_to_str(target: Dict):
         for key, val in target.items():
             if isinstance(val, (int, float)):
                 target[key] = str(val)
@@ -501,50 +537,21 @@ def get_command_list(exp_recipe: Dict) -> Dict[str, str]:
                     if isinstance(val[i], (int, float)):
                         val[i] = str(val[i])
 
-    cvt_int_2_str(constants)
-    cvt_int_2_str(variables)
 
-    for key in variables.keys():
-        map_variable(constants, variables, key)
-    map_variable(constants, exp_recipe, "command")
-    map_variable(variables, exp_recipe, "command", True)
-
-    return exp_recipe["command"]
-
-
-def run_experiment_recipe(exp_recipe: Dict):
-    output_path = Path(exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"))
+def run_experiment_recipe(recipe_file: Union[str, Path]):
+    exp_recipe = ExpRecipeParser(recipe_file)
+    output_path = exp_recipe.output_path
     output_path.mkdir(exist_ok=True)
-    repeat = exp_recipe.get("repeat", 1)
-
-    command_list = get_command_list(exp_recipe)
-
     current_dir = os.getcwd()
     os.chdir(output_path)
+
     failed_case: List[Dict[str, Any]] = []
-    for command_info in command_list:
-        original_command = command_info["command"]
-        command_var = command_info["variable"]
-        exp_name = "_".join(command_var.values())
+    for command_ins in exp_recipe.commands:
+        for repeat_idx in range(exp_recipe.repeat):
+            fail_info = run_otx_command(command_ins, repeat_idx)
+            if fail_info is not None:
+                failed_case.append(fail_info)
 
-        for repeat_idx in range(repeat):
-            workspace = Path(exp_name.replace('/', '_') + f"_repeat_{repeat_idx}")
-            command_var["repeat"] = str(repeat_idx)
-
-            command = copy(original_command).split()
-            if command[1] in ["train", "run"]:
-                set_arguments_to_cmd(command, "--workspace", str(workspace), 2)
-                if "train" in command:
-                    set_arguments_to_cmd(command, "--seed", str(repeat_idx), command.index("train")+1)
-
-            sys.argv = [" ".join(command[:2])] + command[2:]
-            try:
-                globals()["_".join(sys.argv[0].split())]()
-            except Exception as e:
-                failed_case.append({"variable" : copy(command_var), "exception" : e})
-            else:
-                if command[1] in ["train", "run"]:
-                    organize_exp_result(workspace, command_var)
     os.chdir(current_dir)
 
     if failed_case:
@@ -561,6 +568,27 @@ def run_experiment_recipe(exp_recipe: Dict):
             yaml.safe_dump(failed_case, f)
 
     aggregate_all_exp_result(output_path)
+
+
+def run_otx_command(command_ins: Command, repeat_idx: int) -> Optional[Dict]:
+    command_var = copy(command_ins.variable)
+    workspace = Path("_".join(command_var.values()).replace('/', '_') + f"_repeat_{repeat_idx}")
+    command_var["repeat"] = str(repeat_idx)
+
+    for command in command_ins.command:
+        command = command.split()
+        if command[1] == "train":
+            set_arguments_to_cmd(command, "--workspace", str(workspace), 2)
+            set_arguments_to_cmd(command, "--seed", str(repeat_idx), command.index("train")+1)
+
+        sys.argv = [" ".join(command[:2])] + command[2:]
+        try:
+            globals()["_".join(command[:2])]()
+        except Exception as e:
+            return {"variable" : copy(command_var), "exception" : e}
+        
+        if command[1] == "train":
+            organize_exp_result(workspace, command_var)
 
 
 def main():
