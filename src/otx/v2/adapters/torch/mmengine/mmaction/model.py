@@ -83,7 +83,7 @@ def get_model(
             model_name = model
     elif isinstance(model, Config):
         model_cfg = model
-    
+
     if isinstance(model_cfg, Config) and hasattr(model_cfg, "model") and hasattr(model_cfg.model, "name"):
         model_name = model_cfg.model.pop("name")
 
