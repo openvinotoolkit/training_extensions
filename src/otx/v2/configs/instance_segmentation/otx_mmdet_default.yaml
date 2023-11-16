@@ -27,6 +27,9 @@ train_dataloader:
           keep_ratio: false
           downscale_only: true
         enable_memcache: true
+      - type: Resize
+        scale: !!python/tuple [1024, 1024]
+        keep_ratio: false
       - type: RandomFlip
         prob: 0.5
       - type: Pad
@@ -87,7 +90,10 @@ test_dataloader:
         scale: !!python/tuple [1024, 1024]
         keep_ratio: false
       - type: LoadAnnotationFromOTXDataset
+        domain: instance_segmentation
         with_bbox: true
+        with_mask: true
+        poly2mask: false
       - type: PackDetInputs
         meta_keys:
           [

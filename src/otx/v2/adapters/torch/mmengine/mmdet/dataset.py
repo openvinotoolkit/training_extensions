@@ -116,6 +116,7 @@ def get_default_pipeline(
                     },
                     "enable_memcache": True,  # Cache after resizing image & annotations
                 },
+                {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
                 {"type": "RandomFlip", "prob": 0.5},
                 {"type": "Pad", "size_divisor": 32},
                 {

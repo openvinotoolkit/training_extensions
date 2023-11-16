@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 import torch
 from mmengine.device import get_device
 from mmengine.runner import Runner
+from mmengine.structures import BaseDataElement
 
 from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
@@ -606,7 +607,7 @@ class MMXEngine(Engine):
             backend_config = {
                 "type": "openvino",
                 "model_inputs": [{"opt_shapes": {"input": [1, 3, 224, 224]}}],
-                "input_metas": {"mode": "predict"},
+                "input_metas": {"mode": "predict", "data_samples": [BaseDataElement()]},
             }
             deploy_config_dict["backend_config"] = backend_config
 
