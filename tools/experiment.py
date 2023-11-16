@@ -25,7 +25,6 @@ from typing import Union, Dict, List, Any, Optional
 from rich.console import Console
 from rich.table import Table
 
-from otx.cli.utils.experiment import set_arguments_to_cmd
 from otx.cli.tools.build import main as otx_build
 from otx.cli.tools.demo import main as otx_demo
 from otx.cli.tools.deploy import main as otx_deploy
@@ -240,7 +239,7 @@ class MMCVExpParser(BaseExpParser):
                 if eval_files:
                     self._parse_eval_output(eval_files[0])
 
-                # iter, data time
+                # iter, data time, epoch
                 train_record_files = list((task_dir / "logs").glob("*.log.json"))
                 train_record_files.sort(reverse=True, key=lambda x : x.stat().st_mtime)
                 if train_record_files:
@@ -612,6 +611,30 @@ def find_model_path(cmd_entry: str, workspace: Path):
         )
         return None
     return file_path[0]
+
+
+def set_arguments_to_cmd(command: List[str], key: str, value: Optional[str] = None, before_params: bool = True):
+    """Add arguments at proper position in command.
+
+    Args:
+        keys (str): arguement key.
+        value (str or None): argument value.
+        command (List[str]): list includng a otx command entry and arguments.
+        after_params (bool): whether argument should be after `param` or not.
+    """
+    if key in command:
+        if value is not None:
+            command[command.index(key) + 1] = value
+        return
+    
+    if before_params and "params" in command:
+        index = command.index("params")
+    else:
+        index = len(command)
+
+    if value is not None:
+        command.insert(index, value)
+    command.insert(index, key)
 
 
 def main():
