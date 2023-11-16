@@ -26,7 +26,7 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     },
     TaskType.DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-        "default_config": {},
+        "default_config": {TrainType.Incremental: f"{CONFIG_ROOT}/detection/otx_mmdet_default.yaml"},
     },
     TaskType.INSTANCE_SEGMENTATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
