@@ -150,7 +150,7 @@ class TestDataset:
             num_workers=2,
             collate_fn=mock_patial.return_value,
             pin_memory=False,
-            shuffle=True,
+            shuffle=False,
             worker_init_fn=None,
             drop_last=True,
             persistent_workers=False,

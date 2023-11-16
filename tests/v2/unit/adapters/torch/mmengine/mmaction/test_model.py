@@ -23,6 +23,7 @@ def config() -> Config:
                 "in_channels": 432,
                 "num_classes": 400,
             },
+            "name": "otx_x3d",
         },
     })
 
@@ -39,6 +40,7 @@ def test_get_model(config) -> None:
                 "in_channels": 432,
                 "num_classes": 400,
             },
+            "name": "otx_x3d",
         },
     }
     model = get_model(model_dict, pretrained=True, num_classes=5)
