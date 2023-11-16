@@ -36,17 +36,14 @@ model:
 train_dataloader:
   batch_size: 10
   num_workers: 0
-  sampler:
-    type: DefaultSampler
-    shuffle: True
   dataset:
     type: OTXActionClsDataset
     pipeline:
       - type: SampleFrames
         clip_len: 8
         frame_interval: 4
-        num_clips: 2
-      - type: RawFrameDecode
+        num_clips: 1
+      - type: OTXRawFrameDecode
       - type: Resize
         scale: !!python/tuple
           - -1
@@ -60,9 +57,6 @@ train_dataloader:
 val_dataloader:
   batch_size: 1
   num_workers: 0
-  sampler:
-    type: DefaultSampler
-    shuffle: false
   dataset:
     type: OTXActionClsDataset
     pipeline:
@@ -71,7 +65,7 @@ val_dataloader:
         frame_interval: 4
         num_clips: 1
         test_mode: True
-      - type: RawFrameDecode
+      - type: OTXRawFrameDecode
       - type: Resize
         scale: !!python/tuple
           - -1
@@ -85,9 +79,6 @@ val_dataloader:
 test_dataloader:
   batch_size: 1
   num_workers: 0
-  sampler:
-    type: DefaultSampler
-    shuffle: false
   dataset:
     type: OTXActionClsDataset
     pipeline:
@@ -96,7 +87,7 @@ test_dataloader:
         frame_interval: 4
         num_clips: 1
         test_mode: True
-      - type: RawFrameDecode
+      - type: OTXRawFrameDecode
       - type: Resize
         scale: !!python/tuple
           - -1

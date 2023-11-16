@@ -230,7 +230,6 @@ class MMActionDataset(MMXDataset):
         if digit_version(torch.__version__) >= digit_version("1.8.0"):
             kwargs["persistent_workers"] = persistent_workers
 
-        shuffle = False
         dataloader = TorchDataLoader(
             dataset,
             batch_size=batch_size,
