@@ -12,7 +12,7 @@ model = dict(
     backbone=dict(type="CSPDarknet", deepen_factor=1.0, widen_factor=1.0, out_indices=(2, 3, 4)),
     neck=dict(type="YOLOXPAFPN", in_channels=[256, 512, 1024], out_channels=256, num_csp_blocks=3),
     bbox_head=dict(type="CustomYOLOXHead", num_classes=80, in_channels=256, feat_channels=256),
-    train_cfg=dict(assigner=dict(type="SimOTAAssigner", center_radius=2.5)),
+    train_cfg=dict(assigner=dict(type="CustomSimOTAAssigner", center_radius=2.5)),
     # In order to align the source code, the threshold of the val phase is
     # 0.01, and the threshold of the test phase is 0.001.
     test_cfg=dict(score_thr=0.01, nms=dict(type="nms", iou_threshold=0.65), max_per_img=100),
