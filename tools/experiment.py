@@ -348,6 +348,10 @@ def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str
     exp_parser.parse_exp_log()
 
     exp_result = exp_parser.get_exp_result()
+
+    if not exp_result:
+        print(f"There is no experiment result in {workspace}")
+
     with (workspace / "exp_result.yaml").open("w") as f:
         yaml.dump({"meta" : exp_meta, "exp_result" : exp_result}, f, default_flow_style=False)
 
@@ -455,7 +459,8 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     write_csv(exp_dir / "all_exp_result.csv", headers, all_exp_result)
 
     for key in ["repeat", "std_iter_time", "std_data_time"]:  # average of std is distorted value
-        headers.remove(key)
+        if key in headers:
+            headers.remove(key)
 
     rows = []
     for val in exp_result_aggregation.values():
@@ -603,6 +608,12 @@ class CommandFailInfo:
     variable: Dict[str, str]
     command: str
 
+    def get_formatted_result(self) -> Dict:
+        """Return dictionary format result."""
+        result = dataclasses.asdict(self)
+        result["exception"] = str(result["exception"])
+        return result
+
 
 def log_fail_cases(fail_cases: List[CommandFailInfo], output_path: Path):
     """Print fail cases and save it as a file.
@@ -621,7 +632,7 @@ def log_fail_cases(fail_cases: List[CommandFailInfo], output_path: Path):
     console.rule()
 
     with (output_path / "failed_cases.yaml").open("w") as f:
-        yaml.safe_dump(fail_cases, f)
+        yaml.safe_dump([fail_case.get_formatted_result() for fail_case in  fail_cases], f)
 
 
 class OtxCommandRunner:
@@ -685,7 +696,7 @@ class OtxCommandRunner:
         return True
 
     def _run_otx_command(self, command: List[str]):
-        sys.argv = command
+        sys.argv = copy(command)
         try:
             otx_cli()
         except Exception as e:
