@@ -521,8 +521,6 @@ class MMXEngine(Engine):
                 Defaults to None.
             precision (Optional[str]): The precision to use for exporting.
                 Can be "float16", "fp16", "float32", or "fp32". Defaults to "float32".
-            task (Optional[str]): The task to use for exporting. Defaults to None.
-            codebase (Optional[str]): The codebase to use for exporting. Defaults to None.
             export_type (str): The type of export to perform. Can be "ONNX" or "OPENVINO". Defaults to "OPENVINO".
             deploy_config (Optional[str, dict]): The path to the deploy config to use for exporting. Defaults to None.
             device (str): The device to use for exporting. Defaults to "cpu".
@@ -653,7 +651,7 @@ class MMXEngine(Engine):
             TaskType.DETECTION: "ObjectDetection",
             TaskType.INSTANCE_SEGMENTATION: "InstanceSegmentation",
         }
-        codebase_config = {"type": codebase, "task": mmdeploy_task_dict[self.task]}
+        codebase_config: dict[str, str | dict] = {"type": codebase, "task": mmdeploy_task_dict[self.task]}
         if self.task == TaskType.DETECTION:
             # Detection task require post_processing config
             # This should be handled model api
