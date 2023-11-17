@@ -25,32 +25,12 @@ from typing import Union, Dict, List, Any, Optional
 from rich.console import Console
 from rich.table import Table
 
-from otx.cli.tools.build import main as otx_build
-from otx.cli.tools.demo import main as otx_demo
-from otx.cli.tools.deploy import main as otx_deploy
-from otx.cli.tools.eval import main as otx_eval
-from otx.cli.tools.explain import main as otx_explain
-from otx.cli.tools.export import main as otx_export
-from otx.cli.tools.find import main as otx_find
-from otx.cli.tools.optimize import main as otx_optimize
-from otx.cli.tools.train import main as otx_train
-
-__all__ = [
-    "otx_demo",
-    "otx_deploy",
-    "otx_eval",
-    "otx_explain",
-    "otx_export",
-    "otx_find",
-    "otx_train",
-    "otx_optimize",
-    "otx_build",
-]
+from otx.cli.tools.cli import main as otx_cli
 
 
 def get_args() -> str:
     """Parses command line arguments."""
-    parser = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file", type=str, required=True)
     return parser.parse_args()
 
@@ -600,9 +580,9 @@ class OtxCommandRunner:
         return True
 
     def _run_otx_command(self, command: List[str]):
-        sys.argv = [" ".join(command[:2])] + command[2:]
+        sys.argv = command
         try:
-            globals()["_".join(command[:2])]()
+            otx_cli()
         except Exception as e:
             self._fail_logs.append(CommandFailInfo(variable=self._command_var, exception=e, command=" ".join(command)))
 
