@@ -176,10 +176,11 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.inferencer = self.load_inferencer()
         template_file_path = self.task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
-        self._avg_time_per_image = None
+        self._avg_time_per_image: Optional[float] = None
 
     @property
-    def avg_time_per_image(self):
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
         return self._avg_time_per_image
 
     def load_inferencer(self) -> ClassificationOpenVINOInferencer:

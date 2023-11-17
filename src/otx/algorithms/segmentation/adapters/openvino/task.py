@@ -162,7 +162,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         self.model = self.task_environment.model
         self.model_name = self.task_environment.model_template.model_template_id
         self.inferencer = self.load_inferencer()
-        self._avg_time_per_image = None
+        self._avg_time_per_image: Optional[float] = None
 
         labels = task_environment.get_labels(include_empty=False)
         self._label_dictionary = dict(enumerate(labels, 1))
@@ -175,7 +175,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         return self.task_environment.get_hyper_parameters(SegmentationConfig)
 
     @property
-    def avg_time_per_image(self):
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
         return self._avg_time_per_image
 
     def load_inferencer(self) -> OpenVINOSegmentationInferencer:
