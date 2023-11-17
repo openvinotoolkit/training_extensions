@@ -6,7 +6,7 @@ data:
   train_type: Incremental
 
 model:
-  name: otx_resnet50_maskrcnn
+  name: otx_iseg_resnet50_maskrcnn
 
 train_dataloader:
   batch_size: 8

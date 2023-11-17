@@ -6,7 +6,7 @@ data:
   train_type: Incremental
 
 model:
-  name: otx_mobilenetv2_atss
+  name: otx_det_mobilenetv2_atss
 
 train_dataloader:
   batch_size: 8

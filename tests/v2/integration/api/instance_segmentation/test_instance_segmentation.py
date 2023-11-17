@@ -32,7 +32,7 @@ def test_model_api() -> None:
     assert isinstance(otx_model, torch.nn.Module)
 
 
-MODELS: list = list_models("otx*")
+MODELS: list = list_models("otx_iseg*")
 
 
 class TestMMDetAPI:

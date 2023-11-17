@@ -34,7 +34,7 @@ def test_model_api() -> None:
     assert isinstance(otx_model, torch.nn.Module)
 
 
-MODELS: list[str] = list_models("otx*")
+MODELS: list[str] = list_models("otx_det*")
 
 
 class TestMMDetAPI:
@@ -54,6 +54,7 @@ class TestMMDetAPI:
             train_data_roots=TASK_CONFIGURATION["detection"]["train_data_roots"],
             val_data_roots=TASK_CONFIGURATION["detection"]["val_data_roots"],
             test_data_roots=TASK_CONFIGURATION["detection"]["test_data_roots"],
+            task="detection",
         )
 
     def test_dataset_api(self, dataset: Dataset) -> None:
