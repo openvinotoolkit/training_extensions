@@ -114,7 +114,7 @@ class DetectionConfigurer:
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-    def configure_model(self, cfg, ir_options, max_num_detections):  # noqa: C901
+    def configure_model(self, cfg, ir_options, max_num_detections=0):  # noqa: C901
         """Patch config's model.
 
         Change model type to super type
