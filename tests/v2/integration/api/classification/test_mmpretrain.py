@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 import torch
 from otx.v2.adapters.torch.mmengine.mmpretrain import Dataset, Engine, get_model, list_models
+from otx.v2.api.entities.task_type import TaskType
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
@@ -88,7 +89,7 @@ class TestMMPretrainAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path)
+        engine = Engine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         built_model = get_model(model=model, num_classes=dataset.num_classes)
 
         # Train (1 epochs)

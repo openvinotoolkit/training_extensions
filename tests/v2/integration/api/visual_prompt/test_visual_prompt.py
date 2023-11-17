@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import torch
 from otx.v2.adapters.torch.lightning import Dataset, Engine, get_model, list_models
+from otx.v2.api.entities.task_type import TaskType
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
@@ -57,7 +58,7 @@ class TestVisaulPromptAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path, task="visual_prompting")
+        engine = Engine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         built_model = get_model(model=model)
 
         # Train (1 epochs)

@@ -20,6 +20,7 @@ from pytorch_lightning.loggers.logger import Logger
 from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.lightning.engine import LightningEngine
+from otx.v2.api.entities.task_type import TaskType
 
 from .registry import AnomalibRegistry
 
@@ -38,16 +39,16 @@ class AnomalibEngine(LightningEngine):
 
     def __init__(
         self,
+        task: TaskType,
         work_dir: str | Path | None = None,
         config: str | dict | None = None,
-        task: str = "anomaly_classification",
     ) -> None:
         """Initialize the Anomalib engine.
 
         Args:
+            task (TaskType): The task to perform.
             work_dir (str | Path | None, optional): The working directory for the engine. Defaults to None.
             config (str | dict | None, optional): The configuration for the engine. Defaults to None.
-            task (str, optional): The task to perform. Defaults to "anomaly_classification".
         """
         super().__init__(work_dir=work_dir, config=config, task=task)
         self.registry = AnomalibRegistry()

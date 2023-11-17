@@ -20,6 +20,7 @@ from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConf
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.api.core.engine import Engine
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.importing import get_all_args, get_default_args
 from otx.v2.api.utils.logger import get_logger
 
@@ -76,14 +77,16 @@ class MMXEngine(Engine):
     """
     def __init__(
         self,
+        task: TaskType,
         work_dir: str | Path | None = None,
     ) -> None:
         """Initialize a new instance of the MMEngine class.
 
         Args:
+            task (TaskType): Task type of engine.
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
         """
-        super().__init__(work_dir=work_dir)
+        super().__init__(task=task, work_dir=work_dir)
         # Engine's configuration should not affect to DEFAULT_CONFIG
         self.default_config = deepcopy(DEFAULT_CONFIG)
         self.runner: Runner
@@ -503,8 +506,6 @@ class MMXEngine(Engine):
         model: torch.nn.Module | (str | Config) | None = None,  # Module with _config OR Model Config OR config-file
         checkpoint: str | Path | None = None,
         precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: str | None = None,
-        codebase: str | None = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: str | dict | None = None,
         device: str = "cpu",
@@ -582,9 +583,7 @@ class MMXEngine(Engine):
 
         # CODEBASE_COFIG Update
         if codebase_config is None:
-            self._update_codebase_config(
-                codebase=codebase, task=task, deploy_config_dict=deploy_config_dict,
-            )
+            self._update_codebase_config(deploy_config_dict=deploy_config_dict)
 
         # IR_COFIG Update
         if "ir_config" not in deploy_config_dict:
@@ -639,8 +638,6 @@ class MMXEngine(Engine):
     def _update_codebase_config(
         self,
         deploy_config_dict: dict,
-        codebase: str | None = None,
-        task: str | None = None,
     ) -> None:
         """Update specific codebase config.
 
@@ -649,6 +646,24 @@ class MMXEngine(Engine):
             codebase(str): mmX codebase framework
             task(str): mmdeploy task
         """
-        codebase = codebase if codebase is not None else self.registry.name
-        codebase_config = {"type": codebase, "task": task}
+        codebase = self.registry.name
+        mmdeploy_task_dict = {
+            TaskType.SEGMENTATION: "Segmentation",
+            TaskType.CLASSIFICATION: "Classification",
+            TaskType.DETECTION: "ObjectDetection",
+            TaskType.INSTANCE_SEGMENTATION: "InstanceSegmentation",
+        }
+        codebase_config = {"type": codebase, "task": mmdeploy_task_dict[self.task]}
+        if self.task == TaskType.DETECTION:
+            # Detection task require post_processing config
+            # This should be handled model api
+            codebase_config["post_processing"] = {
+                "score_threshold": 0.05,
+                "confidence_threshold": 0.005,  # for YOLOv3
+                "iou_threshold": 0.5,
+                "max_output_boxes_per_class": 200,
+                "pre_top_k": 5000,
+                "keep_top_k": 100,
+                "background_label_id": -1,
+            }
         deploy_config_dict["codebase_config"] = codebase_config

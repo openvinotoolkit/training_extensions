@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import torch
 from otx.v2.adapters.torch.lightning.anomalib import Dataset, Engine, get_model
+from otx.v2.api.entities.task_type import TaskType
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
@@ -57,7 +58,7 @@ class TestAnomalibClassificationAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path)
+        engine = Engine(work_dir=tmp_dir_path, task=TaskType.ANOMALY_CLASSIFICATION)
         built_model = get_model(model=model)
 
         # Train (1 epochs)

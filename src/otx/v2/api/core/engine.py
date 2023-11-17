@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from otx.v2.api.core.registry import BaseRegistry
+from otx.v2.api.entities.task_type import TaskType
 
 
 class Engine:
@@ -23,15 +24,17 @@ class Engine:
     )
     """
 
-    def __init__(self, work_dir: str | Path | None) -> None:
+    def __init__(self, task: TaskType, work_dir: str | Path | None = None) -> None:
         """Initialize a new instance of the Engine class.
 
         Args:
+            task (TaskType): Task type of engine.
             work_dir (Optional[Union[str, Path]]): The working directory for the engine.
 
         Returns:
             None
         """
+        self.task = task
         if work_dir is not None:
             self.work_dir: Path = Path(work_dir).resolve()
             self.work_dir.mkdir(exist_ok=True, parents=True)

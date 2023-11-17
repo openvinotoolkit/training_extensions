@@ -6,6 +6,7 @@
 from pathlib import Path
 
 from otx.v2.api.core.engine import Engine
+from otx.v2.api.entities.task_type import TaskType
 from pytest_mock.plugin import MockerFixture
 
 
@@ -27,7 +28,7 @@ class TestEngine:
         -------
             None
         """
-        engine = Engine(work_dir=tmp_dir_path)
+        engine = Engine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
 
         assert engine.work_dir == tmp_dir_path
         assert engine.registry.name == "base"
@@ -50,7 +51,7 @@ class TestEngine:
         -------
             None
         """
-        engine = Engine(work_dir=None)
+        engine = Engine(work_dir=None, task=TaskType.CLASSIFICATION)
         mock_train = mocker.spy(Engine, "train")
         engine.train(None, None)
 
@@ -74,7 +75,7 @@ class TestEngine:
         -------
             None
         """
-        engine = Engine(work_dir=None)
+        engine = Engine(work_dir=None, task=TaskType.CLASSIFICATION)
         mock_validate = mocker.spy(Engine, "validate")
         engine.validate(None, None)
 
@@ -98,7 +99,7 @@ class TestEngine:
         -------
             None
         """
-        engine = Engine(work_dir=None)
+        engine = Engine(work_dir=None, task=TaskType.CLASSIFICATION)
         mock_test = mocker.spy(Engine, "test")
         engine.test(None, None)
 
@@ -122,7 +123,7 @@ class TestEngine:
         -------
             None
         """
-        engine = Engine(work_dir=None)
+        engine = Engine(work_dir=None, task=TaskType.CLASSIFICATION)
         mock_predict = mocker.spy(Engine, "predict")
         engine.predict(None, None)
 
@@ -146,7 +147,7 @@ class TestEngine:
         -------
             None
         """
-        engine = Engine(work_dir=None)
+        engine = Engine(work_dir=None, task=TaskType.CLASSIFICATION)
         mock_export = mocker.spy(Engine, "export")
         engine.export()
 

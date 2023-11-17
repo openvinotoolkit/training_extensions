@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 import torch
 from omegaconf import DictConfig
 from otx.v2.adapters.torch.lightning.engine import LightningEngine
+from otx.v2.api.entities.task_type import TaskType
 from pytest_mock.plugin import MockerFixture
 
 
@@ -19,30 +20,30 @@ class MockModel(torch.nn.Module):
 
 class TestLightningEngine:
     def test_init(self, tmp_dir_path: Path) -> None:
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         assert engine.work_dir == tmp_dir_path
         assert engine.registry.name == "lightning"
         assert engine.timestamp is not None
 
     def test_initial_config(self, tmp_dir_path: Path) -> None:
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         assert isinstance(engine.config, DictConfig)
 
         config = {"foo": "bar"}
-        engine = LightningEngine(work_dir=tmp_dir_path, config=config)
+        engine = LightningEngine(work_dir=tmp_dir_path, config=config, task=TaskType.VISUAL_PROMPTING)
         assert isinstance(engine.config, DictConfig)
         assert hasattr(engine.config, "foo")
         assert engine.config.foo == "bar"
 
         config_file = tmp_dir_path / "config.yaml"
         config_file.write_text("foo : 'bar'")
-        engine = LightningEngine(work_dir=tmp_dir_path, config=str(config_file))
+        engine = LightningEngine(work_dir=tmp_dir_path, config=str(config_file), task=TaskType.VISUAL_PROMPTING)
         assert isinstance(engine.config, DictConfig)
         assert hasattr(engine.config, "foo")
         assert engine.config.foo == "bar"
 
     def test_update_config(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
 
         # Test with invalid argument
         engine._update_config({}, invalid="test")
@@ -77,7 +78,7 @@ class TestLightningEngine:
         mock_trainer = mocker.patch("otx.v2.adapters.torch.lightning.engine.Trainer")
         mock_trainer.return_value.fit.return_value = None
         mock_trainer.return_value.save_checkpoint.return_value = None
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         mock_model = mocker.Mock()
         mock_model.callbacks = []
         mock_dataloader = mocker.Mock()
@@ -94,7 +95,7 @@ class TestLightningEngine:
         mock_trainer = mocker.patch("otx.v2.adapters.torch.lightning.engine.Trainer")
         mock_trainer.return_value.validate.return_value = {}
         mock_trainer.return_value.save_checkpoint.return_value = None
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         mock_model = mocker.Mock()
         mock_dataloader = mocker.Mock()
         mock_model.callbacks = []
@@ -107,7 +108,7 @@ class TestLightningEngine:
         mock_trainer = mocker.patch("otx.v2.adapters.torch.lightning.engine.Trainer")
         mock_trainer.return_value.test.return_value = {}
         mock_trainer.return_value.save_checkpoint.return_value = None
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         mock_model = mocker.Mock()
         mock_model.callbacks = []
         mock_dataloader = mocker.Mock()
@@ -123,7 +124,7 @@ class TestLightningEngine:
         mock_trainer = mocker.patch("otx.v2.adapters.torch.lightning.engine.Trainer")
         mock_trainer.return_value.predict.return_value = []
         mock_trainer.return_value.save_checkpoint.return_value = None
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
         mock_model = mocker.Mock()
         img = mocker.Mock()
         mock_model.callbacks = []
@@ -134,7 +135,7 @@ class TestLightningEngine:
         mock_trainer.return_value.predict.assert_called_with(model=None, dataloaders=[img], ckpt_path="test.pth")
 
     def test_export(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = LightningEngine(work_dir=tmp_dir_path)
+        engine = LightningEngine(work_dir=tmp_dir_path, task=TaskType.VISUAL_PROMPTING)
 
         mock_model = mocker.Mock()
         mock_model.__class__.return_value = pl.LightningModule

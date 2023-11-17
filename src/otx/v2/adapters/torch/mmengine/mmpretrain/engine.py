@@ -13,6 +13,7 @@ import torch
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -24,16 +25,14 @@ logger = get_logger()
 class MMPTEngine(MMXEngine):
     """The MMPretrainEngine class is responsible for running inference on pre-trained models."""
 
-    def __init__(
-        self,
-        work_dir: str | Path | None = None,
-    ) -> None:
+    def __init__(self, task: TaskType, work_dir: str | Path | None = None) -> None:
         """Initialize a new instance of the MMPretrainEngine class.
 
         Args:
+            task (TaskType): Task type of engine.
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
         """
-        super().__init__(work_dir=work_dir)
+        super().__init__(task=task, work_dir=work_dir)
         self.registry = MMPretrainRegistry()
 
     def _update_eval_config(self, evaluator_config: list | dict | None, num_classes: int) -> list | dict | None:
@@ -147,44 +146,3 @@ class MMPTEngine(MMXEngine):
         )
 
         return inferencer(img, batch_size, **kwargs)
-
-    def export(
-        self,
-        model: torch.nn.Module | (str | Config) | None = None,
-        checkpoint: str | Path | None = None,
-        precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: str | None = "Classification",
-        codebase: str | None = "mmpretrain",
-        export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | dict | None = None,
-        device: str = "cpu",
-        input_shape: tuple[int, int] | None = None,
-    ) -> dict:
-        """Export a PyTorch model to a specified format for deployment.
-
-        Args:
-            model (Optional[Union[torch.nn.Module, str, Config]]): The PyTorch model to export.
-            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for exporting.
-            precision (Optional[str]): The precision to use for exporting.
-                Can be one of ["float16", "fp16", "float32", "fp32"].
-            task (Optional[str]): The task for which the model is being exported. Defaults to "Classification".
-            codebase (Optional[str]): The codebase for the model being exported. Defaults to "mmpretrain".
-            export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
-            deploy_config (Optional[str, dict]): The path to the deploy config to use for exporting. Defaults to None.
-            device (str): The device to use for exporting. Defaults to "cpu".
-            input_shape (Optional[Tuple[int, int]]): The input shape of the model being exported.
-
-        Returns:
-            dict: A dictionary containing information about the exported model.
-        """
-        return super().export(
-            model=model,
-            checkpoint=checkpoint,
-            precision=precision,
-            task=task,
-            codebase=codebase,
-            export_type=export_type,
-            deploy_config=deploy_config,
-            device=device,
-            input_shape=input_shape,
-        )

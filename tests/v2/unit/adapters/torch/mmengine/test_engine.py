@@ -8,6 +8,7 @@ import torch
 from _pytest.monkeypatch import MonkeyPatch
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
+from otx.v2.api.entities.task_type import TaskType
 from pytest_mock.plugin import MockerFixture
 
 
@@ -19,13 +20,13 @@ class MockModel(torch.nn.Module):
 
 class TestMMXEngine:
     def test_init(self, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         assert engine.work_dir == tmp_dir_path
         assert engine.registry.name == "mmengine"
         assert engine.timestamp is not None
 
     def test_get_value_from_config(self, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         engine.default_config = Config({"max_epochs": 20})
         result = engine._get_value_from_config(
             arg_key="max_epochs",
@@ -54,7 +55,7 @@ class TestMMXEngine:
         precision = "float32"
         updated_config = Config({"test": "test1"})
         mock_dataloader = mocker.MagicMock()
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         engine.default_config = Config({"max_epochs": 10, "val_interval": 2, "precision": "float32"})
         engine._update_train_config(
             train_dataloader=mock_dataloader,
@@ -75,7 +76,7 @@ class TestMMXEngine:
         func_args["max_iters"] = 100
         func_args["max_epochs"] = 100
         func_args["precision"] = "float16"
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         updated_config = Config({"test": "test1"})
         mock_dataloader = mocker.MagicMock()
         with pytest.raises(ValueError, match="Only one of `max_epochs` or `max_iters`"):
@@ -98,7 +99,7 @@ class TestMMXEngine:
 
 
     def test_update_train_config_raises_value_error(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         config = {"val_interval": 2}
         config["max_iters"] = 100
         config["max_epochs"] = 10
@@ -115,7 +116,7 @@ class TestMMXEngine:
 
 
     def test_update_train_config_with_train_cfg_in_kwargs(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         engine.default_config = Config({"val_interval": 3})
         updated_config = Config({})
         func_args = {}
@@ -129,7 +130,7 @@ class TestMMXEngine:
 
 
     def test_update_config(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
 
         # Test with model is None argument
         model = mocker.Mock()
@@ -212,7 +213,7 @@ class TestMMXEngine:
         mocker.patch("otx.v2.adapters.torch.mmengine.engine.Path.glob", return_value=["test1.pth"])
         mocker.patch("otx.v2.adapters.torch.mmengine.engine.Path.unlink")
         mocker.patch("otx.v2.adapters.torch.mmengine.engine.shutil.copy")
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         mock_runner = mocker.Mock
         engine.registry.register_module(name="Runner", module=mock_runner, force=True)
         mock_model = mocker.Mock()
@@ -232,7 +233,7 @@ class TestMMXEngine:
             engine.train(max_epochs=3)
 
     def test_validate(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         mock_runner = mocker.Mock
         engine.registry.register_module(name="Runner", module=mock_runner, force=True)
         mock_model = mocker.Mock()
@@ -244,7 +245,7 @@ class TestMMXEngine:
         engine.validate(precision="fp16")
         assert engine.runner._experiment_name.startswith("otx_validate_")
 
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         mock_registry = mocker.Mock()
         mock_registry.get.return_value = None
         engine.registry = mock_registry
@@ -252,7 +253,7 @@ class TestMMXEngine:
             engine.validate(precision="fp16")
 
     def test_test(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         mock_runner = mocker.Mock
         engine.registry.register_module(name="Runner", module=mock_runner, force=True)
         mock_model = mocker.Mock()
@@ -264,7 +265,7 @@ class TestMMXEngine:
         engine.test(precision="fp16")
         assert engine.runner._experiment_name.startswith("otx_test_")
 
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         mock_registry = mocker.Mock()
         mock_registry.get.return_value = None
         engine.registry = mock_registry
@@ -274,7 +275,7 @@ class TestMMXEngine:
     def test_export(self, mocker: MockerFixture, tmp_dir_path: Path, monkeypatch: MonkeyPatch) -> None:
         mock_exporter = mocker.patch("otx.v2.adapters.torch.mmengine.mmdeploy.exporter.Exporter")
         mocker.patch("otx.v2.adapters.torch.mmengine.engine.Config.fromfile", return_value=mocker.MagicMock())
-        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine = MMXEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         engine.export(model="model_path", checkpoint="test.pth")
         mock_exporter.assert_called_once()
 

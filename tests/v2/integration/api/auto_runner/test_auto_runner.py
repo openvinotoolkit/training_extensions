@@ -5,12 +5,23 @@ from pathlib import Path
 
 import pytest
 from otx.v2.api.core import AutoRunner
+from otx.v2.api.entities.task_type import TaskType
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
 # NOTE: This test currently only checks the basic pipeline and doesn't do much checking on the result, which will be fixed in the future.
 
 class TestAutoRunnerAPI:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.task_type_dict = {
+            "classification": TaskType.CLASSIFICATION,
+            "anomaly_classification": TaskType.ANOMALY_CLASSIFICATION,
+            "visual_prompting": TaskType.VISUAL_PROMPTING,
+            "segmentation": TaskType.SEGMENTATION,
+            "detection": TaskType.DETECTION,
+        }
+
     @pytest.mark.parametrize("task", TASK_CONFIGURATION.keys())
     def test_auto_training_api(self, task: str, tmp_dir_path: Path) -> None:
         """
@@ -37,7 +48,7 @@ class TestAutoRunnerAPI:
         task_configuration = TASK_CONFIGURATION[task]
         auto_runner = AutoRunner(
             work_dir=tmp_dir_path,
-            task=task,
+            task=self.task_type_dict[task],
             train_data_roots=task_configuration["train_data_roots"],
             val_data_roots=task_configuration["val_data_roots"],
             test_data_roots=task_configuration["test_data_roots"],

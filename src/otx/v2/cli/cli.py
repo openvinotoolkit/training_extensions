@@ -360,6 +360,7 @@ class OTXCLIv2:
         self.workspace = Workspace(work_dir=work_dir, task=str(self.auto_runner.task.name).lower())
         self.engine = self.framework_engine(
             work_dir=str(self.workspace.work_dir),
+            task=self.auto_runner.task,
         )
         self.workspace.add_config(workspace_config)
 

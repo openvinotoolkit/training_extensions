@@ -20,6 +20,7 @@ from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.lightning.modules.models.base_model import BaseOTXLightningModel
 from otx.v2.api.core.engine import Engine
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.importing import get_all_args, get_default_args
 
@@ -42,9 +43,9 @@ class LightningEngine(Engine):
 
     def __init__(
         self,
+        task: TaskType,
         work_dir: str | Path | None = None,
         config: str | dict | None = None,
-        task: str = "visual_prompting",
     ) -> None:
         """Initialize the Lightning engine.
 
@@ -53,11 +54,10 @@ class LightningEngine(Engine):
             config (str | dict | None, optional): The configuration for the engine. Defaults to None.
             task (str, optional): The task to perform. Defaults to "visual_prompting".
         """
-        super().__init__(work_dir=work_dir)
+        super().__init__(work_dir=work_dir, task=task)
         self.trainer: Trainer
         self.trainer_config: dict = {}
         self.latest_model: dict[str, torch.nn.Module | str | None] = {"model": None, "checkpoint": None}
-        self.task = task
         self.config = self._initial_config(config)
         if hasattr(self, "work_dir"):
             self.config.default_root_dir = self.work_dir
@@ -389,7 +389,7 @@ class LightningEngine(Engine):
         """
         dataloader = None
         # NOTE: It needs to be refactored in a more general way.
-        if self.task.lower() == "visual_prompting" and isinstance(img, (str, Path)):
+        if self.task.name.lower() == "visual_prompting" and isinstance(img, (str, Path)):
             from .modules.datasets.visual_prompting_dataset import VisualPromptInferenceDataset
 
             dataset_config = self.config.get("dataset", {})

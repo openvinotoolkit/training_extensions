@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 import torch
 from otx.v2.adapters.torch.mmengine.mmseg import Engine, get_model, list_models, Dataset
+from otx.v2.api.entities.task_type import TaskType
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
@@ -90,7 +91,7 @@ class TestMMSegAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path)
+        engine = Engine(work_dir=tmp_dir_path, task=TaskType.SEGMENTATION)
         built_model = get_model(model=model, num_classes=dataset.num_classes)
 
         # Train (1 epochs)

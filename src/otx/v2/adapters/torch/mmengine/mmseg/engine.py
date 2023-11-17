@@ -15,6 +15,7 @@ from mmseg.registry import VISUALIZERS
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MMSegmentationRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -26,14 +27,14 @@ logger = get_logger()
 class MMSegEngine(MMXEngine):
     """The MMSegmentation class is responsible for running inference on pre-trained models."""
 
-    def __init__(self, work_dir: str | Path | None = None) -> None:
+    def __init__(self, task: TaskType, work_dir: str | Path | None = None) -> None:
         """Initialize a new instance of the MMPretrainEngine class.
 
         Args:
+            task (TaskType): Task type of engine.
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
-            config (Optional[Union[Dict, Config, str]], optional): The configuration for the engine. Defaults to None.
         """
-        super().__init__(work_dir=work_dir)
+        super().__init__(task=task, work_dir=work_dir)
         self.registry = MMSegmentationRegistry()
         self.visualizer_cfg = {"name": "visualizer", "type": "SegLocalVisualizer"}
         self.evaluator_cfg = {"type": "IoUMetric", "iou_metrics": ["mDice"]}
@@ -114,47 +115,3 @@ class MMSegEngine(MMXEngine):
         inferencer = MMSegInferencer(model=config, weights=checkpoint, device=device)
 
         return inferencer(img, batch_size=batch_size, **kwargs)
-
-    def export(
-        self,
-        model: torch.nn.Module | (str | Config) | None = None,
-        checkpoint: str | Path | None = None,
-        precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: str | None = "Segmentation",
-        codebase: str | None = "mmseg",
-        export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | dict | None = None,
-        device: str = "cpu",
-        input_shape: tuple[int, int] | None = None,
-        **kwargs,
-    ) -> dict:
-        """Export a PyTorch model to a specified format for deployment.
-
-        Args:
-            model (torch.nn.Module | str | Config | None): The PyTorch model to export.
-            checkpoint (str | Path | None): The path to the checkpoint file to use for exporting.
-            precision (str | None): The precision to use for exporting.
-            task (str | None): The task for which the model is being exported. Defaults to "Segmentation".
-            codebase (str | None): The codebase for the model being exported. Defaults to "mmseg".
-            export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
-            deploy_config (str | None): The path to the deployment configuration file to use for exporting.
-                File path only.
-            device (str): The device to use for exporting. Defaults to "cpu".
-            input_shape (tuple[int, int] | None): The input shape of the model being exported.
-            **kwargs: Additional keyword arguments to pass to the export function.
-
-        Returns:
-            dict: A dictionary containing information about the exported model.
-        """
-        return super().export(
-            model=model,
-            checkpoint=checkpoint,
-            precision=precision,
-            task=task,
-            codebase=codebase,
-            export_type=export_type,
-            deploy_config=deploy_config,
-            device=device,
-            input_shape=input_shape,
-            **kwargs,
-        )

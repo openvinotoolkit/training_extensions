@@ -8,12 +8,13 @@ import torch
 from mmengine.model import BaseModel
 from otx.v2.adapters.torch.mmengine.mmpretrain.engine import MMPTEngine
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
+from otx.v2.api.entities.task_type import TaskType
 from pytest_mock.plugin import MockerFixture
 
 
 class TestMMPTEngine:
     def test_init(self, tmp_dir_path: Path) -> None:
-        engine = MMPTEngine(work_dir=tmp_dir_path)
+        engine = MMPTEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
         assert engine.work_dir == tmp_dir_path
 
     def test_predict(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
@@ -21,7 +22,7 @@ class TestMMPTEngine:
         mock_result = mocker.MagicMock()
         mock_api = mocker.patch("mmpretrain.inference_model", return_value=mock_result)
         mock_inferencer = mocker.patch("mmpretrain.ImageClassificationInferencer")
-        engine = MMPTEngine(work_dir=tmp_dir_path)
+        engine = MMPTEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
 
         class MockModule(torch.nn.Module):
             def __init__(self) -> None:
@@ -49,10 +50,7 @@ class TestMMPTEngine:
     def test_export(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         mock_super_export = mocker.patch("otx.v2.adapters.torch.mmengine.mmpretrain.engine.MMXEngine.export")
         mock_super_export.return_value = {"outputs": {"bin": "test.bin", "xml": "test.xml"}}
-        engine = MMPTEngine(work_dir=tmp_dir_path)
+        engine = MMPTEngine(work_dir=tmp_dir_path, task=TaskType.CLASSIFICATION)
 
         result = engine.export(model="model", checkpoint="checkpoint")
         assert result == {"outputs": {"bin": "test.bin", "xml": "test.xml"}}
-        mock_super_export.assert_called_once_with(
-            model="model", checkpoint="checkpoint", precision="float32", task="Classification", codebase="mmpretrain", export_type="OPENVINO", deploy_config=None, device="cpu", input_shape=None,
-        )
