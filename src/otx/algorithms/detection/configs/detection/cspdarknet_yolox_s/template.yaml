@@ -14,6 +14,7 @@ framework: OTXDetection v2.9.1
 entrypoints:
   base: otx.algorithms.detection.adapters.mmdet.task.MMDetectionTask
   openvino: otx.algorithms.detection.adapters.openvino.task.OpenVINODetectionTask
+  nncf: otx.algorithms.detection.adapters.mmdet.nncf.task.DetectionNNCFTask
 
 # Capabilities.
 capabilities:
