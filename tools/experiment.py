@@ -559,8 +559,8 @@ class OtxCommandRunner:
         self._command_ins = command_ins
         self._repeat_idx = repeat_idx
         self._command_var = copy(command_ins.variable)
-        self._command_var["repeat"] = str(repeat_idx)
         self._workspace = Path("_".join(self._command_var.values()).replace('/', '_') + f"_repeat_{repeat_idx}")
+        self._command_var["repeat"] = str(repeat_idx)
         self._fail_logs: List[CommandFailInfo] = []
         self._previous_cmd_entry: Optional[str] = None
 
