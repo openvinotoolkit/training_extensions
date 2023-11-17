@@ -4,35 +4,6 @@ Releases
 .. toctree::
    :maxdepth: 1
 
-v1.5.0 (4Q23)
--------------
-
-- Enable configurable confidence threshold for otx eval and export
-- Add YOLOX variants as new object detector models
-- Enable FeatureVectorHook to support action tasks
-- Add ONNX metadata to detection, instance segmantation, and segmentation models
-- Add a new feature to configure input size
-- Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime
-- Add a new object detector Lite-DINO
-- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task
-- Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS
-- Add new argument to track resource usage in train command
-- Add Self-SL for semantic segmentation of SegNext families
-- Adapt input size automatically based on dataset statistics
-- Refine input data in-memory caching
-- Adapt timeout value of initialization for distributed training
-- Optimize data loading by merging load & resize operations w/ caching support for cls/det/iseg/sseg
-- Support torch==2.0.1
-- Set "Auto" as default input size mode
-
-
-v1.4.4 (4Q23)
--------------
-
-- Update ModelAPI configuration
-- Add Anomaly modelAPI changes
-- Update Image numpy access
-
 v1.4.3 (4Q23)
 -------------
 

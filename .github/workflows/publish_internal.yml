@@ -2,6 +2,8 @@ name: Build and upload to internal PyPI
 
 on:
   workflow_dispatch: # run on request (no need for PR)
+  release:
+    types: [published]
 
 jobs:
   build_wheels:
@@ -59,20 +61,23 @@ jobs:
         uses: actions-ecosystem/action-regex-match@v2
         with:
           text: ${{ github.ref }}
-          regex: '^refs/heads/releases/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+rc[0-9]+|rc[0-9]+)?$'
+          regex: '^refs/tags/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+rc[0-9]+|rc[0-9]+)?$'
+      - name: Upload package distributions to github
+        if: ${{ steps.check-tag.outputs.match != '' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/*
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
       - name: Check dist contents
         run: twine check dist/*
       - name: Publish package dist to internal PyPI
-        if: ${{ steps.check-tag.outputs.match != '' }}
         run: |
           export no_proxy=${{ secrets.PYPI_HOST }}
           export REPOSITORY_URL=http://${{ secrets.PYPI_HOST }}:${{ secrets.PYPI_PORT }}
           twine upload --verbose --repository-url $REPOSITORY_URL dist/* -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }}
-      - name: Publish package distributions to TestPyPI
-        if: ${{ steps.check-tag.outputs.match == '' }}
-        run: |
-          export REPOSITORY_URL=https://test.pypi.org/legacy/
-          twine upload --verbose --repository-url $REPOSITORY_URL dist/* -u __token__ -p ${{ secrets.TESTPYPI_API_TOKEN }}
       - name: Clean up dist
         if: ${{ always() }}
         run: |
