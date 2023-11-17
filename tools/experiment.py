@@ -47,15 +47,9 @@ __all__ = [
     "otx_build",
 ]
 
-OUTPUT_FILE_NAME = {
-    "export" : "openvino.bin",
-    "optimize" : "weights.pth",
-}
-
 
 def get_args() -> str:
     """Parses command line arguments."""
-
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-f", "--file", type=str, required=True)
     return parser.parse_args()
@@ -63,6 +57,14 @@ def get_args() -> str:
 
 def parse_time_delta_fmt(time_str: str, format: str) -> timedelta:
     return datetime.strptime(time_str, format) - datetime(1900, 1, 1)
+
+
+def find_latest_file(where_to_find: Union[Path, str], file_name: str) -> Union[None, Path]:
+    where_to_find = Path(where_to_find)
+    train_record_files = sorted((where_to_find).glob(file_name), reverse=True, key=lambda x : x.stat().st_mtime)
+    if not train_record_files:
+        return None
+    return train_record_files[0]
 
 
 @dataclass
@@ -240,10 +242,9 @@ class MMCVExpParser(BaseExpParser):
                     self._parse_eval_output(eval_files[0])
 
                 # iter, data time, epoch
-                train_record_files = list((task_dir / "logs").glob("*.log.json"))
-                train_record_files.sort(reverse=True, key=lambda x : x.stat().st_mtime)
-                if train_record_files:
-                    self._parse_train_record(train_record_files[0])
+                train_record_file = find_latest_file(task_dir / "logs", "*.log.json")
+                if train_record_file is not None:
+                    self._parse_train_record(train_record_file)
 
                 # train e2e time & val score
                 cli_report_files = list(task_dir.glob("cli_report.log"))
@@ -419,6 +420,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 
     draw_rich_table(headers, rows, "Experiment Summary")
 
+
 @dataclass
 class Command:
     """Command dataclass."""
@@ -514,7 +516,7 @@ class ExpRecipeParser:
             for key in target.keys():
                 target[key] = self._replace_var_in_target(variable, target[key])
         else:
-            raise TypeError(f"{type(target)} isn't supported type. Please use str, list or dict type.")
+            raise TypeError(f"{type(target)} isn't supported type. target should has str, list or dict type.")
 
         return target
 
@@ -529,6 +531,122 @@ class ExpRecipeParser:
                         val[i] = str(val[i])
 
 
+@dataclass
+class CommandFailInfo:
+    variable: Dict[str, str] = field(default_factory=dict)
+    exception: Exception
+    command: str
+
+
+def log_fail_cases(fail_cases: List[CommandFailInfo], output_path: Path):
+    console = Console()
+    console.rule("[bold red]List of failed cases")
+    for each_fail_case in fail_cases:
+        console.print(f"Case : {each_fail_case.variable}", crop=False)
+        console.print(f"command : {each_fail_case.command}", crop=False)
+        console.print("Error log:", str(each_fail_case.exception), crop=False)
+        console.print()
+    console.rule()
+
+    with (output_path / "failed_cases.yaml").open("w") as f:
+        yaml.safe_dump(fail_cases, f)
+
+
+class OtxCommandRunner:
+    OUTPUT_FILE_NAME = {"export" : "openvino.bin", "optimize" : "weights.pth"}
+
+    def __init__(self, command_ins: Command, repeat_idx: int):
+        self._command_ins = command_ins
+        self._repeat_idx = repeat_idx
+        self._command_var = copy(command_ins.variable)
+        self._command_var["repeat"] = str(repeat_idx)
+        self._workspace = Path("_".join(self._command_var.values()).replace('/', '_') + f"_repeat_{repeat_idx}")
+        self._fail_logs: List[CommandFailInfo] = []
+        self._previous_cmd_entry: Optional[str] = None
+
+    @property
+    def fail_logs(self) -> List[CommandFailInfo]:
+        return self._fail_logs
+
+    def run_command_list(self):
+        for command in self._command_ins.command:
+            command = command.split()
+            if not self._prepare_run_command(command):
+                print(f"otx {command[1]} is skipped.")
+                continue
+
+            self._run_otx_command(command)
+                
+            self._previous_cmd_entry = command[1]
+
+        organize_exp_result(self._workspace, self._command_var)
+
+    def _prepare_run_command(self, command: List[str]) -> bool:
+        self.set_arguments_to_cmd(command, "--workspace", str(self._workspace))
+        cmd_entry = command[1]
+        if cmd_entry == "train":
+            self.set_arguments_to_cmd(command, "--seed", str(self._repeat_idx))
+        elif cmd_entry == "eval":
+            if self._previous_cmd_entry in self.OUTPUT_FILE_NAME:
+                file_path = self._find_model_path(self._previous_cmd_entry)
+                if file_path is None:
+                    return False
+                self.set_arguments_to_cmd(command, "--load-weights", str(file_path))
+                output_path = str(file_path.parents[1])
+            else:
+                output_path = str(self._workspace / "outputs" / "latest_trained_model")
+            self.set_arguments_to_cmd(command, "--output", output_path)
+
+        return True
+
+    def _run_otx_command(self, command: List[str]):
+        sys.argv = [" ".join(command[:2])] + command[2:]
+        try:
+            globals()["_".join(command[:2])]()
+        except Exception as e:
+            self._fail_logs.append(CommandFailInfo(variable=self._command_var, exception=e, command=" ".join(command)))
+
+    def _find_model_path(self, cmd_entry: str):
+        output_dir = find_latest_file(self._workspace / "outputs", f"*{cmd_entry}")
+        if output_dir is None:
+            print(f"There is no {cmd_entry} output directory.")
+            return None
+        file_path = list(output_dir.rglob(self.OUTPUT_FILE_NAME[cmd_entry]))
+        if not file_path:
+            print(f"{self.OUTPUT_FILE_NAME[cmd_entry]} can't be found.")
+            return None
+        return file_path[0]
+
+    @staticmethod
+    def set_arguments_to_cmd(
+        command: List[str],
+        key: str,
+        value: Optional[str] = None,
+        before_params: bool = True
+    ):
+        """Add arguments at proper position in command.
+
+        Args:
+            keys (str): arguement key.
+            value (str or None): argument value.
+            command (List[str]): list includng a otx command entry and arguments.
+            after_params (bool): whether argument should be after `param` or not.
+        """
+        if key in command:
+            if value is not None:
+                command[command.index(key) + 1] = value
+            return
+        
+        if before_params and "params" in command:
+            index = command.index("params")
+        else:
+            index = len(command)
+
+        if value is not None:
+            command.insert(index, value)
+        command.insert(index, key)
+
+
 def run_experiment_recipe(recipe_file: Union[str, Path]):
     exp_recipe = ExpRecipeParser(recipe_file)
     output_path = exp_recipe.output_path
@@ -536,105 +654,19 @@ def run_experiment_recipe(recipe_file: Union[str, Path]):
     current_dir = os.getcwd()
     os.chdir(output_path)
 
-    failed_case: List[Dict[str, Any]] = []
+    fail_cases: List[CommandFailInfo] = []
     for command_ins in exp_recipe.commands:
         for repeat_idx in range(exp_recipe.repeat):
-            fail_info = run_otx_command(command_ins, repeat_idx)
-            if fail_info is not None:
-                failed_case.append(fail_info)
+            otx_cmd_runner = OtxCommandRunner(command_ins, repeat_idx)
+            otx_cmd_runner.run_command_list()
+            fail_cases.extend(otx_cmd_runner.fail_logs)
 
     os.chdir(current_dir)
 
-    if failed_case:
-        console = Console()
-        console.rule("[bold red]List of failed cases")
-        for each_fail_case in failed_case:
-            each_fail_case["exception"] = str(each_fail_case["exception"])
-            console.print(f"Case : {each_fail_case['variable']}", crop=False)
-            console.print("Error log:", each_fail_case['exception'], crop=False)
-            console.print()
-        console.rule()
-
-        with (output_path / "failed_cases.yaml").open("w") as f:
-            yaml.safe_dump(failed_case, f)
+    if fail_cases:
+        log_fail_cases(fail_cases, output_path)
 
     aggregate_all_exp_result(output_path)
-
-
-def run_otx_command(command_ins: Command, repeat_idx: int) -> Optional[Dict]:
-    command_var = copy(command_ins.variable)
-    workspace = Path("_".join(command_var.values()).replace('/', '_') + f"_repeat_{repeat_idx}")
-    command_var["repeat"] = str(repeat_idx)
-
-    previous_cmd_entry = None
-    for command in command_ins.command:
-        command = command.split()
-        set_arguments_to_cmd(command, "--workspace", str(workspace))
-        if command[1] == "train":
-            set_arguments_to_cmd(command, "--seed", str(repeat_idx))
-        elif command[1] == "eval":
-            if previous_cmd_entry in OUTPUT_FILE_NAME:
-                file_path = find_model_path(previous_cmd_entry, workspace)
-                if file_path is None:
-                    continue
-                set_arguments_to_cmd(command, "--load-weights", str(file_path))
-                output_path = str(file_path.parents[1])
-            else:
-                output_path = str(workspace / "outputs" / "latest_trained_model")
-            set_arguments_to_cmd(command, "--output", output_path)
-
-        sys.argv = [" ".join(command[:2])] + command[2:]
-        try:
-            globals()["_".join(command[:2])]()
-        except Exception as e:
-            return {"variable" : copy(command_var), "exception" : e}
-        
-        if command[1] == "train":
-            organize_exp_result(workspace, command_var)
-            
-        previous_cmd_entry = command[1]
-
-
-def find_model_path(cmd_entry: str, workspace: Path):
-    output_dir = list((workspace / "outputs").glob(f"*{cmd_entry}"))
-    if not output_dir:
-        print(
-            f"'otx {cmd_entry}' was executed right before, but there is no output directory. "
-            "Evaluating the model is skipped."
-        )
-        return None
-    file_path = list(output_dir[0].rglob(OUTPUT_FILE_NAME[cmd_entry]))
-    if not file_path:
-        print(
-            f"'otx {cmd_entry}' was executed right before, but {OUTPUT_FILE_NAME[cmd_entry]} can't be found. "
-            "Evaluating the model is skipped."
-        )
-        return None
-    return file_path[0]
-
-
-def set_arguments_to_cmd(command: List[str], key: str, value: Optional[str] = None, before_params: bool = True):
-    """Add arguments at proper position in command.
-
-    Args:
-        keys (str): arguement key.
-        value (str or None): argument value.
-        command (List[str]): list includng a otx command entry and arguments.
-        after_params (bool): whether argument should be after `param` or not.
-    """
-    if key in command:
-        if value is not None:
-            command[command.index(key) + 1] = value
-        return
-    
-    if before_params and "params" in command:
-        index = command.index("params")
-    else:
-        index = len(command)
-
-    if value is not None:
-        command.insert(index, value)
-    command.insert(index, key)
 
 
 def main():
