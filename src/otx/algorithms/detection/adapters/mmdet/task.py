@@ -1,18 +1,7 @@
 """Task of OTX Detection using mmdetection training backend."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import glob
 import io
@@ -206,6 +195,7 @@ class MMDetectionTask(OTXDetectionTask):
             ir_options,
             data_classes,
             model_classes,
+            self.max_num_detections,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -513,6 +503,12 @@ class MMDetectionTask(OTXDetectionTask):
         assert len(self._precision) == 1
         export_options["precision"] = str(self._precision[0])
         export_options["type"] = str(export_format)
+        if self.max_num_detections > 0:
+            logger.info(f"Export max_num_detections: {self.max_num_detections}")
+            post_proc_cfg = export_options["deploy_cfg"]["codebase_config"]["post_processing"]
+            post_proc_cfg["max_output_boxes_per_class"] = self.max_num_detections
+            post_proc_cfg["keep_top_k"] = self.max_num_detections
+            post_proc_cfg["pre_top_k"] = self.max_num_detections * 10
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
