@@ -4,28 +4,26 @@
 #
 
 import argparse
-import yaml
-import re
 import csv
-import os
-import sys
-import shutil
-import json
-import statistics
-import yaml
 import dataclasses
+import json
+import os
+import re
+import shutil
+import statistics
+import sys
 from abc import ABC, abstractmethod
 from copy import copy, deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from pathlib import Path
 from itertools import product
-from typing import Union, Dict, List, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
+import yaml
+from otx.cli.tools.cli import main as otx_cli
 from rich.console import Console
 from rich.table import Table
-
-from otx.cli.tools.cli import main as otx_cli
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -54,13 +52,13 @@ def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, 
 
     Args:
         root_dir (Union[Path, str]): Root directory for searching.
-        file_name (str): File name to search. It can constain shell style wild card. 
+        file_name (str): File name to search. It can constain shell style wild card.
 
     Returns:
         Union[None, Path]: Latest file path. If file can't be found, return None.
     """
     root_dir = Path(root_dir)
-    train_record_files = sorted((root_dir).glob(file_name), reverse=True, key=lambda x : x.stat().st_mtime)
+    train_record_files = sorted((root_dir).glob(file_name), reverse=True, key=lambda x: x.stat().st_mtime)
     if not train_record_files:
         return None
     return train_record_files[0]
@@ -74,6 +72,7 @@ class ExperimentResult:
     For example, it can be added by other ExperimentResult instance and also divided by integer.
     It can provide dictionary format result and also can parse a dictionary with same format as itself.
     """
+
     val_score: Union[float, None] = None
     test_score: Union[float, None] = None
     train_e2e_time: Union[timedelta, None] = None
@@ -103,7 +102,7 @@ class ExperimentResult:
             result[f"{attr_name}(%)"] = res_util
 
         if self.train_e2e_time is not None:
-            result["train_e2e_time"] = str(self.train_e2e_time).split('.')[0]
+            result["train_e2e_time"] = str(self.train_e2e_time).split(".")[0]
 
         # delete None value
         for key in list(result.keys()):
@@ -114,7 +113,8 @@ class ExperimentResult:
 
         return result
 
-    def __add__(self, obj: 'ExperimentResult'):
+    def __add__(self, obj: "ExperimentResult"):
+        """Add with same class. If None exists, it's skipped."""
         new_obj = deepcopy(self)
 
         for attr in dataclasses.fields(self):
@@ -123,7 +123,7 @@ class ExperimentResult:
         return new_obj
 
     @staticmethod
-    def _add_if_not_none(dst_obj: 'ExperimentResult', src_obj : 'ExperimentResult', attr: str):
+    def _add_if_not_none(dst_obj: "ExperimentResult", src_obj: "ExperimentResult", attr: str):
         dst_obj_val = getattr(dst_obj, attr)
         src_obj_val = getattr(src_obj, attr)
         if dst_obj_val is not None and src_obj_val is not None:
@@ -132,6 +132,7 @@ class ExperimentResult:
             setattr(dst_obj, attr, None)
 
     def __truediv__(self, divisor: Union[int, float]):
+        """Divide with same class. If None exists, it's skipped."""
         new_obj = deepcopy(self)
 
         for attr in dataclasses.fields(self):
@@ -140,7 +141,7 @@ class ExperimentResult:
         return new_obj
 
     @staticmethod
-    def _divide_if_not_none(obj: 'ExperimentResult', attr: str, divisor: Union[int, float]):
+    def _divide_if_not_none(obj: "ExperimentResult", attr: str, divisor: Union[int, float]):
         obj_val = getattr(obj, attr)
         if obj_val is not None:
             setattr(obj, attr, obj_val / divisor)
@@ -170,6 +171,7 @@ class BaseExpParser(ABC):
     Args:
         workspace (Path): Workspace to parse.
     """
+
     def __init__(self, workspace: Path):
         self._workspace = workspace
         self._exp_result = ExperimentResult()
@@ -212,7 +214,6 @@ class BaseExpParser(ABC):
         elif "optimize" in str(file_path.parent.name):
             self._exp_result.optimize_model_score = list(eval_output.values())[0]
 
-        
     def _parse_resource_usage(self, file_path: Path):
         with file_path.open("r") as f:
             resource_usage = yaml.safe_load(f)
@@ -244,6 +245,7 @@ class BaseExpParser(ABC):
 
 class MMCVExpParser(BaseExpParser):
     """MMCV experiment parser class."""
+
     def parse_exp_log(self):
         """Parse experiment log."""
         for task_dir in (self._workspace / "outputs").iterdir():
@@ -273,7 +275,7 @@ class MMCVExpParser(BaseExpParser):
                 if eval_files:
                     self._parse_eval_output(eval_files[0])
 
-    def _parse_train_record(self, file_path : Path):
+    def _parse_train_record(self, file_path: Path):
         with file_path.open("r") as f:
             lines = f.readlines()
 
@@ -291,6 +293,7 @@ class MMCVExpParser(BaseExpParser):
 
 class AnomalibExpParser(BaseExpParser):
     """Anomalib experiment parser class."""
+
     def parse_exp_log(self):
         """Parse experiment log."""
         for task_dir in (self._workspace / "outputs").iterdir():
@@ -334,7 +337,7 @@ def get_exp_parser(workspace: Path) -> BaseExpParser:
 
 
 def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str, str]] = None):
-    """Organize experiment result and save it as a file named exp_result.yaml
+    """Organize experiment result and save it as a file named exp_result.yaml.
 
     Args:
         workspace (Union[str, Path]): Workspace to organize an expeirment result.
@@ -353,7 +356,7 @@ def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str
         print(f"There is no experiment result in {workspace}")
 
     with (workspace / "exp_result.yaml").open("w") as f:
-        yaml.dump({"meta" : exp_meta, "exp_result" : exp_result}, f, default_flow_style=False)
+        yaml.dump({"meta": exp_meta, "exp_result": exp_result}, f, default_flow_style=False)
 
 
 def write_csv(output_path: Union[str, Path], header: List[str], rows: List[Dict[str, Any]]):
@@ -369,26 +372,26 @@ def write_csv(output_path: Union[str, Path], header: List[str], rows: List[Dict[
 
     with output_path.open("w") as f:
         writer = csv.DictWriter(f, fieldnames=header)
-        writer.writeheader() 
+        writer.writeheader()
         writer.writerows(rows)
 
 
-def print_table(header: List[str], rows: List[Dict[str, Any]], table_title: str = "Table"):
+def print_table(headers: List[str], rows: List[Dict[str, Any]], table_title: str = "Table"):
     """Print a table to console.
 
     Args:
-        header (List[str]): List of header.
+        headers (List[str]): List of headers.
         rows (List[Dict[str, Any]]): Rows of table.
         table_title (str, optional): Table title. Defaults to "Table".
     """
     # print experiment summary to console
     table = Table(title=table_title)
-    for field in header:
-        table.add_column(field, justify="center", no_wrap=True)
+    for header in headers:
+        table.add_column(header, justify="center", no_wrap=True)
     for each_exp_result_summary in rows:
         table_row = []
-        for field in header:
-            val = each_exp_result_summary.get(field)
+        for header in headers:
+            val = each_exp_result_summary.get(header)
             table_row.append(str(val))
 
         table.add_row(*table_row)
@@ -396,7 +399,7 @@ def print_table(header: List[str], rows: List[Dict[str, Any]], table_title: str 
     console = Console()
     console.print(table)
 
-    
+
 def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     """Aggregate all experiment results.
 
@@ -443,7 +446,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
             exp_result_aggregation[exp_name]["result"] += exp_result
             exp_result_aggregation[exp_name]["num"] += 1
         else:
-            exp_result_aggregation[exp_name] = {"result" : exp_result, "num" : 1, "meta" : exp_meta}
+            exp_result_aggregation[exp_name] = {"result": exp_result, "num": 1, "meta": exp_meta}
 
         # copy tensorboard log into tensorboard dir
         exp_tb_dir = list(each_exp.rglob("tf_logs"))
@@ -479,6 +482,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 @dataclass
 class Command:
     """Command dataclass."""
+
     command: List[str]
     variable: Dict[str, str] = field(default_factory=dict)
 
@@ -489,6 +493,7 @@ class ExpRecipeParser:
     Args:
         recipe_file (Union[str, Path]): Recipe file to parse.
     """
+
     def __init__(self, recipe_file: Union[str, Path]):
         if not os.path.exists(recipe_file):
             raise RuntimeError(f"{recipe_file} doesn't exist.")
@@ -500,9 +505,9 @@ class ExpRecipeParser:
         self._constants: Dict[str, str] = constants
         self._variables: Optional[Dict[str, str]] = None
         self._commands: Optional[List[Command]] = None
-        self.output_path: Path = Path(self._exp_recipe.get(
-            "output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        ))
+        self.output_path: Path = Path(
+            self._exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        )
         self.repeat: int = self._exp_recipe.get("repeat", 1)
         self._replace_pat = re.compile(r"\$\{(\w+)\}")
 
@@ -523,7 +528,7 @@ class ExpRecipeParser:
     @property
     def commands(self) -> List[Command]:
         """List of commands from experiment recipe.
-        
+
         It counts all available cases and makes Command instance per each case.
 
         Returns:
@@ -537,7 +542,7 @@ class ExpRecipeParser:
             var_combinations = self._product_all_cases(self.variables, command)
             if not var_combinations:
                 self._commands = [Command(command=command)]
-            
+
             command_arr = []
             for var_combination in var_combinations:
                 command_arr.append(Command(self._replace_var_in_target(var_combination, command), var_combination))
@@ -604,6 +609,7 @@ class ExpRecipeParser:
 @dataclass
 class CommandFailInfo:
     """Dataclass to store command fail information."""
+
     exception: Exception
     variable: Dict[str, str]
     command: str
@@ -632,13 +638,13 @@ def log_fail_cases(fail_cases: List[CommandFailInfo], output_path: Path):
     console.rule()
 
     with (output_path / "failed_cases.yaml").open("w") as f:
-        yaml.safe_dump([fail_case.get_formatted_result() for fail_case in  fail_cases], f)
+        yaml.safe_dump([fail_case.get_formatted_result() for fail_case in fail_cases], f)
 
 
 class OtxCommandRunner:
     """Class to run list of otx commands who have same varaibles.
 
-    It provides convenient features not just runs commands. 
+    It provides convenient features not just runs commands.
     Same workspae made at first otx command is used for all commands.
     Therefore, the template don't have to be set after first command.
     And when executing OTX eval, which model to evaluate is decided depending on previous command.
@@ -647,13 +653,14 @@ class OtxCommandRunner:
         command_ins (Command): Command instance to run.
         repeat_idx (int): repeat index.
     """
-    OUTPUT_FILE_NAME = {"export" : "openvino.bin", "optimize" : "weights.pth"}
+
+    OUTPUT_FILE_NAME = {"export": "openvino.bin", "optimize": "weights.pth"}
 
     def __init__(self, command_ins: Command, repeat_idx: int):
         self._command_ins = command_ins
         self._repeat_idx = repeat_idx
         self._command_var = copy(command_ins.variable)
-        self._workspace = Path("_".join(self._command_var.values()).replace('/', '_') + f"_repeat_{repeat_idx}")
+        self._workspace = Path("_".join(self._command_var.values()).replace("/", "_") + f"_repeat_{repeat_idx}")
         self._command_var["repeat"] = str(repeat_idx)
         self._fail_logs: List[CommandFailInfo] = []
         self._previous_cmd_entry: Optional[str] = None
@@ -672,7 +679,7 @@ class OtxCommandRunner:
                 continue
 
             self._run_otx_command(command)
-                
+
             self._previous_cmd_entry = command[1]
 
         organize_exp_result(self._workspace, self._command_var)
@@ -714,17 +721,12 @@ class OtxCommandRunner:
         return file_path[0]
 
     @staticmethod
-    def set_arguments_to_cmd(
-        command: List[str],
-        key: str,
-        value: Optional[str] = None,
-        before_params: bool = True
-    ):
+    def set_arguments_to_cmd(command: List[str], key: str, value: Optional[str] = None, before_params: bool = True):
         """Add arguments at proper position in command.
 
         Args:
             command (List[str]): list includng a otx command entry and arguments.
-            keys (str): arguement key.
+            key (str): arguement key.
             value (str or None): argument value.
             before_params (bool): whether argument should be after `param` or not.
         """
@@ -732,7 +734,7 @@ class OtxCommandRunner:
             if value is not None:
                 command[command.index(key) + 1] = value
             return
-        
+
         if before_params and "params" in command:
             index = command.index("params")
         else:
