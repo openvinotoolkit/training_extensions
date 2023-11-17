@@ -156,6 +156,12 @@ class DetectionConfigurer:
             test_cfg = cfg.model.test_cfg
             test_cfg.max_per_img = max_num_detections
             test_cfg.nms_pre = max_num_detections * 10
+            # Special cases for 2-stage detectors (e.g. MaskRCNN)
+            if hasattr(test_cfg, "rpn"):
+                test_cfg.rpn.nms_pre = max_num_detections * 10
+                test_cfg.rpn.max_per_img = max_num_detections * 10
+            if hasattr(test_cfg, "rcnn"):
+                test_cfg.rcnn.max_per_img = max_num_detections
 
     def configure_data(self, cfg, training, data_cfg):  # noqa: C901
         """Patch cfg.data.
