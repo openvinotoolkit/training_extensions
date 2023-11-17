@@ -143,7 +143,7 @@ Since STFPM trains the student network, we use the following parameters for its 
 - ``Aditional Techniques``:
    - ``Early Stopping``: Early stopping is used to stop the training process when the validation loss stops improving. The default value of the early stopping patience is ``10``.
 
-For more information on STFPM's training. We invite you to read Anomalib's `STFPM documentation<https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html>`_.
+For more information on STFPM's training. We invite you to read Anomalib's `STFPM documentation <https://anomalib.readthedocs.io/en/latest/reference_guide/algorithms/stfpm.htm>`_.
 
 Reconstruction-based Models
 ---------------------------
