@@ -28,11 +28,12 @@ from rich.table import Table
 from otx.cli.tools.cli import main as otx_cli
 
 
-def get_args() -> str:
+def get_parser() -> argparse.ArgumentParser:
     """Parses command line arguments."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file", type=str, required=True)
-    return parser.parse_args()
+    parser.add_argument("-f", "--file", type=str, help="Experiment recipe file.")
+    parser.add_argument("-p", "--parse", type=str, help="Workspace path to parse.")
+    return parser
 
 
 def parse_time_delta_fmt(time_str: str, format: str) -> timedelta:
@@ -291,14 +292,14 @@ def get_exp_parser(workspace: Path) -> BaseExpParser:
     return MMCVExpParser(workspace)
 
 
-def organize_exp_result(workspace: Union[str, Path], exp_meta: Dict[str, str]):
+def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str, str]] = None):
     if isinstance(workspace, str):
         workspace = Path(workspace)
 
     exp_parser = get_exp_parser(workspace)
     exp_parser.parse_exp_log()
 
-    exp_result = exp_parser.get_exp_result() 
+    exp_result = exp_parser.get_exp_result()
     with (workspace / "exp_result.yaml").open("w") as f:
         yaml.dump({"meta" : exp_meta, "exp_result" : exp_result}, f, default_flow_style=False)
 
@@ -650,10 +651,17 @@ def run_experiment_recipe(recipe_file: Union[str, Path]):
 
 
 def main():
-    args = get_args()
-    run_experiment_recipe(args.file)
+    parser = get_parser()
+    args = parser.parse_args()
 
-    return dict(retcode=0)
+    if args.file is not None and args.parse is not None:
+        print("Please give either --file or --parse argument.")
+    elif args.file is not None:
+        run_experiment_recipe(args.file)
+    elif args.parse is not None:
+        organize_exp_result(args.parse)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
