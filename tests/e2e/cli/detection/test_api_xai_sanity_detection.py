@@ -32,7 +32,7 @@ assert_text_explain_predicted = "The number of saliency maps should be equal to 
 
 class TestOVDetXAIAPI(DetectionTaskAPIBase):
     ref_raw_saliency_shapes = {
-        "MobileNetV2-ATSS": (4, 4),  # Need to be adapted to configurable or adaptive input size
+        "MobileNetV2-ATSS": (16, 16),  # Need to be adapted to configurable or adaptive input size
     }
 
     @e2e_pytest_api
