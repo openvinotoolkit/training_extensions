@@ -424,7 +424,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 @dataclass
 class Command:
     """Command dataclass."""
-    command: List[str] = field(default_factory=list)
+    command: List[str]
     variable: Dict[str, str] = field(default_factory=dict)
 
 
@@ -533,8 +533,8 @@ class ExpRecipeParser:
 
 @dataclass
 class CommandFailInfo:
-    variable: Dict[str, str] = field(default_factory=dict)
     exception: Exception
+    variable: Dict[str, str]
     command: str
 
 
