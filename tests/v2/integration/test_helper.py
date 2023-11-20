@@ -17,6 +17,13 @@ TASK_CONFIGURATION = {
         "sample": "tests/assets/anomaly/hazelnut/test/colour/01.jpg",
         "models": ["otx_padim"],
     },
+    "action_classification": {
+        "train_data_roots": "tests/assets/cvat_dataset/action_classification/train",
+        "val_data_roots": "tests/assets/cvat_dataset/action_classification/train",
+        "test_data_roots": "tests/assets/cvat_dataset/action_classification/train",
+        "sample": "tests/assets/cvat_dataset/action_classification/predict",
+        "models": ["otx_x3d"],
+    },
     "visual_prompting": {
         "train_data_roots": "tests/assets/car_tree_bug",
         "val_data_roots": "tests/assets/car_tree_bug",

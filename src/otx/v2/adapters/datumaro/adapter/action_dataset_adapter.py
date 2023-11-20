@@ -3,25 +3,18 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+from __future__ import annotations
 
 import os
 import os.path as osp
-from typing import Dict, List, Optional
+from typing import Dict, TYPE_CHECKING
 
-from datumaro.components.annotation import AnnotationType
-from datumaro.components.annotation import Bbox as DatumBbox
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.dataset import Dataset as DatumDataset
 
-from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.v2.api.entities.subset import Subset
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
-
 
 class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
     """BaseDataset Adpater for Action tasks inherited by DatumaroDatasetAdapter."""
@@ -31,28 +24,28 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
 
     def _import_datasets(
         self,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        encryption_key: Optional[str] = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        encryption_key: str | None = None,
     ) -> Dict[Subset, DatumDataset]:
         """Import multiple videos that have CVAT format annotation.
 
         Args:
-            train_data_roots (Optional[str]): Path for training data
-            train_ann_files (Optional[str]): Path for training annotation file
-            val_data_roots (Optional[str]): Path for validation data
-            val_ann_files (Optional[str]): Path for validation annotation file
-            test_data_roots (Optional[str]): Path for test data
-            test_ann_files (Optional[str]): Path for test annotation file
-            unlabeled_data_roots (Optional[str]): Path for unlabeled data
-            unlabeled_file_list (Optional[str]): Path of unlabeled file list
-            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+            train_data_roots (str | None): Path for training data
+            train_ann_files (str | None): Path for training annotation file
+            val_data_roots (str | None): Path for validation data
+            val_ann_files (str | None): Path for validation annotation file
+            test_data_roots (str | None): Path for test data
+            test_ann_files (str | None): Path for test annotation file
+            unlabeled_data_roots (str | None): Path for unlabeled data
+            unlabeled_file_list (str | None): Path of unlabeled file list
+            encryption_key (str | None): Encryption key to load an encrypted dataset
                                         (only required for DatumaroBinary format)
 
         Returns:
@@ -68,7 +61,7 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
             if val_data_roots:
                 dataset[Subset.VALIDATION] = self._prepare_cvat_pair_data(val_data_roots)
             self.is_train_phase = True
-        if test_data_roots is not None and train_data_roots is None:
+        if test_data_roots is not None:
             dataset[Subset.TESTING] = self._prepare_cvat_pair_data(test_data_roots)
             self.is_train_phase = False
 
@@ -89,7 +82,7 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
         dataset._source_path = path
 
         # make sure empty frame label has the last label index
-        categories = [category.name for category in dataset.categories()[AnnotationType.label]]
+        categories = [category.name for category in dataset.categories()[DatumAnnotationType.label]]
         categories.sort()
         dst_labels = [
             (float("inf"), category) if category == self.EMPTY_FRAME_LABEL_NAME else (label, category)
@@ -101,7 +94,12 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
 
         return dataset
 
-    def get_otx_dataset(self) -> DatasetEntity:
+
+
+class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
+    """Action classification adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
+    
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatasetEntity.
 
         Args:
@@ -110,86 +108,35 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
         Returns:
             DatasetEntity:
         """
-        raise NotImplementedError
-
-
-class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
-    """Action classification adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
-
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Acion Classification."""
-        dataset_items: List[DatasetItemEntity] = []
-        for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    image = self.datum_media_2_otx_media(datumaro_item.media)
-                    shapes: List[Annotation] = []
-                    for annotation in datumaro_item.annotations:
-                        if annotation.type == AnnotationType.label:
-                            shapes.append(self._get_label_entity(annotation))
-
-                    video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
-                    metadata_item = MetadataItemEntity(
-                        data=VideoMetadata(
-                            video_id=video_name,
-                            frame_idx=int(frame_idx),
-                            is_empty_frame=False,
-                        ),
-                    )
-
-                    dataset_item = DatasetItemEntity(
-                        image,
-                        self._get_ann_scene_entity(shapes),
-                        subset=subset,
-                        metadata=[metadata_item],
-                    )
-                    dataset_items.append(dataset_item)
-
-        return DatasetEntity(items=dataset_items)
+        for _, subset_data in self.dataset.items():
+            for datumaro_item in subset_data:
+                video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
+                datumaro_item.attributes['video_id'] = video_name
+                datumaro_item.attributes['frame_idx'] = int(frame_idx)
+                datumaro_item.attributes['is_empty_frame'] = False
+        return self.dataset
 
 
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
+        """Get DatasetEntity.
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
-        # Detection use index 0 as a background category
-        for label_entity in self.label_entities:
-            label_entity.id = ID(int(label_entity.id) + 1)
+        Args:
+            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
 
-        dataset_items: List[DatasetItemEntity] = []
-        for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    image = self.datum_media_2_otx_media(datumaro_item.media)
-                    shapes: List[Annotation] = []
-                    is_empty_frame = False
-                    for annotation in datumaro_item.annotations:
-                        if isinstance(annotation, DatumBbox):
-                            if self.label_entities[annotation.label].name == self.EMPTY_FRAME_LABEL_NAME:
-                                is_empty_frame = True
-                                shapes.append(self._get_label_entity(annotation))
-                            else:
-                                shapes.append(self._get_original_bbox_entity(annotation))
+        Returns:
+            DatasetEntity:
+        """
+        for _, subset_data in self.dataset.items():
+            for datumaro_item in subset_data:
+                is_empty_frame = False
+                for annotation in datumaro_item.annotations:
+                    if self.label_entities[annotation.label].name == self.EMPTY_FRAME_LABEL_NAME:
+                        is_empty_frame = True
+                video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
+                datumaro_item.attributes['video_id'] = video_name
+                datumaro_item.attributes['frame_idx'] = int(frame_idx.split('_')[-1])
+                datumaro_item.attributes['is_empty_frame'] = is_empty_frame
+        return self.dataset
 
-                    video_name, frame_name = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
-                    metadata_item = MetadataItemEntity(
-                        data=VideoMetadata(
-                            video_id=video_name,
-                            frame_idx=int(frame_name.split("_")[-1]),
-                            is_empty_frame=is_empty_frame,
-                        ),
-                    )
-                    dataset_item = DatasetItemEntity(
-                        image,
-                        self._get_ann_scene_entity(shapes),
-                        subset=subset,
-                        metadata=[metadata_item],
-                    )
-                    dataset_items.append(dataset_item)
-
-        found = [i for i, entity in enumerate(self.label_entities) if entity.name == self.EMPTY_FRAME_LABEL_NAME]
-        if found:
-            self.label_entities.pop(found[0])
-
-        return DatasetEntity(items=dataset_items)

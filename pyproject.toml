@@ -102,6 +102,16 @@ classification = [
     "pytorchcv",
     "yapf<0.40.0",
 ]
+# the latest mmaction2 version is 1.2.0, however, there is an issue
+# https://github.com/open-mmlab/mmaction2/pull/2721
+# When the issue is resolved, the version will be updated to the latest.
+action =[
+    "mmaction2==1.1.0",
+    "mmdet==3.1.0",
+    "mmdeploy",
+    "yapf<0.40.0"
+]
+
 visual_prompt = [
     "pytorch-lightning>=1.7.0,<1.10.0",
     "timm==0.6.12",

@@ -24,7 +24,10 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-
+from datumaro.components.media import Image as DatumImage
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.dataset import DatasetItem as DatumDatasetItem
+from datumaro.components.annotation import Label as DatumLabel
 
 class MockImage(Image):
     """Mock class for Image entity."""
@@ -33,7 +36,6 @@ class MockImage(Image):
         self.__file_path = file_path
         self.__data = np.ndarray((256, 256, 3))
         super().__init__(self.__data)
-
 
 class MockPipeline:
     """Mock class for data pipeline.
@@ -54,33 +56,33 @@ def generate_labels(length: int, domain: Domain) -> List[LabelEntity]:
     return output
 
 
-def generate_action_cls_otx_dataset(video_len: int, frame_len: int, labels: List[LabelEntity]) -> DatasetEntity:
+def generate_action_cls_otx_dataset(video_len: int, frame_len: int) -> DatasetEntity:
     """Generate otx_dataset for action classification task."""
-
-    items: List[DatasetItemEntity] = []
+    items: List[DatumDatasetItem] = []
     for video_id in range(video_len):
-        if video_id > 1:
-            subset = Subset.VALIDATION
-        else:
-            subset = Subset.TRAINING
         for frame_idx in range(frame_len):
-            item = DatasetItemEntity(
-                media=MockImage(f"{video_id}_{frame_idx}.png"),
-                annotation_scene=AnnotationSceneEntity(
-                    annotations=[Annotation(Rectangle.generate_full_box(), [ScoredLabel(labels[video_id])])],
-                    kind=AnnotationSceneKind.ANNOTATION,
-                ),
-                metadata=[MetadataItemEntity(data=VideoMetadata(video_id, frame_idx, is_empty_frame=False))],
-                subset=subset,
+            item = DatumDatasetItem(
+                id=f"{video_id}##{str(frame_idx).zfill(5)}",
+                subset='annotations',
+                image=DatumImage.from_numpy(data=np.ones((256, 256, 3))),
+                annotations=[
+                    DatumLabel(
+                        id=0,
+                        attributes={},
+                        group=0,
+                        label=0
+                    )
+                ],
+                attributes={
+                    'video_id': video_id,
+                }
             )
             items.append(item)
-    dataset = DatasetEntity(items=items)
-    return dataset
+    return DatumDataset.from_iterable(items, categories=['0'])
 
 
 def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List[LabelEntity]) -> DatasetEntity:
     """Generate otx_dataset for action detection task."""
-
     items: List[DatasetItemEntity] = []
     proposals: Dict[str, List[float]] = {}
     for video_id in range(video_len):

@@ -9,7 +9,7 @@ from otx.v2.adapters.datumaro.adapter.action_dataset_adapter import (
     ActionClassificationDatasetAdapter,
     ActionDetectionDatasetAdapter,
 )
-from otx.v2.api.entities.datasets import DatasetEntity
+from datumaro.components.dataset import Dataset as DatumDataset
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 
@@ -54,8 +54,8 @@ class TestOTXActionClassificationDatasetAdapter:
         assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
         assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
         
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
 
 class TestOTXActionDetectionDatasetAdapter:
@@ -90,5 +90,5 @@ class TestOTXActionDetectionDatasetAdapter:
         assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
         assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
         
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
