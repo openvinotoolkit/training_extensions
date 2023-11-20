@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 from mmaction.registry import TRANSFORMS
 
 if TYPE_CHECKING:
@@ -33,17 +32,5 @@ class OTXRawFrameDecode:
         results["imgs"] = imgs
         results["original_shape"] = imgs[0].shape[:2]
         results["img_shape"] = imgs[0].shape[:2]
-
-        # we resize the gt_bboxes and proposals to their real scale
-        if "gt_bboxes" in results:
-            height, width = results["img_shape"]
-            scale_factor = np.array([width, height, width, height])
-            gt_bboxes = results["gt_bboxes"]
-            gt_bboxes = (gt_bboxes * scale_factor).astype(np.float32)
-            results["gt_bboxes"] = gt_bboxes
-            if "proposals" in results and results["proposals"] is not None:
-                proposals = results["proposals"]
-                proposals = (proposals * scale_factor).astype(np.float32)
-                results["proposals"] = proposals
 
         return results

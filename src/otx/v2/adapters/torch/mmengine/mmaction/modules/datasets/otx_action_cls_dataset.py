@@ -80,7 +80,8 @@ class OTXActionClsDataset(RawframeDataset):
             video_id = item.attributes.get("video_id")
 
             if video_id not in video_info:
-                # Will consider the multi-label case
+                # ruff: noqa: FIX002, TD002, TD003
+                # TODO: Will consider the multi-label case
                 label = item.annotations[0].label
                 ignored_labels = item.attributes.get("ignored_labels", [])
                 video_info[video_id] = {

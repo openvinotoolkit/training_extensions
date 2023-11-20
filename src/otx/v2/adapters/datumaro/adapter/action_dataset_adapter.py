@@ -109,12 +109,11 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
             DatasetEntity:
         """
         for _, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
-                    datumaro_item.attributes['video_id'] = video_name
-                    datumaro_item.attributes['frame_idx'] = int(frame_idx)
-                    datumaro_item.attributes['is_empty_frame'] = False
+            for datumaro_item in subset_data:
+                video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
+                datumaro_item.attributes['video_id'] = video_name
+                datumaro_item.attributes['frame_idx'] = int(frame_idx)
+                datumaro_item.attributes['is_empty_frame'] = False
         return self.dataset
 
 
@@ -130,15 +129,14 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
             DatasetEntity:
         """
         for _, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    is_empty_frame = False
-                    for annotation in datumaro_item.annotations:
-                        if self.label_entities[annotation.label].name == self.EMPTY_FRAME_LABEL_NAME:
-                            is_empty_frame = True
-                    video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
-                    datumaro_item.attributes['video_id'] = video_name
-                    datumaro_item.attributes['frame_idx'] = int(frame_idx.split('_')[-1])
-                    datumaro_item.attributes['is_empty_frame'] = is_empty_frame
+            for datumaro_item in subset_data:
+                is_empty_frame = False
+                for annotation in datumaro_item.annotations:
+                    if self.label_entities[annotation.label].name == self.EMPTY_FRAME_LABEL_NAME:
+                        is_empty_frame = True
+                video_name, frame_idx = datumaro_item.id.split(self.VIDEO_FRAME_SEP)
+                datumaro_item.attributes['video_id'] = video_name
+                datumaro_item.attributes['frame_idx'] = int(frame_idx.split('_')[-1])
+                datumaro_item.attributes['is_empty_frame'] = is_empty_frame
         return self.dataset
 
