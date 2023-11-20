@@ -43,10 +43,12 @@ class TestDetectionConfigurer:
 
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg)
-        returned_value = self.configurer.configure(model_cfg, self.det_dataset, "", data_cfg, True)
+        returned_value = self.configurer.configure(
+            model_cfg, self.det_dataset, "", data_cfg, True, max_num_detections=100
+        )
         mock_cfg_base.assert_called_once_with(model_cfg, data_cfg, None, None)
         mock_cfg_device.assert_called_once_with(model_cfg, True)
-        mock_cfg_model.assert_called_once_with(model_cfg, None)
+        mock_cfg_model.assert_called_once_with(model_cfg, None, 100)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_regularization.assert_called_once_with(model_cfg, True)
         mock_cfg_task.assert_called_once_with(model_cfg, self.det_dataset, True)
