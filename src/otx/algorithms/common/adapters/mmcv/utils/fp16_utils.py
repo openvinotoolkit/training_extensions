@@ -6,13 +6,19 @@ from mmcv.runner.fp16_utils import cast_tensor_type
 from mmcv.utils import TORCH_VERSION, digit_version
 from otx.algorithms.common.utils import is_xpu_available
 import torch
+from mmcv.utils import IS_NPU_AVAILABLE
 
 
-if is_xpu_available():
-    # import intel_extension_for_pytorch as ipex
-    from torch.xpu.amp import autocast
-else:
-    from torch.cuda.amp import autocast
+try:
+    if is_xpu_available():
+        # import intel_extension_for_pytorch as ipex
+        from torch.xpu.amp import autocast
+    elif IS_NPU_AVAILABLE:
+        from torch.npu.amp import autocast
+    else:
+        from torch.cuda.amp import autocast
+except ImportError:
+    pass
 
 
 def custom_auto_fp16(
