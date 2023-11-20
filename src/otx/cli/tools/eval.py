@@ -156,11 +156,11 @@ def main():
     print(resultset.performance)
 
     output_path = Path(args.output) if args.output else config_manager.output_path
+    performance = {resultset.performance.score.name: resultset.performance.score.value}
+    if hasattr(task, "avg_time_per_image"):
+        performance["avg_time_per_image"] = task.avg_time_per_image
     with open(output_path / "performance.json", "w", encoding="UTF-8") as write_file:
-        json.dump(
-            {resultset.performance.score.name: resultset.performance.score.value},
-            write_file,
-        )
+        json.dump(performance, write_file)
 
     return dict(retcode=0, template=template.name)
 
