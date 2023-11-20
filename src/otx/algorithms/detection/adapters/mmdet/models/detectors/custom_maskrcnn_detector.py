@@ -18,6 +18,7 @@ from otx.algorithms.common.utils.task_adapt import map_class_names
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin
+from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_auto_fp16
 
 logger = get_logger()
 
@@ -86,6 +87,17 @@ class CustomMaskRCNN(SAMDetectorMixin, L2SPDetectorMixin, MaskRCNN):
 
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
+            
+    @custom_auto_fp16(apply_to=('img', ))
+    def forward(self, img, img_metas, return_loss=True, **kwargs):
+        if torch.onnx.is_in_onnx_export():
+            assert len(img_metas) == 1
+            return self.onnx_export(img[0], img_metas[0])
+
+        if return_loss:
+            return self.forward_train(img, img_metas, **kwargs)
+        else:
+            return self.forward_test(img, img_metas, **kwargs)
 
 
 if is_mmdeploy_enabled():
