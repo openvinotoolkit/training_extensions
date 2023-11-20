@@ -162,6 +162,9 @@ class MMActionEngine(MMXEngine):
             raise ModuleNotFoundError(msg)
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
 
+        codebase_config = None
+        ir_config = None
+        backend_config = None
         if deploy_config is not None:
             deploy_config_dict = load_config(deploy_config)[0]
             ir_config = get_ir_config(deploy_config_dict)
