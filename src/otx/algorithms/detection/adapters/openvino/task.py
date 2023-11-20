@@ -387,12 +387,18 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
         self.inferencer = self.load_inferencer()
+        self._avg_time_per_image: Optional[float] = None
         logger.info("OpenVINO task initialization completed")
 
     @property
     def hparams(self):
         """Hparams of OpenVINO Detection Task."""
         return self.task_environment.get_hyper_parameters(DetectionConfig)
+
+    @property
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
+        return self._avg_time_per_image
 
     def load_config(self) -> ADDict:
         """Load configurable parameters from model adapter.
@@ -557,7 +563,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         self.inferencer.await_all()
 
-        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")
         return dataset
