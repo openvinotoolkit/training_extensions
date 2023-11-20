@@ -57,12 +57,6 @@ class MMActionEngine(MMXEngine):
                 "type": "ActionVisualizer",
                 "vis_backends": [{"type": "LocalVisBackend"}, {"type": "TensorboardVisBackend"}],
             }
-
-        if hasattr(config, "param_scheduler"):
-            config.param_scheduler = [
-                {"type": "LinearLR", "by_epoch": True, "begin": 0, "end": 3},
-                {"type": "CosineAnnealingLR"},
-            ]
         return config, update_check
 
     def predict(
