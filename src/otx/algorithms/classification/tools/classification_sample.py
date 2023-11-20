@@ -12,7 +12,6 @@ import sys
 
 import numpy as np
 import torch
-from mmcv.utils import get_logger
 
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
@@ -33,6 +32,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.utils.logger import get_logger
 
 SEED = 5
 random.seed(SEED)
@@ -42,7 +42,7 @@ torch.cuda.manual_seed_all(SEED)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-logger = get_logger(name="mmcls")
+logger = get_logger()
 
 parser = argparse.ArgumentParser(description="Sample showcasing the new API")
 parser.add_argument("template_file_path", help="path to template file")

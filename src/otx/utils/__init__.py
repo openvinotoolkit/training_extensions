@@ -1,4 +1,4 @@
-"""Initialization of YOLOX Tiny model for Semi-SL Detection Task."""
+"""Collection of tools to run common OTX algorithms."""
 
 # Copyright (C) 2022 Intel Corporation
 #

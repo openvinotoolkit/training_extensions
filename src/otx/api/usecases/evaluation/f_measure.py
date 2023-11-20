@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import logging
 from typing import Dict, List, Optional, Tuple
+from otx.utils.logger import get_logger
 
 import numpy as np
 
@@ -32,7 +32,7 @@ from otx.api.usecases.evaluation.performance_provider_interface import (
 )
 from otx.api.utils.shape_factory import ShapeFactory
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 ALL_CLASSES_NAME = "All Classes"
 
 

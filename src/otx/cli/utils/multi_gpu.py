@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import datetime
-import logging
 import os
 import signal
 import socket
@@ -31,8 +30,9 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from otx.api.configuration import ConfigurableParameters
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _get_free_port():

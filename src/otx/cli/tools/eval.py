@@ -34,6 +34,7 @@ from otx.cli.utils.parser import (
     get_parser_and_hprams_data,
 )
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import config_logger
 
 # pylint: disable=too-many-locals
 
@@ -94,6 +95,7 @@ def main():
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode="eval")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

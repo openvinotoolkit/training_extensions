@@ -8,7 +8,6 @@ from typing import Optional
 
 import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -22,6 +21,7 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -35,7 +35,6 @@ from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
@@ -76,6 +75,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -417,17 +417,6 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset = dataset.get_subset(Subset.TRAINING)
 
         for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
-            if name == "decoder":
-                # TODO (sungchul): quantize decoder, too
-                logger.info(f"{name} won't do PTQ.")
-                output_model.set_data(
-                    f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml")
-                )
-                output_model.set_data(
-                    f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin")
-                )
-                continue
-
             data_loader = OTXOpenVinoDataLoader(
                 dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
             )

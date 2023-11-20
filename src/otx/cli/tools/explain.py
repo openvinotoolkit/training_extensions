@@ -18,7 +18,6 @@ from pathlib import Path
 
 # Update environment variables for CLI use
 import otx.cli  # noqa: F401
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
@@ -36,6 +35,7 @@ from otx.cli.utils.parser import (
     get_override_param,
     get_parser_and_hprams_data,
 )
+from otx.utils.logger import config_logger, get_logger
 
 logger = get_logger()
 
@@ -135,6 +135,7 @@ def main():
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, mode="explain")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

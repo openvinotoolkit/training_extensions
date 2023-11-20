@@ -16,7 +16,6 @@
 
 import io
 import json
-import logging
 import os
 import tempfile
 import time
@@ -79,8 +78,9 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # TODO: refactoring to Sphinx style.

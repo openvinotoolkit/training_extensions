@@ -22,6 +22,3 @@ yolox_s_8x8_300e_coco/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth"
 
 fp16 = dict(loss_scale=512.0)
 ignore = False
-
-# for multi-gpu training
-find_unused_parameters = True

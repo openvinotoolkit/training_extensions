@@ -107,9 +107,13 @@ def regression_openvino_testing(
     ]
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(perf_path)
-    with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
+
+    trained_perf_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
+    assert os.path.exists(trained_perf_path)
+    with open(trained_perf_path) as read_file:
         trained_performance = json.load(read_file)
+
+    assert os.path.exists(perf_path)
     with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
 

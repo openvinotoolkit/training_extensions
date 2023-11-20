@@ -33,6 +33,3 @@ load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_
 
 fp16 = dict(loss_scale=512.0)
 ignore = False
-
-# for multi-gpu training
-find_unused_parameters = True
