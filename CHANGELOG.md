@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## \[unreleased\]
 
+### Enhancements
+
+- Upgrade NNCF to 2.7 and OpenVINO to 2023.2 (<https://github.com/openvinotoolkit/training_extensions/pull/2656>)
+
 ## \[v1.5.0\]
 
 ### New features
