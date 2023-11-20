@@ -19,7 +19,10 @@ logger = get_logger()
 
 
 class ZeroShotSegmentAnything(SegmentAnything):
-    def __init__(self, config: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
+    def __init__(self, config: Optional[DictConfig] = None, state_dict: Optional[OrderedDict] = None) -> None:
+        if config is None:
+            config = self.set_default_config()
+            
         if not config.model.freeze_image_encoder:
             logger.warning("config.model.freeze_image_encoder(=False) must be set to True, changed.")
             config.model.freeze_image_encoder = True
@@ -43,6 +46,19 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 self.reference_prompts = state_dict.pop("reference_prompts")
 
         super().__init__(config, state_dict)
+        
+    def set_default_config(self) -> DictConfig:
+        return DictConfig({"model": {
+            "backbone": "tiny_vit",
+            "checkpoint": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
+            "default_threshold_reference": 0.3,
+            "default_threshold_target": 0.65,
+            "freeze_image_encoder": True,
+            "freeze_mask_decoder": True,
+            "freeze_prompt_encoder": True,
+            "image_size": 1024,
+            "mask_threshold": 0.0,
+        }})
     
     def _initialize_reference(self) -> None:
         """Initialize reference information."""
@@ -86,7 +102,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             default_threshold_reference = deepcopy(self.default_threshold_reference)
             while reference_feat is None:
                 logger.info(f"[*] default_threshold_reference : {default_threshold_reference:.4f}")
-                reference_feat = self._generate_masked_features(ref_feat, ref_mask, default_threshold_reference)
+                reference_feat = self._generate_masked_features(ref_feat, ref_mask, default_threshold_reference, **kwargs)
                 default_threshold_reference -= 0.05
 
             self.reference_feats[int(label.id)] = reference_feat.detach().cpu()
@@ -124,6 +140,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             target_feat = self._preprocess_target_feat(target_feat, c_feat, h_feat, w_feat)
             
             predicted_masks = defaultdict(list)
+            used_points = defaultdict(list)
             for label, reference_feat in self.reference_feats.items():
                 sim = reference_feat.to(target_feat.device) @ target_feat
                 sim = sim.reshape(1, 1, h_feat, w_feat)
@@ -137,7 +154,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                 for x, y, score in points_scores:
                     is_done = False
-                    for pm in predicted_masks[label]:
+                    for pm in predicted_masks.get(label, []):
                         # check if that point is already assigned
                         if pm[int(y), int(x)] > 0:
                             is_done = True
@@ -155,15 +172,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         **kwargs
                     )
 
+                    mask = mask.detach().cpu().to(torch.uint8)
                     # set bbox based on predicted mask
-                    # ys, xs = torch.nonzero(mask)
-                    # bboxes.append([xs.min(), ys.min(), xs.max(), ys.max()])
-                    # scores.append(score)
-                    # classes.append(i+1)
-                    predicted_masks[label].append(mask.detach().cpu().to(torch.uint8))
-                    # used_point.append([float(x), float(y), float(score)])
-
-            total_results.append(predicted_masks)
+                    predicted_masks[label].append(mask)
+                    used_points[label].append((float(x), float(y), float(score)))
+            total_results.append([predicted_masks, used_points])
         return total_results
 
     @torch.no_grad()
@@ -177,8 +190,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Return:
             (torch.Tensor): Predicted mask.
         """
-        # masks, scores, logits = self._predict_mask(image_embeddings, input_prompts, images.shape[2:], **kwargs)
-        
         # First-step prediction
         _, _, logits = self._predict_mask(image_embeddings, input_prompts, image_shape, multimask_output=False, **kwargs)
         best_idx = 0
@@ -232,7 +243,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
             "original_size": batch.get("original_size"),
             "padding": batch.get("padding"),
         }
-        return self.infer(images, **kwargs)
+        results = self.infer(images, **kwargs)
+        return [result[0] for result in results] # tmp: only mask
     
     def _preprocess_prompts(
         self,
@@ -313,7 +325,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x[0]))
         return processed_prompts
     
-    def _generate_masked_features(self, feats: torch.Tensor, masks: torch.Tensor, threshold_mask: float) -> Tuple[torch.Tensor, ...]:
+    def _generate_masked_features(self, feats: torch.Tensor, masks: torch.Tensor, threshold_mask: float, **kwargs) -> Tuple[torch.Tensor, ...]:
         """Generate masked features.
         
         Args:
@@ -325,8 +337,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
             (torch.Tensor): Masked features.
             (torch.Tensor): Masked embeddings used for semantic prompting.
         """
+        if kwargs:
+            image_padding = kwargs["padding"][0]
+            resized_size = (self.config.model.image_size - image_padding[1] - image_padding[3], self.config.model.image_size - image_padding[0] - image_padding[2])
+        else:
+            resized_size = (self.config.model.image_size, self.config.model.image_size)
+
         # Post-process masks
-        masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=self.config.model.image_size, mode="bilinear").squeeze()
+        masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=resized_size, mode="bilinear").squeeze()
         masks = self._preprocess_mask(masks)
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=feats.shape[0: 2], mode="bilinear").squeeze()
         
@@ -418,7 +436,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         n_w = width // downsizing
         
         res = (fg_coords_scores[:,1] * ratio // downsizing * n_w + fg_coords_scores[:,0] * ratio // downsizing).to(torch.int32)
-        points_scores = torch.stack([fg_coords_scores[res == r][0] for r in torch.unique(res)], axis=0)
+        points_scores = torch.stack([fg_coords_scores[res == r][0] for r in torch.unique(res)], dim=0)
         points_scores = points_scores[torch.argsort(points_scores[:,-1], descending=True)]
 
         return points_scores, bg_coords
