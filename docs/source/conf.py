@@ -35,7 +35,21 @@ release = __version__
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx_copybutton',
+    "sphinx.ext.autosummary",  # Create neat summary tables
 ]
+
+# Turn on sphinx.ext.autosummary
+autosummary_generate = True
+# autodoc_member_order = "groupwise"
+# autoclass_content = "both"
+
+# autodoc_default_options = {
+#     "members": True,
+#     "methods": True,
+#     "special-members": "__call__",
+#     "exclude-members": "_abc_impl",
+#     "show-inheritance": True,
+# }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -44,7 +58,6 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
-
 
 # -- Options for HTML output ------------------------------------------------- #
 # The theme to use for HTML and HTML Help pages.  See the documentation for

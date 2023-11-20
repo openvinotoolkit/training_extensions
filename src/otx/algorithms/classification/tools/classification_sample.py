@@ -12,7 +12,6 @@ import sys
 
 import numpy as np
 import torch
-
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
@@ -56,8 +55,6 @@ args = parser.parse_args()
 def load_test_dataset(data_type):
     """Load test dataset."""
     import PIL
-    from PIL import ImageDraw
-
     from otx.api.entities.annotation import (
         Annotation,
         AnnotationSceneEntity,
@@ -67,6 +64,7 @@ def load_test_dataset(data_type):
     from otx.api.entities.image import Image
     from otx.api.entities.scored_label import ScoredLabel
     from otx.api.entities.shapes.rectangle import Rectangle
+    from PIL import ImageDraw
 
     def gen_image(resolution, shape=None):
         image = PIL.Image.new("RGB", resolution, (255, 255, 255))

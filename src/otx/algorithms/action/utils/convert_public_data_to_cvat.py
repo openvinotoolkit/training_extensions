@@ -4,6 +4,7 @@ This script contains a lot of hardcoding to create an.xml file that Datumaro can
 
 Current Datumaro format for video (CVAT)
 
+```
 root
 |- video_0
     |- images
@@ -14,7 +15,7 @@ root
     |- images
     |- annotations.xml
 |- video_2
-
+```
 """
 
 # Copyright (C) 2022 Intel Corporation
