@@ -37,7 +37,7 @@
 /src/otx/v2/adapters/torch/mmengine/mmdeploy                @samet-akcay @harimkang @goodsong81 @sovrasov
 
 # Tests
-/tests/v2                                                   @samet-akcay @harimkang @goodsong81 @wonjuleee
+/tests/v2                                                   @samet-akcay @harimkang @goodsong81 @wonjuleee @jaegukhyun @sungmanc @eugene123tw @kprokofi
 
 # Misc
 /pyproject.toml                                             @samet-akcay @harimkang @yunchu
