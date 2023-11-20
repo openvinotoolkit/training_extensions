@@ -1,0 +1,28 @@
+# Model Configuration
+model:
+  type: Recognizer3D
+  backbone:
+    type: X3D
+    gamma_w: 1
+    gamma_b: 2.25
+    gamma_d: 2.2
+  cls_head:
+    type: X3DHead
+    in_channels: 432
+    num_classes: 400
+    spatial_type: avg
+    dropout_ratio: 0.5
+    fc1_bias: false
+    average_clips: prob
+  data_preprocessor:
+    type: ActionDataPreprocessor
+    mean:
+      - 0.0
+      - 0.0
+      - 0.0
+    std:
+      - 255.0
+      - 255.0
+      - 255.0
+    to_rgb: False
+    format_shape: NCTHW
