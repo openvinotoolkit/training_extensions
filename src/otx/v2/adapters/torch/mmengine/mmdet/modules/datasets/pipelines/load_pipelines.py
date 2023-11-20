@@ -9,7 +9,7 @@ import copy
 from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
-from datumaro.components.annotation import Polygon
+from datumaro.components.annotation import Bbox, Polygon
 from mmdet.registry import TRANSFORMS
 from mmdet.structures.mask.structures import PolygonMasks
 
@@ -108,7 +108,6 @@ class LoadAnnotationFromOTXDataset:
         gt_polygons: list[list[np.array]] = []
         gt_ann_ids: list[tuple[str, int]] = []
 
-        image_height, image_width = dataset_item.media.data.shape[:2]
         _labels: list[int] = [int(label.id) for label in labels]
 
         for annotation in dataset_item.annotations:
@@ -122,10 +121,13 @@ class LoadAnnotationFromOTXDataset:
                 annotation_height = bbox[3]
                 # [x1, y1, w, h] -> [x1, y1, x2, y2]
                 bbox = [bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]]
-            else:
+            elif isinstance(annotation, Bbox):
                 bbox = annotation.points
                 annotation_width = annotation.w
                 annotation_height = annotation.h
+            else:
+                err_msg = f"Detection task's annotation should be Polygon or Bbox, but got {type(annotation)}"
+                raise TypeError(err_msg)
 
             if min(annotation_width, annotation_height) < min_size:
                 continue
@@ -135,6 +137,7 @@ class LoadAnnotationFromOTXDataset:
             gt_ann_ids.append((dataset_item.id, annotation.id))
 
         if len(gt_bboxes) > 0:
+            image_height, image_width = dataset_item.media.data.shape[:2]
             ann_info = {
                 "bboxes": np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
                 "labels": np.array(gt_labels, dtype=int),
