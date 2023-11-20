@@ -14,24 +14,24 @@
 /src/otx/v2/config                                          @samet-akcay @harimkang @goodsong81 @wonjuleee
 
 # OTX API & CLI
-/src/otx/v2/api                                             @samet-akcay @harimkang @wonjuleee @goodsong81 @vinnnamkim
-/src/otx/v2/cli                                             @samet-akcay @harimkang @wonjuleee @goodsong81 @vinnnamkim
+/src/otx/v2/api                                             @samet-akcay @harimkang @wonjuleee @goodsong81 @vinnamkim
+/src/otx/v2/cli                                             @samet-akcay @harimkang @wonjuleee @goodsong81 @vinnamkim
 
 # OTX Adapters Datumaro/Openvino
-/src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang @wonjuleee @vinnnamkim @sungmanc
-/src/otx/v2/adapters/openvino                               @samet-akcay @harimkang @sovrasov @wonjuleee @vinnnamkim
+/src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang @wonjuleee @vinnamkim @sungmanc
+/src/otx/v2/adapters/openvino                               @samet-akcay @harimkang @sovrasov @wonjuleee @vinnamkim
 
 # OTX Adapters torch modules
 /src/otx/v2/adapters/torch/modules                          @samet-akcay @harimkang @goodsong81 @wonjuleee @kprokofi @jaegukhyun
 
 # OTX Adapters lightning
-/src/otx/v2/adapters/torch/lightning                        @samet-akcay @harimkang @ashwinvaidya17 @djdameln @wonjuleee @vinnnamkim
+/src/otx/v2/adapters/torch/lightning                        @samet-akcay @harimkang @ashwinvaidya17 @djdameln @wonjuleee @vinnamkim
 
 # OTX Adapters anomalib
 /src/otx/v2/adapters/torch/lightning/anomalib               @samet-akcay @harimkang @ashwinvaidya17 @djdameln
 
 # OTX Adapters mmengine
-/src/otx/v2/adapters/torch/mmengine                         @samet-akcay @harimkang @goodsong81 @wonjuleee @vinnnamkim @jaegukhyun @sungmanc @eugene123tw
+/src/otx/v2/adapters/torch/mmengine                         @samet-akcay @harimkang @goodsong81 @wonjuleee @vinnamkim @jaegukhyun @sungmanc @eugene123tw
 
 # OTX Adapters mmdeploy
 /src/otx/v2/adapters/torch/mmengine/mmdeploy                @samet-akcay @harimkang @goodsong81 @sovrasov
