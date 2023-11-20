@@ -28,4 +28,3 @@ html:
 # be removed when https://github.com/sphinx-doc/sphinx/issues/1999 is fixed.
 clean:
 	rm -rf "$(SOURCEDIR)/guide/reference/_autosummary"
-	$(SPHINXBUILD)  -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
