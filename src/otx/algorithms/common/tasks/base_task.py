@@ -107,7 +107,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._model_label_schema: List[LabelEntity] = []
         self._resume = False
-        self._should_stop = False
+        self._should_stop: bool = False
         self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self._model_ckpt = None
