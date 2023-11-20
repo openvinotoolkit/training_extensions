@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -169,41 +168,6 @@ class MMActionEngine(MMXEngine):
             raise ModuleNotFoundError(msg)
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
 
-        from otx.v2.adapters.torch.mmengine.mmdeploy.exporter import Exporter
-        from otx.v2.adapters.torch.mmengine.mmdeploy.utils.deploy_cfg_utils import (
-            patch_input_preprocessing,
-            patch_input_shape,
-        )
-
-        # Configure model_cfg
-        model_cfg = None
-        if model is not None:
-            if isinstance(model, str):
-                model_cfg = Config.fromfile(model)
-            elif isinstance(model, Config):
-                model_cfg = copy.deepcopy(model)
-            elif isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
-                model_cfg = model._config.get("model", model._config)  # noqa: SLF001
-            else:
-                raise NotImplementedError
-        elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
-            if isinstance(self.dumped_config["model"], dict):
-                model_cfg = Config(self.dumped_config["model"])
-            else:
-                model_cfg = self.dumped_config["model"]
-        else:
-            msg = "Not fount target model."
-            raise ValueError(msg)
-
-        if checkpoint is None:
-            checkpoint = self.latest_model.get("checkpoint", None)
-        self.dumped_config["model"] = model_cfg
-        self.dumped_config["default_scope"] = "mmengine"
-
-        # deploy_cfg
-        codebase_config = None
-        ir_config = None
-        backend_config = None
         if deploy_config is not None:
             deploy_config_dict = load_config(deploy_config)[0]
             ir_config = get_ir_config(deploy_config_dict)
@@ -212,11 +176,10 @@ class MMActionEngine(MMXEngine):
         else:
             deploy_config_dict = {}
 
-        # codebase_config update
         if codebase_config is None:
-            codebase = codebase if codebase is not None else self.registry.name
-            codebase_config = {"type": codebase, "task": task}
-            deploy_config_dict["codebase_config"] = codebase_config
+            self._update_codebase_config(
+                codebase=codebase, task=task, deploy_config_dict=deploy_config_dict,
+            )
 
         # if_config update
         if ir_config is None:
@@ -244,6 +207,7 @@ class MMActionEngine(MMXEngine):
                 },
             }
             deploy_config_dict["ir_config"] = ir_config
+
         # BACKEND_CONFIG Update
         if backend_config is None:
             backend_config = {
@@ -263,28 +227,14 @@ class MMActionEngine(MMXEngine):
             }
             deploy_config_dict["backend_config"] = backend_config
 
-        # Patch input's configuration
-        if isinstance(deploy_config_dict, dict):
-            deploy_config_dict = Config(deploy_config_dict)
-        data_preprocessor = self.dumped_config.model.get("data_preprocessor", None)
-        mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
-        std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
-        to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
-        patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
-        if not deploy_config_dict.backend_config.get("model_inputs", []):
-            if input_shape is None:
-                pass
-            patch_input_shape(deploy_config_dict, input_shape=input_shape)
-
-        export_dir = Path(self.work_dir) / f"{self.timestamp}_export"
-        exporter = Exporter(
-            config=self.dumped_config,
-            checkpoint=str(checkpoint),
-            deploy_config=deploy_config_dict,
-            work_dir=str(export_dir),
+        return super().export(
+            model=model,
+            checkpoint=checkpoint,
             precision=precision,
+            task=task,
+            codebase=codebase,
             export_type=export_type,
+            deploy_config=deploy_config_dict,
             device=device,
+            input_shape=input_shape,
         )
-
-        return exporter.export()
