@@ -67,7 +67,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         if seed:
             logger.info(f"Setting seed to {seed}")
             seed_everything(seed, workers=True)
-        config.trainer.deterministic = "warn" if deterministic else deterministic
+        config.trainer.deterministic = deterministic
 
         logger.info("Training Configs '%s'", config)
 
