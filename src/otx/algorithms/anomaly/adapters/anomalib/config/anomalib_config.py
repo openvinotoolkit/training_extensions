@@ -22,6 +22,9 @@ from anomalib.config.config import get_configurable_parameters
 from omegaconf import DictConfig, ListConfig
 
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.utils.logger import get_logger
+
+logger = get_logger()
 
 
 def get_anomalib_config(task_name: str, otx_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
@@ -42,8 +45,11 @@ def get_anomalib_config(task_name: str, otx_config: ConfigurableParameters) -> U
     config_path = Path(anomalib.__file__).parent / "models" / task_name.lower() / "config.yaml"
     anomalib_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
 
-    anomalib_config.metrics.image.remove("AUROC")
-    anomalib_config.metrics.pixel.remove("AUROC")
+    try:
+        anomalib_config.metrics.image.remove("AUROC")
+        anomalib_config.metrics.pixel.remove("AUROC")
+    except ValueError:
+        logger.info("Tried removing AUROC metric from anomalib config, but metric was not found.")
 
     # TODO: remove this hard coding of the config location
     if anomalib_config.model.name == "draem":
