@@ -15,4 +15,5 @@ ADAPTERS = [
     "torch.mmengine.mmpretrain",
     "torch.mmengine.mmseg",
     "torch.mmengine.mmdet",
+    "torch.mmengine.mmaction",
 ]

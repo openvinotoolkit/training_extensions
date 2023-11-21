@@ -42,6 +42,13 @@ REQUIRED_ADAPTERS_PER_TASK = {
         "torch.mmengine.mmdet",
         "torch.mmengine.mmdeploy",
     ],
+    "action": [
+        "openvino",
+        "datumaro",
+        "torch.mmengine",
+        "torch.mmengine.mmaction",
+        "torch.mmengine.mmdeploy",
+    ],
 }
 
 
