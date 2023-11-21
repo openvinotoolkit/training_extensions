@@ -3,39 +3,35 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import TYPE_CHECKING
 
 import albumentations
 import numpy as np
 from albumentations.pytorch import ToTensorV2
-from bson import ObjectId
-from datumaro.components.annotation import Label, Bbox, Mask
+from datumaro.components.annotation import Label, Mask
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import DatasetItem
-from datumaro.components.media import Image as Image
+from datumaro.components.media import Image
 from omegaconf import OmegaConf
-from otx.v2.adapters.torch.lightning.anomalib.modules.data.data import (
-    OTXAnomalyDataModule,
-    OTXAnomalyDataset,
-)
-from otx.v2.adapters.torch.lightning.anomalib.modules.data.dataset import (
+from otx.v2.adapters.torch.lightning.modules.datasets.anomaly_dataset import (
     AnomalyClassificationDataset,
     AnomalyDetectionDataset,
     AnomalySegmentationDataset,
+    OTXAnomalyDataModule,
+    OTXAnomalyDataset,
 )
-from otx.v2.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
-from otx.v2.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import Domain, LabelEntity
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch.utils.data import DataLoader
+
+if TYPE_CHECKING:
+    from otx.v2.api.entities.datasets import DatasetEntity
 
 
 def get_hazelnut_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEntity:
@@ -61,23 +57,23 @@ def get_hazelnut_dataset(task_type: TaskType, one_each: bool = False) -> Dataset
         raise ValueError(msg)
 
     if one_each:
-        train_subset = []
-        test_subset = []
-        val_subset = []
+        train_subset_lst = []
+        test_subset_lst = []
+        val_subset_lst = []
         for item in dataset._items:
             if item.subset == Subset.TRAINING and len(train_subset) < 1:
-                train_subset.append(item)
+                train_subset_lst.append(item)
             # Check if the label is already present in the subset.
             elif item.subset == Subset.TESTING and item.annotation_scene.annotations[0].get_labels()[0].name not in [
                 a.annotation_scene.annotations[0].get_labels()[0].name for a in test_subset
             ]:
-                test_subset.append(item)
+                test_subset_lst.append(item)
             # Check if the label is already present in the subset.
             elif item.subset == Subset.VALIDATION and item.annotation_scene.annotations[0].get_labels()[0].name not in [
                 a.annotation_scene.annotations[0].get_labels()[0].name for a in val_subset
             ]:
-                val_subset.append(item)
-        dataset._items = train_subset + test_subset + val_subset
+                val_subset_lst.append(item)
+        dataset._items = train_subset_lst + test_subset_lst + val_subset_lst
     return dataset
 
 
@@ -99,7 +95,6 @@ class DummyDataset(OTXAnomalyDataset):
             ],
         )
         self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
-        
         self.item_ids: list[str] = [item.id for item in self.dataset]
 
     def get_mock_dataitems(self) -> Dataset:
@@ -166,7 +161,7 @@ class HazelnutDataModule(OTXAnomalyDataModule):
         super().__init__(config=self.config, dataset=self.dataset, task_type=task_type)
 
 
-def _get_annotations(task: str) -> Tuple[Dict, Dict, Dict]:
+def _get_annotations(task: str) -> tuple[dict, dict, dict]:
     ann_file_root = Path("tests", "assets", "anomaly", task)
     data_root = Path("tests", "assets", "anomaly", "hazelnut")
 

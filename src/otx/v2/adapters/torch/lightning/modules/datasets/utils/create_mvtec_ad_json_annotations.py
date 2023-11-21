@@ -1,6 +1,5 @@
-# Copyright (C) 2020-2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 """Create MVTec AD (CC BY-NC-SA 4.0) JSON Annotations for OTX CLI.
 

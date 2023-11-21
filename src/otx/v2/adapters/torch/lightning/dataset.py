@@ -7,21 +7,29 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable
 
+from anomalib.data.base.datamodule import collate_fn as anomalib_collate_fn
 from omegaconf import DictConfig, OmegaConf
 
 from otx.v2.adapters.torch.dataset import BaseTorchDataset
-from otx.v2.adapters.torch.lightning.modules.datasets import OTXVisualPromptingDataset
 from otx.v2.adapters.torch.lightning.modules.datasets.pipelines import collate_fn
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.decorators import add_subset_dataloader
-from otx.v2.api.utils.type_utils import str_to_subset_type
+from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
+
+from .modules.datasets import DATASETS
 
 if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
     from torch.utils.data import DataLoader as TorchDataLoader
     from torch.utils.data import Dataset as TorchDataset
     from torch.utils.data import Sampler
 
 SUBSET_LIST = ["train", "val", "test"]
+COLLATE_FNS = {
+    TaskType.ANOMALY_CLASSIFICATION: anomalib_collate_fn,
+    TaskType.VISUAL_PROMPTING: collate_fn,
+}
+
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -52,8 +60,9 @@ class LightningDataset(BaseTorchDataset):
             self._initialize()
 
         # NOTE: It needs to be refactored in a more general way.
+        otx_dataset: DatumDataset
+        config = OmegaConf.load(filename=config) if isinstance(config, str) else DictConfig({})
         if self.task in (TaskType.VISUAL_PROMPTING, "visual_prompting"):
-            config = OmegaConf.load(filename=config) if isinstance(config, str) else DictConfig({})
             config = config.get("dataset", config)
             image_size = config.get("image_size", 1024)
             normalize = config.get("normalize", {})
@@ -67,15 +76,31 @@ class LightningDataset(BaseTorchDataset):
                 otx_dataset = self.dataset_entity.get(str_to_subset_type(subset), None)
             if otx_dataset is None or len(otx_dataset) == 0:
                 return None
+            dataset_class = DATASETS.get("visual_prompting")
+            if dataset_class is not None:
+                return dataset_class(
+                    dataset=otx_dataset,
+                    image_size=image_size,
+                    mean=mean,
+                    std=std,
+                    offset_bbox=offset_bbox,
+                    pipeline=pipeline,
+                )
+        if self.task in (TaskType.ANOMALY_CLASSIFICATION, "anomaly_classification"):
+            config.dataset = {"transform_config": {"train": pipeline}, "image_size": [256, 256]}
+            otx_dataset = self.dataset_entity.get(str_to_subset_type(subset), None)
+            if otx_dataset is None or len(otx_dataset) == 0:
+                return None
 
-            return OTXVisualPromptingDataset(
-                dataset=otx_dataset,
-                image_size=image_size,
-                mean=mean,
-                std=std,
-                offset_bbox=offset_bbox,
-                pipeline=pipeline,
-            )
+            # [TODO] resotre split_local_global_dataset for subset == "val"
+            task_type = str_to_task_type(self.task) if isinstance(self.task, str) else self.task
+            dataset_class = DATASETS.get("anomaly")
+            if dataset_class is not None:
+                return dataset_class(
+                    config=config,
+                    dataset=otx_dataset,
+                    task_type=task_type,
+                )
         raise NotImplementedError
 
     def _build_dataloader(
@@ -114,7 +139,7 @@ class LightningDataset(BaseTorchDataset):
             shuffle = False
 
         # Currently, copy from mm's
-        input_collate_fn = kwargs.pop("collate_fn", collate_fn)
+        input_collate_fn = kwargs.pop("collate_fn", COLLATE_FNS[self.task])
         return super()._build_dataloader(
             dataset,
             batch_size=batch_size,

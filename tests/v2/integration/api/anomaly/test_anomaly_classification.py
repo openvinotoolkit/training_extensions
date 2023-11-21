@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 import torch
-from otx.v2.adapters.torch.lightning.anomalib import Dataset, Engine, get_model
+from otx.v2.adapters.torch.lightning import Dataset, Engine, get_model
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
@@ -30,6 +30,7 @@ class TestAnomalibClassificationAPI:
                 Dataset: A Dataset object containing the paths to the training, validation, and test data.
             """
             return Dataset(
+                task="anomaly_classification",
                 train_data_roots=TASK_CONFIGURATION["anomaly_classification"]["train_data_roots"],
                 val_data_roots=TASK_CONFIGURATION["anomaly_classification"]["val_data_roots"],
                 test_data_roots=TASK_CONFIGURATION["anomaly_classification"]["test_data_roots"],
@@ -57,7 +58,7 @@ class TestAnomalibClassificationAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path)
+        engine = Engine(work_dir=tmp_dir_path, task="anomaly_classification")
         built_model = get_model(model=model)
 
         # Train (1 epochs)

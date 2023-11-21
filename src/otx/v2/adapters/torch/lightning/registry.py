@@ -38,3 +38,7 @@ class LightningRegistry(BaseRegistry):
         if module_type in self.module_dict:
             return self.module_dict[module_type]
         return None
+
+
+MODELS = LightningRegistry()
+DATASETS = LightningRegistry()

@@ -9,8 +9,10 @@ import fnmatch
 from pathlib import Path
 
 import torch
+from anomalib.models.components import AnomalyModule
 from omegaconf import DictConfig, OmegaConf
 
+from otx.v2.adapters.torch.lightning.modules.models.anomaly.anomaly_module import get_wrapper_otx_model
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 
 from .modules.models import MODELS
@@ -51,6 +53,9 @@ def get_model(
             model = MODEL_CONFIGS[model.model["name"]]
             model = OmegaConf.load(model)
 
+    if model.model.name.startswith("otx"):
+        model.model.name = "_".join(model.model.name.split("_")[1:])
+
     state_dict = None
     if checkpoint is not None:
         model["checkpoint"] = checkpoint
@@ -66,6 +71,9 @@ def get_model(
         raise NotImplementedError(
             msg,
         )
+    if isinstance(model_class, type) and issubclass(model_class, AnomalyModule):
+        model_class = get_wrapper_otx_model(model_class=model_class, task=kwargs.pop("task", "classification"))
+        return model_class(model)
     return model_class(config=model, state_dict=state_dict)
 
 

@@ -3,8 +3,9 @@
 
 from omegaconf import DictConfig
 from otx.v2.adapters.torch.lightning.dataset import LightningDataset
-from pytest_mock.plugin import MockerFixture
 from otx.v2.api.entities.task_type import TaskType
+from pytest_mock.plugin import MockerFixture
+
 
 class TestLightningDataset:
     def test_init(self) -> None:
@@ -76,7 +77,7 @@ class TestLightningDataset:
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
-        dataset = LightningDataset()
+        dataset = LightningDataset(task=TaskType.VISUAL_PROMPTING)
         assert dataset._build_dataloader(dataset=None) is None
 
         mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.BaseTorchDataset._build_dataloader")
@@ -212,12 +213,13 @@ class TestVisualPromptDataset:
         assert dataset._build_dataset(subset="predict") is None
 
         # Dataset
-        mock_vp_dataset = mocker.patch("otx.v2.adapters.torch.lightning.dataset.OTXVisualPromptingDataset")
+        mock_datasets = mocker.patch("otx.v2.adapters.torch.lightning.dataset.DATASETS")
+        mock_datasets.get.return_value = mocker.MagicMock()
         mock_dataset_entity.get.return_value = mocker.MagicMock()
         mock_dataset_entity.get.return_value.__len__.return_value = 3
         dataset.dataset_entity = mock_dataset_entity
         dataset._build_dataset(subset="train")
-        mock_vp_dataset.assert_called_once_with(
+        mock_datasets.get.return_value.assert_called_once_with(
             dataset=mock_dataset_entity.get.return_value,
             image_size=1024,
             mean=[123.675, 116.28, 103.53],

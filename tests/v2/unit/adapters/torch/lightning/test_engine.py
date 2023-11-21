@@ -113,10 +113,10 @@ class TestLightningEngine:
         mock_dataloader = mocker.Mock()
 
         engine.test(model=mock_model, test_dataloader=mock_dataloader)
-        engine.trainer.test.assert_called_once_with(model=mock_model, dataloaders=[mock_dataloader], ckpt_path=None)
+        engine.trainer.test.assert_called_once_with(model=mock_model, dataloaders=[mock_dataloader])
 
         engine.test(test_dataloader=mock_dataloader, checkpoint="test.pth")
-        engine.trainer.test.assert_called_with(model=None, dataloaders=[mock_dataloader], ckpt_path="test.pth")
+        engine.trainer.test.assert_called_with(model=None, dataloaders=[mock_dataloader])
 
     def test_predict(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         mocker.patch("otx.v2.adapters.torch.lightning.engine.LightningEngine._update_config", return_value=True)
@@ -128,10 +128,10 @@ class TestLightningEngine:
         img = mocker.Mock()
         mock_model.callbacks = []
         engine.predict(model=mock_model, img=img)
-        mock_trainer.return_value.predict.assert_called_once_with(model=mock_model, dataloaders=[img], ckpt_path=None)
+        mock_trainer.return_value.predict.assert_called_once_with(model=mock_model, dataloaders=[img])
 
         engine.predict(img=img, checkpoint="test.pth")
-        mock_trainer.return_value.predict.assert_called_with(model=None, dataloaders=[img], ckpt_path="test.pth")
+        mock_trainer.return_value.predict.assert_called_with(model=None, dataloaders=[img])
 
     def test_export(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         engine = LightningEngine(work_dir=tmp_dir_path)

@@ -358,9 +358,18 @@ class OTXCLIv2:
 
         # Workspace
         self.workspace = Workspace(work_dir=work_dir, task=str(self.auto_runner.task.name).lower())
-        self.engine = self.framework_engine(
-            work_dir=str(self.workspace.work_dir),
-        )
+        # [TODO]: This is a temporary fix and the PR below will be fixed in the near future (before this PR merge).
+        # https://github.com/openvinotoolkit/training_extensions/pull/2649
+        from otx.v2.api.entities.task_type import TaskType
+        if self.auto_runner.task in (TaskType.ANOMALY_CLASSIFICATION, TaskType.VISUAL_PROMPTING):
+            self.engine = self.framework_engine(
+                work_dir=str(self.workspace.work_dir),
+                task=self.auto_runner.task,
+            )
+        else:
+            self.engine = self.framework_engine(
+                work_dir=str(self.workspace.work_dir),
+            )
         self.workspace.add_config(workspace_config)
 
     def _pop(

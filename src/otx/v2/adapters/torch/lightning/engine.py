@@ -20,8 +20,10 @@ from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.lightning.modules.models.base_model import BaseOTXLightningModel
 from otx.v2.api.core.engine import Engine
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.importing import get_all_args, get_default_args
+from otx.v2.api.utils.type_utils import str_to_task_type
 
 from .registry import LightningRegistry
 
@@ -44,20 +46,20 @@ class LightningEngine(Engine):
         self,
         work_dir: str | Path | None = None,
         config: str | dict | None = None,
-        task: str = "visual_prompting",
+        task: str | TaskType = "visual_prompting",
     ) -> None:
         """Initialize the Lightning engine.
 
         Args:
             work_dir (str | Path | None, optional): The working directory for the engine. Defaults to None.
             config (str | dict | None, optional): The configuration for the engine. Defaults to None.
-            task (str, optional): The task to perform. Defaults to "visual_prompting".
+            task (str | TaskType, optional): The task to perform. Defaults to "visual_prompting".
         """
         super().__init__(work_dir=work_dir)
         self.trainer: Trainer
         self.trainer_config: dict = {}
         self.latest_model: dict[str, torch.nn.Module | str | None] = {"model": None, "checkpoint": None}
-        self.task = task
+        self.task = str_to_task_type(task) if isinstance(task, str) else task
         self.config = self._initial_config(config)
         if hasattr(self, "work_dir"):
             self.config.default_root_dir = self.work_dir
@@ -115,6 +117,7 @@ class LightningEngine(Engine):
         if val_interval is not None:
             # Validation Interval in Trainer -> val_check_interval
             self.trainer_config["val_check_interval"] = val_interval
+        self.trainer_config["num_sanity_val_steps"] = kwargs.pop("num_sanity_val_steps", 0)
 
         # Check Config Default is not None
         trainer_default_args = get_default_args(Trainer.__init__)
@@ -356,11 +359,13 @@ class LightningEngine(Engine):
                 **self.trainer_config,
             )
 
-        checkpoint = str(checkpoint) if checkpoint is not None else None
+        # [TODO]: Need to look into the issue of not being able to use checkpoints directly
+        # on self.trainer when inferring.
+        if checkpoint is not None and isinstance(model, pl.LightningModule):
+            model = model.load_from_checkpoint(checkpoint)
         return self.trainer.test(
             model=model,
             dataloaders=[test_dataloader],
-            ckpt_path=checkpoint,
         )
 
     def predict(
@@ -388,15 +393,36 @@ class LightningEngine(Engine):
             list: The output of the inference.
         """
         dataloader = None
-        # NOTE: It needs to be refactored in a more general way.
-        if self.task.lower() == "visual_prompting" and isinstance(img, (str, Path)):
-            from .modules.datasets.visual_prompting_dataset import VisualPromptInferenceDataset
+        # [TODO]: It needs to be refactored in a more general way with more tasks.
+        if isinstance(img, (str, Path)):
+            if self.task == TaskType.VISUAL_PROMPTING:
+                from .modules.datasets.visual_prompting_dataset import VisualPromptInferenceDataset
 
-            dataset_config = self.config.get("dataset", {})
-            image_size = dataset_config.get("image_size", 1024)
-            dataset = VisualPromptInferenceDataset(path=img, image_size=image_size)
-            dataloader = DataLoader(dataset)
-        if dataloader is None:
+                dataset_config = self.config.get("dataset", {})
+                image_size = dataset_config.get("image_size", 1024)
+                dataset = VisualPromptInferenceDataset(path=img, image_size=image_size)
+                dataloader = DataLoader(dataset)
+            elif self.task == TaskType.ANOMALY_CLASSIFICATION:
+                from anomalib.data.inference import InferenceDataset
+                from anomalib.data.utils import InputNormalizationMethod, get_transforms
+
+                dataset_config = self.config.get("dataset", {})
+                transform_config = dataset_config.transform_config.eval if "transform_config" in dataset_config\
+                    else None
+                image_size = tuple(dataset_config.get("image_size", (256, 256)))
+                center_crop = dataset_config.get("center_crop")
+                if center_crop is not None:
+                    center_crop = tuple(center_crop)
+                normalization = InputNormalizationMethod(dataset_config.get("normalization", "imagenet"))
+                transform = get_transforms(
+                    config=transform_config,
+                    image_size=image_size,
+                    center_crop=center_crop,
+                    normalization=normalization,
+                )
+                dataset = InferenceDataset(path=img, image_size=image_size, transform=transform)
+                dataloader = DataLoader(dataset)
+        else:
             dataloader = [img]
 
         callbacks = callbacks if callbacks is not None else []
@@ -416,12 +442,14 @@ class LightningEngine(Engine):
                 **self.trainer_config,
             )
 
-        checkpoint = str(checkpoint) if checkpoint is not None else None
+        # [TODO]: Need to look into the issue of not being able to use checkpoints directly
+        # on self.trainer when inferring.
+        if checkpoint is not None and isinstance(model, pl.LightningModule):
+            model = model.load_from_checkpoint(checkpoint)
         # Lightning Inferencer
         return self.trainer.predict(
             model=model,
             dataloaders=dataloader,
-            ckpt_path=checkpoint,
         )
 
     def export(

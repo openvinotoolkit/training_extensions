@@ -43,17 +43,17 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     # TaskType.ACTION_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     TaskType.ANOMALY_CLASSIFICATION: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning",
         "default_config": {
             TrainType.Incremental: f"{CONFIG_ROOT}/lightning/otx_anomaly_classification_default.yaml",
         },
     },
     TaskType.ANOMALY_DETECTION: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning",
         "default_config": {},
     },
     TaskType.ANOMALY_SEGMENTATION: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning",
         "default_config": {},
     },
     TaskType.VISUAL_PROMPTING: {
@@ -69,7 +69,7 @@ ADAPTER_QUICK_LINK = {
     "mmpretrain": "torch.mmengine.mmpretrain",
     "mmdet": "torch.mmengine.mmdet",
     "mmseg": "torch.mmengine.mmseg",
-    "anomalib": "torch.lightning.anomalib",
+    "anomalib": "torch.lightning",
     "lightning": "torch.lightning",
 }
 
@@ -346,7 +346,12 @@ class AutoRunner:
 
     def build_framework_engine(self) -> None:
         """Create the selected framework Engine."""
-        self.engine = self.framework_engine(work_dir=self.work_dir)
+        # [TODO]: This is a temporary fix and the PR below will be fixed in the near future (before this PR merge).
+        # https://github.com/openvinotoolkit/training_extensions/pull/2649
+        if self.task in (TaskType.ANOMALY_CLASSIFICATION, TaskType.VISUAL_PROMPTING):
+            self.engine = self.framework_engine(work_dir=self.work_dir, task=self.task)
+        else:
+            self.engine = self.framework_engine(work_dir=self.work_dir)
 
     def subset_dataloader(  # noqa: ANN201
         self,

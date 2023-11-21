@@ -5,11 +5,11 @@
 
 
 import pytorch_lightning as pl
-from otx.v2.adapters.torch.lightning.anomalib.modules.callbacks import ProgressCallback
+from otx.v2.adapters.torch.lightning.modules.callbacks import ProgressCallback
 from otx.v2.api.entities.task_type import TaskType
 
-from tests.v2.unit.adapters.torch.lightning.anomalib.helpers.dummy_dataset import DummyDataModule
-from tests.v2.unit.adapters.torch.lightning.anomalib.helpers.dummy_model import DummyModel
+from tests.v2.unit.adapters.torch.lightning.helpers.dummy_dataset import DummyDataModule
+from tests.v2.unit.adapters.torch.lightning.helpers.dummy_model import DummyModel
 
 
 class ProgressStageCheckerCallback(pl.Callback):

@@ -3,7 +3,7 @@
 
 
 import torch
-from otx.v2.adapters.torch.lightning.anomalib import Dataset, get_model, list_models
+from otx.v2.adapters.torch.lightning import Dataset, get_model, list_models
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
@@ -44,6 +44,7 @@ def test_dataset_api() -> None:
         None
     """
     dataset = Dataset(
+        task="anomaly_classification",
         train_data_roots=TASK_CONFIGURATION["anomaly_classification"]["train_data_roots"],
         val_data_roots=TASK_CONFIGURATION["anomaly_classification"]["val_data_roots"],
         test_data_roots=TASK_CONFIGURATION["anomaly_classification"]["test_data_roots"],

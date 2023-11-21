@@ -23,17 +23,17 @@ from datumaro.components.annotation import Bbox, Label, Polygon
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
-from otx.v2.adapters.torch.lightning.anomalib.modules.logger import get_logger
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
+from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
     import pytorch_lightning as pl
     from anomalib.models import AnomalyModule
     from datumaro.components.dataset import Dataset as DatumDataset
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class AnomalyInferenceCallback(Callback):
