@@ -18,3 +18,5 @@ fp16 = dict(loss_scale=512.0)
 
 optimizer = dict(_delete_=True, type="AdamW", lr=0.01, weight_decay=0.05)
 optimizer_config = dict(_delete_=True)
+
+log_config = dict(interval=1)

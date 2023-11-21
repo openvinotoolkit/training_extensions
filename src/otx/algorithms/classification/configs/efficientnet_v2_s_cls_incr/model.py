@@ -17,3 +17,5 @@ model = dict(
 )
 
 fp16 = dict(loss_scale=512.0)
+
+log_config = dict(interval=1)

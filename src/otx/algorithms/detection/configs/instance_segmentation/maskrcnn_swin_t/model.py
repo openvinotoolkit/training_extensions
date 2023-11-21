@@ -162,3 +162,5 @@ load_from = (
 )
 
 ignore = True
+
+log_config = dict(interval=1)

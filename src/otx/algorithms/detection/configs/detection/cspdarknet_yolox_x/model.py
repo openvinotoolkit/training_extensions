@@ -22,3 +22,5 @@ load_from = "https://download.openmmlab.com/mmdetection/v2.0/yolox\
 
 fp16 = dict(loss_scale=512.0)
 ignore = False
+
+log_config = dict(interval=1)
