@@ -147,7 +147,11 @@ class TaskType(Enum):
             is_local=True,
         )
         ACTION_DETECTION = 15, TaskInfo(
-            domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
+            domain=Domain.ACTION_DETECTION, 
+            is_trainable=True, 
+            is_anomaly=False, 
+            is_global=False, 
+            is_local=True
         )
     VISUAL_PROMPTING = 16, TaskInfo(  # TODO: Is 16 okay when action flag is False?
         domain=Domain.VISUAL_PROMPTING,
