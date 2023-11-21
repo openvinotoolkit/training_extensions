@@ -249,6 +249,9 @@ class MMCVExpParser(BaseExpParser):
     def parse_exp_log(self):
         """Parse experiment log."""
         for task_dir in (self._workspace / "outputs").iterdir():
+            if task_dir.is_symlink():
+                continue
+
             if "train" in str(task_dir.name):
                 # test score
                 eval_files = list(task_dir.glob("performance.json"))
@@ -297,6 +300,9 @@ class AnomalibExpParser(BaseExpParser):
     def parse_exp_log(self):
         """Parse experiment log."""
         for task_dir in (self._workspace / "outputs").iterdir():
+            if task_dir.is_symlink():
+                continue
+
             if "train" in str(task_dir.name):
                 # test score
                 eval_files = list(task_dir.glob("performance.json"))
