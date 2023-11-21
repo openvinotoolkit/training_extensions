@@ -17,6 +17,7 @@ model = dict(
     super_type="MeanTeacher",
     pseudo_conf_thresh=0.7,
     unlabeled_loss_weights={"cls": 1.0, "bbox": 1.0, "mask": 1.0},
+    filter_empty_annotations=False,
     type="CustomMaskRCNN",
     neck=dict(
         type="FPN",
@@ -153,12 +154,3 @@ mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth"
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 ignore = True
-
-custom_hooks = [
-    dict(
-        type="CustomModelEMAHook",
-        priority="ABOVE_NORMAL",
-        epoch_momentum=0.1,
-    ),
-    dict(type="MeanTeacherHook", epoch_momentum=0.0, start_epoch=8, momentum=0.0004),
-]

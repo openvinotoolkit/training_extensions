@@ -19,7 +19,6 @@ import sys
 
 import cv2
 import numpy as np
-from mmcv.utils import get_logger
 
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
@@ -44,8 +43,9 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.utils.logger import get_logger
 
-logger = get_logger(name="mmdet")
+logger = get_logger()
 
 # pylint: disable=too-many-locals, too-many-statements
 

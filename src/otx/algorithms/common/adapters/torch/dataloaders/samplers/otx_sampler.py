@@ -12,8 +12,8 @@ from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import get_proper_repeat_times
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import unwrap_dataset
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

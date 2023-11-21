@@ -4,6 +4,7 @@
 #
 import copy
 import os
+from pathlib import Path
 
 import pytest
 import torch
@@ -326,6 +327,8 @@ class TestToolsOTXSemiSLDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "detection/test_semisl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
@@ -333,6 +336,8 @@ class TestToolsOTXSemiSLDetection:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "detection/test_semisl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -341,6 +346,8 @@ class TestToolsOTXSemiSLDetection:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "detection/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args_semisl)
         args_semisl_multigpu["--gpus"] = "0,1"
