@@ -39,6 +39,8 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "2",
+        "--postprocessing.max_num_detections",
+        "200",
     ],
 }
 
@@ -54,6 +56,8 @@ args_semisl = {
         "1",
         "--learning_parameters.batch_size",
         "2",
+        "--postprocessing.max_num_detections",
+        "200",
     ],
 }
 
@@ -64,6 +68,8 @@ resume_params = [
     "2",
     "--learning_parameters.batch_size",
     "2",
+    "--postprocessing.max_num_detections",
+    "200",
 ]
 
 otx_dir = os.getcwd()
