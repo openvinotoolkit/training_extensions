@@ -210,9 +210,6 @@ class TestMultiClassClassificationCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -410,9 +407,6 @@ class TestMultilabelClassificationCLI:
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
@@ -538,7 +532,4 @@ class TestHierarchicalClassificationCLI:
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_h)

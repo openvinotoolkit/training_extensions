@@ -42,7 +42,7 @@ If you are an experienced user, you can configure your own model based on [torch
 
 Furthermore, OpenVINO™ Training Extensions provides automatic configuration for ease of use.
 The framework will analyze your dataset and identify the most suitable model and figure out the best input size setting and other hyper-parameters.
-The development team is continuously extending this [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html) functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
+The development team is continuously extending this [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/auto_configuration.html) functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
 
 ### Key Features
 
@@ -63,11 +63,11 @@ OpenVINO™ Training Extensions supports the [following learning methods](https:
 
 OpenVINO™ Training Extensions provides the following usability features:
 
-- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model with appropriate input size to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model with appropriate input size to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 - [Datumaro](https://openvinotoolkit.github.io/datumaro/stable/index.html) data frontend: OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We are constantly working to extend supported formats to give more freedom of datasets format choice.
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Mixed-precision training** to save GPUs memory and use larger batch sizes
-- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 
 ---
 
@@ -97,16 +97,20 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.4.0 (3Q23)
+### v1.5.0 (4Q23)
 
-- Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
-- Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
-- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (<https://github.com/openvinotoolkit/training_extensions/pull/2195>)
-- Add per-class XAI saliency maps for Mask R-CNN model (<https://github.com/openvinotoolkit/training_extensions/pull/2227>)
-- Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
-- Add new object detector DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
-- Add new visual prompting task (<https://github.com/openvinotoolkit/training_extensions/pull/2203>, <https://github.com/openvinotoolkit/training_extensions/pull/2274>, <https://github.com/openvinotoolkit/training_extensions/pull/2311>, <https://github.com/openvinotoolkit/training_extensions/pull/2354>, <https://github.com/openvinotoolkit/training_extensions/pull/2318>)
-- Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
+- Enable configurable confidence threshold for otx eval and export (<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
+- Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
+- Enable FeatureVectorHook to support action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
+- Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
+- Add a new feature to configure input size (<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
+- Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
+- Add a new object detector Lite-DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
+- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task (<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
+- Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2485>)
+- Add new argument to track resource usage in train command (<https://github.com/openvinotoolkit/training_extensions/pull/2500>)
+- Add Self-SL for semantic segmentation of SegNext families (<https://github.com/openvinotoolkit/training_extensions/pull/2215>)
+- Adapt input size automatically based on dataset statistics (<https://github.com/openvinotoolkit/training_extensions/pull/2499>)
 
 ### Release History
 

@@ -39,7 +39,6 @@ from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils import is_hpu_available
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.apis.train import train_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     IncrSegmentationConfigurer,
@@ -63,6 +62,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.utils.logger import get_logger
 
 if is_hpu_available():
     import habana_frameworks.torch.core as htcore

@@ -22,8 +22,6 @@ import sys
 
 os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
 
-from mmcv.utils import get_logger
-
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -36,8 +34,9 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import get_logger
 
-logger = get_logger(name="sample")
+logger = get_logger()
 
 
 def parse_args():

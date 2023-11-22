@@ -22,7 +22,7 @@ from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from ..builder import BACKBONES
 

@@ -5,6 +5,7 @@
 
 import copy
 import os
+from pathlib import Path
 
 import pytest
 import torch
@@ -223,9 +224,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -233,9 +231,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
@@ -243,9 +238,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -253,9 +245,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
 
     @e2e_pytest_component
@@ -263,9 +252,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -448,9 +434,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
@@ -458,9 +441,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
@@ -468,9 +448,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -478,9 +455,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.01)
 
     @e2e_pytest_component
@@ -488,9 +462,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
@@ -622,9 +593,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
@@ -632,9 +600,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
@@ -642,9 +607,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.01)
 
     @e2e_pytest_component
@@ -652,9 +614,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -662,9 +621,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
