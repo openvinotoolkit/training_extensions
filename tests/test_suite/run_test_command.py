@@ -1163,6 +1163,7 @@ def generate_model_template_testing(templates):
 
     return _TestModelTemplates
 
+
 def compare_model_accuracy(performance_to_test: Dict, target_performance: Dict, threshold: Union[float, int]):
     for k in target_performance.keys():
         if k == "avg_time_per_image":

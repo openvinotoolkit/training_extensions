@@ -21,9 +21,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
-from otx.cli.tools.cli import main as otx_cli
 from rich.console import Console
 from rich.table import Table
+
+from otx.cli.tools.cli import main as otx_cli
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -192,11 +193,15 @@ class BaseExpParser(ABC):
     def _calculate_avg_std_per_iter(self):
         if self._iter_time_arr:
             self._exp_result.avg_iter_time = statistics.mean(self._iter_time_arr)
-            self._exp_result.std_iter_time = statistics.stdev(self._iter_time_arr) if len(self._iter_time_arr) > 1 else 0
+            self._exp_result.std_iter_time = (
+                statistics.stdev(self._iter_time_arr) if len(self._iter_time_arr) > 1 else 0
+            )
 
         if self._data_time_arr:
             self._exp_result.avg_data_time = statistics.mean(self._data_time_arr)
-            self._exp_result.std_data_time = statistics.stdev(self._data_time_arr)  if len(self._data_time_arr) > 1 else 0
+            self._exp_result.std_data_time = (
+                statistics.stdev(self._data_time_arr) if len(self._data_time_arr) > 1 else 0
+            )
 
     def _parse_eval_output(self, file_path: Path):
         # NOTE: It is assumed that performance.json has key named either score or avg_time_per_image
