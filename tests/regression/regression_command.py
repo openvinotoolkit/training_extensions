@@ -130,6 +130,8 @@ def regression_openvino_testing(
         model_criteria = criteria[template.name] * (1.0 - reg_threshold)
 
     for k in trained_performance.keys():
+        if k == "avg_time_per_image":
+            continue
         result_dict[k] = round(exported_performance[k], 3)
         if exported_performance[k] < model_criteria:
             regression_result["passed"] = False
@@ -180,6 +182,8 @@ def regression_deployment_testing(
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in exported_performance.keys():
+        if k == "avg_time_per_image":
+            continue
         if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(deployed_performance[k], 3)
             if deployed_performance[k] < modified_criteria:
