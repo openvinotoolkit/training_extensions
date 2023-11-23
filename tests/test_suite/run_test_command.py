@@ -850,7 +850,7 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:
         assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
-    assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+    assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, trained=False):
