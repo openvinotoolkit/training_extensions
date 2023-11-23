@@ -92,13 +92,8 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        fp16_cfg = cfg.get("fp16_", None)
-        if fp16_cfg is not None:
-            dtype = torch.bfloat16
-        else:
-            dtype = torch.float32
         model.train()
-        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
+        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer)
 
     if cfg.get("runner") is None:
         cfg.runner = {"type": "IterBasedRunner", "max_iters": cfg.total_iters}

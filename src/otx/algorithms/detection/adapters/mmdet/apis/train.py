@@ -142,12 +142,8 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        if fp16_cfg is not None:
-            dtype = torch.bfloat16
-        else:
-            dtype = torch.float32
         model.train()
-        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
+        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer)
 
     runner = build_runner(
         cfg.runner, default_args=dict(model=model, optimizer=optimizer, work_dir=cfg.work_dir, logger=logger, meta=meta)

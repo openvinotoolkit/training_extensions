@@ -93,12 +93,8 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        if fp16_cfg is not None:
-            dtype = torch.bfloat16
-        else:
-            dtype = torch.float32
         model.train()
-        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
+        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer)
 
     if cfg.get("runner") is None:
         cfg.runner = {"type": "EpochBasedRunner", "max_epochs": cfg.total_epochs}
