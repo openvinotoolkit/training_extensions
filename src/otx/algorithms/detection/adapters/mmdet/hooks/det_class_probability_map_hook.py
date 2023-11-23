@@ -60,12 +60,9 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         else:
             cls_scores = self._get_cls_scores_from_feature_map(feature_map)
 
-        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
-        # it would highlight one of the class maps as a background class
-        if self.use_cls_softmax and self._num_cls_out_channels > 1:
-            cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
-
-        batch_size, _, height, width = cls_scores[-1].size()
+        middle_idx = len(cls_scores) // 2
+        # resize to the middle feature map
+        batch_size, _, height, width = cls_scores[middle_idx].size()
         saliency_maps = torch.empty(batch_size, self._num_cls_out_channels, height, width)
         for batch_idx in range(batch_size):
             cls_scores_anchorless = []
@@ -81,6 +78,11 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     F.interpolate(cls_scores_anchorless_per_level, (height, width), mode="bilinear")
                 )
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
+
+        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
+        # it would highlight one of the class maps as a background class
+        if self.use_cls_softmax:
+            saliency_maps[0] = torch.stack([torch.softmax(t, dim=1) for t in saliency_maps[0]])
 
         if self._norm_saliency_maps:
             saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, -1))

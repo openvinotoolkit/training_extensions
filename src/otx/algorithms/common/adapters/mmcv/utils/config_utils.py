@@ -1,26 +1,14 @@
 """Utils for common OTX algorithms."""
-
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 import copy
 import glob
+import math
 import multiprocessing
 import os
 import os.path as osp
 import platform
-import re
 import shutil
 import sys
 import tempfile
@@ -29,6 +17,7 @@ from collections.abc import Mapping
 from importlib import import_module
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from mmcv import Config, ConfigDict
 from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
@@ -36,8 +25,8 @@ from mmcv.utils.misc import import_modules_from_strings
 from mmcv.utils.path import check_file_exist
 
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.utils.logger import get_logger
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
@@ -421,15 +410,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-def patch_data_pipeline(config: Config, data_pipeline: str = ""):
-    """Replace data pipeline to data_pipeline.py if it exist."""
-    if os.path.isfile(data_pipeline):
-        data_pipeline_cfg = Config.fromfile(data_pipeline)
-        config.merge_from_dict(data_pipeline_cfg)
-    else:
-        raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
-
-
 def patch_color_conversion(config: Config):
     """Patch color conversion."""
     assert "data" in config
@@ -532,20 +512,17 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
-def patch_from_hyperparams(config: Config, hyperparams):
+def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
+    algo_backend = hyperparams.algo_backend
     warmup_iters = int(params.learning_rate_warmup_iters)
 
-    model_label_type = config.filename.split("/")[-1]
-    if "multilabel" in model_label_type:
-        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-    else:
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
 
     if params.enable_early_stopping and config.get("evaluation", None):
         early_stop = ConfigDict(
@@ -569,6 +546,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
             workers_per_gpu=int(params.num_workers),
         ),
         runner=runner,
+        algo_backend=algo_backend,
     )
 
     # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
@@ -583,7 +561,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
                     ),
                 )
             )
-    is_semi_sl = hyperparams.algo_backend.train_type.name == "Semisupervised"
+    is_semi_sl = algo_backend.train_type.name == "Semisupervised"
 
     if hyperparams.learning_parameters.auto_num_workers:
         adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
@@ -605,28 +583,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
     config.merge_from_dict(hparams)
 
 
-DEFAULT_META_KEYS = (
-    "filename",
-    "ori_filename",
-    "ori_shape",
-    "img_shape",
-    "pad_shape",
-    "scale_factor",
-    "flip",
-    "flip_direction",
-    "img_norm_cfg",
-)
-
-
-def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
-    """Update meta_keys for ignore_labels."""
-    meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
-    meta_keys.append("ignored_labels")
-    meta_keys += add_meta_keys
-    pipeline_step["meta_keys"] = set(meta_keys)
-    return pipeline_step
-
-
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     """Prepare configs of working directory."""
     base_work_dir = config.work_dir
@@ -640,14 +596,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     return train_round_checkpoint_dir
 
 
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
-
-
 class InputSizeManager:
     """Class for changing input size and getting input size value by checking data pipeline.
 
@@ -655,7 +603,7 @@ class InputSizeManager:
     are considered at now. If other data pipelines exist, it can work differently than expected.
 
     Args:
-        data_config (Dict): Data configuration expected to have "train", "val" or "test" data pipeline.
+        config (Dict): Global configuration including data config w/ "train", "val" or "test" data pipeline.
         base_input_size (Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]], optional):
             Default input size. If it's a None, it's estimated based on data pipeline. If it's an integer,
             it's expected that all data pipeline have (base_input_size x base_input_size) input size.
@@ -680,23 +628,27 @@ class InputSizeManager:
     }
     SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
+    MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
+    # meaning NxN input pixels being downscaled to 1x1 on feature map
+    MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
+
     def __init__(
         self,
-        data_config: Dict,
+        config: Dict,
         base_input_size: Optional[Union[int, Tuple[int, int], Dict[str, int], Dict[str, Tuple[int, int]]]] = None,
     ):
-        self._data_config = data_config
+        self._config = config
+        self._data_config = config.get("data", {})
         if isinstance(base_input_size, int):
             base_input_size = (base_input_size, base_input_size)
         elif isinstance(base_input_size, dict):
-            for task in base_input_size.keys():
-                if isinstance(base_input_size[task], int):
-                    base_input_size[task] = (base_input_size[task], base_input_size[task])  # type: ignore[assignment]
-            for subset_type in self.SUBSET_TYPES:
-                if subset_type in data_config and subset_type not in base_input_size:
-                    raise ValueError(
-                        f"There is {subset_type} data configuration but base input size for it doesn't exists."
-                    )
+            for subset in base_input_size.keys():
+                if isinstance(base_input_size[subset], int):
+                    size = base_input_size[subset]
+                    base_input_size[subset] = (size, size)  # type: ignore[assignment]
+            for subset in self.SUBSET_TYPES:
+                if subset in self._data_config and subset not in base_input_size:
+                    raise ValueError(f"There is {subset} data configuration but base input size for it doesn't exists.")
 
         self._base_input_size = base_input_size
 
@@ -709,21 +661,33 @@ class InputSizeManager:
                 If input_size is an integer list, (input_size[0] x input_size[1]) will be set.
         """
         if isinstance(input_size, int):
-            input_size = [input_size, input_size]
+            input_size = (input_size, input_size)
         if not isinstance(self.base_input_size, dict):
             resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
-        # scale size values
-        for subset_type in self.SUBSET_TYPES:
-            if subset_type in self._data_config:
+        # Scale size values in data pipelines
+        for subset in self.SUBSET_TYPES:
+            if subset in self._data_config:
                 if isinstance(self.base_input_size, dict):
                     resize_ratio = (
-                        input_size[0] / self.base_input_size[subset_type][0],
-                        input_size[1] / self.base_input_size[subset_type][1],
+                        input_size[0] / self.base_input_size[subset][0],
+                        input_size[1] / self.base_input_size[subset][1],
                     )
-                pipelines = self._get_pipelines(subset_type)
-                for pipeline in pipelines:
-                    self._set_pipeline_size_value(pipeline, resize_ratio)
+                pipelines = self._get_pipelines(subset)
+                if isinstance(pipelines, dict):
+                    # Deals with {"view0": [...], "view1": [...]}
+                    for pipeline in pipelines.values():
+                        self._set_pipeline_size_value(pipeline, resize_ratio)
+                else:
+                    self._set_pipeline_size_value(pipelines, resize_ratio)
+
+        # Set model size
+        model_cfg = self._config.get("model", {})
+        model_cfg["input_size"] = input_size
+        if model_cfg.get("type", "") == "CustomYOLOX":
+            # - needed only for YOLOX
+            if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
+                raise ValueError("YOLOX should have input size being multiple of 32.")
 
     @property
     def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
@@ -750,7 +714,7 @@ class InputSizeManager:
 
     def get_input_size_from_cfg(
         self, subset: Union[str, List[str]] = ["test", "val", "train"]
-    ) -> Union[None, Tuple[int, int]]:
+    ) -> Optional[Tuple[int, int]]:
         """Estimate image size using data pipeline.
 
         Args:
@@ -771,10 +735,17 @@ class InputSizeManager:
         return None
 
     def _estimate_post_img_size(
-        self, pipelines: List[Dict], default_size: Optional[List[int]] = None
+        self, pipelines: Union[Dict, List[Dict]], default_size: Optional[List[int]] = None
     ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
+
+        if isinstance(pipelines, dict):
+            for pipeline in pipelines.values():
+                # Deals with {"view0": [...], "view1": [...]}
+                # Just using the first one to estimate
+                return self._estimate_post_img_size(pipeline, post_img_size)
+
         for pipeline in pipelines:
             if "resize" in pipeline["type"].lower():
                 img_size = self._get_size_value(pipeline, "resize")
@@ -832,14 +803,22 @@ class InputSizeManager:
 
         return None
 
-    def _get_pipelines(self, subset_type: str):
-        if "pipeline" in self._data_config[subset_type]:
-            return self._data_config[subset_type]["pipeline"]
-        if "dataset" in self._data_config[subset_type]:
-            return self._data_config[subset_type]["dataset"]["pipeline"]
+    def _get_pipelines(self, subset: str):
+        if "pipeline" in self._data_config[subset]:
+            return self._data_config[subset]["pipeline"]
+        if "dataset" in self._data_config[subset]:
+            return self._data_config[subset]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
-    def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+    def _set_pipeline_size_value(
+        self, pipeline: Union[Dict, List[Dict]], scale: Tuple[Union[int, float], Union[int, float]]
+    ):
+
+        if isinstance(pipeline, list):
+            for sub_pipeline in pipeline:
+                self._set_pipeline_size_value(sub_pipeline, scale)
+            return
+
         updated = False
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
@@ -882,37 +861,126 @@ class InputSizeManager:
         else:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
 
+    @staticmethod
+    def get_trained_input_size(model_ckpt: Optional[str] = None) -> Optional[Tuple[int, int]]:
+        """Get trained input size from checkpoint. If it doesn't exist, return None.
 
-def get_configured_input_size(
-    input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
-) -> Union[None, Tuple[int, int]]:
-    """Get configurable input size configuration. If it doesn't exist, return None.
+        Args:
+            model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
 
-    Args:
-        input_size_config (InputSizePreset, optional): Input size configuration. Defaults to InputSizePreset.DEFAULT.
-        model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
-
-    Returns:
-        Union[None, Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
-    """
-    input_size = None
-    if input_size_config == InputSizePreset.DEFAULT:
+        Returns:
+            Optional[Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
+        """
         if model_ckpt is None:
             return None
 
         model_info = torch.load(model_ckpt, map_location="cpu")
-        for key in ["config", "learning_parameters", "input_size", "value"]:
-            if key not in model_info:
-                return None
-            model_info = model_info[key]
-        input_size = model_info
+        if model_info is None:
+            return None
 
-        if input_size == InputSizePreset.DEFAULT.value:
+        input_size = model_info.get("input_size", None)
+        if not input_size:
             return None
 
         logger.info("Given model weight was trained with {} input size.".format(input_size))
-    else:
-        input_size = input_size_config.value
+        return input_size
 
-    parsed_tocken = re.match("(\\d+)x(\\d+)", input_size)
-    return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
+    @staticmethod
+    def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]):
+        """Select the most closest size from preset sizes in log scale.
+
+        Args:
+            input_size (Tuple[int, int]): Query input size
+            preset_sizes (List[Tuple[int, int]]): List of preset input sizes
+
+        Returns:
+            Tuple[int, int]: Best matching size out of preset. Returns input_size if preset is empty.
+        """
+        if len(preset_sizes) == 0:
+            return input_size
+
+        def to_log_scale(x):
+            return np.log(np.sqrt(x[0] * x[1]))
+
+        input_scale = to_log_scale(input_size)
+        preset_scales = np.array(list(map(to_log_scale, preset_sizes)))
+        abs_diff = np.abs(preset_scales - input_scale)
+        return preset_sizes[np.argmin(abs_diff)]
+
+    def adapt_input_size_to_dataset(
+        self, max_image_size: int, min_object_size: Optional[int] = None, downscale_only: bool = True
+    ) -> Tuple[int, int]:
+        """Compute appropriate model input size w.r.t. dataset statistics.
+
+        Args:
+            max_image_size (int): Typical large image size of dataset in pixels.
+            min_object_size (int, optional): Typical small object size of dataset in pixels.
+                None to consider only image size. Defaults to None.
+            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+
+        Returns:
+            Tuple[int, int]: (width, height)
+        """
+
+        logger.info("Adapting model input size based on dataset stat")
+
+        base_input_size = self.base_input_size
+        if isinstance(base_input_size, Dict):
+            base_input_size = base_input_size.get("train", base_input_size.get("test", None))
+        logger.info(f"-> Current base input size: {base_input_size}")
+
+        if max_image_size <= 0:
+            return base_input_size
+
+        image_size = max_image_size
+        logger.info(f"-> Based on typical large image size: {image_size}")
+
+        # Refine using annotation shape size stat
+        if min_object_size is not None and min_object_size > 0:
+            image_size = round(image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
+            logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
+            if image_size > max_image_size:
+                image_size = max_image_size
+                logger.info(f"-> Restrict to max image size: {image_size}")
+            if image_size < self.MIN_DETECTION_INPUT_SIZE:
+                image_size = self.MIN_DETECTION_INPUT_SIZE
+                logger.info(f"-> Based on minimum object detection input size: {image_size}")
+
+        input_size = (round(image_size), round(image_size))
+
+        if downscale_only:
+
+            def area(x):
+                return x[0] * x[1]
+
+            if base_input_size and area(input_size) >= area(base_input_size):
+                logger.info(f"-> Downscale only: {input_size} -> {base_input_size}")
+                return base_input_size
+
+        # Closest preset
+        input_size_preset = InputSizePreset.input_sizes()
+        input_size = self.select_closest_size(input_size, input_size_preset)
+        logger.info(f"-> Closest preset: {input_size}")
+        return input_size
+
+
+def get_proper_repeat_times(
+    data_size: int,
+    batch_size: int,
+    coef: float,
+    min_repeat: float,
+) -> float:
+    """Get proper repeat times for adaptive training.
+
+    Args:
+        data_size (int): The total number of the training dataset
+        batch_size (int): The batch size for the training data loader
+        coef (float) : coefficient that effects to number of repeats
+                       (coef * math.sqrt(num_iters-1)) +5
+        min_repeat (float) : minimum repeats
+    """
+    if data_size == 0 or batch_size == 0:
+        logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
+        return 1
+    n_iters_per_epoch = math.ceil(data_size / batch_size)
+    return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))

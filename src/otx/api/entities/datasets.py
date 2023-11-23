@@ -14,13 +14,14 @@ from typing import Generic, Iterator, List, Optional, TypeVar, Union, cast, over
 
 from bson.objectid import ObjectId
 
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.subset import Subset
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class DatasetPurpose(Enum):
@@ -349,8 +350,9 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
         Returns:
             DatasetEntity: DatasetEntity with items matching subsets
         """
+        to_keep = set(subsets)
         dataset = DatasetEntity(
-            items=[item for item in self._items if item.subset in set(subsets)],
+            items=[item for item in self if item.subset in to_keep],
             purpose=self.purpose,
         )
         return dataset

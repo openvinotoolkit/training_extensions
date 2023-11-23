@@ -8,8 +8,9 @@ import json
 import os
 import shutil
 import sys
+import torch
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 import onnx
 import onnxruntime
 
@@ -244,6 +245,12 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+            ckpt = torch.load(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth")
+            input_size = ckpt.get("input_size", None)
+            if input_size:
+                with open(path_to_xml, encoding="utf-8") as xml_stream:
+                    xml_model = xml_stream.read()
+                    assert f"{input_size[1]},{input_size[0]}" in xml_model
     else:
         if "Visual_Prompting" in template.model_template_id:
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
@@ -342,11 +349,7 @@ def otx_eval_openvino_testing(
     with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
 
-    for k in trained_performance.keys():
-        assert (
-            exported_performance[k] >= trained_performance[k]
-            or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
-        ), f"{trained_performance[k]=}, {exported_performance[k]=}"
+    compare_model_accuracy(exported_performance, trained_performance, threshold)
 
 
 def otx_demo_testing(template, root, otx_dir, args):
@@ -487,11 +490,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
     with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
 
-    for k in exported_performance.keys():
-        assert (
-            deployed_performance[k] >= exported_performance[k]
-            or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
-        ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
+    compare_model_accuracy(deployed_performance, deployed_performance, threshold)
 
 
 def otx_demo_deployment_testing(template, root, otx_dir, args):
@@ -577,13 +576,40 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
     if task_type == "visual_prompting":
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        xml_paths = [
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
+        ]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_image_encoder.yml",
+            ),
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_decoder.yml",
+            ),
+        ]
     else:
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
-    path_to_ref_data = os.path.join(
-        otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
-    )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
+        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
+            )
+        ]
+
+    for xml_path, path_to_ref_data in zip(xml_paths, paths_to_ref_data):
+        _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
@@ -620,6 +646,9 @@ def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -642,6 +671,8 @@ def nncf_optimize_testing(template, root, otx_dir, args):
 
 
 def nncf_export_testing(template, root):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -661,9 +692,19 @@ def nncf_export_testing(template, root):
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin"
     )
     assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
+    ckpt = torch.load(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
+    input_size = ckpt.get("input_size", None)
+    if input_size:
+        with open(
+            f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml", encoding="utf-8"
+        ) as xml_stream:
+            xml_model = xml_stream.read()
+            assert f"{input_size[1]},{input_size[0]}" in xml_model
 
 
 def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
@@ -674,6 +715,8 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -694,14 +737,12 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
 
-    for k in trained_performance.keys():
-        assert (
-            evaluated_performance[k] >= trained_performance[k]
-            or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
-        ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+    compare_model_accuracy(evaluated_performance, trained_performance, threshold)
 
 
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -1121,3 +1162,13 @@ def generate_model_template_testing(templates):
             assert num_default_model == 1
 
     return _TestModelTemplates
+
+
+def compare_model_accuracy(performance_to_test: Dict, target_performance: Dict, threshold: Union[float, int]):
+    for k in target_performance.keys():
+        if k == "avg_time_per_image":
+            continue
+        assert (
+            performance_to_test[k] >= target_performance[k]
+            or abs(target_performance[k] - performance_to_test[k]) / (target_performance[k] + 1e-10) <= threshold
+        ), f"{target_performance[k]=}, {performance_to_test[k]=}"

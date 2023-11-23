@@ -8,7 +8,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     InputSizeManager,
     get_configs_by_pairs,
 )
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     adaptive_tile_params,
@@ -18,6 +17,7 @@ from otx.algorithms.detection.utils.data import (
 )
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.subset import Subset
+from otx.utils.logger import get_logger
 
 try:
     from sklearn.cluster import KMeans
@@ -210,7 +210,7 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
-    input_size_manager = InputSizeManager(cfg.data)
+    input_size_manager = InputSizeManager(cfg)
     size = input_size_manager.get_input_size_from_cfg("test")
 
     assert all(isinstance(i, int) and i > 0 for i in size)

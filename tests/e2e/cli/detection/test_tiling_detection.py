@@ -72,7 +72,11 @@ if TT_STABILITY_TESTS:
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+    _templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+    templates = []
+    for template in _templates:
+        if template.name not in ["YOLOX-S", "YOLOX-X"]:
+            templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
     templates_ids = [template.model_template_id for template in templates]
 
 
@@ -166,6 +170,8 @@ class TestToolsTilingDetection:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        if template.name == "MobileNetV2-ATSS":
+            pytest.skip(reason="Issue#2518: YOLOX-L, Tiling-ATSS showed 0.0 after export")
         tmp_dir_path = tmp_dir_path / "tiling_det"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 

@@ -45,7 +45,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     get_configs_by_pairs,
     patch_adaptive_interval_training,
-    patch_data_pipeline,
     patch_early_stopping,
     patch_from_hyperparams,
     patch_persistent_workers,
@@ -58,7 +57,6 @@ from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelPrecision
@@ -67,6 +65,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -94,7 +93,11 @@ class MMActionTask(OTXActionTask):
         self.set_seed()
 
         # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        if os.path.isfile(self.data_pipeline_path):
+            data_pipeline_cfg = Config.fromfile(self.data_pipeline_path)
+            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
+        else:
+            raise FileNotFoundError(f"data_pipeline: {self.data_pipeline_path} not founded")
 
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)

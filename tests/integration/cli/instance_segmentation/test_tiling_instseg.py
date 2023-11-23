@@ -1,11 +1,12 @@
 """Tests for OTX Class-Incremental Learning for instance segmentation with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
 import os
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -41,6 +42,8 @@ args = {
         "1",
         "--tiling_parameters.enable_adaptive_params",
         "1",
+        "--postprocessing.max_num_detections",
+        "200",
     ],
 }
 
@@ -157,5 +160,8 @@ class TestTilingInstanceSegmentationCLI:
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
-
+        if torch.__version__.startswith("2.") and template.name.startswith("MaskRCNN"):
+            pytest.skip(
+                reason="Issue#2451: Torch2.0 CUDA runtime error during NNCF optimization of ROIAlign MMCV kernel for MaskRCNN"
+            )
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)

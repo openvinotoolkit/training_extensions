@@ -35,7 +35,6 @@ from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
@@ -76,6 +75,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -258,6 +258,7 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         self.model = self.task_environment.model
         self.model_name = self.task_environment.model_template.model_template_id
         self.inferencer = self.load_inferencer()
+        self._avg_time_per_image: Optional[float] = None
 
         labels = task_environment.get_labels(include_empty=False)
         self._label_dictionary = dict(enumerate(labels, 1))
@@ -269,6 +270,11 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
     def hparams(self):
         """Hparams of OpenVINO Visual Prompting Task."""
         return self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
+
+    @property
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
+        return self._avg_time_per_image
 
     def load_inferencer(self) -> OpenVINOVisualPromptingInferencer:
         """Load OpenVINO Visual Prompting Inferencer."""
@@ -328,7 +334,8 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
         self.inferencer.await_all()
 
-        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("Visual Prompting OpenVINO inference completed")
 
@@ -417,17 +424,6 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset = dataset.get_subset(Subset.TRAINING)
 
         for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
-            if name == "decoder":
-                # TODO (sungchul): quantize decoder, too
-                logger.info(f"{name} won't do PTQ.")
-                output_model.set_data(
-                    f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml")
-                )
-                output_model.set_data(
-                    f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin")
-                )
-                continue
-
             data_loader = OTXOpenVinoDataLoader(
                 dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
             )

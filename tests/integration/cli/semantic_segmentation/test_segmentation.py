@@ -46,13 +46,29 @@ args_semisl = {
     "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--unlabeled-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.learning_rate_warmup_iters",
+        "1",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
 args_selfsl = {
     "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "--input": "tests/assets/segmentation/custom/images/training",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.learning_rate_warmup_iters",
+        "1",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
 # Training params for resume, num_iters*2
@@ -70,6 +86,7 @@ MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
     Path("src/otx/algorithms/segmentation/configs") / "ocr_lite_hrnet_18_mod2" / "template.yaml"
 )
+
 # add integration test for semi-sl with new SegNext model and prototype based approach
 segnext_template = parse_model_template(
     Path("src/otx/algorithms/segmentation/configs") / "ham_segnext_s" / "template.yaml"
@@ -165,9 +182,6 @@ class TestSegmentationCLI:
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -203,8 +217,6 @@ class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
-        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
-            pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
 
@@ -212,8 +224,6 @@ class TestSegmentationCLI:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
-            pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
@@ -233,5 +243,5 @@ class TestSegmentationCLI:
     def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
         adapting_num_workers_args = copy.deepcopy(args)
         adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
-        tmp_dir_path = tmp_dir_path / f"segmentation_auto_adapt_num_workers"
+        tmp_dir_path = tmp_dir_path / "segmentation_auto_adapt_num_workers"
         otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)

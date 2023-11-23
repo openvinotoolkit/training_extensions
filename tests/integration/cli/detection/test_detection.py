@@ -36,7 +36,15 @@ args = {
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+        "--postprocessing.max_num_detections",
+        "200",
+    ],
 }
 
 args_semisl = {
@@ -45,7 +53,13 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
 # Training params for resume, num_iters*2
@@ -66,10 +80,11 @@ default_template = parse_model_template(
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
-for i, template in enumerate(templates):
-    if template.name in ["YOLOX-S", "YOLOX-X"]:
-        templates.pop(i)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
+_templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+templates = []
+for template in _templates:
+    if template.name not in ["YOLOX-S", "YOLOX-X"]:
+        templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
@@ -95,20 +110,45 @@ class TestDetectionCLI:
     @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+        _args = args.copy()
+        # FIXME: remove this block once Issue#2504 resolved
+        if "DINO" in template.name:
+            _args["train_params"] = [
+                "params",
+                "--learning_parameters.num_iters",
+                "1",
+                "--learning_parameters.batch_size",
+                "4",
+                "--learning_parameters.input_size",
+                "Default",
+            ]
+        otx_train_testing(template, tmp_dir_path, otx_dir, _args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_resume"
-        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
+        _args = args.copy()
+        _resume_params = resume_params.copy()
+        # FIXME: remove this block once Issue#2504 resolved
+        if "DINO" in template.name:
+            _args["train_params"] = [
+                "params",
+                "--learning_parameters.num_iters",
+                "1",
+                "--learning_parameters.batch_size",
+                "4",
+                "--learning_parameters.input_size",
+                "Default",
+            ]
+            _resume_params.extend(["--learning_parameters.input_size", "Default"])
+        otx_resume_testing(template, tmp_dir_path, otx_dir, _args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = copy.deepcopy(args)
-        args1["train_params"] = resume_params
-        args1[
+        _args["train_params"] = _resume_params
+        _args[
             "--resume-from"
         ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
-        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
+        otx_resume_testing(template, tmp_dir_path, otx_dir, _args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)

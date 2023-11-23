@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -170,6 +170,16 @@ class FeatureVectorHook(BaseRecordingForwardHook):
         else:
             feature_vector = torch.nn.functional.adaptive_avg_pool2d(feature_map, (1, 1))
         return feature_vector
+
+
+class ViTFeatureVectorHook(BaseRecordingForwardHook):
+    """FeatureVectorHook for transformer-based classifiers."""
+
+    @staticmethod
+    def func(features: Tuple[List[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+        """Generate the feature vector for transformer-based classifiers by returning the cls token."""
+        _, cls_token = features[0]
+        return cls_token
 
 
 class ReciproCAMHook(BaseRecordingForwardHook):

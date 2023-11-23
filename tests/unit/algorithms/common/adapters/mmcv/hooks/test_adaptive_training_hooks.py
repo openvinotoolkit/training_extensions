@@ -86,7 +86,7 @@ class TestAdaptiveTrainSchedulingHook:
         assert hook._original_interval is None
         assert eval_hook.interval == 4
         assert lr_hook.interval == 4
-        assert lr_hook.patience == 1
+        assert lr_hook.patience == 2
         assert early_hook.interval == 4
-        assert early_hook.patience == 1
+        assert early_hook.patience == 3
         assert ckpt_hook.interval == 4

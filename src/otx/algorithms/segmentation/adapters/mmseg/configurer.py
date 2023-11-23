@@ -1,11 +1,11 @@
 """Base configurer for mmseg config."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 import os
 from collections import OrderedDict
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 import torch
 from mmcv.runner import CheckpointLoader
@@ -16,13 +16,11 @@ from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configured_input_size,
     remove_custom_hook,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -148,22 +146,30 @@ class SegmentationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
+        cfg, input_size=Optional[Tuple[int, int]], model_ckpt_path: Optional[str] = None, training=True
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
-        if input_size is None:
+        if input_size is None:  # InputSizePreset.DEFAULT
             return
 
-        # segmentation models have different input size in train and val data pipeline
+        # Segmentation models have different input size in train and val data pipeline
         base_input_size = {
             "train": 512,
             "val": 544,
             "test": 544,
             "unlabeled": 512,
         }
+        manager = InputSizeManager(cfg, base_input_size)
 
-        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        if input_size == (0, 0):  # InputSizePreset.AUTO
+            if training:
+                input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=False)
+            else:
+                input_size = manager.get_trained_input_size(model_ckpt_path)
+            if input_size is None:
+                return
+
+        manager.set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
 

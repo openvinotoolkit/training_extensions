@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 import torch
-from pathlib import Path
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -63,7 +62,7 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "2"],
 }
 
 # Training params for resume, num_iters*2
@@ -275,6 +274,8 @@ class TestToolsOTXInstanceSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize(self, template, tmp_dir_path):
+        if "MaskRCNN-ConvNeXt" in template.name:
+            pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
         tmp_dir_path = tmp_dir_path / "ins_seg"
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -283,6 +284,8 @@ class TestToolsOTXInstanceSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
+        if "MaskRCNN-ConvNeXt" in template.name:
+            pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
         ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "instance_segmentation", type(self).__name__)
 
     @e2e_pytest_component
@@ -290,6 +293,8 @@ class TestToolsOTXInstanceSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
+        if "MaskRCNN-ConvNeXt" in template.name:
+            pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
         ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component

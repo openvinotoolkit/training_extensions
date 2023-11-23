@@ -105,24 +105,39 @@ def regression_openvino_testing(
     ]
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(perf_path)
-    with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
+
+    trained_perf_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
+    assert os.path.exists(trained_perf_path)
+    with open(trained_perf_path) as read_file:
         trained_performance = json.load(read_file)
+
+    assert os.path.exists(perf_path)
     with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
 
-    if isinstance(criteria, dict) and template.name in criteria.keys():
-        model_criteria = criteria[template.name]
-        modified_criteria = model_criteria - (model_criteria * reg_threshold)
+    model_criteria = 0.0  # set default model critera for not existing reg config
+    if template.name not in criteria.keys():
+        regression_result["passed"] = False
+        log_msg = (
+            f"Cannot find regression criteria for the template '{template.name}'. "
+            + f"train_performance = {trained_performance}, export_performance = {exported_performance}"
+        )
+        regression_result["log"] = log_msg
+        print(log_msg)
+        return regression_result
+
+    if isinstance(criteria, dict):
+        model_criteria = criteria[template.name] * (1.0 - reg_threshold)
 
     for k in trained_performance.keys():
-        if isinstance(criteria, dict) and template.name in criteria.keys():
-            result_dict[k] = round(exported_performance[k], 3)
-            if exported_performance[k] < modified_criteria:
-                regression_result["passed"] = False
-                regression_result[
-                    "log"
-                ] = f"Export performance: ({exported_performance[k]}) < Criteria: ({modified_criteria})."
+        if k == "avg_time_per_image":
+            continue
+        result_dict[k] = round(exported_performance[k], 3)
+        if exported_performance[k] < model_criteria:
+            regression_result["passed"] = False
+            regression_result[
+                "log"
+            ] = f"Export performance: ({exported_performance[k]}) < Criteria: ({model_criteria})."
 
         if (
             exported_performance[k] < trained_performance[k]
@@ -167,6 +182,8 @@ def regression_deployment_testing(
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in exported_performance.keys():
+        if k == "avg_time_per_image":
+            continue
         if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(deployed_performance[k], 3)
             if deployed_performance[k] < modified_criteria:

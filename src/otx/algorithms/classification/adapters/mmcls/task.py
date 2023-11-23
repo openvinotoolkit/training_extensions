@@ -1,18 +1,7 @@
 """Task of OTX Classification using mmclassification training backend."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import glob
 import os
@@ -30,7 +19,6 @@ from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -42,14 +30,13 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     EigenCamHook,
     FeatureVectorHook,
     ReciproCAMHook,
+    ViTFeatureVectorHook,
     ViTReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
-    patch_data_pipeline,
-    patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
@@ -60,14 +47,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     OTXConfig,
-    update_or_add_custom_hook,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -75,7 +60,7 @@ from otx.api.entities.model import ModelPrecision
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 from .configurer import (
     ClassificationConfigurer,
@@ -100,7 +85,7 @@ class MMClassificationTask(OTXClassificationTask):
         self._recipe_cfg: Optional[Config] = None
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, export: bool = False):  # noqa
+    def _init_task(self):  # noqa
         """Initialize task."""
 
         if self._multilabel:
@@ -119,41 +104,6 @@ class MMClassificationTask(OTXClassificationTask):
 
         self.set_seed()
 
-        # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-
-        if not export:
-            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
-
-        if "custom_hooks" in self.override_configs:
-            override_custom_hooks = self.override_configs.pop("custom_hooks")
-            for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
-        if len(self.override_configs) > 0:
-            logger.info(f"before override configs merging = {self._recipe_cfg}")
-            self._recipe_cfg.merge_from_dict(self.override_configs)
-            logger.info(f"after override configs merging = {self._recipe_cfg}")
-
-        # add Cancel training hook
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
-        )
-        if self._time_monitor is not None:
-            update_or_add_custom_hook(
-                self._recipe_cfg,
-                ConfigDict(
-                    type="OTXProgressHook",
-                    time_monitor=self._time_monitor,
-                    verbose=True,
-                    priority=71,
-                ),
-            )
-        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
-
-        # Update recipe with caching modules
-        self._update_caching_modules(self._recipe_cfg.data)
-
         # Loss dynamics tracking
         if getattr(self._hyperparams.algo_backend, "enable_noisy_label_detection", False):
             LossDynamicsTrackingHook.configure_recipe(self._recipe_cfg, self._output_path)
@@ -163,6 +113,7 @@ class MMClassificationTask(OTXClassificationTask):
         self,
         training=True,
         ir_options=None,
+        export=False,
     ):
         """Patch mmcv configs for OTX classification settings."""
 
@@ -181,11 +132,35 @@ class MMClassificationTask(OTXClassificationTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrClassificationConfigurer("classification", training)
+            configurer = IncrClassificationConfigurer(
+                "classification",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLClassificationConfigurer("classification", training)
+            configurer = SemiSLClassificationConfigurer(
+                "classification",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         else:
-            configurer = ClassificationConfigurer("classification", training)
+            configurer = ClassificationConfigurer(
+                "classification",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
 
         options_for_patch_datasets = {"type": "OTXClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
@@ -195,22 +170,26 @@ class MMClassificationTask(OTXClassificationTask):
         elif self._hierarchical:
             options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
+            options_for_patch_datasets["label_schema"] = self._task_environment.label_schema
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:
             options_for_patch_datasets["type"] = "SelfSLDataset"
 
         cfg = configurer.configure(
             recipe_cfg,
+            self.data_pipeline_path,
+            self._hyperparams,
             self._model_ckpt,
             self._data_cfg,
             ir_options,
             data_classes,
             model_classes,
-            self._hyperparams.learning_parameters.input_size,
+            self._input_size,
             options_for_patch_datasets=options_for_patch_datasets,
             options_for_patch_evaluation=options_for_patch_evaluation,
         )
         self._config = cfg
+        self._input_size = cfg.model.pop("input_size", None)
         return cfg
 
     def build_model(
@@ -247,7 +226,6 @@ class MMClassificationTask(OTXClassificationTask):
             )
         )
 
-        dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
         self._init_task()
@@ -296,16 +274,16 @@ class MMClassificationTask(OTXClassificationTask):
         forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook]
         if model_type == "VisionTransformer":
             forward_explainer_hook = ViTReciproCAMHook(feature_model)
-        elif (
-            not dump_saliency_map or model_type in TRANSFORMER_BACKBONES
-        ):  # TODO: remove latter "or" condition after resolving Issue#2098
+        elif not dump_saliency_map:
             forward_explainer_hook = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if (
-            not dump_features or model_type in TRANSFORMER_BACKBONES
-        ):  # TODO: remove latter "or" condition after resolving Issue#2098
-            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+
+        feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook]
+        if model_type == "VisionTransformer":
+            feature_vector_hook = ViTFeatureVectorHook(feature_model)
+        elif not dump_saliency_map:
+            feature_vector_hook = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
 
@@ -388,6 +366,10 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        if not torch.cuda.is_available():
+            # NOTE: mmcls does not wrap models w/ DP for CPU training not like mmdet
+            # Raw DataContainer "img_metas" is exposed, which results in errors
+            model = build_data_parallel(model, cfg, distributed=False)
         model.train()
 
         if cfg.distributed:
@@ -446,35 +428,6 @@ class MMClassificationTask(OTXClassificationTask):
             output_ckpt_path = best_ckpt_path[0]
         return dict(
             final_ckpt=output_ckpt_path,
-        )
-
-    # These need to be moved somewhere
-    def _update_caching_modules(self, data_cfg: Config) -> None:
-        def _find_max_num_workers(cfg: dict):
-            num_workers = [0]
-            for key, value in cfg.items():
-                if key == "workers_per_gpu" and isinstance(value, int):
-                    num_workers += [value]
-                elif isinstance(value, dict):
-                    num_workers += [_find_max_num_workers(value)]
-
-            return max(num_workers)
-
-        def _get_mem_cache_size():
-            if not hasattr(self._hyperparams.algo_backend, "mem_cache_size"):
-                return 0
-
-            return self._hyperparams.algo_backend.mem_cache_size
-
-        max_num_workers = _find_max_num_workers(data_cfg)
-        mem_cache_size = _get_mem_cache_size()
-
-        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
-        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
-
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
         )
 
     def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
@@ -572,9 +525,9 @@ class MMClassificationTask(OTXClassificationTask):
                 ),
             )
         )
-        self._init_task(export=True)
+        self._init_task()
 
-        cfg = self.configure(False, None)
+        cfg = self.configure(False, None, export=True)
 
         self._precision[0] = precision
         assert len(self._precision) == 1
@@ -583,11 +536,6 @@ class MMClassificationTask(OTXClassificationTask):
 
         export_options["precision"] = str(precision)
         export_options["type"] = str(export_format)
-
-        # [TODO] Enable dump_features for ViT backbones
-        model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
-        if model_type in TRANSFORMER_BACKBONES:
-            dump_features = False
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
@@ -676,7 +624,7 @@ class MMClassificationTask(OTXClassificationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                input_size_manager = InputSizeManager(cfg.data)
+                input_size_manager = InputSizeManager(cfg)
                 size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error

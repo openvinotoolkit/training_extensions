@@ -31,6 +31,7 @@ from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.manager import ConfigManager
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME
+from otx.cli.utils.experiment import ResourceTracker
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
@@ -43,6 +44,7 @@ from otx.cli.utils.parser import (
 )
 from otx.cli.utils.report import get_otx_report
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import config_logger
 
 
 def get_args():
@@ -159,6 +161,14 @@ def get_args():
         default=None,
         help="Encryption key required to train the encrypted dataset. It is not required the non-encrypted dataset",
     )
+    parser.add_argument(
+        "--track-resource-usage",
+        type=str,
+        default=None,
+        help="Track resources utilization and max memory usage and save values at the output path. "
+        "The possible options are 'cpu', 'gpu' or you can set to a comma-separated list of resource types. "
+        "And 'all' is also available for choosing all resource types.",
+    )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
@@ -190,6 +200,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode=mode)
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -273,9 +284,17 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
+    resource_tracker = None
+    if args.track_resource_usage and not is_multigpu_child_process():
+        resource_tracker = ResourceTracker(args.track_resource_usage, args.gpus)
+        resource_tracker.start()
+
     task.train(
         dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
     )
+
+    if resource_tracker is not None:
+        resource_tracker.stop(config_manager.output_path / "resource_usage.yaml")
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))

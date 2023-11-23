@@ -48,12 +48,12 @@ def test_get_visual_promtping_config(
     assert config.get("optimizer", False)
     assert config.get("callback", False)
     assert config.get("trainer", False)
-    if model_checkpoint is not None:
-        if mode == "train":
-            assert config.get("model").get("checkpoint") == model_checkpoint
+    if mode == "train":
+        if model_checkpoint:
+            assert config.get("model").get("checkpoint", None) == model_checkpoint
         else:
-            assert config.get("model").get("checkpoint") != model_checkpoint
-            assert config.get("trainer").get("resume_from_checkpoint", None) == resume_from_checkpoint
+            assert config.get("model").get("checkpoint", None) != model_checkpoint
+        assert config.get("trainer").get("resume_from_checkpoint", None) == resume_from_checkpoint
 
 
 @e2e_pytest_unit

@@ -33,7 +33,15 @@ args = {
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "2"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "2",
+        "--postprocessing.max_num_detections",
+        "200",
+    ],
 }
 
 args_semisl = {
@@ -42,7 +50,15 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "1"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "2",
+        "--postprocessing.max_num_detections",
+        "200",
+    ],
 }
 
 # Training params for resume, num_iters*2
@@ -51,7 +67,9 @@ resume_params = [
     "--learning_parameters.num_iters",
     "2",
     "--learning_parameters.batch_size",
-    "4",
+    "2",
+    "--postprocessing.max_num_detections",
+    "200",
 ]
 
 otx_dir = os.getcwd()
@@ -166,7 +184,10 @@ class TestInstanceSegmentationCLI:
         tmp_dir_path = tmp_dir_path / "ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
-
+        if torch.__version__.startswith("2.") and template.name.startswith("MaskRCNN"):
+            pytest.skip(
+                reason="Issue#2451: Torch2.0 CUDA runtime error during NNCF optimization of ROIAlign MMCV kernel for MaskRCNN"
+            )
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
