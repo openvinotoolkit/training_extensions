@@ -33,23 +33,36 @@ release = __version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
     'sphinx.ext.autodoc',
     'sphinx_copybutton',
     "sphinx.ext.autosummary",  # Create neat summary tables
+    "sphinx.ext.viewcode",  # Find the source files
+    "sphinx.ext.autosectionlabel",  # Refer sections its title
+    "sphinx.ext.intersphinx",  # Generate links to the documentation
 ]
 
-# Turn on sphinx.ext.autosummary
-autosummary_generate = True
-# autodoc_member_order = "groupwise"
-# autoclass_content = "both"
+source_suffix = {
+    ".rst": "restructuredtext",
+     ".md": "markdown",
+}
 
-# autodoc_default_options = {
-#     "members": True,
-#     "methods": True,
-#     "special-members": "__call__",
-#     "exclude-members": "_abc_impl",
-#     "show-inheritance": True,
-# }
+suppress_warnings = [
+    "ref.python",
+    "autosectionlabel.*",
+]
+
+autosummary_generate = True     # Turn on sphinx.ext.autosummary
+autodoc_member_order = "groupwise"
+autoclass_content = "both"
+
+autodoc_default_options = {
+    "members": True,
+    "methods": True,
+    "special-members": "__call__",
+    "exclude-members": "_abc_impl",
+    "show-inheritance": True,
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -87,3 +100,11 @@ html_theme_options = {
 html_css_files = [
     'css/custom.css',
 ]
+
+# -- Extension configuration -------------------------------------------------
+autodoc_docstring_signature = True
+autodoc_member_order = "bysource"
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
