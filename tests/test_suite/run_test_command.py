@@ -791,16 +791,16 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
 
     save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -826,16 +826,16 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
 
     save_dir = f"explain_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -867,16 +867,16 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
 
     save_dir = f"explain_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -903,16 +903,16 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
 
     save_dir = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -939,16 +939,16 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
 
     save_dir = f"explain_ov_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -981,16 +981,16 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
 
     save_dir = f"explain_ov_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,

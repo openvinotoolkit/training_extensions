@@ -449,7 +449,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx explain --help
-    usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
+    usage: otx explain [-h] --input INPUT [--output OUTPUT] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -459,10 +459,10 @@ With the ``--help`` command, you can list additional information, such as its pa
 
     optional arguments:
       -h, --help            show this help message and exit
-      --explain-data-roots EXPLAIN_DATA_ROOTS
+      -i INPUT, --input INPUT
                             Comma-separated paths to explain data folders.
-      --save-explanation-to SAVE_EXPLANATION_TO
-                            Output path for explanation images.
+      -o OUTPUT, --output OUTPUT
+                        Output path for explanation images.
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
       --explain-algorithm EXPLAIN_ALGORITHM
@@ -475,13 +475,13 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Weight of the saliency map when overlaying the input image with saliency map.
 
 
-The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
+The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``output`` path:
 
 .. code-block::
 
-    (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
+    (otx) ...$ otx explain SSD --input <path/to/explain/root> \
                                --load-weights <path/to/model_weights> \
-                               --save-explanation-to <path/to/output/root> \
+                               --output <path/to/output/root> \
                                --explain-algorithm classwisesaliencymap \
                                --overlay-weight 0.5
 
@@ -496,9 +496,9 @@ By default, the model is exported to the OpenVINO™ IR format without extra fea
     (otx) ...$ otx export SSD --load-weights <path/to/trained/weights.pth> \
                               --output outputs/openvino/with_features \
                               --dump-features
-    (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
+    (otx) ...$ otx explain SSD --input <path/to/explain/root> \
                                --load-weights outputs/openvino/with_features \
-                               --save-explanation-to <path/to/output/root> \
+                               --output <path/to/output/root> \
                                --explain-algorithm classwisesaliencymap \
                                --overlay-weight 0.5
 
