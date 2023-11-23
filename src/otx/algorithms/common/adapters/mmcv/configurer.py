@@ -34,9 +34,9 @@ from otx.algorithms.common.utils import (
     is_xpu_available,
 )
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

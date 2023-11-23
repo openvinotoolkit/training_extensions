@@ -23,7 +23,6 @@ from anomalib.models import AnomalyModule
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
@@ -32,8 +31,9 @@ from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class AnomalyInferenceCallback(Callback):

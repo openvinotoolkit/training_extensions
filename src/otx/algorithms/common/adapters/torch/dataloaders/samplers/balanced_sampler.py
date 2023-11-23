@@ -9,7 +9,7 @@ from typing import Union
 import numpy as np
 from torch.utils.data import Dataset
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from .otx_sampler import OTXSampler
 
@@ -58,21 +58,19 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
 
         super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
-        self.img_indices = self.dataset.img_indices  # type: ignore[attr-defined]
+        self.img_indices = {k: v for k, v in self.dataset.img_indices.items() if len(v) > 0}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
+        self.num_trials = int(self.data_length / self.num_cls)
 
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)
-            self.num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
-            base = 1 - (1 / self.num_tail)
-            if base == 0:
-                raise ValueError("Required more than one sample per class")
-            self.num_trials = int(math.log(0.001, base))
-            if int(self.data_length / self.num_cls) < self.num_trials:
-                self.num_trials = int(self.data_length / self.num_cls)
-        else:
-            self.num_trials = int(self.data_length / self.num_cls)
+            num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
+            if num_tail > 1:
+                base = 1 - (1 / num_tail)
+                num_reduced_trials = int(math.log(0.001, base))
+                self.num_trials = min(num_reduced_trials, self.num_trials)
+
         self.num_samples = self._calculate_num_samples()
 
         logger.info(

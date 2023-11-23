@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import logging
 import multiprocessing as mp
 import os
 import time
@@ -15,12 +14,14 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 import psutil
 import yaml
 
+from otx.utils.logger import get_logger
+
 try:
     import pynvml
 except ImportError:
     pynvml = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 GIB = 1024**3
 AVAILABLE_RESOURCE_TYPE = ["cpu", "gpu"]
 

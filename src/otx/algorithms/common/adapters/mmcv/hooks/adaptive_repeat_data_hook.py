@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import get_proper_repeat_times
 from otx.algorithms.common.adapters.torch.dataloaders.samplers import OTXSampler
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

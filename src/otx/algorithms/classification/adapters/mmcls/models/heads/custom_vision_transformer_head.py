@@ -42,3 +42,10 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
     def forward(self, x):
         """Forward fuction of CustomVisionTransformerClsHead class."""
         return self.simple_test(x)
+
+    def forward_train(self, x, gt_label, **kwargs):
+        """Forward_train fuction of CustomVisionTransformerClsHead class."""
+        x = self.pre_logits(x)
+        cls_score = self.layers.head(x)
+        losses = self.loss(cls_score, gt_label, feature=x)
+        return losses

@@ -43,7 +43,6 @@ from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
 )
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
@@ -69,8 +68,9 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -359,7 +359,20 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         extra_model_data[("model_info", "reverse_input_channels")] = False
         extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
-        extra_model_data[("model_info", "labels")] = "Normal Anomaly"
+
+        labels = []
+        label_ids = []
+        for label_entity in self.task_environment.label_schema.get_labels(include_empty=False):
+            label_name = label_entity.name.replace(" ", "_")
+            # There is a mismatch between labels in OTX and modelAPI
+            if label_name == "Anomalous":
+                label_name = "Anomaly"
+            labels.append(label_name)
+            label_ids.append(str(label_entity.id_))
+
+        extra_model_data[("model_info", "labels")] = " ".join(labels)
+        extra_model_data[("model_info", "label_ids")] = " ".join(label_ids)
+
         if export_type == ExportType.OPENVINO:
             embed_ir_model_data(model_file, extra_model_data)
         elif export_type == ExportType.ONNX:

@@ -39,7 +39,7 @@ Dataset Format
 .. _hierarchical_dataset:
 
 For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
-An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_h-label>`_.
+An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/datumaro_h-label>`_.
 
 To use OpenVINO™ Training Extensions with this format, it is required to pass dataset root paths directly to the CLI command:
 

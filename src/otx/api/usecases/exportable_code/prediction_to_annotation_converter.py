@@ -371,7 +371,7 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
-            predictions (tuple): Raw predictions from the model.
+            predictions (AnomalyResult): Raw predictions from the model.
             metadata (Dict[str, Any]): Variable containing metadata information.
 
         Returns:

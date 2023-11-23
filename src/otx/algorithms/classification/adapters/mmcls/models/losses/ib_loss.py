@@ -1,5 +1,5 @@
 """Module for defining IB Loss which alleviate effect of imbalanced dataset."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -48,7 +48,7 @@ class IBLoss(CrossEntropyLoss):
         """Update loss weight per class."""
         if len(cls_num_list) == 0:
             raise ValueError("Cannot compute the IB loss weight with empty cls_num_list.")
-        per_cls_weights = 1.0 / np.array(cls_num_list)
+        per_cls_weights = 1.0 / (np.array(cls_num_list) + self.epsilon)
         per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(cls_num_list)
         per_cls_weights = torch.FloatTensor(per_cls_weights)
         self.weight.data = per_cls_weights.to(device=self.weight.device)
