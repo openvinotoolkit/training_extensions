@@ -1,0 +1,39 @@
+*.pyc
+__pycache__
+.idea/
+.vscode/
+*.iml
+
+*venv*/
+env
+otx-workspace*
+.env
+.tox
+
+.coverage
+
+build/
+dist/
+*egg-info
+
+*.pth
+*.onnx
+*.xml
+*.bin
+*.mapping
+
+*.tar.gz
+*.zip
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# python version
+.python-version
+
+# Cython generated C-code & html
+src/**/*.c
+src/**/*.html
+src/**/*.so

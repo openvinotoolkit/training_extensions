@@ -1,0 +1,68 @@
+name: Build Docs for releases
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  Build-Docs:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Build-Docs
+        run: tox -e build-doc
+      - name: Create gh-pages branch
+        run: |
+          echo RELEASE_VERSION=${GITHUB_REF#refs/*/} >> $GITHUB_ENV
+          echo SOURCE_NAME=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
+          echo SOURCE_BRANCH=${GITHUB_REF#refs/heads/} >> $GITHUB_OUTPUT
+          echo SOURCE_TAG=${GITHUB_REF#refs/tags/} >> $GITHUB_OUTPUT
+          existed_in_remote=$(git ls-remote --heads origin gh-pages)
+
+          if [[ -z ${existed_in_remote} ]]; then
+            echo "Creating gh-pages branch"
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git checkout --orphan gh-pages
+            git reset --hard
+            touch .nojekyll
+            git add .nojekyll
+            git commit -m "Initializing gh-pages branch"
+            git push origin gh-pages
+            git checkout ${{steps.branch_name.outputs.SOURCE_NAME}}
+            echo "Created gh-pages branch"
+          else
+            echo "Branch gh-pages already exists"
+          fi
+      - name: Commit docs to gh-pages branch
+        run: |
+          git fetch
+          git checkout gh-pages
+          mkdir -p /tmp/docs_build
+          cp -r docs/build/html/* /tmp/docs_build/
+          rm -rf ${{ env.RELEASE_VERSION }}/*
+          echo '<html><head><meta http-equiv="refresh" content="0; url=stable/" /></head></html>' > index.html
+          mkdir -p ${{ env.RELEASE_VERSION }}
+          cp -r /tmp/docs_build/* ./${{ env.RELEASE_VERSION }}
+          ln -sfn ${{ env.RELEASE_VERSION }} stable
+          rm -rf /tmp/docs_build
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./stable ${{ env.RELEASE_VERSION }}
+          git commit -m "Update documentation" -a || true
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages

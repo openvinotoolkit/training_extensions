@@ -1,0 +1,12 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Development Requirements.                                                   #
+pre-commit==2.20.0
+pylint
+pytest
+coverage
+pytest-timeout
+pytest-mock
+onnx==1.13.0
+onnxruntime==1.14.1
+pytest-csv
+tox>=4.5.1.1

@@ -1,0 +1,10 @@
+{{ range . }}
+Trivy Vulnerability Scan Results ({{ .Target }})
+VulnerabilityID,Severity,CVSS Score,Title,Library,Vulnerable Version,Fixed Version,Information URL,Triage Information
+{{ range .Vulnerabilities }}{{ .VulnerabilityID }},{{ .Severity }},{{ range $key, $value := .CVSS }}{{ if (eq $key "nvd") }}{{ .V3Score }}{{ end }}{{ end }},"{{ .Title }}","{{ .PkgName }}","{{ .InstalledVersion }}","{{ .FixedVersion }}",{{ .PrimaryURL }}
+{{ end }}
+Trivy Dependency Scan Results ({{ .Target }})
+ID,Name,Version,Notes
+{{ range .Packages }}{{ .ID }},{{ .Name }},{{ .Version }}
+{{ end }}
+{{ end }}

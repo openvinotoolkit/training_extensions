@@ -1,0 +1,56 @@
+default_language_version:
+  python: python3.10
+  node: 16.15.0
+  ruby: 2.7.2
+
+repos:
+  # yaml formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.6.1"
+    hooks:
+      - id: mypy
+        files: '^(src/otx)/.*\.py'
+        additional_dependencies:
+          [
+            types-PyYAML,
+            attrs==21.2.*,
+            types-requests,
+            types-Deprecated,
+            types-docutils,
+            types_futures,
+            types-setuptools,
+            types-python-dateutil,
+            tokenize-rt==3.2.0,
+          ]
+        args: [--disallow-untyped-calls]
+
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.12.0.3
+    hooks:
+      - id: hadolint
+        name: Lint Dockerfiles
+        description: Runs hadolint to lint Dockerfiles
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck # TODO remove this when all shell scripts have been removed from otx
+
+  # markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        args: [--config=.markdownlint.yaml]
+
+  # Ruff
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: "v0.1.2"
+    hooks:
+      - id: ruff
+        args: [--fix]

@@ -1,0 +1,270 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# SETUP CONFIGURATION.                                                        #
+[build-system]
+requires = [
+    "setuptools>=61",
+    "wheel",
+    "Cython~=0.29.32",
+    "numpy~=1.21.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "otx"
+dynamic = ["version"]
+description = "OpenVINO™ Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO™"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    { name = "OpenVINO™ Training Extensions Contributors" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "attrs>=21.2.0",
+    "dill>=0.3.6",
+    "docstring_parser",
+    "imagesize==1.4.1",
+    "jsonargparse==4.25.0",
+    "networkx>=2.6,<=2.8.0",
+    "numpy>=1.21.0,<=1.23.4",
+    "omegaconf>=2.1.1",
+    "opencv-python>=4.5",
+    "pymongo",
+    "rich",
+    "rich-argparse",
+    "scikit-learn>=1.0.2",
+    "Shapely>=1.7.1,<=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox==4.4.5",
+    "pre-commit==2.20.0",
+    "pylint",
+    "pytest",
+    "coverage",
+    "pytest-timeout",
+    "pytest-mock",
+    "onnx==1.13.0",
+    "onnxruntime==1.14.1",
+    "pytest-csv",
+]
+docs = [
+    "furo",
+    "myst-parser",
+    "sphinx==5.3.0",
+    "pydata-sphinx-theme==0.12.0",
+    "sphinx-tabs",
+    "sphinx-panels",
+    "sphinx-copybutton==0.5.0",
+    "sphinx-autoapi",
+    "sphinxemoji",
+    "nbsphinx",
+]
+base = [
+    "natsort>=6.0.0",
+    "prettytable",
+    "protobuf>=3.20.0",
+    "pyyaml",
+    "datumaro~=1.4.0",
+    "psutil",
+    "scipy>=1.8",
+    "bayesian-optimization>=1.2.0",
+    "tensorboard>=2.11.0",
+    "multiprocess",
+    "torch==2.0.1",
+]
+
+[project.scripts]
+otx = "otx.cli.cli:main"
+
+[project.urls]
+Documentation = "https://openvinotoolkit.github.io/training_extensions/"
+Repository = "https://github.com/openvinotoolkit/training_extensions/"
+
+[tool.setuptools.dynamic]
+version = {attr = "otx.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["otx*"]
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# CI CONFIGURATION.                                                        #
+[tool.cibuildwheel]
+build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# COVERAGE CONFIGURATION.                                                     #
+[tool.coverage.run]
+source = [
+    "src/otx",
+]
+omit = [
+    "**/__init__.py",
+]
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# MYPY CONFIGURATION.                                                         #
+[tool.mypy]
+python_version = 3.8
+ignore_missing_imports = true
+show_error_codes = true
+
+# TODO: Need to be edited
+follow_imports = "skip"
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# RUFF CONFIGURATION                                                          #
+[tool.ruff]
+# Enable rules
+select = [
+    "F",    # Pyflakes (`F`)
+
+    # Enable all `pydocstyle` rules, limiting to those that adhere to the
+    # Google convention via `convention = "google"`, below.
+    "D",    # pydocstyle (`D`)
+    "E",    # pycodestyle error (`E`)
+    "W",    # pycodestyle warning (`W`)
+
+    "I",    # isort (`I`)
+    "PL",   # pylint (`PL`)
+
+    "C90",  # mccabe (`C90`)
+    "N",    # pep8-naming (`N`)
+    "UP",   # pyupgrade (`UP`)
+
+    "YTT",  # flake8-2020 (`YTT`)
+    "ANN",  # flake8-annotations (`ANN`)
+    "S",    # flake8-bandit (`S`)
+    # "BLE",  # flake8-blind-except (`BLE`)  -> Need to discuss new exception structure
+    "B",    # flake8-bugbear (`B`)
+    "A",    # flake8-builtins (`A`)
+    "COM",  # flake8-commas (`COM`)
+    # "CPY",  # flake8-copyright (`CPY`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+    "C4",   # flake8-comprehensions (`C4`)
+    "DTZ",  # flake8-datatimez (`DTZ`)
+    "T10",  # flake8-debugger (`T10`)
+    "EM",   # flake8-errmsg (`EM`)
+    "FA",   # flake8-future-annotations (`FA`)
+    "ISC",  # flake8-implicit-str-concat (`ISC`)
+    "ICN",  # flake8-import-conventions (`ICN`)
+    "PIE",  # flake8-pie (`PIE`)
+    "PT",   # flake8-pytest-style (`PT`)
+    "RSE",  # flake8-raise (`RSE`)
+    "RET",  # flake8-return (`RET`)
+    "SLF",  # flake8-self (`SLF`)
+    "SIM",  # flake8-simplify (`SIM`)
+    "TID",  # flake8-tidy-imports (`TID`)
+    "TCH",  # flake8-type-checking (`TCH`)
+    "INT",  # flake8-gettext (`INT`)
+    "ARG",  # flake8-unsused-arguments (`ARG`)
+    "PTH",  # flake8-use-pathlib (`PTH`)
+    "TD",   # flake8-todos (`TD`)
+    "FIX",  # flake8-fixme (`FIX`)
+    # "LOG",  # flake8-logging (`LOG`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+
+    "ERA",  # eradicate (`ERA`)
+    "PD",   # pandas-vet (`PD`)
+    "PGH",  # pygrep-hooks (`PGH`)
+    "TRY",  # tryceratos (`TRY`)
+    "FLY",  # flynt (`FLY`)
+    "NPY",  # NumPy-specific rules (`NPY`)
+    "PERF", # Perflint (`PERF`)
+    # "FURB", # refurb (`FURB`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+    "RUF",  # Ruff-specific rules (`RUF`)
+]
+
+ignore = [
+    # pydocstyle
+    # On top of the Google convention, disable `D417`, which requires
+    # documentation for every function parameter.
+    "D417", # Missing argument descriptions in the docstring
+
+    # flake8-annotations
+    "ANN101",   # Missing-type-self
+    "ANN002",   # Missing type annotation for *args
+    "ANN003",   # Missing type annotation for **kwargs
+    # flake8-type-checking
+    "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
+    # flake8-fixme
+    "FIX002"    # line-contains-todo
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+# fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+# unfixable = [
+#     "F401",     # disable autofix for unused imports
+# ]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Same as Black.
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# minimum target version
+target-version = "py38"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 20
+
+[tool.ruff.pylint]
+allow-magic-value-types = ["str", "bytes", "int", "float"]
+max-args = 20
+max-branches = 50
+max-statements = 150
+max-returns = 10
+
+[tool.ruff.per-file-ignores]
+# Declare an additional exclude rule for test code
+"tests/**/*.py" = [
+    "S101",     # pytest-style allows `assert` statements in tests.
+    "SLF001",   # We sometimes need to inspect private functions for testing.
+    "TCH003",   # It doesn't seem necessary to use TYPE_CHECKING in tests.
+    "PT004",    # fixture ignore type returning.
+    "E501",     # Test skips lines that are too long.
+    "ANN001",   # Skip annotation type hint in test codes
+    "D",     # Test skips missing docstring argument with magic (fixture) methods.
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
