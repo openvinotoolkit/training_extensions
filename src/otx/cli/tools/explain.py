@@ -125,10 +125,7 @@ def _log_after_saving(explain_predicted_classes, explained_image_counter, args, 
             "Please adjust training pipeline or use different model-data pair."
         )
     if explained_image_counter > 0:
-        logger.info(
-            f"Saliency maps saved to {args.output} for {explained_image_counter} "
-            f"out of {num_images} images."
-        )
+        logger.info(f"Saliency maps saved to {args.output} for {explained_image_counter} out of {num_images} images.")
 
 
 def main():
