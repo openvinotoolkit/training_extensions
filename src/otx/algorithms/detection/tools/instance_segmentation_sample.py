@@ -19,6 +19,7 @@ import sys
 
 import cv2
 import numpy as np
+
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (

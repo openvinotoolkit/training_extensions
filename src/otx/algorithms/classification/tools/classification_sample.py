@@ -12,6 +12,7 @@ import sys
 
 import numpy as np
 import torch
+
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
@@ -43,18 +44,23 @@ torch.backends.cudnn.benchmark = False
 
 logger = get_logger()
 
-parser = argparse.ArgumentParser(description="Sample showcasing the new API")
-parser.add_argument("template_file_path", help="path to template file")
-parser.add_argument("--export", action="store_true")
-parser.add_argument("--multilabel", action="store_true")
-parser.add_argument("--hierarchical", action="store_true")
 
-args = parser.parse_args()
+def parse_args():
+    """Parse function for getting model template & check export."""
+    parser = argparse.ArgumentParser(description="Sample showcasing the new API")
+    parser.add_argument("template_file_path", help="path to template file")
+    parser.add_argument("--export", action="store_true")
+    parser.add_argument("--multilabel", action="store_true")
+    parser.add_argument("--hierarchical", action="store_true")
+
+    return parser.parse_args()
 
 
-def load_test_dataset(data_type):
+def load_test_dataset(data_type, args):
     """Load test dataset."""
     import PIL
+    from PIL import ImageDraw
+
     from otx.api.entities.annotation import (
         Annotation,
         AnnotationSceneEntity,
@@ -64,7 +70,6 @@ def load_test_dataset(data_type):
     from otx.api.entities.image import Image
     from otx.api.entities.scored_label import ScoredLabel
     from otx.api.entities.shapes.rectangle import Rectangle
-    from PIL import ImageDraw
 
     def gen_image(resolution, shape=None):
         image = PIL.Image.new("RGB", resolution, (255, 255, 255))
@@ -219,11 +224,11 @@ def validate(task, validation_dataset, model):
     print(str(resultset.performance))
 
 
-def main():
+def main(args):
     """Main of Classification Sample Test."""
 
     logger.info("Train initial model with OLD dataset")
-    dataset, labels_list = load_test_dataset("old")
+    dataset, labels_list = load_test_dataset("old", args)
     labels_schema = get_label_schema(labels_list, multilabel=args.multilabel, hierarchical=args.hierarchical)
 
     logger.info(f"Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items")
@@ -361,4 +366,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(main(parse_args()) or 0)

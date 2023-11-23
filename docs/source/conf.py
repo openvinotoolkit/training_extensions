@@ -52,18 +52,6 @@ suppress_warnings = [
     "autosectionlabel.*",
 ]
 
-autosummary_generate = True     # Turn on sphinx.ext.autosummary
-autodoc_member_order = "groupwise"
-autoclass_content = "both"
-
-autodoc_default_options = {
-    "members": True,
-    "methods": True,
-    "special-members": "__call__",
-    "exclude-members": "_abc_impl",
-    "show-inheritance": True,
-}
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -108,3 +96,17 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
 }
+autodoc_member_order = "groupwise"
+autodoc_default_options = {
+    "members": True,
+    "methods": True,
+    "special-members": "__call__",
+    "exclude-members": "_abc_impl",
+    "show-inheritance": True,
+}
+
+autoclass_content = "both"
+
+autosummary_generate = True     # Turn on sphinx.ext.autosummary
+autosummary_ignore_module_all = False   # Summary list in __all__ no others
+# autosummary_imported_members = True # document classes and functions imported in modules
