@@ -118,6 +118,8 @@ def regression_openvino_testing(
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
+        if k == "avg_time_per_image":
+            continue
         result_dict[k] = round(exported_performance[k], 3)
         if (
             exported_performance[k] < trained_performance[k]
@@ -160,6 +162,8 @@ def regression_deployment_testing(
         deployed_performance = json.load(read_file)
 
     for k in exported_performance.keys():
+        if k == "avg_time_per_image":
+            continue
         result_dict[k] = round(deployed_performance[k], 3)
         if (
             deployed_performance[k] < exported_performance[k]
