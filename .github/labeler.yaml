@@ -1,0 +1,22 @@
+# See help here: https://github.com/marketplace/actions/labeler
+
+OTX 2.0:
+  - "src/otx/**/*"
+TEST:
+  - "tests/**/*"
+DOC:
+  - "docs/**/*"
+  - "**/*.md"
+  - "LICENSE"
+  - "third-party-programs.txt"
+BUILD:
+  - ".ci/**/*"
+  - ".github/**/*"
+  - ".pre-commit-config.yaml"
+  - "markdownlint.rb"
+  - "pyproject.toml"
+  - "tox.ini"
+  - "MANIFEST.in"
+DEPENDENCY:
+  - "requirements/*"
+  - "pyproject.toml"
