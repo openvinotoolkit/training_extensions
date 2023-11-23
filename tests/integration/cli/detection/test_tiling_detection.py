@@ -1,5 +1,5 @@
 """Tests for OTX Class-Incremental Learning for object detection with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
@@ -36,6 +36,8 @@ args = {
         "1",
         "--tiling_parameters.enable_adaptive_params",
         "1",
+        "--postprocessing.max_num_detections",
+        "200",
     ],
 }
 
