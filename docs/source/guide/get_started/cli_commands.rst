@@ -462,7 +462,7 @@ With the ``--help`` command, you can list additional information, such as its pa
       -i INPUT, --input INPUT
                             Comma-separated paths to explain data folders.
       -o OUTPUT, --output OUTPUT
-                        Output path for explanation images.
+                            Output path for explanation images.
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
       --explain-algorithm EXPLAIN_ALGORITHM

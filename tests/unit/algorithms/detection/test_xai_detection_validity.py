@@ -92,12 +92,8 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
-<<<<<<< HEAD
-        actual_sal_vals = saliency_maps[0][0][0].astype(np.uint8)
-=======
         # convert to int16 in case of negative value difference
         actual_sal_vals = saliency_maps[0][0][0][:10].astype(np.int16)
->>>>>>> 89d3c9d0cac51915c74441f668613edefca793da
         ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.uint8)
         assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
