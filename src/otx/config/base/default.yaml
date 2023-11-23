@@ -1,0 +1,22 @@
+# OTX task enum
+task: ???
+
+# # simply provide checkpoint path to resume training
+# ckpt_path: null
+
+# # seed for random number generators in pytorch, numpy and python.random
+# seed: null
+
+# path to working directory
+work_dir: ${hydra:runtime.cwd}
+
+# path to data directory
+data_dir: ${base.work_dir}/data/
+
+# path to logging directory
+log_dir: ${base.work_dir}/logs/
+
+# path to output directory, created dynamically by hydra
+# path generation pattern is specified in `configs/hydra/default.yaml`
+# use it to store all files generated during the run, like ckpts and metrics
+output_dir: ${hydra:runtime.output_dir}
