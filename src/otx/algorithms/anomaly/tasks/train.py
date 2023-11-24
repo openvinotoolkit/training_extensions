@@ -26,9 +26,9 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from pytorch_lightning import Trainer, seed_everything
-from otx.algorithms.anomaly.adapters.anomalib.accelerators import XPUAccelerator
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.callbacks.xpu import XPUCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.datasets import DatasetEntity
@@ -90,12 +90,10 @@ class TrainingTask(InferenceTask, ITrainingTask):
             ),
         ]
 
-        #config.trainer.accelerator = "xpu"
-        config.trainer.pop("accelerator")
-        print(config.trainer.devices)
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks, accelerator=XPUAccelerator())
-        #if is_xpu_available():
-        #    self.model, optimizer = torch.xpu.optimize(self.model, optimizer=self.trainer.optimizers[0], dtype=torch.bfloat16)
+        if is_xpu_available():
+            callbacks.append(XPUCallback())
+
+        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
 
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
