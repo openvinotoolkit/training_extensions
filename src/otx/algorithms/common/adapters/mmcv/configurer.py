@@ -263,7 +263,20 @@ class BaseConfigurer:
                     logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
                 opts["type"] = "HPUOptimizerHook"
                 cfg.optimizer_config.update(opts)
-            elif torch.cuda.is_available() or is_xpu_available():
+            elif is_xpu_available():
+                opts.update({"distributed": distributed, **fp16_config})
+                if optim_type == "SAMOptimizerHook":
+                    logger.warning("SAMOptimizerHook is not supported on XPU yet, changed to OptimizerHook.")
+                    opts["type"] = "OptimizerHook"
+                if optim_type == "OptimizerHook":
+                    opts["type"] = "XPUOptimizerHook"
+                else:
+                    # does not support optimizerhook type
+                    # let mm library handle it
+                    cfg.fp16 = fp16_config
+                    opts = dict()
+                cfg.optimizer_config.update(opts)
+            elif torch.cuda.is_available():
                 opts.update({"distributed": distributed, **fp16_config})
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"

@@ -30,7 +30,7 @@ def custom_auto_fp16(
     out_fp32: bool = False,
     supported_types: tuple = (nn.Module,),
 ) -> Callable:
-    """Custom fp16 related modules to enable XPU modules."""
+    """Custom decorator to enable fp16 training automatically on XPU as well."""
 
     def auto_fp16_wrapper(old_func: Callable) -> Callable:
         @functools.wraps(old_func)
@@ -44,6 +44,7 @@ def custom_auto_fp16(
             if not (hasattr(args[0], "fp16_enabled") and args[0].fp16_enabled):
                 return old_func(*args, **kwargs)
 
+            target_dtype = torch.bfloat16 if is_xpu_available() else torch.half
             # get the arg spec of the decorated method
             args_info = getfullargspec(old_func)
             # get the argument names to be casted
@@ -55,7 +56,7 @@ def custom_auto_fp16(
                 arg_names = args_info.args[: len(args)]
                 for i, arg_name in enumerate(arg_names):
                     if arg_name in args_to_cast:
-                        new_args.append(cast_tensor_type(args[i], torch.float, torch.half))
+                        new_args.append(cast_tensor_type(args[i], torch.float, target_dtype))
                     else:
                         new_args.append(args[i])
             # convert the kwargs that need to be processed
@@ -63,7 +64,7 @@ def custom_auto_fp16(
             if kwargs:
                 for arg_name, arg_value in kwargs.items():
                     if arg_name in args_to_cast:
-                        new_kwargs[arg_name] = cast_tensor_type(arg_value, torch.float, torch.half)
+                        new_kwargs[arg_name] = cast_tensor_type(arg_value, torch.float, target_dtype)
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
@@ -74,7 +75,7 @@ def custom_auto_fp16(
                 output = old_func(*new_args, **new_kwargs)
             # cast the results back to fp32 if necessary
             if out_fp32:
-                output = cast_tensor_type(output, torch.half, torch.float)
+                output = cast_tensor_type(output, target_dtype, torch.float)
             return output
 
         return new_func
