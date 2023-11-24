@@ -98,3 +98,10 @@ try:
     __all__ += ["HPUOptimizerHook"]
 except:  # noqa: E722
     pass
+
+try:
+    from .xpu_optimizer_hook import XPUOptimizerHook
+
+    __all__ += ["XPUOptimizerHook"]
+except:  # noqa: E722
+    pass
