@@ -767,7 +767,7 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
 
     Args:
         recipe_file (Union[str, Path]): Recipe file to run.
-        dry_run (bool, optional): Whether to only print experiment commands. Defaults to False.
+        dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
     """
     exp_recipe = ExpRecipeParser(recipe_file)
     output_path = exp_recipe.output_path
