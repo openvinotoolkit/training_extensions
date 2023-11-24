@@ -84,6 +84,7 @@ class OTXDataEntity:
 @dataclass
 class OTXPredEntity(OTXDataEntity):
     """Data entity to represent the model output prediction."""
+
     score: np.ndarray | Tensor
 
 
@@ -149,6 +150,7 @@ T_OTXBatchPredEntity = TypeVar(
 @dataclass
 class OTXBatchPredEntity(OTXBatchDataEntity):
     """Data entity to represent model output predictions."""
+
     scores: list[np.ndarray] | list[Tensor]
 
 
