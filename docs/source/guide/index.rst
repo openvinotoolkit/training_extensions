@@ -32,11 +32,7 @@ Guide
   :hidden:
   :caption: Reference
 
-  reference/api/index
-  reference/algorithm/index
-  reference/core/index
-  reference/hpo/hpo
-  reference/mpa/index
+  reference/index
 
 
 .. toctree::

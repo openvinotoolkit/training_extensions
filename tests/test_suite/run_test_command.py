@@ -681,6 +681,9 @@ def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
@@ -708,6 +711,9 @@ def nncf_optimize_testing(template, root, otx_dir, args):
 
 
 def nncf_export_testing(template, root):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
@@ -743,6 +749,9 @@ def nncf_export_testing(template, root):
 
 
 def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
@@ -789,6 +798,9 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
 
 
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"

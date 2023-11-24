@@ -100,7 +100,7 @@ In the table below the top-1 accuracy on some academic datasets using our :ref:`
 +-----------------------+-----------------+-----------+-----------+-----------+
 | EfficientNet-V2-S     | 96.13           | 90.36     | 97.68     | 86.74     |
 +-----------------------+-----------------+-----------+-----------+-----------+
-*These datasets were splitted with auto-split (80% train, 20% test).
+\* These datasets were splitted with auto-split (80% train, 20% test).
 
 ************************
 Semi-supervised Learning
@@ -145,7 +145,6 @@ In the table below the top-1 accuracy on some academic datasets using our pipeli
 |  EfficientNet-V2-S    |  36.03  |  39.66  | 16.81 |  20.28  | 65.99  |  69.61  |
 +-----------------------+---------+---------+-------+---------+--------+---------+
 
-|
 
 - 10 labeled images per class including unlabeled dataset for Semi-SL
 
