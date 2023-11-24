@@ -35,6 +35,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
+        inputs: T_OTXBatchDataEntity,
     ) -> Union[T_OTXBatchPredEntity, OTXBatchLossEntity]:
         """Customize OTX output batch data entity if needed for you model."""
         raise NotImplementedError
@@ -52,7 +53,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         )
 
         return (
-            self._customize_outputs(outputs)
+            self._customize_outputs(outputs, inputs)
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )

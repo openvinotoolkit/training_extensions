@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-
 # This is an example for MMDetection models
 # In this way, we can easily import some models developed from the MM community
 class MMDetCompatibleModel(OTXDetectionModel):
@@ -101,6 +100,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
+        inputs: DetBatchDataEntity,
     ) -> Union[DetBatchPredEntity, OTXBatchLossEntity]:
         from mmdet.structures import DetDataSample
 
@@ -133,8 +133,8 @@ class MMDetCompatibleModel(OTXDetectionModel):
 
         return DetBatchPredEntity(
             batch_size=len(outputs),
-            images=[],
-            imgs_info=[],
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
             scores=scores,
             bboxes=bboxes,
             labels=labels,
