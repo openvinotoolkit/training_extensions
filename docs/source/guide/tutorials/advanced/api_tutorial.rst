@@ -181,7 +181,7 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
 Optimization
 ************
 
-To run the optimization with PTQ (also known as POT) on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
+To run the optimization with POT on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
 
 .. code-block::
 
