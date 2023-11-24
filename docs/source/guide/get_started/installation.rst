@@ -1,5 +1,5 @@
 Installation
-=============
+============
 
 **************
 Prerequisites
@@ -88,9 +88,9 @@ Install ``tox`` and create a development environment:
 
 Then you may change code, and all fixes will be directly applied to the editable package.
 
-****************************************************
+*****************************************************
 Install OpenVINO™ Training Extensions by using Docker
-****************************************************
+*****************************************************
 
 .. code-block::
 

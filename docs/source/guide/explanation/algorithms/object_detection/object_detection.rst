@@ -92,6 +92,7 @@ We support the following ready-to-use model templates:
 Above table can be found using the following command
 
 .. code-block::
+
     $ otx find --task detection
 
 `MobileNetV2-ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases.
@@ -147,6 +148,7 @@ Please, refer to the :doc:`tutorial <../../../tutorials/advanced/backbones>` how
 To see which public backbones are available for the task, the following command can be executed:
 
 .. code-block::
+
     $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
 In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
