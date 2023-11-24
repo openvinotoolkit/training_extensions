@@ -33,7 +33,7 @@ DEFAULT_ISEG_TEMPLATE_DIR = os.path.join(
     "src/otx/algorithms/detection/configs/instance_segmentation", "efficientnetb2b_maskrcnn"
 )
 DEFAULT_DET_RECIPE_CONFIG_PATH = "src/otx/recipes/stages/detection/incremental.py"
-DEFAULT_ISEG_RECIPE_CONFIG_PATH = "src/otx/recipes/stages/instance-segmentation/incremental.py"
+DEFAULT_ISEG_RECIPE_CONFIG_PATH = "src/otx/recipes/stages/instance_segmentation/incremental.py"
 
 
 class MockImage(Image):

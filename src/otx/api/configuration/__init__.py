@@ -4,10 +4,6 @@ This module contains base elements that make up OTX ConfigurableParameters, as w
 functions to interact with them.
 
 The configuration helper module can be imported as `otx_config_helper` and implements the following:
-
-.. automodule:: otx.api.configuration.helper
-   :members:
-
 """
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
