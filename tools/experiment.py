@@ -594,9 +594,11 @@ class ExpRecipeParser:
             for key, val in variable.items():
                 target = target.replace(f"${{{key}}}", val)
         elif isinstance(target, list):
+            target = target.copy()
             for i in range(len(target)):
                 target[i] = self._replace_var_in_target(variable, target[i])
         elif isinstance(target, dict):
+            target = target.copy()
             for key in target.keys():
                 target[key] = self._replace_var_in_target(variable, target[key])
         else:
