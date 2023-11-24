@@ -563,7 +563,7 @@ and save performance results in <code class="docutils literal notranslate"><span
 <section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. Run the command line below to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
@@ -582,7 +582,7 @@ Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/late
 2023-02-21 22:54:35,424 - mmaction - INFO - Exporting completed
 </pre></div>
 </div>
-<p>3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+<p>3. Check the accuracy of the IR optimimodel and the consistency between the exported model and the PyTorch model,
 using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                     --load-weights openvino/openvino.xml \
@@ -597,19 +597,20 @@ Performance(score: 0.6357698983041397, dashboard: (3 metric groups))
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. You can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-Currently, quantization jobs that include POT is supported for X3D template. MoViNet will be supported in near future.
+Currently, quantization jobs that include PTQ is supported for X3D template. MoViNet will be supported in near future.</p>
+<p>The optimized model will be quantized to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.
 Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
 <p>2. Example command for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino/openvino.xml \
-                        --output pot_model
+                        --output ptq_model
 
 ...
 
 Performance(score: 0.6252587703095486, dashboard: (3 metric groups))
 </pre></div>
 </div>
-<p>Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<p>Keep in mind that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
 <p>3. Now, you have fully trained, optimized and exported an
 efficient model representation ready-to-use action classification model.</p>
 <p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.

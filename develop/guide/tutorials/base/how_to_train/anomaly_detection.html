@@ -516,7 +516,7 @@ this example.</p>
 <section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">ote_anomaly_detection_padim</span> \
@@ -550,13 +550,14 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
-<p>Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section.</p>
-<p>1. Let’s start with POT
+<p>Anomaly tasks can be optimized either in PTQ or NNCF format. The model will be quantized to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.
+For more information refer to the <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section.</p>
+<p>1. Let’s start with PTQ
 optimization.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">optimize</span> <span class="n">ote_anomaly_detection_padim</span> \
     <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">datasets</span><span class="o">/</span><span class="n">MVTec</span><span class="o">/</span><span class="n">bottle</span><span class="o">/</span><span class="n">train</span> \
     <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">openvino</span><span class="o">/</span><span class="n">openvino</span><span class="o">.</span><span class="n">xml</span> \
-    <span class="o">--</span><span class="n">output</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">pot_model</span>
+    <span class="o">--</span><span class="n">output</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">ptq_model</span>
 </pre></div>
 </div>
 <p>This command generates the following files that can be used to run <a class="reference internal" href="../demo.html"><span class="doc">otx demo</span></a>:</p>
@@ -577,7 +578,7 @@ weights to the <code class="docutils literal notranslate"><span class="pre">opit
     <span class="o">--</span><span class="n">output</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">nncf_model</span>
 </pre></div>
 </div>
-<p>Similar to POT optimization, it generates the following files:</p>
+<p>Similar to PTQ optimization, it generates the following files:</p>
 <ul class="simple">
 <li><p>image_threshold</p></li>
 <li><p>pixel_threshold</p></li>

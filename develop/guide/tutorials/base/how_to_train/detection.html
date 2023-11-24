@@ -651,7 +651,7 @@ Learn more about template-specific parameters using <code class="docutils litera
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
-Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. That’s how we can export the trained model <code class="docutils literal notranslate"><span class="pre">../outputs/weights.pth</span></code>
 from the previous section and save the exported model to the <code class="docutils literal notranslate"><span class="pre">../outputs/openvino/</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights ../outputs/weights.pth \
@@ -692,9 +692,9 @@ Learn more about template-specific parameters using <code class="docutils litera
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-It uses NNCF or POT depending on the model format.</p>
+It uses NNCF or PTQ depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
 <p><code class="docutils literal notranslate"><span class="pre">NNCF</span></code> optimization is used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.</p>
-<p><code class="docutils literal notranslate"><span class="pre">POT</span></code> optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.</p>
+<p><code class="docutils literal notranslate"><span class="pre">PTQ</span></code> optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.</p>
 <p>The function results with the following files, which could be used to run <a class="reference internal" href="../demo.html"><span class="doc">otx demo</span></a> as well with PyTorch (<cite>.pth</cite>) and IR model (<cite>.xml</cite>):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">confidence_threshold</span></code></p></li>
@@ -721,17 +721,17 @@ Performance(score: 0.5446735395189003, dashboard: (1 metric groups))
 </pre></div>
 </div>
 <p>3.  Command example for optimizing OpenVINO™ model (.xml)
-with OpenVINO™ POT.</p>
+with OpenVINO™ PTQ.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize  --load-weights ../outputs/openvino/openvino.xml \
-                         --output ../outputs/pot \
-                         --output ../outputs/pot
+                         --output ../outputs/ptq \
+                         --output ../outputs/ptq
 
 ...
 
 2023-01-10 06:29:46,751 | INFO : Loading OpenVINO OTXDetectionTask
 2023-01-10 06:29:47,685 | INFO : OpenVINO task initialization completed
-2023-01-10 06:29:47,685 | INFO : Start POT optimization
-2023-01-10 06:34:29,304 | INFO : POT optimization completed
+2023-01-10 06:29:47,685 | INFO : Start PTQ optimization
+2023-01-10 06:34:29,304 | INFO : PTQ optimization completed
 2023-01-10 06:34:29,419 | INFO : Start OpenVINO inference
 2023-01-10 06:34:33,275 | INFO : OpenVINO inference completed
 2023-01-10 06:34:33,275 | INFO : Start OpenVINO metric evaluation
@@ -740,7 +740,7 @@ Performance(score: 0.5389435989256938, dashboard: (1 metric groups))
 </pre></div>
 </div>
 <p>The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
-Please note, that POT will take some time without logging to optimize the model.</p>
+Please note, that PTQ will take some time without logging to optimize the model.</p>
 <p>4. Finally, we can also evaluate the optimized model by passing
 it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> function.</p>
 <p>Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.</p>

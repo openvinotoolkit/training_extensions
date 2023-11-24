@@ -661,7 +661,7 @@ you can omit <code class="docutils literal notranslate"><span class="pre">--load
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the
 OpenVINO™ Intermediate Representation (IR) format.</p>
-<p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+<p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">outputs/**_export/openvino</span></code> folder.</p>
 <div class="admonition note">
@@ -684,7 +684,7 @@ you can omit <code class="docutils literal notranslate"><span class="pre">--load
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-It uses NNCF or POT depending on the model format.</p>
+It uses NNCF or PTQ depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
 <p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
 <p>2. Command example for optimizing
 a PyTorch model (<cite>.pth</cite>) with OpenVINO™ <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a>.</p>
@@ -697,11 +697,11 @@ you can omit <code class="docutils literal notranslate"><span class="pre">--load
 </pre></div>
 </div>
 <p>3.  Command example for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml
 </pre></div>
 </div>
-<p>Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<p>Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
 <p>4. Now we have fully trained, optimized and exported an
 efficient model representation ready-to-use instance segmentation model.</p>
 <p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>

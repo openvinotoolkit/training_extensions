@@ -389,12 +389,12 @@
               
   <section id="models-optimization">
 <h1>Models Optimization<a class="headerlink" href="#models-optimization" title="Permalink to this heading">#</a></h1>
-<p>OpenVINO™ Training Extensions provides two types of optimization algorithms: <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction">Post-training Optimization Tool (POT)</a> and <a class="reference external" href="https://github.com/openvinotoolkit/nncf">Neural Network Compression Framework (NNCF)</a>.</p>
-<section id="post-training-optimization-tool">
-<h2>Post-training Optimization Tool<a class="headerlink" href="#post-training-optimization-tool" title="Permalink to this heading">#</a></h2>
-<p>POT is designed to optimize the inference of models by applying post-training methods that do not require model retraining or fine-tuning. If you want to know more details about how POT works and to be more familiar with model optimization methods, please refer to <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction">documentation</a>.</p>
-<p>To run Post-training optimization it is required to convert the model to OpenVINO™ intermediate representation (IR) first. To perform fast and accurate quantization we use <code class="docutils literal notranslate"><span class="pre">DefaultQuantization</span> <span class="pre">Algorithm</span></code> for each task. Please, see the <a class="reference external" href="https://docs.openvino.ai/latest/pot_compression_algorithms_quantization_default_README.html#doxid-pot-compression-algorithms-quantization-default-r-e-a-d-m-e">DefaultQuantization Parameters</a> for further information about configuring the optimization.</p>
-<p>POT parameters can be found and configured in <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">configuration.yaml</span></code> for each task. For Anomaly and Semantic Segmentation tasks, we have separate configuration files for POT, that can be found in the same directory with <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code>, for example for <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/anomaly/configs/classification/padim/ptq_optimization_config.py">PaDiM</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/ptq_optimization_config.py">OCR-Lite-HRNe-18-mod2</a> model.</p>
+<p>OpenVINO™ Training Extensions provides two types of optimization algorithms: <a class="reference external" href="https://github.com/openvinotoolkit/nncf#post-training-quantization">Post-Training Quantization tool (PTQ)</a> and <a class="reference external" href="https://github.com/openvinotoolkit/nncf">Neural Network Compression Framework (NNCF)</a>.</p>
+<section id="post-training-quantization-tool">
+<h2>Post-Training Quantization Tool<a class="headerlink" href="#post-training-quantization-tool" title="Permalink to this heading">#</a></h2>
+<p>PTQ is designed to optimize the inference of models by applying post-training methods that do not require model retraining or fine-tuning. If you want to know more details about how PTQ works and to be more familiar with model optimization methods, please refer to <a class="reference external" href="https://docs.openvino.ai/2023.2/ptq_introduction.html">documentation</a>.</p>
+<p>To run Post-training quantization it is required to convert the model to OpenVINO™ intermediate representation (IR) first. To perform fast and accurate quantization we use <code class="docutils literal notranslate"><span class="pre">DefaultQuantization</span> <span class="pre">Algorithm</span></code> for each task. Please, refer to the <a class="reference external" href="https://docs.openvino.ai/2023.2/basic_quantization_flow.html#tune-quantization-parameters">Tune quantization Parameters</a> for further information about configuring the optimization.</p>
+<p>PTQ parameters can be found and configured in <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">configuration.yaml</span></code> for each task. For Anomaly and Semantic Segmentation tasks, we have separate configuration files for PTQ, that can be found in the same directory with <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code>, for example for <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/anomaly/configs/classification/padim/ptq_optimization_config.py">PaDiM</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/ptq_optimization_config.py">OCR-Lite-HRNe-18-mod2</a> model.</p>
 </section>
 <section id="neural-network-compression-framework">
 <h2>Neural Network Compression Framework<a class="headerlink" href="#neural-network-compression-framework" title="Permalink to this heading">#</a></h2>
@@ -403,12 +403,12 @@ The process of optimization is controlled by the NNCF configuration file. A JSON
 <p>You can refer to configuration files for default templates for each task accordingly: <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/compression_config.json">Classification</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/compression_config.json">Object Detection</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/compression_config.json">Semantic segmentation</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/compression_config.json">Instance segmentation</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/anomaly/configs/classification/padim/compression_config.json">Anomaly classification</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/anomaly/configs/detection/padim/compression_config.json">Anomaly Detection</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/anomaly/configs/segmentation/padim/compression_config.json">Anomaly segmentation</a>. Configs for other templates can be found in the same directory.</p>
 <p>NNCF tends to provide better quality in terms of preserving accuracy as it uses training compression approaches.
 Compression results achievable with the NNCF can be found <a class="reference external" href="https://github.com/openvinotoolkit/nncf#nncf-compressed-model-zoo">here</a> .
-Meanwhile, the POT is faster but can degrade accuracy more than the training-enabled approach.</p>
+Meanwhile, the PTQ is faster but can degrade accuracy more than the training-enabled approach.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The main recommendation is to start with post-training compression and use NNCF compression during training if you are not satisfied with the results.</p>
 </div>
-<p>Please, refer to our <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> on how to optimize your model using POT or NNCF.</p>
+<p>Please, refer to our <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> on how to optimize your model using PTQ or NNCF.</p>
 </section>
 </section>
 
@@ -451,8 +451,8 @@ Meanwhile, the POT is faster but can degrade accuracy more than the training-ena
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#post-training-optimization-tool">
-   Post-training Optimization Tool
+  <a class="reference internal nav-link" href="#post-training-quantization-tool">
+   Post-Training Quantization Tool
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">

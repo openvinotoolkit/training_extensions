@@ -544,12 +544,13 @@ Performance(score: 0.47351524879614754, dashboard: (3 metric groups))
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. You can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-Currently, only PTQ is supported for action detection. NNCF will be supported in near future.
+Currently, only PTQ is supported for action detection. NNCF will be supported in near future.</p>
+<p>The optimized model will be quantized to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.
 Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
 <p>2. Example command for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino/openvino.xml \
-                        --save-model-to pot_model
+                        --save-model-to ptq_model
 
 ...
 

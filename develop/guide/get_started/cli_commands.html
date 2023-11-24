@@ -672,10 +672,10 @@ optional arguments:
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> optimizes a model using <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> or <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html">POT</a> depending on the model format.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> optimizes a model using <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> or <a class="reference external" href="https://github.com/openvinotoolkit/nncf#post-training-quantization">PTQ</a> depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
 <ul class="simple">
 <li><p>NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch</p></li>
-<li><p>POT optimization used for models exported in the OpenVINO™ IR format</p></li>
+<li><p>PTQ optimization used for models exported in the OpenVINO™ IR format</p></li>
 </ul>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">optimize</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">]</span>
@@ -708,13 +708,13 @@ optional arguments:
                             --output outputs/nncf
 </pre></div>
 </div>
-<p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:</p>
+<p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ PTQ:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize SSD --load-weights &lt;path/to/openvino.xml&gt; \
                             --val-data-roots &lt;path/to/val/root&gt; \
-                            --output outputs/pot
+                            --output outputs/ptq
 </pre></div>
 </div>
-<p>Thus, to use POT pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.</p>
+<p>Thus, to use PTQ pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.</p>
 </section>
 <section id="evaluation">
 <h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading">#</a></h2>
@@ -734,7 +734,7 @@ optional arguments:
   --test-data-roots TEST_DATA_ROOTS
                         Comma-separated paths to test data folders.
   --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
+                        Load model weights from previously saved checkpoint. It could be a trained/optimized model (with PTQ only) or exported model.
   -o OUTPUT, --output OUTPUT
                         Location where the intermediate output of the task will be stored.
   --workspace WORKSPACE   Path to the workspace where the command will run.
@@ -828,7 +828,7 @@ optional arguments:
   -i INPUT, --input INPUT
                         Source of input data: images folder, image, webcam and video.
   --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
+                        Load model weights from previously saved checkpoint.It could be a trained/optimized model (with PTQ only) or exported model.
   --fit-to-size FIT_TO_SIZE FIT_TO_SIZE
                         Width and Height space-separated values. Fits displayed images to window with specified Width and Height. This options applies to result visualisation only.
   --loop                Enable reading the input in a loop.
