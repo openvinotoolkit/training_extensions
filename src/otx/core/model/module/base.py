@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 """Class definition for base lightning module used in OTX."""
 from __future__ import annotations
 

@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 """Factory classes for dataset and transforms."""
 
 from __future__ import annotations

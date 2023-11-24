@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 """Python script to translate MMx recipe to OTX YAML recipe file."""
 from argparse import ArgumentParser
 from pathlib import Path

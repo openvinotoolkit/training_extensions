@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 import pytest
 from omegaconf import DictConfig
 from otx.core.data.module import OTXDataModule
