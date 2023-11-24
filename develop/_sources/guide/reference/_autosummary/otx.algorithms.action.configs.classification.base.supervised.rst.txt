@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.classification.base.supervised
+============================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.base.supervised
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,37 @@
+otx.algorithms.classification.configs.deit\_tiny
+================================================
+
+.. automodule:: otx.algorithms.classification.configs.deit_tiny
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.classification.configs.deit_tiny.data_pipeline
+   otx.algorithms.classification.configs.deit_tiny.deployment
+   otx.algorithms.classification.configs.deit_tiny.model
+   otx.algorithms.classification.configs.deit_tiny.model_hierarchical
+   otx.algorithms.classification.configs.deit_tiny.model_multilabel
+   otx.algorithms.classification.configs.deit_tiny.ptq_optimization_config
+   otx.algorithms.classification.configs.deit_tiny.semisl
+

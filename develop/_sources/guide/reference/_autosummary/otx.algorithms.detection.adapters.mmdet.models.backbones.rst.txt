@@ -1,0 +1,32 @@
+otx.algorithms.detection.adapters.mmdet.models.backbones
+========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.backbones
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.models.backbones.imgclsmob
+   otx.algorithms.detection.adapters.mmdet.models.backbones.mmov_backbone
+

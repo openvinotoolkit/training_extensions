@@ -1,0 +1,33 @@
+otx.algorithms.segmentation.configs.base
+========================================
+
+.. automodule:: otx.algorithms.segmentation.configs.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.configs.base.configuration
+   otx.algorithms.segmentation.configs.base.data
+   otx.algorithms.segmentation.configs.base.deployments
+

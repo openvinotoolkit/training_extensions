@@ -1,0 +1,37 @@
+otx.algorithms.segmentation.adapters.mmseg.models.utils.proto\_utils
+====================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.utils.proto_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      distributed_sinkhorn
+      momentum_update
+      trunc_normal_
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ProjectionHead
+   
+   
+
+   
+   
+   
+
+
+

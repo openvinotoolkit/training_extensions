@@ -1,0 +1,29 @@
+otx.algorithms.detection.configs.base.configuration
+===================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionConfig
+   
+   
+
+   
+   
+   
+
+
+

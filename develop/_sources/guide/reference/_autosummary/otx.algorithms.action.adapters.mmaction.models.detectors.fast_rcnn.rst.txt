@@ -1,0 +1,30 @@
+otx.algorithms.action.adapters.mmaction.models.detectors.fast\_rcnn
+===================================================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.models.detectors.fast_rcnn
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AVAFastRCNN
+      ONNXPool3D
+   
+   
+
+   
+   
+   
+
+
+

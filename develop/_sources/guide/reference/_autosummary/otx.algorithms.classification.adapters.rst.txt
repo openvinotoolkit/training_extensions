@@ -1,0 +1,32 @@
+otx.algorithms.classification.adapters
+======================================
+
+.. automodule:: otx.algorithms.classification.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.classification.adapters.mmcls
+   otx.algorithms.classification.adapters.openvino
+

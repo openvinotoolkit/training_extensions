@@ -1,0 +1,30 @@
+otx.api.usecases.tasks.interfaces.inference\_interface
+======================================================
+
+.. automodule:: otx.api.usecases.tasks.interfaces.inference_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IInferenceTask
+      IRawInference
+   
+   
+
+   
+   
+   
+
+
+

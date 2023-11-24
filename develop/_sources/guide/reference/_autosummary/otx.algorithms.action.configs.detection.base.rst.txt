@@ -1,0 +1,36 @@
+otx.algorithms.action.configs.detection.base
+============================================
+
+.. automodule:: otx.algorithms.action.configs.detection.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.configs.detection.base.ava_data_pipeline
+   otx.algorithms.action.configs.detection.base.base_detection_dynamic
+   otx.algorithms.action.configs.detection.base.base_detection_static
+   otx.algorithms.action.configs.detection.base.data_pipeline
+   otx.algorithms.action.configs.detection.base.faster_rcnn_config
+   otx.algorithms.action.configs.detection.base.supervised
+

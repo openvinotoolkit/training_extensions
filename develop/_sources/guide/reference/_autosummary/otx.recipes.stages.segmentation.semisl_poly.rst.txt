@@ -1,0 +1,23 @@
+otx.recipes.stages.segmentation.semisl\_poly
+============================================
+
+.. automodule:: otx.recipes.stages.segmentation.semisl_poly
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

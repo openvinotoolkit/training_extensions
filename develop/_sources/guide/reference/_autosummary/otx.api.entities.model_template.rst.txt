@@ -1,0 +1,51 @@
+otx.api.entities.model\_template
+================================
+
+.. automodule:: otx.api.entities.model_template
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      parse_model_template
+      parse_model_template_from_dict
+      task_type_to_label_domain
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DatasetRequirements
+      Dependency
+      EntryPoints
+      ExportableCodePaths
+      HyperParameterData
+      InstantiationType
+      ModelCategory
+      ModelOptimizationMethod
+      ModelStatus
+      ModelTemplate
+      NullModelTemplate
+      TargetDevice
+      TaskFamily
+      TaskInfo
+      TaskType
+   
+   
+
+   
+   
+   
+
+
+

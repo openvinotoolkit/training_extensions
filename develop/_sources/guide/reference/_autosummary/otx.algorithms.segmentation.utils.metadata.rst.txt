@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.utils.metadata
+==========================================
+
+.. automodule:: otx.algorithms.segmentation.utils.metadata
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_seg_model_api_configuration
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

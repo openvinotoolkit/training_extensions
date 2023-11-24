@@ -1,0 +1,36 @@
+otx.algorithms.common.adapters.mmcv.hooks.eval\_hook
+====================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.hooks.eval_hook
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      single_gpu_test
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomEvalHook
+      DistCustomEvalHook
+   
+   
+
+   
+   
+   
+
+
+

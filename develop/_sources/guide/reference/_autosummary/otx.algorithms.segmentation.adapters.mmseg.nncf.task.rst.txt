@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.nncf.task
+====================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.nncf.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SegmentationNNCFTask
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.algorithms.common.utils.mask\_to\_bbox
+==========================================
+
+.. automodule:: otx.algorithms.common.utils.mask_to_bbox
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      mask2bbox
+      mask_to_border
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

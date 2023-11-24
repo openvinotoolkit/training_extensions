@@ -1,0 +1,40 @@
+otx.api.usecases.evaluation.basic\_operations
+=============================================
+
+.. automodule:: otx.api.usecases.evaluation.basic_operations
+
+   
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      NumberPerLabel
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      divide_arrays_with_possible_zeros
+      get_intersections_and_cardinalities
+      intersection_box
+      intersection_over_union
+      precision_per_class
+      recall_per_class
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

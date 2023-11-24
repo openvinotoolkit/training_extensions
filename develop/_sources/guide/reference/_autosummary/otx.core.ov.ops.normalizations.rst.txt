@@ -1,0 +1,36 @@
+otx.core.ov.ops.normalizations
+==============================
+
+.. automodule:: otx.core.ov.ops.normalizations
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BatchNormalizationV0
+      BatchNormalizationV0Attribute
+      LocalResponseNormalizationV0
+      LocalResponseNormalizationV0Attribute
+      MVNV6
+      MVNV6Attribute
+      NormalizeL2V0
+      NormalizeL2V0Attribute
+   
+   
+
+   
+   
+   
+
+
+

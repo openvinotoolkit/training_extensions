@@ -1,0 +1,32 @@
+otx.algorithms.anomaly.configs.segmentation.padim
+=================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.segmentation.padim
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.segmentation.padim.configuration
+   otx.algorithms.anomaly.configs.segmentation.padim.ptq_optimization_config
+

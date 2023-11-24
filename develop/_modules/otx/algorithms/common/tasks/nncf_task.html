@@ -1,0 +1,672 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.common.tasks.nncf_task &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/common/tasks/nncf_task';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.common.tasks.nncf_task</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;BaseTask for NNCF.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions</span>
+<span class="c1"># and limitations under the License.</span>
+
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.utils</span> <span class="kn">import</span> <span class="n">ConfigDict</span>
+
+<span class="kn">import</span> <span class="nn">otx.algorithms.common.adapters.mmcv.nncf.patches</span>  <span class="c1"># noqa: F401  # pylint: disable=unused-import</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_configs_by_keys</span><span class="p">,</span>
+    <span class="n">remove_from_config</span><span class="p">,</span>
+    <span class="n">remove_from_configs_by_type</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.nncf</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">check_nncf_is_enabled</span><span class="p">,</span>
+    <span class="n">is_accuracy_aware_training_set</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.nncf.config</span> <span class="kn">import</span> <span class="n">compose_nncf_config</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils.callback</span> <span class="kn">import</span> <span class="n">OptimizationProgressCallback</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils.data</span> <span class="kn">import</span> <span class="n">get_dataset</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration</span> <span class="kn">import</span> <span class="n">cfg_helper</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.helper.utils</span> <span class="kn">import</span> <span class="n">ids_to_strings</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelEntity</span><span class="p">,</span>
+    <span class="n">ModelFormat</span><span class="p">,</span>
+    <span class="n">ModelOptimizationType</span><span class="p">,</span>
+    <span class="n">ModelPrecision</span><span class="p">,</span>
+    <span class="n">OptimizationMethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.optimization_parameters</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OptimizationParameters</span><span class="p">,</span>
+    <span class="n">default_progress_callback</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.subset</span> <span class="kn">import</span> <span class="n">Subset</span>
+<span class="kn">from</span> <span class="nn">otx.api.serialization.label_mapper</span> <span class="kn">import</span> <span class="n">label_schema_to_bytes</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.optimization_interface</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">IOptimizationTask</span><span class="p">,</span>
+    <span class="n">OptimizationType</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="NNCFBaseTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.tasks.nncf_task.html#otx.algorithms.common.tasks.nncf_task.NNCFBaseTask">[docs]</a><span class="k">class</span> <span class="nc">NNCFBaseTask</span><span class="p">(</span><span class="n">IOptimizationTask</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NNCFBaseTask.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">check_nncf_is_enabled</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_data_to_build</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_state_dict_to_build</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_preset</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_methods</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OptimizationMethod</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="p">[</span><span class="n">ModelPrecision</span><span class="o">.</span><span class="n">FP32</span><span class="p">]</span>
+
+        <span class="c1"># Extra control variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_training_work_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_should_stop</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_type</span> <span class="o">=</span> <span class="n">ModelOptimizationType</span><span class="o">.</span><span class="n">NNCF</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_monitor</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Variables will be set in training backend task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_ckpt</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_task_environment</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Task initialization completed&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_attributes_by_hyperparams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">quantization</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="o">.</span><span class="n">nncf_optimization</span><span class="o">.</span><span class="n">enable_quantization</span>
+        <span class="n">pruning</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="o">.</span><span class="n">nncf_optimization</span><span class="o">.</span><span class="n">enable_pruning</span>
+        <span class="k">if</span> <span class="n">quantization</span> <span class="ow">and</span> <span class="n">pruning</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_preset</span> <span class="o">=</span> <span class="s2">&quot;nncf_quantization_pruning&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_methods</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">QUANTIZATION</span><span class="p">,</span>
+                <span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">FILTER_PRUNING</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="p">[</span><span class="n">ModelPrecision</span><span class="o">.</span><span class="n">INT8</span><span class="p">]</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">quantization</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pruning</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_preset</span> <span class="o">=</span> <span class="s2">&quot;nncf_quantization&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">QUANTIZATION</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="p">[</span><span class="n">ModelPrecision</span><span class="o">.</span><span class="n">INT8</span><span class="p">]</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quantization</span> <span class="ow">and</span> <span class="n">pruning</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_preset</span> <span class="o">=</span> <span class="s2">&quot;nncf_pruning&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">FILTER_PRUNING</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="p">[</span><span class="n">ModelPrecision</span><span class="o">.</span><span class="n">FP32</span><span class="p">]</span>
+            <span class="k">return</span>
+        <span class="c1"># FIXEME: Error rasing should be re-enabled after Geti issue resolved</span>
+        <span class="c1"># raise RuntimeError(&quot;Not selected optimization algorithm&quot;)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Not selected optimization algorithm. Defaults to quantization&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nncf_preset</span> <span class="o">=</span> <span class="s2">&quot;nncf_quantization&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">QUANTIZATION</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="p">[</span><span class="n">ModelPrecision</span><span class="o">.</span><span class="n">INT8</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_init_train_data_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;init data cfg.&quot;</span><span class="p">)</span>
+        <span class="n">data_cfg</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">cfg_key</span><span class="p">,</span> <span class="n">subset</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">VALIDATION</span><span class="p">],</span>
+        <span class="p">):</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">subset</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">subset</span><span class="p">:</span>
+                <span class="n">data_cfg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">cfg_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">otx_dataset</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data_cfg</span>
+
+    <span class="k">def</span> <span class="nf">_init_nncf_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nncf_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_dir</span><span class="p">,</span> <span class="s2">&quot;compression_config.json&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">nncf_config_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">nncf_config_file</span><span class="p">:</span>
+            <span class="n">common_nncf_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nncf_config_file</span><span class="p">)</span>
+
+        <span class="n">optimization_config</span> <span class="o">=</span> <span class="n">compose_nncf_config</span><span class="p">(</span><span class="n">common_nncf_config</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_nncf_preset</span><span class="p">])</span>
+
+        <span class="n">max_acc_drop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="o">.</span><span class="n">nncf_optimization</span><span class="o">.</span><span class="n">maximal_accuracy_degradation</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="k">if</span> <span class="s2">&quot;accuracy_aware_training&quot;</span> <span class="ow">in</span> <span class="n">optimization_config</span><span class="p">[</span><span class="s2">&quot;nncf_config&quot;</span><span class="p">]:</span>
+            <span class="c1"># Update maximal_absolute_accuracy_degradation</span>
+            <span class="p">(</span>
+                <span class="n">optimization_config</span><span class="p">[</span><span class="s2">&quot;nncf_config&quot;</span><span class="p">][</span><span class="s2">&quot;accuracy_aware_training&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">][</span>
+                    <span class="s2">&quot;maximal_absolute_accuracy_degradation&quot;</span>
+                <span class="p">]</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">max_acc_drop</span>
+            <span class="c1"># Force evaluation interval</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;NNCF config has no accuracy_aware_training parameters&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">optimization_config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># TODO: more delicate configuration change control in OTX side</span>
+
+        <span class="c1"># last batch size of 1 causes undefined behaviour for batch normalization</span>
+        <span class="c1"># when initializing and training NNCF</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_loader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;train_dataloader&quot;</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">())</span>
+            <span class="n">samples_per_gpu</span> <span class="o">=</span> <span class="n">data_loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">))</span>
+            <span class="n">otx_dataset</span> <span class="o">=</span> <span class="n">get_configs_by_keys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="s2">&quot;otx_dataset&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">otx_dataset</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">otx_dataset</span> <span class="o">=</span> <span class="n">otx_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">otx_dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">otx_dataset</span><span class="p">)</span> <span class="o">%</span> <span class="n">samples_per_gpu</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">data_loader</span><span class="p">[</span><span class="s2">&quot;drop_last&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;train_dataloader&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_loader</span>
+
+        <span class="c1"># nncf does not suppoer FP16</span>
+        <span class="k">if</span> <span class="s2">&quot;fp16&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
+            <span class="n">remove_from_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="s2">&quot;fp16&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;fp16 option is not supported in NNCF. Switch to fp32.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># FIXME: nncf quantizer does not work with SAMoptimizer</span>
+        <span class="n">optimizer_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">optimizer_config</span>
+        <span class="k">if</span> <span class="n">optimizer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;OptimizerHook&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SAMOptimizerHook&quot;</span><span class="p">:</span>
+            <span class="n">optimizer_config</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s2">&quot;OptimizerHook&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Updateed SAMOptimizerHook to OptimizerHook as not supported.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># merge nncf_cfg</span>
+        <span class="n">nncf_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_nncf_cfg</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">merge_from_dict</span><span class="p">(</span><span class="n">nncf_cfg</span><span class="p">)</span>
+
+        <span class="c1"># configure nncf</span>
+        <span class="n">nncf_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nncf_config&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">nncf_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;target_metric_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">metric</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric_name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">nncf_config</span><span class="o">.</span><span class="n">target_metric_name</span> <span class="o">=</span> <span class="n">metric_name</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;target_metric_name&#39; not found in nncf config. Using </span><span class="si">{</span><span class="n">metric_name</span><span class="si">}</span><span class="s2"> as target metric&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_accuracy_aware_training_set</span><span class="p">(</span><span class="n">nncf_config</span><span class="p">):</span>
+            <span class="c1"># Prepare runner for Accuracy Aware</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">runner</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;AccuracyAwareRunner&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nncf_config&quot;</span><span class="p">:</span> <span class="n">nncf_config</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="c1"># AccuracyAwareRunner needs to evaluate a model when it needs</span>
+            <span class="c1"># unlike other runners counting on periodically evaluated score by &#39;EvalHook&#39;.</span>
+            <span class="c1"># To configure &#39;interval&#39; to &#39;max_epoch&#39; makes sure &#39;EvalHook&#39; not to evaluate</span>
+            <span class="c1"># during training.</span>
+            <span class="n">max_epoch</span> <span class="o">=</span> <span class="n">nncf_config</span><span class="o">.</span><span class="n">accuracy_aware_training</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">maximal_total_epochs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">max_epoch</span>
+            <span class="c1"># Disable &#39;AdaptiveTrainSchedulingHook&#39; as training is managed by AccuracyAwareRunner</span>
+            <span class="n">remove_from_configs_by_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">custom_hooks</span><span class="p">,</span> <span class="s2">&quot;AdaptiveTrainSchedulingHook&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NNCFBaseTask.model_builder"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.tasks.nncf_task.html#otx.algorithms.common.tasks.nncf_task.NNCFBaseTask.model_builder">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">model_builder</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">nncf_model_builder</span><span class="p">,</span>
+        <span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">data_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">is_export</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">return_compression_ctrl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;model_builder.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">model_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">model_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">merge_from_dict</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">merge_from_dict</span><span class="p">(</span><span class="n">data_config</span><span class="p">)</span>
+
+        <span class="n">compression_ctrl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">=</span> <span class="n">nncf_model_builder</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="n">distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_export</span><span class="p">:</span>
+            <span class="n">compression_ctrl</span><span class="o">.</span><span class="n">prepare_for_export</span><span class="p">()</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">nncf</span><span class="o">.</span><span class="n">disable_dynamic_graph_building</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">return_compression_ctrl</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">compression_ctrl</span><span class="p">,</span> <span class="n">model</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+    <span class="k">def</span> <span class="nf">_optimize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">optimization_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizationParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_optimize_post_hook</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="NNCFBaseTask.optimize"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.tasks.nncf_task.html#otx.algorithms.common.tasks.nncf_task.NNCFBaseTask.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">optimization_type</span><span class="p">:</span> <span class="n">OptimizationType</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">,</span>
+        <span class="n">optimization_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizationParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;NNCF Optimization.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">optimization_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">OptimizationType</span><span class="o">.</span><span class="n">NNCF</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;NNCF is the only supported optimization&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">optimization_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">update_progress_callback</span> <span class="o">=</span> <span class="n">optimization_parameters</span><span class="o">.</span><span class="n">update_progress</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">update_progress_callback</span> <span class="o">=</span> <span class="n">default_progress_callback</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_monitor</span> <span class="o">=</span> <span class="n">OptimizationProgressCallback</span><span class="p">(</span>
+            <span class="n">update_progress_callback</span><span class="p">,</span>
+            <span class="n">loading_stage_progress_percentage</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">initialization_stage_progress_percentage</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_train_data_cfg</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">optimization_parameters</span><span class="p">)</span>
+
+        <span class="c1"># Check for stop signal when training has stopped.</span>
+        <span class="c1"># If should_stop is true, training was cancelled</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_should_stop</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Training cancelled.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_should_stop</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span>
+
+        <span class="n">model_ckpt</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;final_ckpt&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_ckpt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;cannot find final checkpoint from the results.&quot;</span><span class="p">)</span>
+            <span class="c1"># output_model.model_status = ModelStatus.FAILED</span>
+            <span class="k">return</span>
+        <span class="c1"># update checkpoint to the newly trained model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_ckpt</span> <span class="o">=</span> <span class="n">model_ckpt</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimize_post_hook</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">output_model</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">output_model</span><span class="p">)</span>
+
+        <span class="n">output_model</span><span class="o">.</span><span class="n">model_format</span> <span class="o">=</span> <span class="n">ModelFormat</span><span class="o">.</span><span class="n">BASE_FRAMEWORK</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">optimization_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_type</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">optimization_methods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimization_methods</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+    <span class="k">def</span> <span class="nf">_save_model_post_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modelinfo</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="NNCFBaseTask.save_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.tasks.nncf_task.html#otx.algorithms.common.tasks.nncf_task.NNCFBaseTask.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saving model function for NNCF Task.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">hyperparams_str</span> <span class="o">=</span> <span class="n">ids_to_strings</span><span class="p">(</span><span class="n">cfg_helper</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">enum_to_str</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">label</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">rgb_tuple</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">}</span>
+
+        <span class="n">model_ckpt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_ckpt</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">))</span>
+        <span class="n">modelinfo</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_ckpt</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">hyperparams_str</span><span class="p">,</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">,</span>
+            <span class="s2">&quot;VERSION&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;nncf_enable_compression&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_model_post_hook</span><span class="p">(</span><span class="n">modelinfo</span><span class="p">)</span>
+
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">modelinfo</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;weights.pth&quot;</span><span class="p">,</span> <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span>
+            <span class="s2">&quot;label_schema.json&quot;</span><span class="p">,</span>
+            <span class="n">label_schema_to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_task_environment</span><span class="o">.</span><span class="n">label_schema</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

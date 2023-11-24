@@ -1,0 +1,42 @@
+otx.algorithms.detection.utils.data
+===================================
+
+.. automodule:: otx.algorithms.detection.utils.data
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      adaptive_tile_params
+      find_label_by_name
+      format_list_to_str
+      get_anchor_boxes
+      get_classes_from_annotation
+      get_sizes_from_dataset_entity
+      load_dataset_items_coco_format
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CocoDataset
+      LoadAnnotations
+   
+   
+
+   
+   
+   
+
+
+

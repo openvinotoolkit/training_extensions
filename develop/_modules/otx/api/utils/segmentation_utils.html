@@ -1,0 +1,607 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.utils.segmentation_utils &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/utils/segmentation_utils';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.utils.segmentation_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module implements segmentation related utilities.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">bson</span> <span class="kn">import</span> <span class="n">ObjectId</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.annotation</span> <span class="kn">import</span> <span class="n">Annotation</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.dataset_item</span> <span class="kn">import</span> <span class="n">DatasetItemEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.id</span> <span class="kn">import</span> <span class="n">ID</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.label</span> <span class="kn">import</span> <span class="n">LabelEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.scored_label</span> <span class="kn">import</span> <span class="n">ScoredLabel</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.polygon</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">otx.api.utils.shape_factory</span> <span class="kn">import</span> <span class="n">ShapeFactory</span>
+
+
+<div class="viewcode-block" id="mask_from_dataset_item"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.segmentation_utils.html#otx.api.utils.segmentation_utils.mask_from_dataset_item">[docs]</a><span class="k">def</span> <span class="nf">mask_from_dataset_item</span><span class="p">(</span>
+    <span class="n">dataset_item</span><span class="p">:</span> <span class="n">DatasetItemEntity</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="n">use_otx_adapter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a mask from dataset item.</span>
+
+<span class="sd">    The mask will be two dimensional, and the value of each pixel matches the class index with offset 1. The background</span>
+<span class="sd">    class index is zero. labels[0] matches pixel value 1, etc. The class index is</span>
+<span class="sd">    determined based on the order of &#39;labels&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_item: Item to make mask for</span>
+<span class="sd">        labels: The labels to use for creating the mask. The order of</span>
+<span class="sd">            the labels determines the class index.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Numpy array of mask</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># todo: cache this so that it does not have to be redone for all the same media</span>
+    <span class="k">if</span> <span class="n">use_otx_adapter</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_from_annotation</span><span class="p">(</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">(),</span> <span class="n">labels</span><span class="p">,</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_from_file</span><span class="p">(</span><span class="n">dataset_item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="mask_from_file"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.segmentation_utils.html#otx.api.utils.segmentation_utils.mask_from_file">[docs]</a><span class="k">def</span> <span class="nf">mask_from_file</span><span class="p">(</span><span class="n">dataset_item</span><span class="p">:</span> <span class="n">DatasetItemEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads masks directly from annotation image.</span>
+
+<span class="sd">    Only Common Sematic Segmentation format is supported.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mask_form_file</span> <span class="o">=</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">media</span><span class="o">.</span><span class="n">path</span>
+    <span class="k">if</span> <span class="n">mask_form_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mask file doesn&#39;t exist or corrupted&quot;</span><span class="p">)</span>
+    <span class="n">mask_form_file</span> <span class="o">=</span> <span class="n">mask_form_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">mask_form_file</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="mask_from_annotation"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.segmentation_utils.html#otx.api.utils.segmentation_utils.mask_from_annotation">[docs]</a><span class="k">def</span> <span class="nf">mask_from_annotation</span><span class="p">(</span>
+    <span class="n">annotations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">],</span> <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a segmentation mask of a numpy image, and a list of shapes.</span>
+
+<span class="sd">    The mask is will be two dimensional and the value of each pixel matches the class</span>
+<span class="sd">    index with offset 1. The background class index is zero. labels[0] matches pixel</span>
+<span class="sd">    value 1, etc. The class index is determined based on the order of `labels`:</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        annotations: List of annotations to plot in mask</span>
+<span class="sd">        labels: List of labels. The index position of the label</span>
+<span class="sd">            determines the class number in the segmentation mask.</span>
+<span class="sd">        width: Width of the mask</span>
+<span class="sd">        height: Height of the mask</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        2d numpy array of mask</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">:</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">annotation</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">ShapeFactory</span><span class="o">.</span><span class="n">shape_as_polygon</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">known_labels</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">label</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">annotation</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">ScoredLabel</span><span class="p">)</span> <span class="ow">and</span> <span class="n">label</span><span class="o">.</span><span class="n">get_label</span><span class="p">()</span> <span class="ow">in</span> <span class="n">labels</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">known_labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Skip unknown shapes</span>
+            <span class="k">continue</span>
+
+        <span class="n">label_to_compare</span> <span class="o">=</span> <span class="n">known_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_label</span><span class="p">()</span>
+
+        <span class="n">class_idx</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">label_to_compare</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">contour</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">shape</span><span class="o">.</span><span class="n">points</span><span class="p">:</span>
+            <span class="n">contour</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">width</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">height</span><span class="p">)])</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">drawContours</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">contour</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">class_idx</span><span class="p">,</span> <span class="n">class_idx</span><span class="p">,</span> <span class="n">class_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="create_hard_prediction_from_soft_prediction"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.segmentation_utils.html#otx.api.utils.segmentation_utils.create_hard_prediction_from_soft_prediction">[docs]</a><span class="k">def</span> <span class="nf">create_hard_prediction_from_soft_prediction</span><span class="p">(</span>
+    <span class="n">soft_prediction</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">soft_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">blur_strength</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a hard prediction containing the final label index per pixel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        soft_prediction: Output from segmentation network. Assumes</span>
+<span class="sd">            floating point values, between 0.0 and 1.0. Can be a</span>
+<span class="sd">            2d-array of shape (height, width) or per-class segmentation</span>
+<span class="sd">            logits of shape (height, width, num_classes)</span>
+<span class="sd">        soft_threshold: minimum class confidence for each pixel. The</span>
+<span class="sd">            higher the value, the more strict the segmentation is</span>
+<span class="sd">            (usually set to 0.5)</span>
+<span class="sd">        blur_strength: The higher the value, the smoother the</span>
+<span class="sd">            segmentation output will be, but less accurate</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Numpy array of the hard prediction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">soft_prediction_blurred</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">blur</span><span class="p">(</span><span class="n">soft_prediction</span><span class="p">,</span> <span class="p">(</span><span class="n">blur_strength</span><span class="p">,</span> <span class="n">blur_strength</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">soft_prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1"># Apply threshold to filter out `unconfident` predictions, then get max along</span>
+        <span class="c1"># class dimension</span>
+        <span class="n">soft_prediction_blurred</span><span class="p">[</span><span class="n">soft_prediction_blurred</span> <span class="o">&lt;</span> <span class="n">soft_threshold</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">hard_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">soft_prediction_blurred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">soft_prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># In the binary case, simply apply threshold</span>
+        <span class="n">hard_prediction</span> <span class="o">=</span> <span class="n">soft_prediction_blurred</span> <span class="o">&gt;</span> <span class="n">soft_threshold</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid prediction input of shape </span><span class="si">{</span><span class="n">soft_prediction</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Expected either a 2D or 3D array.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">hard_prediction</span></div>
+
+
+<span class="n">Contour</span> <span class="o">=</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="get_subcontours"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.segmentation_utils.html#otx.api.utils.segmentation_utils.get_subcontours">[docs]</a><span class="k">def</span> <span class="nf">get_subcontours</span><span class="p">(</span><span class="n">contour</span><span class="p">:</span> <span class="n">Contour</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Contour</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splits contour into subcontours that do not have self intersections.&quot;&quot;&quot;</span>
+
+    <span class="n">ContourInternal</span> <span class="o">=</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span>
+
+    <span class="k">def</span> <span class="nf">find_loops</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">ContourInternal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;For each consecutive pair of equivalent rows in the input matrix returns their indices.&quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">inverse</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">duplicates</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">inverse</span> <span class="o">==</span> <span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">indices</span>
+
+    <span class="n">base_contour</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">ContourInternal</span><span class="p">,</span> <span class="n">copy</span><span class="p">(</span><span class="n">contour</span><span class="p">))</span>
+
+    <span class="c1"># Make sure that contour is closed.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">base_contour</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">base_contour</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="n">base_contour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base_contour</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">subcontours</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Contour</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">loops</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">find_loops</span><span class="p">(</span><span class="n">base_contour</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">loop</span> <span class="ow">in</span> <span class="n">loops</span><span class="p">:</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">loop</span>
+        <span class="n">subcontour</span> <span class="o">=</span> <span class="n">base_contour</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">subcontour</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">subcontour</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">subcontours</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">Contour</span><span class="p">,</span> <span class="n">subcontour</span><span class="p">))</span>
+        <span class="n">base_contour</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="n">subcontours</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">subcontours</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">subcontours</span></div>
+
+
+<div class="viewcode-block" id="create_annotation_from_segmentation_map"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.segmentation_utils.html#otx.api.utils.segmentation_utils.create_annotation_from_segmentation_map">[docs]</a><span class="k">def</span> <span class="nf">create_annotation_from_segmentation_map</span><span class="p">(</span>
+    <span class="n">hard_prediction</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">soft_prediction</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">label_map</span><span class="p">:</span> <span class="nb">dict</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates polygons from the soft predictions.</span>
+
+<span class="sd">    Background label will be ignored and not be converted to polygons.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hard_prediction: hard prediction containing the final label</span>
+<span class="sd">            index per pixel. See function</span>
+<span class="sd">            `create_hard_prediction_from_soft_prediction`.</span>
+<span class="sd">        soft_prediction: soft prediction with shape H x W x N_labels,</span>
+<span class="sd">            where soft_prediction[:, :, 0] is the soft prediction for</span>
+<span class="sd">            background. If soft_prediction is of H x W shape, it is</span>
+<span class="sd">            assumed that this soft prediction will be applied for all</span>
+<span class="sd">            labels.</span>
+<span class="sd">        label_map: dictionary mapping labels to an index. It is assumed</span>
+<span class="sd">            that the first item in the dictionary corresponds to the</span>
+<span class="sd">            background label and will therefore be ignored.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of shapes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-locals</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">hard_prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">img_class</span> <span class="o">=</span> <span class="n">hard_prediction</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># pylint: disable=too-many-nested-blocks</span>
+    <span class="n">annotations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">label_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Skip background</span>
+        <span class="k">if</span> <span class="n">label_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># obtain current label soft prediction</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">soft_prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">current_label_soft_prediction</span> <span class="o">=</span> <span class="n">soft_prediction</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">label_index</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_label_soft_prediction</span> <span class="o">=</span> <span class="n">soft_prediction</span>
+
+        <span class="n">obj_group</span> <span class="o">=</span> <span class="n">img_class</span> <span class="o">==</span> <span class="n">label_index</span>
+        <span class="n">label_index_map</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj_group</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="c1"># Contour retrieval mode CCOMP (Connected components) creates a two-level</span>
+        <span class="c1"># hierarchy of contours</span>
+        <span class="n">contours</span><span class="p">,</span> <span class="n">hierarchies</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">findContours</span><span class="p">(</span><span class="n">label_index_map</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">RETR_CCOMP</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CHAIN_APPROX_NONE</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">hierarchies</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">contour</span><span class="p">,</span> <span class="n">hierarchy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">contours</span><span class="p">,</span> <span class="n">hierarchies</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">cv2</span><span class="o">.</span><span class="n">contourArea</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">hierarchy</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># In this case a contour does not represent a hole</span>
+                    <span class="n">contour</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">contour</span><span class="p">)</span>
+
+                    <span class="c1"># Split contour into subcontours that do not have self intersections.</span>
+                    <span class="n">subcontours</span> <span class="o">=</span> <span class="n">get_subcontours</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">subcontour</span> <span class="ow">in</span> <span class="n">subcontours</span><span class="p">:</span>
+                        <span class="c1"># compute probability of the shape</span>
+                        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hard_prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                        <span class="n">cv2</span><span class="o">.</span><span class="n">drawContours</span><span class="p">(</span>
+                            <span class="n">mask</span><span class="p">,</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]]</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">subcontour</span><span class="p">]),</span>
+                            <span class="n">contourIdx</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">color</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">thickness</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">probability</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">current_label_soft_prediction</span><span class="p">,</span> <span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                        <span class="c1"># convert the list of points to a closed polygon</span>
+                        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">Point</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span> <span class="o">/</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span> <span class="o">/</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">subcontour</span><span class="p">]</span>
+                        <span class="n">polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">polygon</span><span class="o">.</span><span class="n">get_area</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="c1"># Contour is a closed polygon with area &gt; 0</span>
+                            <span class="n">annotations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="n">Annotation</span><span class="p">(</span>
+                                    <span class="n">shape</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span>
+                                    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">probability</span><span class="p">)],</span>
+                                    <span class="nb">id</span><span class="o">=</span><span class="n">ID</span><span class="p">(</span><span class="n">ObjectId</span><span class="p">()),</span>
+                                <span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Contour is a closed polygon with area == 0</span>
+                            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                                <span class="s2">&quot;The geometry of the segmentation map you are converting &quot;</span>
+                                <span class="s2">&quot;is not fully supported. Polygons with a area of zero &quot;</span>
+                                <span class="s2">&quot;will be removed.&quot;</span><span class="p">,</span>
+                                <span class="ne">UserWarning</span><span class="p">,</span>
+                            <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If contour hierarchy[3] != -1 then contour has a parent and</span>
+                    <span class="c1"># therefore is a hole</span>
+                    <span class="c1"># Do not allow holes in segmentation masks to be filled silently,</span>
+                    <span class="c1"># but trigger warning instead</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;The geometry of the segmentation map you are converting is &quot;</span>
+                        <span class="s2">&quot;not fully supported. A hole was found and will be filled.&quot;</span><span class="p">,</span>
+                        <span class="ne">UserWarning</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">annotations</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,46 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.models.backbones.tiny\_vit
+=======================================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones.tiny_vit
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_tiny_vit
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Attention
+      BasicLayer
+      Conv2d_BN
+      ConvLayer
+      DropPath
+      LayerNorm2d
+      MBConv
+      Mlp
+      PatchEmbed
+      PatchMerging
+      TinyViT
+      TinyViTBlock
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.backbones.mmov\_backbone
+=======================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.backbones.mmov_backbone
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVBackbone
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,32 @@
+otx.algorithms.segmentation.configs.ocr\_lite\_hrnet\_18\_mod2.semisl
+=====================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ocr_lite_hrnet_18_mod2.semisl
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18_mod2.semisl.data_pipeline
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18_mod2.semisl.model
+

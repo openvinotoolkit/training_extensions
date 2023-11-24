@@ -1,0 +1,31 @@
+otx.cli.manager
+===============
+
+.. automodule:: otx.cli.manager
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.cli.manager.config_manager
+

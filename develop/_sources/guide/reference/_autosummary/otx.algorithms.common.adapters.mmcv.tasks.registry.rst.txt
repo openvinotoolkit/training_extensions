@@ -1,0 +1,23 @@
+otx.algorithms.common.adapters.mmcv.tasks.registry
+==================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.tasks.registry
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

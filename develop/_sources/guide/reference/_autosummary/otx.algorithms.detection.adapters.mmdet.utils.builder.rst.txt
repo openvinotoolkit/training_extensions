@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.utils.builder
+=====================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.utils.builder
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_detector
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

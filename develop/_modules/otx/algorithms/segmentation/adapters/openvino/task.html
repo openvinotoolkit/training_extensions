@@ -1,0 +1,714 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.segmentation.adapters.openvino.task &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/segmentation/adapters/openvino/task';</script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.segmentation.adapters.openvino.task</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Openvino Task of Segmentation.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions</span>
+<span class="c1"># and limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
+
+<span class="kn">import</span> <span class="nn">attr</span>
+<span class="kn">import</span> <span class="nn">nncf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openvino.runtime</span> <span class="k">as</span> <span class="nn">ov</span>
+<span class="kn">from</span> <span class="nn">addict</span> <span class="kn">import</span> <span class="n">Dict</span> <span class="k">as</span> <span class="n">ADDict</span>
+<span class="kn">from</span> <span class="nn">nncf.common.quantization.structs</span> <span class="kn">import</span> <span class="n">QuantizationPreset</span>
+<span class="kn">from</span> <span class="nn">openvino.model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span><span class="p">,</span> <span class="n">create_core</span>
+<span class="kn">from</span> <span class="nn">openvino.model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">openvino.model_api.models.utils</span> <span class="kn">import</span> <span class="n">ImageResultWithSoftPrediction</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils</span> <span class="kn">import</span> <span class="n">OTXOpenVinoDataLoader</span><span class="p">,</span> <span class="n">get_default_async_reqs_num</span><span class="p">,</span> <span class="n">read_py_config</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils.ir</span> <span class="kn">import</span> <span class="n">check_if_quantized</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.adapters.openvino</span> <span class="kn">import</span> <span class="n">model_wrappers</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.configs.base</span> <span class="kn">import</span> <span class="n">SegmentationConfig</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.utils</span> <span class="kn">import</span> <span class="n">get_activation_map</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.annotation</span> <span class="kn">import</span> <span class="n">AnnotationSceneEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.inference_parameters</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InferenceParameters</span><span class="p">,</span>
+    <span class="n">default_progress_callback</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.label_schema</span> <span class="kn">import</span> <span class="n">LabelSchemaEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelEntity</span><span class="p">,</span>
+    <span class="n">ModelFormat</span><span class="p">,</span>
+    <span class="n">ModelOptimizationType</span><span class="p">,</span>
+    <span class="n">ModelPrecision</span><span class="p">,</span>
+    <span class="n">OptimizationMethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.optimization_parameters</span> <span class="kn">import</span> <span class="n">OptimizationParameters</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.result_media</span> <span class="kn">import</span> <span class="n">ResultMediaEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.resultset</span> <span class="kn">import</span> <span class="n">ResultSetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.subset</span> <span class="kn">import</span> <span class="n">Subset</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.task_environment</span> <span class="kn">import</span> <span class="n">TaskEnvironment</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.tensor</span> <span class="kn">import</span> <span class="n">TensorEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.serialization.label_mapper</span> <span class="kn">import</span> <span class="n">LabelSchemaMapper</span><span class="p">,</span> <span class="n">label_schema_to_bytes</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.evaluation.metrics_helper</span> <span class="kn">import</span> <span class="n">MetricsHelper</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.exportable_code</span> <span class="kn">import</span> <span class="n">demo</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.exportable_code.inference</span> <span class="kn">import</span> <span class="n">IInferencer</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.exportable_code.prediction_to_annotation_converter</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SegmentationToAnnotationConverter</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.deployment_interface</span> <span class="kn">import</span> <span class="n">IDeploymentTask</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.evaluate_interface</span> <span class="kn">import</span> <span class="n">IEvaluationTask</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.inference_interface</span> <span class="kn">import</span> <span class="n">IInferenceTask</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.optimization_interface</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">IOptimizationTask</span><span class="p">,</span>
+    <span class="n">OptimizationType</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="c1"># pylint: disable=too-many-locals, too-many-statements, unused-argument</span>
+<div class="viewcode-block" id="OpenVINOSegmentationInferencer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationInferencer">[docs]</a><span class="k">class</span> <span class="nc">OpenVINOSegmentationInferencer</span><span class="p">(</span><span class="n">IInferencer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inferencer implementation for Segmentation using OpenVINO backend.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hparams</span><span class="p">:</span> <span class="n">SegmentationConfig</span><span class="p">,</span>
+        <span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">,</span>
+        <span class="n">model_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span>
+        <span class="n">weight_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;CPU&quot;</span><span class="p">,</span>
+        <span class="n">num_requests</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inferencer implementation for Segmentation using OpenVINO backend.</span>
+
+<span class="sd">        :param hparams: Hyper parameters that the model should use.</span>
+<span class="sd">        :param label_schema: LabelSchemaEntity that was used during model training.</span>
+<span class="sd">        :param model_file: Path to model to load, `.xml`, `.bin` or `.onnx` file.</span>
+<span class="sd">        :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to &quot;CPU&quot;.</span>
+<span class="sd">        :param num_requests: Maximum number of requests that the inferencer can make.</span>
+<span class="sd">            Good value is the number of available cores. Defaults to 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">model_adapter</span> <span class="o">=</span> <span class="n">OpenvinoAdapter</span><span class="p">(</span>
+            <span class="n">create_core</span><span class="p">(),</span>
+            <span class="n">model_file</span><span class="p">,</span>
+            <span class="n">weight_file</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">max_num_requests</span><span class="o">=</span><span class="n">num_requests</span><span class="p">,</span>
+            <span class="n">plugin_config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;PERFORMANCE_HINT&quot;</span><span class="p">:</span> <span class="s2">&quot;THROUGHPUT&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">attr</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span>
+                <span class="n">hparams</span><span class="o">.</span><span class="n">postprocessing</span><span class="p">,</span>
+                <span class="nb">filter</span><span class="o">=</span><span class="k">lambda</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">attr</span><span class="o">.</span><span class="n">name</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;visible_in_ui&quot;</span><span class="p">,</span> <span class="s2">&quot;class_name&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
+            <span class="n">model_adapter</span><span class="p">,</span>
+            <span class="s2">&quot;Segmentation&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="p">,</span>
+            <span class="n">preload</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">SegmentationToAnnotationConverter</span><span class="p">(</span><span class="n">label_schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_exceptions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inference_adapter</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_async_callback</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OpenVINOSegmentationInferencer.predict"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationInferencer.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ImageResultWithSoftPrediction</span><span class="p">,</span> <span class="n">AnnotationSceneEntity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a prediction for a given input image.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">convert_to_annotation</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenVINOSegmentationInferencer.enqueue_prediction"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationInferencer.enqueue_prediction">[docs]</a>    <span class="k">def</span> <span class="nf">enqueue_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">result_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs async inference.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">is_ready</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">await_any</span><span class="p">()</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">callback_data</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">result_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inference_adapter</span><span class="o">.</span><span class="n">infer_async</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">callback_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenVINOSegmentationInferencer.await_all"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationInferencer.await_all">[docs]</a>    <span class="k">def</span> <span class="nf">await_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Await all running infer requests if any.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">await_all</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_async_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">callback_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetches the results of async inference.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">id</span><span class="p">,</span> <span class="n">preprocessing_meta</span><span class="p">,</span> <span class="n">result_handler</span> <span class="o">=</span> <span class="n">callback_args</span>
+            <span class="n">raw_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inference_adapter</span><span class="o">.</span><span class="n">copy_raw_result</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">processed_prediciton</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">postprocess</span><span class="p">(</span><span class="n">raw_prediction</span><span class="p">,</span> <span class="n">preprocessing_meta</span><span class="p">)</span>
+            <span class="n">annotation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">convert_to_annotation</span><span class="p">(</span><span class="n">processed_prediciton</span><span class="p">,</span> <span class="n">preprocessing_meta</span><span class="p">)</span>
+            <span class="n">result_handler</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">processed_prediciton</span><span class="o">.</span><span class="n">feature_vector</span><span class="p">,</span> <span class="n">processed_prediciton</span><span class="o">.</span><span class="n">saliency_map</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OpenVINOSegmentationTask"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationTask">[docs]</a><span class="k">class</span> <span class="nc">OpenVINOSegmentationTask</span><span class="p">(</span><span class="n">IDeploymentTask</span><span class="p">,</span> <span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IOptimizationTask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Task implementation for Segmentation using OpenVINO backend.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_environment</span><span class="p">:</span> <span class="n">TaskEnvironment</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span> <span class="o">=</span> <span class="n">task_environment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">model_template_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_inferencer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_avg_time_per_image</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">task_environment</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_dictionary</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">template_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">model_template_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">template_file_path</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hparams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Hparams of OpenVINO Segmentation Task.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">get_hyper_parameters</span><span class="p">(</span><span class="n">SegmentationConfig</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">avg_time_per_image</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Average inference time per image.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_avg_time_per_image</span>
+
+<div class="viewcode-block" id="OpenVINOSegmentationTask.load_inferencer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationTask.load_inferencer">[docs]</a>    <span class="k">def</span> <span class="nf">load_inferencer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpenVINOSegmentationInferencer</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;load_inferencer function of OpenVINO Segmentation Task.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;load_inferencer failed, model is None&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OpenVINOSegmentationInferencer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">label_schema</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;openvino.xml&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;openvino.bin&quot;</span><span class="p">),</span>
+            <span class="n">num_requests</span><span class="o">=</span><span class="n">get_default_async_reqs_num</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenVINOSegmentationTask.infer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">InferenceParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer function of OpenVINOSegmentationTask.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">inference_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">update_progress_callback</span> <span class="o">=</span> <span class="n">inference_parameters</span><span class="o">.</span><span class="n">update_progress</span>
+            <span class="n">dump_soft_prediction</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">inference_parameters</span><span class="o">.</span><span class="n">is_evaluation</span>
+            <span class="n">process_soft_prediction</span> <span class="o">=</span> <span class="n">inference_parameters</span><span class="o">.</span><span class="n">process_saliency_maps</span>
+            <span class="n">enable_async_inference</span> <span class="o">=</span> <span class="n">inference_parameters</span><span class="o">.</span><span class="n">enable_async_inference</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">update_progress_callback</span> <span class="o">=</span> <span class="n">default_progress_callback</span>
+            <span class="n">dump_soft_prediction</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">process_soft_prediction</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">enable_async_inference</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">def</span> <span class="nf">add_prediction</span><span class="p">(</span>
+            <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">predicted_scene</span><span class="p">:</span> <span class="n">AnnotationSceneEntity</span><span class="p">,</span>
+            <span class="n">feature_vector</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+            <span class="n">soft_prediction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">):</span>
+            <span class="n">dataset_item</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span>
+            <span class="n">dataset_item</span><span class="o">.</span><span class="n">append_annotations</span><span class="p">(</span><span class="n">predicted_scene</span><span class="o">.</span><span class="n">annotations</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">feature_vector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">feature_vector_media</span> <span class="o">=</span> <span class="n">TensorEntity</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;representation_vector&quot;</span><span class="p">,</span> <span class="n">numpy</span><span class="o">=</span><span class="n">feature_vector</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">dataset_item</span><span class="o">.</span><span class="n">append_metadata_item</span><span class="p">(</span><span class="n">feature_vector_media</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">dump_soft_prediction</span> <span class="ow">and</span> <span class="n">soft_prediction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">soft_prediction</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">current_label_soft_prediction</span> <span class="o">=</span> <span class="n">soft_prediction</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">label_index</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">process_soft_prediction</span><span class="p">:</span>
+                        <span class="n">current_label_soft_prediction</span> <span class="o">=</span> <span class="n">get_activation_map</span><span class="p">(</span>
+                            <span class="n">current_label_soft_prediction</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="p">)</span>
+                    <span class="n">result_media</span> <span class="o">=</span> <span class="n">ResultMediaEntity</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;soft_prediction&quot;</span><span class="p">,</span>
+                        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                        <span class="n">annotation_scene</span><span class="o">=</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">annotation_scene</span><span class="p">,</span>
+                        <span class="n">roi</span><span class="o">=</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">roi</span><span class="p">,</span>
+                        <span class="n">numpy</span><span class="o">=</span><span class="n">current_label_soft_prediction</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">dataset_item</span><span class="o">.</span><span class="n">append_metadata_item</span><span class="p">(</span><span class="n">result_media</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="n">total_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">dataset_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset_item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">enable_async_inference</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span><span class="o">.</span><span class="n">enqueue_prediction</span><span class="p">(</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">numpy</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">add_prediction</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">,</span> <span class="n">predicted_scene</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">numpy</span><span class="p">)</span>
+                <span class="n">add_prediction</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">predicted_scene</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">feature_vector</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">saliency_map</span><span class="p">)</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="n">total_time</span> <span class="o">+=</span> <span class="n">end_time</span>
+
+            <span class="n">update_progress_callback</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">dataset_size</span> <span class="o">*</span> <span class="mi">100</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span><span class="o">.</span><span class="n">await_all</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_avg_time_per_image</span> <span class="o">=</span> <span class="n">total_time</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Avg time per image: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_avg_time_per_image</span><span class="si">}</span><span class="s2"> secs&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total time: </span><span class="si">{</span><span class="n">total_time</span><span class="si">}</span><span class="s2"> secs&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Segmentation OpenVINO inference completed&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataset</span></div>
+
+<div class="viewcode-block" id="OpenVINOSegmentationTask.evaluate"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate function of OpenVINOSegmentationTask.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing mDice&quot;</span><span class="p">)</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">MetricsHelper</span><span class="o">.</span><span class="n">compute_dice_averaged_over_pixels</span><span class="p">(</span><span class="n">output_resultset</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mDice after evaluation: </span><span class="si">{</span><span class="n">metrics</span><span class="o">.</span><span class="n">overall_dice</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">output_resultset</span><span class="o">.</span><span class="n">performance</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">get_performance</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OpenVINOSegmentationTask.deploy"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationTask.deploy">[docs]</a>    <span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deploy function of OpenVINOSegmentationTask.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying the model&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;deploy failed, model is None&quot;</span><span class="p">)</span>
+
+        <span class="n">work_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">demo</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;type_of_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Segmentation&quot;</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;converter_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SEGMENTATION&quot;</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;model_parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span><span class="o">.</span><span class="n">configuration</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;model_parameters&quot;</span><span class="p">][</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">LabelSchemaMapper</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">label_schema</span><span class="p">)</span>
+
+        <span class="n">zip_buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_buffer</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">arch</span><span class="p">:</span>
+            <span class="c1"># model files</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;model.xml&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;openvino.xml&quot;</span><span class="p">))</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;model.bin&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;openvino.bin&quot;</span><span class="p">))</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;config.json&quot;</span><span class="p">),</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="c1"># model_wrappers files</span>
+            <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">model_wrappers</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="s2">&quot;__pycache__&quot;</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                    <span class="n">arch</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="n">file_path</span><span class="p">,</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;model_wrappers&quot;</span><span class="p">,</span>
+                            <span class="n">file_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;model_wrappers/&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+            <span class="c1"># other python files</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;requirements.txt&quot;</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;requirements.txt&quot;</span><span class="p">))</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;LICENSE&quot;</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;LICENSE&quot;</span><span class="p">))</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;demo.py&quot;</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;demo.py&quot;</span><span class="p">))</span>
+            <span class="n">arch</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;README.md&quot;</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;README.md&quot;</span><span class="p">))</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">exportable_code</span> <span class="o">=</span> <span class="n">zip_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying completed&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenVINOSegmentationTask.optimize"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.openvino.task.html#otx.algorithms.segmentation.adapters.openvino.OpenVINOSegmentationTask.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">optimization_type</span><span class="p">:</span> <span class="n">OptimizationType</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">,</span>
+        <span class="n">optimization_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizationParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optimize function of OpenVINOSegmentationTask.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Start PTQ optimization&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;PTQ optimize failed, model is None&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">optimization_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">OptimizationType</span><span class="o">.</span><span class="n">POT</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;PTQ is the only supported optimization type for OpenVino models&quot;</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_combined_subset</span><span class="p">([</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">UNLABELED</span><span class="p">])</span>
+        <span class="n">data_loader</span> <span class="o">=</span> <span class="n">OTXOpenVinoDataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span><span class="p">)</span>
+        <span class="n">quantization_dataset</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_loader</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tempdir</span><span class="p">:</span>
+            <span class="n">xml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="s2">&quot;model.xml&quot;</span><span class="p">)</span>
+            <span class="n">bin_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="s2">&quot;model.bin&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xml_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;openvino.xml&quot;</span><span class="p">))</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">bin_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;openvino.bin&quot;</span><span class="p">))</span>
+
+            <span class="n">ov_model</span> <span class="o">=</span> <span class="n">ov</span><span class="o">.</span><span class="n">Core</span><span class="p">()</span><span class="o">.</span><span class="n">read_model</span><span class="p">(</span><span class="n">xml_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">check_if_quantized</span><span class="p">(</span><span class="n">ov_model</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Model is already optimized by PTQ&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">optimization_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">optimization_parameters</span><span class="o">.</span><span class="n">update_progress</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">optimization_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_dir</span><span class="p">,</span> <span class="s2">&quot;ptq_optimization_config.py&quot;</span><span class="p">)</span>
+        <span class="n">ptq_config</span> <span class="o">=</span> <span class="n">ADDict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">optimization_config_path</span><span class="p">):</span>
+            <span class="n">ptq_config</span> <span class="o">=</span> <span class="n">read_py_config</span><span class="p">(</span><span class="n">optimization_config_path</span><span class="p">)</span>
+        <span class="n">ptq_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">subset_size</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">pot_parameters</span><span class="o">.</span><span class="n">stat_subset_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)),</span>
+            <span class="n">preset</span><span class="o">=</span><span class="n">QuantizationPreset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">pot_parameters</span><span class="o">.</span><span class="n">preset</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span>
+        <span class="p">)</span>
+
+        <span class="n">compressed_model</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span>
+            <span class="n">ov_model</span><span class="p">,</span>
+            <span class="n">quantization_dataset</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">ptq_config</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">optimization_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">optimization_parameters</span><span class="o">.</span><span class="n">update_progress</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tempdir</span><span class="p">:</span>
+            <span class="n">xml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="s2">&quot;model.xml&quot;</span><span class="p">)</span>
+            <span class="n">ov</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">compressed_model</span><span class="p">,</span> <span class="n">xml_path</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xml_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;openvino.xml&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="s2">&quot;model.bin&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;openvino.bin&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span>
+            <span class="s2">&quot;label_schema.json&quot;</span><span class="p">,</span>
+            <span class="n">label_schema_to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">label_schema</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># set model attributes for quantized model</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">model_format</span> <span class="o">=</span> <span class="n">ModelFormat</span><span class="o">.</span><span class="n">OPENVINO</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">optimization_type</span> <span class="o">=</span> <span class="n">ModelOptimizationType</span><span class="o">.</span><span class="n">POT</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">optimization_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">QUANTIZATION</span><span class="p">]</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="p">[</span><span class="n">ModelPrecision</span><span class="o">.</span><span class="n">INT8</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">output_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inferencer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_inferencer</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">optimization_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">optimization_parameters</span><span class="o">.</span><span class="n">update_progress</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PTQ optimization completed&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

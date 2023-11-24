@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.segmentation.stfpm.configuration
+===============================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.segmentation.stfpm.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      STFPMAnomalySegmentationConfig
+   
+   
+
+   
+   
+   
+
+
+

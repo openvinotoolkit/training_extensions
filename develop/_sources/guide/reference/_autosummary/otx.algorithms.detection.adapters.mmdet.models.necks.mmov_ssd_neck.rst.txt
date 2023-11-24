@@ -1,0 +1,31 @@
+otx.algorithms.detection.adapters.mmdet.models.necks.mmov\_ssd\_neck
+====================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      L2Norm
+      MMOVSSDNeck
+      SSDNeck
+   
+   
+
+   
+   
+   
+
+
+

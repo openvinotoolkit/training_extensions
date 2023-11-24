@@ -1,0 +1,38 @@
+otx.algorithms.segmentation.adapters.mmseg.models.backbones.litehrnet
+=====================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.backbones.litehrnet
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConditionalChannelWeighting
+      CrossResolutionWeighting
+      LiteHRModule
+      LiteHRNet
+      NeighbourSupport
+      ShuffleUnit
+      SpatialWeighting
+      SpatialWeightingV2
+      Stem
+      StemV2
+   
+   
+
+   
+   
+   
+
+
+

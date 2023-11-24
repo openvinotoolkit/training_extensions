@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.custom\_anchor\_generator
+==============================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.custom_anchor_generator
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SSDAnchorGeneratorClustered
+   
+   
+
+   
+   
+   
+
+
+

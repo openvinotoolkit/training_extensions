@@ -1,0 +1,32 @@
+otx.core.ov.ops.convolutions
+============================
+
+.. automodule:: otx.core.ov.ops.convolutions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConvolutionV1
+      ConvolutionV1Attribute
+      GroupConvolutionV1
+      GroupConvolutionV1Attribute
+   
+   
+
+   
+   
+   
+
+
+

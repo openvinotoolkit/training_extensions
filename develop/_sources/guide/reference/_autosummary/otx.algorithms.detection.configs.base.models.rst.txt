@@ -1,0 +1,34 @@
+otx.algorithms.detection.configs.base.models
+============================================
+
+.. automodule:: otx.algorithms.detection.configs.base.models
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.configs.base.models.detector
+   otx.algorithms.detection.configs.base.models.model
+   otx.algorithms.detection.configs.base.models.single_stage_detector
+   otx.algorithms.detection.configs.base.models.unbiased_teacher
+

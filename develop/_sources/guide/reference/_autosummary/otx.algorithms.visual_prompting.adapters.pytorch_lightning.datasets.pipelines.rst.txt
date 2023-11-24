@@ -1,0 +1,32 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.datasets.pipelines
+===============================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.transforms
+

@@ -1,0 +1,30 @@
+otx.cli.tools.deploy
+====================
+
+.. automodule:: otx.cli.tools.deploy
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_args
+      main
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

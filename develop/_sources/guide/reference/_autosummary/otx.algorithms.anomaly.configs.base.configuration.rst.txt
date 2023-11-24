@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.base.configuration
+=================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.base.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseAnomalyConfig
+   
+   
+
+   
+   
+   
+
+
+

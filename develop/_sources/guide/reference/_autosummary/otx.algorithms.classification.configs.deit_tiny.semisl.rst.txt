@@ -1,0 +1,33 @@
+otx.algorithms.classification.configs.deit\_tiny.semisl
+=======================================================
+
+.. automodule:: otx.algorithms.classification.configs.deit_tiny.semisl
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.classification.configs.deit_tiny.semisl.data_pipeline
+   otx.algorithms.classification.configs.deit_tiny.semisl.model
+   otx.algorithms.classification.configs.deit_tiny.semisl.model_multilabel
+

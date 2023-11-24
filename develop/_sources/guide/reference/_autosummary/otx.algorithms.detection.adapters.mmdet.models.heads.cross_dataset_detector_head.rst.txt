@@ -1,0 +1,30 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.cross\_dataset\_detector\_head
+===================================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CrossDatasetDetectorHead
+      TrackingLossDynamicsMixIn
+   
+   
+
+   
+   
+   
+
+
+

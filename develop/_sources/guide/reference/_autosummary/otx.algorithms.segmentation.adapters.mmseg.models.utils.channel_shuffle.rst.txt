@@ -1,0 +1,6 @@
+otx.algorithms.segmentation.adapters.mmseg.models.utils.channel\_shuffle
+========================================================================
+
+.. currentmodule:: otx.algorithms.segmentation.adapters.mmseg.models.utils
+
+.. autofunction:: channel_shuffle

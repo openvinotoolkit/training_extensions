@@ -1,0 +1,32 @@
+otx.algorithms.common.tasks
+===========================
+
+.. automodule:: otx.algorithms.common.tasks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.common.tasks.base_task
+   otx.algorithms.common.tasks.nncf_task
+

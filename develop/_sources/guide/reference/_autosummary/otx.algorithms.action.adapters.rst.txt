@@ -1,0 +1,32 @@
+otx.algorithms.action.adapters
+==============================
+
+.. automodule:: otx.algorithms.action.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.adapters.mmaction
+   otx.algorithms.action.adapters.openvino
+

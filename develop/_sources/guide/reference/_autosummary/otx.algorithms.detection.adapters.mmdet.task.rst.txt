@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.task
+============================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMDetectionTask
+   
+   
+
+   
+   
+   
+
+
+

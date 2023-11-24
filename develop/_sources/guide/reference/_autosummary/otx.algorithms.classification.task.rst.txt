@@ -1,0 +1,29 @@
+otx.algorithms.classification.task
+==================================
+
+.. automodule:: otx.algorithms.classification.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXClassificationTask
+   
+   
+
+   
+   
+   
+
+
+

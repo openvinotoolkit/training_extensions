@@ -1,0 +1,40 @@
+otx.core.ov.ops.object\_detections
+==================================
+
+.. automodule:: otx.core.ov.ops.object_detections
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionOutputV0
+      DetectionOutputV0Attribute
+      PriorBoxClusteredV0
+      PriorBoxClusteredV0Attribute
+      PriorBoxV0
+      PriorBoxV0Attribute
+      ProposalV4
+      ProposalV4Attribute
+      ROIPoolingV0
+      ROIPoolingV0Attribute
+      RegionYoloV0
+      RegionYoloV0Attribute
+   
+   
+
+   
+   
+   
+
+
+

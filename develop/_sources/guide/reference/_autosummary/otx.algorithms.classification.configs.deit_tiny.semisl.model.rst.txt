@@ -1,0 +1,23 @@
+otx.algorithms.classification.configs.deit\_tiny.semisl.model
+=============================================================
+
+.. automodule:: otx.algorithms.classification.configs.deit_tiny.semisl.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

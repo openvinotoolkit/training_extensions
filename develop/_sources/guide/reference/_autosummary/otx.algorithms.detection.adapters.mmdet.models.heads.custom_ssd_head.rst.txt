@@ -1,0 +1,30 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.custom\_ssd\_head
+======================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomSSDHead
+      CustomSSDHeadTrackingLossDynamics
+   
+   
+
+   
+   
+   
+
+
+

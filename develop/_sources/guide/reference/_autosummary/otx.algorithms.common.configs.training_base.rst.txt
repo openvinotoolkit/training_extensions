@@ -1,0 +1,31 @@
+otx.algorithms.common.configs.training\_base
+============================================
+
+.. automodule:: otx.algorithms.common.configs.training_base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseConfig
+      LearningRateSchedule
+      TrainType
+   
+   
+
+   
+   
+   
+
+
+

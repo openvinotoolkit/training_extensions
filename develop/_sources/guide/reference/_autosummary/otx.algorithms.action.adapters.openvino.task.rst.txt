@@ -1,0 +1,31 @@
+otx.algorithms.action.adapters.openvino.task
+============================================
+
+.. automodule:: otx.algorithms.action.adapters.openvino.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionOpenVINOInferencer
+      ActionOpenVINOTask
+      DataLoaderWrapper
+   
+   
+
+   
+   
+   
+
+
+

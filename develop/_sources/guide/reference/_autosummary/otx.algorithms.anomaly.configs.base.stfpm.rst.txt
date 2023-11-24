@@ -1,0 +1,31 @@
+otx.algorithms.anomaly.configs.base.stfpm
+=========================================
+
+.. automodule:: otx.algorithms.anomaly.configs.base.stfpm
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.base.stfpm.configuration
+

@@ -1,0 +1,39 @@
+otx.api.serialization.label\_mapper
+===================================
+
+.. automodule:: otx.api.serialization.label_mapper
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      label_schema_to_bytes
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ColorMapper
+      LabelGroupMapper
+      LabelMapper
+      LabelSchemaMapper
+      LabelTreeMapper
+   
+   
+
+   
+   
+   
+
+
+

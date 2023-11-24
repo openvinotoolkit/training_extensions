@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.adapters.openvino.model\_wrappers
+=============================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.openvino.model_wrappers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

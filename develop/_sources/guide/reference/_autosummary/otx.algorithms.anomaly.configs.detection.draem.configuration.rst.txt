@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.detection.draem.configuration
+============================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.detection.draem.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DraemAnomalyDetectionConfig
+   
+   
+
+   
+   
+   
+
+
+

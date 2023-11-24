@@ -1,0 +1,29 @@
+otx.api.configuration.elements.configurable\_enum
+=================================================
+
+.. automodule:: otx.api.configuration.elements.configurable_enum
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigurableEnum
+   
+   
+
+   
+   
+   
+
+
+

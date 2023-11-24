@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.base.deployments.base\_segmentation\_dynamic
+================================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.base.deployments.base_segmentation_dynamic
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

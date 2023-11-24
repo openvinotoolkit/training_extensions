@@ -1,0 +1,33 @@
+otx.algorithms.common.utils.task\_adapt
+=======================================
+
+.. automodule:: otx.algorithms.common.utils.task_adapt
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      extract_anchor_ratio
+      map_cat_and_cls_as_order
+      map_class_names
+      refine_results
+      unwrap_dataset
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

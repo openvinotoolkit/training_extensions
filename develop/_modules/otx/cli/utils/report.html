@@ -1,0 +1,465 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.cli.utils.report &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/cli/utils/report';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.cli.utils.report</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Report Generating for OTX CLI.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pformat</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">import</span> <span class="nn">otx</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model_template</span> <span class="kn">import</span> <span class="n">ModelTemplate</span>
+
+
+<div class="viewcode-block" id="get_otx_report"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.get_otx_report">[docs]</a><span class="k">def</span> <span class="nf">get_otx_report</span><span class="p">(</span>
+    <span class="n">model_template</span><span class="p">:</span> <span class="n">ModelTemplate</span><span class="p">,</span>
+    <span class="n">task_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">data_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate CLI reports.&quot;&quot;&quot;</span>
+    <span class="n">dash_line</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+    <span class="c1"># Header</span>
+    <span class="n">report_str</span> <span class="o">=</span> <span class="n">get_otx_cli_ascii_banner</span><span class="p">()</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">dash_line</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Current path: </span><span class="si">{</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;sys.argv: </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;OTX: </span><span class="si">{</span><span class="n">otx</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="c1"># 1. Machine Environment</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">sub_title_to_str</span><span class="p">(</span><span class="s2">&quot;Running Environments&quot;</span><span class="p">)</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">env_info_to_str</span><span class="p">()</span>
+
+    <span class="c1"># 2. Task Information (Task, Train-type, Etc.)</span>
+    <span class="k">if</span> <span class="n">model_template</span> <span class="ow">and</span> <span class="n">task_config</span><span class="p">:</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="n">sub_title_to_str</span><span class="p">(</span><span class="s2">&quot;Template Information&quot;</span><span class="p">)</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="n">template_info_to_str</span><span class="p">(</span><span class="n">model_template</span><span class="p">)</span>
+
+    <span class="c1"># 3. Dataset Configuration</span>
+    <span class="k">if</span> <span class="n">data_config</span><span class="p">:</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="n">sub_title_to_str</span><span class="p">(</span><span class="s2">&quot;Dataset Information&quot;</span><span class="p">)</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="n">data_config_to_str</span><span class="p">(</span><span class="n">data_config</span><span class="p">)</span>
+
+    <span class="c1"># 4. Configurations</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">sub_title_to_str</span><span class="p">(</span><span class="s2">&quot;Configurations&quot;</span><span class="p">)</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">task_config_to_str</span><span class="p">(</span><span class="n">task_config</span><span class="p">)</span>
+    <span class="c1"># 5. Result Summary</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">sub_title_to_str</span><span class="p">(</span><span class="s2">&quot;Results&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pformat</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">report_str</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sub_title_to_str"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.sub_title_to_str">[docs]</a><span class="k">def</span> <span class="nf">sub_title_to_str</span><span class="p">(</span><span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add sub title for report.&quot;&quot;&quot;</span>
+    <span class="n">dash_line</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span>
+    <span class="n">report_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">dash_line</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">title</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+    <span class="n">report_str</span> <span class="o">+=</span> <span class="n">dash_line</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">report_str</span></div>
+
+
+<div class="viewcode-block" id="env_info_to_str"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.env_info_to_str">[docs]</a><span class="k">def</span> <span class="nf">env_info_to_str</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Environments.&quot;&quot;&quot;</span>
+    <span class="n">report_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">env_info</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">mmcv.utils.env</span> <span class="kn">import</span> <span class="n">collect_env</span>
+
+        <span class="n">env_info</span> <span class="o">=</span> <span class="n">collect_env</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;PyTorch compiling details&quot;</span> <span class="ow">in</span> <span class="n">env_info</span><span class="p">:</span>
+            <span class="n">env_info</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;PyTorch compiling details&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+        <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;sys.platform&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>
+        <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;Python&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">cuda_available</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+        <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;CUDA available&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cuda_available</span>
+
+        <span class="k">if</span> <span class="n">cuda_available</span><span class="p">:</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()):</span>
+                <span class="n">devices</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_name</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device_ids</span> <span class="ow">in</span> <span class="n">devices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;GPU &quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">device_ids</span><span class="p">)]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;PyTorch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">report_str</span></div>
+
+
+<div class="viewcode-block" id="template_info_to_str"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.template_info_to_str">[docs]</a><span class="k">def</span> <span class="nf">template_info_to_str</span><span class="p">(</span><span class="n">model_template</span><span class="p">:</span> <span class="n">ModelTemplate</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Template information.&quot;&quot;&quot;</span>
+    <span class="n">report_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">model_template</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pformat</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">report_str</span></div>
+
+
+<div class="viewcode-block" id="data_config_to_str"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.data_config_to_str">[docs]</a><span class="k">def</span> <span class="nf">data_config_to_str</span><span class="p">(</span><span class="n">data_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Dataset configuration.&quot;&quot;&quot;</span>
+    <span class="n">report_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">subset_key</span><span class="p">,</span> <span class="n">subset_value</span> <span class="ow">in</span> <span class="n">data_config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">subset_key</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">subset_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">report_str</span></div>
+
+
+<div class="viewcode-block" id="task_config_to_str"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.task_config_to_str">[docs]</a><span class="k">def</span> <span class="nf">task_config_to_str</span><span class="p">(</span><span class="n">task_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Task configuration.&quot;&quot;&quot;</span>
+    <span class="n">report_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">not_target</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;log_config&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">target</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">task_config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Remove otx_dataset from the report as it is unnecessary.</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;data&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;otx_dataset&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;otx_dataset&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">not_target</span><span class="p">:</span>
+            <span class="n">report_str</span> <span class="o">+=</span> <span class="n">target</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span>
+            <span class="n">model_str</span> <span class="o">=</span> <span class="n">pformat</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">report_str</span> <span class="o">+=</span> <span class="n">model_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">report_str</span></div>
+
+
+<div class="viewcode-block" id="get_otx_cli_ascii_banner"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.report.html#otx.cli.utils.report.get_otx_cli_ascii_banner">[docs]</a><span class="k">def</span> <span class="nf">get_otx_cli_ascii_banner</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get OTX ASCII banner.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span>
+
+<span class="s2"> ██████╗     ████████╗    ██╗  ██╗</span>
+<span class="s2">██╔═══██╗    ╚══██╔══╝    ╚██╗██╔╝</span>
+<span class="s2">██║   ██║       ██║        ╚███╔╝</span>
+<span class="s2">██║   ██║       ██║        ██╔██╗</span>
+<span class="s2">╚██████╔╝       ██║       ██╔╝ ██╗</span>
+<span class="s2"> ╚═════╝        ╚═╝       ╚═╝  ╚═╝</span>
+
+<span class="s2">&quot;&quot;&quot;</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

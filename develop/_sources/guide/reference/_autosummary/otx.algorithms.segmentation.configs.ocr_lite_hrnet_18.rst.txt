@@ -1,0 +1,37 @@
+otx.algorithms.segmentation.configs.ocr\_lite\_hrnet\_18
+========================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ocr_lite_hrnet_18
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.data_pipeline
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.deployment
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.model
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.ptq_optimization_config
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.selfsl
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.semisl
+   otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.supcon
+

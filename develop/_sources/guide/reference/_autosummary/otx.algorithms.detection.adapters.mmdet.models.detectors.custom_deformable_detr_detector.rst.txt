@@ -1,0 +1,35 @@
+otx.algorithms.detection.adapters.mmdet.models.detectors.custom\_deformable\_detr\_detector
+===========================================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      custom_deformable_detr__simple_test
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomDeformableDETR
+   
+   
+
+   
+   
+   
+
+
+

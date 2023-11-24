@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.nncf.task
+=================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.nncf.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionNNCFTask
+   
+   
+
+   
+   
+   
+
+
+

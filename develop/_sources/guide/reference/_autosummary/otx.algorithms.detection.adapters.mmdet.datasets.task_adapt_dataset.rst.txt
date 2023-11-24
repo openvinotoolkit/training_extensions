@@ -1,0 +1,30 @@
+otx.algorithms.detection.adapters.mmdet.datasets.task\_adapt\_dataset
+=====================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.datasets.task_adapt_dataset
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AdaptClassLabels
+      TaskAdaptEvalDataset
+   
+   
+
+   
+   
+   
+
+
+

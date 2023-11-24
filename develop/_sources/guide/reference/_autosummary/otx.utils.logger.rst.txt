@@ -1,0 +1,30 @@
+otx.utils.logger
+================
+
+.. automodule:: otx.utils.logger
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      config_logger
+      get_log_dir
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

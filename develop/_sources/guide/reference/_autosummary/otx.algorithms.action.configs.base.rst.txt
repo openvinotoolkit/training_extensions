@@ -1,0 +1,31 @@
+otx.algorithms.action.configs.base
+==================================
+
+.. automodule:: otx.algorithms.action.configs.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.configs.base.configuration
+

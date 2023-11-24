@@ -1,0 +1,31 @@
+otx.algorithms.anomaly.configs.base.padim
+=========================================
+
+.. automodule:: otx.algorithms.anomaly.configs.base.padim
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.base.padim.configuration
+

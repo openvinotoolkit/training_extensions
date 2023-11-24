@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.data.iseg\_resnet\_data\_pipeline
+=======================================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.data.iseg_resnet_data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

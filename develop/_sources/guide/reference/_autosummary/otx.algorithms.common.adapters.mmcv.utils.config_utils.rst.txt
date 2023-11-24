@@ -1,0 +1,55 @@
+otx.algorithms.common.adapters.mmcv.utils.config\_utils
+=======================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.utils.config_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      add_custom_hook_if_not_exists
+      config_from_string
+      copy_config
+      get_adaptive_num_workers
+      get_dataset_configs
+      get_proper_repeat_times
+      is_epoch_based_runner
+      patch_adaptive_interval_training
+      patch_color_conversion
+      patch_early_stopping
+      patch_from_hyperparams
+      patch_persistent_workers
+      prepare_for_testing
+      prepare_work_dir
+      recursively_update_cfg
+      remove_custom_hook
+      remove_from_config
+      remove_from_configs_by_type
+      update_config
+      update_or_add_custom_hook
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InputSizeManager
+      OTXConfig
+   
+   
+
+   
+   
+   
+
+
+

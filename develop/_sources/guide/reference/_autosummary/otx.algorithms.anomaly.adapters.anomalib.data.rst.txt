@@ -1,0 +1,34 @@
+otx.algorithms.anomaly.adapters.anomalib.data
+=============================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.data
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations
+   otx.algorithms.anomaly.adapters.anomalib.data.data
+   otx.algorithms.anomaly.adapters.anomalib.data.dataset
+   otx.algorithms.anomaly.adapters.anomalib.data.mvtec
+

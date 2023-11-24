@@ -1,0 +1,31 @@
+otx.algorithms.segmentation.adapters.mmseg.configurer
+=====================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.configurer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IncrSegmentationConfigurer
+      SegmentationConfigurer
+      SemiSLSegmentationConfigurer
+   
+   
+
+   
+   
+   
+
+
+

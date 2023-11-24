@@ -1,0 +1,30 @@
+otx.algorithms.segmentation.adapters.mmseg.utils.builder
+========================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.utils.builder
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_scalar_scheduler
+      build_segmentor
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

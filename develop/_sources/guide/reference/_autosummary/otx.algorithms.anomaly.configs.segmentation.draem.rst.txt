@@ -1,0 +1,31 @@
+otx.algorithms.anomaly.configs.segmentation.draem
+=================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.segmentation.draem
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.segmentation.draem.configuration
+

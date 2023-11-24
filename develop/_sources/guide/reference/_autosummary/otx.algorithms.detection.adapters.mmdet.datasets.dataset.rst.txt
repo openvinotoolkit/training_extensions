@@ -1,0 +1,36 @@
+otx.algorithms.detection.adapters.mmdet.datasets.dataset
+========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.datasets.dataset
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_annotation_mmdet_format
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ImageTilingDataset
+      OTXDetDataset
+   
+   
+
+   
+   
+   
+
+
+

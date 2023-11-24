@@ -1,0 +1,29 @@
+otx.core.ov.registry
+====================
+
+.. automodule:: otx.core.ov.registry
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Registry
+   
+   
+
+   
+   
+   
+
+
+

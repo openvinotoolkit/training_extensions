@@ -1,0 +1,839 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.core.ov.ops.movements &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/ov/ops/movements';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.core.ov.ops.movements</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Movement-related modules for otx.core.ov.ops.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="kn">from</span> <span class="nn">.builder</span> <span class="kn">import</span> <span class="n">OPS</span>
+<span class="kn">from</span> <span class="nn">.op</span> <span class="kn">import</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Operation</span>
+
+<span class="c1"># pylint: disable=too-many-branches</span>
+
+
+<div class="viewcode-block" id="PadV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.PadV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PadV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PadV1Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">pad_mode</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PadV1Attribute&#39;s post-init function.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
+        <span class="n">valid_pad_mode</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="s2">&quot;edge&quot;</span><span class="p">,</span> <span class="s2">&quot;reflect&quot;</span><span class="p">,</span> <span class="s2">&quot;symmetric&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_pad_mode</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid pad_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pad_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_pad_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PadV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.PadV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">PadV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">PadV1Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PadV1 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Pad&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">PadV1Attribute</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pad_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_torch_pad_mode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">pad_mode</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PadV1.get_torch_pad_mode"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.PadV1.get_torch_pad_mode">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_torch_pad_mode</span><span class="p">(</span><span class="n">pad_mode</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PadV1&#39;s get_torch_pad_mode function.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pad_mode</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;constant&quot;</span>
+        <span class="k">if</span> <span class="n">pad_mode</span> <span class="o">==</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;replicate&quot;</span>
+        <span class="k">if</span> <span class="n">pad_mode</span> <span class="o">==</span> <span class="s2">&quot;reflect&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;reflect&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="PadV1.get_torch_pad_dim"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.PadV1.get_torch_pad_dim">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_torch_pad_dim</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">,</span> <span class="n">pads_end</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PadV1&#39;s get_torch_pad_dim function.&quot;&quot;&quot;</span>
+        <span class="c1"># reverse padding</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">pads_end</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">tup</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PadV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.PadV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">pads_begin</span><span class="p">,</span> <span class="n">pads_end</span><span class="p">,</span> <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PadV1&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="n">pads_begin</span> <span class="o">=</span> <span class="n">pads_begin</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">pads_begin</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">pads_end</span> <span class="o">=</span> <span class="n">pads_end</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pads_end</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">pads_end</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">pad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_torch_pad_dim</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">,</span> <span class="n">pads_end</span><span class="p">)</span>
+        <span class="n">pad</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">,</span> <span class="n">pad</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">pad</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pad_mode</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">pad_value</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ConcatV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ConcatV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ConcatV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ConcatV0Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="ConcatV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ConcatV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ConcatV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ConcatV0Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ConcatV0 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Concat&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ConcatV0Attribute</span>
+
+<div class="viewcode-block" id="ConcatV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ConcatV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ConcatV0&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TransposeV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.TransposeV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TransposeV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TransposeV1Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+
+
+<div class="viewcode-block" id="TransposeV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.TransposeV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">TransposeV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">TransposeV1Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TransposeV1 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Transpose&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">TransposeV1Attribute</span>
+
+<div class="viewcode-block" id="TransposeV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.TransposeV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;TransposeV1&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">order</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GatherV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.GatherV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">GatherV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GatherV0Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">batch_dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GatherV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.GatherV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">GatherV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">GatherV0Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GatherV0 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Gather&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">GatherV0Attribute</span>
+
+<div class="viewcode-block" id="GatherV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.GatherV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;GatherV0&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">axis</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">squeeze_axis</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="n">batch_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">batch_dims</span>
+        <span class="k">if</span> <span class="n">batch_dims</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">batch_dims</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">+</span> <span class="n">batch_dims</span>
+
+        <span class="n">indices_shape</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">batch_dims</span> <span class="o">&lt;</span> <span class="n">axis</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">indices_shape</span><span class="p">[:</span><span class="n">batch_dims</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">indices_shape</span> <span class="o">=</span> <span class="n">indices_shape</span><span class="p">[</span><span class="n">batch_dims</span><span class="p">:]</span>
+
+        <span class="k">if</span> <span class="n">indices</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">indices</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">while</span> <span class="n">indices</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">axis</span><span class="p">:</span>
+                    <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">batch_dims</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">indices</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">():</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">repeat</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">indices</span><span class="o">.</span><span class="n">shape</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
+                    <span class="n">repeat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">j</span> <span class="o">%</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="n">repeat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span> <span class="o">//</span> <span class="n">k</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">repeat</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">indices</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">squeeze_axis</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="GatherV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.GatherV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">GatherV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GatherV1Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+
+
+<div class="viewcode-block" id="GatherV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.GatherV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">GatherV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">GatherV1Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GatherV1 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Gather&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset2&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">GatherV1Attribute</span>
+
+<div class="viewcode-block" id="GatherV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.GatherV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;GatherV1&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StridedSliceV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.StridedSliceV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">StridedSliceV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;StridedSliceV1Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">begin_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">end_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">new_axis_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">shrink_axis_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ellipsis_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="StridedSliceV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.StridedSliceV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">StridedSliceV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">StridedSliceV1Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;StridedSliceV1 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;StridedSlice&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">StridedSliceV1Attribute</span>
+
+<div class="viewcode-block" id="StridedSliceV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.StridedSliceV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;StridedSliceV1&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">ellipsis_mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">begin_mask</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">begin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">end_mask</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">end</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stride</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stride</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">begin</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">begin</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">stride_0</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">stride</span><span class="p">)):</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+            <span class="c1"># begin index is inclusive</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="n">length</span><span class="p">,</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># end index is exclusive</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="o">-</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">stride_0</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="n">length</span> <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">b</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="n">e</span> <span class="o">+</span> <span class="n">length</span> <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">e</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">stride_0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">length</span> <span class="k">if</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">b</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="n">e</span> <span class="o">-</span> <span class="n">length</span> <span class="k">if</span> <span class="n">e</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">e</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">stride_0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">indices</span> <span class="o">+=</span> <span class="n">length</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">new_axis_mask</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">new_axis_mask</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">shrink_axis_mask</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">new_axis_mask</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="SplitV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.SplitV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">SplitV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SplitV1Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">num_splits</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="SplitV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.SplitV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">SplitV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">SplitV1Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SplitV1 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Split&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">SplitV1Attribute</span>
+
+<div class="viewcode-block" id="SplitV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.SplitV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;SplitV1&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="n">split_size</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">num_splits</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">split_size_or_sections</span><span class="o">=</span><span class="n">split_size</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VariadicSplitV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.VariadicSplitV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">VariadicSplitV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;VariadicSplitV1Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+
+
+<div class="viewcode-block" id="VariadicSplitV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.VariadicSplitV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">VariadicSplitV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">VariadicSplitV1Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;VariadicSplitV1 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;VariadicSplit&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">VariadicSplitV1Attribute</span>
+
+<div class="viewcode-block" id="VariadicSplitV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.VariadicSplitV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">split_lengths</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;VariadicSplitV1&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">split_lengths</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">idx</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">split_lengths</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">split_lengths</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span> <span class="o">==</span> <span class="nb">sum</span><span class="p">(</span><span class="n">split_lengths</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">start_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">length</span> <span class="ow">in</span> <span class="n">split_lengths</span><span class="p">:</span>
+            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span>
+                    <span class="n">inputs</span><span class="p">,</span>
+                    <span class="n">axis</span><span class="p">,</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="n">length</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">start_idx</span> <span class="o">+=</span> <span class="n">length</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ShuffleChannelsV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ShuffleChannelsV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ShuffleChannelsV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ShuffleChannelsV0Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">group</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShuffleChannelsV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ShuffleChannelsV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ShuffleChannelsV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ShuffleChannelsV0Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ShuffleChannelsV0 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;ShuffleChannels&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ShuffleChannelsV0Attribute</span>
+
+<div class="viewcode-block" id="ShuffleChannelsV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ShuffleChannelsV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ShuffleChannelsV0&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="c1">#  n, c, h, w = input.shape</span>
+        <span class="k">assert</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span>
+        <span class="n">origin_shape</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">origin_dim</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">origin_shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">group</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">axis</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">axis</span> <span class="o">+</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
+
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">group</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">origin_shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">group</span><span class="p">),</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">target_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">target_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">origin_shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">axis</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">origin_dim</span><span class="p">)])</span>
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">target_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">origin_shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="p">)])</span>
+            <span class="n">target_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">origin_shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="p">)])</span>
+            <span class="n">target_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">origin_shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">axis</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">origin_dim</span><span class="p">)])</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">target_shape</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">permute</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">origin_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="BroadcastV3Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.BroadcastV3Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">BroadcastV3Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;BroadcastV3Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;BroadcastV3Attribute&#39;s post-init function.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
+        <span class="n">valid_mode</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span> <span class="s2">&quot;explicit&quot;</span><span class="p">,</span> <span class="s2">&quot;bidirectional&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_mode</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BroadcastV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.BroadcastV3">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">BroadcastV3</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">BroadcastV3Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;BroadcastV3 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Broadcast&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">BroadcastV3Attribute</span>
+
+<div class="viewcode-block" id="BroadcastV3.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.BroadcastV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">,</span> <span class="n">axes_mapping</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;BroadcastV3&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">target_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;bidirectional&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="o">*</span><span class="n">target_shape</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="n">inputs</span>
+        <span class="k">assert</span> <span class="n">axes_mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">axes</span> <span class="ow">in</span> <span class="n">axes_mapping</span><span class="p">:</span>
+            <span class="n">prev</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">axes</span> <span class="o">-</span> <span class="n">prev</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">axes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">prev</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_shape</span><span class="p">):</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">target_shape</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ScatterNDUpdateV3Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ScatterNDUpdateV3Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ScatterNDUpdateV3Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ScatterNDUpdateV3Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+
+
+<div class="viewcode-block" id="ScatterNDUpdateV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ScatterNDUpdateV3">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ScatterNDUpdateV3</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ScatterNDUpdateV3Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ScatterNDUpdateV3 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;ScatterNDUpdate&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ScatterNDUpdateV3Attribute</span>
+
+<div class="viewcode-block" id="ScatterNDUpdateV3.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ScatterNDUpdateV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">indicies</span><span class="p">,</span> <span class="n">updates</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ScatterNDUpdateV3&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: need to verify</span>
+        <span class="k">if</span> <span class="n">updates</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="c1"># FIXME: hard-coded</span>
+        <span class="n">last_dim</span> <span class="o">=</span> <span class="n">indicies</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">last_dim</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">indicies</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">indicies</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>  <span class="c1"># pylint: disable=pointless-statement</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">indicies</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">indicies</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">i</span><span class="p">,))</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">updates</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="ScatterUpdateV3Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ScatterUpdateV3Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ScatterUpdateV3Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ScatterUpdateV3Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+
+
+<div class="viewcode-block" id="ScatterUpdateV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ScatterUpdateV3">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ScatterUpdateV3</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ScatterUpdateV3Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ScatterUpdateV3 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;ScatterUpdate&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ScatterUpdateV3Attribute</span>
+
+<div class="viewcode-block" id="ScatterUpdateV3.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.ScatterUpdateV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">indicies</span><span class="p">,</span> <span class="n">updates</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ScatterUpdateV3&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: need to verify</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">updates</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+            <span class="n">updates</span> <span class="o">=</span> <span class="n">updates</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">indicies</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">inputs</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">indicies</span><span class="p">]</span> <span class="o">=</span> <span class="n">updates</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">indicies</span><span class="p">,</span> <span class="n">updates</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="TileV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.TileV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TileV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TileV0Attribute class.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+
+
+<div class="viewcode-block" id="TileV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.TileV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">TileV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">TileV0Attribute</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TileV0 class.&quot;&quot;&quot;</span>
+
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;Tile&quot;</span>
+    <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
+    <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">TileV0Attribute</span>
+
+<div class="viewcode-block" id="TileV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.TileV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">repeats</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;TileV0&#39;s forward function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">repeats</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="get_torch_padding"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.movements.html#otx.core.ov.ops.get_torch_padding">[docs]</a><span class="k">def</span> <span class="nf">get_torch_padding</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">,</span> <span class="n">pads_end</span><span class="p">,</span> <span class="n">auto_pad</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">weight_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Getter function for torch padding.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dilation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dilation</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">input_size</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">auto_pad</span> <span class="o">==</span> <span class="s2">&quot;valid&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">auto_pad</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;same_upper&quot;</span><span class="p">,</span> <span class="s2">&quot;same_lower&quot;</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dilation</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dilation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">pads_begin</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pads_end</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">input_size_</span><span class="p">,</span> <span class="n">weight_size_</span><span class="p">,</span> <span class="n">stride_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">weight_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">dilation</span><span class="p">):</span>
+            <span class="n">out_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">input_size_</span> <span class="o">/</span> <span class="n">stride_</span><span class="p">)</span>
+            <span class="n">padding_needed</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">out_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_</span> <span class="o">+</span> <span class="n">weight_size_</span> <span class="o">-</span> <span class="n">input_size_</span><span class="p">)</span>
+            <span class="n">padding_lhs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">padding_needed</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">padding_rhs</span> <span class="o">=</span> <span class="n">padding_needed</span> <span class="o">-</span> <span class="n">padding_lhs</span>
+
+            <span class="n">pads_begin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">padding_lhs</span> <span class="k">if</span> <span class="n">auto_pad</span> <span class="o">==</span> <span class="s2">&quot;same_upper&quot;</span> <span class="k">else</span> <span class="n">padding_rhs</span><span class="p">)</span>
+            <span class="n">pads_end</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">padding_rhs</span> <span class="k">if</span> <span class="n">auto_pad</span> <span class="o">==</span> <span class="s2">&quot;same_upper&quot;</span> <span class="k">else</span> <span class="n">padding_lhs</span><span class="p">)</span>
+        <span class="n">pad</span> <span class="o">=</span> <span class="n">PadV1</span><span class="o">.</span><span class="n">get_torch_pad_dim</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">,</span> <span class="n">pads_end</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">pad</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">auto_pad</span> <span class="o">==</span> <span class="s2">&quot;explicit&quot;</span><span class="p">:</span>
+        <span class="n">pad</span> <span class="o">=</span> <span class="n">PadV1</span><span class="o">.</span><span class="n">get_torch_pad_dim</span><span class="p">(</span><span class="n">pads_begin</span><span class="p">,</span> <span class="n">pads_end</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">pad</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

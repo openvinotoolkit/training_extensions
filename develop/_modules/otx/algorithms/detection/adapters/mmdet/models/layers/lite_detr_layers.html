@@ -1,0 +1,717 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/detection/adapters/mmdet/models/layers/lite_detr_layers';</script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Layers for Lite-DETR.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn</span> <span class="kn">import</span> <span class="n">Linear</span><span class="p">,</span> <span class="n">build_norm_layer</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn.bricks.registry</span> <span class="kn">import</span> <span class="n">FEEDFORWARD_NETWORK</span><span class="p">,</span> <span class="n">TRANSFORMER_LAYER</span><span class="p">,</span> <span class="n">TRANSFORMER_LAYER_SEQUENCE</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn.bricks.transformer</span> <span class="kn">import</span> <span class="n">FFN</span><span class="p">,</span> <span class="n">BaseTransformerLayer</span><span class="p">,</span> <span class="n">build_transformer_layer</span>
+<span class="kn">from</span> <span class="nn">mmcv.runner.base_module</span> <span class="kn">import</span> <span class="n">BaseModule</span><span class="p">,</span> <span class="n">Sequential</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+
+<div class="viewcode-block" id="SmallExpandFFN"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN">[docs]</a><span class="nd">@FEEDFORWARD_NETWORK</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">SmallExpandFFN</span><span class="p">(</span><span class="n">FFN</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements feed-forward networks (FFNs) with small expand.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        embed_dims (int): The feature dimension. Same as</span>
+<span class="sd">            `MultiheadAttention`. Defaults: 256.</span>
+<span class="sd">        feedforward_channels (int): The hidden dimension of FFNs.</span>
+<span class="sd">            Defaults: 1024.</span>
+<span class="sd">        num_fcs (int, optional): The number of fully-connected layers in</span>
+<span class="sd">            FFNs. Default: 2.</span>
+<span class="sd">        act_cfg (dict, optional): The activation config for FFNs.</span>
+<span class="sd">            Default: dict(type=&#39;ReLU&#39;)</span>
+<span class="sd">        ffn_drop (float, optional): Probability of an element to be</span>
+<span class="sd">            zeroed in FFN. Default 0.0.</span>
+<span class="sd">        add_identity (bool, optional): Whether to add the</span>
+<span class="sd">            identity connection. Default: `True`.</span>
+<span class="sd">        dropout_layer (obj:`ConfigDict`): The dropout_layer used</span>
+<span class="sd">            when adding the shortcut.</span>
+<span class="sd">        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.</span>
+<span class="sd">            Default: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embed_dims</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+        <span class="n">feedforward_channels</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+        <span class="n">num_fcs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">act_cfg</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ffn_drop</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">dropout_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">add_identity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">embed_dims</span><span class="p">,</span>
+            <span class="n">feedforward_channels</span><span class="p">,</span>
+            <span class="n">num_fcs</span><span class="p">,</span>
+            <span class="n">act_cfg</span><span class="p">,</span>
+            <span class="n">ffn_drop</span><span class="p">,</span>
+            <span class="n">dropout_layer</span><span class="p">,</span>
+            <span class="n">add_identity</span><span class="p">,</span>
+            <span class="n">init_cfg</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_fcs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Sequential</span><span class="p">(</span><span class="n">Linear</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">,</span> <span class="n">embed_dims</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">activate</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">ffn_drop</span><span class="p">)))</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Linear</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">,</span> <span class="n">embed_dims</span><span class="p">))</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">ffn_drop</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">small_expand_layers</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SmallExpandFFN.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">level_start_index</span><span class="p">,</span> <span class="n">enc_scale</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for FFN.&quot;&quot;&quot;</span>
+        <span class="n">x_3s</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="n">enc_scale</span><span class="p">]</span> <span class="p">:]</span>
+        <span class="n">x_4s</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span> <span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="n">enc_scale</span><span class="p">]]</span>
+        <span class="n">x_4s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_ffn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">small_expand_layers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm2</span><span class="p">,</span> <span class="n">x_4s</span><span class="p">,</span> <span class="n">identity</span><span class="p">)</span>
+        <span class="n">x_3s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_ffn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span><span class="p">,</span> <span class="n">x_3s</span><span class="p">,</span> <span class="n">identity</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x_4s</span><span class="p">,</span> <span class="n">x_3s</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="SmallExpandFFN.forward_ffn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN.forward_ffn">[docs]</a>    <span class="k">def</span> <span class="nf">forward_ffn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward Feed Forward Network given layers.&quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_identity</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_layer</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">identity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">norm</span><span class="p">(</span><span class="n">identity</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_layer</span><span class="p">(</span><span class="n">out</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="EfficientTransformerLayer"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerLayer">[docs]</a><span class="nd">@TRANSFORMER_LAYER</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">EfficientTransformerLayer</span><span class="p">(</span><span class="n">BaseTransformerLayer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Efficient TransformerLayer for Lite-DETR.</span>
+
+<span class="sd">    It is base transformer encoder layer for Lite-DETR &lt;https://arxiv.org/pdf/2303.07335.pdf&gt;`_ .</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        attn_cfgs (list[`mmcv.ConfigDict`] | obj:`mmcv.ConfigDict` | None )):</span>
+<span class="sd">            Configs for `self_attention` or `cross_attention` modules,</span>
+<span class="sd">            The order of the configs in the list should be consistent with</span>
+<span class="sd">            corresponding attentions in operation_order.</span>
+<span class="sd">            If it is a dict, all of the attention modules in operation_order</span>
+<span class="sd">            will be built with this config. Default: None.</span>
+<span class="sd">        ffn_cfgs (list[`mmcv.ConfigDict`] | obj:`mmcv.ConfigDict` | None )):</span>
+<span class="sd">            Configs for FFN, The order of the configs in the list should be</span>
+<span class="sd">            consistent with corresponding ffn in operation_order.</span>
+<span class="sd">            If it is a dict, all of the attention modules in operation_order</span>
+<span class="sd">            will be built with this config.</span>
+<span class="sd">        operation_order (tuple[str]): The execution order of operation</span>
+<span class="sd">            in transformer. Such as (&#39;self_attn&#39;, &#39;norm&#39;, &#39;ffn&#39;, &#39;norm&#39;).</span>
+<span class="sd">            Support `prenorm` when you specifying first element as `norm`.</span>
+<span class="sd">            Default：None.</span>
+<span class="sd">        norm_cfg (dict): Config dict for normalization layer.</span>
+<span class="sd">            Default: dict(type=&#39;LN&#39;).</span>
+<span class="sd">        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.</span>
+<span class="sd">            Default: None.</span>
+<span class="sd">        batch_first (bool): Key, Query and Value are shape</span>
+<span class="sd">            of (batch, n, embed_dim)</span>
+<span class="sd">            or (n, batch, embed_dim). Default to False.</span>
+<span class="sd">        enc_scale (int): Scale of high level features. Default is 3.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">small_expand</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">attn_cfgs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ffn_cfgs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;FFN&quot;</span><span class="p">,</span>
+            <span class="n">embed_dims</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+            <span class="n">feedforward_channels</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+            <span class="n">num_fcs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">ffn_drop</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">act_cfg</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">operation_order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;LN&quot;</span><span class="p">),</span>
+        <span class="n">init_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">enc_scale</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attn_cfgs</span><span class="p">,</span> <span class="n">ffn_cfgs</span><span class="p">,</span> <span class="n">operation_order</span><span class="p">,</span> <span class="n">norm_cfg</span><span class="p">,</span> <span class="n">init_cfg</span><span class="p">,</span> <span class="n">batch_first</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span> <span class="o">=</span> <span class="n">enc_scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">small_expand</span> <span class="o">=</span> <span class="n">small_expand</span>
+
+<div class="viewcode-block" id="EfficientTransformerLayer.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">,</span>
+        <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">query_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">key_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">attn_masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">query_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">level_start_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for `TransformerDecoderLayer`.</span>
+
+<span class="sd">        **kwargs contains some specific arguments of attentions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (Tensor): The input query with shape</span>
+<span class="sd">                [num_queries, bs, embed_dims] if</span>
+<span class="sd">                self.batch_first is False, else</span>
+<span class="sd">                [bs, num_queries embed_dims].</span>
+<span class="sd">            key (Tensor): The key tensor with shape [num_keys, bs,</span>
+<span class="sd">                embed_dims] if self.batch_first is False, else</span>
+<span class="sd">                [bs, num_keys, embed_dims] .</span>
+<span class="sd">            value (Tensor): The value tensor with same shape as `key`.</span>
+<span class="sd">            query_pos (Tensor): The positional encoding for `query`.</span>
+<span class="sd">                Default: None.</span>
+<span class="sd">            key_pos (Tensor): The positional encoding for `key`.</span>
+<span class="sd">                Default: None.</span>
+<span class="sd">            attn_masks (List[Tensor] | None): 2D Tensor used in</span>
+<span class="sd">                calculation of corresponding attention. The length of</span>
+<span class="sd">                it should equal to the number of `attention` in</span>
+<span class="sd">                `operation_order`. Default: None.</span>
+<span class="sd">            query_key_padding_mask (Tensor): ByteTensor for `query`, with</span>
+<span class="sd">                shape [bs, num_queries]. Only used in `self_attn` layer.</span>
+<span class="sd">                Defaults to None.</span>
+<span class="sd">            key_padding_mask (Tensor): ByteTensor for `query`, with</span>
+<span class="sd">                shape [bs, num_keys]. Default: None.</span>
+<span class="sd">            level_start_index (Tensor): Start index for each level.</span>
+<span class="sd">            kwargs: Additional arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: forwarded results with shape [num_queries, bs, embed_dims].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">norm_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">attn_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ffn_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">identity</span> <span class="o">=</span> <span class="n">query</span>
+        <span class="k">if</span> <span class="n">attn_masks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">attn_masks</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_attn</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attn_masks</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">attn_masks</span> <span class="o">=</span> <span class="p">[</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">attn_masks</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_attn</span><span class="p">)]</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Use same attn_mask in all attentions in &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">attn_masks</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_attn</span><span class="p">,</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The length of &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;attn_masks </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">attn_masks</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be equal &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;to the number of attention in &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;operation_order </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_attn</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">operation_order</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;self_attn&quot;</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attentions</span><span class="p">[</span><span class="n">attn_index</span><span class="p">](</span>
+                    <span class="n">query</span><span class="p">,</span>
+                    <span class="n">key</span><span class="p">,</span>
+                    <span class="n">value</span><span class="p">,</span>
+                    <span class="n">identity</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">query_pos</span><span class="o">=</span><span class="n">query_pos</span><span class="p">,</span>
+                    <span class="n">key_pos</span><span class="o">=</span><span class="n">query_pos</span><span class="p">,</span>
+                    <span class="n">attn_mask</span><span class="o">=</span><span class="n">attn_masks</span><span class="p">[</span><span class="n">attn_index</span><span class="p">],</span>
+                    <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">query_key_padding_mask</span><span class="p">,</span>
+                    <span class="n">level_start_index</span><span class="o">=</span><span class="n">level_start_index</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">attn_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">identity</span> <span class="o">=</span> <span class="n">query</span>
+
+            <span class="k">elif</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norms</span><span class="p">[</span><span class="n">norm_index</span><span class="p">](</span><span class="n">query</span><span class="p">)</span>
+                <span class="n">norm_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">elif</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;cross_attn&quot;</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attentions</span><span class="p">[</span><span class="n">attn_index</span><span class="p">](</span>
+                    <span class="n">query</span><span class="p">,</span>
+                    <span class="n">key</span><span class="p">,</span>
+                    <span class="n">value</span><span class="p">,</span>
+                    <span class="n">identity</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">query_pos</span><span class="o">=</span><span class="n">query_pos</span><span class="p">,</span>
+                    <span class="n">key_pos</span><span class="o">=</span><span class="n">key_pos</span><span class="p">,</span>
+                    <span class="n">attn_mask</span><span class="o">=</span><span class="n">attn_masks</span><span class="p">[</span><span class="n">attn_index</span><span class="p">],</span>
+                    <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">key_padding_mask</span><span class="p">,</span>
+                    <span class="n">level_start_index</span><span class="o">=</span><span class="n">level_start_index</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">attn_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">identity</span> <span class="o">=</span> <span class="n">query</span>
+
+            <span class="k">elif</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;ffn&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">small_expand</span><span class="p">:</span>
+                    <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ffns</span><span class="p">[</span><span class="n">ffn_index</span><span class="p">](</span>
+                        <span class="n">query</span><span class="p">,</span> <span class="n">level_start_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span><span class="p">,</span> <span class="n">identity</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span> <span class="k">else</span> <span class="kc">None</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ffns</span><span class="p">[</span><span class="n">ffn_index</span><span class="p">](</span><span class="n">query</span><span class="p">,</span> <span class="n">identity</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">ffn_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">query</span></div></div>
+
+
+<div class="viewcode-block" id="EfficientTransformerEncoder"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerEncoder">[docs]</a><span class="nd">@TRANSFORMER_LAYER_SEQUENCE</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">EfficientTransformerEncoder</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TransformerEncoder of Lite-DETR.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        post_norm_cfg (dict): Config of last normalization layer. Default：</span>
+<span class="sd">            `LN`. Only used when `self.pre_norm` is `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformerlayers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">post_norm_cfg</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;LN&quot;</span><span class="p">),</span>
+        <span class="n">enc_scale</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">num_expansion</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">transformerlayers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">num_layers</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">num_expansion</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">_transformerlayers</span> <span class="o">=</span> <span class="p">[</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">transformerlayers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span>
+                    <span class="n">transformerlayers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_transformerlayers</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_expansion</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">num_layers</span> <span class="o">/</span> <span class="n">num_expansion</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">_transformerlayers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">transformerlayers</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="n">_transformerlayers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">transformerlayers</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transformerlayers</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">transformerlayers</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">=</span> <span class="n">num_layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">_transformerlayers</span><span class="p">:</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">build_transformer_layer</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">layer</span><span class="o">.</span><span class="n">enc_scale</span> <span class="o">==</span> <span class="n">enc_scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">embed_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pre_norm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_expansion</span> <span class="o">=</span> <span class="n">num_expansion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span> <span class="o">=</span> <span class="n">enc_scale</span>
+
+        <span class="k">if</span> <span class="n">post_norm_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_norm</span> <span class="o">=</span> <span class="n">build_norm_layer</span><span class="p">(</span><span class="n">post_norm_cfg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Use prenorm in &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">,&quot;</span> <span class="sa">f</span><span class="s2">&quot;Please specify post_norm_cfg&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_norm</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="EfficientTransformerEncoder.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerEncoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">query_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">key_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">attn_masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">query_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">level_start_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reference_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for `TransformerCoder`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (Tensor): Input query with shape</span>
+<span class="sd">                `(num_queries, bs, embed_dims)`.</span>
+<span class="sd">            key (Tensor): The key tensor with shape</span>
+<span class="sd">                `(num_keys, bs, embed_dims)`.</span>
+<span class="sd">            value (Tensor): The value tensor with shape</span>
+<span class="sd">                `(num_keys, bs, embed_dims)`.</span>
+<span class="sd">            query_pos (Tensor): The positional encoding for `query`.</span>
+<span class="sd">                Default: None.</span>
+<span class="sd">            key_pos (Tensor): The positional encoding for `key`.</span>
+<span class="sd">                Default: None.</span>
+<span class="sd">            attn_masks (List[Tensor], optional): Each element is 2D Tensor</span>
+<span class="sd">                which is used in calculation of corresponding attention in</span>
+<span class="sd">                operation_order. Default: None.</span>
+<span class="sd">            query_key_padding_mask (Tensor): ByteTensor for `query`, with</span>
+<span class="sd">                shape [bs, num_queries]. Only used in self-attention</span>
+<span class="sd">                Default: None.</span>
+<span class="sd">            key_padding_mask (Tensor): ByteTensor for `query`, with</span>
+<span class="sd">                shape [bs, num_keys]. Default: None.</span>
+<span class="sd">            level_start_index (Tensor): Start index for each level.</span>
+<span class="sd">            reference_points (Tensor): BBox predictions&#39; reference.</span>
+<span class="sd">            kwargs: Additional arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor:  results with shape [num_queries, bs, embed_dims].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">query</span>
+        <span class="n">value_tgt</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span><span class="p">]</span> <span class="p">:]</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">value_tgt</span>
+        <span class="n">reference_points_tgt</span> <span class="o">=</span> <span class="n">reference_points</span><span class="p">[:,</span> <span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span><span class="p">]</span> <span class="p">:]</span>
+        <span class="n">query_pos_tgt</span> <span class="o">=</span> <span class="n">query_pos</span><span class="p">[</span><span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span><span class="p">]</span> <span class="p">:]</span>
+        <span class="k">for</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">layer_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_expansion</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span>
+                    <span class="n">query</span><span class="p">,</span>
+                    <span class="n">key</span><span class="p">,</span>
+                    <span class="n">value</span><span class="p">,</span>
+                    <span class="n">query_pos</span><span class="o">=</span><span class="n">query_pos</span><span class="p">,</span>
+                    <span class="n">reference_points</span><span class="o">=</span><span class="n">reference_points</span><span class="p">,</span>
+                    <span class="n">level_start_index</span><span class="o">=</span><span class="n">level_start_index</span><span class="p">,</span>
+                    <span class="n">key_pos</span><span class="o">=</span><span class="n">key_pos</span><span class="p">,</span>
+                    <span class="n">attn_masks</span><span class="o">=</span><span class="n">attn_masks</span><span class="p">,</span>
+                    <span class="n">query_key_padding_mask</span><span class="o">=</span><span class="n">query_key_padding_mask</span><span class="p">,</span>
+                    <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">key_padding_mask</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span><span class="p">]</span> <span class="p">:]</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">output</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span>
+                    <span class="n">query</span><span class="p">,</span>
+                    <span class="n">key</span><span class="p">,</span>
+                    <span class="n">value</span><span class="p">,</span>
+                    <span class="n">query_pos</span><span class="o">=</span><span class="n">query_pos_tgt</span><span class="p">,</span>
+                    <span class="n">reference_points</span><span class="o">=</span><span class="n">reference_points_tgt</span><span class="p">,</span>
+                    <span class="n">level_start_index</span><span class="o">=</span><span class="n">level_start_index</span><span class="p">,</span>
+                    <span class="n">key_pos</span><span class="o">=</span><span class="n">key_pos</span><span class="p">,</span>
+                    <span class="n">attn_masks</span><span class="o">=</span><span class="n">attn_masks</span><span class="p">,</span>
+                    <span class="n">query_key_padding_mask</span><span class="o">=</span><span class="n">query_key_padding_mask</span><span class="p">,</span>
+                    <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">key_padding_mask</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">output</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">value</span><span class="p">[:</span> <span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span><span class="p">]],</span> <span class="n">query</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_norm</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

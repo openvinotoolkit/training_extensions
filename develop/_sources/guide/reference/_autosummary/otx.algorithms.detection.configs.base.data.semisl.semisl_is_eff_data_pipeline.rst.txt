@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.data.semisl.semisl\_is\_eff\_data\_pipeline
+=================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.data.semisl.semisl_is_eff_data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

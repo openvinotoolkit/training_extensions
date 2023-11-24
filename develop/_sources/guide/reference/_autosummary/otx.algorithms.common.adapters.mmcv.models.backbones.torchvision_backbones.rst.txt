@@ -1,0 +1,37 @@
+otx.algorithms.common.adapters.mmcv.models.backbones.torchvision\_backbones
+===========================================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.models.backbones.torchvision_backbones
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      generate_torchvision_backbones
+      get_torchvision_models
+      init_weights
+      multioutput_forward
+      replace_activation
+      replace_norm
+      resnet_forward
+      shufflenet_forward
+      train
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

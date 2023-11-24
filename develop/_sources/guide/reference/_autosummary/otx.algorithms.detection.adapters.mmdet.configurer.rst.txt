@@ -1,0 +1,31 @@
+otx.algorithms.detection.adapters.mmdet.configurer
+==================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.configurer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionConfigurer
+      IncrDetectionConfigurer
+      SemiSLDetectionConfigurer
+   
+   
+
+   
+   
+   
+
+
+

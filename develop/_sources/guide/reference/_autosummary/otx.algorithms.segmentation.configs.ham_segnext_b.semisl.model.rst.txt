@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.ham\_segnext\_b.semisl.model
+================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ham_segnext_b.semisl.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,548 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.usecases.evaluation.dice &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/usecases/evaluation/dice';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.usecases.evaluation.dice</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module contains the Dice performance provider.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.label</span> <span class="kn">import</span> <span class="n">LabelEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.metrics</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BarChartInfo</span><span class="p">,</span>
+    <span class="n">BarMetricsGroup</span><span class="p">,</span>
+    <span class="n">ColorPalette</span><span class="p">,</span>
+    <span class="n">MetricsGroup</span><span class="p">,</span>
+    <span class="n">Performance</span><span class="p">,</span>
+    <span class="n">ScoreMetric</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.resultset</span> <span class="kn">import</span> <span class="n">ResultSetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.evaluation.averaging</span> <span class="kn">import</span> <span class="n">MetricAverageMethod</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.evaluation.basic_operations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_intersections_and_cardinalities</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.evaluation.performance_provider_interface</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">IPerformanceProvider</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.utils.segmentation_utils</span> <span class="kn">import</span> <span class="n">mask_from_dataset_item</span>
+<span class="kn">from</span> <span class="nn">otx.api.utils.time_utils</span> <span class="kn">import</span> <span class="n">timeit</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.image</span> <span class="kn">import</span> <span class="n">Image</span>
+
+
+<div class="viewcode-block" id="DiceAverage"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.dice.html#otx.api.usecases.evaluation.DiceAverage">[docs]</a><span class="k">class</span> <span class="nc">DiceAverage</span><span class="p">(</span><span class="n">IPerformanceProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the average Dice coefficient overall and for individual labels.</span>
+
+<span class="sd">    See https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient for background information.</span>
+
+<span class="sd">    To compute the Dice coefficient the shapes in the dataset items of the prediction and ground truth</span>
+<span class="sd">    dataset are first converted to masks.</span>
+
+<span class="sd">    Dice is computed by computing the intersection and union computed over the whole dataset, instead of</span>
+<span class="sd">    computing intersection and union for individual images and then averaging.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resultset (ResultSetEntity): ResultSet that score will be computed for</span>
+<span class="sd">        average (MetricAverageMethod): One of</span>
+<span class="sd">            - MICRO: every pixel has the same weight, regardless of label</span>
+<span class="sd">            - MACRO: compute score per label, return the average of the per-label scores</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span>
+        <span class="n">average</span><span class="p">:</span> <span class="n">MetricAverageMethod</span> <span class="o">=</span> <span class="n">MetricAverageMethod</span><span class="o">.</span><span class="n">MACRO</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">average</span> <span class="o">=</span> <span class="n">average</span>
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overall_dice</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dice_per_label</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compute_dice_averaged_over_pixels</span><span class="p">(</span><span class="n">resultset</span><span class="p">,</span> <span class="n">average</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">overall_dice</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScoreMetric</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the dice average as ScoreMetric.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overall_dice</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dice_per_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">,</span> <span class="n">ScoreMetric</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dice_per_label</span>
+
+<div class="viewcode-block" id="DiceAverage.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.dice.html#otx.api.usecases.evaluation.DiceAverage.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Performance</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the performance of the resultset.&quot;&quot;&quot;</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overall_dice</span>
+        <span class="n">dashboard_metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MetricsGroup</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dice_per_label</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dashboard_metrics</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dashboard_metrics</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">BarMetricsGroup</span><span class="p">(</span>
+                    <span class="n">metrics</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dice_per_label</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                    <span class="n">visualization_info</span><span class="o">=</span><span class="n">BarChartInfo</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dice Average Per Label&quot;</span><span class="p">,</span>
+                        <span class="n">palette</span><span class="o">=</span><span class="n">ColorPalette</span><span class="o">.</span><span class="n">LABEL</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">return</span> <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="o">=</span><span class="n">score</span><span class="p">,</span> <span class="n">dashboard_metrics</span><span class="o">=</span><span class="n">dashboard_metrics</span><span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">__compute_dice_averaged_over_pixels</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">average</span><span class="p">:</span> <span class="n">MetricAverageMethod</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ScoreMetric</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">,</span> <span class="n">ScoreMetric</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the diced averaged over pixels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resultset (ResultSetEntity): Result set to use</span>
+<span class="sd">            average (MetricAverageMethod): Averaging method to use</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]: Tuple of the overall dice and the dice averaged over</span>
+<span class="sd">                pixels for each label.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot compute the DICE score of an empty result set.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Prediction and ground truth dataset should have the same length. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Ground truth dataset has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> items, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;prediction dataset has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> items&quot;</span>
+            <span class="p">)</span>
+        <span class="n">resultset_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span> <span class="o">+</span> <span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span>
+        <span class="n">model_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">get_label_schema</span><span class="p">()</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">resultset_labels</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">model_labels</span><span class="p">))</span>
+        <span class="n">hard_predictions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">hard_references</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">prediction_item</span><span class="p">,</span> <span class="n">reference_item</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">hard_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask_from_dataset_item</span><span class="p">(</span><span class="n">prediction_item</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+                <span class="n">hard_references</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask_from_dataset_item</span><span class="p">(</span><span class="n">reference_item</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="c1"># when item consists of masks with Image properties</span>
+                <span class="c1"># TODO (sungchul): how to add condition to check if polygon or mask?</span>
+                <span class="n">labels_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">)}</span>
+
+                <span class="k">def</span> <span class="nf">combine_masks</span><span class="p">(</span><span class="n">annotations</span><span class="p">):</span>
+                    <span class="n">combined_mask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Image</span><span class="p">):</span>
+                            <span class="n">scored_label</span> <span class="o">=</span> <span class="n">annotation</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">label</span> <span class="o">=</span> <span class="n">scored_label</span><span class="o">.</span><span class="n">label</span>
+                            <span class="k">if</span> <span class="n">combined_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">combined_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">numpy</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">labels_map</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">combined_mask</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">numpy</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">labels_map</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">combined_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">combined_mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">combined_mask</span>
+
+                <span class="n">hard_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">combine_masks</span><span class="p">(</span><span class="n">prediction_item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()))</span>
+                <span class="n">hard_references</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">combine_masks</span><span class="p">(</span><span class="n">reference_item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()))</span>
+
+        <span class="n">all_intersection</span><span class="p">,</span> <span class="n">all_cardinality</span> <span class="o">=</span> <span class="n">get_intersections_and_cardinalities</span><span class="p">(</span>
+            <span class="n">hard_references</span><span class="p">,</span> <span class="n">hard_predictions</span><span class="p">,</span> <span class="n">labels</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">compute_dice_using_intersection_and_cardinality</span><span class="p">(</span><span class="n">all_intersection</span><span class="p">,</span> <span class="n">all_cardinality</span><span class="p">,</span> <span class="n">average</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DiceAverage.compute_dice_using_intersection_and_cardinality"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.dice.html#otx.api.usecases.evaluation.DiceAverage.compute_dice_using_intersection_and_cardinality">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">compute_dice_using_intersection_and_cardinality</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">all_intersection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">all_cardinality</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">average</span><span class="p">:</span> <span class="n">MetricAverageMethod</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ScoreMetric</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">,</span> <span class="n">ScoreMetric</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes dice score using intersection and cardinality dictionaries.</span>
+
+<span class="sd">        Both dictionaries must contain the same set of keys.</span>
+<span class="sd">        Dice score is computed by: 2 * intersection / cardinality</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            average: Averaging method to use</span>
+<span class="sd">            all_intersection: collection of intersections per label</span>
+<span class="sd">            all_cardinality: collection of cardinality per label</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A tuple containing the overall DICE score, and per label</span>
+<span class="sd">            DICE score</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: if the keys in intersection and cardinality do not</span>
+<span class="sd">                match</span>
+<span class="sd">            KeyError: if the key `None` is not present in either</span>
+<span class="sd">                all_intersection or all_cardinality</span>
+<span class="sd">            ValueError: if the intersection for a certain key is larger</span>
+<span class="sd">                than its corresponding cardinality</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dice_per_label</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">,</span> <span class="n">ScoreMetric</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">intersection</span> <span class="ow">in</span> <span class="n">all_intersection</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">cardinality</span> <span class="o">=</span> <span class="n">all_cardinality</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+            <span class="n">dice_score</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__compute_single_dice_score_using_intersection_and_cardinality</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">)</span>
+
+            <span class="c1"># If label is None, then the dice score corresponds to the overall dice score</span>
+            <span class="c1"># rather than a per-label dice score.</span>
+            <span class="c1"># This score is calculated last because it can depend on the values in dice_per_label</span>
+            <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dice_per_label</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">dice_score</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Set overall_dice to 0 in case the score cannot be computed</span>
+        <span class="n">overall_dice</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dice Average&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dice_per_label</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># dataset consists of background pixels only</span>
+            <span class="k">pass</span>  <span class="c1"># Use the default value of 0</span>
+        <span class="k">elif</span> <span class="n">average</span> <span class="o">==</span> <span class="n">MetricAverageMethod</span><span class="o">.</span><span class="n">MICRO</span><span class="p">:</span>
+            <span class="n">overall_cardinality</span> <span class="o">=</span> <span class="n">all_cardinality</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">overall_intersection</span> <span class="o">=</span> <span class="n">all_intersection</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">dice_score</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__compute_single_dice_score_using_intersection_and_cardinality</span><span class="p">(</span>
+                <span class="n">overall_intersection</span><span class="p">,</span> <span class="n">overall_cardinality</span>
+            <span class="p">)</span>
+            <span class="n">overall_dice</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">dice_score</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dice Average&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">average</span> <span class="o">==</span> <span class="n">MetricAverageMethod</span><span class="o">.</span><span class="n">MACRO</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dice_per_label</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+            <span class="n">macro_average_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+            <span class="n">overall_dice</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">macro_average_score</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dice Average&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">overall_dice</span><span class="p">,</span> <span class="n">dice_per_label</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__compute_single_dice_score_using_intersection_and_cardinality</span><span class="p">(</span><span class="n">intersection</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes a single dice score using intersection and cardinality.</span>
+
+<span class="sd">        Dice score is computed by: 2 * intersection / cardinality</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If intersection is larger than cardinality</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">intersection</span> <span class="o">&gt;</span> <span class="n">cardinality</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;intersection cannot be larger than cardinality&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cardinality</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">intersection</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dice_score</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dice_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">intersection</span> <span class="o">/</span> <span class="n">cardinality</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dice_score</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

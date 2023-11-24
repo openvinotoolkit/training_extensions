@@ -1,0 +1,23 @@
+otx.algorithms.common.adapters.mmcv.configs.backbones.lite\_hrnet\_s
+====================================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.configs.backbones.lite_hrnet_s
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

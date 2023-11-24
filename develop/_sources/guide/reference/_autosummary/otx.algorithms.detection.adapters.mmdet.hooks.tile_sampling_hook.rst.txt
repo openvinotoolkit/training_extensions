@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.hooks.tile\_sampling\_hook
+==================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.hooks.tile_sampling_hook
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TileSamplingHook
+   
+   
+
+   
+   
+   
+
+
+

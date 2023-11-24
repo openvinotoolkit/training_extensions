@@ -1,0 +1,30 @@
+otx.core.ov.ops.image\_processings
+==================================
+
+.. automodule:: otx.core.ov.ops.image_processings
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InterpolateV4
+      InterpolateV4Attribute
+   
+   
+
+   
+   
+   
+
+
+

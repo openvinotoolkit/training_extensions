@@ -1,0 +1,31 @@
+otx.api.usecases.exportable\_code.demo.demo
+===========================================
+
+.. automodule:: otx.api.usecases.exportable_code.demo.demo
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_argparser
+      get_inferencer_class
+      main
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,23 @@
+otx.algorithms.common.adapters.mmcv.configs.backbones.segnext
+=============================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.configs.backbones.segnext
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

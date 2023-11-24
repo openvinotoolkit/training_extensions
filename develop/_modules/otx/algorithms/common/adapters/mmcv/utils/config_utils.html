@@ -1,0 +1,1308 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.common.adapters.mmcv.utils.config_utils &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/common/adapters/mmcv/utils/config_utils';</script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.common.adapters.mmcv.utils.config_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utils for common OTX algorithms.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2022-2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span>
+<span class="kn">from</span> <span class="nn">mmcv.utils.config</span> <span class="kn">import</span> <span class="n">BASE_KEY</span><span class="p">,</span> <span class="n">DEPRECATION_KEY</span>
+<span class="kn">from</span> <span class="nn">mmcv.utils.misc</span> <span class="kn">import</span> <span class="n">import_modules_from_strings</span>
+<span class="kn">from</span> <span class="nn">mmcv.utils.path</span> <span class="kn">import</span> <span class="n">check_file_exist</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.configs.configuration_enums</span> <span class="kn">import</span> <span class="n">InputSizePreset</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="kn">from</span> <span class="nn">._config_utils_get_configs_by_keys</span> <span class="kn">import</span> <span class="n">get_configs_by_keys</span>
+<span class="kn">from</span> <span class="nn">._config_utils_get_configs_by_pairs</span> <span class="kn">import</span> <span class="n">get_configs_by_pairs</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="c1"># TODO: refactor Config</span>
+<div class="viewcode-block" id="OTXConfig"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.OTXConfig">[docs]</a><span class="k">class</span> <span class="nc">OTXConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class that extends the base `Config` class, adds additional functionality for loading configuration files.&quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_file2dict</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">use_predefined_variables</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>  <span class="c1"># pylint: disable=too-many-locals, too-many-branches, too-many-statements</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Static method that loads the configuration file and returns a dictionary of its contents.</span>
+
+<span class="sd">        :param filename: str, the path of the configuration file to be loaded.</span>
+<span class="sd">        :param use_predefined_variables: bool, a flag indicating whether to substitute predefined variables in the</span>
+<span class="sd">                                          configuration file.</span>
+<span class="sd">        :return: tuple of dictionary and string. Returns a dictionary containing the contents of the configuration file</span>
+<span class="sd">                 and a string representation of the configuration file.</span>
+<span class="sd">        :raises: IOError if the file type is not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="n">check_file_exist</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">extender</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">extender</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.py&quot;</span><span class="p">,</span> <span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;.yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;.yml&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Only py/yml/yaml/json type are supported now!&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">temp_config_dir</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">temp_config_dir</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">extender</span><span class="p">)</span> <span class="k">as</span> <span class="n">temp_config_file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+                    <span class="n">temp_config_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">temp_config_name</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">temp_config_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="c1"># Substitute predefined variables</span>
+                <span class="k">if</span> <span class="n">use_predefined_variables</span><span class="p">:</span>
+                    <span class="n">Config</span><span class="o">.</span><span class="n">_substitute_predefined_vars</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">temp_config_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">temp_config_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="c1"># Substitute base variables from placeholders to strings</span>
+                <span class="n">base_var_dict</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">_pre_substitute_base_vars</span><span class="p">(</span><span class="n">temp_config_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">temp_config_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">):</span>
+                    <span class="n">temp_module_name</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">temp_config_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">temp_config_dir</span><span class="p">)</span>
+                    <span class="n">Config</span><span class="o">.</span><span class="n">_validate_py_syntax</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                    <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">temp_module_name</span><span class="p">)</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">cfg_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)}</span>
+                    <span class="c1"># delete imported module</span>
+                    <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">temp_module_name</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.yml&quot;</span><span class="p">,</span> <span class="s2">&quot;.yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;.json&quot;</span><span class="p">)):</span>
+                    <span class="kn">import</span> <span class="nn">mmcv</span>
+
+                    <span class="n">cfg_dict</span> <span class="o">=</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">temp_config_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># check deprecation information</span>
+        <span class="k">if</span> <span class="n">DEPRECATION_KEY</span> <span class="ow">in</span> <span class="n">cfg_dict</span><span class="p">:</span>
+            <span class="n">deprecation_info</span> <span class="o">=</span> <span class="n">cfg_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">DEPRECATION_KEY</span><span class="p">)</span>
+            <span class="n">warning_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The config file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> will be deprecated &quot;</span> <span class="s2">&quot;in the future.&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;expected&quot;</span> <span class="ow">in</span> <span class="n">deprecation_info</span><span class="p">:</span>
+                <span class="n">warning_msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; Please use </span><span class="si">{</span><span class="n">deprecation_info</span><span class="p">[</span><span class="s2">&quot;expected&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> &#39;</span> <span class="s2">&quot;instead.&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;reference&quot;</span> <span class="ow">in</span> <span class="n">deprecation_info</span><span class="p">:</span>
+                <span class="n">warning_msg</span> <span class="o">+=</span> <span class="s2">&quot; More information can be found at &quot;</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">deprecation_info</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+
+        <span class="n">cfg_text</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="c1"># Setting encoding explicitly to resolve coding issue on windows</span>
+            <span class="n">cfg_text</span> <span class="o">+=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">BASE_KEY</span> <span class="ow">in</span> <span class="n">cfg_dict</span><span class="p">:</span>
+            <span class="n">cfg_dir</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">base_filename</span> <span class="o">=</span> <span class="n">cfg_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">BASE_KEY</span><span class="p">)</span>
+            <span class="n">base_filename</span> <span class="o">=</span> <span class="n">base_filename</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_filename</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">base_filename</span><span class="p">]</span>
+
+            <span class="n">cfg_dict_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">cfg_text_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">base_filename</span><span class="p">:</span>
+                <span class="n">_cfg_dict</span><span class="p">,</span> <span class="n">_cfg_text</span> <span class="o">=</span> <span class="n">OTXConfig</span><span class="o">.</span><span class="n">_file2dict</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+                <span class="n">cfg_dict_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_cfg_dict</span><span class="p">)</span>
+                <span class="n">cfg_text_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_cfg_text</span><span class="p">)</span>
+
+            <span class="n">base_cfg_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="c1"># for c in cfg_dict_list:</span>
+            <span class="c1">#     duplicate_keys = base_cfg_dict.keys() &amp; c.keys()</span>
+            <span class="c1">#     if len(duplicate_keys) &gt; 0:</span>
+            <span class="c1">#         raise KeyError(&#39;Duplicate key is not allowed among bases. &#39;</span>
+            <span class="c1">#                        f&#39;Duplicate keys: {duplicate_keys}&#39;)</span>
+            <span class="c1">#     base_cfg_dict.update(c)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cfg_dict_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_cfg_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">c</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># raise KeyError(f&#39;Duplicate key is not allowed among bases [{base_cfg_dict.keys() &amp; c.keys()}]&#39;)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duplicate key is detected among bases [</span><span class="si">{</span><span class="n">base_cfg_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;base = </span><span class="si">{</span><span class="n">base_cfg_dict</span><span class="si">}</span><span class="s2">, cfg = </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">base_cfg_dict</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">_merge_a_into_b</span><span class="p">(</span><span class="n">base_cfg_dict</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;merged dict = </span><span class="si">{</span><span class="n">base_cfg_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">base_cfg_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+            <span class="c1"># Subtitute base variables from strings to their actual values</span>
+            <span class="n">cfg_dict</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">_substitute_base_vars</span><span class="p">(</span><span class="n">cfg_dict</span><span class="p">,</span> <span class="n">base_var_dict</span><span class="p">,</span> <span class="n">base_cfg_dict</span><span class="p">)</span>
+
+            <span class="n">base_cfg_dict</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">_merge_a_into_b</span><span class="p">(</span><span class="n">cfg_dict</span><span class="p">,</span> <span class="n">base_cfg_dict</span><span class="p">)</span>
+            <span class="n">cfg_dict</span> <span class="o">=</span> <span class="n">base_cfg_dict</span>
+
+            <span class="c1"># merge cfg_text</span>
+            <span class="n">cfg_text_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cfg_text</span><span class="p">)</span>
+            <span class="n">cfg_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg_text_list</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cfg_dict</span><span class="p">,</span> <span class="n">cfg_text</span>
+
+<div class="viewcode-block" id="OTXConfig.fromfile"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.OTXConfig.fromfile">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fromfile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">use_predefined_variables</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">import_custom_modules</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Static method that loads a configuration file and returns an instance of `Config` class.</span>
+
+<span class="sd">        :param filename: str, the path of the configuration file to be loaded.</span>
+<span class="sd">        :param use_predefined_variables: bool, a flag indicating whether to substitute predefined variables in the</span>
+<span class="sd">                                          configuration file.</span>
+<span class="sd">        :param import_custom_modules: bool, a flag indicating whether to import custom modules.</span>
+<span class="sd">        :return: Config object, an instance of `Config` class containing the contents of the configuration file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cfg_dict</span><span class="p">,</span> <span class="n">cfg_text</span> <span class="o">=</span> <span class="n">OTXConfig</span><span class="o">.</span><span class="n">_file2dict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">use_predefined_variables</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">import_custom_modules</span> <span class="ow">and</span> <span class="n">cfg_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_imports&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">import_modules_from_strings</span><span class="p">(</span><span class="o">**</span><span class="n">cfg_dict</span><span class="p">[</span><span class="s2">&quot;custom_imports&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">OTXConfig</span><span class="p">(</span><span class="n">cfg_dict</span><span class="p">,</span> <span class="n">cfg_text</span><span class="o">=</span><span class="n">cfg_text</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pretty_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make python file human-readable.</span>
+
+<span class="sd">        It&#39;s almost same as mmcv.Config&#39;s code but code to reformat using yapf is removed to reduce time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">indent</span> <span class="o">=</span> <span class="mi">4</span>
+
+        <span class="k">def</span> <span class="nf">_indent</span><span class="p">(</span><span class="n">s_</span><span class="p">,</span> <span class="n">num_spaces</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s_</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">s_</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="p">[(</span><span class="n">num_spaces</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">s</span><span class="p">]</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">first</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">s</span>
+            <span class="k">return</span> <span class="n">s</span>
+
+        <span class="k">def</span> <span class="nf">_format_basic_types</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">use_mapping</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">v_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">use_mapping</span><span class="p">:</span>
+                <span class="n">k_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="n">attr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k_str</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v_str</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">attr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">v_str</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">attr_str</span> <span class="o">=</span> <span class="n">_indent</span><span class="p">(</span><span class="n">attr_str</span><span class="p">,</span> <span class="n">indent</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">attr_str</span>
+
+        <span class="k">def</span> <span class="nf">_format_list</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">use_mapping</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="c1"># check if all items in the list are dict</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">v</span><span class="p">):</span>
+                <span class="n">v_str</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">v_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dict(</span><span class="si">{</span><span class="n">_indent</span><span class="p">(</span><span class="n">_format_dict</span><span class="p">(</span><span class="n">v_</span><span class="p">),</span><span class="w"> </span><span class="n">indent</span><span class="p">)</span><span class="si">}</span><span class="s2">),&quot;</span> <span class="k">for</span> <span class="n">v_</span> <span class="ow">in</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">use_mapping</span><span class="p">:</span>
+                    <span class="n">k_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k_str</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v_str</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">v_str</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">attr_str</span> <span class="o">=</span> <span class="n">_indent</span><span class="p">(</span><span class="n">attr_str</span><span class="p">,</span> <span class="n">indent</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">attr_str</span> <span class="o">=</span> <span class="n">_format_basic_types</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">use_mapping</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">attr_str</span>
+
+        <span class="k">def</span> <span class="nf">_contain_invalid_identifier</span><span class="p">(</span><span class="n">dict_str</span><span class="p">):</span>
+            <span class="n">contain_invalid_identifier</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">key_name</span> <span class="ow">in</span> <span class="n">dict_str</span><span class="p">:</span>
+                <span class="n">contain_invalid_identifier</span> <span class="o">|=</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">key_name</span><span class="p">)</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">contain_invalid_identifier</span>
+
+        <span class="k">def</span> <span class="nf">_format_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">outest_level</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="n">use_mapping</span> <span class="o">=</span> <span class="n">_contain_invalid_identifier</span><span class="p">(</span><span class="n">input_dict</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_mapping</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;{&quot;</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                <span class="n">is_last</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_dict</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">outest_level</span> <span class="ow">or</span> <span class="n">is_last</span> <span class="k">else</span> <span class="s2">&quot;,&quot;</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">v_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">_format_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">use_mapping</span><span class="p">:</span>
+                        <span class="n">k_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                        <span class="n">attr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k_str</span><span class="si">}</span><span class="s2">: dict(</span><span class="si">{</span><span class="n">v_str</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">attr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">=dict(</span><span class="si">{</span><span class="n">v_str</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="n">_indent</span><span class="p">(</span><span class="n">attr_str</span><span class="p">,</span> <span class="n">indent</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span> <span class="o">+</span> <span class="n">end</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="n">_format_list</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">use_mapping</span><span class="p">)</span> <span class="o">+</span> <span class="n">end</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="n">_format_basic_types</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">use_mapping</span><span class="p">)</span> <span class="o">+</span> <span class="n">end</span>
+
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr_str</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_mapping</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;}&quot;</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+        <span class="n">cfg_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg_dict</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">_format_dict</span><span class="p">(</span><span class="n">cfg_dict</span><span class="p">,</span> <span class="n">outest_level</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="copy_config"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.copy_config">[docs]</a><span class="k">def</span> <span class="nf">copy_config</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that creates a deep copy of the input configuration object.</span>
+
+<span class="sd">    :param cfg: Config object, an instance of `Config` class to be copied.</span>
+<span class="sd">    :return: Config object, a deep copy of the input configuration object.</span>
+<span class="sd">    :raises: ValueError if the input object is not an instance of `Config` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">Config</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot copy this instance </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># disable [B301, B403] pickle, import-pickle - the library used for converting cfg object</span>
+    <span class="kn">import</span> <span class="nn">pickle</span>  <span class="c1"># nosec B403</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># nosec B301</span></div>
+
+
+<div class="viewcode-block" id="update_or_add_custom_hook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.update_or_add_custom_hook">[docs]</a><span class="k">def</span> <span class="nf">update_or_add_custom_hook</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">hook_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update hook cfg if same type is in custom_hook or append it.&quot;&quot;&quot;</span>
+    <span class="n">custom_hooks</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_hooks&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">custom_hooks_updated</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">custom_hook</span> <span class="ow">in</span> <span class="n">custom_hooks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">custom_hook</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">hook_cfg</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]:</span>
+            <span class="n">custom_hook</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hook_cfg</span><span class="p">)</span>
+            <span class="n">custom_hooks_updated</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">custom_hooks_updated</span><span class="p">:</span>
+        <span class="n">custom_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hook_cfg</span><span class="p">)</span>
+    <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;custom_hooks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">custom_hooks</span></div>
+
+
+<div class="viewcode-block" id="remove_custom_hook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.remove_custom_hook">[docs]</a><span class="k">def</span> <span class="nf">remove_custom_hook</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">hook_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove hook cfg if hook_type is in custom_hook.&quot;&quot;&quot;</span>
+    <span class="n">custom_hooks</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_hooks&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">custom_hooks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">idx_to_del</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">custom_hook</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">custom_hooks</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">custom_hook</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">hook_type</span><span class="p">:</span>
+                <span class="n">idx_to_del</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">idx_to_del</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">custom_hooks</span><span class="p">[</span><span class="n">idx_to_del</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="recursively_update_cfg"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.recursively_update_cfg">[docs]</a><span class="k">def</span> <span class="nf">recursively_update_cfg</span><span class="p">(</span>
+    <span class="n">cfg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
+    <span class="n">criterion</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
+    <span class="n">update_dict</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that recursively updates the input dictionary or `Config` object with a new dictionary.</span>
+
+<span class="sd">    :param cfg: Union[Config, dict], an input dictionary or `Config` object to be updated.</span>
+<span class="sd">    :param criterion: Callable[[Any, Any], bool], a function that determines whether to update a key-value pair based on</span>
+<span class="sd">                      a criterion. The function takes two arguments: key and value, and returns a boolean.</span>
+<span class="sd">    :param update_dict: Any, a dictionary to be used for updating the input dictionary.</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">recursively_update_cfg</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">update_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">criterion</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update_dict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_custom_hook_if_not_exists"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.add_custom_hook_if_not_exists">[docs]</a><span class="k">def</span> <span class="nf">add_custom_hook_if_not_exists</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">hook_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that adds a custom hook to the input `Config` object if it doesn&#39;t already exist.</span>
+
+<span class="sd">    :param cfg: Config object, an instance of `Config` class to which the custom hook will be added.</span>
+<span class="sd">    :param hook_cfg: ConfigDict object, an instance of `ConfigDict` class representing the custom hook to be added.</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">custom_hooks</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_hooks&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">custom_hooks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">hook</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">hook_cfg</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+        <span class="n">custom_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hook_cfg</span><span class="p">)</span>
+        <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;custom_hooks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">custom_hooks</span></div>
+
+
+<div class="viewcode-block" id="remove_from_config"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.remove_from_config">[docs]</a><span class="k">def</span> <span class="nf">remove_from_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update &amp; Remove configs.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Config</span><span class="p">):</span>
+            <span class="k">del</span> <span class="n">config</span><span class="o">.</span><span class="n">_cfg_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># pylint: disable=protected-access</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">):</span>
+            <span class="k">del</span> <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown config type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="remove_from_configs_by_type"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.remove_from_configs_by_type">[docs]</a><span class="k">def</span> <span class="nf">remove_from_configs_by_type</span><span class="p">(</span><span class="n">configs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDict</span><span class="p">],</span> <span class="n">type_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update &amp; remove by type.&quot;&quot;&quot;</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">configs</span><span class="p">):</span>
+        <span class="n">type_name_</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_name_</span> <span class="o">==</span> <span class="n">type_name</span><span class="p">:</span>
+            <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+        <span class="n">configs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="update_config"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.update_config">[docs]</a><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">],</span>
+    <span class="n">pairs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update configs by path as a key and value as a target.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">path_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="n">path_</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">path_</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">Config</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ptr</span><span class="p">:</span>
+                    <span class="n">ptr</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> must be int for (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ptr</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">key</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> exceeds </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ptr</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">ptr</span> <span class="o">=</span> <span class="n">ptr</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_dataset_configs"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.get_dataset_configs">[docs]</a><span class="k">def</span> <span class="nf">get_dataset_configs</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">],</span> <span class="n">subset</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that retrieves &#39;datasets&#39; configurations from the input `Config` object or `ConfigDict` object.</span>
+
+<span class="sd">    :param config: Union[Config, ConfigDict], an instance of `Config` class or `ConfigDict` class containing the</span>
+<span class="sd">                   configurations.</span>
+<span class="sd">    :param subset: str, a string representing the subset for which the &#39;datasets&#39; configuration is required.</span>
+<span class="sd">    :return: List[ConfigDict], a list of &#39;datasets&#39; configuration dictionaries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">subset</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">data_cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span>
+    <span class="n">data_cfgs</span> <span class="o">=</span> <span class="n">get_configs_by_keys</span><span class="p">(</span><span class="n">data_cfg</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;datasets&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">data_cfgs</span> <span class="k">if</span> <span class="n">data_cfgs</span> <span class="k">else</span> <span class="p">[</span><span class="n">data_cfg</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="prepare_for_testing"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.prepare_for_testing">[docs]</a><span class="k">def</span> <span class="nf">prepare_for_testing</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">],</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Config</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare configs for testing phase.&quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="c1"># FIXME. Should working directories be modified here?</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">otx_dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="is_epoch_based_runner"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.is_epoch_based_runner">[docs]</a><span class="k">def</span> <span class="nf">is_epoch_based_runner</span><span class="p">(</span><span class="n">runner_config</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check Epoch based or Iter based runner.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;Epoch&quot;</span> <span class="ow">in</span> <span class="n">runner_config</span><span class="o">.</span><span class="n">type</span></div>
+
+
+<div class="viewcode-block" id="config_from_string"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.config_from_string">[docs]</a><span class="k">def</span> <span class="nf">config_from_string</span><span class="p">(</span><span class="n">config_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Config</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate an mmcv config dict object from a string.</span>
+
+<span class="sd">    :param config_string: string to parse</span>
+<span class="sd">    :return config: configuration object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.py&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">temp_file</span><span class="p">:</span>
+        <span class="n">temp_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config_string</span><span class="p">)</span>
+        <span class="n">temp_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Config</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">temp_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="patch_color_conversion"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.patch_color_conversion">[docs]</a><span class="k">def</span> <span class="nf">patch_color_conversion</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch color conversion.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">config</span>
+
+    <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">get_configs_by_pairs</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Normalize&quot;</span><span class="p">)):</span>
+        <span class="n">to_rgb</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;to_rgb&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+            <span class="n">to_rgb</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_rgb</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">to_rgb</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">to_rgb</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="patch_adaptive_interval_training"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.patch_adaptive_interval_training">[docs]</a><span class="k">def</span> <span class="nf">patch_adaptive_interval_training</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update adaptive interval settings for OTX training.</span>
+
+<span class="sd">    This function can be removed by adding custom hook cfg into recipe.py directly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Add/remove adaptive interval hook</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_adaptive_interval&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">update_or_add_custom_hook</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="n">ConfigDict</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;AdaptiveTrainSchedulingHook&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;max_interval&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                    <span class="s2">&quot;enable_adaptive_interval_hook&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s2">&quot;enable_eval_before_run&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;adaptive_validation_interval&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+                <span class="p">}</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;adaptive_validation_interval&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="patch_early_stopping"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.patch_early_stopping">[docs]</a><span class="k">def</span> <span class="nf">patch_early_stopping</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update early stop settings for OTX training.</span>
+
+<span class="sd">    This function can be removed by adding custom hook cfg into recipe.py directly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;early_stop&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">remove_custom_hook</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;EarlyStoppingHook&quot;</span><span class="p">)</span>
+        <span class="n">early_stop</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;early_stop&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">early_stop</span><span class="p">:</span>
+            <span class="n">early_stop_hook</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;LazyEarlyStoppingHook&quot;</span><span class="p">,</span>
+                <span class="n">start</span><span class="o">=</span><span class="n">early_stop</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                <span class="n">patience</span><span class="o">=</span><span class="n">early_stop</span><span class="o">.</span><span class="n">patience</span><span class="p">,</span>
+                <span class="n">iteration_patience</span><span class="o">=</span><span class="n">early_stop</span><span class="o">.</span><span class="n">iteration_patience</span><span class="p">,</span>
+                <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">early_stop_metric</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">update_or_add_custom_hook</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">early_stop_hook</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">remove_custom_hook</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;LazyEarlyStoppingHook&quot;</span><span class="p">)</span>
+
+    <span class="c1"># make sure model to be in a training mode even after model is evaluated (mmcv bug)</span>
+    <span class="n">update_or_add_custom_hook</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">,</span>
+        <span class="n">ConfigDict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;ForceTrainModeHook&quot;</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="s2">&quot;LOWEST&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="patch_persistent_workers"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.patch_persistent_workers">[docs]</a><span class="k">def</span> <span class="nf">patch_persistent_workers</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set persistent_workers as False in some conditions.</span>
+
+<span class="sd">    persistent_workers is set as 0 in two cases below:</span>
+<span class="sd">    case 1) num_workers is 0</span>
+<span class="sd">    case 2) semi-SL with distributed training. Because it uses two data loaders in each processes,</span>
+<span class="sd">            it makes workers for data loaders unstable, which makes errors during training.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dist_semi_sl</span> <span class="o">=</span> <span class="s2">&quot;unlabeled&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span>
+    <span class="n">data_cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;unlabeled&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">subset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_cfg</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">dataloader_cfg</span> <span class="o">=</span> <span class="n">data_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">subset</span><span class="si">}</span><span class="s2">_dataloader&quot;</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">())</span>
+        <span class="n">workers_per_gpu</span> <span class="o">=</span> <span class="n">dataloader_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;workers_per_gpu&quot;</span><span class="p">,</span>
+            <span class="n">data_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;workers_per_gpu&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">workers_per_gpu</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dist_semi_sl</span><span class="p">:</span>
+            <span class="n">dataloader_cfg</span><span class="p">[</span><span class="s2">&quot;persistent_workers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="s2">&quot;persistent_workers&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataloader_cfg</span><span class="p">:</span>
+            <span class="n">dataloader_cfg</span><span class="p">[</span><span class="s2">&quot;persistent_workers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="s2">&quot;pin_memory&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataloader_cfg</span><span class="p">:</span>
+            <span class="n">dataloader_cfg</span><span class="p">[</span><span class="s2">&quot;pin_memory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">data_cfg</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">subset</span><span class="si">}</span><span class="s2">_dataloader&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataloader_cfg</span></div>
+
+
+<div class="viewcode-block" id="get_adaptive_num_workers"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.get_adaptive_num_workers">[docs]</a><span class="k">def</span> <span class="nf">get_adaptive_num_workers</span><span class="p">(</span><span class="n">num_dataloader</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Measure appropriate num_workers value and return it.&quot;&quot;&quot;</span>
+    <span class="n">num_gpus</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">num_gpus</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;There is no GPUs. Use existing num_worker value.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">//</span> <span class="p">(</span><span class="n">num_dataloader</span> <span class="o">*</span> <span class="n">num_gpus</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span>  <span class="c1"># max available num_workers is 8</span></div>
+
+
+<div class="viewcode-block" id="patch_from_hyperparams"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.patch_from_hyperparams">[docs]</a><span class="k">def</span> <span class="nf">patch_from_hyperparams</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">hyperparams</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch config parameters from hyperparams.&quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">hyperparams</span><span class="o">.</span><span class="n">learning_parameters</span>
+    <span class="n">algo_backend</span> <span class="o">=</span> <span class="n">hyperparams</span><span class="o">.</span><span class="n">algo_backend</span>
+    <span class="n">warmup_iters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">learning_rate_warmup_iters</span><span class="p">)</span>
+
+    <span class="n">lr_config</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ConfigDict</span><span class="p">(</span><span class="n">warmup_iters</span><span class="o">=</span><span class="n">warmup_iters</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">warmup_iters</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">warmup_iters</span><span class="o">=</span><span class="n">warmup_iters</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">enable_early_stopping</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">early_stop</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">early_stop_start</span><span class="p">),</span>
+            <span class="n">patience</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">early_stop_patience</span><span class="p">),</span>
+            <span class="n">iteration_patience</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">early_stop_iteration_patience</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">early_stop</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">num_iters</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;runner&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;IterBasedRunner&quot;</span><span class="p">):</span>
+        <span class="n">runner</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">max_iters</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">num_iters</span><span class="p">))</span>
+
+    <span class="n">hparams</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+        <span class="n">optimizer</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">),</span>
+        <span class="n">lr_config</span><span class="o">=</span><span class="n">lr_config</span><span class="p">,</span>
+        <span class="n">early_stop</span><span class="o">=</span><span class="n">early_stop</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">samples_per_gpu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
+            <span class="n">workers_per_gpu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">num_workers</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">,</span>
+        <span class="n">algo_backend</span><span class="o">=</span><span class="n">algo_backend</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,</span>
+    <span class="c1"># as `samples_per_gpu might` not be a valid argument for certain algorithms.</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;instance-segmentation&quot;</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;detection&quot;</span><span class="p">:</span>
+            <span class="n">hparams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                        <span class="n">val_dataloader</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span><span class="n">samples_per_gpu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">inference_batch_size</span><span class="p">)),</span>
+                        <span class="n">test_dataloader</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span><span class="n">samples_per_gpu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">inference_batch_size</span><span class="p">)),</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+    <span class="n">is_semi_sl</span> <span class="o">=</span> <span class="n">algo_backend</span><span class="o">.</span><span class="n">train_type</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Semisupervised&quot;</span>
+
+    <span class="k">if</span> <span class="n">hyperparams</span><span class="o">.</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">auto_num_workers</span><span class="p">:</span>
+        <span class="n">adapted_num_worker</span> <span class="o">=</span> <span class="n">get_adaptive_num_workers</span><span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">is_semi_sl</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">adapted_num_worker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hparams</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">workers_per_gpu</span> <span class="o">=</span> <span class="n">adapted_num_worker</span>
+
+    <span class="k">if</span> <span class="n">is_semi_sl</span><span class="p">:</span>
+        <span class="n">unlabeled_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                <span class="n">unlabeled_dataloader</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">samples_per_gpu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">unlabeled_batch_size</span><span class="p">),</span>
+                    <span class="n">workers_per_gpu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">num_workers</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">unlabeled_config</span><span class="p">)</span>
+
+    <span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;use_adaptive_interval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hyperparams</span><span class="o">.</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">use_adaptive_interval</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">merge_from_dict</span><span class="p">(</span><span class="n">hparams</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="prepare_work_dir"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.prepare_work_dir">[docs]</a><span class="k">def</span> <span class="nf">prepare_work_dir</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare configs of working directory.&quot;&quot;&quot;</span>
+    <span class="n">base_work_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">work_dir</span>
+    <span class="n">checkpoint_dirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_work_dir</span><span class="p">,</span> <span class="s2">&quot;checkpoints_round_*&quot;</span><span class="p">))</span>
+    <span class="n">train_round_checkpoint_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_work_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;checkpoints_round_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">checkpoint_dirs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">train_round_checkpoint_dir</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">work_dir</span> <span class="o">=</span> <span class="n">train_round_checkpoint_dir</span>
+    <span class="k">if</span> <span class="s2">&quot;meta&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">runner</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">()</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">exp_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;train_round_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">checkpoint_dirs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">train_round_checkpoint_dir</span></div>
+
+
+<div class="viewcode-block" id="InputSizeManager"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.InputSizeManager">[docs]</a><span class="k">class</span> <span class="nc">InputSizeManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for changing input size and getting input size value by checking data pipeline.</span>
+
+<span class="sd">    NOTE: &quot;resize&quot;, &quot;pad&quot;, &quot;crop&quot;, &quot;mosaic&quot;, &quot;randomaffine&quot;, &quot;multiscaleflipaug&quot; , &quot;AutoAugment&quot; and &quot;TwoCropTransform&quot;</span>
+<span class="sd">    are considered at now. If other data pipelines exist, it can work differently than expected.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (Dict): Global configuration including data config w/ &quot;train&quot;, &quot;val&quot; or &quot;test&quot; data pipeline.</span>
+<span class="sd">        base_input_size (Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]], optional):</span>
+<span class="sd">            Default input size. If it&#39;s a None, it&#39;s estimated based on data pipeline. If it&#39;s an integer,</span>
+<span class="sd">            it&#39;s expected that all data pipeline have (base_input_size x base_input_size) input size.</span>
+<span class="sd">            If it&#39;s an integer list, all data pipeline have same (base_input_size[0] x base_input_size[1]) input size.</span>
+<span class="sd">            If it&#39;s dictionary, each data pipeline has specified input size. It should have format as below:</span>
+<span class="sd">                {&quot;train&quot; : [w, h], &quot;val&quot; : [w, h], &quot;test&quot; : [w, h]}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">PIPELINE_TO_CHANGE</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;resize&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="s2">&quot;img_scale&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;pad&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;crop&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;crop_size&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;mosaic&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;img_scale&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;randomaffine&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;border&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;multiscaleflipaug&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;img_scale&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">PIPELINE_WRAPPER</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;MultiScaleFlipAug&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;transforms&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AutoAugment&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;policies&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;TwoCropTransform&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;view0&quot;</span><span class="p">,</span> <span class="s2">&quot;view1&quot;</span><span class="p">,</span> <span class="s2">&quot;pipeline&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;LoadResizeDataFromOTXDataset&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;resize_cfg&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">SUBSET_TYPES</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;unlabeled&quot;</span><span class="p">)</span>
+
+    <span class="n">MIN_RECOGNIZABLE_OBJECT_SIZE</span> <span class="o">=</span> <span class="mi">32</span>  <span class="c1"># Minimum object size recognizable by NNs: typically 16 ~ 32</span>
+    <span class="c1"># meaning NxN input pixels being downscaled to 1x1 on feature map</span>
+    <span class="n">MIN_DETECTION_INPUT_SIZE</span> <span class="o">=</span> <span class="mi">256</span>  <span class="c1"># Minimum input size for object detection</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+        <span class="n">base_input_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_input_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">base_input_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_input_size</span><span class="p">,</span> <span class="n">base_input_size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_input_size</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">base_input_size</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_input_size</span><span class="p">[</span><span class="n">subset</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">size</span> <span class="o">=</span> <span class="n">base_input_size</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span>
+                    <span class="n">base_input_size</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
+            <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUBSET_TYPES</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span> <span class="ow">and</span> <span class="n">subset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">base_input_size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There is </span><span class="si">{</span><span class="n">subset</span><span class="si">}</span><span class="s2"> data configuration but base input size for it doesn&#39;t exists.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_input_size</span> <span class="o">=</span> <span class="n">base_input_size</span>
+
+<div class="viewcode-block" id="InputSizeManager.set_input_size"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.InputSizeManager.set_input_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input size in data pipe line.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_size (Union[int, List[int]]):</span>
+<span class="sd">                input size to set. If it&#39;s an integer, (input_size x input_size) will be set.</span>
+<span class="sd">                If input_size is an integer list, (input_size[0] x input_size[1]) will be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">input_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">resize_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Scale size values in data pipelines</span>
+        <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUBSET_TYPES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">subset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">resize_ratio</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span><span class="p">[</span><span class="n">subset</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span><span class="p">[</span><span class="n">subset</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="p">)</span>
+                <span class="n">pipelines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pipelines</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipelines</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="c1"># Deals with {&quot;view0&quot;: [...], &quot;view1&quot;: [...]}</span>
+                    <span class="k">for</span> <span class="n">pipeline</span> <span class="ow">in</span> <span class="n">pipelines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_pipeline_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">resize_ratio</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_set_pipeline_size_value</span><span class="p">(</span><span class="n">pipelines</span><span class="p">,</span> <span class="n">resize_ratio</span><span class="p">)</span>
+
+        <span class="c1"># Set model size</span>
+        <span class="n">model_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;input_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_size</span>
+        <span class="k">if</span> <span class="n">model_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;CustomYOLOX&quot;</span><span class="p">:</span>
+            <span class="c1"># - needed only for YOLOX</span>
+            <span class="k">if</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;YOLOX should have input size being multiple of 32.&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">base_input_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Getter function of `base_input_size` attirbute.</span>
+
+<span class="sd">        If it isn&#39;t set when intializing class, it&#39;s estimated by checking data pipeline.</span>
+<span class="sd">        Same value is returned after estimation.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If failed to estimate base input size from data pipeline, raise an error.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Union[List[int], Dict[str, List[int]]]: Base input size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_input_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_input_size</span>  <span class="c1"># type: ignore[return-value]</span>
+
+        <span class="n">input_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_input_size_from_cfg</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">input_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;There isn&#39;t any pipeline in the data configurations.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_input_size</span> <span class="o">=</span> <span class="n">input_size</span>
+        <span class="k">return</span> <span class="n">input_size</span>
+
+<div class="viewcode-block" id="InputSizeManager.get_input_size_from_cfg"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.InputSizeManager.get_input_size_from_cfg">[docs]</a>    <span class="k">def</span> <span class="nf">get_input_size_from_cfg</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate image size using data pipeline.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            subset (Union[str, List[str]], optional): Which pipelines to check. Defaults to [&quot;test&quot;, &quot;val&quot;, &quot;train&quot;].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Union[None, List[int]]: Return estimiated input size. If failed to estimate, return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subset</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="p">[</span><span class="n">subset</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">target_subset</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">target_subset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">:</span>
+                <span class="n">input_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_post_img_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">[</span><span class="n">target_subset</span><span class="p">][</span><span class="s2">&quot;pipeline&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">input_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span>  <span class="c1"># type: ignore[return-value]</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_estimate_post_img_size</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">pipelines</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]],</span> <span class="n">default_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="c1"># NOTE: Mosaic isn&#39;t considered in this step because Mosaic and following RandomAffine don&#39;t change image size</span>
+        <span class="n">post_img_size</span> <span class="o">=</span> <span class="n">default_size</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipelines</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">pipeline</span> <span class="ow">in</span> <span class="n">pipelines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="c1"># Deals with {&quot;view0&quot;: [...], &quot;view1&quot;: [...]}</span>
+                <span class="c1"># Just using the first one to estimate</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_post_img_size</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">post_img_size</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pipeline</span> <span class="ow">in</span> <span class="n">pipelines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;resize&quot;</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">img_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s2">&quot;resize&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">post_img_size</span> <span class="o">=</span> <span class="n">img_size</span>
+            <span class="k">elif</span> <span class="s2">&quot;pad&quot;</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">img_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s2">&quot;pad&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">post_img_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">post_img_size</span> <span class="o">=</span> <span class="n">img_size</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">post_img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                                <span class="n">post_img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s2">&quot;crop&quot;</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">img_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s2">&quot;crop&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">post_img_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">post_img_size</span> <span class="o">=</span> <span class="n">img_size</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">post_img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                                <span class="n">post_img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;MultiScaleFlipAug&quot;</span><span class="p">:</span>
+                <span class="n">img_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s2">&quot;multiscaleflipaug&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">post_img_size</span> <span class="o">=</span> <span class="n">img_size</span>
+
+        <span class="k">for</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">sub_pipeline_names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PIPELINE_WRAPPER</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">pipeline_name</span> <span class="o">==</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">sub_pipeline_name</span> <span class="ow">in</span> <span class="n">sub_pipeline_names</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sub_pipeline_name</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">:</span>
+                        <span class="n">sub_pipeline</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sub_pipeline</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                            <span class="n">sub_pipeline</span> <span class="o">=</span> <span class="p">[</span><span class="n">sub_pipeline</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sub_pipeline</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                            <span class="n">sub_pipeline</span> <span class="o">=</span> <span class="n">sub_pipeline</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">post_img_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_post_img_size</span><span class="p">(</span><span class="n">sub_pipeline</span><span class="p">,</span> <span class="n">post_img_size</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">post_img_size</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_size_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">pipeline_attr</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">PIPELINE_TO_CHANGE</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">pipeline_attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">size_val</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">[</span><span class="n">pipeline_attr</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size_val</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">size_val</span><span class="p">,</span> <span class="n">size_val</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size_val</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">size_val</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size_val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">size_val</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_get_pipelines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;pipeline&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">[</span><span class="n">subset</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">[</span><span class="n">subset</span><span class="p">][</span><span class="s2">&quot;pipeline&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;dataset&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">[</span><span class="n">subset</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_config</span><span class="p">[</span><span class="n">subset</span><span class="p">][</span><span class="s2">&quot;dataset&quot;</span><span class="p">][</span><span class="s2">&quot;pipeline&quot;</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Failed to find pipeline.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_pipeline_size_value</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]],</span> <span class="n">scale</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+    <span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">sub_pipeline</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_pipeline_size_value</span><span class="p">(</span><span class="n">sub_pipeline</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">updated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">pipeline_attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PIPELINE_TO_CHANGE</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">pipeline_name</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">pipeline_attr</span> <span class="ow">in</span> <span class="n">pipeline_attrs</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">pipeline_attr</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">pipeline_attr</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+                        <span class="n">updated</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">updated</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="k">for</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">sub_pipeline_names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PIPELINE_WRAPPER</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">pipeline_name</span> <span class="o">==</span> <span class="n">pipeline</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">sub_pipeline_name</span> <span class="ow">in</span> <span class="n">sub_pipeline_names</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sub_pipeline_name</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_set_pipeline_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">],</span> <span class="n">scale</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">sub_pipeline</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">]:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_set_pipeline_size_value</span><span class="p">(</span><span class="n">sub_pipeline</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">sub_pipelines</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">[</span><span class="n">sub_pipeline_name</span><span class="p">]:</span>
+                                <span class="k">for</span> <span class="n">sub_pipeline</span> <span class="ow">in</span> <span class="n">sub_pipelines</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_set_pipeline_size_value</span><span class="p">(</span><span class="n">sub_pipeline</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                <span class="s2">&quot;Dataset pipeline in pipeline wrapper type should be&quot;</span>
+                                <span class="s2">&quot;either dict, list[dict] or list[list[dict]].&quot;</span>
+                            <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_set_size_value</span><span class="p">(</span><span class="n">pipeline</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">])):</span>
+                <span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">round</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                    <span class="nb">round</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">round</span><span class="p">(</span><span class="n">pipeline</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+<div class="viewcode-block" id="InputSizeManager.get_trained_input_size"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.InputSizeManager.get_trained_input_size">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_trained_input_size</span><span class="p">(</span><span class="n">model_ckpt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get trained input size from checkpoint. If it doesn&#39;t exist, return None.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">model_ckpt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">model_info</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_ckpt</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">input_size</span> <span class="o">=</span> <span class="n">model_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_size&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input_size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Given model weight was trained with </span><span class="si">{}</span><span class="s2"> input size.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">input_size</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">input_size</span></div>
+
+<div class="viewcode-block" id="InputSizeManager.select_closest_size"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.InputSizeManager.select_closest_size">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">select_closest_size</span><span class="p">(</span><span class="n">input_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">preset_sizes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select the most closest size from preset sizes in log scale.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_size (Tuple[int, int]): Query input size</span>
+<span class="sd">            preset_sizes (List[Tuple[int, int]]): List of preset input sizes</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[int, int]: Best matching size out of preset. Returns input_size if preset is empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">preset_sizes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">input_size</span>
+
+        <span class="k">def</span> <span class="nf">to_log_scale</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="n">input_scale</span> <span class="o">=</span> <span class="n">to_log_scale</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span>
+        <span class="n">preset_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_log_scale</span><span class="p">,</span> <span class="n">preset_sizes</span><span class="p">)))</span>
+        <span class="n">abs_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">preset_scales</span> <span class="o">-</span> <span class="n">input_scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">preset_sizes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">abs_diff</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="InputSizeManager.adapt_input_size_to_dataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.InputSizeManager.adapt_input_size_to_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_input_size_to_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">max_image_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">min_object_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">downscale_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute appropriate model input size w.r.t. dataset statistics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            max_image_size (int): Typical large image size of dataset in pixels.</span>
+<span class="sd">            min_object_size (int, optional): Typical small object size of dataset in pixels.</span>
+<span class="sd">                None to consider only image size. Defaults to None.</span>
+<span class="sd">            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[int, int]: (width, height)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adapting model input size based on dataset stat&quot;</span><span class="p">)</span>
+
+        <span class="n">base_input_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_input_size</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_input_size</span><span class="p">,</span> <span class="n">Dict</span><span class="p">):</span>
+            <span class="n">base_input_size</span> <span class="o">=</span> <span class="n">base_input_size</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">base_input_size</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Current base input size: </span><span class="si">{</span><span class="n">base_input_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">max_image_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">base_input_size</span>
+
+        <span class="n">image_size</span> <span class="o">=</span> <span class="n">max_image_size</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Based on typical large image size: </span><span class="si">{</span><span class="n">image_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Refine using annotation shape size stat</span>
+        <span class="k">if</span> <span class="n">min_object_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">min_object_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">image_size</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">image_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">MIN_RECOGNIZABLE_OBJECT_SIZE</span> <span class="o">/</span> <span class="n">min_object_size</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Based on typical small object size </span><span class="si">{</span><span class="n">min_object_size</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">image_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">image_size</span> <span class="o">&gt;</span> <span class="n">max_image_size</span><span class="p">:</span>
+                <span class="n">image_size</span> <span class="o">=</span> <span class="n">max_image_size</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Restrict to max image size: </span><span class="si">{</span><span class="n">image_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">image_size</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">MIN_DETECTION_INPUT_SIZE</span><span class="p">:</span>
+                <span class="n">image_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MIN_DETECTION_INPUT_SIZE</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Based on minimum object detection input size: </span><span class="si">{</span><span class="n">image_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">input_size</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">image_size</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">image_size</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">downscale_only</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">base_input_size</span> <span class="ow">and</span> <span class="n">area</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">area</span><span class="p">(</span><span class="n">base_input_size</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Downscale only: </span><span class="si">{</span><span class="n">input_size</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">base_input_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">base_input_size</span>
+
+        <span class="c1"># Closest preset</span>
+        <span class="n">input_size_preset</span> <span class="o">=</span> <span class="n">InputSizePreset</span><span class="o">.</span><span class="n">input_sizes</span><span class="p">()</span>
+        <span class="n">input_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_closest_size</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">input_size_preset</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Closest preset: </span><span class="si">{</span><span class="n">input_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">input_size</span></div></div>
+
+
+<div class="viewcode-block" id="get_proper_repeat_times"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.config_utils.html#otx.algorithms.common.adapters.mmcv.utils.get_proper_repeat_times">[docs]</a><span class="k">def</span> <span class="nf">get_proper_repeat_times</span><span class="p">(</span>
+    <span class="n">data_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">coef</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">min_repeat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get proper repeat times for adaptive training.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data_size (int): The total number of the training dataset</span>
+<span class="sd">        batch_size (int): The batch size for the training data loader</span>
+<span class="sd">        coef (float) : coefficient that effects to number of repeats</span>
+<span class="sd">                       (coef * math.sqrt(num_iters-1)) +5</span>
+<span class="sd">        min_repeat (float) : minimum repeats</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">data_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Repeat dataset enabled, but not a train mode. repeat times set to 1.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="n">n_iters_per_epoch</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">data_size</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">coef</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_iters_per_epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span> <span class="n">min_repeat</span><span class="p">))</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

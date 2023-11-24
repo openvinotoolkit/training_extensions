@@ -1,0 +1,878 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.segmentation.adapters.mmseg.task &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/segmentation/adapters/mmseg/task';</script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.segmentation.adapters.mmseg.task</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Task of OTX Segmentation using mmsegmentation training backend.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">nullcontext</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.runner</span> <span class="kn">import</span> <span class="n">wrap_fp16_model</span>
+<span class="kn">from</span> <span class="nn">mmcv.utils</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">get_git_hash</span>
+<span class="kn">from</span> <span class="nn">mmseg</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">mmseg.apis</span> <span class="kn">import</span> <span class="n">train_segmentor</span>
+<span class="kn">from</span> <span class="nn">mmseg.datasets</span> <span class="kn">import</span> <span class="n">build_dataloader</span><span class="p">,</span> <span class="n">build_dataset</span>
+<span class="kn">from</span> <span class="nn">mmseg.utils</span> <span class="kn">import</span> <span class="n">collect_env</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseRecordingForwardHook</span><span class="p">,</span>
+    <span class="n">FeatureVectorHook</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">adapt_batch_size</span><span class="p">,</span>
+    <span class="n">build_data_parallel</span><span class="p">,</span>
+    <span class="n">get_configs_by_pairs</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.utils.config_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InputSizeManager</span><span class="p">,</span>
+    <span class="n">OTXConfig</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.torch.utils</span> <span class="kn">import</span> <span class="n">convert_sync_batchnorm</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.configs.configuration_enums</span> <span class="kn">import</span> <span class="n">BatchSizeAdaptType</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.configs.training_base</span> <span class="kn">import</span> <span class="n">TrainType</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.tasks.nncf_task</span> <span class="kn">import</span> <span class="n">NNCFBaseTask</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils.data</span> <span class="kn">import</span> <span class="n">get_dataset</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.adapters.mmseg.configurer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">IncrSegmentationConfigurer</span><span class="p">,</span>
+    <span class="n">SegmentationConfigurer</span><span class="p">,</span>
+    <span class="n">SemiSLSegmentationConfigurer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.adapters.mmseg.utils.builder</span> <span class="kn">import</span> <span class="n">build_segmentor</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.adapters.mmseg.utils.exporter</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SegmentationExporter</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.task</span> <span class="kn">import</span> <span class="n">OTXSegmentationTask</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration</span> <span class="kn">import</span> <span class="n">cfg_helper</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.helper.utils</span> <span class="kn">import</span> <span class="n">ids_to_strings</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.inference_parameters</span> <span class="kn">import</span> <span class="n">InferenceParameters</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelEntity</span><span class="p">,</span>
+    <span class="n">ModelPrecision</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.subset</span> <span class="kn">import</span> <span class="n">Subset</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.task_environment</span> <span class="kn">import</span> <span class="n">TaskEnvironment</span>
+<span class="kn">from</span> <span class="nn">otx.api.serialization.label_mapper</span> <span class="kn">import</span> <span class="n">label_schema_to_bytes</span>
+<span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.export_interface</span> <span class="kn">import</span> <span class="n">ExportType</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+<span class="c1"># TODO Remove unnecessary pylint disable</span>
+<span class="c1"># pylint: disable=too-many-lines</span>
+
+
+<div class="viewcode-block" id="MMSegmentationTask"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.task.html#otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask">[docs]</a><span class="k">class</span> <span class="nc">MMSegmentationTask</span><span class="p">(</span><span class="n">OTXSegmentationTask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Task class for OTX segmentation using mmsegmentation training backend.&quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_environment</span><span class="p">:</span> <span class="n">TaskEnvironment</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">task_environment</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># pylint: disable=too-many-locals, too-many-branches, too-many-statements</span>
+    <span class="k">def</span> <span class="nf">_init_task</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize task.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span> <span class="o">=</span> <span class="n">OTXConfig</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_dir</span><span class="p">,</span> <span class="s2">&quot;model.py&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_type</span><span class="o">.</span><span class="n">domain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_seed</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;initialized.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># pylint: disable=too-many-arguments</span>
+<div class="viewcode-block" id="MMSegmentationTask.configure"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.task.html#otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask.configure">[docs]</a>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">ir_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">export</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch mmcv configs for OTX segmentation settings.&quot;&quot;&quot;</span>
+
+        <span class="c1"># deepcopy all configs to make sure</span>
+        <span class="c1"># changes under Configuerer and below does not take an effect to OTX for clear distinction</span>
+        <span class="n">recipe_cfg</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_recipe_cfg</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">recipe_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&#39;recipe_cfg&#39; is not initialized.&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_classes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">model_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_label_schema</span><span class="p">]</span>
+
+        <span class="n">recipe_cfg</span><span class="o">.</span><span class="n">work_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_path</span>
+        <span class="n">recipe_cfg</span><span class="o">.</span><span class="n">resume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Incremental</span><span class="p">:</span>
+            <span class="n">configurer</span> <span class="o">=</span> <span class="n">IncrSegmentationConfigurer</span><span class="p">(</span>
+                <span class="s2">&quot;segmentation&quot;</span><span class="p">,</span>
+                <span class="n">training</span><span class="p">,</span>
+                <span class="n">export</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">override_configs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">on_hook_initialized</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_time_monitor</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_learning_curves</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Semisupervised</span><span class="p">:</span>
+            <span class="n">configurer</span> <span class="o">=</span> <span class="n">SemiSLSegmentationConfigurer</span><span class="p">(</span>
+                <span class="s2">&quot;segmentation&quot;</span><span class="p">,</span>
+                <span class="n">training</span><span class="p">,</span>
+                <span class="n">export</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">override_configs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">on_hook_initialized</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_time_monitor</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_learning_curves</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">configurer</span> <span class="o">=</span> <span class="n">SegmentationConfigurer</span><span class="p">(</span>
+                <span class="s2">&quot;segmentation&quot;</span><span class="p">,</span>
+                <span class="n">training</span><span class="p">,</span>
+                <span class="n">export</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">override_configs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">on_hook_initialized</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_time_monitor</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_learning_curves</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">configurer</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+            <span class="n">recipe_cfg</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_pipeline_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model_ckpt</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span><span class="p">,</span>
+            <span class="n">ir_options</span><span class="p">,</span>
+            <span class="n">data_classes</span><span class="p">,</span>
+            <span class="n">model_classes</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input_size</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_size</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;input_size&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cfg</span></div>
+
+<div class="viewcode-block" id="MMSegmentationTask.build_model"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.task.html#otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask.build_model">[docs]</a>    <span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
+        <span class="n">fp16</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build model from model_builder.&quot;&quot;&quot;</span>
+        <span class="n">model_builder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;model_builder&quot;</span><span class="p">,</span> <span class="n">build_segmentor</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model_builder</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">fp16</span><span class="p">):</span>
+            <span class="n">wrap_fp16_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+    <span class="k">def</span> <span class="nf">_infer_model</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">InferenceParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main infer function.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                <span class="n">train</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">otx_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">test</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">otx_dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">dump_features</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_task</span><span class="p">()</span>
+
+        <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;infer!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># FIXME: Currently segmentor does not support multi batch inference.</span>
+        <span class="k">if</span> <span class="s2">&quot;test&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="s2">&quot;test_dataloader&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test_dataloader</span><span class="p">[</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Data loader</span>
+        <span class="n">mm_dataset</span> <span class="o">=</span> <span class="n">build_dataset</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+        <span class="n">dataloader</span> <span class="o">=</span> <span class="n">build_dataloader</span><span class="p">(</span>
+            <span class="n">mm_dataset</span><span class="p">,</span>
+            <span class="n">samples_per_gpu</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test_dataloader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">workers_per_gpu</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test_dataloader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;workers_per_gpu&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">num_gpus</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">gpu_ids</span><span class="p">),</span>
+            <span class="n">dist</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">distributed</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Target classes</span>
+        <span class="k">if</span> <span class="s2">&quot;task_adapt&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+            <span class="n">target_classes</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">task_adapt</span><span class="o">.</span><span class="n">final</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_classes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;target_classes=</span><span class="si">{</span><span class="n">target_classes</span><span class="si">}</span><span class="s2"> is empty check the metadata from model ckpt or recipe &quot;</span>
+                    <span class="s2">&quot;configuration&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_classes</span> <span class="o">=</span> <span class="n">mm_dataset</span><span class="o">.</span><span class="n">CLASSES</span>
+
+        <span class="c1"># Model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_model</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">fp16</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fp16&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">CLASSES</span> <span class="o">=</span> <span class="n">target_classes</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">feature_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_s</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Semisupervised</span> <span class="k">else</span> <span class="n">model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">build_data_parallel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># InferenceProgressCallback (Time Monitor enable into Infer task)</span>
+        <span class="n">time_monitor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_hooks&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">time_monitor</span> <span class="o">=</span> <span class="p">[</span><span class="n">hook</span><span class="o">.</span><span class="n">time_monitor</span> <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">custom_hooks</span> <span class="k">if</span> <span class="n">hook</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;OTXProgressHook&quot;</span><span class="p">]</span>
+            <span class="n">time_monitor</span> <span class="o">=</span> <span class="n">time_monitor</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">time_monitor</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">time_monitor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="c1"># pylint: disable=unused-argument</span>
+            <span class="k">def</span> <span class="nf">pre_hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
+                <span class="n">time_monitor</span><span class="o">.</span><span class="n">on_test_batch_begin</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="p">):</span>
+                <span class="n">time_monitor</span><span class="o">.</span><span class="n">on_test_batch_end</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="n">model</span><span class="o">.</span><span class="n">register_forward_pre_hook</span><span class="p">(</span><span class="n">pre_hook</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+
+        <span class="n">eval_predictions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">feature_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dump_features</span><span class="p">:</span>
+            <span class="n">feature_vector_hook</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nullcontext</span><span class="p">,</span> <span class="n">BaseRecordingForwardHook</span><span class="p">]</span> <span class="o">=</span> <span class="n">nullcontext</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">feature_vector_hook</span> <span class="o">=</span> <span class="n">FeatureVectorHook</span><span class="p">(</span><span class="n">feature_model</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">feature_vector_hook</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">return_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">output_logits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">eval_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_vector_hook</span><span class="p">,</span> <span class="n">nullcontext</span><span class="p">):</span>
+                    <span class="n">feature_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">mm_dataset</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">feature_vector_hook</span><span class="o">.</span><span class="n">records</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">eval_predictions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;Number of elements should be the same, however, number of outputs are &quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">eval_predictions</span><span class="p">)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">classes</span><span class="o">=</span><span class="n">target_classes</span><span class="p">,</span>
+            <span class="n">eval_predictions</span><span class="o">=</span><span class="n">eval_predictions</span><span class="p">,</span>
+            <span class="n">feature_vectors</span><span class="o">=</span><span class="n">feature_vectors</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">outputs</span>
+
+    <span class="c1"># pylint: disable=too-many-branches, too-many-statements</span>
+    <span class="k">def</span> <span class="nf">_train_model</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train function in MMSegmentationTask.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;init data cfg.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">cfg_key</span><span class="p">,</span> <span class="n">subset</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;unlabeled&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">VALIDATION</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">UNLABELED</span><span class="p">],</span>
+        <span class="p">):</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">subset</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">subset</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">cfg_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">otx_dataset</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_task</span><span class="p">()</span>
+
+        <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;train!&quot;</span><span class="p">)</span>
+
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">())</span>
+
+        <span class="c1"># Environment</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cfg.gpu_ids = </span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">gpu_ids</span><span class="si">}</span><span class="s2">, distributed = </span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">distributed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">env_info_dict</span> <span class="o">=</span> <span class="n">collect_env</span><span class="p">()</span>
+        <span class="n">env_info</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">env_info_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="n">dash_line</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Environment info:</span><span class="se">\n</span><span class="si">{</span><span class="n">dash_line</span><span class="si">}{</span><span class="n">env_info</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">dash_line</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Data</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">build_dataset</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Semisupervised</span><span class="p">:</span>
+            <span class="c1"># forward the knowledge of num iters per epoch to model for filter loss</span>
+            <span class="n">bs_per_gpu</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">[</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">]</span>
+            <span class="n">actual_bs</span> <span class="o">=</span> <span class="n">bs_per_gpu</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span> <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">distributed</span> <span class="k">else</span> <span class="n">bs_per_gpu</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_iters_per_epoch</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">actual_bs</span><span class="p">)</span>
+
+        <span class="c1"># FIXME: Currently segmentor does not support multi batch evaluation.</span>
+        <span class="c1"># For the Self-SL case, there is no val data. So, need to check the</span>
+
+        <span class="k">if</span> <span class="s2">&quot;val&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="s2">&quot;val_dataloader&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">val_dataloader</span><span class="p">[</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Target classes</span>
+        <span class="k">if</span> <span class="s2">&quot;task_adapt&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+            <span class="n">target_classes</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">task_adapt</span><span class="o">.</span><span class="n">final</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_classes</span> <span class="o">=</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">CLASSES</span>
+
+        <span class="c1"># Metadata</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;env_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">env_info</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">seed</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;exp_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">work_dir</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">checkpoint_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">checkpoint_config</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">mmseg_version</span><span class="o">=</span><span class="n">__version__</span> <span class="o">+</span> <span class="n">get_git_hash</span><span class="p">()[:</span><span class="mi">7</span><span class="p">],</span>
+                <span class="n">CLASSES</span><span class="o">=</span><span class="n">target_classes</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_model</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">fp16</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fp16&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="n">is_training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_training</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">CLASSES</span> <span class="o">=</span> <span class="n">target_classes</span>
+
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">distributed</span><span class="p">:</span>
+            <span class="n">convert_sync_batchnorm</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="n">validate</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="o">.</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">auto_adapt_batch_size</span> <span class="o">!=</span> <span class="n">BatchSizeAdaptType</span><span class="o">.</span><span class="n">NONE</span><span class="p">:</span>
+            <span class="n">train_func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">train_segmentor</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">meta</span><span class="p">),</span> <span class="n">model</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">adapt_batch_size</span><span class="p">(</span>
+                <span class="n">train_func</span><span class="p">,</span>
+                <span class="n">cfg</span><span class="p">,</span>
+                <span class="n">datasets</span><span class="p">,</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NNCFBaseTask</span><span class="p">),</span>  <span class="c1"># nncf needs eval hooks</span>
+                <span class="n">not_increase</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="o">.</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">auto_adapt_batch_size</span> <span class="o">==</span> <span class="n">BatchSizeAdaptType</span><span class="o">.</span><span class="n">SAFE</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="n">train_segmentor</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span>
+            <span class="n">datasets</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="p">,</span>
+            <span class="n">distributed</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">distributed</span><span class="p">,</span>
+            <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span>
+            <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Save outputs</span>
+        <span class="n">output_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;latest.pth&quot;</span><span class="p">)</span>
+        <span class="n">best_ckpt_path</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;best_mDice_*.pth&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_ckpt_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">output_ckpt_path</span> <span class="o">=</span> <span class="n">best_ckpt_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">best_ckpt_path</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">work_dir</span><span class="p">,</span> <span class="s2">&quot;best_mIoU_*.pth&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_ckpt_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">output_ckpt_path</span> <span class="o">=</span> <span class="n">best_ckpt_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">final_ckpt</span><span class="o">=</span><span class="n">output_ckpt_path</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_explain_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Explain function of OTX Segmentation Task.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="c1"># pylint: disable=too-many-statements</span>
+    <span class="k">def</span> <span class="nf">_export_model</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">precision</span><span class="p">:</span> <span class="n">ModelPrecision</span> <span class="o">=</span> <span class="n">ModelPrecision</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
+        <span class="n">export_format</span><span class="p">:</span> <span class="n">ExportType</span> <span class="o">=</span> <span class="n">ExportType</span><span class="o">.</span><span class="n">ONNX</span><span class="p">,</span>
+        <span class="n">dump_features</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export function of OTX Segmentation Task.&quot;&quot;&quot;</span>
+        <span class="c1"># copied from OTX inference_task.py</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_cfg</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                <span class="n">train</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">otx_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">test</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">otx_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_task</span><span class="p">()</span>
+
+        <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">export</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">precision</span>
+        <span class="n">export_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_deploy_cfg</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;precision&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">export_format</span><span class="p">)</span>
+
+        <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;dump_features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dump_features</span>
+        <span class="k">if</span> <span class="n">dump_features</span><span class="p">:</span>
+            <span class="n">output_names</span> <span class="o">=</span> <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;ir_config&quot;</span><span class="p">][</span><span class="s2">&quot;output_names&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;feature_vector&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output_names</span><span class="p">:</span>
+                <span class="n">output_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;codebase_config&quot;</span><span class="p">][</span><span class="s2">&quot;task&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;Segmentation&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;saliency_map&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output_names</span><span class="p">:</span>
+                    <span class="n">output_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">)</span>
+        <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;model_builder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;model_builder&quot;</span><span class="p">,</span> <span class="n">build_segmentor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ModelPrecision</span><span class="o">.</span><span class="n">FP16</span><span class="p">:</span>
+            <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;backend_config&quot;</span><span class="p">][</span><span class="s2">&quot;mo_options&quot;</span><span class="p">][</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--compress_to_fp16&quot;</span><span class="p">)</span>
+
+        <span class="n">backend_cfg_backup</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">ExportType</span><span class="o">.</span><span class="n">ONNX</span><span class="p">:</span>
+            <span class="n">backend_cfg_backup</span> <span class="o">=</span> <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;backend_config&quot;</span><span class="p">]</span>
+            <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;backend_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;onnxruntime&quot;</span><span class="p">}</span>
+            <span class="n">export_options</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">][</span><span class="s2">&quot;ir_config&quot;</span><span class="p">][</span><span class="s2">&quot;dynamic_axes&quot;</span><span class="p">][</span><span class="s2">&quot;input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch&quot;</span><span class="p">}</span>
+
+        <span class="n">exporter</span> <span class="o">=</span> <span class="n">SegmentationExporter</span><span class="p">()</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">exporter</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">export_options</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">ExportType</span><span class="o">.</span><span class="n">ONNX</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;inference_parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;inference_parameters&quot;</span><span class="p">][</span><span class="s2">&quot;mean_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">backend_cfg_backup</span><span class="p">[</span><span class="s2">&quot;mo_options&quot;</span><span class="p">][</span><span class="s2">&quot;args&quot;</span><span class="p">][</span><span class="s2">&quot;--mean_values&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;inference_parameters&quot;</span><span class="p">][</span><span class="s2">&quot;scale_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">backend_cfg_backup</span><span class="p">[</span><span class="s2">&quot;mo_options&quot;</span><span class="p">][</span><span class="s2">&quot;args&quot;</span><span class="p">][</span><span class="s2">&quot;--scale_values&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># This should moved somewhere</span>
+    <span class="k">def</span> <span class="nf">_init_deploy_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Config</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">model_template_path</span><span class="p">))</span>
+        <span class="n">deploy_cfg_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;deployment.py&quot;</span><span class="p">)</span>
+        <span class="n">deploy_cfg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">deploy_cfg_path</span><span class="p">):</span>
+            <span class="n">deploy_cfg</span> <span class="o">=</span> <span class="n">OTXConfig</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">deploy_cfg_path</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">patch_input_preprocessing</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">):</span>
+                <span class="n">normalize_cfg</span> <span class="o">=</span> <span class="n">get_configs_by_pairs</span><span class="p">(</span>
+                    <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">pipeline</span><span class="p">,</span>
+                    <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Normalize&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalize_cfg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="n">normalize_cfg</span> <span class="o">=</span> <span class="n">normalize_cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="p">[],</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+                <span class="c1"># NOTE: OTX loads image in RGB format</span>
+                <span class="c1"># so that `to_rgb=True` means a format change to BGR instead.</span>
+                <span class="c1"># Conventionally, OpenVINO IR expects a image in BGR format</span>
+                <span class="c1"># but OpenVINO IR under OTX assumes a image in RGB format.</span>
+                <span class="c1">#</span>
+                <span class="c1"># `to_rgb=True` -&gt; a model was trained with images in BGR format</span>
+                <span class="c1">#                  and a OpenVINO IR needs to reverse input format from RGB to BGR</span>
+                <span class="c1"># `to_rgb=False` -&gt; a model was trained with images in RGB format</span>
+                <span class="c1">#                   and a OpenVINO IR does not need to do a reverse</span>
+                <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;to_rgb&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;--reverse_input_channels&quot;</span><span class="p">]</span>
+                <span class="c1"># value must be a list not a tuple</span>
+                <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">][</span><span class="s2">&quot;--mean_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">][</span><span class="s2">&quot;--scale_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">))</span>
+
+                <span class="c1"># fill default</span>
+                <span class="n">backend_config</span> <span class="o">=</span> <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span>
+                <span class="k">if</span> <span class="n">backend_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mo_options&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">backend_config</span><span class="o">.</span><span class="n">mo_options</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">()</span>
+                <span class="n">mo_options</span> <span class="o">=</span> <span class="n">backend_config</span><span class="o">.</span><span class="n">mo_options</span>
+                <span class="k">if</span> <span class="n">mo_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;args&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">mo_options</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">mo_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;flags&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="c1"># already defiend options have higher priority</span>
+                <span class="n">options</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mo_options</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+                <span class="n">mo_options</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">])</span>
+                <span class="c1"># make sure no duplicates</span>
+                <span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">])</span>
+                <span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span><span class="p">))</span>
+
+            <span class="k">def</span> <span class="nf">patch_input_shape</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">):</span>
+                <span class="n">input_size_manager</span> <span class="o">=</span> <span class="n">InputSizeManager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="n">input_size_manager</span><span class="o">.</span><span class="n">get_input_size_from_cfg</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">size</span><span class="p">)</span>
+                <span class="c1"># default is static shape to prevent an unexpected error</span>
+                <span class="c1"># when converting to OpenVINO IR</span>
+                <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span><span class="o">.</span><span class="n">model_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ConfigDict</span><span class="p">(</span><span class="n">opt_shapes</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="n">size</span><span class="p">]))]</span>
+
+            <span class="n">patch_input_preprocessing</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+            <span class="n">patch_input_shape</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">deploy_cfg</span>
+
+    <span class="c1"># This should be removed</span>
+<div class="viewcode-block" id="MMSegmentationTask.update_override_configurations"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.task.html#otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask.update_override_configurations">[docs]</a>    <span class="k">def</span> <span class="nf">update_override_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update override_configs.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;update override config with: </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">override_configs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MMSegmentationTask.save_model"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.task.html#otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save best model weights in SegmentationTrainTask.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;called save_model&quot;</span><span class="p">)</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">hyperparams_str</span> <span class="o">=</span> <span class="n">ids_to_strings</span><span class="p">(</span><span class="n">cfg_helper</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hyperparams</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">enum_to_str</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">label</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">rgb_tuple</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">}</span>
+        <span class="n">model_ckpt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_ckpt</span><span class="p">)</span>
+        <span class="n">modelinfo</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_ckpt</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">hyperparams_str</span><span class="p">,</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">,</span>
+            <span class="s2">&quot;input_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_size</span><span class="p">,</span>
+            <span class="s2">&quot;VERSION&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">modelinfo</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;weights.pth&quot;</span><span class="p">,</span> <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span>
+            <span class="s2">&quot;label_schema.json&quot;</span><span class="p">,</span>
+            <span class="n">label_schema_to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_task_environment</span><span class="o">.</span><span class="n">label_schema</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

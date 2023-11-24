@@ -1,0 +1,30 @@
+otx.algorithms.common.adapters.mmdeploy.utils.utils
+===================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmdeploy.utils.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      numpy_2_list
+      sync_batchnorm_2_batchnorm
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

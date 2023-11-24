@@ -1,0 +1,35 @@
+otx.algorithms.detection.adapters.mmdet.datasets.tiling
+=======================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.datasets.tiling
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      timeit
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Tile
+   
+   
+
+   
+   
+   
+
+
+

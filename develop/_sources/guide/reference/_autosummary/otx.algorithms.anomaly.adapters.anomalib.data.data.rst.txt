@@ -1,0 +1,30 @@
+otx.algorithms.anomaly.adapters.anomalib.data.data
+==================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.data.data
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXAnomalyDataModule
+      OTXAnomalyDataset
+   
+   
+
+   
+   
+   
+
+
+

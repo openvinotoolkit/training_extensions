@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.detection.base.ava\_data\_pipeline
+================================================================
+
+.. automodule:: otx.algorithms.action.configs.detection.base.ava_data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.api.configuration.ui\_rules.utils
+=====================================
+
+.. automodule:: otx.api.configuration.ui_rules.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      attr_convert_action
+      attr_convert_operator
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

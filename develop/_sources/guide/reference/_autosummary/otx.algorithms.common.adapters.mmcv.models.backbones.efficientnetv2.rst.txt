@@ -1,0 +1,30 @@
+otx.algorithms.common.adapters.mmcv.models.backbones.efficientnetv2
+===================================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.models.backbones.efficientnetv2
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXEfficientNetV2
+      TimmModelsWrapper
+   
+   
+
+   
+   
+   
+
+
+

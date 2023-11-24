@@ -1,0 +1,32 @@
+otx.algorithms.classification.utils
+===================================
+
+.. automodule:: otx.algorithms.classification.utils
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.classification.utils.cls_utils
+   otx.algorithms.classification.utils.convert_coco_to_multilabel
+

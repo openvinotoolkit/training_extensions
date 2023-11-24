@@ -1,0 +1,534 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/detection/adapters/mmdet/models/necks/mmov_ssd_neck';</script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;MMOVSSDNeck class for OMZ models.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">openvino.runtime</span> <span class="k">as</span> <span class="nn">ov</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn</span> <span class="kn">import</span> <span class="n">ConvModule</span><span class="p">,</span> <span class="n">DepthwiseSeparableConvModule</span>
+<span class="kn">from</span> <span class="nn">mmcv.runner</span> <span class="kn">import</span> <span class="n">BaseModule</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.builder</span> <span class="kn">import</span> <span class="n">NECKS</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span> <span class="nn">otx.core.ov.models.mmov_model</span> <span class="kn">import</span> <span class="n">MMOVModel</span>
+
+<span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+
+
+<span class="c1"># FIXME: get rid of defined SSDNeck as this is a workaround for forked/deprecated mmdet</span>
+<div class="viewcode-block" id="SSDNeck"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.SSDNeck">[docs]</a><span class="k">class</span> <span class="nc">SSDNeck</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extra layers of SSD backbone to generate multi-scale feature maps.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_channels (Sequence[int]): Number of input channels per scale.</span>
+<span class="sd">        out_channels (Sequence[int]): Number of output channels per scale.</span>
+<span class="sd">        level_strides (Sequence[int]): Stride of 3x3 conv per level.</span>
+<span class="sd">        level_paddings (Sequence[int]): Padding size of 3x3 conv per level.</span>
+<span class="sd">        l2_norm_scale (float|None): L2 normalization layer init scale.</span>
+<span class="sd">            If None, not use L2 normalization on the first input feature.</span>
+<span class="sd">        last_kernel_size (int): Kernel size of the last conv layer.</span>
+<span class="sd">            Default: 3.</span>
+<span class="sd">        use_depthwise (bool): Whether to use DepthwiseSeparableConv.</span>
+<span class="sd">            Default: False.</span>
+<span class="sd">        conv_cfg (dict): Config dict for convolution layer. Default: None.</span>
+<span class="sd">        norm_cfg (dict): Dictionary to construct and config norm layer.</span>
+<span class="sd">            Default: None.</span>
+<span class="sd">        act_cfg (dict): Config dict for activation layer.</span>
+<span class="sd">            Default: dict(type=&#39;ReLU&#39;).</span>
+<span class="sd">        init_cfg (dict or list[dict], optional): Initialization config dict.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">level_strides</span><span class="p">,</span>
+        <span class="n">level_paddings</span><span class="p">,</span>
+        <span class="n">l2_norm_scale</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+        <span class="n">last_kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">use_depthwise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">conv_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">act_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">init_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">init_cfg</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Xavier&quot;</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;uniform&quot;</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;Conv2d&quot;</span><span class="p">),</span>
+                <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;BatchNorm2d&quot;</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_channels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_channels</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_channels</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_channels</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">level_strides</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">level_strides</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">level_paddings</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">in_channels</span> <span class="o">==</span> <span class="n">out_channels</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_channels</span><span class="p">)]</span>
+
+        <span class="n">act_cfg</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">act_cfg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">act_cfg</span>
+
+        <span class="k">if</span> <span class="n">l2_norm_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l2_norm</span> <span class="o">=</span> <span class="n">L2Norm</span><span class="p">(</span><span class="n">in_channels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">l2_norm_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_cfg</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l2_norm</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">override</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;l2_norm&quot;</span><span class="p">))]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="n">extra_layer_channels</span> <span class="o">=</span> <span class="n">out_channels</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">in_channels</span><span class="p">)</span> <span class="p">:]</span>
+        <span class="n">second_conv</span> <span class="o">=</span> <span class="n">DepthwiseSeparableConvModule</span> <span class="k">if</span> <span class="n">use_depthwise</span> <span class="k">else</span> <span class="n">ConvModule</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">out_channel</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">extra_layer_channels</span><span class="p">,</span> <span class="n">level_strides</span><span class="p">,</span> <span class="n">level_paddings</span><span class="p">)):</span>
+            <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">last_kernel_size</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">extra_layer_channels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">3</span>
+            <span class="n">per_lvl_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">ConvModule</span><span class="p">(</span>
+                    <span class="n">out_channels</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">in_channels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span>
+                    <span class="n">out_channel</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">conv_cfg</span><span class="o">=</span><span class="n">conv_cfg</span><span class="p">,</span>
+                    <span class="n">norm_cfg</span><span class="o">=</span><span class="n">norm_cfg</span><span class="p">,</span>
+                    <span class="n">act_cfg</span><span class="o">=</span><span class="n">act_cfg</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">second_conv</span><span class="p">(</span>
+                    <span class="n">out_channel</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="n">out_channel</span><span class="p">,</span>
+                    <span class="n">kernel_size</span><span class="p">,</span>
+                    <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                    <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                    <span class="n">conv_cfg</span><span class="o">=</span><span class="n">conv_cfg</span><span class="p">,</span>
+                    <span class="n">norm_cfg</span><span class="o">=</span><span class="n">norm_cfg</span><span class="p">,</span>
+                    <span class="n">act_cfg</span><span class="o">=</span><span class="n">act_cfg</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extra_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">per_lvl_convs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SSDNeck.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.SSDNeck.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function.&quot;&quot;&quot;</span>
+        <span class="n">outs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;l2_norm&quot;</span><span class="p">):</span>
+            <span class="n">outs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l2_norm</span><span class="p">(</span><span class="n">outs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">feat</span> <span class="o">=</span> <span class="n">outs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_layers</span><span class="p">:</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="n">outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="L2Norm"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.L2Norm">[docs]</a><span class="k">class</span> <span class="nc">L2Norm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;L2 normalization class.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_dims</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;L2 normalization layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_dims (int): Number of dimensions to be normalized</span>
+<span class="sd">            scale (float, optional): Defaults to 20..</span>
+<span class="sd">            eps (float, optional): Used to avoid division by zero.</span>
+<span class="sd">                Defaults to 1e-10.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_dims</span> <span class="o">=</span> <span class="n">n_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dims</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+
+<div class="viewcode-block" id="L2Norm.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.L2Norm.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function.&quot;&quot;&quot;</span>
+        <span class="c1"># normalization layer convert to FP32 in FP16 training</span>
+        <span class="n">x_float</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">x_float</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x_float</span><span class="p">)</span> <span class="o">*</span> <span class="n">x_float</span> <span class="o">/</span> <span class="n">norm</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MMOVSSDNeck"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.MMOVSSDNeck">[docs]</a><span class="nd">@NECKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">MMOVSSDNeck</span><span class="p">(</span><span class="n">SSDNeck</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MMOVSSDNeck class for OMZ models.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_path_or_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ov</span><span class="o">.</span><span class="n">Model</span><span class="p">],</span>
+        <span class="n">weight_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_weight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">verify_shape</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># dummy</span>
+        <span class="n">in_channels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
+        <span class="n">out_channels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="n">level_strides</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">level_paddings</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">l2_norm_scale</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">level_strides</span><span class="o">=</span><span class="n">level_strides</span><span class="p">,</span>
+            <span class="n">level_paddings</span><span class="o">=</span><span class="n">level_paddings</span><span class="p">,</span>
+            <span class="n">l2_norm_scale</span><span class="o">=</span><span class="n">l2_norm_scale</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_path_or_model</span> <span class="o">=</span> <span class="n">model_path_or_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_weight_path</span> <span class="o">=</span> <span class="n">weight_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_weight</span> <span class="o">=</span> <span class="n">init_weight</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_layers</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+
+        <span class="c1"># TODO: Need to fix what exactly the types of inputs and outputs are.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The type of inputs &amp; outputs is invalid.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">input_e</span><span class="p">,</span> <span class="n">output_e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;extra_layers&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;extra_layers&quot;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">input_e</span> <span class="ow">and</span> <span class="n">output_e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">extra_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">MMOVModel</span><span class="p">(</span>
+                        <span class="n">model_path_or_model</span><span class="p">,</span>
+                        <span class="n">weight_path</span><span class="p">,</span>
+                        <span class="n">inputs</span><span class="o">=</span><span class="n">input_e</span><span class="p">,</span>
+                        <span class="n">outputs</span><span class="o">=</span><span class="n">output_e</span><span class="p">,</span>
+                        <span class="n">remove_normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">merge_bn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">paired_bn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">init_weight</span><span class="o">=</span><span class="n">init_weight</span><span class="p">,</span>
+                        <span class="n">verify_shape</span><span class="o">=</span><span class="n">verify_shape</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">extra_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="s2">&quot;l2_norm&quot;</span> <span class="ow">in</span> <span class="n">inputs</span> <span class="ow">and</span> <span class="s2">&quot;l2_norm&quot;</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">input_l2</span><span class="p">,</span> <span class="n">output_l2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;l2_norm&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;l2_norm&quot;</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">l2_norm</span> <span class="o">=</span> <span class="n">MMOVModel</span><span class="p">(</span>
+                    <span class="n">model_path_or_model</span><span class="p">,</span>
+                    <span class="n">weight_path</span><span class="p">,</span>
+                    <span class="n">inputs</span><span class="o">=</span><span class="n">input_l2</span><span class="p">,</span>
+                    <span class="n">outputs</span><span class="o">=</span><span class="n">output_l2</span><span class="p">,</span>
+                    <span class="n">remove_normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">merge_bn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">paired_bn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">init_weight</span><span class="o">=</span><span class="n">init_weight</span><span class="p">,</span>
+                    <span class="n">verify_shape</span><span class="o">=</span><span class="n">verify_shape</span><span class="p">,</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="MMOVSSDNeck.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.MMOVSSDNeck.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initial weights of MMOVSSDNeck.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO</span>
+        <span class="k">return</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

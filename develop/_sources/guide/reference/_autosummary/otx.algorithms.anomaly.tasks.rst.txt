@@ -1,0 +1,34 @@
+otx.algorithms.anomaly.tasks
+============================
+
+.. automodule:: otx.algorithms.anomaly.tasks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.tasks.inference
+   otx.algorithms.anomaly.tasks.nncf
+   otx.algorithms.anomaly.tasks.openvino
+   otx.algorithms.anomaly.tasks.train
+

@@ -1,0 +1,38 @@
+otx.api.usecases.evaluation
+===========================
+
+.. automodule:: otx.api.usecases.evaluation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.api.usecases.evaluation.accuracy
+   otx.api.usecases.evaluation.anomaly_metrics
+   otx.api.usecases.evaluation.averaging
+   otx.api.usecases.evaluation.basic_operations
+   otx.api.usecases.evaluation.dice
+   otx.api.usecases.evaluation.f_measure
+   otx.api.usecases.evaluation.metrics_helper
+   otx.api.usecases.evaluation.performance_provider_interface
+

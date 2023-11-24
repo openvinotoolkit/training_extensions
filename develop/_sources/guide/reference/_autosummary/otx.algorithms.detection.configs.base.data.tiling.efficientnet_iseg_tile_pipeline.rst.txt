@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.data.tiling.efficientnet\_iseg\_tile\_pipeline
+====================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.data.tiling.efficientnet_iseg_tile_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

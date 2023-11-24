@@ -1,0 +1,31 @@
+otx.algorithms.action.adapters.mmaction.models.recognizers
+==========================================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.models.recognizers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.adapters.mmaction.models.recognizers.movinet_recognizer
+

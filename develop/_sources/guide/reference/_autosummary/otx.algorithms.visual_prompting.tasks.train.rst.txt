@@ -1,0 +1,29 @@
+otx.algorithms.visual\_prompting.tasks.train
+============================================
+
+.. automodule:: otx.algorithms.visual_prompting.tasks.train
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TrainingTask
+   
+   
+
+   
+   
+   
+
+
+

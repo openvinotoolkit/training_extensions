@@ -1,0 +1,37 @@
+otx.algorithms.action.adapters.openvino.dataloader
+==================================================
+
+.. automodule:: otx.algorithms.action.adapters.openvino.dataloader
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_ovdataloader
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionOVClsDataLoader
+      ActionOVDemoDataLoader
+      ActionOVDetDataLoader
+   
+   
+
+   
+   
+   
+
+
+

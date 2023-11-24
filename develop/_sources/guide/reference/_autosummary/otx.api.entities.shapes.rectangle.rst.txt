@@ -1,0 +1,29 @@
+otx.api.entities.shapes.rectangle
+=================================
+
+.. automodule:: otx.api.entities.shapes.rectangle
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Rectangle
+   
+   
+
+   
+   
+   
+
+
+

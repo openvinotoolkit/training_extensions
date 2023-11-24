@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.models.detector
+=====================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.models.detector
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

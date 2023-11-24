@@ -1,0 +1,30 @@
+otx.api.usecases.tasks.interfaces.optimization\_interface
+=========================================================
+
+.. automodule:: otx.api.usecases.tasks.interfaces.optimization_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IOptimizationTask
+      OptimizationType
+   
+   
+
+   
+   
+   
+
+
+

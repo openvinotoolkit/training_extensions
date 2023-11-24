@@ -1,0 +1,32 @@
+otx.algorithms.detection.adapters.mmdet.hooks
+=============================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.hooks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook
+   otx.algorithms.detection.adapters.mmdet.hooks.tile_sampling_hook
+

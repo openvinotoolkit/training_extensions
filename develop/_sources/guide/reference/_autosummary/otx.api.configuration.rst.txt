@@ -1,0 +1,37 @@
+otx.api.configuration
+=====================
+
+.. automodule:: otx.api.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.api.configuration.configurable_parameters
+   otx.api.configuration.default_model_parameters
+   otx.api.configuration.elements
+   otx.api.configuration.enums
+   otx.api.configuration.helper
+   otx.api.configuration.model_lifecycle
+   otx.api.configuration.ui_rules
+

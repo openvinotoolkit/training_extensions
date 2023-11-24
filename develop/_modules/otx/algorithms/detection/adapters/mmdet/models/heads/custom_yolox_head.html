@@ -1,0 +1,533 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_yolox_head';</script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Custom YOLOX head for OTX template.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">mmcv.runner</span> <span class="kn">import</span> <span class="n">force_fp32</span>
+<span class="kn">from</span> <span class="nn">mmdet.core</span> <span class="kn">import</span> <span class="n">multi_apply</span><span class="p">,</span> <span class="n">reduce_mean</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.builder</span> <span class="kn">import</span> <span class="n">HEADS</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.dense_heads.yolox_head</span> <span class="kn">import</span> <span class="n">YOLOXHead</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.losses.utils</span> <span class="kn">import</span> <span class="n">weight_reduce_loss</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TrackingLossDynamicsMixIn</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.detection.adapters.mmdet.models.loss_dyns</span> <span class="kn">import</span> <span class="n">TrackingLossType</span>
+
+
+<div class="viewcode-block" id="CustomYOLOXHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CustomYOLOXHead</span><span class="p">(</span><span class="n">YOLOXHead</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomYOLOXHead class for OTX.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CustomYOLOXHeadTrackingLossDynamics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHeadTrackingLossDynamics">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CustomYOLOXHeadTrackingLossDynamics</span><span class="p">(</span><span class="n">TrackingLossDynamicsMixIn</span><span class="p">,</span> <span class="n">CustomYOLOXHead</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomYOLOXHead which supports loss dynamics tracking.&quot;&quot;&quot;</span>
+
+    <span class="n">tracking_loss_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">TrackingLossType</span><span class="o">.</span><span class="n">cls</span><span class="p">,</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">bbox</span><span class="p">)</span>
+
+    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss</span>
+    <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_scores&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds&quot;</span><span class="p">,</span> <span class="s2">&quot;objectnesses&quot;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">objectnesses</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss of the head.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls_scores (list[Tensor]): Box scores for each scale level,</span>
+<span class="sd">                each is a 4D-tensor, the channel number is</span>
+<span class="sd">                num_priors * num_classes.</span>
+<span class="sd">            bbox_preds (list[Tensor]): Box energies / deltas for each scale</span>
+<span class="sd">                level, each is a 4D-tensor, the channel number is</span>
+<span class="sd">                num_priors * 4.</span>
+<span class="sd">            objectnesses (list[Tensor], Optional): Score factor for</span>
+<span class="sd">                all scale level, each is a 4D-tensor, has shape</span>
+<span class="sd">                (batch_size, 1, H, W).</span>
+<span class="sd">            gt_bboxes (list[Tensor]): Ground truth bboxes for each image with</span>
+<span class="sd">                shape (num_gts, 4) in [tl_x, tl_y, br_x, br_y] format.</span>
+<span class="sd">            gt_labels (list[Tensor]): class indices corresponding to each box</span>
+<span class="sd">            img_metas (list[dict]): Meta information of each image, e.g.,</span>
+<span class="sd">                image size, scaling factor, etc.</span>
+<span class="sd">            gt_bboxes_ignore (None | list[Tensor]): specify which bounding</span>
+<span class="sd">                boxes can be ignored when computing the loss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_imgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_metas</span><span class="p">)</span>
+        <span class="n">featmap_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">cls_score</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="k">for</span> <span class="n">cls_score</span> <span class="ow">in</span> <span class="n">cls_scores</span><span class="p">]</span>
+        <span class="n">mlvl_priors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_generator</span><span class="o">.</span><span class="n">grid_priors</span><span class="p">(</span>
+            <span class="n">featmap_sizes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cls_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">cls_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">with_stride</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="n">flatten_cls_preds</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">cls_pred</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_imgs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span><span class="p">)</span> <span class="k">for</span> <span class="n">cls_pred</span> <span class="ow">in</span> <span class="n">cls_scores</span>
+        <span class="p">]</span>
+        <span class="n">flatten_bbox_preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">bbox_pred</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_imgs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">bbox_pred</span> <span class="ow">in</span> <span class="n">bbox_preds</span><span class="p">]</span>
+        <span class="n">flatten_objectness</span> <span class="o">=</span> <span class="p">[</span><span class="n">objectness</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_imgs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">objectness</span> <span class="ow">in</span> <span class="n">objectnesses</span><span class="p">]</span>
+
+        <span class="n">flatten_cls_preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">flatten_cls_preds</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">flatten_bbox_preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">flatten_bbox_preds</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">flatten_objectness</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">flatten_objectness</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">flatten_priors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">mlvl_priors</span><span class="p">)</span>
+        <span class="n">flatten_bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_decode</span><span class="p">(</span><span class="n">flatten_priors</span><span class="p">,</span> <span class="n">flatten_bbox_preds</span><span class="p">)</span>
+
+        <span class="c1"># Init variables for loss dynamics tracking</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_batch_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_gt_bboxes_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_bbox</span><span class="p">)</span> <span class="k">for</span> <span class="n">gt_bbox</span> <span class="ow">in</span> <span class="n">gt_bboxes</span><span class="p">])</span>
+
+        <span class="p">(</span>
+            <span class="n">pos_masks</span><span class="p">,</span>
+            <span class="n">cls_targets</span><span class="p">,</span>
+            <span class="n">obj_targets</span><span class="p">,</span>
+            <span class="n">bbox_targets</span><span class="p">,</span>
+            <span class="n">l1_targets</span><span class="p">,</span>
+            <span class="n">num_fg_imgs</span><span class="p">,</span>
+            <span class="n">pos_assigned_gt_inds_list</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">multi_apply</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_target_single</span><span class="p">,</span>
+            <span class="n">flatten_cls_preds</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span>
+            <span class="n">flatten_objectness</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span>
+            <span class="n">flatten_priors</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">num_imgs</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">flatten_bboxes</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span>
+            <span class="n">gt_bboxes</span><span class="p">,</span>
+            <span class="n">gt_labels</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># The experimental results show that ‘reduce_mean’ can improve</span>
+        <span class="c1"># performance on the COCO dataset.</span>
+        <span class="n">num_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">num_fg_imgs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">flatten_cls_preds</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">num_total_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">num_pos</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="n">pos_masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pos_masks</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">cls_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">cls_targets</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">obj_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">obj_targets</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">bbox_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">bbox_targets</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># For storing loss dynamics</span>
+        <span class="n">pos_assigned_gt_inds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pos_assigned_gt_inds_list</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_inds</span> <span class="o">=</span> <span class="n">pos_assigned_gt_inds</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gt_bboxes_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bbox_inds</span> <span class="o">=</span> <span class="n">pos_assigned_gt_inds</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gt_bboxes_len</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_l1</span><span class="p">:</span>
+            <span class="n">l1_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">l1_targets</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">loss_bbox</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_bbox</span><span class="p">(</span>
+                <span class="n">flatten_bboxes</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="n">pos_masks</span><span class="p">],</span>
+                <span class="n">bbox_targets</span><span class="p">,</span>
+                <span class="n">reduction_override</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">/</span> <span class="n">num_total_samples</span>
+        <span class="p">)</span>
+        <span class="n">loss_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_obj</span><span class="p">(</span><span class="n">flatten_objectness</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">obj_targets</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_total_samples</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span><span class="p">(</span>
+                <span class="n">flatten_cls_preds</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)[</span><span class="n">pos_masks</span><span class="p">],</span>
+                <span class="n">cls_targets</span><span class="p">,</span>
+                <span class="n">reduction_override</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">/</span> <span class="n">num_total_samples</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_loss_dyns</span><span class="p">(</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_loss_dyns</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">cls</span><span class="p">)</span>
+
+        <span class="n">loss_bbox</span> <span class="o">=</span> <span class="n">weight_reduce_loss</span><span class="p">(</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_bbox</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="n">weight_reduce_loss</span><span class="p">(</span><span class="n">loss_cls</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+
+        <span class="n">loss_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">loss_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">loss_obj</span><span class="o">=</span><span class="n">loss_obj</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_l1</span><span class="p">:</span>
+            <span class="n">loss_l1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_l1</span><span class="p">(</span><span class="n">flatten_bbox_preds</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="n">pos_masks</span><span class="p">],</span> <span class="n">l1_targets</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_total_samples</span>
+            <span class="n">loss_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss_l1</span><span class="o">=</span><span class="n">loss_l1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loss_dict</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_get_target_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_preds</span><span class="p">,</span> <span class="n">objectness</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">decoded_bboxes</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute classification, regression, and objectness targets for priors in a single image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls_preds (Tensor): Classification predictions of one image,</span>
+<span class="sd">                a 2D-Tensor with shape [num_priors, num_classes]</span>
+<span class="sd">            objectness (Tensor): Objectness predictions of one image,</span>
+<span class="sd">                a 1D-Tensor with shape [num_priors]</span>
+<span class="sd">            priors (Tensor): All priors of one image, a 2D-Tensor with shape</span>
+<span class="sd">                [num_priors, 4] in [cx, xy, stride_w, stride_y] format.</span>
+<span class="sd">            decoded_bboxes (Tensor): Decoded bboxes predictions of one image,</span>
+<span class="sd">                a 2D-Tensor with shape [num_priors, 4] in [tl_x, tl_y,</span>
+<span class="sd">                br_x, br_y] format.</span>
+<span class="sd">            gt_bboxes (Tensor): Ground truth bboxes of one image, a 2D-Tensor</span>
+<span class="sd">                with shape [num_gts, 4] in [tl_x, tl_y, br_x, br_y] format.</span>
+<span class="sd">            gt_labels (Tensor): Ground truth labels of one image, a Tensor</span>
+<span class="sd">                with shape [num_gts].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">num_priors</span> <span class="o">=</span> <span class="n">priors</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">num_gts</span> <span class="o">=</span> <span class="n">gt_labels</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">gt_bboxes</span> <span class="o">=</span> <span class="n">gt_bboxes</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">decoded_bboxes</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># No target</span>
+        <span class="k">if</span> <span class="n">num_gts</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cls_target</span> <span class="o">=</span> <span class="n">cls_preds</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">))</span>
+            <span class="n">bbox_target</span> <span class="o">=</span> <span class="n">cls_preds</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+            <span class="n">l1_target</span> <span class="o">=</span> <span class="n">cls_preds</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+            <span class="n">obj_target</span> <span class="o">=</span> <span class="n">cls_preds</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="n">num_priors</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">foreground_mask</span> <span class="o">=</span> <span class="n">cls_preds</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">num_priors</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">foreground_mask</span><span class="p">,</span> <span class="n">cls_target</span><span class="p">,</span> <span class="n">obj_target</span><span class="p">,</span> <span class="n">bbox_target</span><span class="p">,</span> <span class="n">l1_target</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># YOLOX uses center priors with 0.5 offset to assign targets,</span>
+        <span class="c1"># but use center priors without offset to regress bboxes.</span>
+        <span class="n">offset_priors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">priors</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">priors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">priors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">assign_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">cls_preds</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span> <span class="o">*</span> <span class="n">objectness</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(),</span> <span class="n">offset_priors</span><span class="p">,</span> <span class="n">decoded_bboxes</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span>
+        <span class="p">)</span>
+
+        <span class="n">sampling_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">assign_result</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
+        <span class="n">pos_inds</span> <span class="o">=</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_inds</span>
+        <span class="n">num_pos_per_img</span> <span class="o">=</span> <span class="n">pos_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">pos_ious</span> <span class="o">=</span> <span class="n">assign_result</span><span class="o">.</span><span class="n">max_overlaps</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span>
+        <span class="c1"># IOU aware classification score</span>
+        <span class="n">cls_target</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_gt_labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="n">pos_ious</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">obj_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">objectness</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">obj_target</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">bbox_target</span> <span class="o">=</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_gt_bboxes</span>
+        <span class="n">l1_target</span> <span class="o">=</span> <span class="n">cls_preds</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="n">num_pos_per_img</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_l1</span><span class="p">:</span>
+            <span class="n">l1_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_l1_target</span><span class="p">(</span><span class="n">l1_target</span><span class="p">,</span> <span class="n">bbox_target</span><span class="p">,</span> <span class="n">priors</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">])</span>
+        <span class="n">foreground_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">objectness</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="n">foreground_mask</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">pos_assigned_gt_inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_batch_idx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gt_bboxes_len</span> <span class="o">+</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_assigned_gt_inds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_batch_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_inds</span> <span class="o">=</span> <span class="n">pos_inds</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">foreground_mask</span><span class="p">,</span>
+            <span class="n">cls_target</span><span class="p">,</span>
+            <span class="n">obj_target</span><span class="p">,</span>
+            <span class="n">bbox_target</span><span class="p">,</span>
+            <span class="n">l1_target</span><span class="p">,</span>
+            <span class="n">num_pos_per_img</span><span class="p">,</span>
+            <span class="n">pos_assigned_gt_inds</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

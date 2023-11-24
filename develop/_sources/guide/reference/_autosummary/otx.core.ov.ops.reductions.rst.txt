@@ -1,0 +1,36 @@
+otx.core.ov.ops.reductions
+==========================
+
+.. automodule:: otx.core.ov.ops.reductions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ReduceMeanV1
+      ReduceMeanV1Attribute
+      ReduceMinV1
+      ReduceMinV1Attribute
+      ReduceProdV1
+      ReduceProdV1Attribute
+      ReduceSumV1
+      ReduceSumV1Attribute
+   
+   
+
+   
+   
+   
+
+
+

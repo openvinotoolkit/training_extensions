@@ -1,0 +1,29 @@
+otx.algorithms.common.adapters.mmdeploy.ops.custom\_ops
+=======================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmdeploy.ops.custom_ops
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      squeeze__default
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

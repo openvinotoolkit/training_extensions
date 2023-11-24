@@ -1,0 +1,32 @@
+otx.algorithms.common.adapters.mmcv.hooks.early\_stopping\_hook
+===============================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EarlyStoppingHook
+      LazyEarlyStoppingHook
+      ReduceLROnPlateauLrUpdaterHook
+      StopLossNanTrainingHook
+   
+   
+
+   
+   
+   
+
+
+

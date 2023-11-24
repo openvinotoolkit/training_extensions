@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.tasks.nncf
+=================================
+
+.. automodule:: otx.algorithms.anomaly.tasks.nncf
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NNCFTask
+   
+   
+
+   
+   
+   
+
+
+

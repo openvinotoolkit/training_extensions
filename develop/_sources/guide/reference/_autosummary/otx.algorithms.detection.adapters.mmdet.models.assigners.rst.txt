@@ -1,0 +1,31 @@
+otx.algorithms.detection.adapters.mmdet.models.assigners
+========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.assigners
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner
+

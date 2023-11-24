@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.nncf.builder
+=======================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.nncf.builder
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_nncf_segmentor
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

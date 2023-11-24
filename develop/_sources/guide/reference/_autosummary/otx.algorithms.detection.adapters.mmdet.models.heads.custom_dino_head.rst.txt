@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.custom\_dino\_head
+=======================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomDINOHead
+   
+   
+
+   
+   
+   
+
+
+

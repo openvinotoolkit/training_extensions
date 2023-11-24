@@ -1,0 +1,23 @@
+otx.algorithms.visual\_prompting.configs.sam\_vit\_b.ptq\_optimization\_config
+==============================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.configs.sam_vit_b.ptq_optimization_config
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

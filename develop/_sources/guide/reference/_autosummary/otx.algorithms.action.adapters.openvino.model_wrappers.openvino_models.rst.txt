@@ -1,0 +1,37 @@
+otx.algorithms.action.adapters.openvino.model\_wrappers.openvino\_models
+========================================================================
+
+.. automodule:: otx.algorithms.action.adapters.openvino.model_wrappers.openvino_models
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_multiclass_predictions
+      softmax_numpy
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXOVActionCls
+      OTXOVActionDet
+   
+   
+
+   
+   
+   
+
+
+

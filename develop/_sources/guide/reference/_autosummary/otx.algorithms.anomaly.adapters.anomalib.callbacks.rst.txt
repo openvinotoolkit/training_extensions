@@ -1,0 +1,32 @@
+otx.algorithms.anomaly.adapters.anomalib.callbacks
+==================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.callbacks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.adapters.anomalib.callbacks.inference
+   otx.algorithms.anomaly.adapters.anomalib.callbacks.progress
+

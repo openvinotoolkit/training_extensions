@@ -1,0 +1,32 @@
+otx.algorithms.detection.configs.rotated\_detection
+===================================================
+
+.. automodule:: otx.algorithms.detection.configs.rotated_detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.configs.rotated_detection.efficientnetb2b_maskrcnn
+   otx.algorithms.detection.configs.rotated_detection.resnet50_maskrcnn
+

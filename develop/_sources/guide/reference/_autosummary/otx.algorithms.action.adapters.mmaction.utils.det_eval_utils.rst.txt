@@ -1,0 +1,29 @@
+otx.algorithms.action.adapters.mmaction.utils.det\_eval\_utils
+==============================================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.utils.det_eval_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      det_eval
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

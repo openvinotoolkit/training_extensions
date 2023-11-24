@@ -1,0 +1,31 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.callbacks
+======================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference
+

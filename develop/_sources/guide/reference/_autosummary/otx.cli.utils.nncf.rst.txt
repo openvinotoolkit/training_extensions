@@ -1,0 +1,30 @@
+otx.cli.utils.nncf
+==================
+
+.. automodule:: otx.cli.utils.nncf
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_number_of_fakequantizers_in_xml
+      is_checkpoint_nncf
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

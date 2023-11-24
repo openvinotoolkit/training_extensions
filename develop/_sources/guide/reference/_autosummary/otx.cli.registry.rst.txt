@@ -1,0 +1,31 @@
+otx.cli.registry
+================
+
+.. automodule:: otx.cli.registry
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.cli.registry.registry
+

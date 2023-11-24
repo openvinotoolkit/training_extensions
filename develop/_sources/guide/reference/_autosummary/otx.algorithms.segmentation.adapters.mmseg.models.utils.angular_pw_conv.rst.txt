@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.models.utils.angular\_pw\_conv
+=========================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.utils.angular_pw_conv
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AngularPWConv
+   
+   
+
+   
+   
+   
+
+
+

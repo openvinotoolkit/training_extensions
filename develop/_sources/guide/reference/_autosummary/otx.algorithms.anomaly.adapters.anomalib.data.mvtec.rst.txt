@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.adapters.anomalib.data.mvtec
+===================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.data.mvtec
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OtxMvtecDataset
+   
+   
+
+   
+   
+   
+
+
+

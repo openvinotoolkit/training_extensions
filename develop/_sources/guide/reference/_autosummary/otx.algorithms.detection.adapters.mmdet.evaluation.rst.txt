@@ -1,0 +1,31 @@
+otx.algorithms.detection.adapters.mmdet.evaluation
+==================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.evaluation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.evaluation.evaluator
+

@@ -1,0 +1,42 @@
+otx.algorithms.action.adapters.mmaction.models.backbones.movinet
+================================================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.models.backbones.movinet
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      same_padding
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BasicBneck
+      Conv2dBNActivation
+      Conv3DBNActivation
+      ConvBlock3D
+      MoViNet
+      OTXMoViNet
+      SqueezeExcitation
+      TFAvgPool3D
+   
+   
+
+   
+   
+   
+
+
+

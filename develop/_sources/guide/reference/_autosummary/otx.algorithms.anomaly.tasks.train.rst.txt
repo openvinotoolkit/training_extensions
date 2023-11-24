@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.tasks.train
+==================================
+
+.. automodule:: otx.algorithms.anomaly.tasks.train
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TrainingTask
+   
+   
+
+   
+   
+   
+
+
+

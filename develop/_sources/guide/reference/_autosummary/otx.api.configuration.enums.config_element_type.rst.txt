@@ -1,0 +1,30 @@
+otx.api.configuration.enums.config\_element\_type
+=================================================
+
+.. automodule:: otx.api.configuration.enums.config_element_type
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigElementType
+      ElementCategory
+   
+   
+
+   
+   
+   
+
+
+

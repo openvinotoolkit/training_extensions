@@ -1,0 +1,33 @@
+otx.algorithms.anomaly.configs.detection
+========================================
+
+.. automodule:: otx.algorithms.anomaly.configs.detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.detection.draem
+   otx.algorithms.anomaly.configs.detection.padim
+   otx.algorithms.anomaly.configs.detection.stfpm
+

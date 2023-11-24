@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.utils.dataset_utils &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/utils/dataset_utils';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.utils.dataset_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Dataset utils.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions</span>
+<span class="c1"># and limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.annotation</span> <span class="kn">import</span> <span class="n">AnnotationSceneEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.dataset_item</span> <span class="kn">import</span> <span class="n">DatasetItemEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.label</span> <span class="kn">import</span> <span class="n">LabelEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model</span> <span class="kn">import</span> <span class="n">ModelEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.result_media</span> <span class="kn">import</span> <span class="n">ResultMediaEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.resultset</span> <span class="kn">import</span> <span class="n">ResultSetEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.scored_label</span> <span class="kn">import</span> <span class="n">ScoredLabel</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.rectangle</span> <span class="kn">import</span> <span class="n">Rectangle</span>
+<span class="kn">from</span> <span class="nn">otx.api.utils.vis_utils</span> <span class="kn">import</span> <span class="n">get_actmap</span>
+
+
+<div class="viewcode-block" id="get_fully_annotated_idx"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.get_fully_annotated_idx">[docs]</a><span class="k">def</span> <span class="nf">get_fully_annotated_idx</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the indices of the fully annotated items in a dataset.</span>
+
+<span class="sd">    A dataset item is fully annotated if local annotations are available, or if the item has the `normal` label.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset (DatasetEntity): Dataset that may contain both partially and fully annotated items.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[int]: List of indices of the fully annotated dataset items.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local_idx</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">gt_item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+        <span class="n">local_annotations</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">annotation</span> <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">gt_item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">Rectangle</span><span class="o">.</span><span class="n">is_full_box</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">is_anomalous</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">gt_item</span><span class="o">.</span><span class="n">get_shapes_labels</span><span class="p">())</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">local_annotations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">local_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">local_idx</span></div>
+
+
+<div class="viewcode-block" id="get_local_subset"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.get_local_subset">[docs]</a><span class="k">def</span> <span class="nf">get_local_subset</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+    <span class="n">fully_annotated_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_normal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract a subset that contains only those dataset items that have local annotations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset (DatasetEntity): Dataset from which we want to extract the locally annotated subset.</span>
+<span class="sd">        fully_annotated_idx (Optional[List[int]]): The indices of the fully annotated dataset items. If not provided,</span>
+<span class="sd">            the function will compute the indices before creating the subset.</span>
+<span class="sd">        include_normal (bool): When true, global normal annotations will be included in the local dataset.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        DatasetEntity: Output dataset with only local annotations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local_items</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">fully_annotated_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fully_annotated_idx</span> <span class="o">=</span> <span class="n">get_fully_annotated_idx</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">fully_annotated_idx</span><span class="p">:</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">local_annotations</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">annotation</span> <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">Rectangle</span><span class="o">.</span><span class="n">is_full_box</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="c1"># annotations with the normal label are considered local</span>
+        <span class="k">if</span> <span class="n">include_normal</span><span class="p">:</span>
+            <span class="n">local_annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">annotation</span>
+                    <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">is_anomalous</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">annotation</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">local_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">DatasetItemEntity</span><span class="p">(</span>
+                <span class="n">media</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">media</span><span class="p">,</span>
+                <span class="n">annotation_scene</span><span class="o">=</span><span class="n">AnnotationSceneEntity</span><span class="p">(</span>
+                    <span class="n">local_annotations</span><span class="p">,</span>
+                    <span class="n">kind</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">annotation_scene</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(),</span>
+                <span class="n">subset</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">subset</span><span class="p">,</span>
+                <span class="n">roi</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">roi</span><span class="p">,</span>
+                <span class="n">ignored_labels</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">ignored_labels</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">DatasetEntity</span><span class="p">(</span><span class="n">local_items</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">purpose</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_global_subset"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.get_global_subset">[docs]</a><span class="k">def</span> <span class="nf">get_global_subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract a subset that contains only the global annotations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset (DatasetEntity): Dataset from which we want to extract the globally annotated subset.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        DatasetEntity: Output dataset with only global annotations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">global_items</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+        <span class="n">global_annotations</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">annotation</span> <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()</span> <span class="k">if</span> <span class="n">Rectangle</span><span class="o">.</span><span class="n">is_full_box</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">global_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">DatasetItemEntity</span><span class="p">(</span>
+                <span class="n">media</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">media</span><span class="p">,</span>
+                <span class="n">annotation_scene</span><span class="o">=</span><span class="n">AnnotationSceneEntity</span><span class="p">(</span><span class="n">global_annotations</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">annotation_scene</span><span class="o">.</span><span class="n">kind</span><span class="p">),</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(),</span>
+                <span class="n">subset</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">subset</span><span class="p">,</span>
+                <span class="n">roi</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">roi</span><span class="p">,</span>
+                <span class="n">ignored_labels</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">ignored_labels</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">DatasetEntity</span><span class="p">(</span><span class="n">global_items</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">purpose</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="split_local_global_dataset"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.split_local_global_dataset">[docs]</a><span class="k">def</span> <span class="nf">split_local_global_dataset</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">DatasetEntity</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split a dataset into the globally and locally annotated subsets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset (DatasetEntity): Input dataset</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[DatasetEntity, DatasetEntity]: Tuple of the globally and locally annotated subsets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">global_dataset</span> <span class="o">=</span> <span class="n">get_global_subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="n">local_dataset</span> <span class="o">=</span> <span class="n">get_local_subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">global_dataset</span><span class="p">,</span> <span class="n">local_dataset</span></div>
+
+
+<div class="viewcode-block" id="split_local_global_resultset"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.split_local_global_resultset">[docs]</a><span class="k">def</span> <span class="nf">split_local_global_resultset</span><span class="p">(</span>
+    <span class="n">resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">ResultSetEntity</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split a resultset into the globally and locally annotated resultsets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resultset (ResultSetEntity): Input resultset</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[ResultSetEntity, ResultSetEntity]: Tuple of the globally and locally annotated resultsets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">global_gt_dataset</span> <span class="o">=</span> <span class="n">get_global_subset</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="p">)</span>
+    <span class="n">local_gt_dataset</span> <span class="o">=</span> <span class="n">get_local_subset</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="p">,</span> <span class="n">include_normal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">local_idx</span> <span class="o">=</span> <span class="n">get_fully_annotated_idx</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">ground_truth_dataset</span><span class="p">)</span>
+    <span class="n">global_pred_dataset</span> <span class="o">=</span> <span class="n">get_global_subset</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="p">)</span>
+    <span class="n">local_pred_dataset</span> <span class="o">=</span> <span class="n">get_local_subset</span><span class="p">(</span><span class="n">resultset</span><span class="o">.</span><span class="n">prediction_dataset</span><span class="p">,</span> <span class="n">local_idx</span><span class="p">,</span> <span class="n">include_normal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">global_resultset</span> <span class="o">=</span> <span class="n">ResultSetEntity</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">resultset</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">ground_truth_dataset</span><span class="o">=</span><span class="n">global_gt_dataset</span><span class="p">,</span>
+        <span class="n">prediction_dataset</span><span class="o">=</span><span class="n">global_pred_dataset</span><span class="p">,</span>
+        <span class="n">purpose</span><span class="o">=</span><span class="n">resultset</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">local_resultset</span> <span class="o">=</span> <span class="n">ResultSetEntity</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">resultset</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">ground_truth_dataset</span><span class="o">=</span><span class="n">local_gt_dataset</span><span class="p">,</span>
+        <span class="n">prediction_dataset</span><span class="o">=</span><span class="n">local_pred_dataset</span><span class="p">,</span>
+        <span class="n">purpose</span><span class="o">=</span><span class="n">resultset</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">global_resultset</span><span class="p">,</span> <span class="n">local_resultset</span></div>
+
+
+<div class="viewcode-block" id="contains_anomalous_images"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.contains_anomalous_images">[docs]</a><span class="k">def</span> <span class="nf">contains_anomalous_images</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a dataset contains any items with the anomalous label.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset (DatasetEntity): Dataset to check for anomalous items.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the dataset contains anomalous items, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get_shapes_labels</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">is_anomalous</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="c1"># pylint: disable-msg=too-many-locals</span>
+<div class="viewcode-block" id="add_saliency_maps_to_dataset_item"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.add_saliency_maps_to_dataset_item">[docs]</a><span class="k">def</span> <span class="nf">add_saliency_maps_to_dataset_item</span><span class="p">(</span>
+    <span class="n">dataset_item</span><span class="p">:</span> <span class="n">DatasetItemEntity</span><span class="p">,</span>
+    <span class="n">saliency_map</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelEntity</span><span class="p">],</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span>
+    <span class="n">predicted_scored_labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">explain_predicted_classes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">process_saliency_maps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add saliency maps (2D array for class-agnostic saliency map,</span>
+<span class="sd">    3D array or list or 2D arrays for class-wise saliency maps) to a single dataset item.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">class_wise_saliency_map</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">saliency_map</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">class_wise_saliency_map</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">saliency_map</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">class_wise_saliency_map</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saliency map has to be 2 or 3-dimensional array, &quot;</span> <span class="sa">f</span><span class="s2">&quot;but got </span><span class="si">{</span><span class="n">saliency_map</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dims.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Check saliency_map, it has to be list or np.ndarray.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">class_wise_saliency_map</span><span class="p">:</span>
+        <span class="c1"># Multiple saliency maps per image (class-wise saliency map), support e.g. ReciproCAM</span>
+        <span class="k">if</span> <span class="n">explain_predicted_classes</span><span class="p">:</span>
+            <span class="c1"># Explain only predicted classes</span>
+            <span class="k">if</span> <span class="n">predicted_scored_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;To explain only predictions, list of predicted scored labels have to be provided.&quot;</span><span class="p">)</span>
+
+            <span class="n">explain_targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">scored_label</span> <span class="ow">in</span> <span class="n">predicted_scored_labels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">scored_label</span><span class="o">.</span><span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Check for an empty label</span>
+                    <span class="n">explain_targets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">scored_label</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Explain all classes</span>
+            <span class="n">explain_targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">class_id</span><span class="p">,</span> <span class="n">class_wise_saliency_map</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">):</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">class_id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">class_wise_saliency_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">explain_targets</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">process_saliency_maps</span><span class="p">:</span>
+                    <span class="n">class_wise_saliency_map</span> <span class="o">=</span> <span class="n">get_actmap</span><span class="p">(</span>
+                        <span class="n">class_wise_saliency_map</span><span class="p">,</span> <span class="p">(</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">saliency_media</span> <span class="o">=</span> <span class="n">ResultMediaEntity</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">,</span>
+                    <span class="n">annotation_scene</span><span class="o">=</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">annotation_scene</span><span class="p">,</span>
+                    <span class="n">numpy</span><span class="o">=</span><span class="n">class_wise_saliency_map</span><span class="p">,</span>
+                    <span class="n">roi</span><span class="o">=</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">roi</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">dataset_item</span><span class="o">.</span><span class="n">append_metadata_item</span><span class="p">(</span><span class="n">saliency_media</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Single saliency map per image, support e.g. ActivationMap</span>
+        <span class="k">if</span> <span class="n">process_saliency_maps</span><span class="p">:</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">get_actmap</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">,</span> <span class="p">(</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">height</span><span class="p">))</span>
+        <span class="n">saliency_media</span> <span class="o">=</span> <span class="n">ResultMediaEntity</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Saliency Map&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">,</span>
+            <span class="n">annotation_scene</span><span class="o">=</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">annotation_scene</span><span class="p">,</span>
+            <span class="n">numpy</span><span class="o">=</span><span class="n">saliency_map</span><span class="p">,</span>
+            <span class="n">roi</span><span class="o">=</span><span class="n">dataset_item</span><span class="o">.</span><span class="n">roi</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">dataset_item</span><span class="o">.</span><span class="n">append_metadata_item</span><span class="p">(</span><span class="n">saliency_media</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="non_linear_normalization"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.utils.dataset_utils.html#otx.api.utils.dataset_utils.non_linear_normalization">[docs]</a><span class="k">def</span> <span class="nf">non_linear_normalization</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use non-linear normalization y=x**1.5 for 2D saliency maps.&quot;&quot;&quot;</span>
+
+    <span class="n">min_soft_score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">)</span>
+    <span class="c1"># make merged_map distribution positive to perform non-linear normalization y=x**1.5</span>
+    <span class="n">saliency_map</span> <span class="o">=</span> <span class="p">(</span><span class="n">saliency_map</span> <span class="o">-</span> <span class="n">min_soft_score</span><span class="p">)</span> <span class="o">**</span> <span class="mf">1.5</span>
+
+    <span class="n">max_soft_score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">)</span>
+    <span class="n">saliency_map</span> <span class="o">=</span> <span class="mf">255.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_soft_score</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span> <span class="o">*</span> <span class="n">saliency_map</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">))</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

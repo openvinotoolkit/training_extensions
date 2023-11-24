@@ -1,0 +1,35 @@
+otx.algorithms.segmentation.adapters.mmseg.models.heads
+=======================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.heads
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_otx_head
+   otx.algorithms.segmentation.adapters.mmseg.models.heads.detcon_head
+   otx.algorithms.segmentation.adapters.mmseg.models.heads.light_ham
+   otx.algorithms.segmentation.adapters.mmseg.models.heads.mmov_decode_head
+   otx.algorithms.segmentation.adapters.mmseg.models.heads.proto_head
+

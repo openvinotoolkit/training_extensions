@@ -1,0 +1,30 @@
+otx.algorithms.anomaly.tasks.openvino
+=====================================
+
+.. automodule:: otx.algorithms.anomaly.tasks.openvino
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXNNCFAnomalyDataloader
+      OpenVINOTask
+   
+   
+
+   
+   
+   
+
+
+

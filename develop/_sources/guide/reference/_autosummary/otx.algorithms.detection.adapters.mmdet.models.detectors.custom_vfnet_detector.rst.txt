@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.detectors.custom\_vfnet\_detector
+================================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomVFNet
+   
+   
+
+   
+   
+   
+
+
+

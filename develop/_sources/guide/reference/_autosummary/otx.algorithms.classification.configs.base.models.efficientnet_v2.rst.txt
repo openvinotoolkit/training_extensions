@@ -1,0 +1,23 @@
+otx.algorithms.classification.configs.base.models.efficientnet\_v2
+==================================================================
+
+.. automodule:: otx.algorithms.classification.configs.base.models.efficientnet_v2
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

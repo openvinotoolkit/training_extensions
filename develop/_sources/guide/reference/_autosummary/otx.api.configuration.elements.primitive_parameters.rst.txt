@@ -1,0 +1,36 @@
+otx.api.configuration.elements.primitive\_parameters
+====================================================
+
+.. automodule:: otx.api.configuration.elements.primitive_parameters
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      boolean_attribute
+      configurable_boolean
+      configurable_float
+      configurable_integer
+      float_selectable
+      selectable
+      set_common_metadata
+      string_attribute
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

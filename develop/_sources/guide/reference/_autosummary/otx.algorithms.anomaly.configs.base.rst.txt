@@ -1,0 +1,35 @@
+otx.algorithms.anomaly.configs.base
+===================================
+
+.. automodule:: otx.algorithms.anomaly.configs.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.base.configuration
+   otx.algorithms.anomaly.configs.base.configuration_enums
+   otx.algorithms.anomaly.configs.base.draem
+   otx.algorithms.anomaly.configs.base.padim
+   otx.algorithms.anomaly.configs.base.stfpm
+

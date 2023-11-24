@@ -1,0 +1,6 @@
+otx.core.ov.graph.parsers.cls.cls\_base\_parser
+===============================================
+
+.. currentmodule:: otx.core.ov.graph.parsers.cls
+
+.. autofunction:: cls_base_parser

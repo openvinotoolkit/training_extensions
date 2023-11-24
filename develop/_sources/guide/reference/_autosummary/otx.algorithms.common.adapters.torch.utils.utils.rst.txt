@@ -1,0 +1,30 @@
+otx.algorithms.common.adapters.torch.utils.utils
+================================================
+
+.. automodule:: otx.algorithms.common.adapters.torch.utils.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      convert_sync_batchnorm
+      model_from_timm
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

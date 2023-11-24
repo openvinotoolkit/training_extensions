@@ -1,0 +1,29 @@
+otx.core.data.adapter.visual\_prompting\_dataset\_adapter
+=========================================================
+
+.. automodule:: otx.core.data.adapter.visual_prompting_dataset_adapter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      VisualPromptingDatasetAdapter
+   
+   
+
+   
+   
+   
+
+
+

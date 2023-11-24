@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.task
+===============================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMSegmentationTask
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,1013 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.entities.model_template &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/entities/model_template';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.entities.model_template</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file defines the ModelConfiguration, ModelEntity and Model classes.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021-2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">IntEnum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">,</span> <span class="n">OmegaConf</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.configuration.elements</span> <span class="kn">import</span> <span class="n">metadata_keys</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.enums</span> <span class="kn">import</span> <span class="n">AutoHPOState</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.helper.utils</span> <span class="kn">import</span> <span class="n">search_in_config_dict</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.label</span> <span class="kn">import</span> <span class="n">Domain</span>
+
+
+<div class="viewcode-block" id="TargetDevice"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.TargetDevice">[docs]</a><span class="k">class</span> <span class="nc">TargetDevice</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents the target device for a given model.</span>
+
+<span class="sd">    This device might be used for instance be used for training or inference.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">UNSPECIFIED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">CPU</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">GPU</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">VPU</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ModelOptimizationMethod"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelOptimizationMethod">[docs]</a><span class="k">class</span> <span class="nc">ModelOptimizationMethod</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optimized model format.&quot;&quot;&quot;</span>
+
+    <span class="n">TENSORRT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">OPENVINO</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns ModelOptimizationMethod as string.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetRequirements"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.DatasetRequirements">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DatasetRequirements</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expected requirements for the dataset in order to use this algorithm.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        classes (Optional[List[str]]): Classes which must be present in the dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">classes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ExportableCodePaths"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ExportableCodePaths">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ExportableCodePaths</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The paths to the different versions of the exportable code for a given model template.&quot;&quot;&quot;</span>
+
+    <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">openvino</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="TaskFamily"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.TaskFamily">[docs]</a><span class="k">class</span> <span class="nc">TaskFamily</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Overall task family.&quot;&quot;&quot;</span>
+
+    <span class="n">VISION</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">FLOW_CONTROL</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">DATASET</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns task family as a string.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TaskInfo"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.TaskInfo">[docs]</a><span class="k">class</span> <span class="nc">TaskInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Task information.</span>
+
+<span class="sd">    NamedTuple to store information about the task type like label domain, if it is</span>
+<span class="sd">    trainable, if it is an anomaly task and if it supports global or local labels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">domain</span><span class="p">:</span> <span class="n">Domain</span>
+    <span class="n">is_trainable</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">is_anomaly</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">is_global</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">is_local</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+
+<div class="viewcode-block" id="TaskType"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.TaskType">[docs]</a><span class="k">class</span> <span class="nc">TaskType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The type of algorithm within the task family.</span>
+
+<span class="sd">    Also contains relevant information about the task type like label domain, if it is trainable,</span>
+<span class="sd">    if it is an anomaly task or if it supports global or local labels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value (int): (Unused) Unique integer for .value property of Enum (auto() does not work)</span>
+<span class="sd">        task_info (TaskInfo): NamedTuple containing information about the task&#39;s capabilities</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=unused-argument</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">task_info</span><span class="p">:</span> <span class="n">TaskInfo</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">domain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_trainable</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">is_trainable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_anomaly</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">is_anomaly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_global</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">is_global</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_local</span> <span class="o">=</span> <span class="n">task_info</span><span class="o">.</span><span class="n">is_local</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns new instance.&quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="n">NULL</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">NULL</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">DATASET</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">NULL</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">CLASSIFICATION</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">CLASSIFICATION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">SEGMENTATION</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">SEGMENTATION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">DETECTION</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ANOMALY_DETECTION</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">CROP</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">NULL</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">TILE</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">NULL</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">INSTANCE_SEGMENTATION</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ACTIVELEARNING</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">NULL</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ANOMALY_SEGMENTATION</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ANOMALY_CLASSIFICATION</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ROTATED_DETECTION</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+        <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">,</span>
+        <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FEATURE_FLAGS_OTX_ACTION_TASKS&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+        <span class="n">ACTION_CLASSIFICATION</span> <span class="o">=</span> <span class="mi">14</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+            <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">,</span>
+            <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ACTION_DETECTION</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>
+            <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">ACTION_DETECTION</span><span class="p">,</span> <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+        <span class="n">VISUAL_PROMPTING</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">TaskInfo</span><span class="p">(</span>  <span class="c1"># TODO: Is 16 okay when action flag is False?</span>
+            <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">,</span>
+            <span class="n">is_trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">is_anomaly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_global</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># TODO: check whether is it local or not</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+
+<div class="viewcode-block" id="task_type_to_label_domain"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.task_type_to_label_domain">[docs]</a><span class="k">def</span> <span class="nf">task_type_to_label_domain</span><span class="p">(</span><span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Domain</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Links the task type to the label domain enum.</span>
+
+<span class="sd">    Note that not all task types have an associated domain (e.g. crop task).</span>
+<span class="sd">    In this case, a ``ValueError`` is raised.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        task_type (TaskType): The task type to get the label domain for.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Domain: The label domain for the task type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">CLASSIFICATION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">CLASSIFICATION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">SEGMENTATION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">SEGMENTATION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FEATURE_FLAGS_OTX_ACTION_TASKS&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">mapping</span><span class="p">,</span>
+            <span class="n">TaskType</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">,</span>
+            <span class="n">TaskType</span><span class="o">.</span><span class="n">ACTION_DETECTION</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">ACTION_DETECTION</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">mapping</span><span class="p">,</span>
+            <span class="n">TaskType</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">:</span> <span class="n">Domain</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mapping</span><span class="p">[</span><span class="n">task_type</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task type </span><span class="si">{</span><span class="n">task_type</span><span class="si">}</span><span class="s2"> does not have any associated label domain.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span></div>
+
+
+<div class="viewcode-block" id="HyperParameterData"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.HyperParameterData">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">HyperParameterData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;HyperParameter Data.</span>
+
+<span class="sd">    Class that contains the raw hyper parameter data, for those hyper parameters for the model that are</span>
+<span class="sd">    user-configurable.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        base_path (Optional[str]): The path to the yaml file specifying the base configurable parameters to use in the</span>
+<span class="sd">            model. Defaults to None.</span>
+<span class="sd">        parameter_overrides (Dict): Nested dictionary that describes overrides for the metadata for the</span>
+<span class="sd">            user-configurable hyper parameters that are used in the model. This allows multiple models to share the</span>
+<span class="sd">            same base hyper-parameters, while for each individual model the defaults, parameter ranges, descriptions,</span>
+<span class="sd">            etc. can still be customized.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">parameter_overrides</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">__data</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">__has_valid_configurable_parameters</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HyperParameterData.load_parameters"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.HyperParameterData.load_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">load_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_template_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load hyper parameters.</span>
+
+<span class="sd">        Loads the actual hyper parameters defined in the file at `base_path`, and performs any overrides specified in</span>
+<span class="sd">        the `parameter_overrides`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_template_path (str): file path to the model template file in which the HyperParameters live.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">has_valid_configurable_parameters</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_template_path</span><span class="p">):</span>
+            <span class="n">model_template_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">model_template_path</span><span class="p">)</span>
+            <span class="n">base_hyper_parameter_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_template_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="p">)</span>
+
+            <span class="n">config_dict</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">base_hyper_parameter_path</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">config_dict</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__remove_parameter_values_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="n">has_valid_configurable_parameters</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Unexpected configurable parameter file found at path </span><span class="si">{</span><span class="n">base_hyper_parameter_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;, expected a dictionary-like format, got list-like instead.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_overrides</span> <span class="ow">and</span> <span class="n">has_valid_configurable_parameters</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">substitute_parameter_overrides</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__has_valid_configurable_parameters</span> <span class="o">=</span> <span class="n">has_valid_configurable_parameters</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the set of hyper parameters defined in the ModelTemplate.</span>
+
+<span class="sd">        This does not contain the actual parameter values, but instead holds the parameter schema&#39;s in</span>
+<span class="sd">        a structured manner. The actual values should be either loaded from the database, or will be initialized from</span>
+<span class="sd">        the defaults upon creating a configurable parameter object out of this data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_overrides</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if any parameter overrides are defined by the HyperParameters instance, False otherwise.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_overrides</span> <span class="o">!=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_valid_configurable_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if configurable parameters are valid.</span>
+
+<span class="sd">        Returns True if the HyperParameterData instance contains valid configurable parameters, extracted from the</span>
+<span class="sd">        model template. False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__has_valid_configurable_parameters</span>
+
+<div class="viewcode-block" id="HyperParameterData.substitute_parameter_overrides"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.HyperParameterData.substitute_parameter_overrides">[docs]</a>    <span class="k">def</span> <span class="nf">substitute_parameter_overrides</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Carries out the parameter overrides specified in the `parameter_overrides` attribute.</span>
+
+<span class="sd">        Validates whether the overridden parameters exist in the base set of configurable parameters,</span>
+<span class="sd">        and whether the metadata values that should be overridden are valid metadata attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__substitute_parameter_overrides</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_overrides</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__substitute_parameter_overrides</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">override_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">parameter_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitutes parameters form override_dict into parameter_dict.</span>
+
+<span class="sd">        Recursively substitutes overridden parameter values specified in `override_dict` into the base set of</span>
+<span class="sd">        hyper parameters passed in as `parameter_dict`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            override_dict (Dict): dictionary containing the parameter overrides</span>
+<span class="sd">            parameter_dict (Dict): dictionary that contains the base set of hyper parameters, in which the overridden</span>
+<span class="sd">                values are substituted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">override_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">metadata_keys</span><span class="o">.</span><span class="n">allows_dictionary_values</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__substitute_parameter_overrides</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">parameter_dict</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Unable to perform parameter override. Parameter or parameter group named </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;is not valid for the base hyper parameters specified in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metadata_keys</span><span class="o">.</span><span class="n">allows_model_template_override</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                    <span class="n">parameter_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not a valid keyword for hyper parameter overrides&quot;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__remove_parameter_values_from_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method removes the actual parameter values from the input parameter data.</span>
+
+<span class="sd">        These values should be removed because the parameters should be instantiated</span>
+<span class="sd">        from the default_values, instead of their values.</span>
+
+<span class="sd">        NOTE: This method modifies its input dictionary, it does not return a new copy</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Parameter dictionary to remove values from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_copy</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">metadata_keys</span><span class="o">.</span><span class="n">UI_RULES</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__remove_parameter_values_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HyperParameterData.manually_set_data_and_validate"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.HyperParameterData.manually_set_data_and_validate">[docs]</a>    <span class="k">def</span> <span class="nf">manually_set_data_and_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyper_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This function is used to manually set the hyper parameter data from a dictionary.</span>
+
+<span class="sd">        It is meant to be used in testing only, in cases where the model</span>
+<span class="sd">        template is not backed up by an actual yaml file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hyper_parameters (Dict): Dictionary containing the data to be set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">hyper_parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__has_valid_configurable_parameters</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+
+
+<div class="viewcode-block" id="InstantiationType"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.InstantiationType">[docs]</a><span class="k">class</span> <span class="nc">InstantiationType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The method to instantiate a given task.&quot;&quot;&quot;</span>
+
+    <span class="n">NONE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">CLASS</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">GRPC</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the name of the instantiation type.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Dependency"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.Dependency">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Dependency</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dependency required by the task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        source (str): Source of the dependency</span>
+<span class="sd">        destination (str): Destination folder to install the dependency</span>
+<span class="sd">        size (Optional[int]): Size of the dependency in bytes</span>
+<span class="sd">        sha256 (Optional[str]): SHA-256 checksum of the dependency file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sha256</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="EntryPoints"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.EntryPoints">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">EntryPoints</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Path of the Python classes implementing the task interface.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        base (str): Base interface implementing the functionality in a framework such as PyTorch or TensorFlow</span>
+<span class="sd">        openvino (Optional[str]): OpenVINO interface.</span>
+<span class="sd">        nncf (Optional[str]): NNCF interface</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">openvino</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">nncf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ModelCategory"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelCategory">[docs]</a><span class="k">class</span> <span class="nc">ModelCategory</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents model category regarding accuracy &amp; speed trade-off.&quot;&quot;&quot;</span>
+
+    <span class="n">SPEED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">BALANCE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">ACCURACY</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">OTHER</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the name of the model category.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ModelStatus"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelStatus">[docs]</a><span class="k">class</span> <span class="nc">ModelStatus</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents model status regarding deprecation process.&quot;&quot;&quot;</span>
+
+    <span class="n">ACTIVE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">DEPRECATED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the name of the model status.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<div class="viewcode-block" id="ModelTemplate"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelTemplate">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class represents a Task in the Task database.</span>
+
+<span class="sd">    It can be either a CLASS type, with the class path specified or a GRPC type with its address.</span>
+<span class="sd">    The task chain uses this information to setup a `ChainLink` (A task in the chain)</span>
+
+<span class="sd">    model_template_id (str): ID of the model template</span>
+<span class="sd">    model_template_path (str): path to the original model template file</span>
+<span class="sd">    name (str): user-friendly name for the algorithm used in the task</span>
+<span class="sd">    task_family (TaskFamily): overall task family of the task. One of VISION, FLOW_CONTROL AND DATASET.</span>
+<span class="sd">    task_type (TaskType): Type of algorithm within task family.</span>
+<span class="sd">    instantiation (InstantiationType): InstantiationType (CLASS or GRPC)</span>
+<span class="sd">    summary (str): Summary of what the algorithm does. Defaults to &quot;&quot;.</span>
+<span class="sd">    framework (Optional[str]): The framework used by the algorithm. Defaults to None.</span>
+<span class="sd">    max_nodes (int): Max number of nodes for training. Defaults to 1.</span>
+<span class="sd">    application (Optional[str]): Name of the application solved by this algorithm. Defaults to None.</span>
+<span class="sd">    dependencies (Liar[Dependency]): List of dependencies required by the algorithm. Defaults to empty `field`.</span>
+<span class="sd">    initial_weights (Optional[str]): Optional URL to the initial weights used by the algorithm. Defaults to None</span>
+<span class="sd">    training_targets (List[TargetDevice]): device used for training. Defaults to empty `field`.</span>
+<span class="sd">    inference_targets (List[TargetDevices]): device used for inference. Defaults to empty `field`.</span>
+<span class="sd">    dataset_requirements (DatasetRequirements): list of dataset requirements. Defaults to empty `field`.</span>
+<span class="sd">    model_optimization_methods (List[ModelOptimizationMethod]): list of ModelOptimizationMethod.</span>
+<span class="sd">        This lists all methods available to optimize the inference model for the task</span>
+<span class="sd">    hyper_parameters (HyperParameterData): HyperParameterData object containing the base path to the configurable</span>
+<span class="sd">        parameter definition, as well as any overrides for the base parameters that are specific for the</span>
+<span class="sd">        current template.</span>
+<span class="sd">    is_trainable (bool): specify whether task is trainable</span>
+<span class="sd">    capabilities (List[str]): list of task capabilities</span>
+<span class="sd">    grpc_address (Optional[str]): the grpc host address (for instantiation type == GRPC)</span>
+<span class="sd">    entrypoints (Optional[Entrypoints]): Entrypoints implementing the Python task interface</span>
+<span class="sd">    base_model_path (str): Path to template file for the base model used for nncf compression.</span>
+<span class="sd">    exportable_code_paths (ExportableCodePaths): if it exists, the path to the exportable code sources.</span>
+<span class="sd">        Defaults to empty `field`.</span>
+<span class="sd">    task_type_sort_priority (int): priority of order of how tasks are shown in the pipeline dropdown for a given task</span>
+<span class="sd">        type. E.g. for classification Inception is default and has weight 0. Unassigned priority will have -1 as</span>
+<span class="sd">        priority. mobilenet is less important, and has a higher value. Default is zero (the highest priority).</span>
+<span class="sd">    gigaflops (float): how many billions of operations are required to do inference on a single data item.</span>
+<span class="sd">    size (float): how much disk space the model will approximately take.</span>
+<span class="sd">    model_category (ModelCategory): Represents model category regarding accuracy &amp; speed trade-off. Default to OTHER.</span>
+<span class="sd">    model_status (ModelStatus): Represents model status regarding deprecation process. Default to ACTIVE.</span>
+<span class="sd">    is_default_for_task (bool): Whether this model is a default recommendation for the task</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model_template_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">model_template_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">task_family</span><span class="p">:</span> <span class="n">TaskFamily</span>
+    <span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span>
+    <span class="n">instantiation</span><span class="p">:</span> <span class="n">InstantiationType</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">framework</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">max_nodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">application</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dependencies</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dependency</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">initial_weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">training_targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TargetDevice</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">inference_targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TargetDevice</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">dataset_requirements</span><span class="p">:</span> <span class="n">DatasetRequirements</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">DatasetRequirements</span><span class="p">)</span>
+    <span class="n">model_optimization_methods</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ModelOptimizationMethod</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">hyper_parameters</span><span class="p">:</span> <span class="n">HyperParameterData</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">HyperParameterData</span><span class="p">)</span>
+    <span class="n">is_trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">capabilities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">grpc_address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">entrypoints</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EntryPoints</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">base_model_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">exportable_code_paths</span><span class="p">:</span> <span class="n">ExportableCodePaths</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">ExportableCodePaths</span><span class="p">)</span>
+    <span class="n">task_type_sort_priority</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">gigaflops</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">hpo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model_category</span><span class="p">:</span> <span class="n">ModelCategory</span> <span class="o">=</span> <span class="n">ModelCategory</span><span class="o">.</span><span class="n">OTHER</span>
+    <span class="n">model_status</span><span class="p">:</span> <span class="n">ModelStatus</span> <span class="o">=</span> <span class="n">ModelStatus</span><span class="o">.</span><span class="n">ACTIVE</span>
+    <span class="n">is_default_for_task</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do sanitation checks before loading the hyper-parameters.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiation</span> <span class="o">==</span> <span class="n">InstantiationType</span><span class="o">.</span><span class="n">GRPC</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">grpc_address</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Task is registered as gRPC, but no gRPC address is specified&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiation</span> <span class="o">==</span> <span class="n">InstantiationType</span><span class="o">.</span><span class="n">CLASS</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">entrypoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Task is registered as CLASS, but entrypoints were not specified&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_family</span> <span class="o">==</span> <span class="n">TaskFamily</span><span class="o">.</span><span class="n">VISION</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="o">.</span><span class="n">base_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Task is registered as a VISION task but no hyper parameters were defined.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_family</span> <span class="o">!=</span> <span class="n">TaskFamily</span><span class="o">.</span><span class="n">VISION</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="o">.</span><span class="n">base_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Hyper parameters are currently not supported for non-VISION tasks.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Load the full hyper parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="o">.</span><span class="n">load_parameters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_template_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ModelTemplate.computes_uncertainty_score"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelTemplate.computes_uncertainty_score">[docs]</a>    <span class="k">def</span> <span class="nf">computes_uncertainty_score</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns true if &quot;compute_uncertainty_score&quot; is in capabilities false otherwise.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;compute_uncertainty_score&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">capabilities</span></div>
+
+<div class="viewcode-block" id="ModelTemplate.computes_representations"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelTemplate.computes_representations">[docs]</a>    <span class="k">def</span> <span class="nf">computes_representations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns true if &quot;compute_representations&quot; is in capabilities.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;compute_representations&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">capabilities</span></div>
+
+<div class="viewcode-block" id="ModelTemplate.is_task_global"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelTemplate.is_task_global">[docs]</a>    <span class="k">def</span> <span class="nf">is_task_global</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns ``True`` if the task is global task i.e. if task produces global labels.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="o">.</span><span class="n">is_global</span></div>
+
+<div class="viewcode-block" id="ModelTemplate.supports_auto_hpo"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.ModelTemplate.supports_auto_hpo">[docs]</a>    <span class="k">def</span> <span class="nf">supports_auto_hpo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns `True` if the algorithm supports automatic hyper parameter optimization, `False` otherwise.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="o">.</span><span class="n">has_valid_configurable_parameters</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">auto_hpo_state_results</span> <span class="o">=</span> <span class="n">search_in_config_dict</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">key_to_search</span><span class="o">=</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">AUTO_HPO_STATE</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">auto_hpo_state_results</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">AutoHPOState</span><span class="o">.</span><span class="n">POSSIBLE</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+
+<div class="viewcode-block" id="NullModelTemplate"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.NullModelTemplate">[docs]</a><span class="k">class</span> <span class="nc">NullModelTemplate</span><span class="p">(</span><span class="n">ModelTemplate</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represent an empty model template. Note that a task based on this model template cannot be instantiated.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">model_template_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">model_template_path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">task_family</span><span class="o">=</span><span class="n">TaskFamily</span><span class="o">.</span><span class="n">FLOW_CONTROL</span><span class="p">,</span>
+            <span class="n">task_type</span><span class="o">=</span><span class="n">TaskType</span><span class="o">.</span><span class="n">NULL</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Null algorithm&quot;</span><span class="p">,</span>
+            <span class="n">instantiation</span><span class="o">=</span><span class="n">InstantiationType</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span>
+            <span class="n">capabilities</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span></div>
+
+
+<span class="n">ANOMALY_TASK_TYPES</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TaskType</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">TRAINABLE_TASK_TYPES</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TaskType</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">CLASSIFICATION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">SEGMENTATION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+    <span class="n">TaskType</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FEATURE_FLAGS_OTX_ACTION_TASKS&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+    <span class="n">TRAINABLE_TASK_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">*</span><span class="n">TRAINABLE_TASK_TYPES</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">ACTION_DETECTION</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+    <span class="n">TRAINABLE_TASK_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">*</span><span class="n">TRAINABLE_TASK_TYPES</span><span class="p">,</span>
+        <span class="n">TaskType</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_model_template_from_omegaconf</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an OmegaConf configuration into a model template.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (Union[DictConfig, ListConfig]): The configuration to parse.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ModelTemplate: The parsed model template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">structured</span><span class="p">(</span><span class="n">ModelTemplate</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">ModelTemplate</span><span class="p">,</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_object</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="parse_model_template"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.parse_model_template">[docs]</a><span class="k">def</span> <span class="nf">parse_model_template</span><span class="p">(</span><span class="n">model_template_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a model template from a file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_template_path (str): Path to the model template template.yaml file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ModelTemplate: The model template parsed from the file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_template_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected the configuration file to contain a dictionary, not a list&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;model_template_id&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_template_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_template_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_template_path</span>
+    <span class="k">return</span> <span class="n">_parse_model_template_from_omegaconf</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_model_template_from_dict"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.api.entities.model_template.html#otx.api.entities.model_template.parse_model_template_from_dict">[docs]</a><span class="k">def</span> <span class="nf">parse_model_template_from_dict</span><span class="p">(</span><span class="n">model_template_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a model template from a dictionary.</span>
+
+<span class="sd">    Note that the model_template_id must be defined inside the dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_template_dict (dict): Dictionary containing the model template.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ModelTemplate: The model template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model_template_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_model_template_from_omegaconf</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

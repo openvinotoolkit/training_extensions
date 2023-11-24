@@ -1,0 +1,38 @@
+otx.algorithms.detection.adapters.mmdet.evaluation.evaluator
+============================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.evaluation.evaluator
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      mask_iou
+      print_map_summary
+      sanitize_coordinates
+      tpfpmiou_func
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Evaluator
+   
+   
+
+   
+   
+   
+
+
+

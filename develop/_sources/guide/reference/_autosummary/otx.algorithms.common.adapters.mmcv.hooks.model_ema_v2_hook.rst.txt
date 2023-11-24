@@ -1,0 +1,30 @@
+otx.algorithms.common.adapters.mmcv.hooks.model\_ema\_v2\_hook
+==============================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.hooks.model_ema_v2_hook
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ModelEmaV2
+      ModelEmaV2Hook
+   
+   
+
+   
+   
+   
+
+
+

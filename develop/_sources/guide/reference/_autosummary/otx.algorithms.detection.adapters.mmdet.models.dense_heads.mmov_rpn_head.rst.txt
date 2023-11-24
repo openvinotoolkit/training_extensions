@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.dense\_heads.mmov\_rpn\_head
+===========================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_rpn_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVRPNHead
+   
+   
+
+   
+   
+   
+
+
+

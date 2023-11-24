@@ -1,0 +1,521 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.segmentation.adapters.mmseg.configurer &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/segmentation/adapters/mmseg/configurer';</script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.segmentation.adapters.mmseg.configurer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Base configurer for mmseg config.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.runner</span> <span class="kn">import</span> <span class="n">CheckpointLoader</span>
+<span class="kn">from</span> <span class="nn">mmcv.utils</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.clsincr_mixin</span> <span class="kn">import</span> <span class="n">IncrConfigurerMixin</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.configurer</span> <span class="kn">import</span> <span class="n">BaseConfigurer</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.semisl_mixin</span> <span class="kn">import</span> <span class="n">SemiSLConfigurerMixin</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.utils.config_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InputSizeManager</span><span class="p">,</span>
+    <span class="n">remove_custom_hook</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils</span> <span class="kn">import</span> <span class="n">append_dist_rank_suffix</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.segmentation.adapters.mmseg.models.heads</span> <span class="kn">import</span> <span class="n">otx_head_factory</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="c1"># pylint: disable=too-many-public-methods</span>
+<div class="viewcode-block" id="SegmentationConfigurer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer">[docs]</a><span class="k">class</span> <span class="nc">SegmentationConfigurer</span><span class="p">(</span><span class="n">BaseConfigurer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch config to support otx train.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SegmentationConfigurer.configure_task"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer.configure_task">[docs]</a>    <span class="k">def</span> <span class="nf">configure_task</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch config to support training algorithm.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_task</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;task_adapt&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configure_decode_head</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SegmentationConfigurer.configure_classes"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer.configure_classes">[docs]</a>    <span class="k">def</span> <span class="nf">configure_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch classes for model and dataset.&quot;&quot;&quot;</span>
+        <span class="n">org_model_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_classes</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">data_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_classes</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;background&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">org_model_classes</span><span class="p">:</span>
+            <span class="n">org_model_classes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;background&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">org_model_classes</span>
+        <span class="k">if</span> <span class="s2">&quot;background&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_classes</span><span class="p">:</span>
+            <span class="n">data_classes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;background&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data_classes</span>
+
+        <span class="c1"># Model classes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_adapt_op</span> <span class="o">==</span> <span class="s2">&quot;REPLACE&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_classes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># background</span>
+                <span class="n">model_classes</span> <span class="o">=</span> <span class="n">org_model_classes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">model_classes</span> <span class="o">=</span> <span class="n">data_classes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_adapt_op</span> <span class="o">==</span> <span class="s2">&quot;MERGE&quot;</span><span class="p">:</span>
+            <span class="n">model_classes</span> <span class="o">=</span> <span class="n">org_model_classes</span> <span class="o">+</span> <span class="p">[</span><span class="bp">cls</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">data_classes</span> <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">org_model_classes</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task_adapt_op</span><span class="si">}</span><span class="s2"> is not supported for task_adapt options!&quot;</span><span class="p">)</span>
+
+        <span class="n">cfg</span><span class="o">.</span><span class="n">task_adapt</span><span class="o">.</span><span class="n">final</span> <span class="o">=</span> <span class="n">model_classes</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">task_adapt</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">src_classes</span><span class="o">=</span><span class="n">org_model_classes</span><span class="p">,</span>
+            <span class="n">dst_classes</span><span class="o">=</span><span class="n">model_classes</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">org_model_classes</span> <span class="o">=</span> <span class="n">org_model_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span> <span class="o">=</span> <span class="n">model_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_classes</span> <span class="o">=</span> <span class="n">data_classes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configure_head</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SegmentationConfigurer.configure_decode_head"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer.configure_decode_head">[docs]</a>    <span class="k">def</span> <span class="nf">configure_decode_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change to incremental loss (ignore mode) and substitute head with otx universal head.&quot;&quot;&quot;</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;decode_head&quot;</span><span class="p">,</span> <span class="s2">&quot;auxiliary_head&quot;</span><span class="p">):</span>
+            <span class="n">decode_head</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">decode_head</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">decode_head</span><span class="o">.</span><span class="n">base_type</span> <span class="o">=</span> <span class="n">decode_head</span><span class="o">.</span><span class="n">type</span>
+                <span class="n">decode_head</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">otx_head_factory</span>
+                <span class="k">if</span> <span class="n">ignore</span><span class="p">:</span>
+                    <span class="n">cfg_loss_decode</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;CrossEntropyLossWithIgnore&quot;</span><span class="p">,</span>
+                        <span class="n">use_sigmoid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">loss_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">decode_head</span><span class="o">.</span><span class="n">loss_decode</span> <span class="o">=</span> <span class="n">cfg_loss_decode</span></div>
+
+    <span class="c1"># pylint: disable=too-many-branches</span>
+    <span class="k">def</span> <span class="nf">_configure_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch number of classes of head.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;decode_head&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+            <span class="n">decode_head</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">decode_head</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">decode_head</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">decode_head</span><span class="p">:</span>
+                    <span class="n">head</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">decode_head</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span><span class="p">)</span>
+
+            <span class="c1"># For SupConDetCon</span>
+            <span class="k">if</span> <span class="s2">&quot;SupConDetCon&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
+                <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;auxiliary_head&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">auxiliary_head</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SegmentationConfigurer.configure_ckpt"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer.configure_ckpt">[docs]</a>    <span class="k">def</span> <span class="nf">configure_ckpt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">model_ckpt_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch checkpoint path for pretrained weight.</span>
+
+<span class="sd">        Replace cfg.load_from to model_ckpt_path</span>
+<span class="sd">        Replace cfg.load_from to pretrained</span>
+<span class="sd">        Replace cfg.resume_from to cfg.load_from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_ckpt</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">model_ckpt_path</span><span class="p">)</span>
+        <span class="c1"># patch checkpoint if needed (e.g. pretrained weights from mmseg)</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;load_from&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">model_ckpt_path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resume&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">load_from</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_chkpt</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">load_from</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SegmentationConfigurer.patch_chkpt"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer.patch_chkpt">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">patch_chkpt</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Modify state dict for pretrained weights to match model state dict.&quot;&quot;&quot;</span>
+        <span class="n">ckpt</span> <span class="o">=</span> <span class="n">CheckpointLoader</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">local_torch_hub_folder</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">get_dir</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;state_dict&quot;</span> <span class="ow">in</span> <span class="n">ckpt</span><span class="p">:</span>
+            <span class="n">ckpt</span> <span class="o">=</span> <span class="n">ckpt</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">]</span>
+            <span class="n">new_ckpt</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="n">modified</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># patch pre-trained checkpoint for model</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ckpt</span><span class="p">:</span>
+                <span class="c1"># we should add backbone prefix to backbone parameters names to load it for our models</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;backbone&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;head&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="n">new_name</span> <span class="o">=</span> <span class="s2">&quot;backbone.&quot;</span> <span class="o">+</span> <span class="n">name</span>
+                    <span class="n">modified</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_name</span> <span class="o">=</span> <span class="n">name</span>
+                <span class="n">new_ckpt</span><span class="p">[</span><span class="n">new_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">modified</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">new_path</span><span class="p">:</span>
+                    <span class="n">new_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_torch_hub_folder</span><span class="p">,</span> <span class="s2">&quot;converted.pth&quot;</span><span class="p">)</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="n">append_dist_rank_suffix</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">new_ckpt</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">new_path</span>
+        <span class="k">return</span> <span class="n">ckpt_path</span></div>
+
+<div class="viewcode-block" id="SegmentationConfigurer.configure_input_size"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SegmentationConfigurer.configure_input_size">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">configure_input_size</span><span class="p">(</span>
+        <span class="n">cfg</span><span class="p">,</span> <span class="n">input_size</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">model_ckpt_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change input size if necessary.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">input_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># InputSizePreset.DEFAULT</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Segmentation models have different input size in train and val data pipeline</span>
+        <span class="n">base_input_size</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span>
+            <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mi">544</span><span class="p">,</span>
+            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="mi">544</span><span class="p">,</span>
+            <span class="s2">&quot;unlabeled&quot;</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">manager</span> <span class="o">=</span> <span class="n">InputSizeManager</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">base_input_size</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">input_size</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>  <span class="c1"># InputSizePreset.AUTO</span>
+            <span class="k">if</span> <span class="n">training</span><span class="p">:</span>
+                <span class="n">input_size</span> <span class="o">=</span> <span class="n">BaseConfigurer</span><span class="o">.</span><span class="n">adapt_input_size_to_dataset</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">manager</span><span class="p">,</span> <span class="n">use_annotations</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">input_size</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_trained_input_size</span><span class="p">(</span><span class="n">model_ckpt_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">input_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+
+        <span class="n">manager</span><span class="o">.</span><span class="n">set_input_size</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input size is changed to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">input_size</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="IncrSegmentationConfigurer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.IncrSegmentationConfigurer">[docs]</a><span class="k">class</span> <span class="nc">IncrSegmentationConfigurer</span><span class="p">(</span><span class="n">IncrConfigurerMixin</span><span class="p">,</span> <span class="n">SegmentationConfigurer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch config to support incremental learning for semantic segmentation.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IncrSegmentationConfigurer.is_incremental"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.IncrSegmentationConfigurer.is_incremental">[docs]</a>    <span class="k">def</span> <span class="nf">is_incremental</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether current model classes is increased from original model classes.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Revisit this part when removing bg label -&gt; it should be 1 because of &#39;background&#39; label</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">org_model_classes</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">org_model_classes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_classes</span>
+        <span class="p">):</span>
+            <span class="n">is_cls_incr</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">is_cls_incr</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">is_cls_incr</span></div></div>
+
+
+<div class="viewcode-block" id="SemiSLSegmentationConfigurer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SemiSLSegmentationConfigurer">[docs]</a><span class="k">class</span> <span class="nc">SemiSLSegmentationConfigurer</span><span class="p">(</span><span class="n">SemiSLConfigurerMixin</span><span class="p">,</span> <span class="n">SegmentationConfigurer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch config to support semi supervised learning for semantic segmentation.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SemiSLSegmentationConfigurer.configure_task"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.configurer.html#otx.algorithms.segmentation.adapters.mmseg.configurer.SemiSLSegmentationConfigurer.configure_task">[docs]</a>    <span class="k">def</span> <span class="nf">configure_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adjust settings for task adaptation.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_task</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Remove task adapt hook (set default torch random sampler)</span>
+        <span class="n">remove_custom_hook</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;TaskAdaptHook&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

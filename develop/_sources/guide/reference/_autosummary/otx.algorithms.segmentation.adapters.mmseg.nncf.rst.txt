@@ -1,0 +1,33 @@
+otx.algorithms.segmentation.adapters.mmseg.nncf
+===============================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.nncf
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.adapters.mmseg.nncf.builder
+   otx.algorithms.segmentation.adapters.mmseg.nncf.patches
+   otx.algorithms.segmentation.adapters.mmseg.nncf.task
+

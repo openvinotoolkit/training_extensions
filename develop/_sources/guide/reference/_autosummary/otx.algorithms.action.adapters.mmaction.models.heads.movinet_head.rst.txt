@@ -1,0 +1,29 @@
+otx.algorithms.action.adapters.mmaction.models.heads.movinet\_head
+==================================================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.models.heads.movinet_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MoViNetHead
+   
+   
+
+   
+   
+   
+
+
+

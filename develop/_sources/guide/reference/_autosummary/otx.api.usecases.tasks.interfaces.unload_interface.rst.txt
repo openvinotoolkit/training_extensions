@@ -1,0 +1,29 @@
+otx.api.usecases.tasks.interfaces.unload\_interface
+===================================================
+
+.. automodule:: otx.api.usecases.tasks.interfaces.unload_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IUnload
+   
+   
+
+   
+   
+   
+
+
+

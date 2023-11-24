@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.detection.x3d\_fast\_rcnn.data\_pipeline
+======================================================================
+
+.. automodule:: otx.algorithms.action.configs.detection.x3d_fast_rcnn.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

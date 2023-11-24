@@ -1,0 +1,506 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/segmentation/adapters/mmseg/models/losses/detcon_loss';</script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;DetCon loss.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># pylint: disable=no-name-in-module, not-callable</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">mmseg.models.builder</span> <span class="kn">import</span> <span class="n">LOSSES</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+
+<div class="viewcode-block" id="manual_cross_entropy"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.manual_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">manual_cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manually calculate weighted cross entropy.&quot;&quot;&quot;</span>
+    <span class="n">cross_entropy</span> <span class="o">=</span> <span class="o">-</span><span class="n">weight</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">labels</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cross_entropy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetConLoss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss">[docs]</a><span class="nd">@LOSSES</span><span class="o">.</span><span class="n">register_module</span>
+<span class="k">class</span> <span class="nc">DetConLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modified from https://github.com/deepmind/detcon/blob/main/utils/losses.py.</span>
+
+<span class="sd">    Compute the NCE scores from pairs of predictions and targets.</span>
+<span class="sd">    This implements the batched form of the loss described in</span>
+<span class="sd">    Section 3.1, Equation 3 in https://arxiv.org/pdf/2103.10957.pdf.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        temperature: (float) the temperature to use for the NCE loss.</span>
+<span class="sd">        use_replicator_loss (bool): use cross-replica samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">use_replicator_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span><span class="p">,</span>
+    <span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">temperature</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_replicator_loss</span> <span class="o">=</span> <span class="n">use_replicator_loss</span>
+
+<div class="viewcode-block" id="DetConLoss.get_distributed_tensors"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.get_distributed_tensors">[docs]</a>    <span class="k">def</span> <span class="nf">get_distributed_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target1</span><span class="p">,</span> <span class="n">target2</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Grab tensors across replicas during distributed training.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_replicator_loss</span><span class="p">:</span>
+            <span class="c1"># Grab tensor across replicas and expand first dimension</span>
+            <span class="n">world_size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
+            <span class="n">target1_large</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">target1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">world_size</span><span class="p">)]</span>
+            <span class="n">target2_large</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">target2</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">world_size</span><span class="p">)]</span>
+            <span class="n">dist</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">target1_large</span><span class="p">,</span> <span class="n">target1</span><span class="p">)</span>
+            <span class="n">dist</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">target2_large</span><span class="p">,</span> <span class="n">target2</span><span class="p">)</span>
+            <span class="n">target1_large</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">target1_large</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">target2_large</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">target2_large</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Fold into batch dimension</span>
+            <span class="n">target1_large</span> <span class="o">=</span> <span class="n">target1_large</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span>
+            <span class="n">target2_large</span> <span class="o">=</span> <span class="n">target2_large</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span>
+
+            <span class="c1"># Create the labels by using the current replica ID and offsetting.</span>
+            <span class="n">replica_id</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+            <span class="n">labels_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span> <span class="o">+</span> <span class="n">replica_id</span> <span class="o">*</span> <span class="n">batch_size</span>
+            <span class="n">enlarged_bs</span> <span class="o">=</span> <span class="n">target1_large</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">labels_idx</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">enlarged_bs</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target1_large</span> <span class="o">=</span> <span class="n">target1</span>
+            <span class="n">target2_large</span> <span class="o">=</span> <span class="n">target2</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">batch_size</span><span class="p">),</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">target1_large</span><span class="p">,</span> <span class="n">target2_large</span><span class="p">,</span> <span class="n">labels</span></div>
+
+    <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+<div class="viewcode-block" id="DetConLoss.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pred1</span><span class="p">,</span>
+        <span class="n">pred2</span><span class="p">,</span>
+        <span class="n">target1</span><span class="p">,</span>
+        <span class="n">target2</span><span class="p">,</span>
+        <span class="n">pind1</span><span class="p">,</span>
+        <span class="n">pind2</span><span class="p">,</span>
+        <span class="n">tind1</span><span class="p">,</span>
+        <span class="n">tind2</span><span class="p">,</span>
+        <span class="n">local_negatives</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward loss.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pred1 (Tensor): (b, num_samples, d) the prediction from first view.</span>
+<span class="sd">            pred2 (Tensor): (b, num_samples, d) the prediction from second view.</span>
+<span class="sd">            target1 (Tensor): (b, num_samples, d) the projection from first view.</span>
+<span class="sd">            target2 (Tensor): (b, num_samples, d) the projection from second view.</span>
+<span class="sd">            pind1 (Tensor): (b, num_samples) mask indices for first view&#39;s prediction.</span>
+<span class="sd">            pind2 (Tensor): (b, num_samples) mask indices for second view&#39;s prediction.</span>
+<span class="sd">            tind1 (Tensor): (b, num_samples) mask indices for first view&#39;s projection.</span>
+<span class="sd">            tind2 (Tensor): (b, num_samples) mask indices for second view&#39;s projection.</span>
+<span class="sd">            local_negatives (bool): whether to include local negatives.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, Tensor]: A single scalar loss for the XT-NCE objective.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span> <span class="o">=</span> <span class="n">pred1</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">main_dtype</span> <span class="o">=</span> <span class="n">pred1</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="c1"># infinity_proxy is reduced to avoid overflow when training w/ fp16.</span>
+        <span class="n">infinity_proxy</span> <span class="o">=</span> <span class="mf">1e4</span>  <span class="c1"># Used for masks to proxy a very large number.</span>
+
+        <span class="k">def</span> <span class="nf">make_same_obj</span><span class="p">(</span><span class="n">ind_0</span><span class="p">,</span> <span class="n">ind_1</span><span class="p">):</span>
+            <span class="n">same_obj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span>
+                <span class="n">ind_0</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                <span class="n">ind_1</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">]),</span>
+            <span class="p">)</span>
+            <span class="n">same_obj</span> <span class="o">=</span> <span class="n">same_obj</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">main_dtype</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">same_obj</span>
+
+        <span class="n">same_obj_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="p">(</span><span class="n">pind</span><span class="p">,</span> <span class="n">tind</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="s2">&quot;ab&quot;</span><span class="p">,</span> <span class="s2">&quot;ba&quot;</span><span class="p">,</span> <span class="s2">&quot;bb&quot;</span><span class="p">],</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">([</span><span class="n">pind1</span><span class="p">,</span> <span class="n">pind2</span><span class="p">],</span> <span class="p">[</span><span class="n">tind1</span><span class="p">,</span> <span class="n">tind2</span><span class="p">])),</span>
+        <span class="p">):</span>
+            <span class="n">same_obj_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_same_obj</span><span class="p">(</span><span class="n">pind</span><span class="p">,</span> <span class="n">tind</span><span class="p">)</span>
+
+        <span class="c1"># L2 normalize the tensors to use for the cosine-similarity</span>
+        <span class="k">def</span> <span class="nf">normalize_same_dtype</span><span class="p">(</span><span class="n">logit</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># modified from torch.nn.functional.normalize</span>
+            <span class="n">denom</span> <span class="o">=</span> <span class="n">logit</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">logit</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">logit</span> <span class="o">/</span> <span class="n">denom</span>
+
+        <span class="n">pred1</span> <span class="o">=</span> <span class="n">normalize_same_dtype</span><span class="p">(</span><span class="n">pred1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">main_dtype</span><span class="p">)</span>
+        <span class="n">pred2</span> <span class="o">=</span> <span class="n">normalize_same_dtype</span><span class="p">(</span><span class="n">pred2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">main_dtype</span><span class="p">)</span>
+        <span class="n">target1</span> <span class="o">=</span> <span class="n">normalize_same_dtype</span><span class="p">(</span><span class="n">target1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">main_dtype</span><span class="p">)</span>
+        <span class="n">target2</span> <span class="o">=</span> <span class="n">normalize_same_dtype</span><span class="p">(</span><span class="n">target2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">main_dtype</span><span class="p">)</span>
+        <span class="n">target1_large</span><span class="p">,</span> <span class="n">target2_large</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distributed_tensors</span><span class="p">(</span>
+            <span class="n">target1</span><span class="p">,</span> <span class="n">target2</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">pred1</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Do our matmuls and mask out appropriately.</span>
+        <span class="n">logits_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="s2">&quot;ab&quot;</span><span class="p">,</span> <span class="s2">&quot;ba&quot;</span><span class="p">,</span> <span class="s2">&quot;bb&quot;</span><span class="p">],</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">([</span><span class="n">pred1</span><span class="p">,</span> <span class="n">pred2</span><span class="p">],</span> <span class="p">[</span><span class="n">target1_large</span><span class="p">,</span> <span class="n">target2_large</span><span class="p">])),</span>
+        <span class="p">):</span>
+            <span class="n">logits_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;abk,uvk-&gt;abuv&quot;</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
+
+        <span class="n">labels_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">labels</span> <span class="o">*</span> <span class="n">same_obj</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">same_obj</span> <span class="ow">in</span> <span class="n">same_obj_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="s2">&quot;bb&quot;</span><span class="p">]:</span>
+            <span class="n">logits_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">-=</span> <span class="n">infinity_proxy</span> <span class="o">*</span> <span class="n">labels</span> <span class="o">*</span> <span class="n">same_obj_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span>
+            <span class="n">labels_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">local_negatives</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="s2">&quot;ab&quot;</span><span class="p">,</span> <span class="s2">&quot;ba&quot;</span><span class="p">,</span> <span class="s2">&quot;bb&quot;</span><span class="p">]:</span>
+                <span class="n">logits_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">-=</span> <span class="n">infinity_proxy</span> <span class="o">*</span> <span class="n">labels</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">same_obj_dict</span><span class="p">[</span><span class="n">pair</span><span class="p">])</span>
+
+        <span class="n">labels_concat</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">labels_dict</span><span class="p">[</span><span class="s2">&quot;ab&quot;</span><span class="p">],</span> <span class="n">labels_dict</span><span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">labels_dict</span><span class="p">[</span><span class="s2">&quot;ba&quot;</span><span class="p">],</span> <span class="n">labels_dict</span><span class="p">[</span><span class="s2">&quot;bb&quot;</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="p">]</span>
+
+        <span class="n">num_positives</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">label_concat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">label_concat</span> <span class="ow">in</span> <span class="n">labels_concat</span><span class="p">]</span>
+
+        <span class="n">labels_concat</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">label_concat</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">num_positive</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">num_positive</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">label_concat</span><span class="p">,</span> <span class="n">num_positive</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels_concat</span><span class="p">,</span> <span class="n">num_positives</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">obj_areas</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">make_same_obj</span><span class="p">(</span><span class="n">pind</span><span class="p">,</span> <span class="n">pind</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="k">for</span> <span class="n">pind</span> <span class="ow">in</span> <span class="p">[</span><span class="n">pind1</span><span class="p">,</span> <span class="n">pind2</span><span class="p">]]</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">greater</span><span class="p">(</span><span class="n">num_positive</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">/</span> <span class="n">obj_area</span>
+            <span class="k">for</span> <span class="n">num_positive</span><span class="p">,</span> <span class="n">obj_area</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">num_positives</span><span class="p">,</span> <span class="n">obj_areas</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">logits_concat</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">logits_dict</span><span class="p">[</span><span class="s2">&quot;ab&quot;</span><span class="p">],</span> <span class="n">logits_dict</span><span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">logits_dict</span><span class="p">[</span><span class="s2">&quot;ba&quot;</span><span class="p">],</span> <span class="n">logits_dict</span><span class="p">[</span><span class="s2">&quot;bb&quot;</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="p">]</span>
+
+        <span class="n">loss_a</span> <span class="o">=</span> <span class="n">manual_cross_entropy</span><span class="p">(</span><span class="n">logits_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">labels_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">loss_b</span> <span class="o">=</span> <span class="n">manual_cross_entropy</span><span class="p">(</span><span class="n">logits_concat</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">labels_concat</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_a</span> <span class="o">+</span> <span class="n">loss_b</span>
+
+        <span class="k">return</span> <span class="n">loss</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

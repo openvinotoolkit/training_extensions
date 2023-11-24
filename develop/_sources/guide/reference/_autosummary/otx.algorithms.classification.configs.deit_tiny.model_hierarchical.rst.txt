@@ -1,0 +1,23 @@
+otx.algorithms.classification.configs.deit\_tiny.model\_hierarchical
+====================================================================
+
+.. automodule:: otx.algorithms.classification.configs.deit_tiny.model_hierarchical
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

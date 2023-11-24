@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.detection.base.base\_detection\_dynamic
+=====================================================================
+
+.. automodule:: otx.algorithms.action.configs.detection.base.base_detection_dynamic
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.api.entities.scored\_label
+==============================
+
+.. automodule:: otx.api.entities.scored_label
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LabelSource
+      ScoredLabel
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,38 @@
+otx.cli.utils.io
+================
+
+.. automodule:: otx.cli.utils.io
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_explain_dataset_from_filelist
+      get_image_files
+      read_binary
+      read_deployed_model
+      read_label_schema
+      read_model
+      read_openvino_model
+      read_pytorch_model
+      save_model_data
+      save_saliency_output
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

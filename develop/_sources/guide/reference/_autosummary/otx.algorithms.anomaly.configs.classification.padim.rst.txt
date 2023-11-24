@@ -1,0 +1,32 @@
+otx.algorithms.anomaly.configs.classification.padim
+===================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.classification.padim
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.configs.classification.padim.configuration
+   otx.algorithms.anomaly.configs.classification.padim.ptq_optimization_config
+

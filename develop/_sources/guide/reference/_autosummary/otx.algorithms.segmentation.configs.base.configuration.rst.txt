@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.configs.base.configuration
+======================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.base.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SegmentationConfig
+   
+   
+
+   
+   
+   
+
+
+

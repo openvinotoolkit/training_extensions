@@ -1,0 +1,38 @@
+otx.api.usecases.evaluation.f\_measure
+======================================
+
+.. automodule:: otx.api.usecases.evaluation.f_measure
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      bounding_box_intersection_over_union
+      get_iou_matrix
+      get_n_false_negatives
+      intersection_box
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FMeasure
+   
+   
+
+   
+   
+   
+
+
+

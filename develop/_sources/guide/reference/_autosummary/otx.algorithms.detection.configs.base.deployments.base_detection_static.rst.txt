@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.deployments.base\_detection\_static
+=========================================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.deployments.base_detection_static
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

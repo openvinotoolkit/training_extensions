@@ -1,0 +1,35 @@
+otx.cli
+=======
+
+.. automodule:: otx.cli
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.cli.builder
+   otx.cli.manager
+   otx.cli.registry
+   otx.cli.tools
+   otx.cli.utils
+

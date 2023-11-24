@@ -1,0 +1,29 @@
+otx.algorithms.common.adapters.mmcv.hooks.no\_bias\_decay\_hook
+===============================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.hooks.no_bias_decay_hook
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NoBiasDecayHook
+   
+   
+
+   
+   
+   
+
+
+

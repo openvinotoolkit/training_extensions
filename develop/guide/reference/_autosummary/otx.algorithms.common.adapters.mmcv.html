@@ -1,0 +1,2044 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>otx.algorithms.common.adapters.mmcv &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="otx.algorithms.common.adapters.mmcv.clsincr_mixin" href="otx.algorithms.common.adapters.mmcv.clsincr_mixin.html" />
+    <link rel="prev" title="otx.algorithms.common.adapters" href="otx.algorithms.common.adapters.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/cli_commands.html">OpenVINO™ Training Extensions CLI commands</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/base/index.html">Base Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../tutorials/base/how_to_train/index.html">How to train, validate, export and optimize the model</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/classification.html">Classification  model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/detection.html">Object Detection model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/instance_segmentation.html">Instance Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_classification.html">Action Classification model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_detection.html">Action Detection model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/deploy.html">How to deploy the model and use demo in exportable code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/explain.html">How to explain the model behavior</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/semi_sl.html">Use Semi-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/self_sl.html">Use Self-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/backbones.html">Backbone Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/api_tutorial.html">Utilize OpenVINO™ Training Extensions APIs in your project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hpo_tutorial.html">Simple HPO Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanation/algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/object_detection/object_detection.html">Object Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/algorithms/anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/action/action_classification.html">Action Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/action/action_detection.html">Action Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/algorithms/visual_prompting/index.html">Visual Prompting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanation/additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/adaptive_training.html">Adaptive Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/noisy_label_detection.html">Noisy Label Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/tiling.html">Improve Small Object Detection with Image Tiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/config_input_size.html">Configurable Input Size</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="otx.html">otx</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.algorithms.html">otx.algorithms</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="otx.algorithms.action.html">otx.algorithms.action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algorithms.anomaly.html">otx.algorithms.anomaly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algorithms.classification.html">otx.algorithms.classification</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="otx.algorithms.common.html">otx.algorithms.common</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algorithms.detection.html">otx.algorithms.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algorithms.segmentation.html">otx.algorithms.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algorithms.visual_prompting.html">otx.algorithms.visual_prompting</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.api.html">otx.api</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.api.configuration.html">otx.api.configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.api.entities.html">otx.api.entities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.api.serialization.html">otx.api.serialization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.api.usecases.html">otx.api.usecases</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.api.utils.html">otx.api.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.cli.builder.html">otx.cli.builder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.cli.manager.html">otx.cli.manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.cli.registry.html">otx.cli.registry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.cli.tools.html">otx.cli.tools</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.cli.utils.html">otx.cli.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.file.html">otx.core.file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.ov.html">otx.core.ov</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+  </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="module-otx.algorithms.common.adapters.mmcv">
+<span id="otx-algorithms-common-adapters-mmcv"></span><h1>otx.algorithms.common.adapters.mmcv<a class="headerlink" href="#module-otx.algorithms.common.adapters.mmcv" title="Permalink to this heading">#</a></h1>
+<p>Adapters for mmcv support.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">AccuracyAwareRunner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nncf_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nncf_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/runners.html#AccuracyAwareRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.algorithms.common.adapters.mmcv.runner.html#otx.algorithms.common.adapters.mmcv.runner.EpochRunnerWithCancel" title="otx.algorithms.common.adapters.mmcv.runner.EpochRunnerWithCancel"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochRunnerWithCancel</span></code></a></p>
+<p>AccuracyAwareRunner for NNCF task.</p>
+<p>An mmcv training runner to be used with NNCF-based accuracy-aware training.
+Inherited from the standard EpochBasedRunner with the overridden “run” method.
+This runner does not use the “workflow” and “max_epochs” parameters that are
+used by the EpochBasedRunner since the training is controlled by NNCF’s
+AdaptiveCompressionTrainingLoop that does the scheduling of the compression-aware
+training loop using the parameters specified in the “accuracy_aware_training”.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loaders</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/runners.html#AccuracyAwareRunner.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.run" title="Permalink to this definition">#</a></dt>
+<dd><p>run.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.save_checkpoint">
+<span class="sig-name descname"><span class="pre">save_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/runners.html#AccuracyAwareRunner.save_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.save_checkpoint" title="Permalink to this definition">#</a></dt>
+<dd><p>Save checkpoint with NNCF meta state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.train_fn">
+<span class="sig-name descname"><span class="pre">train_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/runners.html#AccuracyAwareRunner.train_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.train_fn" title="Permalink to this definition">#</a></dt>
+<dd><p>train_fn.</p>
+<p>Train the model for a single epoch.
+This method is used in NNCF-based accuracy-aware training.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.validation_fn">
+<span class="sig-name descname"><span class="pre">validation_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/runners.html#AccuracyAwareRunner.validation_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.validation_fn" title="Permalink to this definition">#</a></dt>
+<dd><p>validation_fn.</p>
+<p>Return the target metric value on the validation dataset.
+This method is used in NNCF-based accuracy-aware training.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CancelTrainingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">CancelTrainingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/cancel_hook.html#CancelTrainingHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CancelTrainingHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>CancelTrainingHook for Training Stopping.</p>
+<p>Periodically check whether whether a stop signal is sent to the runner during model training.</p>
+<p>Every ‘check_interval’ iterations, the work_dir for the runner is checked to see if a file ‘.stop_training’
+is present. If it is, training is stopped.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>interval</strong> – Period for checking for stop signal, given in iterations.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CancelTrainingHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/cancel_hook.html#CancelTrainingHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CancelTrainingHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Log after_train_iter for CancelTrainingHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">CheckpointHookWithValResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_keep_ckpts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html#CheckpointHookWithValResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Save checkpoints periodically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The saving period. If <code class="docutils literal notranslate"><span class="pre">by_epoch=True</span></code>, interval
+indicates epochs, otherwise it indicates iterations.
+Default: -1, which means “never”.</p></li>
+<li><p><strong>by_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Saving checkpoints by epoch or by iteration.
+Default: True.</p></li>
+<li><p><strong>save_optimizer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to save optimizer state_dict in the
+checkpoint. It is usually used for resuming experiments.
+Default: True.</p></li>
+<li><p><strong>out_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The directory to save checkpoints. If not
+specified, <code class="docutils literal notranslate"><span class="pre">runner.work_dir</span></code> will be used by default.</p></li>
+<li><p><strong>max_keep_ckpts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – The maximum checkpoints to keep.
+In some cases we want only the latest few checkpoints and would
+like to delete old ones to save the disk space.
+Default: -1, which means unlimited.</p></li>
+<li><p><strong>sync_buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to synchronize buffers in different
+gpus. Default: False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html#CheckpointHookWithValResults.after_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Checkpoint stuffs after train epoch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html#CheckpointHookWithValResults.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Checkpoint stuffs after train iteration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html#CheckpointHookWithValResults.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Set output directopy if not set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CompressionHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">CompressionHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compression_ctrl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/hooks.html#CompressionHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CompressionHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>CompressionHook.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/hooks.html#CompressionHook.after_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after train epoch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/hooks.html#CompressionHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after train iter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CompressionHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/nncf/hooks.html#CompressionHook.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CompressionHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before run.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CustomEvalHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">CustomEvalHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ema_eval_start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/eval_hook.html#CustomEvalHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CustomEvalHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">EvalHook</span></code></p>
+<p>Custom Evaluation hook for the OTX.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloader</strong> (<em>DataLoader</em>) – A PyTorch dataloader.</p></li>
+<li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Evaluation interval (by epochs). Default: 1.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CustomEvalHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/eval_hook.html#CustomEvalHook.after_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CustomEvalHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Check whether current epoch is to be evaluated or not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.CustomEvalHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/eval_hook.html#CustomEvalHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.CustomEvalHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Check whether current iteration is to be evaluated or not.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">EMAMomentumUpdateHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_momentum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/custom_model_ema_hook.html#EMAMomentumUpdateHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Exponential moving average (EMA) momentum update hook for self-supervised methods.</p>
+<dl class="simple">
+<dt>This hook includes momentum adjustment in self-supervised methods following:</dt><dd><p>m = 1 - ( 1- m_0) * (cos(pi * k / K) + 1) / 2,
+k: current step, K: total steps.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>end_momentum</strong> – The final momentum coefficient for the target network, defaults to 1.</p></li>
+<li><p><strong>update_interval</strong> – Interval to update new momentum, defaults to 1.</p></li>
+<li><p><strong>by_epoch</strong> – Whether updating momentum by epoch or not, defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/custom_model_ema_hook.html#EMAMomentumUpdateHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_train_iter in EMAMomentumUpdateHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/custom_model_ema_hook.html#EMAMomentumUpdateHook.before_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_train_epoch in EMAMomentumUpdateHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_iter">
+<span class="sig-name descname"><span class="pre">before_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/custom_model_ema_hook.html#EMAMomentumUpdateHook.before_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_train_iter in EMAMomentumUpdateHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EarlyStoppingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">EarlyStoppingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbox_mAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_delta_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#EarlyStoppingHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Cancel training when a metric has stopped improving.</p>
+<p>Early Stopping hook monitors a metric quantity and if no improvement is seen for a ‘patience’
+number of epochs, the training is cancelled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> – the number of intervals for checking early stop. The interval number should be
+the same as the evaluation interval - the <cite>interval</cite> variable set in
+<cite>evaluation</cite> config.</p></li>
+<li><p><strong>metric</strong> – the metric name to be monitored</p></li>
+<li><p><strong>rule</strong> – greater or less.  In <cite>less</cite> mode, training will stop when the metric has stopped
+decreasing and in <cite>greater</cite> mode it will stop when the metric has stopped
+increasing.</p></li>
+<li><p><strong>patience</strong> – Number of epochs with no improvement after which the training will be reduced.
+For example, if patience = 2, then we will ignore the first 2 epochs with no
+improvement, and will only cancel the training after the 3rd epoch if the
+metric still hasn’t improved then</p></li>
+<li><p><strong>iteration_patience</strong> – Number of iterations must be trained after the last improvement
+before training stops. The same as patience but the training
+continues if the number of iteration is lower than iteration_patience
+This variable makes sure a model is trained enough for some
+iterations after the last improvement before stopping.</p></li>
+<li><p><strong>min_delta_ratio</strong> – Minimal ratio value to check the best score. If the difference between current and
+best score is smaller than (current_score * (1-min_delta_ratio)), best score will not be changed.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#EarlyStoppingHook.after_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training epoch to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#EarlyStoppingHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training iter to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#EarlyStoppingHook.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_run in EarlyStoppingHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">EnsureCorrectBestCheckpointHook</span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html#EnsureCorrectBestCheckpointHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>EnsureCorrectBestCheckpointHook.</p>
+<p>This hook makes sure that the ‘best_mAP’ checkpoint points properly to the best model, even if the best model is
+created in the last epoch.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook.after_run">
+<span class="sig-name descname"><span class="pre">after_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html#EnsureCorrectBestCheckpointHook.after_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook.after_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after train epoch hooks.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">EpochRunnerWithCancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/runner.html#EpochRunnerWithCancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">EpochBasedRunner</span></code></p>
+<p>Simple modification to EpochBasedRunner to allow cancelling the training during an epoch.</p>
+<p>A stopping hook should set the runner.should_stop flag to True if stopping is required.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/runner.html#EpochRunnerWithCancel.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel.stop" title="Permalink to this definition">#</a></dt>
+<dd><p>Returning a boolean to break the training loop.</p>
+<p>This method supports distributed training by broadcasting should_stop to other ranks
+:return: a cancellation bool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/runner.html#EpochRunnerWithCancel.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel.train" title="Permalink to this definition">#</a></dt>
+<dd><p>Train call hook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.Fp16SAMOptimizerHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">Fp16SAMOptimizerHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/fp16_sam_optimizer_hook.html#Fp16SAMOptimizerHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.Fp16SAMOptimizerHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Fp16OptimizerHook</span></code></p>
+<p>Sharpness-aware Minimization optimizer hook.</p>
+<p>Implemented as OptimizerHook for MMCV Runners
+- Paper ref: <a class="reference external" href="https://arxiv.org/abs/2010.01412">https://arxiv.org/abs/2010.01412</a>
+- code ref: <a class="github reference external" href="https://github.com/davda54/sam">davda54/sam</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.Fp16SAMOptimizerHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/fp16_sam_optimizer_hook.html#Fp16SAMOptimizerHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.Fp16SAMOptimizerHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform SAM optimization.</p>
+<ol class="arabic simple" start="0">
+<li><p>compute current loss (DONE IN model.train_step())</p></li>
+<li><p>compute current gradient</p></li>
+<li><p>move param to the approximate local maximum: w + e(w) = w + rho*norm_grad</p></li>
+<li><p>compute maximum loss</p></li>
+<li><p>compute SAM gradient on maximum loss</p></li>
+<li><p>restore parram to original param</p></li>
+<li><p>update param using SAM gradient</p></li>
+</ol>
+<p>Assuming model.current_batch had been set in model.train_step()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.IBLossHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">IBLossHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dst_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/ib_loss_hook.html#IBLossHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.IBLossHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Hook for IB loss.</p>
+<p>It passes the number of data per class and current epoch to IB loss class.</p>
+<p>Initialize the IBLossHook.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dst_classes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – A list of classes including new_classes to be newly learned</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.IBLossHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/ib_loss_hook.html#IBLossHook.before_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.IBLossHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Get loss from model and pass the number of data per class and current epoch to IB loss.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">IterBasedRunnerWithCancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/runner.html#IterBasedRunnerWithCancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IterBasedRunner</span></code></p>
+<p>Runner With Cancel for early-stopping (Iter based).</p>
+<p>Simple modification to IterBasedRunner to allow cancelling the training. The cancel training hook
+should set the runner.should_stop flag to True if stopping is required.</p>
+<p># TODO: Implement cancelling of training via keyboard interrupt signal, instead of should_stop</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel.main_loop">
+<span class="sig-name descname"><span class="pre">main_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">IterLoader</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/runner.html#IterBasedRunnerWithCancel.main_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel.main_loop" title="Permalink to this definition">#</a></dt>
+<dd><p>Main loop function in IterBasedRunnerWithCancel.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DataLoader</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workflow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/runner.html#IterBasedRunnerWithCancel.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Function of main run.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">LossDynamicsTrackingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html#LossDynamicsTrackingHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Tracking loss dynamics during training and export it to Datumaro dataset format.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.after_run">
+<span class="sig-name descname"><span class="pre">after_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html#LossDynamicsTrackingHook.after_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.after_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Export loss dynamics statistics to Datumaro format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html#LossDynamicsTrackingHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Accumulate training loss dynamics.</p>
+<p>It should be here because it needs to access the training iteration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html#LossDynamicsTrackingHook.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Before run, check the type of model for safe running.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html#LossDynamicsTrackingHook.before_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Initialize the tracker for training loss dynamics tracking.</p>
+<p>Tracker needs the training dataset for initialization.
+However, there is no way to access to dataloader until the beginning of training epoch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.configure_recipe">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configure_recipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipe_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html#LossDynamicsTrackingHook.configure_recipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.configure_recipe" title="Permalink to this definition">#</a></dt>
+<dd><p>Configure recipe to enable loss dynamics tracking.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.MemCacheHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">MemCacheHook</span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/mem_cache_hook.html#MemCacheHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.MemCacheHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Memory cache hook for logging and freezing MemCacheHandler.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.MemCacheHook.after_epoch">
+<span class="sig-name descname"><span class="pre">after_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/mem_cache_hook.html#MemCacheHook.after_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.MemCacheHook.after_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>After epoch. Log the handler statistics.</p>
+<p>To prevent it from skipping the validation samples,
+this hook should have lower priority than CustomEvalHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.MemCacheHook.before_epoch">
+<span class="sig-name descname"><span class="pre">before_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/mem_cache_hook.html#MemCacheHook.before_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.MemCacheHook.before_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Before training, unfreeze the handler.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.NoBiasDecayHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">NoBiasDecayHook</span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/no_bias_decay_hook.html#NoBiasDecayHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.NoBiasDecayHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Hook for No Bias Decay Method (Bag of Tricks for Image Classification).</p>
+<p>This hook divides model’s weight &amp; bias to 3 parameter groups
+[weight with decay, weight without decay, bias without decay].</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.NoBiasDecayHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/no_bias_decay_hook.html#NoBiasDecayHook.after_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.NoBiasDecayHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Merge splited groups before saving checkpoint.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.NoBiasDecayHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/no_bias_decay_hook.html#NoBiasDecayHook.before_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.NoBiasDecayHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Split weights into decay/no-decay groups.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXLoggerHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">OTXLoggerHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curves</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.hooks.logger_hook.html#otx.algorithms.common.adapters.mmcv.hooks.logger_hook.OTXLoggerHook.Curve" title="otx.algorithms.common.adapters.mmcv.hooks.logger_hook.OTXLoggerHook.Curve"><span class="pre">Curve</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/logger_hook.html#OTXLoggerHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LoggerHook</span></code></p>
+<p>OTXLoggerHook for Logging.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXLoggerHook.Curve">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Curve</span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/logger_hook.html#OTXLoggerHook.Curve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.Curve" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Curve with x (epochs) &amp; y (scores).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXLoggerHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/logger_hook.html#OTXLoggerHook.after_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_train_epoch in OTXLoggerHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXLoggerHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/logger_hook.html#OTXLoggerHook.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_run in OTXLoggerHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXLoggerHook.log">
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/logger_hook.html#OTXLoggerHook.log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.log" title="Permalink to this definition">#</a></dt>
+<dd><p>Log function for OTXLoggerHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">OTXProgressHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_monitor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.usecases.reporting.time_monitor_callback.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><span class="pre">TimeMonitorCallback</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>OTXProgressHook for getting progress.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_epoch">
+<span class="sig-name descname"><span class="pre">after_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.after_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_epoch in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_iter">
+<span class="sig-name descname"><span class="pre">after_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.after_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_iter in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_run">
+<span class="sig-name descname"><span class="pre">after_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.after_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_run in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_val_iter">
+<span class="sig-name descname"><span class="pre">after_val_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.after_val_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_val_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_val_iter in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_epoch">
+<span class="sig-name descname"><span class="pre">before_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.before_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_epoch in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_iter">
+<span class="sig-name descname"><span class="pre">before_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.before_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_iter in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_run in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_val_iter">
+<span class="sig-name descname"><span class="pre">before_val_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html#OTXProgressHook.before_val_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_val_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_val_iter in OTXProgressHook.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.OTXProgressHook.progress">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">progress</span></span><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.progress" title="Permalink to this definition">#</a></dt>
+<dd><p>Getting Progress from time monitor.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">ReduceLROnPlateauLrUpdaterHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbox_mAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#ReduceLROnPlateauLrUpdaterHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LrUpdaterHook</span></code></p>
+<p>Reduce learning rate when a metric has stopped improving.</p>
+<p>Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates.
+This scheduler reads a metrics quantity and if no improvement is seen for a ‘patience’
+number of epochs, the learning rate is reduced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_lr</strong> – minimum learning rate. The lower bound of the desired learning rate.</p></li>
+<li><p><strong>interval</strong> – the number of intervals for checking the hook. The interval number should be
+the same as the evaluation interval - the <cite>interval</cite> variable set in
+<cite>evaluation</cite> config.</p></li>
+<li><p><strong>metric</strong> – the metric name to be monitored</p></li>
+<li><p><strong>rule</strong> – greater or less.  In <cite>less</cite> mode, learning rate will be dropped if the metric has
+stopped decreasing and in <cite>greater</cite> mode it will be dropped when the metric has
+stopped increasing.</p></li>
+<li><p><strong>patience</strong> – Number of epochs with no improvement after which learning rate will be reduced.
+For example, if patience = 2, then we will ignore the first 2 epochs with no
+improvement, and will only drop LR after the 3rd epoch if the metric still
+hasn’t improved then</p></li>
+<li><p><strong>iteration_patience</strong> – Number of iterations must be trained after the last improvement
+before LR drops. The same as patience but the LR remains the same if
+the number of iteration is lower than iteration_patience. This
+variable makes sure a model is trained enough for some iterations
+after the last improvement before dropping the LR.</p></li>
+<li><p><strong>factor</strong> – Factor to be multiply with the learning rate.
+For example, new_lr = current_lr * factor</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.after_each_n_epochs">
+<span class="sig-name descname"><span class="pre">after_each_n_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#ReduceLROnPlateauLrUpdaterHook.after_each_n_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.after_each_n_epochs" title="Permalink to this definition">#</a></dt>
+<dd><p>Check whether current epoch is a next epoch after multiples of interval.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.after_each_n_iters">
+<span class="sig-name descname"><span class="pre">after_each_n_iters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#ReduceLROnPlateauLrUpdaterHook.after_each_n_iters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.after_each_n_iters" title="Permalink to this definition">#</a></dt>
+<dd><p>Check whether current iter is a next iter after multiples of interval.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#ReduceLROnPlateauLrUpdaterHook.before_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_run in ReduceLROnPlateauLrUpdaterHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.get_lr">
+<span class="sig-name descname"><span class="pre">get_lr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#ReduceLROnPlateauLrUpdaterHook.get_lr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.get_lr" title="Permalink to this definition">#</a></dt>
+<dd><p>Called get_lr in ReduceLROnPlateauLrUpdaterHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.SAMOptimizerHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">SAMOptimizerHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/sam_optimizer_hook.html#SAMOptimizerHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.SAMOptimizerHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">OptimizerHook</span></code></p>
+<p>Sharpness-aware Minimization optimizer hook.</p>
+<p>Implemented as OptimizerHook for MMCV Runners
+- Paper ref: <a class="reference external" href="https://arxiv.org/abs/2010.01412">https://arxiv.org/abs/2010.01412</a>
+- code ref: <a class="github reference external" href="https://github.com/davda54/sam">davda54/sam</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.SAMOptimizerHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/sam_optimizer_hook.html#SAMOptimizerHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.SAMOptimizerHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform SAM optimization.</p>
+<ol class="arabic simple" start="0">
+<li><p>compute current loss (DONE IN model.train_step())</p></li>
+<li><p>compute current gradient</p></li>
+<li><p>move param to the approximate local maximum: w + e(w) = w + rho*norm_grad</p></li>
+<li><p>compute maximum loss</p></li>
+<li><p>compute SAM gradient on maximum loss</p></li>
+<li><p>restore parram to original param</p></li>
+<li><p>update param using SAM gradient</p></li>
+</ol>
+<p>Assuming model.current_batch had been set in model.train_step()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.SemiSLClsHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unlabeled_warmup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/semisl_cls_hook.html#SemiSLClsHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>Hook for SemiSL for classification.</p>
+<dl class="simple">
+<dt>This hook includes unlabeled warm-up loss coefficient (default: True):</dt><dd><p>unlabeled_coef = (0.5 - cos(min(pi, 2 * pi * k) / K)) / 2
+k: current step, K: total steps</p>
+</dd>
+</dl>
+<p>Also, this hook adds semi-sl-related data to the log (unlabeled_coef, pseudo_label)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – total steps for training (iteration)
+Raise the coefficient from 0 to 1 during half the duration of total_steps
+default: 0, use runner.max_iters</p></li>
+<li><p><strong>unlabeled_warmup</strong> (<em>boolean</em>) – enable unlabeled warm-up loss coefficient
+If False, Semi-SL uses 1 as unlabeled loss coefficient</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.SemiSLClsHook.after_epoch">
+<span class="sig-name descname"><span class="pre">after_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/semisl_cls_hook.html#SemiSLClsHook.after_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook.after_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Add data related to Semi-SL to the log.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.SemiSLClsHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/semisl_cls_hook.html#SemiSLClsHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Add the number of pseudo-labels correctly selected from iteration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.SemiSLClsHook.before_train_iter">
+<span class="sig-name descname"><span class="pre">before_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/semisl_cls_hook.html#SemiSLClsHook.before_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook.before_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate the unlabeled warm-up loss coefficient before training iteration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.StopLossNanTrainingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">StopLossNanTrainingHook</span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#StopLossNanTrainingHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.StopLossNanTrainingHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>StopLossNanTrainingHook.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.StopLossNanTrainingHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html#StopLossNanTrainingHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.StopLossNanTrainingHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_train_iter in StopLossNanTrainingHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.TwoCropTransformHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">TwoCropTransformHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/two_crop_transform_hook.html#TwoCropTransformHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.TwoCropTransformHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Hook</span></code></p>
+<p>TwoCropTransformHook with every specific interval.</p>
+<p>This hook decides whether using single pipeline or two pipelines
+implemented in <cite>TwoCropTransform</cite> for the current iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – If <cite>interval</cite> == 1, both pipelines is used.
+If <cite>interval</cite> &gt; 1, the first pipeline is used and then
+both pipelines are used every <cite>interval</cite>. Defaults to 1.</p></li>
+<li><p><strong>by_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – (TODO) Use <cite>interval</cite> by epoch. Defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.TwoCropTransformHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/two_crop_transform_hook.html#TwoCropTransformHook.after_train_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.TwoCropTransformHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after_train_iter in TwoCropTransformHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.TwoCropTransformHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/hooks/two_crop_transform_hook.html#TwoCropTransformHook.before_train_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.TwoCropTransformHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called before_train_epoch in TwoCropTransformHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.common.adapters.mmcv.multi_scale_deformable_attn_pytorch">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.adapters.mmcv.</span></span><span class="sig-name descname"><span class="pre">multi_scale_deformable_attn_pytorch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_spatial_shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/adapters/mmcv/ops/multi_scale_deformable_attn_pytorch.html#multi_scale_deformable_attn_pytorch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.adapters.mmcv.multi_scale_deformable_attn_pytorch" title="Permalink to this definition">#</a></dt>
+<dd><p>Custom patch for multi_scale_deformable_attn_pytorch function.</p>
+<p>Original implementation in mmcv.ops use torch.nn.functional.grid_sample.
+It raises errors during inference with OpenVINO exported model.
+Therefore this function change grid_sample function to _custom_grid_sample function.</p>
+</dd></dl>
+
+<p class="rubric">Modules</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.clsincr_mixin.html#module-otx.algorithms.common.adapters.mmcv.clsincr_mixin" title="otx.algorithms.common.adapters.mmcv.clsincr_mixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.clsincr_mixin</span></code></a></p></td>
+<td><p>Class Incremental Learning configuration mixin.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.configs.html#module-otx.algorithms.common.adapters.mmcv.configs" title="otx.algorithms.common.adapters.mmcv.configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.configs</span></code></a></p></td>
+<td><p>MMCV model configs for OTX Common Algorithms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.configurer.html#module-otx.algorithms.common.adapters.mmcv.configurer" title="otx.algorithms.common.adapters.mmcv.configurer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.configurer</span></code></a></p></td>
+<td><p>Implementation of class for default patches of mmcv configs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.hooks.html#module-otx.algorithms.common.adapters.mmcv.hooks" title="otx.algorithms.common.adapters.mmcv.hooks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.hooks</span></code></a></p></td>
+<td><p>Adapters for mmcv support.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.models.html#module-otx.algorithms.common.adapters.mmcv.models" title="otx.algorithms.common.adapters.mmcv.models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.models</span></code></a></p></td>
+<td><p>Adapters for OTX Common Algorithm.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.nncf.html#module-otx.algorithms.common.adapters.mmcv.nncf" title="otx.algorithms.common.adapters.mmcv.nncf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.nncf</span></code></a></p></td>
+<td><p>NNCF for mmcv.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.ops.html#module-otx.algorithms.common.adapters.mmcv.ops" title="otx.algorithms.common.adapters.mmcv.ops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.ops</span></code></a></p></td>
+<td><p>Initial file for mmcv ops.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.pipelines.html#module-otx.algorithms.common.adapters.mmcv.pipelines" title="otx.algorithms.common.adapters.mmcv.pipelines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.pipelines</span></code></a></p></td>
+<td><p>Pipelines for mmcv.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.runner.html#module-otx.algorithms.common.adapters.mmcv.runner" title="otx.algorithms.common.adapters.mmcv.runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.runner</span></code></a></p></td>
+<td><p>Runner with cancel for common OTX algorithms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.semisl_mixin.html#module-otx.algorithms.common.adapters.mmcv.semisl_mixin" title="otx.algorithms.common.adapters.mmcv.semisl_mixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.semisl_mixin</span></code></a></p></td>
+<td><p>SemiSL configuration mixin.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.tasks.html#module-otx.algorithms.common.adapters.mmcv.tasks" title="otx.algorithms.common.adapters.mmcv.tasks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.tasks</span></code></a></p></td>
+<td><p>Initialzation OTX Tasks with MMCV framework.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.adapters.mmcv.utils.html#module-otx.algorithms.common.adapters.mmcv.utils" title="otx.algorithms.common.adapters.mmcv.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.adapters.mmcv.utils</span></code></a></p></td>
+<td><p>OTX Adapters - mmcv.utils.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="otx.algorithms.common.adapters.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">otx.algorithms.common.adapters</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="otx.algorithms.common.adapters.mmcv.clsincr_mixin.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">otx.algorithms.common.adapters.mmcv.clsincr_mixin</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AccuracyAwareRunner
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AccuracyAwareRunner.run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.save_checkpoint">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AccuracyAwareRunner.save_checkpoint()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.train_fn">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AccuracyAwareRunner.train_fn()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.AccuracyAwareRunner.validation_fn">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AccuracyAwareRunner.validation_fn()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CancelTrainingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CancelTrainingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CancelTrainingHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CancelTrainingHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CheckpointHookWithValResults
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CheckpointHookWithValResults.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CheckpointHookWithValResults.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CheckpointHookWithValResults.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CompressionHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CompressionHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CompressionHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CompressionHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CompressionHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CompressionHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CustomEvalHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CustomEvalHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CustomEvalHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomEvalHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.CustomEvalHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomEvalHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     EMAMomentumUpdateHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EMAMomentumUpdateHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EMAMomentumUpdateHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EMAMomentumUpdateHook.before_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     EarlyStoppingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EarlyStoppingHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     EnsureCorrectBestCheckpointHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook.after_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EnsureCorrectBestCheckpointHook.after_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     EpochRunnerWithCancel
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel.stop">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EpochRunnerWithCancel.stop()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.EpochRunnerWithCancel.train">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EpochRunnerWithCancel.train()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.Fp16SAMOptimizerHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Fp16SAMOptimizerHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.Fp16SAMOptimizerHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Fp16SAMOptimizerHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.IBLossHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IBLossHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.IBLossHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IBLossHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IterBasedRunnerWithCancel
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel.main_loop">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IterBasedRunnerWithCancel.main_loop()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.IterBasedRunnerWithCancel.run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IterBasedRunnerWithCancel.run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     LossDynamicsTrackingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.after_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LossDynamicsTrackingHook.after_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LossDynamicsTrackingHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LossDynamicsTrackingHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LossDynamicsTrackingHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.LossDynamicsTrackingHook.configure_recipe">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LossDynamicsTrackingHook.configure_recipe()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.MemCacheHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MemCacheHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.MemCacheHook.after_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MemCacheHook.after_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.MemCacheHook.before_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MemCacheHook.before_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.NoBiasDecayHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NoBiasDecayHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.NoBiasDecayHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NoBiasDecayHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.NoBiasDecayHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NoBiasDecayHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTXLoggerHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.Curve">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXLoggerHook.Curve
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXLoggerHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXLoggerHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXLoggerHook.log">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXLoggerHook.log()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTXProgressHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.after_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.after_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.after_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.after_val_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.after_val_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.before_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.before_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.before_val_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.before_val_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.OTXProgressHook.progress">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXProgressHook.progress
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ReduceLROnPlateauLrUpdaterHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.after_each_n_epochs">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.after_each_n_epochs()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.after_each_n_iters">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.after_each_n_iters()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.ReduceLROnPlateauLrUpdaterHook.get_lr">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.get_lr()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.SAMOptimizerHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SAMOptimizerHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.SAMOptimizerHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SAMOptimizerHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook.after_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsHook.after_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.SemiSLClsHook.before_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsHook.before_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.StopLossNanTrainingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     StopLossNanTrainingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.StopLossNanTrainingHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       StopLossNanTrainingHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.TwoCropTransformHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TwoCropTransformHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.TwoCropTransformHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TwoCropTransformHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.TwoCropTransformHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TwoCropTransformHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.common.adapters.mmcv.multi_scale_deformable_attn_pytorch">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     multi_scale_deformable_attn_pytorch()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

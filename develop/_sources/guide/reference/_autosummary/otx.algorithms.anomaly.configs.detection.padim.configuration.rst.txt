@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.detection.padim.configuration
+============================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.detection.padim.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PadimAnomalyDetectionConfig
+   
+   
+
+   
+   
+   
+
+
+

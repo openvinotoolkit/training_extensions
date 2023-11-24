@@ -1,0 +1,29 @@
+otx.core.data.adapter.base\_dataset\_adapter
+============================================
+
+.. automodule:: otx.core.data.adapter.base_dataset_adapter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseDatasetAdapter
+   
+   
+
+   
+   
+   
+
+
+

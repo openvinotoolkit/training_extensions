@@ -1,0 +1,29 @@
+otx.api.usecases.evaluation.dice
+================================
+
+.. automodule:: otx.api.usecases.evaluation.dice
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DiceAverage
+   
+   
+
+   
+   
+   
+
+
+

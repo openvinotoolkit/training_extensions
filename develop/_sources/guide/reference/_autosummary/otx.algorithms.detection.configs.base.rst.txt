@@ -1,0 +1,34 @@
+otx.algorithms.detection.configs.base
+=====================================
+
+.. automodule:: otx.algorithms.detection.configs.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.configs.base.configuration
+   otx.algorithms.detection.configs.base.data
+   otx.algorithms.detection.configs.base.deployments
+   otx.algorithms.detection.configs.base.models
+

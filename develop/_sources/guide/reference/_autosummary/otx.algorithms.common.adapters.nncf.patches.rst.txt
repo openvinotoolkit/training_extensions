@@ -1,0 +1,31 @@
+otx.algorithms.common.adapters.nncf.patches
+===========================================
+
+.. automodule:: otx.algorithms.common.adapters.nncf.patches
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      nncf_trace_context
+      nncf_trace_wrapper
+      no_nncf_trace_wrapper
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

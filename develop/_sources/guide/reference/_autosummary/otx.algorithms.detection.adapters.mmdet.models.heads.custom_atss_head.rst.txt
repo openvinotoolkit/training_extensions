@@ -1,0 +1,30 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.custom\_atss\_head
+=======================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomATSSHead
+      CustomATSSHeadTrackingLossDynamics
+   
+   
+
+   
+   
+   
+
+
+

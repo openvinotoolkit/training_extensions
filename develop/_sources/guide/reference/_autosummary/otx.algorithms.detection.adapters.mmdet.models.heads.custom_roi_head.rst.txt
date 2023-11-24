@@ -1,0 +1,30 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.custom\_roi\_head
+======================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.custom_roi_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomConvFCBBoxHead
+      CustomRoIHead
+   
+   
+
+   
+   
+   
+
+
+

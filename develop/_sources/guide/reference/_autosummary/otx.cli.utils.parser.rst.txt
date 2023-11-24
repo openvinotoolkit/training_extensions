@@ -1,0 +1,41 @@
+otx.cli.utils.parser
+====================
+
+.. automodule:: otx.cli.utils.parser
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      add_hyper_parameters_sub_parser
+      gen_param_help
+      gen_params_dict_from_args
+      get_override_param
+      get_parser_and_hprams_data
+      str2bool
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MemSizeAction
+      ShortDefaultsHelpFormatter
+   
+   
+
+   
+   
+   
+
+
+

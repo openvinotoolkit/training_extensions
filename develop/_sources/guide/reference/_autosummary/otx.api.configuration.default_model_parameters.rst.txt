@@ -1,0 +1,29 @@
+otx.api.configuration.default\_model\_parameters
+================================================
+
+.. automodule:: otx.api.configuration.default_model_parameters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DefaultModelParameters
+   
+   
+
+   
+   
+   
+
+
+

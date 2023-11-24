@@ -1,0 +1,37 @@
+otx.algorithms
+==============
+
+.. automodule:: otx.algorithms
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action
+   otx.algorithms.anomaly
+   otx.algorithms.classification
+   otx.algorithms.common
+   otx.algorithms.detection
+   otx.algorithms.segmentation
+   otx.algorithms.visual_prompting
+

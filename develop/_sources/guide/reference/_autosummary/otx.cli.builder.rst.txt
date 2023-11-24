@@ -1,0 +1,32 @@
+otx.cli.builder
+===============
+
+.. automodule:: otx.cli.builder
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.cli.builder.builder
+   otx.cli.builder.supported_backbone
+

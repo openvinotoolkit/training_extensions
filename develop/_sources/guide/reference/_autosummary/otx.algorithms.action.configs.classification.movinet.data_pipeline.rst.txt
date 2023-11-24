@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.classification.movinet.data\_pipeline
+===================================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.movinet.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

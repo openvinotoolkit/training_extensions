@@ -1,0 +1,29 @@
+otx.core.data.manager.dataset\_manager
+======================================
+
+.. automodule:: otx.core.data.manager.dataset_manager
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DatasetManager
+   
+   
+
+   
+   
+   
+
+
+

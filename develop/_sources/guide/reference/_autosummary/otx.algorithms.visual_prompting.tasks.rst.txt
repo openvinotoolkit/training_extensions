@@ -1,0 +1,33 @@
+otx.algorithms.visual\_prompting.tasks
+======================================
+
+.. automodule:: otx.algorithms.visual_prompting.tasks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.tasks.inference
+   otx.algorithms.visual_prompting.tasks.openvino
+   otx.algorithms.visual_prompting.tasks.train
+

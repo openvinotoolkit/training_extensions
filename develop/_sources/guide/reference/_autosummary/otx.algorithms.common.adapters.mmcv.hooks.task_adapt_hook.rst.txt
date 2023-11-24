@@ -1,0 +1,29 @@
+otx.algorithms.common.adapters.mmcv.hooks.task\_adapt\_hook
+===========================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.hooks.task_adapt_hook
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TaskAdaptHook
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.action.adapters.mmaction.task
+============================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMActionTask
+   
+   
+
+   
+   
+   
+
+
+

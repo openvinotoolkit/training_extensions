@@ -1,0 +1,31 @@
+otx.algorithms.action.adapters.openvino.model\_wrappers
+=======================================================
+
+.. automodule:: otx.algorithms.action.adapters.openvino.model_wrappers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.adapters.openvino.model_wrappers.openvino_models
+

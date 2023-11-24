@@ -1,0 +1,32 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.models.backbones
+=============================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones.tiny_vit
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones.vit
+

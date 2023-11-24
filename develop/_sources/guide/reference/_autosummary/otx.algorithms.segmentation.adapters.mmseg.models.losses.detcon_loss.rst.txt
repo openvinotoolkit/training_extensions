@@ -1,0 +1,35 @@
+otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon\_loss
+=====================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      manual_cross_entropy
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetConLoss
+   
+   
+
+   
+   
+   
+
+
+

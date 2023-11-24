@@ -1,0 +1,35 @@
+otx.api.entities.inference\_parameters
+======================================
+
+.. automodule:: otx.api.entities.inference_parameters
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      default_progress_callback
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InferenceParameters
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.api.entities.media
+======================
+
+.. automodule:: otx.api.entities.media
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IMedia2DEntity
+      IMediaEntity
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,36 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.datasets.pipelines.transforms
+==========================================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.transforms
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      collate_fn
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MultipleInputsCompose
+      Pad
+   
+   
+
+   
+   
+   
+
+
+

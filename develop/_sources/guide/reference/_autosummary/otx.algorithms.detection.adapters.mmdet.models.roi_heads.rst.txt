@@ -1,0 +1,33 @@
+otx.algorithms.detection.adapters.mmdet.models.roi\_heads
+=========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.roi_heads
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.models.roi_heads.bbox_heads
+   otx.algorithms.detection.adapters.mmdet.models.roi_heads.mask_heads
+   otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors
+

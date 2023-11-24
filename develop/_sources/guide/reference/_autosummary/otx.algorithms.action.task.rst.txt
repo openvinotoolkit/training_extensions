@@ -1,0 +1,29 @@
+otx.algorithms.action.task
+==========================
+
+.. automodule:: otx.algorithms.action.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXActionTask
+   
+   
+
+   
+   
+   
+
+
+

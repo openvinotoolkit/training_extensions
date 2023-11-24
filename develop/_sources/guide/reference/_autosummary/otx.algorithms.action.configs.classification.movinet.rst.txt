@@ -1,0 +1,33 @@
+otx.algorithms.action.configs.classification.movinet
+====================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.movinet
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.configs.classification.movinet.data_pipeline
+   otx.algorithms.action.configs.classification.movinet.deployment
+   otx.algorithms.action.configs.classification.movinet.model
+

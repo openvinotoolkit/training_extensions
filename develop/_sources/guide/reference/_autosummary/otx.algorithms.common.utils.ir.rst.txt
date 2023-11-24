@@ -1,0 +1,30 @@
+otx.algorithms.common.utils.ir
+==============================
+
+.. automodule:: otx.algorithms.common.utils.ir
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      check_if_quantized
+      embed_ir_model_data
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

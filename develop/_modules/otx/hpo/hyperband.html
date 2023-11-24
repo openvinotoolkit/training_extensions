@@ -1,0 +1,1302 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.hpo.hyperband &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/hpo/hyperband';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.hpo.hyperband</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Hyperband implementation.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions</span>
+<span class="c1"># and limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span> <span class="k">as</span> <span class="n">osp</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">scipy.stats.qmc</span> <span class="kn">import</span> <span class="n">LatinHypercube</span>
+
+<span class="kn">from</span> <span class="nn">otx.hpo.hpo_base</span> <span class="kn">import</span> <span class="n">HpoBase</span><span class="p">,</span> <span class="n">Trial</span><span class="p">,</span> <span class="n">TrialStatus</span>
+<span class="kn">from</span> <span class="nn">otx.hpo.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">check_mode_input</span><span class="p">,</span>
+    <span class="n">check_not_negative</span><span class="p">,</span>
+    <span class="n">check_positive</span><span class="p">,</span>
+    <span class="n">left_vlaue_is_better</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_check_reduction_factor_value</span><span class="p">(</span><span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">reduction_factor</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;reduction_factor should be greater than 2.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;your value : </span><span class="si">{</span><span class="n">reduction_factor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AshaTrial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.AshaTrial">[docs]</a><span class="k">class</span> <span class="nc">AshaTrial</span><span class="p">(</span><span class="n">Trial</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ASHA trial class.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        trial_id (Any): Id of the trial.</span>
+<span class="sd">        configuration (Dict): Configuration for the trial.</span>
+<span class="sd">        train_environment (Optional[Dict]): Train environment for the trial.</span>
+<span class="sd">                                            For, example, subset ratio can be included. Defaults to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial_id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">train_environment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">trial_id</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">train_environment</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rung</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bracket</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimating_max_resource</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rung</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rung where the trial is included.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rung</span>
+
+    <span class="nd">@rung</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">rung</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setter for rung.&quot;&quot;&quot;</span>
+        <span class="n">check_not_negative</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;rung&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rung</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bracket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bracket where the trial is inlcuded.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bracket</span>
+
+    <span class="nd">@bracket</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bracket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setter for bracket.&quot;&quot;&quot;</span>
+        <span class="n">check_not_negative</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;bracket&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bracket</span> <span class="o">=</span> <span class="n">val</span>
+
+<div class="viewcode-block" id="AshaTrial.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.AshaTrial.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a result of the trial at &#39;save_path&#39;.&quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;rung&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rung</span><span class="p">,</span>
+            <span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="p">,</span>
+            <span class="s2">&quot;train_environment&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_environment</span><span class="p">,</span>
+            <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Rung"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung">[docs]</a><span class="k">class</span> <span class="nc">Rung</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rung class.</span>
+
+<span class="sd">    Rung is in charge of selecting a trial to train and deciding which trial to promote to next rung in the bracket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        resource (Union[int, float]): Resource to use for training a trial.</span>
+<span class="sd">                                      For example, something like epoch or iteration.</span>
+<span class="sd">        num_required_trial (int): Necessary trials for the rung.</span>
+<span class="sd">        reduction_factor (int): Decicdes how many trials to promote.</span>
+<span class="sd">                                Only top 1 / reduction_factor of all trials can be promoted.</span>
+<span class="sd">        rung_idx (int): Current rung index.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">num_required_trial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">rung_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s2">&quot;resource&quot;</span><span class="p">)</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">num_required_trial</span><span class="p">,</span> <span class="s2">&quot;num_required_trial&quot;</span><span class="p">)</span>
+        <span class="n">_check_reduction_factor_value</span><span class="p">(</span><span class="n">reduction_factor</span><span class="p">)</span>
+        <span class="n">check_not_negative</span><span class="p">(</span><span class="n">rung_idx</span><span class="p">,</span> <span class="s2">&quot;rung_idx&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span> <span class="o">=</span> <span class="n">reduction_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_required_trial</span> <span class="o">=</span> <span class="n">num_required_trial</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resource</span> <span class="o">=</span> <span class="n">resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rung_idx</span> <span class="o">=</span> <span class="n">rung_idx</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_required_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of required trials for the rung.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_required_trial</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">resource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resource to use for training a trial.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rung_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Current rung index.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rung_idx</span>
+
+<div class="viewcode-block" id="Rung.add_new_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.add_new_trial">[docs]</a>    <span class="k">def</span> <span class="nf">add_new_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial</span><span class="p">:</span> <span class="n">AshaTrial</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a new trial to the rung.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trial (AshaTrial): Trial to add</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If no more trial is needed, raise an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_more_trials</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rung_idx</span><span class="si">}</span><span class="s2"> rung has already sufficient trials.&quot;</span><span class="p">)</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">rung</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rung_idx</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">READY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rung.get_best_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_best_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get best trial in the rung.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode (str, optional): Decide which trial is better between having highest score or lowest score.</span>
+<span class="sd">                                  Defaults to &quot;max&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[AshaTrial]: Best trial. If there is no trial, return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_mode_input</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_trial</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">rung</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rung_idx</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">trial_score</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">trial_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">best_score</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">left_vlaue_is_better</span><span class="p">(</span><span class="n">trial_score</span><span class="p">,</span> <span class="n">best_score</span><span class="p">,</span> <span class="n">mode</span><span class="p">)):</span>
+                <span class="n">best_trial</span> <span class="o">=</span> <span class="n">trial</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="n">trial_score</span>
+
+        <span class="k">return</span> <span class="n">best_trial</span></div>
+
+<div class="viewcode-block" id="Rung.need_more_trials"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.need_more_trials">[docs]</a>    <span class="k">def</span> <span class="nf">need_more_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether the rung needs more trials.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_required_trial</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_num_trials</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Rung.get_num_trials"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_num_trials">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of trials the rung has.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rung.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the rung is done.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_more_trials</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Rung.get_trial_to_promote"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_trial_to_promote">[docs]</a>    <span class="k">def</span> <span class="nf">get_trial_to_promote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asynchronous_sha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a trial to promote.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to False.</span>
+<span class="sd">            mode (str, optional): Decide which trial is better between having highest score or lowest score.</span>
+<span class="sd">                                  Defaults to &quot;max&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[AshaTrial]: Trial to prmote. If there is no trial to promote, return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_finished_trial</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">num_promoted_trial</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_trial</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">rung</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rung_idx</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">trial</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                    <span class="n">num_finished_trial</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">trial_score</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">best_score</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">left_vlaue_is_better</span><span class="p">(</span><span class="n">trial_score</span><span class="p">,</span> <span class="n">best_score</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+                        <span class="n">best_trial</span> <span class="o">=</span> <span class="n">trial</span>
+                        <span class="n">best_score</span> <span class="o">=</span> <span class="n">trial_score</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">num_promoted_trial</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">asynchronous_sha</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">num_promoted_trial</span> <span class="o">+</span> <span class="n">num_finished_trial</span><span class="p">)</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span> <span class="o">&gt;</span> <span class="n">num_promoted_trial</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">best_trial</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_required_trial</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span> <span class="o">&gt;</span> <span class="n">num_promoted_trial</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">best_trial</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Rung.get_next_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_next_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next trial to trian.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[AshaTrial]: Next trial to train. If there is no left trial to train, then return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">trial</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">trial</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="Bracket"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket">[docs]</a><span class="k">class</span> <span class="nc">Bracket</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bracket class. It operates a single SHA using multiple rungs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bracket_id (int): Bracket id.</span>
+<span class="sd">        minimum_resource (Union[float, int]): Maximum resource to use for training a trial.</span>
+<span class="sd">        maximum_resource (Union[float, int]): Minimum resource to use for training a trial.</span>
+<span class="sd">        hyper_parameter_configurations (List[AshaTrial]): Hyper parameter configuration to try.</span>
+<span class="sd">        reduction_factor (int): Decicdes how many trials to promote to next rung.</span>
+<span class="sd">                                Only top 1 / reduction_factor of rung trials can be promoted.</span>
+<span class="sd">        mode (str, optional): Decide which trial is better between having highest score or lowest score.</span>
+<span class="sd">                              Defaults to &quot;max&quot;.</span>
+<span class="sd">        asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bracket_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">minimum_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">maximum_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">hyper_parameter_configurations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">],</span>
+        <span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+        <span class="n">asynchronous_sha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">minimum_resource</span><span class="p">,</span> <span class="s2">&quot;minimum_resource&quot;</span><span class="p">)</span>
+        <span class="n">_check_reduction_factor_value</span><span class="p">(</span><span class="n">reduction_factor</span><span class="p">)</span>
+        <span class="n">check_mode_input</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">bracket_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="o">=</span> <span class="n">minimum_resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">=</span> <span class="n">maximum_resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span> <span class="o">=</span> <span class="n">reduction_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_sha</span> <span class="o">=</span> <span class="n">asynchronous_sha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">AshaTrial</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Rung</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_rungs</span><span class="p">(</span><span class="n">hyper_parameter_configurations</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bracket id.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">maximum_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Maximum resource to use for training a trial.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_resource</span>
+
+    <span class="nd">@maximum_resource</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">maximum_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setter for maximum_resource.&quot;&quot;&quot;</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;maximum_resource&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;maxnum_resource should be greater than minimum_resource.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;value to set : </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">, minimum_resource : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;maximum_resource is same with the minimum_resource.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_resource</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_rung</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of rungs the bracket has.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calcuate_max_rung_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bracket.calcuate_max_rung_idx"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.calcuate_max_rung_idx">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calcuate_max_rung_idx</span><span class="p">(</span>
+        <span class="n">minimum_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">maximum_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number of rungs the bracket needs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            minimum_resource (Union[float, int]): Minimum resource to use for training a trial.</span>
+<span class="sd">            maximum_resource (Union[float, int]): Maximum resource to use for training a trial.</span>
+<span class="sd">            reduction_factor (int): Decicdes how many trials to promote to next rung.</span>
+<span class="sd">                                    Only top 1 / reduction_factor of rung trials can be promoted.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If minimum resource is lower than maximum resource, raise an error.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The number of rungs the bracket needs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">minimum_resource</span><span class="p">,</span> <span class="s2">&quot;minimum_resource&quot;</span><span class="p">)</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">maximum_resource</span><span class="p">,</span> <span class="s2">&quot;maximum_resource&quot;</span><span class="p">)</span>
+        <span class="n">check_positive</span><span class="p">(</span><span class="n">reduction_factor</span><span class="p">,</span> <span class="s2">&quot;reduction_factor&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">minimum_resource</span> <span class="o">&gt;</span> <span class="n">maximum_resource</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;maximum_resource should be bigger than minimum_resource. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but minimum_resource : </span><span class="si">{</span><span class="n">minimum_resource</span><span class="si">}</span><span class="s2"> / maximum_resource : </span><span class="si">{</span><span class="n">maximum_resource</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">maximum_resource</span> <span class="o">/</span> <span class="n">minimum_resource</span><span class="p">,</span> <span class="n">reduction_factor</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_initialize_rungs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyper_parameter_configurations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]):</span>
+        <span class="n">num_trials</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hyper_parameter_configurations</span><span class="p">)</span>
+        <span class="n">minimum_num_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">max_rung</span>
+        <span class="k">if</span> <span class="n">minimum_num_trials</span> <span class="o">&gt;</span> <span class="n">num_trials</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;number of hyper_parameter_configurations is not enough. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;minimum number is </span><span class="si">{</span><span class="n">minimum_num_trials</span><span class="si">}</span><span class="s2">, but current number is </span><span class="si">{</span><span class="n">num_trials</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;if you want to let them be, you can decrease needed number &quot;</span>
+                <span class="s2">&quot;by increasing reduction factor or minimum resource.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">rungs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Rung</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="o">**</span><span class="n">idx</span><span class="p">),</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">num_trials</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="o">**-</span><span class="n">idx</span><span class="p">)),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">,</span>
+                <span class="n">idx</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_rung</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">new_trial</span> <span class="ow">in</span> <span class="n">hyper_parameter_configurations</span><span class="p">[:</span> <span class="n">rungs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">num_required_trial</span><span class="p">]:</span>
+            <span class="n">new_trial</span><span class="o">.</span><span class="n">bracket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">rungs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add_new_trial</span><span class="p">(</span><span class="n">new_trial</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">[</span><span class="n">new_trial</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_trial</span>
+
+        <span class="k">return</span> <span class="n">rungs</span>
+
+    <span class="k">def</span> <span class="nf">_promote_trial_if_available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rung_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">check_not_negative</span><span class="p">(</span><span class="n">rung_idx</span><span class="p">,</span> <span class="s2">&quot;rung_idx&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_rung</span> <span class="o">&lt;=</span> <span class="n">rung_idx</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">best_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">[</span><span class="n">rung_idx</span><span class="p">]</span><span class="o">.</span><span class="n">get_trial_to_promote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_sha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">best_trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">[</span><span class="n">rung_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add_new_trial</span><span class="p">(</span><span class="n">best_trial</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">best_trial</span>
+
+<div class="viewcode-block" id="Bracket.get_next_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.get_next_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next trial to train.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[AshaTrial]: Next trial to train. There is no trial to train, then return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_rung</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_rung</span>
+        <span class="k">while</span> <span class="n">current_rung</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">next_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_promote_trial_if_available</span><span class="p">(</span><span class="n">current_rung</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">next_sample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">next_sample</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">current_rung</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_rung</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">current_rung</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="k">break</span>
+
+            <span class="n">next_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">[</span><span class="n">current_rung</span><span class="p">]</span><span class="o">.</span><span class="n">get_next_trial</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">next_sample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">current_rung</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">next_sample</span></div>
+
+<div class="viewcode-block" id="Bracket.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the bracket is done.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether bracket is done or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Bracket.get_best_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.get_best_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get best trial in the bracket.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[AshaTrial]: Best trial in the bracket. If there is no trial to select, then return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Bracket is not done yet.&quot;</span><span class="p">)</span>
+
+        <span class="n">trial</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">rung</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">):</span>
+            <span class="n">trial</span> <span class="o">=</span> <span class="n">rung</span><span class="o">.</span><span class="n">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">trial</span></div>
+
+<div class="viewcode-block" id="Bracket.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a bracket result to &#39;save_path&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            save_path (str): Path where to save a bracket result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_result</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;rung_status.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">trial_id</span><span class="p">,</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">trial</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trial_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Bracket.print_result"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.print_result">[docs]</a>    <span class="k">def</span> <span class="nf">print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a bracket result.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">20</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> bracket&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_result</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;rung_status&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">best_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_trial</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">best_trial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This bracket isn&#39;t started yet!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;best trial:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;id : </span><span class="si">{</span><span class="n">best_trial</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> / score : </span><span class="si">{</span><span class="n">best_trial</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">()</span><span class="si">}</span><span class="s2"> / config : </span><span class="si">{</span><span class="n">best_trial</span><span class="o">.</span><span class="n">configuration</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;all trials:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;id : </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> / score : </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">()</span><span class="si">}</span><span class="s2"> / config : </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">configuration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;minimum_resource&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="p">,</span>
+            <span class="s2">&quot;maximum_resource&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">,</span>
+            <span class="s2">&quot;reduction_factor&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">,</span>
+            <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">,</span>
+            <span class="s2">&quot;asynchronous_sha&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_sha</span><span class="p">,</span>
+            <span class="s2">&quot;num_trials&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">),</span>
+            <span class="s2">&quot;rung_status&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;rung_idx&quot;</span><span class="p">:</span> <span class="n">rung</span><span class="o">.</span><span class="n">rung_idx</span><span class="p">,</span>
+                    <span class="s2">&quot;num_trial&quot;</span><span class="p">:</span> <span class="n">rung</span><span class="o">.</span><span class="n">get_num_trials</span><span class="p">(),</span>
+                    <span class="s2">&quot;num_required_trial&quot;</span><span class="p">:</span> <span class="n">rung</span><span class="o">.</span><span class="n">num_required_trial</span><span class="p">,</span>
+                    <span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">rung</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">rung</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span>
+            <span class="p">],</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="HyperBand"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand">[docs]</a><span class="k">class</span> <span class="nc">HyperBand</span><span class="p">(</span><span class="n">HpoBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;It implements the Asyncronous HyperBand scheduler with iterations only.</span>
+
+<span class="sd">    Please refer the below papers for the detailed algorithm.</span>
+
+<span class="sd">    [1] &quot;Hyperband: A Novel Bandit-Based Approach to Hyperparameter Optimization&quot;, JMLR 2018</span>
+<span class="sd">        https://arxiv.org/abs/1603.06560</span>
+<span class="sd">        https://homes.cs.washington.edu/~jamieson/hyperband.html</span>
+
+<span class="sd">    [2] &quot;A System for Massively Parallel Hyperparameter Tuning&quot;, MLSys 2020</span>
+<span class="sd">        https://arxiv.org/abs/1810.05934</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        minimum_resource (Union[float, int]): Minimum resource to use for training a trial. Defaults to None.</span>
+<span class="sd">        reduction_factor (int, optional): Decicdes how many trials to promote to next rung.</span>
+<span class="sd">                                          Only top 1 / reduction_factor of rung trials can be promoted. Defaults to 3.</span>
+<span class="sd">        asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.</span>
+<span class="sd">        asynchronous_bracket (bool, optional): Whether SHAs(brackets) are running parallelly or not.</span>
+<span class="sd">                                               Defaults to True. Defaults to False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">minimum_resource</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">asynchronous_sha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">asynchronous_bracket</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">minimum_resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">check_positive</span><span class="p">(</span><span class="n">minimum_resource</span><span class="p">,</span> <span class="s2">&quot;minimum_resource&quot;</span><span class="p">)</span>
+        <span class="n">_check_reduction_factor_value</span><span class="p">(</span><span class="n">reduction_factor</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span> <span class="o">=</span> <span class="n">reduction_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="o">=</span> <span class="n">minimum_resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_sha</span> <span class="o">=</span> <span class="n">asynchronous_sha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_bracket</span> <span class="o">=</span> <span class="n">asynchronous_bracket</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AshaTrial</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Bracket</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_find_resource_value</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_brackets</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_need_to_find_resource_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_make_brackets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Bracket</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">brackets_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_default_brackets_setting</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">brackets_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_config</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_brackets_as_config</span><span class="p">(</span><span class="n">brackets_config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_bracket_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_max_rung_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bracket_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate how much resource is needed for the bracket given that resume is available.&quot;&quot;&quot;</span>
+        <span class="n">num_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_num_bracket_trials</span><span class="p">(</span><span class="n">num_max_rung_trials</span><span class="p">,</span> <span class="n">bracket_index</span><span class="p">)</span>
+        <span class="n">minimum_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="o">**-</span><span class="n">bracket_index</span><span class="p">)</span>
+
+        <span class="n">total_resource</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">num_rungs</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Bracket</span><span class="o">.</span><span class="n">calcuate_max_rung_idx</span><span class="p">(</span>
+                <span class="n">minimum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
+            <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">previous_resource</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">minimum_resource</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_rungs</span><span class="p">):</span>
+            <span class="n">total_resource</span> <span class="o">+=</span> <span class="n">num_trial</span> <span class="o">*</span> <span class="p">(</span><span class="n">resource</span> <span class="o">-</span> <span class="n">previous_resource</span><span class="p">)</span>
+            <span class="n">num_trial</span> <span class="o">//=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span>
+            <span class="n">previous_resource</span> <span class="o">=</span> <span class="n">resource</span>
+            <span class="n">resource</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span>
+
+        <span class="k">return</span> <span class="n">total_resource</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_num_bracket_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_max_rung_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bracket_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">num_max_rung_trials</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="o">**</span><span class="n">bracket_index</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_origin_num_trial_for_bracket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bracket_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_num_bracket_trials</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_num_max_rung_trials</span><span class="p">(</span><span class="n">bracket_idx</span><span class="p">),</span> <span class="n">bracket_idx</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_num_max_rung_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bracket_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculate_s_max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bracket_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_s_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_default_brackets_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="c1"># Bracket order is the opposite of order of paper&#39;s.</span>
+        <span class="c1"># This is for running default hyper parmeters with abundant resource.</span>
+        <span class="n">brackets_setting</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculate_s_max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">brackets_setting</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;bracket_index&quot;</span><span class="p">:</span> <span class="n">idx</span><span class="p">,</span> <span class="s2">&quot;num_trials&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_origin_num_trial_for_bracket</span><span class="p">(</span><span class="n">idx</span><span class="p">)}</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">brackets_setting</span>
+
+    <span class="k">def</span> <span class="nf">_make_brackets_as_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">brackets_settings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Bracket</span><span class="p">]:</span>
+        <span class="n">brackets</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">total_num_trials</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">bracket_setting</span> <span class="ow">in</span> <span class="n">brackets_settings</span><span class="p">:</span>
+            <span class="n">total_num_trials</span> <span class="o">+=</span> <span class="n">bracket_setting</span><span class="p">[</span><span class="s2">&quot;num_trials&quot;</span><span class="p">]</span>
+        <span class="n">reserved_trials</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reserved_trials</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">total_num_trials</span><span class="p">:</span>
+            <span class="n">reserved_trials</span> <span class="o">=</span> <span class="n">reserved_trials</span><span class="p">[:</span><span class="n">total_num_trials</span><span class="p">]</span>
+        <span class="n">configurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_new_hyper_parameter_configs</span><span class="p">(</span><span class="n">total_num_trials</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">reserved_trials</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">bracket_setting</span> <span class="ow">in</span> <span class="n">brackets_settings</span><span class="p">:</span>
+            <span class="n">bracket_idx</span> <span class="o">=</span> <span class="n">bracket_setting</span><span class="p">[</span><span class="s2">&quot;bracket_index&quot;</span><span class="p">]</span>
+            <span class="n">num_trial_to_initialize</span> <span class="o">=</span> <span class="n">bracket_setting</span><span class="p">[</span><span class="s2">&quot;num_trials&quot;</span><span class="p">]</span>
+            <span class="n">minimum_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="o">**-</span><span class="n">bracket_idx</span><span class="p">)</span>
+
+            <span class="n">bracket_configurations</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">reserved_trial</span> <span class="ow">in</span> <span class="n">reserved_trials</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">reserved_trial</span><span class="o">.</span><span class="n">bracket</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">reserved_trial</span><span class="o">.</span><span class="n">get_progress</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">minimum_resource</span>
+                <span class="p">)</span> <span class="ow">or</span> <span class="n">reserved_trial</span><span class="o">.</span><span class="n">bracket</span> <span class="o">==</span> <span class="n">bracket_idx</span><span class="p">:</span>
+                    <span class="n">num_trial_to_initialize</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">bracket_configurations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reserved_trial</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bracket_configurations</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">bracket_setting</span><span class="p">[</span><span class="s2">&quot;num_trials&quot;</span><span class="p">]:</span>
+                        <span class="k">break</span>
+
+            <span class="k">for</span> <span class="n">selected_trial</span> <span class="ow">in</span> <span class="n">bracket_configurations</span><span class="p">:</span>
+                <span class="n">reserved_trials</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">selected_trial</span><span class="p">)</span>
+
+            <span class="n">bracket_configurations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">configurations</span><span class="p">[:</span><span class="n">num_trial_to_initialize</span><span class="p">])</span>
+            <span class="n">configurations</span> <span class="o">=</span> <span class="n">configurations</span><span class="p">[</span><span class="n">num_trial_to_initialize</span><span class="p">:]</span>
+
+            <span class="n">bracket</span> <span class="o">=</span> <span class="n">Bracket</span><span class="p">(</span>
+                <span class="n">bracket_idx</span><span class="p">,</span>
+                <span class="n">minimum_resource</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">bracket_configurations</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_sha</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">brackets</span><span class="p">[</span><span class="n">bracket_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">bracket</span>
+
+        <span class="k">return</span> <span class="n">brackets</span>
+
+    <span class="k">def</span> <span class="nf">_make_new_hyper_parameter_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+        <span class="n">check_not_negative</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">)</span>
+
+        <span class="n">hp_configs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hp_configs</span>
+
+        <span class="n">hp_configs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_prior_hyper_parameters</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">num</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">hp_configs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">hp_configs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_random_hyper_parameter</span><span class="p">(</span><span class="n">num</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">hp_configs</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">hp_configs</span>
+
+    <span class="k">def</span> <span class="nf">_get_prior_hyper_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+        <span class="n">hp_configs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">num_samples</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_hyper_parameters</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_samples</span><span class="p">):</span>
+            <span class="n">hyper_parameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_hyper_parameters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">hp_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_trial</span><span class="p">(</span><span class="n">hyper_parameter</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">hp_configs</span>
+
+    <span class="k">def</span> <span class="nf">_get_random_hyper_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+        <span class="n">hp_configs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">latin_hypercube</span> <span class="o">=</span> <span class="n">LatinHypercube</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_space</span><span class="p">))</span>
+        <span class="n">configurations</span> <span class="o">=</span> <span class="n">latin_hypercube</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">num_samples</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">:</span>
+            <span class="n">config_with_key</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_space</span><span class="p">)}</span>
+            <span class="n">hp_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_make_trial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_space</span><span class="o">.</span><span class="n">convert_from_zero_one_scale_to_real_space</span><span class="p">(</span><span class="n">config_with_key</span><span class="p">))</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hp_configs</span>
+
+    <span class="k">def</span> <span class="nf">_make_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AshaTrial</span><span class="p">:</span>
+        <span class="n">trial_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_trial_id</span><span class="p">()</span>
+        <span class="n">trial</span> <span class="o">=</span> <span class="n">AshaTrial</span><span class="p">(</span><span class="n">trial_id</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_train_environment</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">[</span><span class="n">trial_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span>
+        <span class="k">return</span> <span class="n">trial</span>
+
+    <span class="k">def</span> <span class="nf">_get_new_trial_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">trial_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_train_environment</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">train_environment</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;subset_ratio&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_ratio</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">train_environment</span>
+
+<div class="viewcode-block" id="HyperBand.get_next_sample"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.get_next_sample">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next trial to train.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[AshaTrial]: Next trial to train. If there is no trial to train, then return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_trial_to_estimate_resource</span><span class="p">()</span>
+
+        <span class="n">next_sample</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">bracket</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bracket</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                <span class="n">next_sample</span> <span class="o">=</span> <span class="n">bracket</span><span class="o">.</span><span class="n">get_next_trial</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_asynchronous_bracket</span> <span class="ow">and</span> <span class="n">next_sample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">next_sample</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_trial_to_estimate_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AshaTrial</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trial to estimate a maximum resource or minimum resource.&quot;&quot;&quot;</span>
+        <span class="n">trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_new_hyper_parameter_configs</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># first trial to estimate</span>
+                <span class="n">trial</span><span class="o">.</span><span class="n">bracket</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_full_iterations</span>
+                <span class="n">trial</span><span class="o">.</span><span class="n">estimating_max_resource</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_full_iterations</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span>
+        <span class="k">return</span> <span class="n">trial</span>
+
+<div class="viewcode-block" id="HyperBand.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a ASHA result.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">bracket</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">bracket</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HyperBand.auto_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.auto_config">[docs]</a>    <span class="k">def</span> <span class="nf">auto_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure ASHA automatically aligning with possible resource.</span>
+
+<span class="sd">        Configure ASHA automatically. If resource is lesser than full ASHA, decrease ASHA scale.</span>
+<span class="sd">        In contrast, resource is more than full ASHA, increase ASHA scale.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Dict[str, Any]]: ASHA configuration. It&#39;s used to make brackets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_minimum_resource</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_dcrease_hyerpband_scale</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decrease_hyperband_scale</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_increase_hyperband_scale</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_adjust_minimum_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set meaningful minimum resource.</span>
+
+<span class="sd">        Goal of this function is to avoid setting minimum resource too low</span>
+<span class="sd">        to distinguish which trial is better.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;maximum_resource is lesser than reduction factor. adjusting minimum resource is skipped.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">trial</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;There is no finished trial. adjusting minimum resource is skipped.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">cur_score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">minimum_resource</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">resource</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">trial</span><span class="o">.</span><span class="n">score</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">resource</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">cur_score</span> <span class="o">=</span> <span class="n">cur_score</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">score</span> <span class="o">*</span> <span class="mf">0.5</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">left_vlaue_is_better</span><span class="p">(</span><span class="n">best_score</span><span class="p">,</span> <span class="n">cur_score</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">):</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="n">cur_score</span>
+                <span class="k">if</span> <span class="n">minimum_resource</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">minimum_resource</span> <span class="o">=</span> <span class="n">resource</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">minimum_resource</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">minimum_resource</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">minimum_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="o">=</span> <span class="n">minimum_resource</span>
+
+    <span class="k">def</span> <span class="nf">_get_full_asha_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="n">total_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculate_s_max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">num_max_rung_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_max_rung_trials</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">total_resource</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bracket_resource</span><span class="p">(</span><span class="n">num_max_rung_trials</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">total_resource</span>
+
+    <span class="k">def</span> <span class="nf">_need_to_dcrease_hyerpband_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check full ASHA resource exceeds expected_time_ratio.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_full_asha_resource</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_expected_total_resource</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_decrease_hyperband_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decrease Hyperband scale.</span>
+
+<span class="sd">        From bracket which has biggest number of rung, check that it&#39;s resource exceeds expected_time_ratio</span>
+<span class="sd">        if bracket is added. If not, bracket is added. If it does, check that number of trials for bracket</span>
+<span class="sd">        can be reduced. if not, skip that bracket and check that next bracket can be added by same method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">brackets_setting</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">resource_upper_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_expected_total_resource</span><span class="p">()</span>
+
+        <span class="n">reserved_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>  <span class="c1"># reserve resources for trials which should be run on bracket 0</span>
+            <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">bracket</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">reserved_resource</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span>  <span class="c1"># type: ignore</span>
+            <span class="n">total_resource</span> <span class="o">+=</span> <span class="n">reserved_resource</span>
+
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculate_s_max</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">total_resource</span> <span class="o">-=</span> <span class="n">reserved_resource</span>
+
+            <span class="n">origin_num_max_rung_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_max_rung_trials</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">num_max_rung_trials</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">origin_num_max_rung_trials</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">bracket_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bracket_resource</span><span class="p">(</span><span class="n">num_max_rung_trials</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">total_resource</span> <span class="o">+</span> <span class="n">bracket_resource</span> <span class="o">&lt;=</span> <span class="n">resource_upper_bound</span><span class="p">:</span>
+                    <span class="n">total_resource</span> <span class="o">+=</span> <span class="n">bracket_resource</span>
+                    <span class="n">num_bracket_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_num_bracket_trials</span><span class="p">(</span><span class="n">num_max_rung_trials</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                    <span class="n">brackets_setting</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;bracket_index&quot;</span><span class="p">:</span> <span class="n">idx</span><span class="p">,</span> <span class="s2">&quot;num_trials&quot;</span><span class="p">:</span> <span class="n">num_bracket_trials</span><span class="p">})</span>
+                    <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">brackets_setting</span>
+
+    <span class="k">def</span> <span class="nf">_get_expected_total_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;expected time ratio should be set to get expceted total resource&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_full_iterations</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_additional_time_ratio</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_increase_hyperband_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="n">total_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">bracket_status</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">s_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_s_max</span><span class="p">()</span>
+
+        <span class="c1"># If all brackets can run more than one, then multiply number of trials on each bracket as many as possible</span>
+        <span class="n">sum_unit_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">num_max_rung_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_max_rung_trials</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">unit_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bracket_resource</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="n">sum_unit_resource</span> <span class="o">+=</span> <span class="n">unit_resource</span>
+            <span class="n">bracket_status</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;num_max_rung_trials&quot;</span><span class="p">:</span> <span class="n">num_max_rung_trials</span><span class="p">,</span> <span class="s2">&quot;unit_resource&quot;</span><span class="p">:</span> <span class="n">unit_resource</span><span class="p">}</span>
+            <span class="n">total_resource</span> <span class="o">+=</span> <span class="n">num_max_rung_trials</span> <span class="o">*</span> <span class="n">unit_resource</span>
+
+        <span class="n">maximum_reseource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_expected_total_resource</span><span class="p">()</span>
+        <span class="n">available_num_trials</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">maximum_reseource</span> <span class="o">-</span> <span class="n">total_resource</span><span class="p">)</span> <span class="o">//</span> <span class="n">sum_unit_resource</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">bracket_status</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;num_max_rung_trials&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">available_num_trials</span>
+        <span class="n">total_resource</span> <span class="o">+=</span> <span class="n">sum_unit_resource</span> <span class="o">*</span> <span class="n">available_num_trials</span>
+
+        <span class="c1"># add trials to brackets from big index as many as possible</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">update_flag</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s_max</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">total_resource</span> <span class="o">+</span> <span class="n">bracket_status</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;unit_resource&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">maximum_reseource</span><span class="p">:</span>
+                    <span class="n">total_resource</span> <span class="o">+=</span> <span class="n">bracket_status</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;unit_resource&quot;</span><span class="p">]</span>
+                    <span class="n">bracket_status</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;num_max_rung_trials&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">update_flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">update_flag</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="c1"># set brackets setting</span>
+        <span class="n">brackets_setting</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">brackets_setting</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;bracket_index&quot;</span><span class="p">:</span> <span class="n">idx</span><span class="p">,</span>
+                    <span class="s2">&quot;num_trials&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_num_bracket_trials</span><span class="p">(</span>
+                        <span class="n">bracket_status</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;num_max_rung_trials&quot;</span><span class="p">],</span> <span class="n">idx</span>  <span class="c1"># type: ignore</span>
+                    <span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">brackets_setting</span>
+
+    <span class="k">def</span> <span class="nf">_get_used_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="n">used_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">used_resource</span> <span class="o">+=</span> <span class="n">trial</span><span class="o">.</span><span class="n">get_progress</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">used_resource</span>
+
+<div class="viewcode-block" id="HyperBand.get_progress"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.get_progress">[docs]</a>    <span class="k">def</span> <span class="nf">get_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current progress of ASHA.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">total_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_full_asha_resource</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_expected_total_resource</span><span class="p">()</span>
+
+        <span class="n">progress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_used_resource</span><span class="p">()</span> <span class="o">/</span> <span class="n">total_resource</span>
+
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HyperBand.report_score"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.report_score">[docs]</a>    <span class="k">def</span> <span class="nf">report_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">trial_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">done</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="n">TrialStatus</span><span class="o">.</span><span class="n">STOP</span><span class="p">,</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Report a score to ASHA.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            score (Union[float, int]): Score to report.</span>
+<span class="sd">            resource (Union[float, int]): Resource used to get score.</span>
+<span class="sd">            trial_id (str): Trial id.</span>
+<span class="sd">            done (bool, optional): Whether training trial is done. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Literal[TrialStatus.STOP, TrialStatus.RUNNING]: Decide whether to continue training or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">[</span><span class="n">trial_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">trial</span><span class="o">.</span><span class="n">estimating_max_resource</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">get_progress</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_full_iterations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_find_resource_value</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_brackets</span><span class="p">()</span>
+            <span class="n">trial</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">trial</span><span class="o">.</span><span class="n">register_score</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">score</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_find_resource_value</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_brackets</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span> <span class="ow">or</span> <span class="n">trial</span><span class="o">.</span><span class="n">bracket</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">STOP</span>
+
+        <span class="k">return</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span></div>
+
+<div class="viewcode-block" id="HyperBand.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the ASHA is done.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether ASHA is done.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">bracket</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bracket</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="HyperBand.get_best_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.get_best_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get best configuration in ASHA.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[Dict[str, Any]]: Best configuration in ASHA. If there is no trial to select, return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_trial</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">best_score</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">left_vlaue_is_better</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">best_score</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)):</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="n">score</span>
+                <span class="n">best_trial</span> <span class="o">=</span> <span class="n">trial</span>
+
+        <span class="k">if</span> <span class="n">best_trial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">best_trial</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">best_trial</span><span class="o">.</span><span class="n">configuration</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="HyperBand.print_result"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.print_result">[docs]</a>    <span class="k">def</span> <span class="nf">print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a ASHA result.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;HPO(ASHA) result summary</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Best config : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_best_config</span><span class="p">()</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Hyper band runs </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="p">)</span><span class="si">}</span><span class="s2"> brackets.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Brackets summary:&quot;</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">bracket</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">bracket</span><span class="o">.</span><span class="n">print_result</span><span class="p">()</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

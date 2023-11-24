@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.ham\_segnext\_s.deployment
+==============================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ham_segnext_s.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

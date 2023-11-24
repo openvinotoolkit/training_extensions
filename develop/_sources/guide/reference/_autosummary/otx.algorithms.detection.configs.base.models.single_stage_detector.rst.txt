@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.models.single\_stage\_detector
+====================================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.models.single_stage_detector
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.dense\_heads.mmov\_ssd\_head
+===========================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_ssd_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVSSDHead
+   
+   
+
+   
+   
+   
+
+
+

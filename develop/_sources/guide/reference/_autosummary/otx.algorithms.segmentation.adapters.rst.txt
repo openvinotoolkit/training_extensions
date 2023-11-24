@@ -1,0 +1,32 @@
+otx.algorithms.segmentation.adapters
+====================================
+
+.. automodule:: otx.algorithms.segmentation.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.adapters.mmseg
+   otx.algorithms.segmentation.adapters.openvino
+

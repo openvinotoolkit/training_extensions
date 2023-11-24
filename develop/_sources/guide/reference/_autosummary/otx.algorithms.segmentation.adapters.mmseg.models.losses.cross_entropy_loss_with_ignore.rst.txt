@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.models.losses.cross\_entropy\_loss\_with\_ignore
+===========================================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.losses.cross_entropy_loss_with_ignore
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CrossEntropyLossWithIgnore
+   
+   
+
+   
+   
+   
+
+
+

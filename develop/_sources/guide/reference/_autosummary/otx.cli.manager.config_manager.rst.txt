@@ -1,0 +1,35 @@
+otx.cli.manager.config\_manager
+===============================
+
+.. automodule:: otx.cli.manager.config_manager
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      set_workspace
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigManager
+   
+   
+
+   
+   
+   
+
+
+

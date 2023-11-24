@@ -1,0 +1,34 @@
+otx.algorithms.anomaly
+======================
+
+.. automodule:: otx.algorithms.anomaly
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.adapters
+   otx.algorithms.anomaly.configs
+   otx.algorithms.anomaly.tasks
+   otx.algorithms.anomaly.tools
+

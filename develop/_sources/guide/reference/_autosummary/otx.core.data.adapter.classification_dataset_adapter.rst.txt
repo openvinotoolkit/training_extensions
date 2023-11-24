@@ -1,0 +1,30 @@
+otx.core.data.adapter.classification\_dataset\_adapter
+======================================================
+
+.. automodule:: otx.core.data.adapter.classification_dataset_adapter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ClassificationDatasetAdapter
+      SelfSLClassificationDatasetAdapter
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.common.adapters.mmcv.hooks.dual\_model\_ema\_hook
+================================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.hooks.dual_model_ema_hook
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DualModelEMAHook
+   
+   
+
+   
+   
+   
+
+
+

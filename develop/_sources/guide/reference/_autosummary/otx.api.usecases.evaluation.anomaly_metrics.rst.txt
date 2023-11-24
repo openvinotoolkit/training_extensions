@@ -1,0 +1,32 @@
+otx.api.usecases.evaluation.anomaly\_metrics
+============================================
+
+.. automodule:: otx.api.usecases.evaluation.anomaly_metrics
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AnomalyDetectionScores
+      AnomalyLocalizationPerformance
+      AnomalyLocalizationScores
+      AnomalySegmentationScores
+   
+   
+
+   
+   
+   
+
+
+

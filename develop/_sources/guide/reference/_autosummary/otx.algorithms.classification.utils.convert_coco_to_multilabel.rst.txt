@@ -1,0 +1,31 @@
+otx.algorithms.classification.utils.convert\_coco\_to\_multilabel
+=================================================================
+
+.. automodule:: otx.algorithms.classification.utils.convert_coco_to_multilabel
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      coco_to_datumaro_multilabel
+      main
+      parse_args
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

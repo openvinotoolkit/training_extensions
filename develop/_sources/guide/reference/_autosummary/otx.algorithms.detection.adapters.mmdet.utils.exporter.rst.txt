@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.utils.exporter
+======================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.utils.exporter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionExporter
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,33 @@
+otx.algorithms.anomaly.adapters.anomalib
+========================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.anomaly.adapters.anomalib.callbacks
+   otx.algorithms.anomaly.adapters.anomalib.config
+   otx.algorithms.anomaly.adapters.anomalib.data
+

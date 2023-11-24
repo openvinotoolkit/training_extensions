@@ -1,0 +1,35 @@
+otx.algorithms.classification
+=============================
+
+.. automodule:: otx.algorithms.classification
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.classification.adapters
+   otx.algorithms.classification.configs
+   otx.algorithms.classification.task
+   otx.algorithms.classification.tools
+   otx.algorithms.classification.utils
+

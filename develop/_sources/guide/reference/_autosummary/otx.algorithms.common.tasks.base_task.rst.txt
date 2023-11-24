@@ -1,0 +1,30 @@
+otx.algorithms.common.tasks.base\_task
+======================================
+
+.. automodule:: otx.algorithms.common.tasks.base_task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXTask
+      OnHookInitialized
+   
+   
+
+   
+   
+   
+
+
+

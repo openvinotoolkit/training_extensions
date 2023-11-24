@@ -1,0 +1,29 @@
+otx.api.serialization.id\_mapper
+================================
+
+.. automodule:: otx.api.serialization.id_mapper
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IDMapper
+   
+   
+
+   
+   
+   
+
+
+

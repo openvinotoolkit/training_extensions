@@ -1,0 +1,36 @@
+otx.algorithms.detection.adapters.mmdet.models.detectors.custom\_maskrcnn\_detector
+===================================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      custom_mask_rcnn__simple_test
+      custom_maskrcnn__forward
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomMaskRCNN
+   
+   
+
+   
+   
+   
+
+
+

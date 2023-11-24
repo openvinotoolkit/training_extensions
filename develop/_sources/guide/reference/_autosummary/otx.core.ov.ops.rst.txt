@@ -1,0 +1,49 @@
+otx.core.ov.ops
+===============
+
+.. automodule:: otx.core.ov.ops
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.core.ov.ops.activations
+   otx.core.ov.ops.arithmetics
+   otx.core.ov.ops.builder
+   otx.core.ov.ops.convolutions
+   otx.core.ov.ops.generation
+   otx.core.ov.ops.image_processings
+   otx.core.ov.ops.infrastructures
+   otx.core.ov.ops.matmuls
+   otx.core.ov.ops.modules
+   otx.core.ov.ops.movements
+   otx.core.ov.ops.normalizations
+   otx.core.ov.ops.object_detections
+   otx.core.ov.ops.op
+   otx.core.ov.ops.poolings
+   otx.core.ov.ops.reductions
+   otx.core.ov.ops.shape_manipulations
+   otx.core.ov.ops.sorting_maximization
+   otx.core.ov.ops.type_conversions
+   otx.core.ov.ops.utils
+

@@ -1,0 +1,32 @@
+otx.core.data.adapter.anomaly\_dataset\_adapter
+===============================================
+
+.. automodule:: otx.core.data.adapter.anomaly_dataset_adapter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AnomalyBaseDatasetAdapter
+      AnomalyClassificationDatasetAdapter
+      AnomalyDetectionDatasetAdapter
+      AnomalySegmentationDatasetAdapter
+   
+   
+
+   
+   
+   
+
+
+

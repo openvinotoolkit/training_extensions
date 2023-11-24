@@ -1,0 +1,34 @@
+otx.algorithms.common.adapters.mmcv.configs.backbones
+=====================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.configs.backbones
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.common.adapters.mmcv.configs.backbones.lite_hrnet_18
+   otx.algorithms.common.adapters.mmcv.configs.backbones.lite_hrnet_s
+   otx.algorithms.common.adapters.mmcv.configs.backbones.lite_hrnet_x
+   otx.algorithms.common.adapters.mmcv.configs.backbones.segnext
+

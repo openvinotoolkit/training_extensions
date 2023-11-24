@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.detection.adapters.mmdet.utils.config_utils &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/detection/adapters/mmdet/utils/config_utils';</script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.detection.adapters.mmdet.utils.config_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Collection of utils for task implementation in Detection Task.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2022-2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">from</span> <span class="nn">mmcv</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">ConfigDict</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmcv.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InputSizeManager</span><span class="p">,</span>
+    <span class="n">get_configs_by_pairs</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.detection.configs.base</span> <span class="kn">import</span> <span class="n">DetectionConfig</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.detection.utils.data</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">adaptive_tile_params</span><span class="p">,</span>
+    <span class="n">format_list_to_str</span><span class="p">,</span>
+    <span class="n">get_anchor_boxes</span><span class="p">,</span>
+    <span class="n">get_sizes_from_dataset_entity</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">DatasetPurpose</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.subset</span> <span class="kn">import</span> <span class="n">Subset</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+
+    <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;KMeans&quot;</span><span class="p">]</span>
+
+    <span class="n">KMEANS_IMPORT</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">KMEANS_IMPORT</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="should_cluster_anchors"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.utils.html#otx.algorithms.detection.adapters.mmdet.utils.should_cluster_anchors">[docs]</a><span class="k">def</span> <span class="nf">should_cluster_anchors</span><span class="p">(</span><span class="n">model_cfg</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether cluster anchors or not.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_cfg</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;bbox_head&quot;</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="p">,</span> <span class="s2">&quot;anchor_generator&quot;</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="n">model_cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">anchor_generator</span><span class="p">,</span>
+            <span class="s2">&quot;reclustering_anchors&quot;</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="cluster_anchors"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.utils.html#otx.algorithms.detection.adapters.mmdet.utils.cluster_anchors">[docs]</a><span class="k">def</span> <span class="nf">cluster_anchors</span><span class="p">(</span><span class="n">recipe_config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update configs for cluster_anchors.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">KMEANS_IMPORT</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;Sklearn package is not installed. To enable anchor boxes clustering, please install &quot;</span>
+            <span class="s2">&quot;packages from requirements/optional.txt or just scikit-learn package.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Collecting statistics from training dataset to cluster anchor boxes...&quot;</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">target_wh</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">img_scale</span>
+        <span class="k">for</span> <span class="n">transforms</span> <span class="ow">in</span> <span class="n">recipe_config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">pipeline</span>
+        <span class="k">if</span> <span class="n">transforms</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;MultiScaleFlipAug&quot;</span>
+    <span class="p">]</span>
+    <span class="n">prev_generator</span> <span class="o">=</span> <span class="n">recipe_config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">anchor_generator</span>
+    <span class="n">group_as</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">width</span><span class="p">)</span> <span class="k">for</span> <span class="n">width</span> <span class="ow">in</span> <span class="n">prev_generator</span><span class="o">.</span><span class="n">widths</span><span class="p">]</span>
+    <span class="n">wh_stats</span> <span class="o">=</span> <span class="n">get_sizes_from_dataset_entity</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_wh</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wh_stats</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">sum</span><span class="p">(</span><span class="n">group_as</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;There are not enough objects to cluster: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">wh_stats</span><span class="p">)</span><span class="si">}</span><span class="s2"> were detected, while it should be &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;at least </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">group_as</span><span class="p">)</span><span class="si">}</span><span class="s2">. Anchor box clustering was skipped.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">widths</span><span class="p">,</span> <span class="n">heights</span> <span class="o">=</span> <span class="n">get_anchor_boxes</span><span class="p">(</span><span class="n">wh_stats</span><span class="p">,</span> <span class="n">group_as</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Anchor boxes widths have been updated from </span><span class="si">{</span><span class="n">format_list_to_str</span><span class="p">(</span><span class="n">prev_generator</span><span class="o">.</span><span class="n">widths</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">format_list_to_str</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Anchor boxes heights have been updated from </span><span class="si">{</span><span class="n">format_list_to_str</span><span class="p">(</span><span class="n">prev_generator</span><span class="o">.</span><span class="n">heights</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">format_list_to_str</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">config_generator</span> <span class="o">=</span> <span class="n">recipe_config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">anchor_generator</span>
+    <span class="n">config_generator</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span> <span class="n">config_generator</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="n">widths</span><span class="p">,</span> <span class="n">heights</span>
+
+    <span class="n">recipe_config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">anchor_generator</span> <span class="o">=</span> <span class="n">config_generator</span></div>
+
+
+<div class="viewcode-block" id="patch_tiling"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.utils.html#otx.algorithms.detection.adapters.mmdet.utils.patch_tiling">[docs]</a><span class="k">def</span> <span class="nf">patch_tiling</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">hparams</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update config for tiling.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (dict): OTX config containing configuration settings.</span>
+<span class="sd">        hparams (DetectionConfig): DetectionConfig containing hyperparameters.</span>
+<span class="sd">        dataset (DatasetEntity, optional): A dataset entity. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The updated configuration dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Tiling enabled&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dataset</span> <span class="ow">and</span> <span class="n">dataset</span><span class="o">.</span><span class="n">purpose</span> <span class="o">!=</span> <span class="n">DatasetPurpose</span><span class="o">.</span><span class="n">INFERENCE</span> <span class="ow">and</span> <span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span><span class="p">:</span>
+            <span class="n">adaptive_tile_params</span><span class="p">(</span><span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tile_classifier</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Tile classifier enabled&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Patch model from: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2"> to CustomMaskRCNNTileOptimized&quot;</span><span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s2">&quot;CustomMaskRCNNTileOptimized&quot;</span>
+
+            <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s2">&quot;transforms&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span><span class="o">.</span><span class="n">pipeline</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">transforms</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span><span class="o">.</span><span class="n">pipeline</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;transforms&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">transforms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Collect&quot;</span><span class="p">:</span>
+                        <span class="n">transforms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;keys&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;full_res_image&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;efficientnet_b2b&quot;</span><span class="p">:</span>
+                <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.002</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Patched </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2"> LR: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hparams</span><span class="o">.</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">learning_rate</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">learning_rate</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="n">hparams</span><span class="o">.</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">learning_rate</span> <span class="o">=</span> <span class="n">learning_rate</span>
+
+            <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">filter_empty_gt</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">sampling_ratio</span> <span class="o">=</span> <span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_sampling_ratio</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">val</span><span class="o">.</span><span class="n">sampling_ratio</span> <span class="o">=</span> <span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_sampling_ratio</span>
+        <span class="k">if</span> <span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_sampling_ratio</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">custom_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ConfigDict</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TileSamplingHook&quot;</span><span class="p">}))</span>
+
+        <span class="n">tiling_params</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+            <span class="n">tile_size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_size</span><span class="p">),</span>
+            <span class="n">overlap_ratio</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_overlap</span><span class="p">),</span>
+            <span class="n">max_per_img</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">hparams</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_max_number</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">ConfigDict</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span>
+                    <span class="n">train</span><span class="o">=</span><span class="n">tiling_params</span><span class="p">,</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">tiling_params</span><span class="p">,</span>
+                    <span class="n">test</span><span class="o">=</span><span class="n">tiling_params</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">evaluation</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">iou_thr</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">])))</span>
+
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="patch_input_preprocessing"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.utils.html#otx.algorithms.detection.adapters.mmdet.utils.patch_input_preprocessing">[docs]</a><span class="k">def</span> <span class="nf">patch_input_preprocessing</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update backend configuration with input preprocessing options.</span>
+
+<span class="sd">    - If `&quot;to_rgb&quot;` in Normalize config is truthy, it adds `&quot;--reverse_input_channels&quot;` as a flag.</span>
+
+<span class="sd">    The function then sets default values for the backend configuration in `deploy_cfg`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cfg (mmcv.ConfigDict): Config object containing test pipeline and other configurations.</span>
+<span class="sd">        deploy_cfg (mmcv.ConfigDict): DeployConfig object containing backend configuration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None: This function updates the input `deploy_cfg` object directly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">normalize_cfgs</span> <span class="o">=</span> <span class="n">get_configs_by_pairs</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">pipeline</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Normalize&quot;</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalize_cfgs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">normalize_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">normalize_cfgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Set options based on Normalize config</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;flags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;--reverse_input_channels&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;to_rgb&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+        <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;--mean_values&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="s2">&quot;--scale_values&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Set default backend configuration</span>
+    <span class="n">mo_options</span> <span class="o">=</span> <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mo_options&quot;</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">())</span>
+    <span class="n">mo_options</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">()</span> <span class="k">if</span> <span class="n">mo_options</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mo_options</span>
+    <span class="n">mo_options</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">mo_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;args&quot;</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">())</span>
+    <span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">mo_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;flags&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="c1"># Override backend configuration with options from Normalize config</span>
+    <span class="n">mo_options</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">])</span>
+    <span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mo_options</span><span class="o">.</span><span class="n">flags</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">]))</span>
+
+    <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span><span class="o">.</span><span class="n">mo_options</span> <span class="o">=</span> <span class="n">mo_options</span></div>
+
+
+<div class="viewcode-block" id="patch_input_shape"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.utils.html#otx.algorithms.detection.adapters.mmdet.utils.patch_input_shape">[docs]</a><span class="k">def</span> <span class="nf">patch_input_shape</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update backend configuration with input shape information.</span>
+
+<span class="sd">    This function retrieves the input size from `cfg.data.test.pipeline`,</span>
+<span class="sd">    then sets the input shape for the backend model in `deploy_cfg`</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    {</span>
+<span class="sd">        &quot;opt_shapes&quot;: {</span>
+<span class="sd">            &quot;input&quot;: [1, 3, *size]</span>
+<span class="sd">        }</span>
+<span class="sd">    }</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cfg (Config): Config object containing test pipeline and other configurations.</span>
+<span class="sd">        deploy_cfg (DeployConfig): DeployConfig object containing backend configuration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None: This function updates the input `deploy_cfg` object directly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_size_manager</span> <span class="o">=</span> <span class="n">InputSizeManager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">input_size_manager</span><span class="o">.</span><span class="n">get_input_size_from_cfg</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">size</span><span class="p">)</span>
+    <span class="c1"># default is static shape to prevent an unexpected error</span>
+    <span class="c1"># when converting to OpenVINO IR</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">size</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Patching OpenVINO IR input shape: </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">ir_config</span><span class="o">.</span><span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+    <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span><span class="o">.</span><span class="n">model_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ConfigDict</span><span class="p">(</span><span class="n">opt_shapes</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">]))]</span></div>
+
+
+<div class="viewcode-block" id="patch_ir_scale_factor"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.utils.html#otx.algorithms.detection.adapters.mmdet.utils.patch_ir_scale_factor">[docs]</a><span class="k">def</span> <span class="nf">patch_ir_scale_factor</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">hyper_parameters</span><span class="p">:</span> <span class="n">DetectionConfig</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch IR scale factor inplace from hyper parameters to deploy config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        deploy_cfg (ConfigDict): mmcv deploy config</span>
+<span class="sd">        hyper_parameters (DetectionConfig): OTX detection hyper parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">hyper_parameters</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span><span class="p">:</span>
+        <span class="n">scale_ir_input</span> <span class="o">=</span> <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale_ir_input&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scale_ir_input</span><span class="p">:</span>
+            <span class="n">tile_ir_scale_factor</span> <span class="o">=</span> <span class="n">hyper_parameters</span><span class="o">.</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_ir_scale_factor</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Apply OpenVINO IR scale factor: </span><span class="si">{</span><span class="n">tile_ir_scale_factor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">ir_input_shape</span> <span class="o">=</span> <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span><span class="o">.</span><span class="n">model_inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">opt_shapes</span><span class="o">.</span><span class="n">input</span>
+            <span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">tile_ir_scale_factor</span><span class="p">)</span>  <span class="c1"># height</span>
+            <span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">tile_ir_scale_factor</span><span class="p">)</span>  <span class="c1"># width</span>
+            <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">ir_config</span><span class="o">.</span><span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># width, height</span>
+            <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">backend_config</span><span class="o">.</span><span class="n">model_inputs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">ConfigDict</span><span class="p">(</span><span class="n">opt_shapes</span><span class="o">=</span><span class="n">ConfigDict</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">ir_input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]]))</span>
+            <span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-----------------&gt; x </span><span class="si">{</span><span class="n">tile_ir_scale_factor</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">ir_input_shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

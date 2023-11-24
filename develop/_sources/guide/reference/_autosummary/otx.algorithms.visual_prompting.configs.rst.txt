@@ -1,0 +1,33 @@
+otx.algorithms.visual\_prompting.configs
+========================================
+
+.. automodule:: otx.algorithms.visual_prompting.configs
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.configs.base
+   otx.algorithms.visual_prompting.configs.sam_tiny_vit
+   otx.algorithms.visual_prompting.configs.sam_vit_b
+

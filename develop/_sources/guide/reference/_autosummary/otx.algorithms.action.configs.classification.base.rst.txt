@@ -1,0 +1,33 @@
+otx.algorithms.action.configs.classification.base
+=================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.configs.classification.base.base_classification_dynamic
+   otx.algorithms.action.configs.classification.base.base_classification_static
+   otx.algorithms.action.configs.classification.base.supervised
+

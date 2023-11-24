@@ -1,0 +1,32 @@
+otx.core.ov.ops.matmuls
+=======================
+
+.. automodule:: otx.core.ov.ops.matmuls
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EinsumV7
+      EinsumV7Attribute
+      MatMulV0
+      MatMulV0Attribute
+   
+   
+
+   
+   
+   
+
+
+

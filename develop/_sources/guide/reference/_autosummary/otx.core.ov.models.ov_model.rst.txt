@@ -1,0 +1,29 @@
+otx.core.ov.models.ov\_model
+============================
+
+.. automodule:: otx.core.ov.models.ov_model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OVModel
+   
+   
+
+   
+   
+   
+
+
+

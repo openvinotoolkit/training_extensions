@@ -1,0 +1,29 @@
+otx.api.entities.shapes.ellipse
+===============================
+
+.. automodule:: otx.api.entities.shapes.ellipse
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Ellipse
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.models.backbones.mmov\_backbone
+==========================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.backbones.mmov_backbone
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVBackbone
+   
+   
+
+   
+   
+   
+
+
+

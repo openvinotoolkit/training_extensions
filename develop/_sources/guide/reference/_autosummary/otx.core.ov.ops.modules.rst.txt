@@ -1,0 +1,31 @@
+otx.core.ov.ops.modules
+=======================
+
+.. automodule:: otx.core.ov.ops.modules
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.core.ov.ops.modules.op_module
+

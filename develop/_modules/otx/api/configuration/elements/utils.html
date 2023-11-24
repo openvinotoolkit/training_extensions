@@ -1,0 +1,605 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.configuration.elements.utils &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/configuration/elements/utils';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.configuration.elements.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utility functions for attr package.</span>
+
+<span class="sd">This module contains utility functions to use with the attr package, concerning for instance parameter validation</span>
+<span class="sd">or serialization. They are used within the cfg_helper or the configuration elements.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">attr</span> <span class="kn">import</span> <span class="n">Attribute</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.configuration.elements.configurable_enum</span> <span class="kn">import</span> <span class="n">ConfigurableEnum</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.elements.parameter_group</span> <span class="kn">import</span> <span class="n">ParameterGroup</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.id</span> <span class="kn">import</span> <span class="n">ID</span>
+
+<span class="n">NumericTypeVar</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;NumericTypeVar&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+<span class="n">SelectableTypeVar</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;SelectableTypeVar&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+<span class="n">ConfigurableEnumTypeVar</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ConfigurableEnumTypeVar&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">ConfigurableEnum</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="attr_enum_to_str_serializer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.attr_enum_to_str_serializer">[docs]</a><span class="k">def</span> <span class="nf">attr_enum_to_str_serializer</span><span class="p">(</span>
+    <span class="n">instance</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>  <span class="c1"># pylint: disable=unused-argument</span>
+    <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">,</span>  <span class="c1"># pylint: disable=unused-argument</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Enum</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This function converts Enums to their string representation.</span>
+
+<span class="sd">    It is used when converting between yaml and python object representation of the configuration.</span>
+<span class="sd">    The function signature matches what is expected by the `attr.asdict` value_serializer argument.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        instance (object): (Unused) The instance of the class that the attribute is attached to.</span>
+<span class="sd">        attribute (Attribute): (unused) The attribute that is being serialized.</span>
+<span class="sd">        value (Union[Enum, str]): The value to serialize.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The string representation of the value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<span class="k">def</span> <span class="nf">_convert_enum_selectable_value</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">],</span>
+    <span class="n">enum_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ConfigurableEnumTypeVar</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function that converts the input value to an instance of the correct ConfigurableEnum.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value (Union[str, ConfigurableEnumTypeVar]): input value to convert</span>
+<span class="sd">        enum_class (Type[ConfigurableEnumTypeVar]): Type of the Enum to convert to</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ConfigurableEnumTypeVar: Instance of the correct ConfigurableEnum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">enum_value</span> <span class="o">=</span> <span class="n">enum_class</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is an invalid option for </span><span class="si">{</span><span class="n">enum_class</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. Valid options are:&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">enum_class</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">ex</span>
+        <span class="k">return</span> <span class="n">enum_value</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<div class="viewcode-block" id="construct_attr_enum_selectable_converter"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.construct_attr_enum_selectable_converter">[docs]</a><span class="k">def</span> <span class="nf">construct_attr_enum_selectable_converter</span><span class="p">(</span>
+    <span class="n">default_value</span><span class="p">:</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">]],</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This function converts an input value to the correct instance of the ConfigurableEnum.</span>
+
+<span class="sd">    It is used when initializing a selectable parameter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        default_value (ConfigurableEnumTypeVar): Default value for the selectable</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable[[Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar]:</span>
+<span class="sd">            Function that converts an input value to the correct instance of the ConfigurableEnum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">enum_class</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">default_value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">attr_convert_enum_selectable_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function that converts an input value to an instance of the appropriate ConfigurableEnum.</span>
+
+<span class="sd">        Can be used as a `converter` for attrs.Attributes of type ConfigurableEnum.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (Union[str, ConfigurableEnumTypeVar]): Value to convert to ConfigurableEnum instance</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ConfigurableEnumTypeVar: Instance of the correct ConfigurableEnum</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_convert_enum_selectable_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">enum_class</span><span class="o">=</span><span class="n">enum_class</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">attr_convert_enum_selectable_value</span></div>
+
+
+<div class="viewcode-block" id="construct_attr_enum_selectable_onsetattr"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.construct_attr_enum_selectable_onsetattr">[docs]</a><span class="k">def</span> <span class="nf">construct_attr_enum_selectable_onsetattr</span><span class="p">(</span>
+    <span class="n">default_value</span><span class="p">:</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ParameterGroup</span><span class="p">,</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">]],</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This function converts an input value to the correct instance of the ConfigurableEnum.</span>
+
+<span class="sd">    It is used when setting a value for a selectable parameter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        default_value (ConfigurableEnumTypeVar): Default value for the enum_selectable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable[[Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar]: Function that converts an input</span>
+<span class="sd">            value to the correct instance of the ConfigurableEnum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">enum_class</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">default_value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">attr_convert_enum_selectable_value</span><span class="p">(</span>
+        <span class="n">instance</span><span class="p">:</span> <span class="n">ParameterGroup</span><span class="p">,</span>  <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">,</span>  <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurableEnumTypeVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function that converts an input value to an instance of the appropriate ConfigurableEnum.</span>
+
+<span class="sd">        Can be used with the `on_setattr` hook of the attrs package.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_convert_enum_selectable_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">enum_class</span><span class="o">=</span><span class="n">enum_class</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">attr_convert_enum_selectable_value</span></div>
+
+
+<div class="viewcode-block" id="construct_attr_value_validator"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.construct_attr_value_validator">[docs]</a><span class="k">def</span> <span class="nf">construct_attr_value_validator</span><span class="p">(</span>
+    <span class="n">min_value</span><span class="p">:</span> <span class="n">NumericTypeVar</span><span class="p">,</span> <span class="n">max_value</span><span class="p">:</span> <span class="n">NumericTypeVar</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ParameterGroup</span><span class="p">,</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">NumericTypeVar</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constructs a validator function that is used in the attribute validation of numeric configurable parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        min_value (NumericTypeVar): Minimum value for the parameter</span>
+<span class="sd">        max_value (NumericTypeVar): Maximum value for the parameter</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable[[ParameterGroup, Attribute, NumericTypeVar], None]: Function that validates the input value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">attr_validate_value</span><span class="p">(</span>
+        <span class="n">instance</span><span class="p">:</span> <span class="n">ParameterGroup</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">NumericTypeVar</span>
+    <span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This function is used to validate values for numeric ConfigurableParameters.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">min_value</span> <span class="o">&lt;=</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="n">max_value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid value set for </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is out of bounds.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">attr_validate_value</span></div>
+
+
+<div class="viewcode-block" id="construct_attr_selectable_validator"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.construct_attr_selectable_validator">[docs]</a><span class="k">def</span> <span class="nf">construct_attr_selectable_validator</span><span class="p">(</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">SelectableTypeVar</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ParameterGroup</span><span class="p">,</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">SelectableTypeVar</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constructs a validator function that is used in the attribute validation of selectable configurable parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        options (List[SelectableTypeVar]): List of valid options for the parameter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable[[ParameterGroup, Attribute, SelectableTypeVar], None]: Function that validates the input value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">attr_validate_selectable</span><span class="p">(</span>
+        <span class="n">instance</span><span class="p">:</span> <span class="n">ParameterGroup</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SelectableTypeVar</span>
+    <span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This function is used to validate values for selectable ConfigurableParameters.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid value set for </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not a valid option for this &quot;</span> <span class="sa">f</span><span class="s2">&quot;parameter.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">attr_validate_selectable</span></div>
+
+
+<div class="viewcode-block" id="convert_string_to_id"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.convert_string_to_id">[docs]</a><span class="k">def</span> <span class="nf">convert_string_to_id</span><span class="p">(</span><span class="n">id_string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ID</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">ID</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This function converts an input string representing an ID into an OTX ID object.</span>
+
+<span class="sd">    Inputs that are already in the form of an ID are left untouched.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        id_string (Optional[Union[str, ID]]): string, ID or None object that should be converted to an ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ID: the input as an instance of ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">id_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">ID</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">id_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">ID</span><span class="p">(</span><span class="n">id_string</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">id_string</span>
+    <span class="k">return</span> <span class="n">output_id</span></div>
+
+
+<div class="viewcode-block" id="attr_strict_int_validator"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.attr_strict_int_validator">[docs]</a><span class="k">def</span> <span class="nf">attr_strict_int_validator</span><span class="p">(</span>
+    <span class="n">instance</span><span class="p">:</span> <span class="n">ParameterGroup</span><span class="p">,</span>  <span class="c1"># pylint: disable=unused-argument</span>
+    <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validates that the value set for an attribute is an integer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        instance (ParameterGroup): (Unused) ParameterGroup to which the attribute belongs</span>
+<span class="sd">        attribute (Attribute): Attribute for which to validate the value</span>
+<span class="sd">        value (int): Value to validate</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: if the value passed to the validator is not an integer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">is_strict_int</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_strict_int</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid argument type for </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not of type &#39;int&#39;&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_validate_and_convert_float</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that a value is a float, or a number that can be converted to a float.</span>
+
+<span class="sd">    If the value is valid, this method will return the value as float. Otherwise, this</span>
+<span class="sd">    method returns None</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value (float): Value to validate and convert</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[float]: The value as a float, or None if the value is not valid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">valid</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="attr_strict_float_on_setattr"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.attr_strict_float_on_setattr">[docs]</a><span class="k">def</span> <span class="nf">attr_strict_float_on_setattr</span><span class="p">(</span>
+    <span class="n">instance</span><span class="p">:</span> <span class="n">ParameterGroup</span><span class="p">,</span>  <span class="c1"># pylint: disable=unused-argument</span>
+    <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that the value set for an attribute is a float, or a number that can be converted to a float.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        instance (ParameterGroup): ParameterGroup to which the attribute belongs</span>
+<span class="sd">        attribute (Attribute): Attribute for which to validate the value</span>
+<span class="sd">        value (float): Value to validate</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: if the value passed to the validator is not a float or number</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The value as a float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">float_value</span> <span class="o">=</span> <span class="n">_validate_and_convert_float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">float_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid argument type for </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not of type &quot;</span> <span class="sa">f</span><span class="s2">&quot;&#39;float&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">float_value</span></div>
+
+
+<div class="viewcode-block" id="attr_strict_float_converter"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.elements.utils.html#otx.api.configuration.elements.utils.attr_strict_float_converter">[docs]</a><span class="k">def</span> <span class="nf">attr_strict_float_converter</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a value to float.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value (float): value to convert</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: if value cannot be converted to float</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Value as float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">float_value</span> <span class="o">=</span> <span class="n">_validate_and_convert_float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">float_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid value passed for parameter. Value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="sa">f</span><span class="s2">&quot;is not a float.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">float_value</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

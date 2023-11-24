@@ -1,0 +1,702 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.configuration.helper.create &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/configuration/helper/create';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.configuration.helper.create</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module contains the definition for the `create` function within the configuration helper.</span>
+
+<span class="sd">This function can be used to create a OTX configuration object from a dictionary or yaml representation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">attr</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">OmegaConf</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.configuration.configurable_parameters</span> <span class="kn">import</span> <span class="n">ConfigurableParameters</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.elements</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ConfigurableEnum</span><span class="p">,</span>
+    <span class="n">ParameterGroup</span><span class="p">,</span>
+    <span class="n">metadata_keys</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.enums</span> <span class="kn">import</span> <span class="n">AutoHPOState</span><span class="p">,</span> <span class="n">ModelLifecycle</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.enums.config_element_type</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ConfigElementType</span><span class="p">,</span>
+    <span class="n">ElementCategory</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.enums.utils</span> <span class="kn">import</span> <span class="n">get_enum_names</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.ui_rules.rules</span> <span class="kn">import</span> <span class="n">NullUIRules</span><span class="p">,</span> <span class="n">Rule</span><span class="p">,</span> <span class="n">UIRules</span>
+
+<span class="kn">from</span> <span class="nn">.config_element_mapping</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GroupElementMapping</span><span class="p">,</span>
+    <span class="n">PrimitiveElementMapping</span><span class="p">,</span>
+    <span class="n">RuleElementMapping</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">deserialize_enum_value</span><span class="p">,</span> <span class="n">input_to_config_dict</span>
+
+<span class="n">ParameterGroupTypeVar</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ParameterGroupTypeVar&quot;</span><span class="p">,</span> <span class="n">ParameterGroup</span><span class="p">,</span> <span class="n">ConfigurableParameters</span><span class="p">)</span>
+<span class="n">ExposureTypeVar</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ExposureTypeVar&quot;</span><span class="p">,</span> <span class="n">UIRules</span><span class="p">,</span> <span class="n">Rule</span><span class="p">)</span>
+
+<span class="n">METADATA_ENUMS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">metadata_keys</span><span class="o">.</span><span class="n">AFFECTS_OUTCOME_OF</span><span class="p">:</span> <span class="n">ModelLifecycle</span><span class="p">,</span>
+    <span class="n">metadata_keys</span><span class="o">.</span><span class="n">AUTO_HPO_STATE</span><span class="p">:</span> <span class="n">AutoHPOState</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">construct_attrib_from_dict</span><span class="p">(</span><span class="n">dict_object</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ExposureTypeVar</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constructs a ui exposure element from an input dictionary or DictConfig.</span>
+
+<span class="sd">    Elements are mapped according to the &#39;type&#39; field in the input dict.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dict_object (Union[dict, DictConfig]): Dictionary containing the arguments for the element constructor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ExposureTypeVar: Rule or UIRules element, constructed according to the input dict_object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">dict_object</span><span class="p">)</span>
+    <span class="n">object_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">TYPE</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">object_type</span> <span class="ow">in</span> <span class="n">get_enum_names</span><span class="p">(</span><span class="n">RuleElementMapping</span><span class="p">):</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">RuleElementMapping</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid type found in configuration dictionary: </span><span class="si">{</span><span class="n">object_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">cls_constructor</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">object_type</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">cls_constructor</span><span class="p">(</span><span class="o">**</span><span class="n">value_dict</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">construct_ui_rules_from_dict</span><span class="p">(</span><span class="n">ui_exposure_settings</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">UIRules</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes a dictionary representation of ui exposure logic and constructs an UIRules element out of this.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ui_exposure_settings: dictionary representing the logic to govern exposure of a parameter in the UI</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Exposure element constructed according to the settings passed in ui_exposure_settings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ui_exposure_settings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">NullUIRules</span><span class="p">()</span>
+
+    <span class="n">rules_dict</span> <span class="o">=</span> <span class="n">ui_exposure_settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;rules&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ui_exposure_settings</span><span class="p">[</span><span class="s2">&quot;rules&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rules</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">UIRules</span><span class="p">,</span> <span class="n">Rule</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rules_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">NullUIRules</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules_dict</span><span class="p">:</span>
+        <span class="n">rule_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">TYPE</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="n">RuleElementMapping</span><span class="o">.</span><span class="n">UI_RULES</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">construct_ui_rules_from_dict</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="n">RuleElementMapping</span><span class="o">.</span><span class="n">RULE</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">construct_attrib_from_dict</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid UI exposure settings passed to parser. Configuration contains invalid rule &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;type: </span><span class="si">{</span><span class="n">rule_type</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+    <span class="n">ui_rules</span><span class="p">:</span> <span class="n">UIRules</span> <span class="o">=</span> <span class="n">construct_attrib_from_dict</span><span class="p">(</span><span class="n">ui_exposure_settings</span><span class="p">)</span>
+    <span class="n">ui_rules</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
+    <span class="k">return</span> <span class="n">ui_rules</span>
+
+
+<span class="k">def</span> <span class="nf">create_default_configurable_enum_from_dict</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a default configurable enum from a dictionary.</span>
+
+<span class="sd">    Takes a parameter_dict representing a configurable Enum and consumes the ENUM_NAME, OPTIONS and DEFAULT_VALUE</span>
+<span class="sd">    metadata.</span>
+
+<span class="sd">    From this, a new subclass of ConfigurableEnum is constructed. The DEFAULT_VALUE of the parameter_dict is updated</span>
+<span class="sd">    with the appropriate ConfigurableEnum instance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parameter_dict: Dictionary representation of an enum_selectable parameter. Can be either serialized or not.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        parameter_dict containing the default_value instantiated as a ConfigurableEnum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Some input type validation here first, to keep mypy happy</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">):</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">parameter_dict</span> <span class="o">=</span> <span class="n">param_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid input parameter_dict of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create the enum using the functional Enum API. Unfortunately this doesn&#39;t play nice with mypy, so ignoring the</span>
+    <span class="c1"># type error for now</span>
+    <span class="c1"># pylint: disable=unexpected-keyword-arg</span>
+    <span class="n">configurable_enum</span> <span class="o">=</span> <span class="n">ConfigurableEnum</span><span class="p">(</span>
+        <span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">ENUM_NAME</span><span class="p">),</span>
+        <span class="n">names</span><span class="o">=</span><span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">OPTIONS</span><span class="p">),</span>
+    <span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="c1"># pylint: enable=unexpected-keyword-arg</span>
+    <span class="n">serialized_default_value</span> <span class="o">=</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">DEFAULT_VALUE</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serialized_default_value</span><span class="p">,</span> <span class="n">ConfigurableEnum</span><span class="p">):</span>
+        <span class="n">default_value</span> <span class="o">=</span> <span class="n">serialized_default_value</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># This instantiates the enum, but mypy doesn&#39;t pick up that the created configurable_enum type is callable.</span>
+        <span class="n">default_value</span> <span class="o">=</span> <span class="n">configurable_enum</span><span class="p">(</span><span class="n">serialized_default_value</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="n">parameter_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">DEFAULT_VALUE</span><span class="p">:</span> <span class="n">default_value</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">parameter_dict</span>
+
+
+<span class="k">def</span> <span class="nf">gather_parameter_arguments_and_values_from_dict</span><span class="p">(</span><span class="n">config_dict_section</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect arguments needed to construct attrs class out of a config dict section representing a parameter group.</span>
+
+<span class="sd">    Parameters living in the group are constructed in this function as well.</span>
+
+<span class="sd">    This function returns a dictionary that contains the keys `make_arguments`, `call_arguments` and `values`.</span>
+<span class="sd">    make_arguments are the arguments that should be passed to attr.make_class to dynamically generate a class</span>
+<span class="sd">        constructor</span>
+<span class="sd">    call_arguments are the arguments that should be passed in the initialization call to the constructor</span>
+<span class="sd">    values are the parameter values, that can be set once the instance of the parameter group is created.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_dict_section: Dictionary representation of a parameter</span>
+<span class="sd">            group in a configuration, for which to gather the</span>
+<span class="sd">            constructor arguments</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dictionary containing the make_arguments, call_arguments and</span>
+<span class="sd">        values parsed from the config_dict_section</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-locals</span>
+    <span class="n">make_arguments</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">call_arguments</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">all_parameter_values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config_dict_section</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">DictConfig</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+            <span class="c1"># In case of a nested dict, value represents the settings for a parameter. The arguments are parsed from</span>
+            <span class="c1"># the dict here and passed to the constructor function for the parameter, according to its `type`.</span>
+            <span class="n">parameter_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">parameter_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">TYPE</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">parameter_type</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">ConfigElementType</span><span class="o">.</span><span class="n">SELECTABLE</span><span class="p">):</span>
+                <span class="n">parameter_dict</span> <span class="o">=</span> <span class="n">create_default_configurable_enum_from_dict</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">parameter_type</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No type was specified for the configurable &quot;</span> <span class="sa">f</span><span class="s2">&quot;parameter or parameter group named &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                <span class="p">)</span>
+            <span class="n">parameter_value</span> <span class="o">=</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="n">metadata_enums</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">metadata_key</span><span class="p">,</span> <span class="n">enum_type</span> <span class="ow">in</span> <span class="n">METADATA_ENUMS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">enum_value</span> <span class="o">=</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">enum_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">metadata_enums</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">metadata_key</span><span class="p">:</span> <span class="n">deserialize_enum_value</span><span class="p">(</span><span class="n">enum_value</span><span class="p">,</span> <span class="n">enum_type</span><span class="o">=</span><span class="n">enum_type</span><span class="p">)})</span>
+
+            <span class="n">parameter_ui_rules_dict</span> <span class="o">=</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">UI_RULES</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">parameter_constructor</span> <span class="o">=</span> <span class="n">PrimitiveElementMapping</span><span class="p">[</span><span class="n">parameter_type</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">parameter_ui_rules</span> <span class="o">=</span> <span class="n">construct_ui_rules_from_dict</span><span class="p">(</span><span class="n">parameter_ui_rules_dict</span><span class="p">)</span>
+            <span class="n">parameter_make_arguments</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">parameter_constructor</span><span class="p">(</span><span class="o">**</span><span class="n">parameter_dict</span><span class="p">,</span> <span class="n">ui_rules</span><span class="o">=</span><span class="n">parameter_ui_rules</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata_enums</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="n">make_arguments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameter_make_arguments</span><span class="p">)</span>
+            <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">parameter_value</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Flat values will be passed to the initialization call directly. The only exception is the &#39;type&#39; item,</span>
+            <span class="c1"># this should not be included in the call_arguments as it is used to determine the type of constructor for</span>
+            <span class="c1"># attrs to generate</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">metadata_keys</span><span class="o">.</span><span class="n">TYPE</span><span class="p">:</span>
+                <span class="n">call_arguments</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;make_arguments&quot;</span><span class="p">:</span> <span class="n">make_arguments</span><span class="p">,</span>
+        <span class="s2">&quot;call_arguments&quot;</span><span class="p">:</span> <span class="n">call_arguments</span><span class="p">,</span>
+        <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">all_parameter_values</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">create_parameter_group</span><span class="p">(</span><span class="n">config_dict_section</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ParameterGroupTypeVar</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a parameter group object out of a config_dict_section.</span>
+
+<span class="sd">    config_dict_section is a dictionary or DictConfig representing a parameter group.</span>
+<span class="sd">    This method should only be used for simple groups, i.e. parameter groups not containing any other parameter groups.</span>
+<span class="sd">    For nested groups, the function &#39;create_nested_parameter_group&#39; should be used instead.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_dict_section: Dictionary representation of the parameter</span>
+<span class="sd">            group to construct</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ParameterGroup or ConfigurableParameters object constructed</span>
+<span class="sd">        according to config_dict_section</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params_and_values</span> <span class="o">=</span> <span class="n">gather_parameter_arguments_and_values_from_dict</span><span class="p">(</span><span class="n">config_dict_section</span><span class="p">)</span>
+    <span class="n">make_arguments</span> <span class="o">=</span> <span class="n">params_and_values</span><span class="p">[</span><span class="s2">&quot;make_arguments&quot;</span><span class="p">]</span>
+    <span class="n">call_arguments</span> <span class="o">=</span> <span class="n">params_and_values</span><span class="p">[</span><span class="s2">&quot;call_arguments&quot;</span><span class="p">]</span>
+    <span class="n">all_parameter_values</span> <span class="o">=</span> <span class="n">params_and_values</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span>
+    <span class="n">group_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">config_dict_section</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">TYPE</span><span class="p">))</span>
+
+    <span class="n">group_constructor_type</span> <span class="o">=</span> <span class="n">GroupElementMapping</span><span class="p">[</span><span class="n">group_type</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">group_constructor</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">make_class</span><span class="p">(</span>
+        <span class="n">GroupElementMapping</span><span class="p">[</span><span class="n">group_type</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">bases</span><span class="o">=</span><span class="p">(</span><span class="n">group_constructor_type</span><span class="p">,),</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="n">make_arguments</span><span class="p">,</span>
+        <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parameter_group</span> <span class="o">=</span> <span class="n">group_constructor</span><span class="p">(</span><span class="o">**</span><span class="n">call_arguments</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">parameter_group</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="n">parameter_group</span><span class="o">.</span><span class="n">update_auto_hpo_states</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">parameter_group</span>
+
+
+<span class="k">def</span> <span class="nf">create_nested_parameter_group</span><span class="p">(</span><span class="n">config_dict_section</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ParameterGroup</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a parameter group object out of a config_dict_section.</span>
+
+<span class="sd">    config_dict_section is a dictionary or DictConfig representing a parameter group. This method should be used for</span>
+<span class="sd">    nested groups, and uses recursion to reconstruct those.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_dict_section: Dictionary representation of the parameter group to construct</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ParameterGroup or Configuration object constructed according to config_dict_section</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">main_config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">config_dict_section</span><span class="p">)</span>
+
+    <span class="n">group_names</span> <span class="o">=</span> <span class="n">contains_parameter_groups</span><span class="p">(</span><span class="n">config_dict_section</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">group_names</span><span class="p">:</span>
+        <span class="n">group_config_section</span> <span class="o">=</span> <span class="n">config_dict_section</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">group_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">contains_parameter_groups</span><span class="p">(</span><span class="n">group_config_section</span><span class="p">):</span>
+            <span class="n">childless_parameter_group</span><span class="p">:</span> <span class="n">ParameterGroup</span> <span class="o">=</span> <span class="n">create_parameter_group</span><span class="p">(</span><span class="n">group_config_section</span><span class="p">)</span>
+            <span class="n">groups</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">group_name</span><span class="p">:</span> <span class="n">childless_parameter_group</span><span class="p">})</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameter_group_with_children</span><span class="p">:</span> <span class="n">ParameterGroup</span> <span class="o">=</span> <span class="n">create_nested_parameter_group</span><span class="p">(</span><span class="n">group_config_section</span><span class="p">)</span>
+            <span class="n">groups</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">group_name</span><span class="p">:</span> <span class="n">parameter_group_with_children</span><span class="p">})</span>
+
+        <span class="n">main_config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">group_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">parameter_group</span><span class="p">:</span> <span class="n">ParameterGroup</span> <span class="o">=</span> <span class="n">create_parameter_group</span><span class="p">(</span><span class="n">main_config</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">parameter_group</span><span class="p">,</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+
+    <span class="n">parameter_group</span><span class="o">.</span><span class="n">__attrs_post_init__</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">parameter_group</span>
+
+
+<span class="k">def</span> <span class="nf">contains_parameter_groups</span><span class="p">(</span><span class="n">config_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks whether a configuration or configuration section specified in `config_dict` contains parameter groups.</span>
+
+<span class="sd">    Returns a list of the group names if it does, and an empty list otherwise</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_dict: Dictionary or DictConfig representing a configuration or configuration section.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of names of parameter groups that are defined in the config_dict, if any. Empty list otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config_dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">):</span>
+        <span class="n">input_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">config_dict</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="c1"># The config_dict will always be converted to a dict by the OmegaConf.to_container call, but this is not</span>
+        <span class="c1"># reflected by the return type signature. Therefore, mypy can ignore this error</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">input_dict</span> <span class="o">=</span> <span class="n">config_dict</span>
+
+    <span class="n">groups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">group_category_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ConfigElementType</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">GROUPS</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># If the field is a dict, check whether the type is a parameter group (or derived from it)</span>
+            <span class="n">_type</span> <span class="o">=</span> <span class="n">field_value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata_keys</span><span class="o">.</span><span class="n">TYPE</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">_type</span><span class="p">)</span> <span class="ow">in</span> <span class="n">group_category_types</span><span class="p">:</span>
+                <span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">groups</span>
+
+
+<span class="k">def</span> <span class="nf">from_dict_attr</span><span class="p">(</span><span class="n">config_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ConfigurableParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a configuration object from an input config_dict.</span>
+
+<span class="sd">    Uses recursion to handle nested parameter groups in the config</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_dict (Union[dict, DictConfig]): Dictionary representation of a TaskConfig,</span>
+<span class="sd">            ProjectConfig or ComponentConfig</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ConfigurableParameters: ParameterGroup object constructed according to config_dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local_config_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">config_dict</span><span class="p">)</span>
+
+    <span class="c1"># Initialize all groups in the config, and collect them into the config_groups dict to assign them to the final</span>
+    <span class="c1"># configuration later on</span>
+    <span class="n">config_groups</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ParameterGroup</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Determine all parameter groups living at the first level of the config</span>
+    <span class="n">base_config_groups</span> <span class="o">=</span> <span class="n">contains_parameter_groups</span><span class="p">(</span><span class="n">config_dict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">base_config_groups</span><span class="p">:</span>
+        <span class="n">group_config_section</span> <span class="o">=</span> <span class="n">local_config_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">group_name</span><span class="p">)</span>
+        <span class="c1"># If the group itself contains groups, it is nested. If not, it&#39;s flat. Initialization for nested and flat</span>
+        <span class="c1"># groups is different, hence we check this.</span>
+        <span class="k">if</span> <span class="n">contains_parameter_groups</span><span class="p">(</span><span class="n">group_config_section</span><span class="p">):</span>
+            <span class="n">config_groups</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">group_name</span><span class="p">:</span> <span class="n">create_nested_parameter_group</span><span class="p">(</span><span class="n">group_config_section</span><span class="p">)})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config_groups</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">group_name</span><span class="p">:</span> <span class="n">create_parameter_group</span><span class="p">(</span><span class="n">group_config_section</span><span class="p">)})</span>
+
+    <span class="c1"># Collect parameters for the high level config from the config_dict and create the config constructor, using the</span>
+    <span class="c1"># type defined in the dict</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">ConfigurableParameters</span> <span class="o">=</span> <span class="n">create_parameter_group</span><span class="p">(</span><span class="n">local_config_dict</span><span class="p">)</span>
+
+    <span class="c1"># Add the groups to the config</span>
+    <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">config_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+
+    <span class="c1"># Run post-initialization to set the groups and parameters attributes correctly</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">__attrs_post_init__</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">config</span>
+
+
+<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.helper.create.html#otx.api.configuration.helper.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">input_config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ConfigurableParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a configuration object from a yaml string, yaml file path, dictionary or OmegaConf DictConfig object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_config: yaml string, dictionary, DictConfig or filepath</span>
+<span class="sd">            describing a configuration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ConfigurableParameters object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Parse input, validate config type and convert to dict if needed</span>
+    <span class="n">config_dict</span> <span class="o">=</span> <span class="n">input_to_config_dict</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">input_config</span><span class="p">))</span>
+    <span class="c1"># Create config from the resulting dictionary</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">ConfigurableParameters</span> <span class="o">=</span> <span class="n">from_dict_attr</span><span class="p">(</span><span class="n">config_dict</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">config</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

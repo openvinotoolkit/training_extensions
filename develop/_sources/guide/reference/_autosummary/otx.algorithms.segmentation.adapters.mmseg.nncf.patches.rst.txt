@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.adapters.mmseg.nncf.patches
+=======================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.nncf.patches
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

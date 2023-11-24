@@ -1,0 +1,33 @@
+otx.algorithms.action.configs.classification
+============================================
+
+.. automodule:: otx.algorithms.action.configs.classification
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.configs.classification.base
+   otx.algorithms.action.configs.classification.movinet
+   otx.algorithms.action.configs.classification.x3d
+

@@ -1,0 +1,30 @@
+otx.api.configuration.helper.substitute
+=======================================
+
+.. automodule:: otx.api.configuration.helper.substitute
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      substitute_values
+      substitute_values_for_lifecycle
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

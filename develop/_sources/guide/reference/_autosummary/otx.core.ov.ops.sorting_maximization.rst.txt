@@ -1,0 +1,34 @@
+otx.core.ov.ops.sorting\_maximization
+=====================================
+
+.. automodule:: otx.core.ov.ops.sorting_maximization
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NonMaxSuppressionV5
+      NonMaxSuppressionV5Attribute
+      NonMaxSuppressionV9
+      NonMaxSuppressionV9Attribute
+      TopKV3
+      TopKV3Attribute
+   
+   
+
+   
+   
+   
+
+
+

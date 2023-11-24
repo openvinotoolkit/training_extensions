@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.models.heads.proto\_head
+===================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.heads.proto_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ProtoNet
+   
+   
+
+   
+   
+   
+
+
+

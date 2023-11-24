@@ -1,0 +1,34 @@
+otx.algorithms.detection.configs.detection.cspdarknet\_yolox\_x
+===============================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.cspdarknet_yolox_x
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.data_pipeline
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.deployment
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.model
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.tile_pipeline
+

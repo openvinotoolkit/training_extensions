@@ -1,0 +1,699 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.common.adapters.mmdeploy.apis &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/common/adapters/mmdeploy/apis';</script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.common.adapters.mmdeploy.apis</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;API of otx.algorithms.common.adapters.mmdeploy.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">mmcv</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.parallel</span> <span class="kn">import</span> <span class="n">collate</span><span class="p">,</span> <span class="n">scatter</span>
+
+<span class="kn">from</span> <span class="nn">.utils.mmdeploy</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">is_mmdeploy_enabled</span><span class="p">,</span>
+    <span class="n">mmdeploy_init_model_helper</span><span class="p">,</span>
+    <span class="n">update_deploy_cfg</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.utils.onnx</span> <span class="kn">import</span> <span class="n">prepare_onnx_for_openvino</span>
+<span class="kn">from</span> <span class="nn">.utils.utils</span> <span class="kn">import</span> <span class="n">numpy_2_list</span>
+
+<span class="c1"># pylint: disable=too-many-locals</span>
+
+
+<div class="viewcode-block" id="NaiveExporter"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.NaiveExporter">[docs]</a><span class="k">class</span> <span class="nc">NaiveExporter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NaiveExporter for non-mmdeploy export.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NaiveExporter.export2backend"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.NaiveExporter.export2backend">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">export2backend</span><span class="p">(</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model_builder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+        <span class="n">input_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">precision</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;FP32&quot;</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="n">input_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">opset_version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+        <span class="n">dynamic_axes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mo_transforms</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">export_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;OPENVINO&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function for exporting to openvino.&quot;&quot;&quot;</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="n">scatter</span><span class="p">(</span><span class="n">collate</span><span class="p">([</span><span class="n">input_data</span><span class="p">],</span> <span class="n">samples_per_gpu</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model_builder</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">dynamic_axes</span> <span class="o">=</span> <span class="n">dynamic_axes</span> <span class="k">if</span> <span class="n">dynamic_axes</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">onnx_path</span> <span class="o">=</span> <span class="n">NaiveExporter</span><span class="o">.</span><span class="n">torch2onnx</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">model</span><span class="p">,</span>
+            <span class="n">input_data</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="n">input_names</span><span class="o">=</span><span class="n">input_names</span><span class="p">,</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="n">output_names</span><span class="p">,</span>
+            <span class="n">opset_version</span><span class="o">=</span><span class="n">opset_version</span><span class="p">,</span>
+            <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">dynamic_axes</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;ONNX&quot;</span> <span class="ow">in</span> <span class="n">export_type</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">def</span> <span class="nf">get_normalize_cfg</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">_get_normalize_cfg</span><span class="p">(</span><span class="n">cfg_</span><span class="p">):</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg_</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg_</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Mapping</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                            <span class="n">out</span> <span class="o">+=</span> <span class="n">_get_normalize_cfg</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;Normalize&quot;</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="p">[</span><span class="n">cfg_</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg_</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg_</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Mapping</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                            <span class="n">out</span> <span class="o">+=</span> <span class="n">_get_normalize_cfg</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">out</span>
+
+            <span class="n">cfg</span> <span class="o">=</span> <span class="n">_get_normalize_cfg</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">mo_args</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">normalize_cfg</span> <span class="o">=</span> <span class="n">get_normalize_cfg</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mo_args</span><span class="p">[</span><span class="s2">&quot;mean_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mo_args</span><span class="p">[</span><span class="s2">&quot;scale_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalize_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;to_rgb&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">mo_args</span><span class="p">[</span><span class="s2">&quot;reverse_input_channels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">precision</span> <span class="o">==</span> <span class="s2">&quot;FP16&quot;</span><span class="p">:</span>
+            <span class="n">mo_args</span><span class="p">[</span><span class="s2">&quot;compress_to_fp16&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">mo_transforms</span><span class="p">:</span>
+            <span class="n">mo_args</span><span class="p">[</span><span class="s2">&quot;transform&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mo_transforms</span>
+
+        <span class="n">NaiveExporter</span><span class="o">.</span><span class="n">onnx2openvino</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">onnx_path</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">mo_args</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="NaiveExporter.torch2onnx"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.NaiveExporter.torch2onnx">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">torch2onnx</span><span class="p">(</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">input_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="n">input_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">opset_version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+        <span class="n">dynamic_axes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">onnx_options</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function for torch to onnx exporting.&quot;&quot;&quot;</span>
+
+        <span class="n">img_metas</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;img_metas&quot;</span><span class="p">)</span>
+        <span class="n">numpy_2_list</span><span class="p">(</span><span class="n">img_metas</span><span class="p">)</span>
+        <span class="n">imgs</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;img&quot;</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="n">return_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">onnx_file_name</span> <span class="o">=</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.onnx&quot;</span>
+        <span class="n">dynamic_axes</span> <span class="o">=</span> <span class="n">dynamic_axes</span> <span class="k">if</span> <span class="n">dynamic_axes</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span>
+            <span class="n">imgs</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">onnx_file_name</span><span class="p">),</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">export_params</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">input_names</span><span class="o">=</span><span class="n">input_names</span><span class="p">,</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="n">output_names</span><span class="p">,</span>
+            <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">dynamic_axes</span><span class="p">,</span>
+            <span class="n">opset_version</span><span class="o">=</span><span class="n">opset_version</span><span class="p">,</span>
+            <span class="n">operator_export_type</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">OperatorExportTypes</span><span class="o">.</span><span class="n">ONNX</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">onnx_options</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;forward&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">onnx_file_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NaiveExporter.onnx2openvino"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.NaiveExporter.onnx2openvino">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">onnx2openvino</span><span class="p">(</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">onnx_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">openvino_options</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function for onnx to openvino exporting.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">otx.algorithms.common.utils</span> <span class="kn">import</span> <span class="n">mo_wrapper</span>
+
+        <span class="n">mo_args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;input_model&quot;</span><span class="p">:</span> <span class="n">onnx_path</span><span class="p">,</span>
+            <span class="s2">&quot;output_dir&quot;</span><span class="p">:</span> <span class="n">output_dir</span><span class="p">,</span>
+            <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">mo_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">openvino_options</span><span class="p">)</span>
+
+        <span class="n">ret</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">mo_wrapper</span><span class="o">.</span><span class="n">generate_ir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">mo_args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.xml&quot;</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="n">is_mmdeploy_enabled</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">mmdeploy.apis.openvino</span> <span class="k">as</span> <span class="nn">openvino_api</span>
+    <span class="kn">from</span> <span class="nn">mmdeploy.apis</span> <span class="kn">import</span> <span class="n">build_task_processor</span><span class="p">,</span> <span class="n">extract_model</span><span class="p">,</span> <span class="n">torch2onnx</span>
+    <span class="kn">from</span> <span class="nn">mmdeploy.apis.openvino</span> <span class="kn">import</span> <span class="n">get_input_info_from_cfg</span><span class="p">,</span> <span class="n">get_mo_options_from_cfg</span>
+    <span class="kn">from</span> <span class="nn">mmdeploy.core</span> <span class="kn">import</span> <span class="n">reset_mark_function_count</span>
+
+    <span class="c1"># from mmdeploy.core import FUNCTION_REWRITER</span>
+    <span class="kn">from</span> <span class="nn">mmdeploy.utils</span> <span class="kn">import</span> <span class="n">get_ir_config</span><span class="p">,</span> <span class="n">get_partition_config</span>
+
+<div class="viewcode-block" id="MMdeployExporter"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.MMdeployExporter">[docs]</a>    <span class="k">class</span> <span class="nc">MMdeployExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;MMdeployExporter for mmdeploy exporting.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MMdeployExporter.export2backend"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.MMdeployExporter.export2backend">[docs]</a>        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">export2backend</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">model_builder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+            <span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+            <span class="n">export_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Function for exporting to openvino.&quot;&quot;&quot;</span>
+
+            <span class="n">task_processor</span> <span class="o">=</span> <span class="n">build_task_processor</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">deploy_cfg</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">helper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">mmdeploy_init_model_helper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">model_builder</span><span class="o">=</span><span class="n">model_builder</span><span class="p">)</span>
+
+            <span class="n">task_processor</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">init_pytorch_model</span> <span class="o">=</span> <span class="n">helper</span>
+
+            <span class="n">input_data_cfg</span> <span class="o">=</span> <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
+                <span class="s2">&quot;input_data&quot;</span><span class="p">,</span>
+                <span class="p">{</span><span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;file_path&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">input_data_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_path&quot;</span><span class="p">):</span>
+                <span class="kn">import</span> <span class="nn">cv2</span>
+
+                <span class="n">input_data</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">input_data_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_path&quot;</span><span class="p">))</span>
+                <span class="c1"># image assumed to be RGB format under OTX</span>
+                <span class="n">input_data</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">input_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">input_data_cfg</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+            <span class="n">partition_cfgs</span> <span class="o">=</span> <span class="n">get_partition_config</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">partition_cfgs</span><span class="p">:</span>
+                <span class="n">MMdeployExporter</span><span class="o">.</span><span class="n">extract_partition</span><span class="p">(</span>
+                    <span class="n">output_dir</span><span class="p">,</span>
+                    <span class="n">input_data</span><span class="p">,</span>
+                    <span class="n">cfg</span><span class="p">,</span>
+                    <span class="n">deploy_cfg</span><span class="p">,</span>
+                    <span class="n">export_type</span><span class="p">,</span>
+                    <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="n">onnx_paths</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">onnx_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">MMdeployExporter</span><span class="o">.</span><span class="n">torch2onnx</span><span class="p">(</span>
+                    <span class="n">output_dir</span><span class="p">,</span>
+                    <span class="n">input_data</span><span class="p">,</span>
+                    <span class="n">cfg</span><span class="p">,</span>
+                    <span class="n">deploy_cfg</span><span class="p">,</span>
+                    <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;ONNX&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">export_type</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">onnx_path</span> <span class="ow">in</span> <span class="n">onnx_paths</span><span class="p">:</span>
+                    <span class="n">deploy_cfg_</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+                    <span class="n">update_deploy_cfg</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">,</span> <span class="n">deploy_cfg_</span><span class="p">)</span>
+                    <span class="n">MMdeployExporter</span><span class="o">.</span><span class="n">onnx2openvino</span><span class="p">(</span>
+                        <span class="n">output_dir</span><span class="p">,</span>
+                        <span class="n">onnx_path</span><span class="p">,</span>
+                        <span class="n">deploy_cfg_</span><span class="p">,</span>
+                    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="MMdeployExporter.extract_partition"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.MMdeployExporter.extract_partition">[docs]</a>        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">extract_partition</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">input_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+            <span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+            <span class="n">export_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Function for extracting partition.&quot;&quot;&quot;</span>
+            <span class="n">reset_mark_function_count</span><span class="p">()</span>
+            <span class="n">model_onnx</span> <span class="o">=</span> <span class="n">MMdeployExporter</span><span class="o">.</span><span class="n">torch2onnx</span><span class="p">(</span>
+                <span class="n">output_dir</span><span class="p">,</span>
+                <span class="n">input_data</span><span class="p">,</span>
+                <span class="n">cfg</span><span class="p">,</span>
+                <span class="n">deploy_cfg</span><span class="p">,</span>
+                <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">partition_cfgs</span> <span class="o">=</span> <span class="n">get_partition_config</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+            <span class="n">partition_cfgs</span> <span class="o">=</span> <span class="n">partition_cfgs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;partition_cfg&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">partition_onnx</span> <span class="o">=</span> <span class="n">MMdeployExporter</span><span class="o">.</span><span class="n">partition_onnx</span><span class="p">(</span>
+                <span class="n">output_dir</span><span class="p">,</span>
+                <span class="n">model_onnx</span><span class="p">,</span>
+                <span class="n">partition_cfgs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;ONNX&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">export_type</span><span class="p">:</span>
+                <span class="n">deploy_cfg_</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+                <span class="n">update_deploy_cfg</span><span class="p">(</span><span class="n">partition_onnx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">deploy_cfg_</span><span class="p">)</span>
+                <span class="n">MMdeployExporter</span><span class="o">.</span><span class="n">onnx2openvino</span><span class="p">(</span>
+                    <span class="n">output_dir</span><span class="p">,</span>
+                    <span class="n">partition_onnx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">deploy_cfg_</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">deploy_cfg</span><span class="p">[</span><span class="s2">&quot;partition_config&quot;</span><span class="p">][</span><span class="s2">&quot;apply_marks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">reset_mark_function_count</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MMdeployExporter.torch2onnx"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.MMdeployExporter.torch2onnx">[docs]</a>        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">torch2onnx</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">input_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+            <span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Function for torch to onnx exporting.&quot;&quot;&quot;</span>
+            <span class="n">onnx_file_name</span> <span class="o">=</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.onnx&quot;</span>
+            <span class="n">torch2onnx</span><span class="p">(</span>
+                <span class="n">input_data</span><span class="p">,</span>
+                <span class="n">output_dir</span><span class="p">,</span>
+                <span class="n">onnx_file_name</span><span class="p">,</span>
+                <span class="n">deploy_cfg</span><span class="o">=</span><span class="n">deploy_cfg</span><span class="p">,</span>
+                <span class="n">model_cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span>
+                <span class="n">model_checkpoint</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;load_from&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">onnx_file_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MMdeployExporter.partition_onnx"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.MMdeployExporter.partition_onnx">[docs]</a>        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">partition_onnx</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">onnx_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">partition_cfgs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">mmcv</span><span class="o">.</span><span class="n">ConfigDict</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">mmcv</span><span class="o">.</span><span class="n">ConfigDict</span><span class="p">]],</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Function for parition onnx.&quot;&quot;&quot;</span>
+            <span class="n">partitioned_paths</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partition_cfgs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">partition_cfgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">partition_cfgs</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">partition_cfg</span> <span class="ow">in</span> <span class="n">partition_cfgs</span><span class="p">:</span>
+                <span class="n">save_file</span> <span class="o">=</span> <span class="n">partition_cfg</span><span class="p">[</span><span class="s2">&quot;save_file&quot;</span><span class="p">]</span>
+                <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">save_file</span><span class="p">)</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">partition_cfg</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">partition_cfg</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
+                <span class="n">dynamic_axes</span> <span class="o">=</span> <span class="n">partition_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dynamic_axes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                <span class="n">extract_model</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">dynamic_axes</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="n">save_path</span><span class="p">)</span>
+                <span class="n">partitioned_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">partitioned_paths</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MMdeployExporter.onnx2openvino"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.apis.html#otx.algorithms.common.adapters.mmdeploy.apis.MMdeployExporter.onnx2openvino">[docs]</a>        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">onnx2openvino</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">onnx_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">deploy_cfg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">mmcv</span><span class="o">.</span><span class="n">Config</span><span class="p">],</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Function for onnx to openvino exporting.&quot;&quot;&quot;</span>
+
+            <span class="n">input_info</span> <span class="o">=</span> <span class="n">get_input_info_from_cfg</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+            <span class="n">output_names</span> <span class="o">=</span> <span class="n">get_ir_config</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span><span class="o">.</span><span class="n">output_names</span>
+            <span class="n">mo_options</span> <span class="o">=</span> <span class="n">get_mo_options_from_cfg</span><span class="p">(</span><span class="n">deploy_cfg</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">model_name</span><span class="p">:</span>
+                <span class="n">model_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.onnx&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">mo_options</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;--model_name &quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+
+            <span class="n">onnx_ready_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">_ready.onnx&quot;</span><span class="p">)</span>
+            <span class="n">prepare_onnx_for_openvino</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">_ready.onnx&quot;</span><span class="p">))</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">openvino_api</span><span class="o">.</span><span class="n">from_onnx</span><span class="p">(</span><span class="n">onnx_ready_path</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">input_info</span><span class="p">,</span> <span class="n">output_names</span><span class="p">,</span> <span class="n">mo_options</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># NOTE: mo returns non zero return code (245) even though it successfully generate IR</span>
+                <span class="n">cur_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="n">time_threshold</span> <span class="o">=</span> <span class="mi">5</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">245</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="p">{</span><span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.xml&quot;</span><span class="p">}</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">))</span>
+                    <span class="ow">and</span> <span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="n">cur_time</span> <span class="o">&lt;</span> <span class="n">time_threshold</span>
+                        <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.xml&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="n">cur_time</span> <span class="o">&lt;</span> <span class="n">time_threshold</span>
+                    <span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.xml&quot;</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">),</span>
+            <span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

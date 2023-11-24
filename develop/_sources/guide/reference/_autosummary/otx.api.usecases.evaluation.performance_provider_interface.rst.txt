@@ -1,0 +1,29 @@
+otx.api.usecases.evaluation.performance\_provider\_interface
+============================================================
+
+.. automodule:: otx.api.usecases.evaluation.performance_provider_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IPerformanceProvider
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.algorithms.detection.adapters.mmdet.models.heads.custom\_yolox\_head
+========================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomYOLOXHead
+      CustomYOLOXHeadTrackingLossDynamics
+   
+   
+
+   
+   
+   
+
+
+

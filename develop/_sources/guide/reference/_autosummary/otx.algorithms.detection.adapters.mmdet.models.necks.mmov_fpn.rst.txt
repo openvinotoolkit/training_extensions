@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.necks.mmov\_fpn
+==============================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.necks.mmov_fpn
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVFPN
+   
+   
+
+   
+   
+   
+
+
+

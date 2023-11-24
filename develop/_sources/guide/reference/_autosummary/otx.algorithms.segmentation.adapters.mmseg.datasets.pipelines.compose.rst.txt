@@ -1,0 +1,30 @@
+otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.compose
+=====================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.compose
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MaskCompose
+      ProbCompose
+   
+   
+
+   
+   
+   
+
+
+

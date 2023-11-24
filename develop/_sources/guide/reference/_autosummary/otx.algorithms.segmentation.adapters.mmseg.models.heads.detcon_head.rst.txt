@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.models.heads.detcon\_head
+====================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.heads.detcon_head
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetConHead
+   
+   
+
+   
+   
+   
+
+
+

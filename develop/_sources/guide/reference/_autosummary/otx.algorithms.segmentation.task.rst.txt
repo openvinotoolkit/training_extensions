@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.task
+================================
+
+.. automodule:: otx.algorithms.segmentation.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXSegmentationTask
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,23 @@
+otx.algorithms.anomaly.configs.classification.padim.ptq\_optimization\_config
+=============================================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.classification.padim.ptq_optimization_config
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

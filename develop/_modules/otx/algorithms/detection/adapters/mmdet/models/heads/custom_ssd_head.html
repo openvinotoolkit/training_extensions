@@ -1,0 +1,683 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_ssd_head';</script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Custom SSD head for OTX template.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2018-2021 OpenMMLab</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn</span> <span class="kn">import</span> <span class="n">build_activation_layer</span>
+<span class="kn">from</span> <span class="nn">mmdet.core</span> <span class="kn">import</span> <span class="n">anchor_inside_flags</span><span class="p">,</span> <span class="n">unmap</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.builder</span> <span class="kn">import</span> <span class="n">HEADS</span><span class="p">,</span> <span class="n">build_loss</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.dense_heads.ssd_head</span> <span class="kn">import</span> <span class="n">SSDHead</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.losses</span> <span class="kn">import</span> <span class="n">smooth_l1_loss</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head</span> <span class="kn">import</span> <span class="n">TrackingLossDynamicsMixIn</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.detection.adapters.mmdet.models.loss_dyns</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TrackingLossType</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+
+
+<div class="viewcode-block" id="CustomSSDHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CustomSSDHead</span><span class="p">(</span><span class="n">SSDHead</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomSSDHead class for OTX.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">bg_loss_weight</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">loss_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loss_balancing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">loss_cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">loss_cls</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;CrossEntropyLoss&quot;</span><span class="p">,</span>
+                <span class="n">use_sigmoid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                <span class="n">loss_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span> <span class="o">=</span> <span class="n">build_loss</span><span class="p">(</span><span class="n">loss_cls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bg_loss_weight</span> <span class="o">=</span> <span class="n">bg_loss_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_balancing</span> <span class="o">=</span> <span class="n">loss_balancing</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_balancing</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># TODO: remove this internal method</span>
+    <span class="c1"># _init_layers of CustomSSDHead(this) and of SSDHead(parent)</span>
+    <span class="c1"># Initialize almost the same model structure.</span>
+    <span class="c1"># However, there are subtle differences</span>
+    <span class="c1"># Theses differences make `load_state_dict_pre_hook()` go wrong</span>
+    <span class="k">def</span> <span class="nf">_init_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize layers of the head.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cls_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+
+        <span class="n">act_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">act_cfg</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;inplace&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_base_priors</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_depthwise</span><span class="p">:</span>
+                <span class="n">activation_layer</span> <span class="o">=</span> <span class="n">build_activation_layer</span><span class="p">(</span><span class="n">act_cfg</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">),</span>
+                        <span class="n">activation_layer</span><span class="p">,</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cls_convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">),</span>
+                        <span class="n">activation_layer</span><span class="p">,</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cls_convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="CustomSSDHead.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cls_score</span><span class="p">,</span>
+        <span class="n">bbox_pred</span><span class="p">,</span>
+        <span class="n">anchor</span><span class="p">,</span>
+        <span class="n">labels</span><span class="p">,</span>
+        <span class="n">label_weights</span><span class="p">,</span>
+        <span class="n">bbox_targets</span><span class="p">,</span>
+        <span class="n">bbox_weights</span><span class="p">,</span>
+        <span class="n">num_total_samples</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss of a single image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls_score (Tensor): Box scores for eachimage</span>
+<span class="sd">                Has shape (num_total_anchors, num_classes).</span>
+<span class="sd">            bbox_pred (Tensor): Box energies / deltas for each image</span>
+<span class="sd">                level with shape (num_total_anchors, 4).</span>
+<span class="sd">            anchor (Tensor): Box reference for each scale level with shape</span>
+<span class="sd">                (num_total_anchors, 4).</span>
+<span class="sd">            labels (Tensor): Labels of each anchors with shape</span>
+<span class="sd">                (num_total_anchors,).</span>
+<span class="sd">            label_weights (Tensor): Label weights of each anchor with shape</span>
+<span class="sd">                (num_total_anchors,)</span>
+<span class="sd">            bbox_targets (Tensor): BBox regression targets of each anchor</span>
+<span class="sd">                weight shape (num_total_anchors, 4).</span>
+<span class="sd">            bbox_weights (Tensor): BBox regression loss weights of each anchor</span>
+<span class="sd">                with shape (num_total_anchors, 4).</span>
+<span class="sd">            num_total_samples (int): If sampling, num total samples equal to</span>
+<span class="sd">                the number of total anchors; Otherwise, it is the number of</span>
+<span class="sd">                positive anchors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, Tensor]: A dictionary of loss components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Re-weigting BG loss</span>
+        <span class="n">label_weights</span> <span class="o">=</span> <span class="n">label_weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bg_loss_weight</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">neg_indices</span> <span class="o">=</span> <span class="n">labels</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span>
+            <span class="n">label_weights</span> <span class="o">=</span> <span class="n">label_weights</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">label_weights</span><span class="p">[</span><span class="n">neg_indices</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bg_loss_weight</span>
+
+        <span class="n">loss_cls_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span><span class="p">(</span><span class="n">cls_score</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loss_cls_all</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">loss_cls_all</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># FG cat_id: [0, num_classes -1], BG cat_id: num_classes</span>
+        <span class="n">pos_inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pos_inds</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="n">neg_inds</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">num_pos_samples</span> <span class="o">=</span> <span class="n">pos_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">num_neg_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="o">.</span><span class="n">neg_pos_ratio</span> <span class="o">*</span> <span class="n">num_pos_samples</span>
+        <span class="k">if</span> <span class="n">num_neg_samples</span> <span class="o">&gt;</span> <span class="n">neg_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">num_neg_samples</span> <span class="o">=</span> <span class="n">neg_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">topk_loss_cls_neg</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="p">[</span><span class="n">neg_inds</span><span class="p">]</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">num_neg_samples</span><span class="p">)</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss_cls</span><span class="p">(</span><span class="n">num_total_samples</span><span class="p">,</span> <span class="n">loss_cls_all</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">topk_loss_cls_neg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_decoded_bbox</span><span class="p">:</span>
+            <span class="c1"># When the regression loss (e.g. `IouLoss`, `GIouLoss`)</span>
+            <span class="c1"># is applied directly on the decoded bounding boxes, it</span>
+            <span class="c1"># decodes the already encoded coordinates to absolute format.</span>
+            <span class="n">bbox_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_coder</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">)</span>
+
+        <span class="c1"># TODO: We need to verify that this is working properly.</span>
+        <span class="c1"># pylint: disable=redundant-keyword-arg</span>
+        <span class="n">loss_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss_bbox</span><span class="p">(</span><span class="n">bbox_pred</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss_cls</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">loss_bbox</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_pos_inds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="n">pos_inds</span> <span class="o">=</span> <span class="p">((</span><span class="n">labels</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">labels</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">))</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pos_inds</span>
+
+    <span class="k">def</span> <span class="nf">_get_loss_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span><span class="p">):</span>
+        <span class="n">loss_bbox</span> <span class="o">=</span> <span class="n">smooth_l1_loss</span><span class="p">(</span>
+            <span class="n">bbox_pred</span><span class="p">,</span>
+            <span class="n">bbox_targets</span><span class="p">,</span>
+            <span class="n">bbox_weights</span><span class="p">,</span>
+            <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="o">.</span><span class="n">smoothl1_beta</span><span class="p">,</span>
+            <span class="n">avg_factor</span><span class="o">=</span><span class="n">num_total_samples</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loss_bbox</span>
+
+    <span class="k">def</span> <span class="nf">_get_loss_cls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_total_samples</span><span class="p">,</span> <span class="n">loss_cls_all</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">topk_loss_cls_neg</span><span class="p">):</span>
+        <span class="n">loss_cls_pos</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">loss_cls_neg</span> <span class="o">=</span> <span class="n">topk_loss_cls_neg</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss_cls_pos</span> <span class="o">+</span> <span class="n">loss_cls_neg</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_total_samples</span>
+        <span class="k">return</span> <span class="n">loss_cls</span>
+
+    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loss function.&quot;&quot;&quot;</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">)</span>
+        <span class="n">losses_cls</span> <span class="o">=</span> <span class="n">losses</span><span class="p">[</span><span class="s2">&quot;loss_cls&quot;</span><span class="p">]</span>
+        <span class="n">losses_bbox</span> <span class="o">=</span> <span class="n">losses</span><span class="p">[</span><span class="s2">&quot;loss_bbox&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_balancing</span><span class="p">:</span>
+            <span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_balance_losses</span><span class="p">(</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_bbox</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">losses_bbox</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_balance_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_reg</span><span class="p">):</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">_loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">_loss</span> <span class="ow">in</span> <span class="n">losses_cls</span><span class="p">)</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">loss_cls</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">loss_reg</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">_loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">_loss</span> <span class="ow">in</span> <span class="n">losses_reg</span><span class="p">)</span>
+        <span class="n">loss_reg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">loss_reg</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">loss_cls</span><span class="p">,</span> <span class="n">loss_reg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CustomSSDHeadTrackingLossDynamics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHeadTrackingLossDynamics">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CustomSSDHeadTrackingLossDynamics</span><span class="p">(</span><span class="n">TrackingLossDynamicsMixIn</span><span class="p">,</span> <span class="n">CustomSSDHead</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomSSDHead which supports tracking loss dynamics.&quot;&quot;&quot;</span>
+
+    <span class="n">tracking_loss_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">TrackingLossType</span><span class="o">.</span><span class="n">cls</span><span class="p">,</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">bbox</span><span class="p">,</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">centerness</span><span class="p">)</span>
+
+    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss</span>
+    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss from the head and prepare for loss dynamics tracking.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CustomSSDHeadTrackingLossDynamics.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHeadTrackingLossDynamics.loss_single">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss_single</span>
+    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss of a single image and increase `self.cur_loss_idx` counter for loss dynamics tracking.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss_single</span><span class="p">(</span>
+            <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_loss_cls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_total_samples</span><span class="p">,</span> <span class="n">loss_cls_all</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">topk_loss_cls_neg</span><span class="p">):</span>
+        <span class="n">loss_cls_pos</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span>
+        <span class="n">loss_cls_neg</span> <span class="o">=</span> <span class="n">topk_loss_cls_neg</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss_cls_pos</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">loss_cls_neg</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_total_samples</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_loss_dyns</span><span class="p">(</span><span class="n">loss_cls_pos</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">cls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss_cls</span>
+
+    <span class="k">def</span> <span class="nf">_get_loss_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span><span class="p">):</span>
+        <span class="n">loss_bbox</span> <span class="o">=</span> <span class="n">smooth_l1_loss</span><span class="p">(</span>
+            <span class="n">bbox_pred</span><span class="p">,</span>
+            <span class="n">bbox_targets</span><span class="p">,</span>
+            <span class="n">bbox_weights</span><span class="p">,</span>
+            <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="o">.</span><span class="n">smoothl1_beta</span><span class="p">,</span>
+            <span class="n">avg_factor</span><span class="o">=</span><span class="n">num_total_samples</span><span class="p">,</span>
+            <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_loss_dyns</span><span class="p">(</span><span class="n">loss_bbox</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_inds</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_loss</span><span class="p">(</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">avg_factor</span><span class="o">=</span><span class="n">num_total_samples</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CustomSSDHeadTrackingLossDynamics.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHeadTrackingLossDynamics.get_targets">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="n">concatenate_last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">anchor_list</span><span class="p">,</span>
+        <span class="n">valid_flag_list</span><span class="p">,</span>
+        <span class="n">gt_bboxes_list</span><span class="p">,</span>
+        <span class="n">img_metas</span><span class="p">,</span>
+        <span class="n">gt_bboxes_ignore_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">gt_labels_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">label_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">unmap_outputs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_sampling_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get targets.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_targets</span><span class="p">(</span>
+            <span class="n">anchor_list</span><span class="p">,</span>
+            <span class="n">valid_flag_list</span><span class="p">,</span>
+            <span class="n">gt_bboxes_list</span><span class="p">,</span>
+            <span class="n">img_metas</span><span class="p">,</span>
+            <span class="n">gt_bboxes_ignore_list</span><span class="p">,</span>
+            <span class="n">gt_labels_list</span><span class="p">,</span>
+            <span class="n">label_channels</span><span class="p">,</span>
+            <span class="n">unmap_outputs</span><span class="p">,</span>
+            <span class="n">return_sampling_results</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_targets_single</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">flat_anchors</span><span class="p">,</span>
+        <span class="n">valid_flags</span><span class="p">,</span>
+        <span class="n">gt_bboxes</span><span class="p">,</span>
+        <span class="n">gt_bboxes_ignore</span><span class="p">,</span>
+        <span class="n">gt_labels</span><span class="p">,</span>
+        <span class="n">img_meta</span><span class="p">,</span>
+        <span class="n">label_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">unmap_outputs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute regression and classification targets for anchors in a single image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            flat_anchors (Tensor): Multi-level anchors of the image, which are</span>
+<span class="sd">                concatenated into a single tensor of shape (num_anchors ,4)</span>
+<span class="sd">            valid_flags (Tensor): Multi level valid flags of the image,</span>
+<span class="sd">                which are concatenated into a single tensor of</span>
+<span class="sd">                    shape (num_anchors,).</span>
+<span class="sd">            gt_bboxes (Tensor): Ground truth bboxes of the image,</span>
+<span class="sd">                shape (num_gts, 4).</span>
+<span class="sd">            gt_bboxes_ignore (Tensor): Ground truth bboxes to be</span>
+<span class="sd">                ignored, shape (num_ignored_gts, 4).</span>
+<span class="sd">            img_meta (dict): Meta info of the image.</span>
+<span class="sd">            gt_labels (Tensor): Ground truth labels of each box,</span>
+<span class="sd">                shape (num_gts,).</span>
+<span class="sd">            label_channels (int): Channel of label.</span>
+<span class="sd">            unmap_outputs (bool): Whether to map outputs back to the original</span>
+<span class="sd">                set of anchors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                labels_list (list[Tensor]): Labels of each level</span>
+<span class="sd">                label_weights_list (list[Tensor]): Label weights of each level</span>
+<span class="sd">                bbox_targets_list (list[Tensor]): BBox targets of each level</span>
+<span class="sd">                bbox_weights_list (list[Tensor]): BBox weights of each level</span>
+<span class="sd">                num_total_pos (int): Number of positive samples in all images</span>
+<span class="sd">                num_total_neg (int): Number of negative samples in all images</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inside_flags</span> <span class="o">=</span> <span class="n">anchor_inside_flags</span><span class="p">(</span>
+            <span class="n">flat_anchors</span><span class="p">,</span> <span class="n">valid_flags</span><span class="p">,</span> <span class="n">img_meta</span><span class="p">[</span><span class="s2">&quot;img_shape&quot;</span><span class="p">][:</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="o">.</span><span class="n">allowed_border</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inside_flags</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">7</span>
+        <span class="c1"># assign gt and sample anchors</span>
+        <span class="n">anchors</span> <span class="o">=</span> <span class="n">flat_anchors</span><span class="p">[</span><span class="n">inside_flags</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">assign_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">anchors</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">,</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="k">else</span> <span class="n">gt_labels</span><span class="p">)</span>
+        <span class="n">sampling_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">assign_result</span><span class="p">,</span> <span class="n">anchors</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
+
+        <span class="n">num_valid_anchors</span> <span class="o">=</span> <span class="n">anchors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">bbox_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span>
+        <span class="n">bbox_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">anchors</span><span class="o">.</span><span class="n">new_full</span><span class="p">((</span><span class="n">num_valid_anchors</span><span class="p">,),</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="n">label_weights</span> <span class="o">=</span> <span class="n">anchors</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">num_valid_anchors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+        <span class="n">pos_inds</span> <span class="o">=</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_inds</span>
+        <span class="n">neg_inds</span> <span class="o">=</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">neg_inds</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos_inds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_decoded_bbox</span><span class="p">:</span>
+                <span class="n">pos_bbox_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_coder</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_bboxes</span><span class="p">,</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_gt_bboxes</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pos_bbox_targets</span> <span class="o">=</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_gt_bboxes</span>
+            <span class="n">bbox_targets</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pos_bbox_targets</span>
+            <span class="n">bbox_weights</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="k">if</span> <span class="n">gt_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Only rpn gives gt_labels as None</span>
+                <span class="c1"># Foreground is the first class since v2.5.0</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">gt_labels</span><span class="p">[</span><span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_assigned_gt_inds</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="o">.</span><span class="n">pos_weight</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">label_weights</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label_weights</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="o">.</span><span class="n">pos_weight</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg_inds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">label_weights</span><span class="p">[</span><span class="n">neg_inds</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># map up to original set of anchors</span>
+        <span class="k">if</span> <span class="n">unmap_outputs</span><span class="p">:</span>
+            <span class="n">num_total_anchors</span> <span class="o">=</span> <span class="n">flat_anchors</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">unmap</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">num_total_anchors</span><span class="p">,</span> <span class="n">inside_flags</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>  <span class="c1"># fill bg label</span>
+            <span class="n">label_weights</span> <span class="o">=</span> <span class="n">unmap</span><span class="p">(</span><span class="n">label_weights</span><span class="p">,</span> <span class="n">num_total_anchors</span><span class="p">,</span> <span class="n">inside_flags</span><span class="p">)</span>
+            <span class="n">bbox_targets</span> <span class="o">=</span> <span class="n">unmap</span><span class="p">(</span><span class="n">bbox_targets</span><span class="p">,</span> <span class="n">num_total_anchors</span><span class="p">,</span> <span class="n">inside_flags</span><span class="p">)</span>
+            <span class="n">bbox_weights</span> <span class="o">=</span> <span class="n">unmap</span><span class="p">(</span><span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_anchors</span><span class="p">,</span> <span class="n">inside_flags</span><span class="p">)</span>
+
+        <span class="c1">########## What we changed from the original mmdet code ###############</span>
+        <span class="c1"># Store all_pos_assigned_gt_inds to member variable</span>
+        <span class="c1"># to look up training loss dynamics for each gt_bboxes afterwards</span>
+        <span class="n">pos_assigned_gt_inds</span> <span class="o">=</span> <span class="n">anchors</span><span class="o">.</span><span class="n">new_full</span><span class="p">((</span><span class="n">num_valid_anchors</span><span class="p">,),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos_inds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pos_assigned_gt_inds</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cur_batch_idx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gt_bboxes_len</span> <span class="o">+</span> <span class="n">sampling_result</span><span class="o">.</span><span class="n">pos_assigned_gt_inds</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">unmap_outputs</span><span class="p">:</span>
+            <span class="n">pos_assigned_gt_inds</span> <span class="o">=</span> <span class="n">unmap</span><span class="p">(</span><span class="n">pos_assigned_gt_inds</span><span class="p">,</span> <span class="n">num_total_anchors</span><span class="p">,</span> <span class="n">inside_flags</span><span class="p">,</span> <span class="n">fill</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_assigned_gt_inds_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">pos_assigned_gt_inds</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_batch_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1">########################################################################</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">neg_inds</span><span class="p">,</span> <span class="n">sampling_result</span><span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

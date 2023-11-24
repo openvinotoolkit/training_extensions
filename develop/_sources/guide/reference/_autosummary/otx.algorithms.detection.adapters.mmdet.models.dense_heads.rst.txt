@@ -1,0 +1,33 @@
+otx.algorithms.detection.adapters.mmdet.models.dense\_heads
+===========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.dense_heads
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_rpn_head
+   otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_ssd_head
+   otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head
+

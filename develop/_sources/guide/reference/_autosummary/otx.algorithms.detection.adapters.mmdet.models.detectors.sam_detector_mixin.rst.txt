@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.detectors.sam\_detector\_mixin
+=============================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SAMDetectorMixin
+   
+   
+
+   
+   
+   
+
+
+

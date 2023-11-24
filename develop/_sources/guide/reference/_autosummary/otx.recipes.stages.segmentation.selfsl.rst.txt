@@ -1,0 +1,23 @@
+otx.recipes.stages.segmentation.selfsl
+======================================
+
+.. automodule:: otx.recipes.stages.segmentation.selfsl
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

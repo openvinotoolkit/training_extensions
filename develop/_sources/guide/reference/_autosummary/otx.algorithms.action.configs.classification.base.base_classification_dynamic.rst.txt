@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.classification.base.base\_classification\_dynamic
+===============================================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.base.base_classification_dynamic
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

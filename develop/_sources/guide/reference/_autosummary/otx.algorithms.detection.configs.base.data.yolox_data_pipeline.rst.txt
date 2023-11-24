@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.base.data.yolox\_data\_pipeline
+================================================================
+
+.. automodule:: otx.algorithms.detection.configs.base.data.yolox_data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

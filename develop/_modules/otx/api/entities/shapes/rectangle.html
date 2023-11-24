@@ -1,0 +1,652 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.api.entities.shapes.rectangle &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/api/entities/shapes/rectangle';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.api.entities.shapes.rectangle</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module implements the Rectangle shape entity.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="c1"># Conflict with Isort</span>
+<span class="c1"># pylint: disable=wrong-import-order, cyclic-import</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span> <span class="k">as</span> <span class="n">shapely_polygon</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.shape</span> <span class="kn">import</span> <span class="n">Shape</span><span class="p">,</span> <span class="n">ShapeEntity</span><span class="p">,</span> <span class="n">ShapeType</span>
+<span class="kn">from</span> <span class="nn">otx.api.utils.time_utils</span> <span class="kn">import</span> <span class="n">now</span>
+
+<span class="c1"># pylint: disable=invalid-name</span>
+
+
+<div class="viewcode-block" id="Rectangle"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle">[docs]</a><span class="k">class</span> <span class="nc">Rectangle</span><span class="p">(</span><span class="n">Shape</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rectangle represents a rectangular shape.</span>
+
+<span class="sd">    Rectangle are used to annotate detection and classification tasks. In the</span>
+<span class="sd">    classification case, the rectangle is a full rectangle spanning the whole related</span>
+<span class="sd">    item (could be an image, video frame, a region of interest).</span>
+
+<span class="sd">    - x1 and y1 represent the top-left coordinate of the rectangle</span>
+<span class="sd">    - x2 and y2 representing the bottom-right coordinate of the rectangle</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x1 (float): x-coordinate of the top-left corner of the rectangle</span>
+<span class="sd">        y1 (float): y-coordinate of the top-left corner of the rectangle</span>
+<span class="sd">        x2 (float): x-coordinate of the bottom-right corner of the rectangle</span>
+<span class="sd">        y2 (float): y-coordinate of the bottom-right corner of the rectangle</span>
+<span class="sd">        modification_date (datetime.datetime): Date of the last modification of the rectangle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-arguments; Requires refactor</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">y1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">y2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">modification_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">modification_date</span> <span class="o">=</span> <span class="n">now</span><span class="p">()</span> <span class="k">if</span> <span class="n">modification_date</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">modification_date</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">shape_type</span><span class="o">=</span><span class="n">ShapeType</span><span class="o">.</span><span class="n">RECTANGLE</span><span class="p">,</span>
+            <span class="n">modification_date</span><span class="o">=</span><span class="n">modification_date</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">is_valid</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)]:</span>
+            <span class="n">is_valid</span> <span class="o">=</span> <span class="n">is_valid</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_coordinates</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> coordinates are invalid : x1=</span><span class="si">{</span><span class="n">x1</span><span class="si">}</span><span class="s2">, y1=</span><span class="si">{</span><span class="n">y1</span><span class="si">}</span><span class="s2">, x2=</span><span class="si">{</span><span class="n">x2</span><span class="si">}</span><span class="s2">, y2=</span><span class="si">{</span><span class="n">y2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">=</span> <span class="n">x1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">=</span> <span class="n">y1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">=</span> <span class="n">x2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">=</span> <span class="n">y2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid rectangle with coordinates: x1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="si">}</span><span class="s2">, y1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="si">}</span><span class="s2">, &quot;</span> <span class="sa">f</span><span class="s2">&quot;x2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="si">}</span><span class="s2">, y2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y2</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the rectangle.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Rectangle(x=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="si">}</span><span class="s2">, width=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="si">}</span><span class="s2">, &quot;</span> <span class="sa">f</span><span class="s2">&quot;height=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if `other` is a `Rectangle` with the same coordinates.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">x1</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">y1</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">x2</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">y2</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">modification_date</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">modification_date</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns hash of the rectangle.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Rectangle.clip_to_visible_region"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.clip_to_visible_region">[docs]</a>    <span class="k">def</span> <span class="nf">clip_to_visible_region</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rectangle&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clip the rectangle to the [0, 1] visible region of an image.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rectangle: Clipped rectangle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">modification_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modification_date</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rectangle.normalize_wrt_roi_shape"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.normalize_wrt_roi_shape">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_wrt_roi_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi_shape</span><span class="p">:</span> <span class="n">ShapeEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rectangle&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transforms from the `roi` coordinate system to the normalized coordinate system.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            Assume we have rectangle `b1` which lives in the top-right quarter of</span>
+<span class="sd">            a 2D space. The 2D space where `b1` lives in is an `roi` living in the top-left</span>
+<span class="sd">            quarter of the normalized coordinate space. This function returns rectangle</span>
+<span class="sd">            `b1` expressed in the normalized coordinate space.</span>
+
+<span class="sd">                &gt;&gt;&gt; from otx.api.entities.annotation import Annotation</span>
+<span class="sd">                &gt;&gt;&gt; b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)</span>
+<span class="sd">                &gt;&gt;&gt; roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)</span>
+<span class="sd">                &gt;&gt;&gt; normalized = b1.normalize_wrt_roi_shape(roi_shape)</span>
+<span class="sd">                &gt;&gt;&gt; normalized</span>
+<span class="sd">                Box(, x=0.25, y=0.0, width=0.25, height=0.25)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            roi_shape (ShapeEntity): Region of Interest.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the `roi_shape` is not a `Rectangle`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New polygon in the image coordinate system</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">roi_shape</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;roi_shape has to be a Rectangle.&quot;</span><span class="p">)</span>
+
+        <span class="n">roi_shape</span> <span class="o">=</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">clip_to_visible_region</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span>
+            <span class="n">x1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">*</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span>
+            <span class="n">y1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">*</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">y1</span><span class="p">,</span>
+            <span class="n">x2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">*</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span>
+            <span class="n">y2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">*</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">y1</span><span class="p">,</span>
+            <span class="n">modification_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modification_date</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rectangle.denormalize_wrt_roi_shape"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.denormalize_wrt_roi_shape">[docs]</a>    <span class="k">def</span> <span class="nf">denormalize_wrt_roi_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi_shape</span><span class="p">:</span> <span class="n">ShapeEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rectangle&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transforming shape from the normalized coordinate system to the `roi` coordinate system.</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">            Assume we have rectangle `b1` which lives in the top-right quarter of</span>
+<span class="sd">            the normalized coordinate space. The `roi` is a rectangle living in the half</span>
+<span class="sd">            right of the normalized coordinate space. This function returns rectangle</span>
+<span class="sd">            `b1` expressed in the coordinate space of `roi`. (should return top-half)</span>
+<span class="sd">            Box denormalized to a rectangle as ROI</span>
+
+<span class="sd">                &gt;&gt;&gt; from otx.api.entities.annotation import Annotation</span>
+<span class="sd">                &gt;&gt;&gt; b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)</span>
+<span class="sd">                # the top-right</span>
+<span class="sd">                &gt;&gt;&gt; roi = Annotation(Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0))</span>
+<span class="sd">                # the half-right</span>
+<span class="sd">                &gt;&gt;&gt; normalized = b1.denormalize_wrt_roi_shape(roi_shape)</span>
+<span class="sd">                # should return top half</span>
+<span class="sd">                &gt;&gt;&gt; normalized</span>
+<span class="sd">                Box(, x=0.0, y=0.0, width=1.0, height=0.5)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            roi_shape (ShapeEntity): Region of Interest</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the `roi_shape` is not a `Rectangle`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rectangle: New polygon in the ROI coordinate system</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">roi_shape</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;roi_shape has to be a Rectangle.&quot;</span><span class="p">)</span>
+
+        <span class="n">roi_shape</span> <span class="o">=</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">clip_to_visible_region</span><span class="p">()</span>
+
+        <span class="n">x1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">-</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">width</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">-</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">height</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">-</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">width</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">-</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="n">roi_shape</span><span class="o">.</span><span class="n">height</span>
+
+        <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span>
+            <span class="n">x1</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span>
+            <span class="n">y1</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span>
+            <span class="n">x2</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span>
+            <span class="n">y2</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span>
+            <span class="n">modification_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modification_date</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_as_shapely_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">shapely_polygon</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">shapely_polygon</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Rectangle.generate_full_box"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.generate_full_box">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_full_box</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rectangle&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a rectangle that fully encapsulates the normalized coordinate space.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; Rectangle.generate_full_box()</span>
+<span class="sd">            Box(, x=0.0, y=0.0, width=1.0, height=1.0)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rectangle: A rectangle that fully encapsulates the normalized coordinate space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rectangle.is_full_box"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.is_full_box">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_full_box</span><span class="p">(</span><span class="n">rectangle</span><span class="p">:</span> <span class="n">ShapeEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns true if rectangle is a full box (occupying the full normalized coordinate space).</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">            &gt;&gt;&gt; b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)</span>
+<span class="sd">            &gt;&gt;&gt; Rectangle.is_full_box(b1)</span>
+<span class="sd">            False</span>
+
+<span class="sd">            &gt;&gt;&gt; b2 = Rectangle(x1=0.0, x2=1.0, y1=0.0, y2=1.0)</span>
+<span class="sd">            &gt;&gt;&gt; Rectangle.is_full_box(b2)</span>
+<span class="sd">            True</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rectangle (ShapeEntity): rectangle to evaluate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: true if it fully encapsulate normalized coordinate space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">rectangle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">rectangle</span><span class="o">.</span><span class="n">x1</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="n">rectangle</span><span class="o">.</span><span class="n">y1</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="n">rectangle</span><span class="o">.</span><span class="n">height</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="ow">and</span> <span class="n">rectangle</span><span class="o">.</span><span class="n">width</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Rectangle.crop_numpy_array"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.crop_numpy_array">[docs]</a>    <span class="k">def</span> <span class="nf">crop_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crop the given Numpy array to the region of interest represented by this rectangle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (np.ndarray): Image to crop.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Cropped image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># We clip negative values to zero since Numpy uses negative values</span>
+        <span class="c1"># to represent indexing from the right side of the array.</span>
+        <span class="c1"># However, on the other hand, it is safe to have indices larger than the size</span>
+        <span class="c1"># of the dimension; therefore, we do not clip values larger than the width and</span>
+        <span class="c1"># height.</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">y1</span><span class="p">:</span><span class="n">y2</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span><span class="n">x2</span><span class="p">,</span> <span class="p">::]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the width of the rectangle (x-axis).</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">            &gt;&gt;&gt; b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)</span>
+<span class="sd">            &gt;&gt;&gt; b1.width</span>
+<span class="sd">            0.5</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: the width of the rectangle. (x-axis)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the height of the rectangle (y-axis).</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">            &gt;&gt;&gt; b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)</span>
+<span class="sd">            &gt;&gt;&gt; b1.height</span>
+<span class="sd">            0.5</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: the height of the rectangle. (y-axis)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">diagonal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the diagonal size/hypotenuse  of the rectangle (x-axis).</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">            &gt;&gt;&gt; b1 = Rectangle(x1=0.0, x2=0.3, y1=0.0, y2=0.4)</span>
+<span class="sd">            &gt;&gt;&gt; b1.diagonal</span>
+<span class="sd">            0.5</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: the width of the rectangle. (x-axis)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Rectangle.get_area"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.entities.shapes.rectangle.html#otx.api.entities.shapes.rectangle.Rectangle.get_area">[docs]</a>    <span class="k">def</span> <span class="nf">get_area</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the approximate area of the shape.</span>
+
+<span class="sd">        Area is a value between 0 and 1, calculated as (x2-x1) * (y2-y1)</span>
+
+<span class="sd">        NOTE: This method should not be relied on for exact area computation. The area</span>
+<span class="sd">        is approximate, because shapes are continuous, but pixels are discrete.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; Rectangle(0, 0, 1, 1).get_area()</span>
+<span class="sd">            1.0</span>
+<span class="sd">            &gt;&gt;&gt; Rectangle(0.5, 0.5, 1.0, 1.0).get_area()</span>
+<span class="sd">            0.25</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Approximate area of the shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

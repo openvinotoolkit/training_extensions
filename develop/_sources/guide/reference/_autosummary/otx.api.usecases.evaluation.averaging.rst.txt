@@ -1,0 +1,29 @@
+otx.api.usecases.evaluation.averaging
+=====================================
+
+.. automodule:: otx.api.usecases.evaluation.averaging
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MetricAverageMethod
+   
+   
+
+   
+   
+   
+
+
+

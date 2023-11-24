@@ -1,0 +1,45 @@
+otx.api.entities.label\_schema
+==============================
+
+.. automodule:: otx.api.entities.label_schema
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      natural_sort_label_id
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LabelGroup
+      LabelGroupType
+      LabelSchemaEntity
+      LabelTree
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      LabelGroupDoesNotExistException
+      LabelGroupExistsException
+   
+   
+
+
+

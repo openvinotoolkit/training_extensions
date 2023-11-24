@@ -1,0 +1,29 @@
+otx.algorithms.segmentation.adapters.mmseg.models.schedulers.constant
+=====================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.schedulers.constant
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConstantScalarScheduler
+   
+   
+
+   
+   
+   
+
+
+

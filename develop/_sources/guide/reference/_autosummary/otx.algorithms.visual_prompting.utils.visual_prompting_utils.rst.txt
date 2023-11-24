@@ -1,0 +1,29 @@
+otx.algorithms.visual\_prompting.utils.visual\_prompting\_utils
+===============================================================
+
+.. automodule:: otx.algorithms.visual_prompting.utils.visual_prompting_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_visual_prompting_inferencer_configuration
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

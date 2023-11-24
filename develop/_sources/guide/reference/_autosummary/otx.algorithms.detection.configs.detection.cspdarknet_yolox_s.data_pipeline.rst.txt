@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.detection.cspdarknet\_yolox\_s.data\_pipeline
+==============================================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.cspdarknet_yolox_s.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

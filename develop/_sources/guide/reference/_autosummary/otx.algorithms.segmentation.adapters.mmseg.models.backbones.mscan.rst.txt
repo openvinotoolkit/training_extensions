@@ -1,0 +1,35 @@
+otx.algorithms.segmentation.adapters.mmseg.models.backbones.mscan
+=================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.backbones.mscan
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MSCAAttention
+      MSCABlock
+      MSCAN
+      MSCASpatialAttention
+      Mlp
+      OverlapPatchEmbed
+      StemConv
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.action.adapters.mmaction.data.cls\_dataset
+=========================================================
+
+.. automodule:: otx.algorithms.action.adapters.mmaction.data.cls_dataset
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXActionClsDataset
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp\_detector\_mixin
+==============================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      L2SPDetectorMixin
+   
+   
+
+   
+   
+   
+
+
+

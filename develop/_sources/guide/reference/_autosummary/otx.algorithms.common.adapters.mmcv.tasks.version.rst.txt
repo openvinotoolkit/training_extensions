@@ -1,0 +1,29 @@
+otx.algorithms.common.adapters.mmcv.tasks.version
+=================================================
+
+.. automodule:: otx.algorithms.common.adapters.mmcv.tasks.version
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_version
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

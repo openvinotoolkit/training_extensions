@@ -1,0 +1,36 @@
+otx.algorithms.detection.adapters.mmdet.models.detectors.custom\_atss\_detector
+===============================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      custom_atss__forward
+      custom_atss__simple_test
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomATSS
+   
+   
+
+   
+   
+   
+
+
+

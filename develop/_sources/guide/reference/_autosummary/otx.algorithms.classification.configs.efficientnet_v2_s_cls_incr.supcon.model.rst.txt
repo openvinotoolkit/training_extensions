@@ -1,0 +1,23 @@
+otx.algorithms.classification.configs.efficientnet\_v2\_s\_cls\_incr.supcon.model
+=================================================================================
+
+.. automodule:: otx.algorithms.classification.configs.efficientnet_v2_s_cls_incr.supcon.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

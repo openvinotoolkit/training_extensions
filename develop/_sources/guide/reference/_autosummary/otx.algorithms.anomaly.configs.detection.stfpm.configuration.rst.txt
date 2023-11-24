@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.detection.stfpm.configuration
+============================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.detection.stfpm.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      STFPMAnomalyDetectionConfig
+   
+   
+
+   
+   
+   
+
+
+

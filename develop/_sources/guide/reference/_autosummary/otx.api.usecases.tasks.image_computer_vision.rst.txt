@@ -1,0 +1,29 @@
+otx.api.usecases.tasks.image\_computer\_vision
+==============================================
+
+.. automodule:: otx.api.usecases.tasks.image_computer_vision
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ImageComputerVisionTask
+   
+   
+
+   
+   
+   
+
+
+

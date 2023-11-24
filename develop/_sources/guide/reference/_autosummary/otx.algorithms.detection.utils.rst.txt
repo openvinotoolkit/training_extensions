@@ -1,0 +1,32 @@
+otx.algorithms.detection.utils
+==============================
+
+.. automodule:: otx.algorithms.detection.utils
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.utils.data
+   otx.algorithms.detection.utils.utils
+

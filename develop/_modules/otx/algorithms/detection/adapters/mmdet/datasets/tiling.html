@@ -1,0 +1,913 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.detection.adapters.mmdet.datasets.tiling &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/detection/adapters/mmdet/datasets/tiling';</script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.detection.adapters.mmdet.datasets.tiling</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tiling for detection and instance segmentation task.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">sample</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">mmcv.ops</span> <span class="kn">import</span> <span class="n">nms</span>
+<span class="kn">from</span> <span class="nn">mmdet.core</span> <span class="kn">import</span> <span class="n">BitmapMasks</span><span class="p">,</span> <span class="n">bbox2result</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.utils.dataset_utils</span> <span class="kn">import</span> <span class="n">non_linear_normalization</span>
+
+
+<div class="viewcode-block" id="timeit"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.timeit">[docs]</a><span class="k">def</span> <span class="nf">timeit</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator to measure time of function execution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        func: Function to be the target for measuring.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable function with time measurement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">==== </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">begin</span><span class="si">}</span><span class="s2"> sec ====</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<span class="c1"># pylint: disable=too-many-instance-attributes, too-many-arguments</span>
+<div class="viewcode-block" id="Tile"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile">[docs]</a><span class="k">class</span> <span class="nc">Tile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tile and merge datasets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset (CustomDataset): the dataset to be tiled.</span>
+<span class="sd">        tile_size (int): the length of side of each tile. Defaults to 400</span>
+<span class="sd">        overlap (float, optional): ratio of each tile to overlap with each of</span>
+<span class="sd">            the tiles in its 4-neighborhood. Defaults to 0.2.</span>
+<span class="sd">        min_area_ratio (float, optional): the minimum overlap area ratio</span>
+<span class="sd">            between a tiled image and its annotations. Ground-truth box is</span>
+<span class="sd">            discarded if the overlap area is less than this value.</span>
+<span class="sd">            Defaults to 0.9.</span>
+<span class="sd">        iou_threshold (float, optional): IoU threshold to be used to suppress</span>
+<span class="sd">            boxes in tiles&#39; overlap areas. Defaults to 0.45.</span>
+<span class="sd">        max_per_img (int, optional): if there are more than max_per_img bboxes</span>
+<span class="sd">            after NMS, only top max_per_img will be kept. Defaults to 1500.</span>
+<span class="sd">        max_annotation(int, optional): Limit the number of ground truth by</span>
+<span class="sd">            randomly select 5000 due to RAM OOM.</span>
+<span class="sd">        filter_empty_gt (bool, optional): If set true, images without bounding</span>
+<span class="sd">            boxes of the dataset&#39;s classes will be filtered out. This option</span>
+<span class="sd">            only works when `test_mode=False`, i.e., we never filter images</span>
+<span class="sd">            during tests. Defaults to True.</span>
+<span class="sd">        nproc (int, optional): Processes used for processing masks. Default: 4.</span>
+<span class="sd">        sampling_ratio (float): Ratio for sampling entire tile dataset. Default: 1.0.(No sample)</span>
+<span class="sd">        include_full_img (bool): Whether to include full-size image for inference or training. Default: False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">,</span>
+        <span class="n">pipeline</span><span class="p">,</span>
+        <span class="n">tile_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">min_area_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+        <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.45</span><span class="p">,</span>
+        <span class="n">max_per_img</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1500</span><span class="p">,</span>
+        <span class="n">max_annotation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span>
+        <span class="n">filter_empty_gt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">nproc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">sampling_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">include_full_img</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_area_ratio</span> <span class="o">=</span> <span class="n">min_area_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_empty_gt</span> <span class="o">=</span> <span class="n">filter_empty_gt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iou_threshold</span> <span class="o">=</span> <span class="n">iou_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_per_img</span> <span class="o">=</span> <span class="n">max_per_img</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_annotation</span> <span class="o">=</span> <span class="n">max_annotation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="n">tile_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tile_size</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_images</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">CLASSES</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CLASSES</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">CLASSES</span>  <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nproc</span> <span class="o">=</span> <span class="n">nproc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img2fp32</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;PhotoMetricDistortion&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">img2fp32</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_all</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cached_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_tile_ann</span><span class="p">(</span><span class="n">include_full_img</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_num</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_all</span><span class="p">)</span> <span class="o">*</span> <span class="n">sampling_ratio</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sampling_ratio</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span> <span class="o">=</span> <span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_all</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_num</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_all</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">gen_tile_ann</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_full_img</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate tile annotations and cache the original image-level annotations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tiles: a list of tile annotations with some other useful information for data pipeline.</span>
+<span class="sd">            cache_result: a list of original image-level annotations.</span>
+<span class="sd">            include_full_img: whether to include full-size image for inference or training.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cache_result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Loading dataset annotations...&quot;</span><span class="p">):</span>
+            <span class="n">cache_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Generating tile annotations...&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cache_result</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">include_full_img</span><span class="p">:</span>
+                <span class="n">tiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_single_img</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="o">=</span><span class="n">idx</span><span class="p">))</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cache_result</span><span class="p">):</span>
+            <span class="n">tiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_tiles_single_img</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="o">=</span><span class="n">idx</span><span class="p">))</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tiles</span><span class="p">,</span> <span class="n">cache_result</span>
+
+<div class="viewcode-block" id="Tile.random_select_gt"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.random_select_gt">[docs]</a>    <span class="k">def</span> <span class="nf">random_select_gt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Randomly select ground truth masks for each image.</span>
+
+<span class="sd">        Limit the number of ground truth masks by randomly select `num` due to RAM OOM for Instance Segmentation task.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            result (Dict): the original image-level result (i.e. the original image annotation)</span>
+<span class="sd">            num (int): the number of ground truth masks to be selected</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;gt_masks&quot;</span> <span class="ow">in</span> <span class="n">result</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">num</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]),</span> <span class="n">size</span><span class="o">=</span><span class="n">num</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">][</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">][</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">][</span><span class="n">indices</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Tile.gen_single_img"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.gen_single_img">[docs]</a>    <span class="k">def</span> <span class="nf">gen_single_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add full-size image for inference or training.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            result (Dict): the original image-level result (i.e. the original image annotation)</span>
+<span class="sd">            dataset_idx (int): the image index this tile belongs to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict: annotation with some other useful information for data pipeline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_select_gt</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_annotation</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;full_res_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;tile_box&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;img_shape&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;img_shape&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;dataset_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset_idx</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;original_shape_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;img_shape&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;gt_bboxes&quot;</span> <span class="ow">in</span> <span class="n">result</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;gt_labels&quot;</span> <span class="ow">in</span> <span class="n">result</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;gt_masks&quot;</span> <span class="ow">in</span> <span class="n">result</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="c1"># pylint: disable=too-many-locals</span>
+<div class="viewcode-block" id="Tile.gen_tiles_single_img"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.gen_tiles_single_img">[docs]</a>    <span class="k">def</span> <span class="nf">gen_tiles_single_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate tile annotation for a single image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            result (Dict): the original image-level result (i.e. the original image annotation)</span>
+<span class="sd">            dataset_idx (int): the image index this tile belongs to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Dict]: a list of tile annotation with some other useful information for data pipeline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tile_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_select_gt</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_annotation</span><span class="p">)</span>
+        <span class="n">gt_bboxes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+        <span class="n">gt_masks</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">gt_bboxes_ignore</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gt_bboxes_ignore&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+        <span class="n">gt_labels</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+        <span class="n">img_shape</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;img_shape&quot;</span><span class="p">)</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img_shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">_tile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">num_patches_h</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span>
+        <span class="n">num_patches_w</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="p">(</span><span class="n">loc_i</span><span class="p">,</span> <span class="n">loc_j</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_patches_h</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_patches_w</span><span class="p">)),</span>
+            <span class="n">product</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">),</span>
+                <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">x_1</span> <span class="o">=</span> <span class="n">loc_j</span>
+            <span class="n">x_2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">loc_j</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+            <span class="n">y_1</span> <span class="o">=</span> <span class="n">loc_i</span>
+            <span class="n">y_2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">loc_i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+            <span class="n">tile</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_tile</span><span class="p">)</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;full_res_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;original_shape_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_shape</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;ori_shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_2</span> <span class="o">-</span> <span class="n">y_1</span><span class="p">,</span> <span class="n">x_2</span> <span class="o">-</span> <span class="n">x_1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;img_shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;ori_shape&quot;</span><span class="p">]</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;tile_box&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="n">y_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">y_2</span><span class="p">)</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;dataset_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset_idx</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;gt_bboxes_ignore&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gt_bboxes_ignore</span>
+            <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_ann_assignment</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x_1</span><span class="p">,</span> <span class="n">y_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">y_2</span><span class="p">]]),</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_masks</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">)</span>
+            <span class="c1"># filter empty ground truth</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_empty_gt</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">tile_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dataset_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;image: </span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2"> ~ tile_size: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num_patches_h</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">num_patches_w</span><span class="si">}</span><span class="s2"> tiles -&gt; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tile_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> tiles after filtering&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tile_list</span></div>
+
+<div class="viewcode-block" id="Tile.prepare_result"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.prepare_result">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare results dict for pipeline.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            result (Dict): original image-level result for a tile</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict: result template with useful information for data pipeline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result_template</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">ori_filename</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;ori_filename&quot;</span><span class="p">],</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">],</span>
+            <span class="n">bbox_fields</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;bbox_fields&quot;</span><span class="p">],</span>
+            <span class="n">mask_fields</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;mask_fields&quot;</span><span class="p">],</span>
+            <span class="n">seg_fields</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;seg_fields&quot;</span><span class="p">],</span>
+            <span class="n">img_fields</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;img_fields&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result_template</span></div>
+
+<div class="viewcode-block" id="Tile.tile_ann_assignment"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.tile_ann_assignment">[docs]</a>    <span class="k">def</span> <span class="nf">tile_ann_assignment</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tile_result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+        <span class="n">tile_box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">gt_bboxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">gt_masks</span><span class="p">:</span> <span class="n">BitmapMasks</span><span class="p">,</span>
+        <span class="n">gt_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign new annotation to this tile.</span>
+
+<span class="sd">        Ground-truth is discarded if the overlap with this tile is lower than</span>
+<span class="sd">        min_area_ratio.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tile_result (Dict): the tile-level result (i.e. the tile annotation)</span>
+<span class="sd">            tile_box (np.ndarray): the coordinate for this tile box (i.e. the tile coordinate relative to the image)</span>
+<span class="sd">            gt_bboxes (np.ndarray): the original image-level boxes</span>
+<span class="sd">            gt_masks (BitmapMasks): the original image-level masks</span>
+<span class="sd">            gt_labels (np.ndarray): the original image-level labels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_1</span><span class="p">,</span> <span class="n">y_1</span> <span class="o">=</span> <span class="n">tile_box</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">matched_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_boxes_overlap</span><span class="p">(</span><span class="n">tile_box</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matched_indices</span><span class="p">):</span>
+            <span class="n">tile_lables</span> <span class="o">=</span> <span class="n">gt_labels</span><span class="p">[</span><span class="n">matched_indices</span><span class="p">][:]</span>
+            <span class="n">tile_bboxes</span> <span class="o">=</span> <span class="n">gt_bboxes</span><span class="p">[</span><span class="n">matched_indices</span><span class="p">][:]</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">x_1</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">y_1</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">x_1</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-=</span> <span class="n">y_1</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+            <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">tile_bboxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">])</span>
+            <span class="n">tile_result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tile_bboxes</span>
+            <span class="n">tile_result</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tile_lables</span>
+            <span class="n">tile_result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gt_masks</span><span class="p">[</span><span class="n">matched_indices</span><span class="p">]</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">tile_box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">gt_masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tile_result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;bbox_fields&quot;</span><span class="p">)</span>
+            <span class="n">tile_result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mask_fields&quot;</span><span class="p">)</span>
+            <span class="n">tile_result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;seg_fields&quot;</span><span class="p">)</span>
+            <span class="n">tile_result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;img_fields&quot;</span><span class="p">)</span>
+            <span class="n">tile_result</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">tile_result</span><span class="p">[</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">tile_result</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">gt_masks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tile_result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Tile.tile_boxes_overlap"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.tile_boxes_overlap">[docs]</a>    <span class="k">def</span> <span class="nf">tile_boxes_overlap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tile_box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">boxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute overlapping ratio over boxes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tile_box (np.ndarray): box in shape (1, 4).</span>
+<span class="sd">            boxes (np.ndarray): boxes in shape (N, 4).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: matched indices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">tile_box</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">match_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">x1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">y1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">x2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">y2</span><span class="p">)</span>
+        <span class="n">match_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">match_indices</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">match_indices</span></div>
+
+<div class="viewcode-block" id="Tile.multiclass_nms"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.multiclass_nms">[docs]</a>    <span class="k">def</span> <span class="nf">multiclass_nms</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">scores</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idxs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_num</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;NMS for multi-class bboxes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            boxes (np.ndarray):  boxes in shape (N, 4).</span>
+<span class="sd">            scores (np.ndarray): scores in shape (N, ).</span>
+<span class="sd">            idxs (np.ndarray):  each index value correspond to a bbox cluster,</span>
+<span class="sd">                and NMS will not be applied between elements of different idxs,</span>
+<span class="sd">                shape (N, ).</span>
+<span class="sd">            iou_threshold (float): IoU threshold to be used to suppress boxes</span>
+<span class="sd">                in tiles&#39; overlap areas.</span>
+<span class="sd">            max_num (int): if there are more than max_per_img bboxes after</span>
+<span class="sd">                NMS, only top max_per_img will be kept.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: tuple: kept dets and indice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="n">max_coordinate</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">idxs</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">boxes</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_coordinate</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">boxes_for_nms</span> <span class="o">=</span> <span class="n">boxes</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">dets</span><span class="p">,</span> <span class="n">keep</span> <span class="o">=</span> <span class="n">nms</span><span class="p">(</span><span class="n">boxes_for_nms</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_num</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dets</span> <span class="o">=</span> <span class="n">dets</span><span class="p">[:</span><span class="n">max_num</span><span class="p">]</span>
+            <span class="n">keep</span> <span class="o">=</span> <span class="n">keep</span><span class="p">[:</span><span class="n">max_num</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">dets</span><span class="p">,</span> <span class="n">keep</span></div>
+
+<div class="viewcode-block" id="Tile.tile_nms"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.tile_nms">[docs]</a>    <span class="k">def</span> <span class="nf">tile_nms</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bbox_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">mask_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">],</span>
+        <span class="n">label_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">max_per_img</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">detection</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;NMS after aggregation suppressing duplicate boxes in tile-overlap areas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bbox_results (List[List]): image-level box prediction</span>
+<span class="sd">            mask_results (List[np.ndarray]): image-level mask prediction</span>
+<span class="sd">            label_results (List[List]): image-level label prediction</span>
+<span class="sd">            iou_threshold (float): IoU threshold to be used to suppress boxes in tiles&#39; overlap areas.</span>
+<span class="sd">            max_per_img (int): if there are more than max_per_img bboxes after NMS, only top max_per_img will be kept.</span>
+<span class="sd">            detection (bool): whether it is a detection task</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bbox_results</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_results</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_results</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bbox_results</span><span class="p">,</span> <span class="n">mask_results</span><span class="p">,</span> <span class="n">label_results</span><span class="p">)):</span>
+            <span class="n">score_bboxes</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="n">bboxes</span> <span class="o">=</span> <span class="n">score_bboxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">score_bboxes</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">])</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">keep_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_nms</span><span class="p">(</span>
+                <span class="n">bboxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="n">iou_threshold</span><span class="p">,</span> <span class="n">max_num</span><span class="o">=</span><span class="n">max_per_img</span>
+            <span class="p">)</span>
+
+            <span class="n">bboxes</span> <span class="o">=</span> <span class="n">bboxes</span><span class="p">[</span><span class="n">keep_indices</span><span class="p">]</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">keep_indices</span><span class="p">]</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep_indices</span><span class="p">]</span>
+            <span class="n">bbox_results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bbox2result</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">detection</span><span class="p">:</span>
+                <span class="n">masks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">masks</span><span class="p">[</span><span class="n">keep_idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">keep_idx</span> <span class="ow">in</span> <span class="n">keep_indices</span><span class="p">])</span>
+                <span class="n">mask_results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">masks</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)]</span></div>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total number of tiles.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get training/test tile.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx (int): Index of data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Training/test data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">dataset_idx</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;dataset_idx&quot;</span><span class="p">]</span>
+        <span class="n">x_1</span><span class="p">,</span> <span class="n">y_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">y_2</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;tile_box&quot;</span><span class="p">]</span>
+        <span class="n">ori_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cached_results</span><span class="p">[</span><span class="n">dataset_idx</span><span class="p">][</span><span class="s2">&quot;img&quot;</span><span class="p">]</span>
+        <span class="n">cropped_tile</span> <span class="o">=</span> <span class="n">ori_img</span><span class="p">[</span><span class="n">y_1</span><span class="p">:</span><span class="n">y_2</span><span class="p">,</span> <span class="n">x_1</span><span class="p">:</span><span class="n">x_2</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">img2fp32</span><span class="p">:</span>
+            <span class="n">cropped_tile</span> <span class="o">=</span> <span class="n">cropped_tile</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;img&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cropped_tile</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="c1"># pylint: disable=too-many-locals</span>
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge/Aggregate tile-level prediction to image-level prediction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            results (list[list | tuple]): Testing tile results of the dataset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[List]: Testing image results of the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">)</span>
+
+        <span class="n">detection</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">detection</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unknown data type&quot;</span><span class="p">)</span>
+
+        <span class="n">merged_bbox_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">)]</span>
+        <span class="n">merged_mask_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">)]</span>
+        <span class="n">merged_label_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">)]</span>
+
+        <span class="k">for</span> <span class="n">result</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">):</span>
+            <span class="n">tile_x1</span><span class="p">,</span> <span class="n">tile_y1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;tile_box&quot;</span><span class="p">]</span>
+            <span class="n">img_idx</span> <span class="o">=</span> <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;dataset_idx&quot;</span><span class="p">]</span>
+            <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;original_shape_&quot;</span><span class="p">]</span>
+
+            <span class="n">mask_result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">bbox_result</span><span class="p">,</span> <span class="n">mask_result</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bbox_result</span> <span class="o">=</span> <span class="n">result</span>
+
+            <span class="k">for</span> <span class="n">cls_idx</span><span class="p">,</span> <span class="n">cls_result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bbox_result</span><span class="p">,</span> <span class="n">mask_result</span><span class="p">)):</span>
+                <span class="n">cls_bbox_result</span><span class="p">,</span> <span class="n">cls_mask_result</span> <span class="o">=</span> <span class="n">cls_result</span>
+                <span class="n">_tmp_cls_bbox_result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">cls_bbox_result</span><span class="p">)</span>
+                <span class="n">_tmp_cls_bbox_result</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls_bbox_result</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">tile_x1</span>
+                <span class="n">_tmp_cls_bbox_result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls_bbox_result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tile_y1</span>
+                <span class="n">_tmp_cls_bbox_result</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls_bbox_result</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">tile_x1</span>
+                <span class="n">_tmp_cls_bbox_result</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls_bbox_result</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">tile_y1</span>
+                <span class="n">_tmp_cls_bbox_result</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls_bbox_result</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
+
+                <span class="n">merged_bbox_results</span><span class="p">[</span><span class="n">img_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">merged_bbox_results</span><span class="p">[</span><span class="n">img_idx</span><span class="p">],</span> <span class="n">_tmp_cls_bbox_result</span><span class="p">))</span>
+                <span class="n">merged_label_results</span><span class="p">[</span><span class="n">img_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">merged_label_results</span><span class="p">[</span><span class="n">img_idx</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">cls_bbox_result</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="n">cls_idx</span><span class="p">]]</span>
+                <span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">cls_mask_dict</span> <span class="ow">in</span> <span class="n">cls_mask_result</span><span class="p">:</span>
+                    <span class="n">cls_mask_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">tile_box</span><span class="o">=</span><span class="n">tile</span><span class="p">[</span><span class="s2">&quot;tile_box&quot;</span><span class="p">],</span> <span class="n">img_size</span><span class="o">=</span><span class="p">(</span><span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">)))</span>
+                <span class="n">merged_mask_results</span><span class="p">[</span><span class="n">img_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cls_mask_result</span>
+
+        <span class="c1"># run NMS after aggregation suppressing duplicate boxes in</span>
+        <span class="c1"># overlapping areas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_nms</span><span class="p">(</span>
+            <span class="n">merged_bbox_results</span><span class="p">,</span>
+            <span class="n">merged_mask_results</span><span class="p">,</span>
+            <span class="n">merged_label_results</span><span class="p">,</span>
+            <span class="n">iou_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iou_threshold</span><span class="p">,</span>
+            <span class="n">max_per_img</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_per_img</span><span class="p">,</span>
+            <span class="n">detection</span><span class="o">=</span><span class="n">detection</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">merged_bbox_results</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">merged_mask_results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">detection</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">merged_bbox_results</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">merged_bbox_results</span><span class="p">,</span> <span class="n">merged_mask_results</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Tile.get_ann_info"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.get_ann_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get annotation by index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx (int): Index of data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Annotation info of specified index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ann</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;gt_bboxes&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
+            <span class="n">ann</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;gt_masks&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
+            <span class="n">ann</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;gt_labels&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
+            <span class="n">ann</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;gt_labels&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ann</span></div>
+
+<div class="viewcode-block" id="Tile.merge_vectors"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.merge_vectors">[docs]</a>    <span class="k">def</span> <span class="nf">merge_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_vectors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge tile-level feature vectors to image-level feature vector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            feature_vectors (List[np.ndarray]): tile-level feature vectors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            merged_vectors (List[np.ndarray]): Merged vectors for each image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">image_vectors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">vector</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">):</span>
+            <span class="n">data_idx</span> <span class="o">=</span> <span class="n">tile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;index&quot;</span> <span class="ow">in</span> <span class="n">tile</span> <span class="k">else</span> <span class="n">tile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset_idx&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data_idx</span> <span class="ow">in</span> <span class="n">image_vectors</span><span class="p">:</span>
+                <span class="c1"># tile vectors</span>
+                <span class="n">image_vectors</span><span class="p">[</span><span class="n">data_idx</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># whole image vector</span>
+                <span class="n">image_vectors</span><span class="p">[</span><span class="n">data_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">vector</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">image_vectors</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="Tile.merge_maps"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.tiling.html#otx.algorithms.detection.adapters.mmdet.datasets.tiling.Tile.merge_maps">[docs]</a>    <span class="k">def</span> <span class="nf">merge_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">saliency_maps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge tile-level saliency maps to image-level saliency map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            saliency_maps (List[List[np.array] | np.ndarray]): tile-level saliency maps.</span>
+<span class="sd">            Each map is a list of maps for each detected class or None if class wasn&#39;t detected.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            merged_maps (List[list | np.ndarray | None]): Merged saliency maps for each image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="nb">map</span> <span class="ow">in</span> <span class="n">saliency_maps</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cl_map</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">:</span>
+                <span class="c1"># find first class map which is not None</span>
+                <span class="k">if</span> <span class="n">cl_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">dtype</span> <span class="o">=</span> <span class="n">cl_map</span><span class="o">.</span><span class="n">dtype</span>
+                    <span class="n">feat_h</span><span class="p">,</span> <span class="n">feat_w</span> <span class="o">=</span> <span class="n">cl_map</span><span class="o">.</span><span class="n">shape</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if None for each class for each image</span>
+            <span class="k">return</span> <span class="n">saliency_maps</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">]</span>
+
+        <span class="n">merged_maps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">orig_image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cached_results</span><span class="p">:</span>
+            <span class="n">img_idx</span> <span class="o">=</span> <span class="n">orig_image</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span>
+            <span class="n">image_h</span><span class="p">,</span> <span class="n">image_w</span> <span class="o">=</span> <span class="n">orig_image</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">],</span> <span class="n">orig_image</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+            <span class="n">ratios</span><span class="p">[</span><span class="n">img_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">feat_h</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">image_h</span><span class="p">),</span> <span class="n">feat_w</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">image_w</span><span class="p">)])</span>
+
+            <span class="n">image_map_h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">image_h</span> <span class="o">*</span> <span class="n">ratios</span><span class="p">[</span><span class="n">img_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">image_map_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">image_w</span> <span class="o">*</span> <span class="n">ratios</span><span class="p">[</span><span class="n">img_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">merged_maps</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">image_map_h</span><span class="p">,</span> <span class="n">image_map_w</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)])</span>
+
+        <span class="k">for</span> <span class="nb">map</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span> <span class="p">:]):</span>
+            <span class="k">for</span> <span class="n">class_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">cls_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span>
+                <span class="n">img_idx</span> <span class="o">=</span> <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;dataset_idx&quot;</span><span class="p">]</span>
+                <span class="n">x_1</span><span class="p">,</span> <span class="n">y_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">y_2</span> <span class="o">=</span> <span class="n">tile</span><span class="p">[</span><span class="s2">&quot;tile_box&quot;</span><span class="p">]</span>
+                <span class="n">y_1</span><span class="p">,</span> <span class="n">x_1</span> <span class="o">=</span> <span class="p">((</span><span class="n">y_1</span><span class="p">,</span> <span class="n">x_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">ratios</span><span class="p">[</span><span class="n">img_idx</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
+                <span class="n">y_2</span><span class="p">,</span> <span class="n">x_2</span> <span class="o">=</span> <span class="p">((</span><span class="n">y_2</span><span class="p">,</span> <span class="n">x_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ratios</span><span class="p">[</span><span class="n">img_idx</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
+
+                <span class="n">map_h</span><span class="p">,</span> <span class="n">map_w</span> <span class="o">=</span> <span class="n">cls_map</span><span class="o">.</span><span class="n">shape</span>
+                <span class="c1"># resize feature map if it got from the tile which width and height is less the tile_size</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">map_h</span> <span class="o">&gt;</span> <span class="n">y_2</span> <span class="o">-</span> <span class="n">y_1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">map_w</span> <span class="o">&gt;</span> <span class="n">x_2</span> <span class="o">-</span> <span class="n">x_1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="n">cls_map</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cls_map</span><span class="p">,</span> <span class="p">(</span><span class="n">x_2</span> <span class="o">-</span> <span class="n">x_1</span><span class="p">,</span> <span class="n">y_2</span> <span class="o">-</span> <span class="n">y_1</span><span class="p">))</span>
+                <span class="c1"># cut the rest of the feature map that went out of the image borders</span>
+                <span class="n">map_h</span><span class="p">,</span> <span class="n">map_w</span> <span class="o">=</span> <span class="n">y_2</span> <span class="o">-</span> <span class="n">y_1</span><span class="p">,</span> <span class="n">x_2</span> <span class="o">-</span> <span class="n">x_1</span>
+
+                <span class="k">for</span> <span class="n">hi</span><span class="p">,</span> <span class="n">wi</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">h_</span><span class="p">,</span> <span class="n">w_</span><span class="p">)</span> <span class="k">for</span> <span class="n">h_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">map_h</span><span class="p">)</span> <span class="k">for</span> <span class="n">w_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">map_w</span><span class="p">)]:</span>
+                    <span class="n">map_pixel</span> <span class="o">=</span> <span class="n">cls_map</span><span class="p">[</span><span class="n">hi</span><span class="p">,</span> <span class="n">wi</span><span class="p">]</span>
+                    <span class="c1"># on tile overlap add 0.5 value of each tile</span>
+                    <span class="k">if</span> <span class="n">merged_maps</span><span class="p">[</span><span class="n">img_idx</span><span class="p">][</span><span class="n">class_idx</span><span class="p">][</span><span class="n">y_1</span> <span class="o">+</span> <span class="n">hi</span><span class="p">,</span> <span class="n">x_1</span> <span class="o">+</span> <span class="n">wi</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">merged_maps</span><span class="p">[</span><span class="n">img_idx</span><span class="p">][</span><span class="n">class_idx</span><span class="p">][</span><span class="n">y_1</span> <span class="o">+</span> <span class="n">hi</span><span class="p">,</span> <span class="n">x_1</span> <span class="o">+</span> <span class="n">wi</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">map_pixel</span> <span class="o">+</span> <span class="n">merged_maps</span><span class="p">[</span><span class="n">img_idx</span><span class="p">][</span><span class="n">class_idx</span><span class="p">][</span><span class="n">y_1</span> <span class="o">+</span> <span class="n">hi</span><span class="p">,</span> <span class="n">x_1</span> <span class="o">+</span> <span class="n">wi</span><span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">merged_maps</span><span class="p">[</span><span class="n">img_idx</span><span class="p">][</span><span class="n">class_idx</span><span class="p">][</span><span class="n">y_1</span> <span class="o">+</span> <span class="n">hi</span><span class="p">,</span> <span class="n">x_1</span> <span class="o">+</span> <span class="n">wi</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_pixel</span>
+
+        <span class="n">norm_maps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">merged_map</span><span class="p">,</span> <span class="n">image_sal_map</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">merged_maps</span><span class="p">,</span> <span class="n">saliency_maps</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">class_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">):</span>
+                <span class="c1"># don&#39;t have detections for this class on merged map</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                    <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">image_map_cls</span> <span class="o">=</span> <span class="n">image_sal_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span>
+                    <span class="c1"># resize the feature map for whole image to add it to merged saliency maps</span>
+                    <span class="k">if</span> <span class="n">image_map_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">map_h</span><span class="p">,</span> <span class="n">map_w</span> <span class="o">=</span> <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+                        <span class="n">image_map_cls</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">image_map_cls</span><span class="p">,</span> <span class="p">(</span><span class="n">map_w</span><span class="p">,</span> <span class="n">map_h</span><span class="p">))</span>
+                        <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">image_map_cls</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+                    <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">non_linear_normalization</span><span class="p">(</span><span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">])</span>
+            <span class="n">norm_maps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merged_map</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">norm_maps</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+otx.algorithms.detection.adapters.mmdet.nncf.patches
+====================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.nncf.patches
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

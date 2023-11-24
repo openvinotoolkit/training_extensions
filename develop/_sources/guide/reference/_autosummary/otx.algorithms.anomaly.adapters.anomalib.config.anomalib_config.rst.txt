@@ -1,0 +1,30 @@
+otx.algorithms.anomaly.adapters.anomalib.config.anomalib\_config
+================================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_anomalib_config
+      update_anomalib_config
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

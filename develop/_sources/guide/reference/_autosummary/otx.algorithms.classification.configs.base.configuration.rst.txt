@@ -1,0 +1,29 @@
+otx.algorithms.classification.configs.base.configuration
+========================================================
+
+.. automodule:: otx.algorithms.classification.configs.base.configuration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ClassificationConfig
+   
+   
+
+   
+   
+   
+
+
+

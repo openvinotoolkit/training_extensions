@@ -1,0 +1,34 @@
+otx.recipes.stages
+==================
+
+.. automodule:: otx.recipes.stages
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.recipes.stages.classification
+   otx.recipes.stages.detection
+   otx.recipes.stages.instance_segmentation
+   otx.recipes.stages.segmentation
+

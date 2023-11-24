@@ -1,0 +1,31 @@
+otx.algorithms.visual\_prompting.adapters.openvino.model\_wrappers
+==================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.openvino.model_wrappers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models
+

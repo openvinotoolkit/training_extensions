@@ -1,0 +1,31 @@
+otx.core.ov.graph.parsers.parser
+================================
+
+.. automodule:: otx.core.ov.graph.parsers.parser
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      parameter_parser
+      result_parser
+      type_parser
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

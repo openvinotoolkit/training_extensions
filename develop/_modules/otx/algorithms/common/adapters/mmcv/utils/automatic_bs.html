@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.common.adapters.mmcv.utils.automatic_bs &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/common/adapters/mmcv/utils/automatic_bs';</script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.common.adapters.mmcv.utils.automatic_bs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Algorithm to find a proper batch size which is fit to current GPU device for tasks using mmcv.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">torch.cuda</span> <span class="kn">import</span> <span class="n">is_available</span> <span class="k">as</span> <span class="n">cuda_available</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.torch.utils</span> <span class="kn">import</span> <span class="n">BsSearchAlgo</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_set_value_at_dict_in_dict</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">key_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set value at dictionary hierarchy structure.</span>
+
+<span class="sd">    This function is for setting a value at leaf dictionary node in dictionary hierarchy structure.</span>
+<span class="sd">    If key doesn&#39;t exist in the middle node dictionaray, then make a new dictionary at that and keep going.</span>
+<span class="sd">    For example, if you want to set value at target[&quot;a&quot;][&quot;b&quot;][&quot;c&quot;], then you can call the function as below.</span>
+<span class="sd">    _set_value_at_dict_in_dict(target, &quot;a.b.c&quot;, value)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        target (Dict): Target variable.</span>
+<span class="sd">        key_path (str): Dot delimited dictionary key string.</span>
+<span class="sd">        value : Value to set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">key_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target</span><span class="p">:</span>
+            <span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="n">target</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+
+
+<div class="viewcode-block" id="adapt_batch_size"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.automatic_bs.html#otx.algorithms.common.adapters.mmcv.utils.adapt_batch_size">[docs]</a><span class="k">def</span> <span class="nf">adapt_batch_size</span><span class="p">(</span><span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">not_increase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decrease batch size if default batch size isn&#39;t fit to current GPU device.</span>
+
+<span class="sd">    This function just setup for single iteration training to reduce time for adapting.</span>
+<span class="sd">    The core part of adapting batch size is done in adapt_batch_size in the torch.utils package.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        train_func (Callable): The function to train a model.</span>
+<span class="sd">            Only cfg, dataset and meta are passed to the function when invoking it.</span>
+<span class="sd">        cfg: Configuration of a training.</span>
+<span class="sd">        meta (Dict): A dict records some meta information of a training.</span>
+<span class="sd">        datasets (List): List of datasets.</span>
+<span class="sd">        validate (bool): Whether do vlidation or not.</span>
+<span class="sd">        not_increase (bool) : Whether adapting batch size to larger value than default value or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cuda_available</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Skip Auto-adaptive batch size: CUDA should be available, but it isn&#39;t.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">train_func_single_iter</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">copied_cfg</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">_set_batch_size</span><span class="p">(</span><span class="n">copied_cfg</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">_set_max_epoch</span><span class="p">(</span><span class="n">copied_cfg</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># setup for training a single iter to reduce time</span>
+
+        <span class="c1"># Remove hooks due to reasons below</span>
+        <span class="c1"># OTXProgressHook =&gt; prevent progress bar from being 0 and 100 repeatably</span>
+        <span class="c1"># earlystoppinghook =&gt; if eval hook is excluded, this hook makes an error due to absence of score history</span>
+        <span class="c1"># CustomEvalHook =&gt; exclude validation in classification task</span>
+        <span class="n">idx_hooks_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">hooks_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;OTXProgressHook&quot;</span><span class="p">,</span> <span class="s2">&quot;earlystoppinghook&quot;</span><span class="p">,</span> <span class="s2">&quot;CustomEvalHook&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">hook</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">copied_cfg</span><span class="o">.</span><span class="n">custom_hooks</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validate</span> <span class="ow">and</span> <span class="n">hook</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;AdaptiveTrainSchedulingHook&quot;</span><span class="p">:</span>
+                <span class="n">hook</span><span class="p">[</span><span class="s2">&quot;enable_eval_before_run&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">hook_to_remove</span> <span class="ow">in</span> <span class="n">hooks_to_remove</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">hook_to_remove</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">hook</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">idx_hooks_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">idx_hooks_to_remove</span><span class="p">:</span>
+            <span class="n">idx_hooks_to_remove</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">idx_hooks_to_remove</span><span class="p">):</span>
+                <span class="k">del</span> <span class="n">copied_cfg</span><span class="o">.</span><span class="n">custom_hooks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="n">new_datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">SubDataset</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_size</span><span class="p">)]</span>
+
+        <span class="n">train_func</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">new_datasets</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="o">=</span><span class="n">copied_cfg</span><span class="p">,</span>
+            <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">default_bs</span> <span class="o">=</span> <span class="n">_get_batch_size</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+    <span class="n">bs_search_algo</span> <span class="o">=</span> <span class="n">BsSearchAlgo</span><span class="p">(</span>
+        <span class="n">train_func</span><span class="o">=</span><span class="n">train_func_single_iter</span><span class="p">,</span>
+        <span class="n">default_bs</span><span class="o">=</span><span class="n">default_bs</span><span class="p">,</span>
+        <span class="n">max_bs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">not_increase</span><span class="p">:</span>
+        <span class="n">new_batch_size</span> <span class="o">=</span> <span class="n">bs_search_algo</span><span class="o">.</span><span class="n">auto_decrease_batch_size</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">drop_last</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;train_dataloader&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;drop_last&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">new_batch_size</span> <span class="o">=</span> <span class="n">bs_search_algo</span><span class="o">.</span><span class="n">find_big_enough_batch_size</span><span class="p">(</span><span class="n">drop_last</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">default_bs</span> <span class="o">!=</span> <span class="n">new_batch_size</span><span class="p">:</span>
+        <span class="n">_set_batch_size</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">new_batch_size</span><span class="p">)</span>
+        <span class="n">origin_lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span>
+        <span class="n">bs_change_ratio</span> <span class="o">=</span> <span class="n">new_batch_size</span> <span class="o">/</span> <span class="n">default_bs</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span> <span class="o">*=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">bs_change_ratio</span><span class="p">)</span>  <span class="c1"># Using root scale instead of linear scale</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adapting batch size is done.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batch size is adapted : </span><span class="si">{</span><span class="n">default_bs</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">new_batch_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;learning rate is adapted : </span><span class="si">{</span><span class="n">origin_lr</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adapting batch size is done. Batch size isn&#39;t changed.&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_batch_size</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;action&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">videos_per_gpu</span>
+    <span class="k">return</span> <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">[</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_set_batch_size</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;action&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">videos_per_gpu</span> <span class="o">=</span> <span class="n">batch_size</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">[</span><span class="s2">&quot;samples_per_gpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="k">for</span> <span class="n">custom_hook</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">custom_hooks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">custom_hook</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;AdaptiveRepeatDataHook&quot;</span><span class="p">:</span>
+                <span class="n">custom_hook</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">batch_size</span>
+
+
+<span class="k">def</span> <span class="nf">_set_max_epoch</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">max_epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;AccuracyAwareRunner&quot;</span><span class="p">:</span>  <span class="c1"># nncf case</span>
+        <span class="k">if</span> <span class="s2">&quot;nncf_config&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">runner</span><span class="p">:</span>
+            <span class="n">_set_value_at_dict_in_dict</span><span class="p">(</span>
+                <span class="n">cfg</span><span class="o">.</span><span class="n">runner</span><span class="p">[</span><span class="s2">&quot;nncf_config&quot;</span><span class="p">],</span> <span class="s2">&quot;accuracy_aware_training.params.maximal_total_epochs&quot;</span><span class="p">,</span> <span class="n">max_epoch</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">runner_type</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">runner_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;iterbased&quot;</span> <span class="ow">in</span> <span class="n">runner_type</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">runner</span><span class="p">[</span><span class="s2">&quot;max_iters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_epoch</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">runner</span><span class="p">[</span><span class="s2">&quot;max_epochs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_epoch</span>
+
+
+<div class="viewcode-block" id="SubDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.utils.automatic_bs.html#otx.algorithms.common.adapters.mmcv.utils.SubDataset">[docs]</a><span class="k">class</span> <span class="nc">SubDataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper class to make dataset pretend to have specified number of images.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fullset: Original dataset.</span>
+<span class="sd">        num_samples (int): Number of images to pretend to have. It should be positive.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fullset</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">num_samples</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;num_samples should be positive. But, current value is </span><span class="si">{</span><span class="n">num_samples</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fullset</span> <span class="o">=</span> <span class="n">fullset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_indices</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># for class incremental case</span>
+            <span class="s2">&quot;old&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_samples</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)],</span>
+            <span class="s2">&quot;new&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_samples</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)],</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get length of subset.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dataset at index.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullset</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;When trying to get other attributes, not dataset, get values from fullset.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;__setstate__&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullset</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Getter of flag for detection task.</span>
+
+<span class="sd">        Sampler of the detection task decides length of dataset checking sum of flag array.</span>
+<span class="sd">        To consider that case, return flag array with length of num_samples.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

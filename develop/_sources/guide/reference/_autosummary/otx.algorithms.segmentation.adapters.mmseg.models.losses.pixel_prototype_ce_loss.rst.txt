@@ -1,0 +1,31 @@
+otx.algorithms.segmentation.adapters.mmseg.models.losses.pixel\_prototype\_ce\_loss
+===================================================================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.mmseg.models.losses.pixel_prototype_ce_loss
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PPC
+      PPD
+      PixelPrototypeCELoss
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.core.data.adapter.segmentation\_dataset\_adapter
+====================================================
+
+.. automodule:: otx.core.data.adapter.segmentation_dataset_adapter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SegmentationDatasetAdapter
+      SelfSLSegmentationDatasetAdapter
+   
+   
+
+   
+   
+   
+
+
+
