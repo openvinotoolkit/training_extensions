@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-=======
->>>>>>> Initial commit
 """Helper to support MMCV data transform functions."""
 
 from __future__ import annotations
