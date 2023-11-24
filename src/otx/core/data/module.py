@@ -30,7 +30,6 @@ class OTXDataModule(LightningDataModule):
         self.task = task
         self.config = config
         self.subsets: dict[str, OTXDataset] = {}
-        self.prepare_data_per_node = True
         self.save_hyperparameters()
 
         dataset = DmDataset.import_from(
