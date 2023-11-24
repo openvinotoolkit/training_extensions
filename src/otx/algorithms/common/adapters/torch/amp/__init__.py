@@ -5,5 +5,5 @@
 
 try:
     from .xpu_grad_scaler import XPUGradScaler  # noqa: F401
-except:
+except:  # noqa: E722
     pass

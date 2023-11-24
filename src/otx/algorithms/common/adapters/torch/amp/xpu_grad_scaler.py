@@ -3,23 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import intel_extension_for_pytorch as ipex
+from collections import abc, defaultdict
 from typing import List
+
+import intel_extension_for_pytorch as ipex  # noqa: F401
 import torch
-from collections import defaultdict, abc
-from torch.cuda.amp.grad_scaler import GradScaler, _refresh_per_optimizer_state
 from intel_extension_for_pytorch.cpu.autocast._grad_scaler import _MultiDeviceReplicator
+from torch.cuda.amp.grad_scaler import GradScaler, _refresh_per_optimizer_state
 
 
 class XPUGradScaler(GradScaler):
-    def __init__(
-        self,
-        init_scale=2.0**16,
-        growth_factor=2.0,
-        backoff_factor=0.5,
-        growth_interval=2000,
-        enabled=True
-    ):
+    """GradScaler for XPU."""
+
+    def __init__(self, init_scale=2.0**16, growth_factor=2.0, backoff_factor=0.5, growth_interval=2000, enabled=True):
         self._enabled = enabled
 
         if self._enabled:
@@ -36,10 +32,9 @@ class XPUGradScaler(GradScaler):
             # self._growth_tracker will be lazily initialized during the first call to scale()
             self._growth_tracker = None
             self._per_optimizer_states = defaultdict(_refresh_per_optimizer_state)
-            
+
     def scale(self, outputs):
-        """
-        Multiplies ('scales') a tensor or list of tensors by the scale factor.
+        """Multiplies ('scales') a tensor or list of tensors by the scale factor.
 
         Returns scaled outputs.  If this instance of :class:`GradScaler` is not enabled, outputs are returned
         unmodified.
@@ -115,8 +110,8 @@ class XPUGradScaler(GradScaler):
 
             for device, per_dtype_grads in per_device_and_dtype_grads.items():
                 for grads in per_dtype_grads.values():
-                    torch._amp_foreach_non_finite_check_and_unscale_(grads,
-                                                                     per_device_found_inf.get(device),
-                                                                     per_device_inv_scale.get(device))
+                    torch._amp_foreach_non_finite_check_and_unscale_(
+                        grads, per_device_found_inf.get(device), per_device_inv_scale.get(device)
+                    )
 
         return per_device_found_inf._per_device_tensors
