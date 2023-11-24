@@ -75,14 +75,13 @@ class OTXDetectionTask(OTXTask, ABC):
         )
         self._anchors: Dict[str, int] = {}
 
-        if (
-            hasattr(self._hyperparams, "postprocessing")
-            and not getattr(self._hyperparams.postprocessing, "result_based_confidence_threshold", False)
-            and hasattr(self._hyperparams.postprocessing, "confidence_threshold")
-        ):
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        else:
-            self.confidence_threshold = 0.0
+        self.confidence_threshold = 0.0
+        self.max_num_detections = 0
+        if hasattr(self._hyperparams, "postprocessing"):
+            if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
+                self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
+            if hasattr(self._hyperparams.postprocessing, "max_num_detections"):
+                self.max_num_detections = self._hyperparams.postprocessing.max_num_detections
 
         if task_environment.model is not None:
             self._load_model()
@@ -115,6 +114,12 @@ class OTXDetectionTask(OTXTask, ABC):
             hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
         else:
             hparams.use_ellipse_shapes = False
+        if "max_num_detections" in loaded_postprocessing:
+            trained_max_num_detections = loaded_postprocessing["max_num_detections"]["value"]
+            # Prefer new hparam value set by user (>0) intentionally than trained value
+            if self.max_num_detections == 0:
+                self.max_num_detections = trained_max_num_detections
+
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
         # and should not be changed during inference. Otherwise user-specified value should be taken.
         if hparams.result_based_confidence_threshold:

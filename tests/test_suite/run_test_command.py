@@ -757,6 +757,9 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
