@@ -7,7 +7,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../recipes/stages/instance-segmentation/incremental.py",
+    "../../../../../recipes/stages/instance_segmentation/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml",
     "../../base/models/detector.py",
 ]
@@ -139,7 +139,7 @@ model = dict(
         ),
         rcnn=dict(
             score_thr=0.05,
-            nms=dict(type="nms", iou_threshold=0.5, max_num=100),
+            nms=dict(type="nms", iou_threshold=0.5),
             max_per_img=100,
             mask_thr_binary=0.5,
         ),
