@@ -31,6 +31,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file", type=str, help="Experiment recipe file.")
     parser.add_argument("-p", "--parse", type=str, help="Workspace path to parse.")
+    parser.add_argument("-d", "--dryrun", action="store_true", help="Print experiment commands without execution.")
     return parser
 
 
@@ -594,9 +595,11 @@ class ExpRecipeParser:
             for key, val in variable.items():
                 target = target.replace(f"${{{key}}}", val)
         elif isinstance(target, list):
+            target = target.copy()
             for i in range(len(target)):
                 target[i] = self._replace_var_in_target(variable, target[i])
         elif isinstance(target, dict):
+            target = target.copy()
             for key in target.keys():
                 target[key] = self._replace_var_in_target(variable, target[key])
         else:
@@ -680,19 +683,23 @@ class OtxCommandRunner:
         """Information of all failed cases."""
         return self._fail_logs
 
-    def run_command_list(self):
+    def run_command_list(self, dryrun: bool = False):
         """Run all commands and organize experiment results."""
         for command in self._command_ins.command:
             command = command.split()
-            if not self._prepare_run_command(command):
+            if not self._prepare_run_command(command) and not dryrun:
                 print(f"otx {command[1]} is skipped.")
                 continue
 
-            self._run_otx_command(command)
+            if not dryrun:
+                self._run_otx_command(command)
+            else:
+                print(" ".join(command))
 
             self._previous_cmd_entry = command[1]
 
-        organize_exp_result(self._workspace, self._command_var)
+        if not dryrun:
+            organize_exp_result(self._workspace, self._command_var)
 
     def _prepare_run_command(self, command: List[str]) -> bool:
         self.set_arguments_to_cmd(command, "--workspace", str(self._workspace))
@@ -755,11 +762,12 @@ class OtxCommandRunner:
         command.insert(index, key)
 
 
-def run_experiment_recipe(recipe_file: Union[str, Path]):
+def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     """Run experiments based on the recipe.
 
     Args:
         recipe_file (Union[str, Path]): Recipe file to run.
+        dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
     """
     exp_recipe = ExpRecipeParser(recipe_file)
     output_path = exp_recipe.output_path
@@ -771,7 +779,7 @@ def run_experiment_recipe(recipe_file: Union[str, Path]):
     for command_ins in exp_recipe.commands:
         for repeat_idx in range(exp_recipe.repeat):
             otx_cmd_runner = OtxCommandRunner(command_ins, repeat_idx)
-            otx_cmd_runner.run_command_list()
+            otx_cmd_runner.run_command_list(dryrun)
             fail_cases.extend(otx_cmd_runner.fail_logs)
 
     os.chdir(current_dir)
@@ -779,7 +787,8 @@ def run_experiment_recipe(recipe_file: Union[str, Path]):
     if fail_cases:
         log_fail_cases(fail_cases, output_path)
 
-    aggregate_all_exp_result(output_path)
+    if not dryrun:
+        aggregate_all_exp_result(output_path)
 
 
 def main():
@@ -790,7 +799,7 @@ def main():
     if args.file is not None and args.parse is not None:
         print("Please give either --file or --parse argument.")
     elif args.file is not None:
-        run_experiment_recipe(args.file)
+        run_experiment_recipe(args.file, args.dryrun)
     elif args.parse is not None:
         organize_exp_result(args.parse)
     else:
