@@ -11,7 +11,6 @@ from mmcls.models.classifiers.image import ImageClassifier
 from mmcls.models.utils import resize_pos_embed
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import ViTReciproCAMHook
-from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_auto_fp16
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.task_adapt import map_class_names
 from otx.utils.logger import get_logger
@@ -293,21 +292,6 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
             x = self.neck(x)
 
         return x
-
-    @custom_auto_fp16(apply_to=("img",))
-    def forward(self, img, return_loss=True, **kwargs):
-        """Calls either forward_train or forward_test depending on whether return_loss=True.
-
-        Note this setting will change the expected inputs. When
-        `return_loss=True`, img and img_meta are single-nested (i.e. Tensor and
-        List[dict]), and when `resturn_loss=False`, img and img_meta should be
-        double nested (i.e.  List[Tensor], List[List[dict]]), with the outer
-        list indicating test time augmentations.
-        """
-        if return_loss:
-            return self.forward_train(img, **kwargs)
-        else:
-            return self.forward_test(img, **kwargs)
 
 
 if is_mmdeploy_enabled():

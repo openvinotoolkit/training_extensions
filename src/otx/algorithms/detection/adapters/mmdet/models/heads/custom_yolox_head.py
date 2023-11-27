@@ -8,7 +8,6 @@ from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.yolox_head import YOLOXHead
 from mmdet.models.losses.utils import weight_reduce_loss
 
-from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_force_fp32
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     TrackingLossDynamicsMixIn,
 )
@@ -22,7 +21,7 @@ class CustomYOLOXHead(YOLOXHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @custom_force_fp32(apply_to=("cls_scores", "bbox_preds", "objectnesses"))
+    @force_fp32(apply_to=("cls_scores", "bbox_preds", "objectnesses"))
     def loss(self, cls_scores, bbox_preds, objectnesses, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Compute loss of the head.
 
