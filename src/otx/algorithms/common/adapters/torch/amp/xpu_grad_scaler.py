@@ -6,7 +6,6 @@
 from collections import abc, defaultdict
 from typing import List
 
-import intel_extension_for_pytorch as ipex  # noqa: F401
 import torch
 from intel_extension_for_pytorch.cpu.autocast._grad_scaler import _MultiDeviceReplicator
 from torch.cuda.amp.grad_scaler import GradScaler, _refresh_per_optimizer_state
