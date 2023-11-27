@@ -73,5 +73,5 @@ if is_xpu_available():
 
         mmcv.runner.auto_fp16 = custom_auto_fp16
         mmcv.runner.force_fp32 = custom_force_fp32
-    except:  # noqa: E722
+    except ImportError:
         pass
