@@ -1,26 +1,54 @@
-# MIT License
-
-# Copyright (c) 2023 Intel Corporation
-# Copyright (c) 2021 ashleve
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# This source code is borrowed from https://github.com/ashleve/lightning-hydra-template
 
 """Module for OTX engine components."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+from otx.core.config import TrainConfig
+from otx.core.engine.train import train
+
+if TYPE_CHECKING:
+    from lightning import Trainer
+
+
+class Engine:
+    """OTX Engine class."""
+
+    def __init__(self):
+        self._trainer = None
+
+    @property
+    def trainer(self) -> Trainer:
+        """PyTorch Lightning Trainer.
+
+        To get this property, you should execute `Engine.train()` function first.
+        """
+        if self._trainer is None:
+            msg = "Please run train() first"
+            raise RuntimeError(msg)
+
+        return self._trainer
+
+    def train(self, cfg: TrainConfig) -> dict[str, Any]:
+        """Train the model using PyTorch Lightning Trainer."""
+        trainer, metrics = train(cfg)
+        self._trainer = trainer
+        return metrics
+
+    def predict(self, *args, **kwargs) -> None:
+        """Predict with the trained model."""
+        raise NotImplementedError
+
+    def export(self, *args, **kwargs) -> None:
+        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
+        # return export(
+        #     self.cfg.deploy_cfg,
+        #     model,
+        #     f"{output_path}/openvino",
+        #     half_precision,
+        #     onnx_only=export_format == ExportType.ONNX,
+        # )
+        raise NotImplementedError
