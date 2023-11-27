@@ -15,7 +15,6 @@ from otx.algorithms.common.utils import is_xpu_available
 
 try:
     if is_xpu_available():
-        # import intel_extension_for_pytorch as ipex
         from torch.xpu.amp import autocast
     elif IS_NPU_AVAILABLE:
         from torch.npu.amp import autocast

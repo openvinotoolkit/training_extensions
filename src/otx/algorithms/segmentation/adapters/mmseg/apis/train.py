@@ -95,7 +95,7 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
         dtype = torch.bfloat16 if cfg.optimizer_config.get("bf16_training", False) else torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
-        
+
     if "bf16_training" in cfg.optimizer_config:
         # Remove unused parameters in runner
         cfg.optimizer_config.pop("bf16_training")
