@@ -66,9 +66,12 @@ if is_hpu_available():
 
 
 if is_xpu_available():
-    import mmcv
+    try:
+        import mmcv
 
-    from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_auto_fp16, custom_force_fp32
+        from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_auto_fp16, custom_force_fp32
 
-    mmcv.runner.auto_fp16 = custom_auto_fp16
-    mmcv.runner.force_fp32 = custom_force_fp32
+        mmcv.runner.auto_fp16 = custom_auto_fp16
+        mmcv.runner.force_fp32 = custom_force_fp32
+    except:  # noqa: E722
+        pass
