@@ -100,8 +100,8 @@ except:  # noqa: E722
     pass
 
 try:
-    from .xpu_optimizer_hook import XPUOptimizerHook
+    from .xpu_optimizer_hook import BFp16XPUOptimizerHook
 
-    __all__ += ["XPUOptimizerHook"]
+    __all__ += ["BFp16XPUOptimizerHook"]
 except:  # noqa: E722
     pass

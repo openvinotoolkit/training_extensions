@@ -269,7 +269,7 @@ class BaseConfigurer:
                     logger.warning("SAMOptimizerHook is not supported on XPU yet, changed to OptimizerHook.")
                     opts["type"] = "OptimizerHook"
                 if optim_type == "OptimizerHook":
-                    opts["type"] = "XPUOptimizerHook"
+                    opts["type"] = "BFp16XPUOptimizerHook"
                 else:
                     # does not support optimizerhook type
                     # let mm library handle it

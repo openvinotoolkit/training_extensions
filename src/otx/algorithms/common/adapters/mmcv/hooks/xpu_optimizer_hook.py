@@ -11,8 +11,8 @@ from otx.algorithms.common.adapters.torch.amp import XPUGradScaler
 
 
 @HOOKS.register_module()
-class XPUOptimizerHook(Fp16OptimizerHook):
-    """Custom Optimizer Hook for mixed precision training on XPU."""
+class BFp16XPUOptimizerHook(Fp16OptimizerHook):
+    """Custom Optimizer Hook for mixed & lower precision training on XPU."""
 
     def __init__(
         self,
