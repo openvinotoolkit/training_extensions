@@ -9,6 +9,11 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4 # Uploads repository content to the runner
+        name: Checkout repository
+        with:
+          sparse-checkout: |
+            .github
       - uses: actions/labeler@v4
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
