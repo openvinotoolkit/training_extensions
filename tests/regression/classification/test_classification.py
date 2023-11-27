@@ -53,20 +53,19 @@ class TestRegressionMultiClassClassification:
     @classmethod
     @pytest.fixture(scope="class")
     def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
-            tmp_results_root=tmp_dir_path,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
 
-        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -74,6 +73,7 @@ class TestRegressionMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
@@ -87,14 +87,14 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            reg_cfg.config_dict["regression_criteria"]["train"],
+            reg_cfg.config_dict["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -102,6 +102,8 @@ class TestRegressionMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
         performance = reg_cfg.get_template_performance(template)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=reg_cfg.config_dict["kpi_e2e_train_time_criteria"]["train"],
@@ -121,7 +123,10 @@ class TestRegressionMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, reg_cfg, template, tmp_dir_path):
+        if template.name == "DeiT-Tiny":
+            pytest.skip(reason="Issue#2567: error while calc IB loss for DeiT-Tiny")
         train_type = "class_incr"
+        test_type = "train"
         self.performance[template.name] = {}
 
         sl_template_work_dir = get_template_dir(template, tmp_dir_path / "multi_class_cls")
@@ -146,14 +151,14 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             args_cls_incr,
-            config_cls_incr["regression_criteria"]["train"],
+            config_cls_incr["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -164,6 +169,8 @@ class TestRegressionMultiClassClassification:
         config_cls_incr = reg_cfg.load_config(train_type=train_type)
 
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_cls_incr["kpi_e2e_train_time_criteria"]["train"],
@@ -184,6 +191,7 @@ class TestRegressionMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl(self, reg_cfg, template, tmp_dir_path):
         train_type = "semi_supervised"
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
@@ -211,14 +219,14 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             args_semisl,
-            config_semisl["regression_criteria"]["train"],
+            config_semisl["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -229,6 +237,8 @@ class TestRegressionMultiClassClassification:
         config_semisl = reg_cfg.load_config(train_type=train_type)
 
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_semisl["kpi_e2e_train_time_criteria"]["train"],
@@ -251,6 +261,7 @@ class TestRegressionMultiClassClassification:
         if template.name == "DeiT-Tiny":
             pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         train_type = "self_supervised"
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
@@ -295,14 +306,14 @@ class TestRegressionMultiClassClassification:
             new_tmp_dir_path,
             reg_cfg.otx_dir,
             args_selfsl,
-            config_selfsl["regression_criteria"]["train"],
+            config_selfsl["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -313,6 +324,8 @@ class TestRegressionMultiClassClassification:
         config_selfsl = reg_cfg.load_config(train_type=train_type)
 
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_selfsl["kpi_e2e_train_time_criteria"]["train"],
@@ -332,6 +345,7 @@ class TestRegressionMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, reg_cfg, template, tmp_dir_path):
+        test_type = "export"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
@@ -346,7 +360,7 @@ class TestRegressionMultiClassClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.05,
-            criteria=reg_cfg.config_dict["regression_criteria"]["export"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -354,15 +368,14 @@ class TestRegressionMultiClassClassification:
 
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["export"].append(
-            self.performance
-        )
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_eval_deployment(self, reg_cfg, template, tmp_dir_path):
+        test_type = "deploy"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
@@ -377,7 +390,7 @@ class TestRegressionMultiClassClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.0,
-            criteria=reg_cfg.config_dict["regression_criteria"]["deploy"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -385,15 +398,14 @@ class TestRegressionMultiClassClassification:
 
         self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["deploy"].append(
-            self.performance
-        )
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        test_type = "nncf"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
@@ -411,7 +423,7 @@ class TestRegressionMultiClassClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.01,
-            criteria=reg_cfg.config_dict["regression_criteria"]["nncf"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -419,13 +431,14 @@ class TestRegressionMultiClassClassification:
 
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["nncf"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        test_type = "ptq"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
@@ -439,7 +452,7 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            criteria=reg_cfg.config_dict["regression_criteria"]["ptq"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -447,7 +460,7 @@ class TestRegressionMultiClassClassification:
 
         self.performance[template.name][TIME_LOG["ptq_time"]] = round(ptq_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["ptq_eval_time"]] = round(ptq_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["ptq"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -467,20 +480,19 @@ class TestRegressionMultiLabelClassification:
     @classmethod
     @pytest.fixture(scope="class")
     def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
-            tmp_results_root=tmp_dir_path,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
 
-        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -488,6 +500,7 @@ class TestRegressionMultiLabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
@@ -501,14 +514,14 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            reg_cfg.config_dict["regression_criteria"]["train"],
+            reg_cfg.config_dict["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -516,6 +529,8 @@ class TestRegressionMultiLabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
         performance = reg_cfg.get_template_performance(template)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=reg_cfg.config_dict["kpi_e2e_train_time_criteria"]["train"],
@@ -536,6 +551,7 @@ class TestRegressionMultiLabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, reg_cfg, template, tmp_dir_path):
         train_type = "class_incr"
+        test_type = "train"
         self.performance[template.name] = {}
 
         sl_template_work_dir = get_template_dir(template, tmp_dir_path / "multi_label_cls")
@@ -560,14 +576,14 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             args_cls_incr,
-            config_cls_incr["regression_criteria"]["train"],
+            config_cls_incr["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -578,6 +594,8 @@ class TestRegressionMultiLabelClassification:
         config_cls_incr = reg_cfg.load_config(train_type=train_type)
 
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_cls_incr["kpi_e2e_train_time_criteria"]["train"],
@@ -597,6 +615,7 @@ class TestRegressionMultiLabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, reg_cfg, template, tmp_dir_path):
+        test_type = "export"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
@@ -611,7 +630,7 @@ class TestRegressionMultiLabelClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.05,
-            criteria=reg_cfg.config_dict["regression_criteria"]["export"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -619,15 +638,14 @@ class TestRegressionMultiLabelClassification:
 
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["export"].append(
-            self.performance
-        )
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_eval_deployment(self, reg_cfg, template, tmp_dir_path):
+        test_type = "deploy"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
@@ -642,7 +660,7 @@ class TestRegressionMultiLabelClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.0,
-            criteria=reg_cfg.config_dict["regression_criteria"]["deploy"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -650,15 +668,14 @@ class TestRegressionMultiLabelClassification:
 
         self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["deploy"].append(
-            self.performance
-        )
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        test_type = "nncf"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
@@ -676,7 +693,7 @@ class TestRegressionMultiLabelClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.01,
-            criteria=reg_cfg.config_dict["regression_criteria"]["nncf"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -684,13 +701,14 @@ class TestRegressionMultiLabelClassification:
 
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["nncf"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        test_type = "ptq"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
@@ -704,7 +722,7 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            criteria=reg_cfg.config_dict["regression_criteria"]["ptq"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -712,7 +730,7 @@ class TestRegressionMultiLabelClassification:
 
         self.performance[template.name][TIME_LOG["ptq_time"]] = round(ptq_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["ptq_eval_time"]] = round(ptq_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["ptq"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -732,20 +750,19 @@ class TestRegressionHierarchicalLabelClassification:
     @classmethod
     @pytest.fixture(scope="class")
     def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
-            tmp_results_root=tmp_dir_path,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
 
-        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -753,6 +770,7 @@ class TestRegressionHierarchicalLabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "h_label_cls"
@@ -766,14 +784,14 @@ class TestRegressionHierarchicalLabelClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            reg_cfg.config_dict["regression_criteria"]["train"],
+            reg_cfg.config_dict["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -781,6 +799,8 @@ class TestRegressionHierarchicalLabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
         performance = reg_cfg.get_template_performance(template)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=reg_cfg.config_dict["kpi_e2e_train_time_criteria"]["train"],
@@ -800,6 +820,7 @@ class TestRegressionHierarchicalLabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, reg_cfg, template, tmp_dir_path):
+        test_type = "export"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "h_label_cls"
@@ -814,7 +835,7 @@ class TestRegressionHierarchicalLabelClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.05,
-            criteria=reg_cfg.config_dict["regression_criteria"]["export"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -822,15 +843,13 @@ class TestRegressionHierarchicalLabelClassification:
 
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["export"].append(
-            self.performance
-        )
-
+        reg_cfg.update_result(test_type, self.performance)
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_eval_deployment(self, reg_cfg, template, tmp_dir_path):
+        test_type = "deploy"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "h_label_cls"
@@ -845,7 +864,7 @@ class TestRegressionHierarchicalLabelClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.0,
-            criteria=reg_cfg.config_dict["regression_criteria"]["deploy"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -853,15 +872,14 @@ class TestRegressionHierarchicalLabelClassification:
 
         self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["deploy"].append(
-            self.performance
-        )
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        test_type = "nncf"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "h_label_cls"
@@ -879,7 +897,7 @@ class TestRegressionHierarchicalLabelClassification:
             reg_cfg.otx_dir,
             reg_cfg.args,
             threshold=0.01,
-            criteria=reg_cfg.config_dict["regression_criteria"]["nncf"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -887,13 +905,14 @@ class TestRegressionHierarchicalLabelClassification:
 
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["nncf"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        test_type = "ptq"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "h_label_cls"
@@ -907,7 +926,7 @@ class TestRegressionHierarchicalLabelClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            criteria=reg_cfg.config_dict["regression_criteria"]["ptq"],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -915,7 +934,7 @@ class TestRegressionHierarchicalLabelClassification:
 
         self.performance[template.name][TIME_LOG["ptq_time"]] = round(ptq_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["ptq_eval_time"]] = round(ptq_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["ptq"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -940,20 +959,19 @@ class TestRegressionSupconClassification:
     @classmethod
     @pytest.fixture(scope="class")
     def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
-            tmp_results_root=tmp_dir_path,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
 
-        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -961,6 +979,9 @@ class TestRegressionSupconClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        if template.name == "DeiT-Tiny":
+            pytest.skip(reason="Supcon for ViT template is not supported yet.")
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "supcon_cls"
@@ -977,14 +998,14 @@ class TestRegressionSupconClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            reg_cfg.config_dict["regression_criteria"]["train"],
+            reg_cfg.config_dict["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -992,6 +1013,8 @@ class TestRegressionSupconClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
         performance = reg_cfg.get_template_performance(template)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=reg_cfg.config_dict["kpi_e2e_train_time_criteria"]["train"],
