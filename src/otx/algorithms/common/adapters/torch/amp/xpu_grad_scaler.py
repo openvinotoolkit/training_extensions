@@ -92,8 +92,6 @@ class XPUGradScaler(GradScaler):
                 for param in group["params"]:
                     if param.grad is None:
                         continue
-                    if (not allow_bf16) and param.grad.dtype == torch.bfloat16:
-                        raise ValueError("Attempting to unscale BF16 gradients.")
                     if param.grad.is_sparse:
                         # is_coalesced() == False means the sparse grad has values with duplicate indices.
                         # coalesce() deduplicates indices and adds all values that have the same index.
