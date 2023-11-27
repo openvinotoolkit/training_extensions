@@ -3,6 +3,7 @@ defaults:
   - override /base: detection
   - override /data: mmdet
   - override /model: mmdet
+recipe: detection/atss_r50_fpn
 data:
   subsets:
     train:

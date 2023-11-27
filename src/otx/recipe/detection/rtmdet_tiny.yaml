@@ -3,6 +3,7 @@ defaults:
   - override /base: detection
   - override /data: mmdet
   - override /model: mmdet
+recipe: detection/rtmdet_tiny
 data:
   subsets:
     train:
