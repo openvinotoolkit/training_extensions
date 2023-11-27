@@ -92,11 +92,13 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        dtype = None
-        if "bf16_training" in cfg.optimizer_config:
-            dtype = torch.bfloat16 if cfg.optimizer_config.pop("bf16_training") else torch.float32
+        dtype = torch.bfloat16 if cfg.optimizer_config.get("bf16_training", False) else torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
+        
+    if "bf16_training" in cfg.optimizer_config:
+        # Remove unused parameters in runner
+        cfg.optimizer_config.pop("bf16_training")
 
     if cfg.get("runner") is None:
         cfg.runner = {"type": "IterBasedRunner", "max_iters": cfg.total_iters}
