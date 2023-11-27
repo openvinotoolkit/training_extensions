@@ -49,8 +49,8 @@ def get_args():
     )
     parser.add_argument(
         "--load-weights",
-        help="Load model weights from previously saved checkpoint."
-        "It could be a trained/optimized model (POT only) or exported model.",
+        help="Load model weights from previously saved checkpoint. "
+        "It could be a trained/optimized model (with PTQ only) or exported model.",
     )
     parser.add_argument(
         "-o",

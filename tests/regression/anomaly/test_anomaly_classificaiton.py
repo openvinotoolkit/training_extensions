@@ -11,6 +11,15 @@ from timeit import default_timer as timer
 import pytest
 
 from otx.cli.registry import Registry
+from tests.regression.regression_command import (
+    regression_deployment_testing,
+    regression_eval_testing,
+    regression_eval_time_testing,
+    regression_nncf_eval_testing,
+    regression_openvino_testing,
+    regression_ptq_eval_testing,
+    regression_train_time_testing,
+)
 from tests.regression.regression_test_helpers import (
     ANOMALY_DATASET_CATEGORIES,
     TIME_LOG,
@@ -25,16 +34,6 @@ from tests.test_suite.run_test_command import (
     ptq_optimize_testing,
 )
 
-from tests.regression.regression_command import (
-    regression_eval_testing,
-    regression_openvino_testing,
-    regression_deployment_testing,
-    regression_nncf_eval_testing,
-    regression_ptq_eval_testing,
-    regression_train_time_testing,
-    regression_eval_time_testing,
-)
-
 
 class TestRegressionAnomalyClassification:
     # Configurations for regression test.
@@ -44,7 +43,7 @@ class TestRegressionAnomalyClassification:
     LABEL_TYPE = None
     TRAIN_PARAMS = None
 
-    SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 3)
+    SAMPLED_ANOMALY_DATASET_CATEGORIES = ANOMALY_DATASET_CATEGORIES
 
     templates = Registry(f"src/otx/algorithms/{REG_CATEGORY}").filter(task_type=TASK_TYPE.upper()).templates
     templates_ids = [template.model_template_id for template in templates]
@@ -54,20 +53,19 @@ class TestRegressionAnomalyClassification:
     @classmethod
     @pytest.fixture(scope="class")
     def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             enable_auto_num_worker=False,
-            tmp_results_root=tmp_dir_path,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
 
-        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict(dump_path=os.path.join(cls.reg_cfg.result_dir, f"result_{cls.TASK_TYPE}.json"))
 
     def setup_method(self):
         self.performance = {}
@@ -87,6 +85,7 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path, category):
+        test_type = "train"
         self.performance[template.name] = {}
         category_data_args = self._apply_category(reg_cfg.args, category)
 
@@ -101,14 +100,14 @@ class TestRegressionAnomalyClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             category_data_args,
-            reg_cfg.config_dict["regression_criteria"]["train"][category],
+            reg_cfg.config_dict["regression_criteria"][test_type][category],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type]["train"][category].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, is_anomaly=True, category=category)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -118,6 +117,8 @@ class TestRegressionAnomalyClassification:
     def test_otx_train_kpi_test(self, reg_cfg, template, category):
         """KPI tests: measure the train+val time and evaluation time and compare with criteria."""
         performance = reg_cfg.get_template_performance(template, category=category)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         # Compare train+val time with the KPI criteria.
         kpi_train_result = regression_train_time_testing(
@@ -142,6 +143,7 @@ class TestRegressionAnomalyClassification:
     def test_otx_export_eval_openvino(self, reg_cfg, template, tmp_dir_path, category):
         if category in ["transistor", "cable"]:
             pytest.skip("Issue#2189: Anomaly task sometimes shows performance drop")
+        test_type = "export"
         self.performance[template.name] = {}
         category_data_args = self._apply_category(reg_cfg.args, category)
 
@@ -157,7 +159,7 @@ class TestRegressionAnomalyClassification:
             reg_cfg.otx_dir,
             category_data_args,
             threshold=0.05,
-            criteria=reg_cfg.config_dict["regression_criteria"]["export"][category],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -165,7 +167,7 @@ class TestRegressionAnomalyClassification:
 
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type]["export"][category].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, is_anomaly=True, category=category)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -175,6 +177,7 @@ class TestRegressionAnomalyClassification:
     def test_otx_deploy_eval_deployment(self, reg_cfg, template, tmp_dir_path, category):
         if category in ["transistor", "cable"]:
             pytest.skip("Issue#2189: Anomaly task sometimes shows performance drop")
+        test_type = "deploy"
         self.performance[template.name] = {}
         category_data_args = self._apply_category(reg_cfg.args, category)
 
@@ -190,7 +193,7 @@ class TestRegressionAnomalyClassification:
             reg_cfg.otx_dir,
             category_data_args,
             threshold=0.0,
-            criteria=reg_cfg.config_dict["regression_criteria"]["deploy"][category],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -198,7 +201,7 @@ class TestRegressionAnomalyClassification:
 
         self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type]["deploy"][category].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, is_anomaly=True, category=category)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -208,6 +211,7 @@ class TestRegressionAnomalyClassification:
     def test_nncf_optimize_eval(self, reg_cfg, template, tmp_dir_path, category):
         if category in ["transistor", "cable", "bottle"]:
             pytest.skip("Issue#2189: Anomaly task sometimes shows performance drop")
+        test_type = "nncf"
         self.performance[template.name] = {}
         category_data_args = self._apply_category(reg_cfg.args, category)
 
@@ -226,7 +230,7 @@ class TestRegressionAnomalyClassification:
             reg_cfg.otx_dir,
             category_data_args,
             threshold=0.01,
-            criteria=reg_cfg.config_dict["regression_criteria"]["nncf"][category],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -234,7 +238,7 @@ class TestRegressionAnomalyClassification:
 
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type]["nncf"][category].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, is_anomaly=True, category=category)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -242,6 +246,7 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_ptq_optimize_eval(self, reg_cfg, template, tmp_dir_path, category):
+        test_type = "ptq"
         self.performance[template.name] = {}
         category_data_args = self._apply_category(reg_cfg.args, category)
 
@@ -256,7 +261,7 @@ class TestRegressionAnomalyClassification:
             tmp_dir_path,
             reg_cfg.otx_dir,
             category_data_args,
-            criteria=reg_cfg.config_dict["regression_criteria"]["ptq"][category],
+            criteria=reg_cfg.config_dict["regression_criteria"][test_type][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
@@ -264,6 +269,6 @@ class TestRegressionAnomalyClassification:
 
         self.performance[template.name][TIME_LOG["ptq_time"]] = round(ptq_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["ptq_eval_time"]] = round(ptq_eval_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type]["ptq"][category].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, is_anomaly=True, category=category)
 
         assert test_result["passed"] is True, test_result["log"]
