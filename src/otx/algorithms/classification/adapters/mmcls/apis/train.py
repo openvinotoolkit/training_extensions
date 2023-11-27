@@ -97,7 +97,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
         if "bf16_training" in cfg.optimizer_config:
             dtype = torch.bfloat16 if cfg.optimizer_config.pop("bf16_training") else torch.float32
         model.train()
-        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer)
+        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     if cfg.get("runner") is None:
         cfg.runner = {"type": "EpochBasedRunner", "max_epochs": cfg.total_epochs}
