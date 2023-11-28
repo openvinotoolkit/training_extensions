@@ -22,7 +22,8 @@ class XPUCallback(Callback):
 
     def on_train_batch_start(self, trainer, pl_module, batch, batch_idx):
         for k in batch:
-            batch[k] = batch[k].to(self.device)
+            if not isinstance(batch[k], list):
+                batch[k] = batch[k].to(self.device)
 
     def on_validation_batch_start(self, trainer, pl_module, batch, batch_idx, dataloader_idx):
         for k in batch:
