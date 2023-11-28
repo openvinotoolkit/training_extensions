@@ -2,4 +2,4 @@ TestToolsOTXSegmentation:
   nncf:
     number_of_fakequantizers: 1138
   ptq:
-    number_of_fakequantizers: 1026
+    number_of_fakequantizers: 942
