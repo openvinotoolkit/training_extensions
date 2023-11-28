@@ -1,0 +1,21 @@
+_target_: otx.core.model.module.classification.OTXClassificationLitModule
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 1e-6
+  weight_decay: 1e-5
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.PolynomialLR
+  _partial_: true
+  total_iters: 5
+  power: 1.0
+  last_epoch: -1
+
+otx_model:
+  _target_: otx.core.model.entity.segmentation.MMSegCompatibleModel
+  config: ???
+
+# compile model for faster training with pytorch 2.0
+torch_compile: false
