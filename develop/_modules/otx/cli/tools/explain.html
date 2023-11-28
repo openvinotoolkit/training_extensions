@@ -287,12 +287,14 @@
     <span class="n">parser</span><span class="p">,</span> <span class="n">hyper_parameters</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">get_parser_and_hprams_data</span><span class="p">()</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--explain-data-roots&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--input&quot;</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Comma-separated paths to explain data folders.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--save-explanation-to&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">&quot;saliency_dump&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output path for explanation images.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
@@ -360,10 +362,7 @@
             <span class="s2">&quot;Please adjust training pipeline or use different model-data pair.&quot;</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">explained_image_counter</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Saliency maps saved to </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">save_explanation_to</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">explained_image_counter</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;out of </span><span class="si">{</span><span class="n">num_images</span><span class="si">}</span><span class="s2"> images.&quot;</span>
-        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saliency maps saved to </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">explained_image_counter</span><span class="si">}</span><span class="s2"> out of </span><span class="si">{</span><span class="n">num_images</span><span class="si">}</span><span class="s2"> images.&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.tools.explain.html#otx.cli.tools.explain.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
@@ -406,10 +405,10 @@
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">explain_algorithm</span><span class="si">}</span><span class="s2"> currently not supported. </span><span class="se">\</span>
 <span class="s2">            Currently only support </span><span class="si">{</span><span class="n">SUPPORTED_EXPLAIN_ALGORITHMS</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">save_explanation_to</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">save_explanation_to</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">image_files</span> <span class="o">=</span> <span class="n">get_image_files</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">explain_data_roots</span><span class="p">)</span>
+    <span class="n">image_files</span> <span class="o">=</span> <span class="n">get_image_files</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
     <span class="n">dataset_to_explain</span> <span class="o">=</span> <span class="n">get_explain_dataset_from_filelist</span><span class="p">(</span><span class="n">image_files</span><span class="p">)</span>
     <span class="n">explain_predicted_classes</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">explain_all_classes</span>
     <span class="n">explain_parameters</span> <span class="o">=</span> <span class="n">ExplainParameters</span><span class="p">(</span>
@@ -438,7 +437,7 @@
                 <span class="n">process_saliency_maps</span><span class="o">=</span><span class="n">explain_parameters</span><span class="o">.</span><span class="n">process_saliency_maps</span><span class="p">,</span>
                 <span class="n">img</span><span class="o">=</span><span class="n">explained_data</span><span class="o">.</span><span class="n">numpy</span><span class="p">,</span>
                 <span class="n">saliency_map</span><span class="o">=</span><span class="n">saliency_data</span><span class="o">.</span><span class="n">numpy</span><span class="p">,</span>
-                <span class="n">save_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">save_explanation_to</span><span class="p">,</span>
+                <span class="n">save_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span>
                 <span class="n">fname</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span>
                 <span class="n">weight</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">overlay_weight</span><span class="p">,</span>
             <span class="p">)</span>

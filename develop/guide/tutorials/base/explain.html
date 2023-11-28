@@ -405,9 +405,9 @@ created in the previous step.</p>
 </pre></div>
 </div>
 <p>2. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> returns saliency maps (heatmaps with red colored areas of focus)
-at the path specified by <code class="docutils literal notranslate"><span class="pre">--save-explanation-to</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">explain</span> <span class="o">--</span><span class="n">explain</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span><span class="o">/</span><span class="n">splitted_dataset</span><span class="o">/</span><span class="n">val</span><span class="o">/</span> \
-            <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">explanation</span><span class="o">-</span><span class="n">to</span> <span class="n">outputs</span><span class="o">/</span><span class="n">explanation</span> \
+at the path specified by <code class="docutils literal notranslate"><span class="pre">--output</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">explain</span> <span class="o">--</span><span class="nb">input</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span><span class="o">/</span><span class="n">splitted_dataset</span><span class="o">/</span><span class="n">val</span><span class="o">/</span> \
+            <span class="o">--</span><span class="n">output</span> <span class="n">outputs</span><span class="o">/</span><span class="n">explanation</span> \
             <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">outputs</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span>
 </pre></div>
 </div>
@@ -428,7 +428,7 @@ we can define the <code class="docutils literal notranslate"><span class="pre">-
 <p>Learn more about Explainable AI and its algorithms in <a class="reference internal" href="../../explanation/additional_features/xai.html"><span class="doc">XAI explanation section</span></a></p>
 </div>
 <p>4. As a result we will get a folder with a pair of generated
-images for each image in <code class="docutils literal notranslate"><span class="pre">--explain-data-roots</span></code>:</p>
+images for each image in <code class="docutils literal notranslate"><span class="pre">--input</span></code>:</p>
 <ul class="simple">
 <li><p>saliency map - where red color means more attention of the model</p></li>
 <li><p>overlay - where the saliency map is combined with the original image:</p></li>
