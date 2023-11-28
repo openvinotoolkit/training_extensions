@@ -22,12 +22,12 @@ created in the previous step.
   . venv/otx/bin/activate
 
 2. ``otx explain`` returns saliency maps (heatmaps with red colored areas of focus) 
-at the path specified by ``--save-explanation-to``.
+at the path specified by ``--output``.
 
 .. code-block::
 
-    otx explain --explain-data-roots otx-workspace-DETECTION/splitted_dataset/val/ \
-                --save-explanation-to outputs/explanation \
+    otx explain --input otx-workspace-DETECTION/splitted_dataset/val/ \
+                --output outputs/explanation \
                 --load-weights outputs/weights.pth
 
 3. To specify the algorithm of saliency map creation for classification, 
@@ -48,7 +48,7 @@ For detection task, we can choose between the following methods:
 
 
 4. As a result we will get a folder with a pair of generated 
-images for each image in ``--explain-data-roots``: 
+images for each image in ``--input``: 
 
 - saliency map - where red color means more attention of the model
 - overlay - where the saliency map is combined with the original image:
