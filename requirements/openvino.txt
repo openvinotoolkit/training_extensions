@@ -1,6 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # OpenVINO Requirements.                                                      #
-nncf==2.7.0
+nncf==2.6.0
 onnx==1.13.0
 openvino-model-api==0.1.7
 openvino==2023.2.0
