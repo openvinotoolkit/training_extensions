@@ -572,8 +572,8 @@ class ZeroShotTask(InferenceTask):
         model_info = self.model.state_dict()
         # TODO (sungchul): is there more efficient way not to manually add properties?
         model_info.update({
-            "reference_feats": self.model.reference_feats,
-            "reference_prompts": self.model.reference_prompts,
+            "prompt_getter.reference_feats": self.model.prompt_getter.reference_feats,
+            "prompt_getter.reference_prompts": self.model.prompt_getter.reference_prompts,
         })
         
         buffer = io.BytesIO()
