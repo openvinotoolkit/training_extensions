@@ -63,3 +63,15 @@ __all__ = [
 if is_hpu_available():
     os.environ["PT_HPU_LAZY_MODE"] = "1"
     import habana_frameworks.torch.gpu_migration  # noqa: F401
+
+
+if is_xpu_available():
+    try:
+        import mmcv
+
+        from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_auto_fp16, custom_force_fp32
+
+        mmcv.runner.auto_fp16 = custom_auto_fp16
+        mmcv.runner.force_fp32 = custom_force_fp32
+    except ImportError:
+        pass
