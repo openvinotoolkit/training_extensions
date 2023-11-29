@@ -4,7 +4,7 @@
 """Helper to support MMDET data transform functions."""
 
 from __future__ import annotations
-
+import torch
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -19,6 +19,7 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 
 from .mmcv import MMCVTransformLib
 
@@ -38,10 +39,13 @@ class LoadAnnotations(MMDetLoadAnnotations):
             msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
             raise RuntimeError(msg)
 
-        if self.with_bbox and isinstance(otx_data_entity, DetDataEntity):
+        if self.with_bbox and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity)):
             gt_bboxes = otx_data_entity.bboxes.numpy()
             results["gt_bboxes"] = gt_bboxes
-        if self.with_label and isinstance(otx_data_entity, DetDataEntity):
+        if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
+            gt_masks = otx_data_entity.masks.numpy()
+            results["gt_masks"] = gt_masks
+        if self.with_label and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity)):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
             results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
@@ -53,7 +57,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
 class PackDetInputs(MMDetPackDetInputs):
     """Class to override PackDetInputs LoadAnnotations."""
 
-    def transform(self, results: dict) -> DetDataEntity:
+    def transform(self, results: dict) -> DetDataEntity | InstanceSegDataEntity:
         """Pack MMDet data entity into DetDataEntity."""
         transformed = super().transform(results)
 
@@ -71,16 +75,27 @@ class PackDetInputs(MMDetPackDetInputs):
             canvas_size=img_shape,
         )
         labels = data_samples.gt_instances.labels
+        image_info = ImageInfo(
+                        img_idx=0,
+                        img_shape=img_shape,
+                        ori_shape=ori_shape,
+                        pad_shape=pad_shape,
+                        scale_factor=scale_factor,
+                    )
+
+        if isinstance(results['__otx__'], InstanceSegDataEntity):
+            masks = tv_tensors.Mask(data_samples.gt_instances.masks, dtype=torch.bool)
+            return InstanceSegDataEntity(
+                    image=image,
+                    img_info=image_info,
+                    bboxes=bboxes,
+                    masks=masks,
+                    labels=labels,
+                )
 
         return DetDataEntity(
             image=image,
-            img_info=ImageInfo(
-                img_idx=0,
-                img_shape=img_shape,
-                ori_shape=ori_shape,
-                pad_shape=pad_shape,
-                scale_factor=scale_factor,
-            ),
+            img_info=image_info,
             bboxes=bboxes,
             labels=labels,
         )

@@ -56,5 +56,9 @@ class OTXDatasetFactory:
             from .dataset.detection import OTXDetectionDataset
 
             return OTXDetectionDataset(dm_subset, transforms)
+        elif task == OTXTaskType.INSTANCE_SEGMENTATION:
+            from .dataset.instance_segmentation import OTXInstanceSegDataset
+
+            return OTXInstanceSegDataset(dm_subset, transforms)
 
         raise NotImplementedError(task)
