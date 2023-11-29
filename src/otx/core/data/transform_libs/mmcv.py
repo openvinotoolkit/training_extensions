@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import cv2
 import numpy as np
 from mmcv.transforms import LoadImageFromFile as MMCVLoadImageFromFile
 from mmcv.transforms.builder import TRANSFORMS
@@ -30,6 +31,8 @@ class LoadImageFromFile(MMCVLoadImageFromFile):
 
         if self.to_float32:
             img = img.astype(np.float32)
+        if len(img.shape) == 2:
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
 
         results = {}
         results["img"] = img

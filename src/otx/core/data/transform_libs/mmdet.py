@@ -43,7 +43,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
             results["gt_bboxes"] = gt_bboxes
         if self.with_label and isinstance(otx_data_entity, DetDataEntity):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
-            results["gt_bboxes_labels"] = gt_bboxes_labels
+            results["gt_bboxes_labels"] = gt_bboxes_labels - 1
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
 
         return results
