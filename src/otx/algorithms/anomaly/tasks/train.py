@@ -94,7 +94,6 @@ class TrainingTask(InferenceTask, ITrainingTask):
             callbacks.append(XPUCallback())
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
-
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)
