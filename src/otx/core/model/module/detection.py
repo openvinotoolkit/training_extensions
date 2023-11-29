@@ -59,6 +59,9 @@ class OTXDetectionLitModule(OTXLitModule):
                 log.debug("Cannot log Tensor which is not scalar")
                 continue
 
+            if k != "map_50":
+                continue
+
             self.log(
                 f"{key}/{k}",
                 v,
