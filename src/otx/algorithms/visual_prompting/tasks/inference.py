@@ -29,8 +29,10 @@ from typing import Dict, List, Optional, Union
 import torch
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import TQDMProgressBar
-from otx.api.entities.train_parameters import TrainParameters
+from pytorch_lightning.callbacks import (
+    TQDMProgressBar,
+)
+from pytorch_lightning.loggers import CSVLogger
 
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
@@ -59,16 +61,13 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from pytorch_lightning.callbacks import (
-    TQDMProgressBar,
-)
-from pytorch_lightning.loggers import CSVLogger
 
 logger = get_logger()
 
@@ -92,7 +91,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
-        self.train_type = self.hyper_parameters.algo_backend.train_type
+        self.train_type = self.hyper_parameters.algo_backend.train_type  # type: ignore[attr-defined]
 
         template_file_path = task_environment.model_template.model_template_path
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
@@ -177,10 +176,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         def get_model(config: DictConfig, train_type: TrainType, state_dict: Optional[OrderedDict] = None):
             if config.model.name == "SAM":
                 if train_type == TrainType.Incremental:
-                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import SegmentAnything as VisualPrompter
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
+                        SegmentAnything as VisualPrompter,
+                    )
                 elif train_type == TrainType.Zeroshot:
-                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import ZeroShotSegmentAnything as VisualPrompter
-                
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
+                        ZeroShotSegmentAnything as VisualPrompter,
+                    )
+
                 model = VisualPrompter(config=config, state_dict=state_dict)
             else:
                 raise NotImplementedError(
@@ -246,7 +249,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         logger.info("Performing inference on the validation set using the base torch model.")
         self.model = self.load_model(otx_model=self.task_environment.model)
-        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset, train_type=self.train_type)
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
 
         logger.info("Inference Configs '%s'", self.config)
 
@@ -476,13 +481,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
 class ZeroShotTask(InferenceTask):
     """Learn task for Zero-shot learning.
-    
+
     **There are two ways to be decided:
     1. use it independently <-- temporarily current setting
     2. use it depending on template
-    
+
     The objective of this task is to get reference features and export it with decoder modules.
     """
+
     def train(  # noqa: D102
         self,
         dataset: DatasetEntity,
@@ -502,16 +508,18 @@ class ZeroShotTask(InferenceTask):
 
         self.model = self.load_model(otx_model=self.task_environment.model)
 
-        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset, train_type=self.train_type)
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
 
         self.trainer = Trainer(
-            logger=CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp),
-            **self.config.trainer)
+            logger=CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp), **self.config.trainer
+        )
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         # save resulting model
         self.save_model(output_model)
-        
+
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """Perform inference on a dataset.
 
@@ -524,43 +532,23 @@ class ZeroShotTask(InferenceTask):
         """
         logger.info("Performing inference on the validation set using the base torch model.")
         self.model = self.load_model(otx_model=self.task_environment.model)
-        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset, train_type=self.train_type)
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
 
         logger.info("Inference Configs '%s'", self.config)
 
         # Callbacks
-        inference_callback = ZeroShotInferenceCallback(otx_dataset=dataset, label_schema=self.task_environment.label_schema)
+        inference_callback = ZeroShotInferenceCallback(
+            otx_dataset=dataset, label_schema=self.task_environment.label_schema
+        )
         callbacks = [TQDMProgressBar(), inference_callback]
 
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
 
         return inference_callback.otx_dataset
-        
-    def export(
-        self,
-        export_type: ExportType,
-        output_model: ModelEntity,
-        precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = False,
-    ):
-        """Export"""
-        pass
-    
-    def learn(
-        self,
-        dataset: DatasetEntity,
-        inference_parameters: InferenceParameters,
-        export_type: ExportType,
-        output_model: ModelEntity,
-        precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = False,
-    ):
-        """Get reference features from given images and prompts and export both reference features and decoders."""
-        self._initialize_reference()
-        
-        self.export(export_type, output_model, precision, dump_features)
-        
+
     def save_model(self, output_model: ModelEntity) -> None:
         """Save the model after training is completed.
 
@@ -568,14 +556,16 @@ class ZeroShotTask(InferenceTask):
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         logger.info("Saving the model weights and reference features.")
-        
+
         model_info = self.model.state_dict()
         # TODO (sungchul): is there more efficient way not to manually add properties?
-        model_info.update({
-            "prompt_getter.reference_feats": self.model.prompt_getter.reference_feats,
-            "prompt_getter.reference_prompts": self.model.prompt_getter.reference_prompts,
-        })
-        
+        model_info.update(
+            {
+                "prompt_getter.reference_feats": self.model.prompt_getter.reference_feats,
+                "prompt_getter.reference_prompts": self.model.prompt_getter.reference_prompts,
+            }
+        )
+
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())

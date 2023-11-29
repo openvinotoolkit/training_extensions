@@ -58,7 +58,9 @@ class ResizeLongestSide:
         return np.array(resize(to_pil_image(image), target_size))
 
     @classmethod
-    def apply_coords(cls, coords: Union[np.ndarray, Tensor], original_size: Union[List[Any], Tensor], target_length: int) -> np.ndarray:
+    def apply_coords(
+        cls, coords: Union[np.ndarray, Tensor], original_size: Union[List[Any], Tensor], target_length: int
+    ) -> np.ndarray:
         """Expects a numpy array of length 2 in the final dimension.
 
         Requires the original image size in (H, W) format.

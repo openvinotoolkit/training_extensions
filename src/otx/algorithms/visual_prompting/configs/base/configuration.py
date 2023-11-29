@@ -42,7 +42,7 @@ class VisualPromptingBaseConfig(BaseConfig):
     class __LearningParameters(BaseConfig.BaseLearningParameters):
         header = string_attribute("Learning Parameters")
         description = header
-        
+
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
         header = string_attribute("Parameters for the OTX algo-backend")
