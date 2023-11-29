@@ -58,9 +58,6 @@ class CustomYOLOX(SAMDetectorMixin, DetLossDynamicsTrackingMixin, L2SPDetectorMi
 
     def extract_feat(self, img):
         """Directly extract features from the backbone+neck."""
-        # workaround for xpu device, since the input converted to fp16 by mmcv
-        if "xpu" in str(img.device) and img.dtype == torch.float16:
-            img = img.to(torch.bfloat16)
         x = self.backbone(img)
         if self.with_neck:
             x = self.neck(x)
