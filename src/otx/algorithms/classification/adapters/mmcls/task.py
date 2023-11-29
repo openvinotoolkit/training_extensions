@@ -19,7 +19,6 @@ from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -31,6 +30,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     EigenCamHook,
     FeatureVectorHook,
     ReciproCAMHook,
+    ViTFeatureVectorHook,
     ViTReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -53,7 +53,6 @@ from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -61,6 +60,7 @@ from otx.api.entities.model import ModelPrecision
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.utils.logger import get_logger
 
 from .configurer import (
     ClassificationConfigurer,
@@ -170,6 +170,7 @@ class MMClassificationTask(OTXClassificationTask):
         elif self._hierarchical:
             options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
+            options_for_patch_datasets["label_schema"] = self._task_environment.label_schema
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:
             options_for_patch_datasets["type"] = "SelfSLDataset"
@@ -225,7 +226,6 @@ class MMClassificationTask(OTXClassificationTask):
             )
         )
 
-        dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
         self._init_task()
@@ -274,16 +274,16 @@ class MMClassificationTask(OTXClassificationTask):
         forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook]
         if model_type == "VisionTransformer":
             forward_explainer_hook = ViTReciproCAMHook(feature_model)
-        elif (
-            not dump_saliency_map or model_type in TRANSFORMER_BACKBONES
-        ):  # TODO: remove latter "or" condition after resolving Issue#2098
+        elif not dump_saliency_map:
             forward_explainer_hook = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if (
-            not dump_features or model_type in TRANSFORMER_BACKBONES
-        ):  # TODO: remove latter "or" condition after resolving Issue#2098
-            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+
+        feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook]
+        if model_type == "VisionTransformer":
+            feature_vector_hook = ViTFeatureVectorHook(feature_model)
+        elif not dump_saliency_map:
+            feature_vector_hook = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
 
@@ -366,6 +366,10 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        if not torch.cuda.is_available():
+            # NOTE: mmcls does not wrap models w/ DP for CPU training not like mmdet
+            # Raw DataContainer "img_metas" is exposed, which results in errors
+            model = build_data_parallel(model, cfg, distributed=False)
         model.train()
 
         if cfg.distributed:

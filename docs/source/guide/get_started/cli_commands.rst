@@ -342,10 +342,10 @@ To use the exported model as an input for ``otx explain``, please dump additiona
 Optimization
 ************
 
-``otx optimize`` optimizes a model using `NNCF <https://github.com/openvinotoolkit/nncf>`_ or `POT <https://docs.openvino.ai/latest/pot_introduction.html>`_ depending on the model format.
+``otx optimize`` optimizes a model using `NNCF <https://github.com/openvinotoolkit/nncf>`_ or `PTQ <https://github.com/openvinotoolkit/nncf#post-training-quantization>`_ depending on the model and transforms it to ``INT8`` format.
 
 - NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch
-- POT optimization used for models exported in the OpenVINO™ IR format
+- PTQ optimization used for models exported in the OpenVINO™ IR format
 
 With the ``--help`` command, you can list additional information:
 
@@ -383,16 +383,16 @@ Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
                                 --output outputs/nncf
 
 
-Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
+Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ PTQ:
 
 .. code-block::
 
     (otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> \
                                 --val-data-roots <path/to/val/root> \
-                                --output outputs/pot
+                                --output outputs/ptq
 
 
-Thus, to use POT pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.
+Thus, to use PTQ pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.
 
 
 ***********
@@ -419,7 +419,7 @@ With the ``--help`` command, you can list additional information, such as its pa
       --test-data-roots TEST_DATA_ROOTS
                             Comma-separated paths to test data folders.
       --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
+                            Load model weights from previously saved checkpoint. It could be a trained/optimized model (with PTQ only) or exported model.
       -o OUTPUT, --output OUTPUT
                             Location where the intermediate output of the task will be stored.
       --workspace WORKSPACE   Path to the workspace where the command will run.
@@ -449,7 +449,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx explain --help
-    usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
+    usage: otx explain [-h] --input INPUT [--output OUTPUT] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -459,9 +459,9 @@ With the ``--help`` command, you can list additional information, such as its pa
 
     optional arguments:
       -h, --help            show this help message and exit
-      --explain-data-roots EXPLAIN_DATA_ROOTS
+      -i INPUT, --input INPUT
                             Comma-separated paths to explain data folders.
-      --save-explanation-to SAVE_EXPLANATION_TO
+      -o OUTPUT, --output OUTPUT
                             Output path for explanation images.
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
@@ -475,13 +475,13 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Weight of the saliency map when overlaying the input image with saliency map.
 
 
-The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
+The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``output`` path:
 
 .. code-block::
 
-    (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
+    (otx) ...$ otx explain SSD --input <path/to/explain/root> \
                                --load-weights <path/to/model_weights> \
-                               --save-explanation-to <path/to/output/root> \
+                               --output <path/to/output/root> \
                                --explain-algorithm classwisesaliencymap \
                                --overlay-weight 0.5
 
@@ -496,9 +496,9 @@ By default, the model is exported to the OpenVINO™ IR format without extra fea
     (otx) ...$ otx export SSD --load-weights <path/to/trained/weights.pth> \
                               --output outputs/openvino/with_features \
                               --dump-features
-    (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
+    (otx) ...$ otx explain SSD --input <path/to/explain/root> \
                                --load-weights outputs/openvino/with_features \
-                               --save-explanation-to <path/to/output/root> \
+                               --output <path/to/output/root> \
                                --explain-algorithm classwisesaliencymap \
                                --overlay-weight 0.5
 
@@ -532,7 +532,7 @@ Demonstration
       -i INPUT, --input INPUT
                             Source of input data: images folder, image, webcam and video.
       --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
+                            Load model weights from previously saved checkpoint.It could be a trained/optimized model (with PTQ only) or exported model.
       --fit-to-size FIT_TO_SIZE FIT_TO_SIZE
                             Width and Height space-separated values. Fits displayed images to window with specified Width and Height. This options applies to result visualisation only.
       --loop                Enable reading the input in a loop.

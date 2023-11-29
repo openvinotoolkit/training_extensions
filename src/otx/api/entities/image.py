@@ -10,6 +10,7 @@ from typing import Optional, Tuple, Callable, Union
 import cv2
 import imagesize
 import numpy as np
+from PIL import Image as PILImage
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.media import IMedia2DEntity
@@ -91,7 +92,12 @@ class Image(IMedia2DEntity):
             np.ndarray: NumPy representation of the image.
         """
         if self.__data is None:
-            return cv2.cvtColor(cv2.imread(self.__file_path), cv2.COLOR_BGR2RGB)
+            try:
+                image = PILImage.open(self.__file_path)
+                image = np.asarray(image.convert("RGB"))
+            except ValueError:
+                image = cv2.cvtColor(cv2.imread(self.__file_path), cv2.COLOR_BGR2RGB)
+            return image
         if callable(self.__data):
             return self.__data()
         return self.__data

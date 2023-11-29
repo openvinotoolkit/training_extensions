@@ -27,7 +27,6 @@ from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -71,6 +70,7 @@ from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -119,6 +119,11 @@ class OTXClassificationTask(OTXTask, ABC):
 
         if self._task_environment.model is not None:
             self._load_model()
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
 
         if hasattr(self._hyperparams.learning_parameters, "input_size"):
             input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
@@ -129,7 +134,7 @@ class OTXClassificationTask(OTXTask, ABC):
     def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
         """Check whether the current training mode is multi-label or not."""
         # NOTE: In the current Geti, multi-label should have `___` symbol for all group names.
-        find_multilabel_symbol = ["___" in i.name for i in label_groups]
+        find_multilabel_symbol = ["___" in getattr(i, "name", "") for i in label_groups]
         return (
             (len(label_groups) > 1) and (len(label_groups) == len(all_labels)) and (False not in find_multilabel_symbol)
         )

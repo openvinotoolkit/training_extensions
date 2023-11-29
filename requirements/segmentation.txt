@@ -2,9 +2,9 @@
 # Segmentation Requirements.
 mmcv-full==1.7.0
 mmsegmentation==0.30.0
-scikit-image
+scikit-image # specifying different version w.r.t python_version is not effect
 mmdeploy==0.14.0
 timm==0.6.12
-pytorchcv
+pytorchcv==0.0.67
 einops==0.6.1
-yapf<0.40.0  # it should be removed after https://github.com/google/yapf/issues/1118 is solved
+yapf<0.40.0  # it should be removed after https://github.com/google/yapf/issues/1118 is solved 

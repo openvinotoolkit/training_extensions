@@ -44,6 +44,7 @@ from otx.cli.utils.parser import (
 )
 from otx.cli.utils.report import get_otx_report
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import config_logger
 
 
 def get_args():
@@ -199,6 +200,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode=mode)
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 import torch
-from pathlib import Path
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry

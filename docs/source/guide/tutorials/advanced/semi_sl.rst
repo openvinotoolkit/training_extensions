@@ -28,7 +28,7 @@ The process has been tested on the following configuration:
 
   To learn how to export the trained model, refer to `classification export <../base/how_to_train/classification.html#export>`__.
 
-  To learn how to optimize the trained model (.xml) with OpenVINO™ POT, refer to `classification optimization <../base/how_to_train/classification.html#optimization>`__.
+  To learn how to optimize the trained model (.xml) with OpenVINO™ PTQ, refer to `classification optimization <../base/how_to_train/classification.html#optimization>`__.
 
   Currently, OpenVINO™ NNCF optimization doesn't support a full Semi-SL training algorithm. The accuracy-aware optimization will be executed on labeled data only.
   So, the performance drop may be more noticeable than after ordinary supervised training.

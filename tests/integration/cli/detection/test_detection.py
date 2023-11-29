@@ -42,6 +42,8 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "4",
+        "--postprocessing.max_num_detections",
+        "200",
     ],
 }
 
@@ -83,7 +85,7 @@ templates = []
 for template in _templates:
     if template.name not in ["YOLOX-S", "YOLOX-X"]:
         templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
-    
+
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [

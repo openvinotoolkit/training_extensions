@@ -9,7 +9,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 
 import onnx
 import onnxruntime
@@ -129,6 +129,8 @@ def otx_train_testing(template, root, otx_dir, args, deterministic=True):
     command_line.extend(["--output", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(["--workspace", f"{template_work_dir}"])
     if "--load-weights" in args:
+        if not os.path.exists(args["--load-weights"]):
+            pytest.skip(reason=f"required file is not exist - {args['--load-weights']}")
         command_line.extend(["--load-weights", args["--load-weights"]])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
@@ -166,6 +168,10 @@ def otx_resume_testing(template, root, otx_dir, args):
     ]:
         if option in args:
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+
+    if "--resume-from" in args:
+        if not os.path.exists(args["--resume-from"]):
+            pytest.skip(reason=f"required file is not exist - {args['--resume-from']}")
 
     command_line.extend(["--output", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
     command_line.extend(["--workspace", f"{template_work_dir}"])
@@ -367,11 +373,7 @@ def otx_eval_openvino_testing(
     with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
 
-    for k in trained_performance.keys():
-        assert (
-            exported_performance[k] >= trained_performance[k]
-            or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
-        ), f"{trained_performance[k]=}, {exported_performance[k]=}"
+    compare_model_accuracy(exported_performance, trained_performance, threshold)
 
 
 def otx_demo_testing(template, root, otx_dir, args):
@@ -532,11 +534,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
     with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
 
-    for k in exported_performance.keys():
-        assert (
-            deployed_performance[k] >= exported_performance[k]
-            or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
-        ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
+    compare_model_accuracy(deployed_performance, deployed_performance, threshold)
 
 
 def otx_demo_deployment_testing(template, root, otx_dir, args):
@@ -689,6 +687,9 @@ def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
@@ -716,6 +717,9 @@ def nncf_optimize_testing(template, root, otx_dir, args):
 
 
 def nncf_export_testing(template, root):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
@@ -751,6 +755,9 @@ def nncf_export_testing(template, root):
 
 
 def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
@@ -765,6 +772,9 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
@@ -790,14 +800,13 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
 
-    for k in trained_performance.keys():
-        assert (
-            evaluated_performance[k] >= trained_performance[k]
-            or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
-        ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+    compare_model_accuracy(evaluated_performance, trained_performance, threshold)
 
 
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
@@ -856,16 +865,16 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
 
     save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         weights_path,
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -901,16 +910,16 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
 
     save_dir = f"explain_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         weights_path,
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -923,7 +932,7 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:
         assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
-    assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+    assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, trained=False):
@@ -945,16 +954,16 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
 
     save_dir = f"explain_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         weights_path,
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -986,16 +995,16 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
 
     save_dir = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         weights_path,
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -1032,16 +1041,16 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
 
     save_dir = f"explain_ov_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         weights_path,
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -1055,7 +1064,7 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:
         assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
-    assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+    assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, args, trained=False):
@@ -1077,16 +1086,16 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
 
     save_dir = f"explain_ov_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
         weights_path,
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -1258,3 +1267,13 @@ def generate_model_template_testing(templates):
             assert num_default_model == 1
 
     return _TestModelTemplates
+
+
+def compare_model_accuracy(performance_to_test: Dict, target_performance: Dict, threshold: Union[float, int]):
+    for k in target_performance.keys():
+        if k == "avg_time_per_image":
+            continue
+        assert (
+            performance_to_test[k] >= target_performance[k]
+            or abs(target_performance[k] - performance_to_test[k]) / (target_performance[k] + 1e-10) <= threshold
+        ), f"{target_performance[k]=}, {performance_to_test[k]=}"

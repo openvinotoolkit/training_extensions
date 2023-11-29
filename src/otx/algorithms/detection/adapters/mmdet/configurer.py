@@ -13,12 +13,12 @@ from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMix
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
 )
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
     patch_tiling,
     should_cluster_anchors,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -37,6 +37,25 @@ class DetectionConfigurer(BaseConfigurer):
         """Configuration for model config."""
         super().configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
         self.configure_regularization(cfg)
+        self.configure_max_num_detections(cfg, kwargs.get("max_num_detections", 0))
+
+    def configure_max_num_detections(self, cfg, max_num_detections):
+        """Patch config for maximum number of detections."""
+        if max_num_detections > 0:
+            logger.info(f"Model max_num_detections: {max_num_detections}")
+            test_cfg = cfg.model.test_cfg
+            test_cfg.max_per_img = max_num_detections
+            test_cfg.nms_pre = max_num_detections * 10
+            # Special cases for 2-stage detectors (e.g. MaskRCNN)
+            if hasattr(test_cfg, "rpn"):
+                test_cfg.rpn.nms_pre = max_num_detections * 20
+                test_cfg.rpn.max_per_img = max_num_detections * 10
+            if hasattr(test_cfg, "rcnn"):
+                test_cfg.rcnn.max_per_img = max_num_detections
+            train_cfg = cfg.model.train_cfg
+            if hasattr(train_cfg, "rpn_proposal"):
+                train_cfg.rpn_proposal.nms_pre = max_num_detections * 20
+                train_cfg.rpn_proposal.max_per_img = max_num_detections * 10
 
     def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""

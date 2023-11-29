@@ -92,6 +92,7 @@ We support the following ready-to-use model templates:
 Above table can be found using the following command
 
 .. code-block::
+
     $ otx find --task detection
 
 `MobileNetV2-ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases.
@@ -121,12 +122,33 @@ In addition to these models, we supports experimental models for object detectio
 
     For using experimental templates, you should specify full path of experimental template. Ex) otx build src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml --task detection
 
+In addition to these models, we supports experimental models for object detection. These experimental models will be changed to official models within a few releases.
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                                                               | Name                | Complexity (GFLOPs) | Model size (MB) |
++===========================================================================================================================================================================================================================+=====================+=====================+=================+
+| `Custom_Object_Detection_Gen3_Deformable_DETR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml>`_  |   Deformable_DETR   | 165                 | 157.0           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_DINO <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml>`_                        |        DINO         | 235                 | 182.0           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_ResNeXt101_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml>`_           |   ResNeXt101-ATSS   | 434.75              | 344.0           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+
+`Deformable_DETR <https://arxiv.org/abs/2010.04159>`_ is `DETR <https://arxiv.org/abs/2005.12872>`_ based model, and it solves slow convergence problem of DETR. `DINO <https://arxiv.org/abs/2203.03605>`_ improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO.
+Although transformer based models show notable performance on various object detection benchmark, CNN based model still show good performance with proper latency.
+Therefore, we added a new experimental CNN based method, ResNeXt101-ATSS. ATSS still shows good performance among `RetinaNet <https://arxiv.org/abs/1708.02002>`_ based models. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
+
+.. note::
+
+    For using experimental templates, you should specify full path of experimental template. Ex) otx build src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml --task detection
+
 Besides this, we support public backbones from `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcls <https://github.com/open-mmlab/mmclassification>`_ and `OpenVino Model Zoo <https://github.com/openvinotoolkit/open_model_zoo>`_.
 Please, refer to the :doc:`tutorial <../../../tutorials/advanced/backbones>` how to customize models and run public backbones.
 
 To see which public backbones are available for the task, the following command can be executed:
 
 .. code-block::
+
     $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
 In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.

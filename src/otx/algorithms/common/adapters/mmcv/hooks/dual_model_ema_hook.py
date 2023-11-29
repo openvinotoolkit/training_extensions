@@ -9,7 +9,7 @@ import torch
 from mmcv.parallel import is_module_wrapper
 from mmcv.runner import HOOKS, Hook
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -71,16 +71,17 @@ class DualModelEMAHook(Hook):
         self.src_model = getattr(model, self.src_model_name, None)
         self.dst_model = getattr(model, self.dst_model_name, None)
         if self.src_model and self.dst_model:
+            self.enabled = True
             self.src_params = self.src_model.state_dict(keep_vars=True)
             self.dst_params = self.dst_model.state_dict(keep_vars=True)
+            if runner.epoch == 0 and runner.iter == 0:
+                self._copy_model(sync_model=True)
+                logger.info("Initialized student model by teacher model")
+                logger.info(f"model_s model_t diff: {self._diff_model()}")
 
-    def before_train_epoch(self, runner):
-        """Momentum update."""
-        if runner.epoch + 1 == self.start_epoch:
-            self._copy_model()
-            self.enabled = True
-
-        if self.epoch_momentum > 0.0 and self.enabled:
+    def before_epoch(self, runner):
+        """Compute adaptive EMA momentum."""
+        if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum
             iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
@@ -91,6 +92,12 @@ class DualModelEMAHook(Hook):
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
         if not self.enabled or (runner.iter % self.interval != 0):
+            # Skip update
+            return
+
+        if runner.epoch + 1 < self.start_epoch:
+            # Just copy parameters before start epoch
+            self._copy_model()
             return
 
         # EMA
@@ -107,12 +114,15 @@ class DualModelEMAHook(Hook):
             model = model.module
         return model
 
-    def _copy_model(self):
+    def _copy_model(self, sync_model=False):
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 if not name.startswith("ema_"):
                     dst_param = self.dst_params[name]
-                    dst_param.data.copy_(src_param.data)
+                    if sync_model:
+                        src_param.data.copy_(dst_param.data)
+                    else:
+                        dst_param.data.copy_(src_param.data)
 
     def _ema_model(self):
         momentum = min(self.momentum, 1.0)
