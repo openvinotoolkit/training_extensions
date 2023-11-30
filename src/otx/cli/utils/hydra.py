@@ -28,9 +28,7 @@ def configure_hydra_outputs(cfg: DictConfig) -> None:
         None
     """
     output_dir = Path(cfg.base.output_dir).resolve()
-    cfg.hydra.job_logging.handlers.file.filename = output_dir / f"{cfg.hydra.job.name}.log"
-    cfg.hydra.runtime.output_dir = output_dir
-    HydraConfig.instance().set_config(cfg)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Configure Logger & logging outputs
     configure_log(cfg.hydra.job_logging, cfg.hydra.verbose)
