@@ -4,22 +4,24 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from collections import OrderedDict
 from typing import Optional, Dict, Any
 
 import pytest
 from omegaconf import DictConfig
 
-from otx.algorithms.visual_prompting.tasks.inference import InferenceTask
+from otx.algorithms.visual_prompting.tasks.inference import InferenceTask, ZeroShotTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.entities.metrics import NullPerformance
 from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from otx.api.entities.resultset import ResultSetEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.configs.training_base import TrainType
+from otx.api.entities.train_parameters import TrainParameters
 from tests.unit.algorithms.visual_prompting.test_helpers import (
     generate_visual_prompting_dataset,
     init_environment,
+    MockImageEncoder,
 )
 
 logger = get_logger()
@@ -29,9 +31,10 @@ class TestInferenceTask:
     @pytest.fixture
     def load_inference_task(self, tmpdir, mocker):
         def _load_inference_task(
-            output_path: Optional[str] = str(tmpdir.mkdir("visual_prompting_training_test")),
+            output_path: Optional[str] = str(tmpdir.mkdir("visual_prompting_inference_test")),
             path: Optional[str] = None,
             resume: bool = False,
+            mode: str = "visual_prompt",
         ):
             if path is None:
                 mocker_model = None
@@ -41,7 +44,7 @@ class TestInferenceTask:
                 mocker.patch.dict(mocker_model.model_adapters, {"path": path, "resume": resume})
 
             mocker.patch("pathlib.Path.write_text")
-            self.task_environment = init_environment(mocker_model)
+            self.task_environment = init_environment(mocker_model, mode=mode)
 
             return InferenceTask(self.task_environment, output_path)
 
@@ -107,6 +110,22 @@ class TestInferenceTask:
         else:
             mocker_io_bytes_io.assert_called_once()
             mocker_torch_load.assert_called_once()
+
+    @e2e_pytest_unit
+    def test_load_model_zeroshot(self, mocker, load_inference_task):
+        """Test load_model when zero-shot."""
+        mocker_segment_anything = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.ZeroShotSegmentAnything"
+        )
+
+        inference_task = load_inference_task(mode="zero_shot")
+
+        assert inference_task.hyper_parameters.algo_backend.train_type == TrainType.Zeroshot
+
+        model = inference_task.load_model(otx_model=inference_task.task_environment.model)
+
+        mocker_segment_anything.assert_called_once()
+        assert "ZeroShotSegmentAnything" in str(model)
 
     @e2e_pytest_unit
     def test_infer(self, mocker, load_inference_task):
@@ -210,3 +229,71 @@ class TestInferenceTask:
             assert "visual_prompting_decoder.xml" in output_model.model_adapters
 
         assert not output_model.has_xai
+
+
+class TestZeroShotTask:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmpdir, mocker):
+        mocker.patch("pathlib.Path.write_text")
+        self.task_environment = init_environment(mode="zero_shot")
+
+        self.output_path = str(tmpdir.mkdir("visual_prompting_zeroshot_test"))
+
+        self.zero_shot_task = ZeroShotTask(self.task_environment, self.output_path)
+
+    @e2e_pytest_unit
+    def test_train(self, mocker):
+        """Test train."""
+        mocker_trainer = mocker.patch("otx.algorithms.visual_prompting.tasks.inference.Trainer")
+        mocker_save = mocker.patch("torch.save")
+        mocker.patch.object(self.zero_shot_task, "model_info")
+
+        dataset = generate_visual_prompting_dataset()
+        output_model = ModelEntity(
+            dataset,
+            self.task_environment.get_model_configuration(),
+        )
+
+        self.zero_shot_task.train(dataset, output_model, TrainParameters())
+
+        mocker_trainer.assert_called_once()
+        mocker_save.assert_called_once()
+        assert isinstance(output_model.performance, NullPerformance)
+        assert output_model.model_adapters.get("weights.pth", None)
+        assert output_model.model_adapters.get("label_schema.json", None)
+
+    @e2e_pytest_unit
+    def test_infer(self, mocker):
+        """Test infer."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
+        mocker_trainer = mocker.patch("otx.algorithms.visual_prompting.tasks.inference.Trainer")
+
+        dataset = generate_visual_prompting_dataset()
+        model = ModelEntity(dataset, self.zero_shot_task.task_environment.get_model_configuration())
+
+        self.zero_shot_task.infer(dataset, model)
+
+        mocker_trainer.assert_called_once()
+
+    @e2e_pytest_unit
+    def test_save_model(self, mocker):
+        """Test save_model."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
+
+        self.zero_shot_task.model = MockImageEncoder()
+        mocker_otx_model = mocker.patch("otx.api.entities.model.ModelEntity")
+        mocker_io_bytes_io = mocker.patch("io.BytesIO")
+        mocker_torch_save = mocker.patch("torch.save")
+
+        self.zero_shot_task.model.prompt_getter = mocker.MagicMock()
+        self.zero_shot_task.model.prompt_getter.reference_feats.return_value = "reference_feats"
+        self.zero_shot_task.model.prompt_getter.reference_prompts.return_value = "reference_prompts"
+
+        self.zero_shot_task.save_model(mocker_otx_model)
+
+        mocker_io_bytes_io.assert_called_once()
+        mocker_torch_save.assert_called_once()
