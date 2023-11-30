@@ -13,11 +13,8 @@ import os
 
 import timm
 from mmengine.runner import load_checkpoint
-from torch import nn
-
-
 from mmpretrain.registry import MODELS
-
+from torch import nn
 
 PRETRAINED_ROOT = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/"
 pretrained_urls = {

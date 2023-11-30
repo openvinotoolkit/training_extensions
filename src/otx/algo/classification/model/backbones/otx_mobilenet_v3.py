@@ -11,12 +11,10 @@ import math
 import os
 
 import torch.nn.functional as F
-from mmpretrain.models.utils import make_divisible
 from mmengine.runner import load_checkpoint
-from torch import nn
-
+from mmpretrain.models.utils import make_divisible
 from mmpretrain.registry import MODELS
-
+from torch import nn
 
 pretrained_root = "https://github.com/d-li14/mobilenetv3.pytorch/blob/master/pretrained/"
 pretrained_urls = {
@@ -112,7 +110,6 @@ class SELayer(nn.Module):
 
     def forward(self, x):
         """Forward."""
-
         # with no_nncf_se_layer_context():
         b, c, _, _ = x.size()
         y = self.avg_pool(x).view(b, c)
@@ -122,7 +119,6 @@ class SELayer(nn.Module):
 
 def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
     """Conv 3x3 layer with batch-norm."""
-
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
         nn.BatchNorm2d(oup) if not IN_conv1 else nn.InstanceNorm2d(oup, affine=True),
@@ -132,7 +128,6 @@ def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
 
 def conv_1x1_bn(inp, oup, loss="softmax"):
     """Conv 1x1 layer with batch-norm."""
-
     return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
         nn.BatchNorm2d(oup),
@@ -196,7 +191,6 @@ class InvertedResidual(nn.Module):
 
     def forward(self, x):
         """Forward."""
-
         if self.identity:
             return x + self.conv(x)
         return self.conv(x)
@@ -242,7 +236,7 @@ class MobileNetV3Base(ModelInterface):
     def forward(self, x, return_featuremaps=False, get_embeddings=False, gt_labels=None):
         """Forward."""
         if self.input_IN is not None:
-            x = self.input_IN(x) 
+            x = self.input_IN(x)
 
         y = self.extract_features(x)
         if return_featuremaps:
@@ -284,13 +278,11 @@ class MobileNetV3(MobileNetV3Base):
 
     def extract_features(self, x):
         """Extract features."""
-
         y = self.conv(self.features(x))
         return (y, )
 
     def infer_head(self, x, skip_pool=False):
         """Inference head."""
-
         if not skip_pool:
             glob_features = self._glob_feature_vector(x, self.pooling_type, reduce_dims=False)
         else:
@@ -301,7 +293,6 @@ class MobileNetV3(MobileNetV3Base):
 
     def _initialize_weights(self):
         """Initialize weights."""
-
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -360,17 +351,15 @@ class OTXMobileNetV3(MobileNetV3):
         super().__init__(self.cfgs[mode], mode=mode, width_mult=width_mult, **kwargs)
         self.key = "mobilenetv3_" + mode
         if width_mult != 1.0:
-            self.key = self.key + "_{:03d}".format(int(width_mult * 100))  # pylint: disable=consider-using-f-string
+            self.key = self.key + f"_{int(width_mult * 100):03d}"  # pylint: disable=consider-using-f-string
         self.init_weights(self.pretrained)
 
     def forward(self, x):
         """Forward."""
-
         return super().forward(x, return_featuremaps=True)
 
     def init_weights(self, pretrained=None):
         """Initialize weights."""
-
         if isinstance(pretrained, str) and os.path.exists(pretrained):
             load_checkpoint(self, pretrained)
             print(f"init weight - {pretrained}")

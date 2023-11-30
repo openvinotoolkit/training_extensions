@@ -10,13 +10,10 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
 from mmengine.runner import load_checkpoint
+from mmpretrain.registry import MODELS
 from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
-
-
-from mmpretrain.registry import MODELS
-
 
 PRETRAINED_ROOT = "https://github.com/osmr/imgclsmob/releases/download/v0.0.364/"
 pretrained_urls = {
@@ -36,7 +33,6 @@ def conv1x1_block(
     activation="ReLU",
 ):
     """Conv block."""
-
     return ConvModule(
         in_channels=in_channels,
         out_channels=out_channels,
@@ -64,7 +60,6 @@ def conv3x3_block(
     IN_conv=False,
 ):
     """Conv block."""
-
     return ConvModule(
         in_channels=in_channels,
         out_channels=out_channels,
@@ -91,7 +86,6 @@ def dwconv3x3_block(
     activation="ReLU",
 ):
     """Conv block."""
-
     return ConvModule(
         in_channels=in_channels,
         out_channels=out_channels,
@@ -498,7 +492,7 @@ class EfficientNet(nn.Module):
         self.features.add_module(
             "final_block",
             conv1x1_block(
-                in_channels=in_channels, out_channels=final_block_channels, bn_eps=bn_eps, activation=activation
+                in_channels=in_channels, out_channels=final_block_channels, bn_eps=bn_eps, activation=activation,
             ),
         )
         self._init_params()
@@ -514,7 +508,7 @@ class EfficientNet(nn.Module):
         """Forward."""
         if self.input_IN is not None:
             x = self.input_IN(x)
-             
+
         y = self.features(x)
         if return_featuremaps:
             return (y,)
@@ -1094,7 +1088,6 @@ def efficientnet_b8c(in_size=(672, 672), **kwargs):
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
         **kwargs: Addition keyword arguments.
     """
-
     return get_efficientnet(
         version="b8",
         in_size=in_size,

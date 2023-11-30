@@ -25,7 +25,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     def _get_item_impl(self, index: int) -> Optional[MulticlassClsDataEntity]:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        img_data = self._get_img_data(img) 
+        img_data = self._get_img_data(img)
         img_shape = img.size
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]

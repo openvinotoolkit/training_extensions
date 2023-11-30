@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-import cv2
 from typing import TYPE_CHECKING, Callable, Generic, List, Optional, Union
 
+import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
@@ -82,9 +82,9 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if img_data.shape[-1] == 4:
             img_data = cv2.cvtColor(img_data, cv2.COLOR_BGRA2BGR)
         if len(img_data.shape) == 2:
-            img_data = cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR) 
+            img_data = cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR)
         return img_data
- 
+
     @abstractmethod
     def _get_item_impl(self, idx: int) -> Optional[T_OTXDataEntity]:
         pass

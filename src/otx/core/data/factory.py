@@ -30,7 +30,7 @@ class TransformLibFactory:
             from .transform_libs.mmcv import MMCVTransformLib
 
             return MMCVTransformLib.generate(config)
-        
+
         if config.transform_lib_type == TransformLibType.MMPRETRAIN:
             from .transform_libs.mmpretrain import MMPretrainTransformLib
 
@@ -60,7 +60,7 @@ class OTXDatasetFactory:
             from .dataset.classification import OTXMulticlassClsDataset
 
             return OTXMulticlassClsDataset(dm_subset, transforms)
-        
+
         if task == OTXTaskType.DETECTION:
             from .dataset.detection import OTXDetectionDataset
 

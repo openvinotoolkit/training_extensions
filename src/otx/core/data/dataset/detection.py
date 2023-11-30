@@ -27,7 +27,7 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
     def _get_item_impl(self, index: int) -> Optional[DetDataEntity]:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        img_data = self._get_img_data(img) 
+        img_data = self._get_img_data(img)
         img_shape = img.size
 
         bbox_anns = [ann for ann in item.annotations if isinstance(ann, Bbox)]
