@@ -1,0 +1,3 @@
+This repository is under Apache License Version 2.0 licence. However the following files are borrowed from the external sources under different licenses.
+
+- MIT License: `src/otx/core/engine/**/*.py`

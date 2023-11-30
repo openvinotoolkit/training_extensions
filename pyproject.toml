@@ -122,8 +122,6 @@ python_version = 3.8
 ignore_missing_imports = true
 show_error_codes = true
 
-# TODO: Need to be edited
-follow_imports = "skip"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -191,16 +189,27 @@ ignore = [
     # pydocstyle
     # On top of the Google convention, disable `D417`, which requires
     # documentation for every function parameter.
-    "D417", # Missing argument descriptions in the docstring
+    "D417",     # Missing argument descriptions in the docstring
+
+    "D107",     # Missing docstring in `__init__`
+    "D105",     # Missing docstring in magic method
 
     # flake8-annotations
     "ANN101",   # Missing-type-self
     "ANN002",   # Missing type annotation for *args
     "ANN003",   # Missing type annotation for **kwargs
+
+    "ANN102",   # Missing type annotation for `cls` in classmethod
+    "ANN204",   # Missing return type annotation for special method `__init__`
+
+    "ARG002",   # Unused method argument
+
     # flake8-type-checking
     "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
     # flake8-fixme
-    "FIX002"    # line-contains-todo
+    "FIX002",   # line-contains-todo
+
+    "UP007"     # Use `X | Y` for type annotations
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
@@ -232,6 +241,9 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    "tests/assets",
+
+    "src/otx/core/engine/utils/*"   # It will be clean up later
 ]
 
 # Same as Black.
@@ -264,6 +276,9 @@ max-returns = 10
     "E501",     # Test skips lines that are too long.
     "ANN001",   # Skip annotation type hint in test codes
     "D",     # Test skips missing docstring argument with magic (fixture) methods.
+]
+"src/otx/**/*.py" = [
+    "ERA001",
 ]
 
 [tool.ruff.pydocstyle]
