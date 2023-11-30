@@ -9,7 +9,6 @@ import copy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from hydra.core.hydra_config import HydraConfig
 from hydra.core.utils import _save_config, configure_log
 
 if TYPE_CHECKING:
