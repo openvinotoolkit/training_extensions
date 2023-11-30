@@ -62,7 +62,9 @@ class PromptGetter(nn.Module):
         for label, reference_feat in self.reference_feats.items():
             sim = reference_feat.to(target_feat.device) @ target_feat
             sim = sim.reshape(1, 1, h_feat, w_feat)
-            sim = ZeroShotSegmentAnything.postprocess_masks(sim, (self.image_size, self.image_size), padding, original_size).squeeze()
+            sim = ZeroShotSegmentAnything.postprocess_masks(
+                sim, (self.image_size, self.image_size), padding, original_size
+            ).squeeze()
 
             # threshold = 0.85 * sim.max() if num_classes > 1 else self.default_threshold_target
             threshold = self.default_threshold_target
