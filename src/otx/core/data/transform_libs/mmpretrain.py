@@ -16,7 +16,9 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import MulticlassClsDataEntity
 
-from .mmcv import MMCVTransformLib
+from .mmcv import LoadImageFromFile, MMCVTransformLib
+
+TRANSFORMS.register_module(module=LoadImageFromFile, force=True)
 
 if TYPE_CHECKING:
     from mmengine.registry import Registry

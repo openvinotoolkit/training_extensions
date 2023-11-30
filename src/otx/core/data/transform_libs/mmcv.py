@@ -66,22 +66,10 @@ class MMCVTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> list[Callable]:
         """Generate MMCV transforms from the configuration."""
-        transforms = []
-        for cfg in config.transforms:
-            builder = cls.get_builder()
-            converted_cfg = convert_conf_to_mmconfig_dict(cfg)
-
-            build_cfg_type = builder.get(converted_cfg.type)
-            # TODO(sungmanc): Need to consider the mmpretrain case
-            # Both MMPretrain and MMCV have `LoadImageFromFile` transform
-            # So, There is an conflict at the registering registry.
-            # https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/transforms/__init__.py
-            # https://github.com/open-mmlab/mmdetection/blob/main/mmdet/datasets/transforms/__init__.py
-            if build_cfg_type.__name__ == "LoadImageFromFile":
-                build_transform = builder.parent.build(converted_cfg)
-            else:
-                build_transform = builder.build(converted_cfg)
-            transforms.append(build_transform)
+        transforms = [
+            cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg))
+            for cfg in config.transforms
+        ]
 
         cls._check_mandatory_transforms(
             transforms,
