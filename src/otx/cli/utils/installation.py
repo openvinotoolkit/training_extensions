@@ -206,25 +206,20 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
     Returns:
         str: The updated CUDA version.
     """
-    selected_cuda_version = None
     max_supported_cuda = max(AVAILABLE_TORCH_VERSIONS[torch_version]["cuda"])
     min_supported_cuda = min(AVAILABLE_TORCH_VERSIONS[torch_version]["cuda"])
+    bounded_cuda_version = max(min(cuda_version, max_supported_cuda), min_supported_cuda)
 
-    if cuda_version > max_supported_cuda:
-        selected_cuda_version = max_supported_cuda
-    elif cuda_version < min_supported_cuda:
-        selected_cuda_version = min_supported_cuda
-
-    if selected_cuda_version is not None:
+    if cuda_version != bounded_cuda_version:
         warn(
             f"Installed CUDA version is v{cuda_version}. \n"
             f"v{min_supported_cuda} <= Supported CUDA version <= v{max_supported_cuda}.\n"
-            f"This script will use CUDA v{selected_cuda_version}.\n"
+            f"This script will use CUDA v{bounded_cuda_version}.\n"
             f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
             f"For more details, refer to https://pytorch.org/get-started/locally/",
             stacklevel=2,
         )
-        cuda_version = selected_cuda_version
+        cuda_version = bounded_cuda_version
 
     return cuda_version
 
