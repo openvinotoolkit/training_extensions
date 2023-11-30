@@ -457,7 +457,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
 
         if stage == "test":
             self.test_dataset = self.DATASETS[self.train_type](
-                dataset=self.dataset.get_subset(Subset.TESTING), image_siz=image_size, mean=mean, std=std
+                dataset=self.dataset.get_subset(Subset.TESTING), image_size=image_size, mean=mean, std=std
             )
 
         if stage == "predict":
