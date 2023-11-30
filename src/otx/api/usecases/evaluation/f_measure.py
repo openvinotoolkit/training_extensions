@@ -19,7 +19,7 @@ from otx.api.entities.metrics import (
     LineChartInfo,
     LineMetricsGroup,
     MetricsGroup,
-    Performance,
+    MultiScorePerformance,
     ScoreMetric,
     TextChartInfo,
     TextMetricsGroup,
@@ -205,6 +205,7 @@ class _AggregatedResults:
         - all_classes_f_measure_curve
         - best_f_measure
         - best_threshold
+        - best_f_measure_metrics
 
     Args:
         classes (List[str]): List of classes.
@@ -217,6 +218,7 @@ class _AggregatedResults:
         self.all_classes_f_measure_curve: List[float] = []
         self.best_f_measure: float = 0.0
         self.best_threshold: float = 0.0
+        self.best_f_measure_metrics: _Metrics = None
 
 
 class _OverallResults:
@@ -364,6 +366,7 @@ class _FMeasureCalculator:
             if all_classes_f_measure > 0.0 and all_classes_f_measure >= result.best_f_measure:
                 result.best_f_measure = all_classes_f_measure
                 result.best_threshold = confidence_threshold
+                result.best_f_measure_metrics = result_point[ALL_CLASSES_NAME]
         return result
 
     def get_results_per_nms(
@@ -418,6 +421,7 @@ class _FMeasureCalculator:
             if all_classes_f_measure > 0.0 and all_classes_f_measure >= result.best_f_measure:
                 result.best_f_measure = all_classes_f_measure
                 result.best_threshold = nms_threshold
+                result.best_f_measure_metrics = result_point[ALL_CLASSES_NAME]
         return result
 
     def evaluate_classes(
@@ -693,6 +697,8 @@ class FMeasure(IPerformanceProvider):
             self.f_measure_per_label[label] = ScoreMetric(
                 name=label.name, value=result.best_f_measure_per_class[label.name]
             )
+        self._precision = ScoreMetric(name="Precision", value=result.per_confidence.best_f_measure_metrics.precision)
+        self._recall = ScoreMetric(name="Recall", value=result.per_confidence.best_f_measure_metrics.recall)
 
         self._f_measure_per_confidence: Optional[CurveMetric] = None
         self._best_confidence_threshold: Optional[ScoreMetric] = None
@@ -752,13 +758,12 @@ class FMeasure(IPerformanceProvider):
         """Returns the best NMS threshold as ScoreMetric if exists."""
         return self._best_nms_threshold
 
-    def get_performance(self) -> Performance:
+    def get_performance(self) -> MultiScorePerformance:
         """Returns the performance which consists of the F-Measure score and the dashboard metrics.
 
         Returns:
-            Performance: Performance object containing the F-Measure score and the dashboard metrics.
+            MultiScorePerformance: MultiScorePerformance object containing the F-Measure scores and the dashboard metrics.
         """
-        score = self.f_measure
         dashboard_metrics: List[MetricsGroup] = []
         dashboard_metrics.append(
             BarMetricsGroup(
@@ -813,7 +818,11 @@ class FMeasure(IPerformanceProvider):
                     ),
                 )
             )
-        return Performance(score=score, dashboard_metrics=dashboard_metrics)
+        return MultiScorePerformance(
+            primary_score=self.f_measure,
+            additional_scores=[self._precision, self._recall],
+            dashboard_metrics=dashboard_metrics
+        )
 
     @staticmethod
     def __get_boxes_from_dataset_as_list(
