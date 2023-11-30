@@ -1,0 +1,4 @@
+defaults:
+  - default
+
+task: MULTI_CLASS_CLS
