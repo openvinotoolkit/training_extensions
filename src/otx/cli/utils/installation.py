@@ -206,30 +206,25 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
     Returns:
         str: The updated CUDA version.
     """
+    selected_cuda_version = None
     max_supported_cuda = max(AVAILABLE_TORCH_VERSIONS[torch_version]["cuda"])
     min_supported_cuda = min(AVAILABLE_TORCH_VERSIONS[torch_version]["cuda"])
 
     if cuda_version > max_supported_cuda:
+        selected_cuda_version = max_supported_cuda
+    elif cuda_version < min_supported_cuda:
+        selected_cuda_version = min_supported_cuda
+
+    if selected_cuda_version is not None:
         warn(
             f"Installed CUDA version is v{cuda_version}. \n"
-            f"Max supported CUDA version by PyTorch v{torch_version} is CUDA v{max_supported_cuda}.\n"
-            f"This script will use CUDA v{max_supported_cuda}.\n"
+            f"v{min_supported_cuda} <= Supported CUDA version <= v{max_supported_cuda}.\n"
+            f"This script will use CUDA v{selected_cuda_version}.\n"
             f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
             f"For more details, refer to https://pytorch.org/get-started/locally/",
             stacklevel=2,
         )
-        cuda_version = max_supported_cuda
-
-    if cuda_version < min_supported_cuda:
-        warn(
-            f"Installed CUDA version is v{cuda_version}. "
-            f"Min supported CUDA version by PyTorch v{torch_version} is CUDA v{min_supported_cuda}.\n"
-            f"This script will use CUDA v{min_supported_cuda}.\n"
-            f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
-            f"For more details, refer to https://pytorch.org/get-started/locally/",
-            stacklevel=2,
-        )
-        cuda_version = min_supported_cuda
+        cuda_version = selected_cuda_version
 
     return cuda_version
 
@@ -381,11 +376,7 @@ def add_hardware_suffix_to_torch(
                 "or torch>=1.8.1, <=1.9.1\n"
                 f"Got {updated_specs} instead."
             )
-            if len(updated_specs) > 2:
-                raise ValueError(msg)
-            raise ValueError(
-                msg,
-            )
+            raise ValueError(msg)
     return updated_requirement
 
 
@@ -474,27 +465,23 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
     if isinstance(torch_requirement, str):
         torch_requirement = Requirement.parse(torch_requirement)
 
-    _operator, version = torch_requirement.specs[0]
-    install_args: list[str] = []
-
     if platform.system() in ("Linux", "Windows", "Darwin", "macos"):
         # Get the hardware suffix (eg., +cpu, +cu116 and +cu118 etc.)
+        _, version = torch_requirement.specs[0]
         hardware_suffix = get_hardware_suffix(with_available_torch_build=True, torch_version=version)
 
         # MMCV builds are only available for major.minor.0 torch versions.
-        major, minor, _patch = version.split(".")
+        major, minor, _ = version.split(".")
         mmcv_torch_version = f"{major}.{minor}.0"
         mmcv_index_url = (
             f"https://download.openmmlab.com/mmcv/dist/{hardware_suffix}/torch{mmcv_torch_version}/index.html"
         )
 
         # Return the install arguments.
-        install_args = ["--find-links", mmcv_index_url, *mmcv_requirements]
-    else:
-        msg = f"Unsupported OS: {platform.system()}"
-        raise RuntimeError(msg)
+        return ["--find-links", mmcv_index_url, *mmcv_requirements]
 
-    return install_args
+    msg = f"Unsupported OS: {platform.system()}"
+    raise RuntimeError(msg)
 
 
 def mim_installation(requirements: list[str]) -> int:
