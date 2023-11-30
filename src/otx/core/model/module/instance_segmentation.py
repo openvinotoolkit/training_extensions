@@ -44,10 +44,12 @@ class OTXInstanceSegLitModule(OTXLitModule):
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
         self._log_metrics(self.val_metric, "val")
+        self.val_metric.reset()
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.test_metric, "test")
+        self.test_metric.reset()
 
     def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
         results = meter.compute()
@@ -97,7 +99,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 "labels": labels,
             }
             for bboxes, masks, scores, labels in zip(
-                preds.bboxes, preds.masks, preds.scores, preds.labels
+                preds.bboxes, preds.masks, preds.scores, preds.labels,
             )
         ]
 

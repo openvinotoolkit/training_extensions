@@ -6,7 +6,14 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Union
+
 import torch
+from mmdet.registry import MODELS
+from mmdet.structures import DetDataSample
+from mmdet.structures.mask import BitmapMasks
+from mmengine.registry import MODELS as MMENGINE_MODELS
+from mmengine.runner.checkpoint import load_checkpoint
+from mmengine.structures import InstanceData
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -36,13 +43,10 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
 
     def __init__(self, config: DictConfig) -> None:
         self.config = config
+        self.load_from = self.config.pop("load_from", None)
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        # import mmdet.models as _
-        from mmdet.registry import MODELS
-        from mmengine.registry import MODELS as MMENGINE_MODELS
-
         # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
         # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
         det = MODELS.get("DetDataPreprocessor")
@@ -53,11 +57,12 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         except AssertionError:
             model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
 
+        if self.load_from is not None:
+            load_checkpoint(model, self.load_from)
+
         return model
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
-        from mmdet.structures import DetDataSample
-        from mmengine.structures import InstanceData
 
         mmdet_inputs: dict[str, Any] = {}
 
@@ -73,7 +78,8 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
                 },
                 gt_instances=InstanceData(
                     bboxes=bboxes,
-                    masks=masks,
+                    # NOTE: converting cuda to cpu could be slow
+                    masks=BitmapMasks(masks.data.cpu().numpy(), *masks.shape[1:]),
                     labels=labels,
                 ),
             )
@@ -105,15 +111,17 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         outputs: Any,  # noqa: ANN401
         inputs: InstanceSegBatchDataEntity,
     ) -> Union[InstanceSegBatchPredEntity, OTXBatchLossEntity]:
-        from mmdet.structures import DetDataSample
 
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)
 
             losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                losses[k] = sum(v)
+            for loss_name, loss_value in outputs.items():
+                if isinstance(loss_value, torch.Tensor):
+                    losses[loss_name] = loss_value
+                elif isinstance(loss_value, list):
+                    losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
             return losses
 
         scores: list[float] = []
@@ -133,7 +141,8 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
                     canvas_size=output.img_shape,
                 ),
             )
-            masks.append(tv_tensors.Mask(output.pred_instances.masks, dtype=torch.bool))
+            output_masks = tv_tensors.Mask(output.pred_instances.masks, dtype=torch.bool)
+            masks.append(output_masks)
             labels.append(output.pred_instances.labels)
 
         return InstanceSegBatchPredEntity(

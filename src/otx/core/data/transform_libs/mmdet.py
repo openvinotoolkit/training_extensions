@@ -4,10 +4,11 @@
 """Helper to support MMDET data transform functions."""
 
 from __future__ import annotations
-import torch
+
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
+import torch
 from mmdet.datasets.transforms import (
     LoadAnnotations as MMDetLoadAnnotations,
 )
@@ -15,6 +16,7 @@ from mmdet.datasets.transforms import (
     PackDetInputs as MMDetPackDetInputs,
 )
 from mmdet.registry import TRANSFORMS
+from mmdet.structures.mask import BitmapMasks
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
@@ -44,10 +46,10 @@ class LoadAnnotations(MMDetLoadAnnotations):
             results["gt_bboxes"] = gt_bboxes
         if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
             gt_masks = otx_data_entity.masks.numpy()
-            results["gt_masks"] = gt_masks
+            results["gt_masks"] = BitmapMasks(gt_masks, *gt_masks.shape[1:])
         if self.with_label and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity)):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
-            results["gt_bboxes_labels"] = gt_bboxes_labels - 1
+            results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
 
         return results
@@ -84,7 +86,7 @@ class PackDetInputs(MMDetPackDetInputs):
                     )
 
         if isinstance(results['__otx__'], InstanceSegDataEntity):
-            masks = tv_tensors.Mask(data_samples.gt_instances.masks, dtype=torch.bool)
+            masks = tv_tensors.Mask(data_samples.gt_instances.masks.to_ndarray(), dtype=torch.uint8)
             return InstanceSegDataEntity(
                     image=image,
                     img_info=image_info,

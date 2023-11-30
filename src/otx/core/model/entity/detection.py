@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Union
 
 import torch
-from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -43,9 +42,9 @@ class MMDetCompatibleModel(OTXDetectionModel):
     def _create_model(self) -> nn.Module:
         # import mmdet.models as _
         from mmdet.registry import MODELS
-        from mmengine.runner.checkpoint import load_checkpoint
-        from mmengine.registry import MODELS as MMENGINE_MODELS
         from mmengine.logging import MMLogger
+        from mmengine.registry import MODELS as MMENGINE_MODELS
+        from mmengine.runner.checkpoint import load_checkpoint
 
         # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
         # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
@@ -126,7 +125,8 @@ class MMDetCompatibleModel(OTXDetectionModel):
                 elif isinstance(v, torch.Tensor):
                     losses[k] = v
                 else:
-                    raise TypeError(f"Loss output should be list or torch.tensor but got {type(v)}")
+                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
             return losses
 
         scores = []

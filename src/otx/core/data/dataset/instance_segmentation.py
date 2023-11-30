@@ -10,7 +10,7 @@ from typing import Callable, Optional
 import cv2
 import numpy as np
 import torch
-from datumaro import Bbox, DatasetSubset, Image, Polygon
+from datumaro import DatasetSubset, Image, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
@@ -63,7 +63,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            masks=tv_tensors.Mask(gt_masks, dtype=torch.bool),
+            masks=tv_tensors.Mask(gt_masks, dtype=torch.uint8),
             labels=torch.as_tensor(gt_labels),
         )
 
