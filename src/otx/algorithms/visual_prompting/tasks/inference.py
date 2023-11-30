@@ -29,9 +29,7 @@ from typing import Dict, List, Optional, Union
 import torch
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import (
-    TQDMProgressBar,
-)
+from pytorch_lightning.callbacks import TQDMProgressBar
 from pytorch_lightning.loggers import CSVLogger
 
 from otx.algorithms.common.configs.training_base import TrainType
