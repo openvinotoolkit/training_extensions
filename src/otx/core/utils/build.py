@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from mmengine.registry import Registry
     from omegaconf import DictConfig
 
-def build_model(config: DictConfig, model_registry: Registry, load_from: str) -> nn.Module:
+def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str) -> nn.Module:
     """Build a model by using the registry."""
     try:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="tuple"))
