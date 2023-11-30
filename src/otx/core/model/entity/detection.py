@@ -11,7 +11,7 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.model.entity.base import OTXModel, MMXCompatibleModel
+from otx.core.model.entity.base import MMXCompatibleModel, OTXModel
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, Union
-from mmengine.registry import Registry
 
 from mmengine.runner import load_checkpoint
 from torch import nn
@@ -65,11 +64,12 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         )
 
 class MMXCompatibleModel(OTXModel):
+    """Base class for the models used in OTX with MMX frameworks."""
     def __init__(self, config: DictConfig) -> None:
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__()
-        
+
     def _build_model(self, model_registry: Registry) -> nn.Module:
         """Build a model by using the registry."""
         try:

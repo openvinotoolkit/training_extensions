@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Union
 import otx.algo.classification.model.backbones  # noqa: F401
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
-from otx.core.model.entity.base import OTXModel, MMXCompatibleModel
+from otx.core.model.entity.base import MMXCompatibleModel, OTXModel
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -30,7 +30,7 @@ class MMPretrainCompatibleModel(OTXClassificationModel, MMXCompatibleModel):
     """
     def _create_model(self) -> nn.Module:
         from mmpretrain.registry import MODELS
-        
+
         return super()._build_model(MODELS)
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
