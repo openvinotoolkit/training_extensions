@@ -52,7 +52,7 @@ def get_requirements(module: str = "otx") -> dict[str, list[Requirement]]:
         }
 
     Returns:
-        Dict[str, List[Requirement]]: List of required packages for each optional-extras.
+        dict[str, list[Requirement]]: List of required packages for each optional-extras.
     """
     requirement_list: list[str] | None = requires(module)
     extra_requirement: dict[str, list[Requirement]] = {}
@@ -96,7 +96,7 @@ def parse_requirements(
         Requirement.parse("onnx>=1.8.1"))
 
     Returns:
-        tuple[Requirement, list[Requirement], list[Requirement]]: Tuple of torch, mmcv and other requirements.
+        tuple[str, list[str], list[str]]: Tuple of torch, mmcv and other requirements.
     """
     torch_requirement: str | None = None
     mm_requirements: list[str] = []
@@ -155,13 +155,14 @@ def get_cuda_version() -> str | None:
     if Path(cuda_home).exists():
         # Check $CUDA_HOME/version.json file.
         version_file = Path(cuda_home) / "version.json"
-        if version_file.is_file():
-            with Path(version_file).open() as file:
-                data = json.load(file)
-                cuda_version = data.get("cuda", {}).get("version", None)
-                if cuda_version is not None:
-                    cuda_version_parts = cuda_version.split(".")
-                    return ".".join(cuda_version_parts[:2])
+        if not version_file.is_file():
+            return None
+        with Path(version_file).open() as file:
+            data = json.load(file)
+            cuda_version = data.get("cuda", {}).get("version", None)
+            if cuda_version is not None:
+                cuda_version_parts = cuda_version.split(".")
+                return ".".join(cuda_version_parts[:2])
     else:
         # 2. 'nvcc --version' check
         try:

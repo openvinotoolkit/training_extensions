@@ -76,16 +76,16 @@ def test_parse_requirements() -> None:
     with pytest.raises(ValueError, match="Could not find torch requirement."):
         parse_requirements(requirements)
 
-def test_get_cuda_version_with_version_file(mocker: MockerFixture, tmp_dir_path: Path) -> None:
+def test_get_cuda_version_with_version_file(mocker: MockerFixture, tmp_path: Path) -> None:
     """Test that get_cuda_version returns the expected CUDA version when version file exists."""
-    tmp_path = tmp_dir_path / "cuda"
+    tmp_path = tmp_path / "cuda"
     tmp_path.mkdir()
     mocker.patch.dict(os.environ, {"CUDA_HOME": str(tmp_path)})
     version_file = tmp_path / "version.json"
     version_file.write_text('{"cuda": {"version": "11.2.0"}}')
     assert get_cuda_version() == "11.2"
 
-    tmp_path_2 = tmp_dir_path / "cuda2"
+    tmp_path_2 = tmp_path / "cuda2"
     tmp_path_2.mkdir()
     mocker.patch.dict(os.environ, {"CUDA_HOME": str(tmp_path_2)})
     assert get_cuda_version() is None
