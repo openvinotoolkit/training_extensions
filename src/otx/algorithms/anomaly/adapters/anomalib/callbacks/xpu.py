@@ -6,8 +6,6 @@
 import torch
 from pytorch_lightning import Callback
 
-from otx.algorithms.common.utils.utils import is_xpu_available
-
 
 class XPUCallback(Callback):
     """XPU device callback.
@@ -20,11 +18,10 @@ class XPUCallback(Callback):
 
     def on_fit_start(self, trainer, pl_module):
         """Applies IPEX optimization before training."""
-        if is_xpu_available():
-            pl_module.to(self.device)
-            model, optimizer = torch.xpu.optimize(trainer.model, optimizer=trainer.optimizers[0], dtype=torch.float32)
-            trainer.optimizers = [optimizer]
-            trainer.model = model
+        pl_module.to(self.device)
+        model, optimizer = torch.xpu.optimize(trainer.model, optimizer=trainer.optimizers[0])
+        trainer.optimizers = [optimizer]
+        trainer.model = model
 
     def on_train_batch_start(self, trainer, pl_module, batch, batch_idx):
         """Moves train batch tensors to XPU."""
