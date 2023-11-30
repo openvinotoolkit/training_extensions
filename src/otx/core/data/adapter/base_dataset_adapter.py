@@ -41,6 +41,7 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.subset import Subset
 from otx.core.data.caching.storage_cache import init_arrow_cache
 
@@ -347,6 +348,21 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return Annotation(
             Polygon(points),
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
+        )
+
+    def _get_ellipse_entity(
+        self, annotation: DatumAnnotation, width: int, height: int, num_polygons: int = -1
+    ) -> Annotation:
+        """Get ellipse entity."""
+        ellipse = Ellipse(
+            (annotation.x1 - 1 ) / width,
+            (annotation.y1 - 1 ) / height,
+            (annotation.x2 - 1 ) / width,
+            (annotation.y2 - 1 ) / height,
+        )
+        return Annotation(
+            ellipse,
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 

@@ -15,6 +15,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
+from otx.api.entities.shapes.ellipse import Ellipse
 
 
 class DetectionDatasetAdapter(BaseDatasetAdapter):
@@ -39,10 +40,12 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     for ann in datumaro_item.annotations:
                         if (
                             self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
-                            and ann.type == DatumAnnotationType.polygon
+                            and ann.type in (DatumAnnotationType.polygon, DatumAnnotationType.ellipse)
                         ):
-                            if self._is_normal_polygon(ann):
+                            if ann.type == DatumAnnotationType.polygon and self._is_normal_polygon(ann):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
+                            elif ann.type == DatumAnnotationType.ellipse:
+                                shapes.append(self._get_ellipse_entity(ann, image.width, image.height))
                         if self.task_type is TaskType.DETECTION and ann.type == DatumAnnotationType.bbox:
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
