@@ -6,8 +6,9 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Generic, Union
+from typing import TYPE_CHECKING, Any, Generic, Union
 
+from mmengine.runner import load_checkpoint
 from torch import nn
 
 from otx.core.data.entity.base import (
@@ -15,7 +16,10 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
+if TYPE_CHECKING:
+    from mmengine.registry import Registry
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the models used in OTX."""
@@ -23,6 +27,17 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def __init__(self) -> None:
         super().__init__()
         self.model = self._create_model()
+
+    def _build_model(self, model_registry: Registry) -> nn.Module:
+        """Build a model by using the registry."""
+        try:
+            model = model_registry.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
+        except AssertionError:
+            model = model_registry.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
+
+        if self.load_from is not None:
+            load_checkpoint(model, self.load_from)
+        return model
 
     @abstractmethod
     def _create_model(self) -> nn.Module:

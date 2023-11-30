@@ -7,14 +7,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Union
 
-from mmengine.runner import load_checkpoint
-
 # classification.model.backbones should be initialized to register the backbones.
 import otx.algo.classification.model.backbones  # noqa: F401
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -40,15 +37,8 @@ class MMPretrainCompatibleModel(OTXClassificationModel):
 
     def _create_model(self) -> nn.Module:
         from mmpretrain.registry import MODELS
-        
-        try:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
-        except AssertionError:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
 
-        if self.load_from is not None:
-            load_checkpoint(model, self.load_from)
-        return model
+        return self._build_model(MODELS)
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
