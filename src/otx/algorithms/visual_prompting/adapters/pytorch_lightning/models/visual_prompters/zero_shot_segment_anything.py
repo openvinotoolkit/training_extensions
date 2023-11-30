@@ -209,7 +209,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     masks, scores, logits = self._predict_mask(
                         image_embeddings=image_embeddings,
                         input_prompts=merged_input_prompts,
-                        image_shape=images.shape[2:],
                         padding=padding,
                         original_size=original_size,
                         multimask_output=True,
@@ -250,7 +249,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
             predicted_masks: defaultdict = defaultdict(list)
             used_points = defaultdict(list)
             for label, (points_scores, bg_coords) in prompts.items():
-                for x, y, score in points_scores:
+                for points_score in points_scores:
+                    x, y = points_score[:2]
                     is_done = False
                     for pm in predicted_masks.get(label, []):
                         # check if that point is already assigned
@@ -262,9 +262,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                     mask, used_point_score = self(
                         image_embeddings=image_embeddings,
-                        x=x,
-                        y=y,
-                        score=score,
+                        points_score=points_score,
                         bg_coords=bg_coords,
                         image_shape=image_shape,
                         padding=padding,
@@ -280,29 +278,24 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def forward(
         self,
         image_embeddings: torch.Tensor,
-        x: float,
-        y: float,
-        score: float,
+        points_score: torch.Tensor,
         bg_coords: torch.Tensor,
         image_shape: Tuple[int, int],
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
-    ) -> Tuple[torch.Tensor, Tuple[float, ...]]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Predict point prompts and predicted masks."""
-        point_coords = torch.cat((torch.tensor([[x, y]], device=bg_coords.device), bg_coords), dim=0).unsqueeze(0)
-        point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, image_shape[0])
+        point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
+        point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
         point_labels = torch.tensor([1] + [0] * len(bg_coords), dtype=torch.int32).unsqueeze(0)
         mask = self._predict_target_mask(
             image_embeddings=image_embeddings,
             input_prompts={"points": (point_coords, point_labels)},
-            image_shape=image_shape,
             padding=padding,
             original_size=original_size,
         )
 
-        mask = mask.detach().cpu().to(torch.uint8)
-
-        return mask, (float(x), float(y), float(score))
+        return mask.detach().cpu().to(torch.uint8), points_score.detach().cpu()
 
     def training_step(self, batch, batch_idx) -> None:
         """Training step for `learn`."""
@@ -523,7 +516,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self,
         image_embeddings: torch.Tensor,
         input_prompts: Dict[str, Any],
-        image_shape: Tuple[int, int],
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> torch.Tensor:
@@ -533,7 +525,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
             image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
                 If it is a zero tensor, the image embedding will be computed from the image.
             input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.
-            image_shape (Tuple[int]): Resized image shape.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
 
@@ -542,14 +533,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
         """
         # First-step prediction
         _, _, logits = self._predict_mask(
-            image_embeddings, input_prompts, image_shape, padding, original_size, multimask_output=False
+            image_embeddings, input_prompts, padding, original_size, multimask_output=False
         )
         best_idx = 0
 
         # Cascaded Post-refinement-1
         input_prompts.update({"masks": logits[:, best_idx : best_idx + 1, :, :]})
         masks, scores, logits = self._predict_mask(
-            image_embeddings, input_prompts, image_shape, padding, original_size, multimask_output=True
+            image_embeddings, input_prompts, padding, original_size, multimask_output=True
         )
         best_idx = torch.argmax(scores)
 
@@ -567,7 +558,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             }
         )
         masks, scores, _ = self._predict_mask(
-            image_embeddings, input_prompts, image_shape, padding, original_size, multimask_output=True
+            image_embeddings, input_prompts, padding, original_size, multimask_output=True
         )
         best_idx = torch.argmax(scores)
 
@@ -577,7 +568,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self,
         image_embeddings: torch.Tensor,
         input_prompts: Dict[str, torch.Tensor],
-        image_shape: Tuple[int, int],
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
         multimask_output: bool = True,
@@ -588,7 +578,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
             image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
                 If it is a zero tensor, the image embedding will be computed from the image.
             input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.
-            image_shape (Tuple[int]): Resized image shape.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
             multimask_output (bool): Whether getting multi mask outputs or not. Defaults to True.
@@ -609,7 +598,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
             dense_prompt_embeddings=dense_embeddings,
             multimask_output=multimask_output,
         )
-        high_res_masks = self.postprocess_masks(low_res_masks, image_shape, padding, original_size)
+        high_res_masks = self.postprocess_masks(
+            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+        )
         masks = high_res_masks > self.config.model.mask_threshold
 
         return masks, scores, low_res_masks
