@@ -5,7 +5,6 @@ requires = [
     "setuptools>=61",
     "wheel",
     "Cython~=0.29.32",
-    "numpy~=1.21.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -29,20 +28,11 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "attrs>=21.2.0",
-    "dill>=0.3.6",
-    "docstring_parser",
-    "imagesize==1.4.1",
-    "jsonargparse==4.25.0",
-    "networkx>=2.6,<=2.8.0",
-    "numpy>=1.21.0,<=1.23.4",
-    "omegaconf>=2.1.1",
-    "opencv-python>=4.5",
-    "pymongo",
+    "datumaro",
+    "omegaconf",
+    "hydra-core",
     "rich",
-    "rich-argparse",
-    "scikit-learn>=1.0.2",
-    "Shapely>=1.7.1,<=1.8.0",
+    "jsonargparse==4.27.1",
 ]
 
 [project.optional-dependencies]
@@ -71,21 +61,15 @@ docs = [
     "nbsphinx",
 ]
 base = [
-    "natsort>=6.0.0",
-    "prettytable",
-    "protobuf>=3.20.0",
-    "pyyaml",
-    "datumaro~=1.4.0",
-    "psutil",
-    "scipy>=1.8",
-    "bayesian-optimization>=1.2.0",
-    "tensorboard>=2.11.0",
-    "multiprocess",
-    "torch==2.0.1",
+    "torch==2.1.1",
+    "lightning==2.1.2",
+]
+mmlab = [
+    "mmdet==3.2.0",
 ]
 
 [project.scripts]
-otx = "otx.cli.cli:main"
+otx = "otx.cli:main"
 
 [project.urls]
 Documentation = "https://openvinotoolkit.github.io/training_extensions/"
@@ -202,7 +186,7 @@ ignore = [
     "ANN102",   # Missing type annotation for `cls` in classmethod
     "ANN204",   # Missing return type annotation for special method `__init__`
 
-    "ARG002",   # Unused method argument
+    "ARG002",   # Unused method argument -> some function cannot use argument
 
     # flake8-type-checking
     "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
