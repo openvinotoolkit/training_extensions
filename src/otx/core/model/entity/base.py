@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, Union
+from mmengine.registry import Registry
 
 from mmengine.runner import load_checkpoint
 from torch import nn
@@ -20,6 +21,7 @@ from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
     from mmengine.registry import Registry
+    from omegaconf import DictConfig
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the models used in OTX."""
@@ -27,17 +29,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def __init__(self) -> None:
         super().__init__()
         self.model = self._create_model()
-
-    def _build_model(self, model_registry: Registry) -> nn.Module:
-        """Build a model by using the registry."""
-        try:
-            model = model_registry.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
-        except AssertionError:
-            model = model_registry.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
-
-        if self.load_from is not None:
-            load_checkpoint(model, self.load_from)
-        return model
 
     @abstractmethod
     def _create_model(self) -> nn.Module:
@@ -72,3 +63,20 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )
+
+class MMXCompatibleModel(OTXModel):
+    def __init__(self, config: DictConfig) -> None:
+        self.config = config
+        self.load_from = config.pop("load_from", None)
+        super().__init__()
+        
+    def _build_model(self, model_registry: Registry) -> nn.Module:
+        """Build a model by using the registry."""
+        try:
+            model = model_registry.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
+        except AssertionError:
+            model = model_registry.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
+
+        if self.load_from is not None:
+            load_checkpoint(model, self.load_from)
+        return model

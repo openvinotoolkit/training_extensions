@@ -11,34 +11,27 @@ from typing import TYPE_CHECKING, Any, Union
 import otx.algo.classification.model.backbones  # noqa: F401
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, MMXCompatibleModel
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
-    from omegaconf import DictConfig
     from torch import nn
 
 
 class OTXClassificationModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):
     """Base class for the classification models used in OTX."""
 
-class MMPretrainCompatibleModel(OTXClassificationModel):
+class MMPretrainCompatibleModel(OTXClassificationModel, MMXCompatibleModel):
     """Classification model compatible for MMPretrain.
 
     It can consume MMPretrain model configuration translated into OTX configuration
     (please see otx.tools.translate_mmrecipe) and create the OTX classification model
     compatible for OTX pipelines.
     """
-
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        super().__init__()
-
     def _create_model(self) -> nn.Module:
         from mmpretrain.registry import MODELS
-
-        return self._build_model(MODELS)
+        
+        return super()._build_model(MODELS)
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample

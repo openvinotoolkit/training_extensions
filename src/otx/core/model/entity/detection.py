@@ -11,11 +11,10 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, MMXCompatibleModel
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from omegaconf import DictConfig
     from torch import nn
 
 
@@ -24,19 +23,13 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
 # This is an example for MMDetection models
 # In this way, we can easily import some models developed from the MM community
-class MMDetCompatibleModel(OTXDetectionModel):
+class MMDetCompatibleModel(OTXDetectionModel, MMXCompatibleModel):
     """Detection model compatible for MMDet.
 
     It can consume MMDet model configuration translated into OTX configuration
     (please see otx.tools.translate_mmrecipe) and create the OTX detection model
     compatible for OTX pipelines.
     """
-
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        super().__init__()
-
     def _create_model(self) -> nn.Module:
         # import mmdet.models as _
         from mmdet.registry import MODELS
@@ -47,7 +40,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         det = MODELS.get("DetDataPreprocessor")
         MMENGINE_MODELS.register_module(module=det)
 
-        return self._build_model(MODELS)
+        return super()._build_model(MODELS)
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
