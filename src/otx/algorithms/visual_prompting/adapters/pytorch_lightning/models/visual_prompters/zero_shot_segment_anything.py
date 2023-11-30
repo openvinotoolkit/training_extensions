@@ -27,8 +27,9 @@ class PromptGetter(nn.Module):
     default_threshold_reference = 0.3
     default_threshold_target = 0.65
 
-    def __init__(self) -> None:
+    def __init__(self, image_size: int) -> None:
         super().__init__()
+        self.image_size = image_size
         self.initialize()
 
     def initialize(self) -> None:
@@ -41,15 +42,14 @@ class PromptGetter(nn.Module):
         self.default_threshold_reference = default_threshold_reference
         self.default_threshold_target = default_threshold_target
 
-    def set_reference(self, label: ScoredLabel, reference_feat: torch.Tensor, results_prompt: torch.Tensor) -> None:
+    def set_reference(self, label: ScoredLabel, reference_feats: torch.Tensor, reference_prompts: torch.Tensor) -> None:
         """Set reference features and prompts."""
-        self.reference_feats[int(label.id_)] = reference_feat
-        self.reference_prompts[int(label.id_)] = results_prompt
+        self.reference_feats[int(label.id_)] = reference_feats
+        self.reference_prompts[int(label.id_)] = reference_prompts
 
     def forward(
         self,
         image_embeddings: torch.Tensor,
-        image_shape: Tuple[int, int],
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> Dict[int, Tuple[torch.Tensor, torch.Tensor]]:
@@ -62,11 +62,11 @@ class PromptGetter(nn.Module):
         for label, reference_feat in self.reference_feats.items():
             sim = reference_feat.to(target_feat.device) @ target_feat
             sim = sim.reshape(1, 1, h_feat, w_feat)
-            sim = ZeroShotSegmentAnything.postprocess_masks(sim, image_shape, padding, original_size).squeeze()
+            sim = ZeroShotSegmentAnything.postprocess_masks(sim, (self.image_size, self.image_size), padding, original_size).squeeze()
 
             # threshold = 0.85 * sim.max() if num_classes > 1 else self.default_threshold_target
             threshold = self.default_threshold_target
-            points_scores, bg_coords = self._point_selection(sim, image_shape, original_size, threshold)
+            points_scores, bg_coords = self._point_selection(sim, original_size, threshold)
             if points_scores is None:
                 # skip if there is no point with score > threshold
                 continue
@@ -81,7 +81,6 @@ class PromptGetter(nn.Module):
     def _point_selection(
         self,
         mask_sim: torch.Tensor,
-        image_shape: Tuple[int, int],
         original_size: Tuple[int, int],
         threshold: float,
         num_bg_points: int = 1,
@@ -104,7 +103,7 @@ class PromptGetter(nn.Module):
         fg_coords_scores = torch.stack(point_coords[::-1] + (mask_sim[point_coords],), dim=0).T
 
         max_len = max(original_size)
-        ratio = image_shape[0] / max_len
+        ratio = self.image_size / max_len
         _, width = map(lambda x: int(x * ratio), original_size)
         n_w = width // downsizing
 
@@ -146,7 +145,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         super().__init__(config, state_dict)
 
-        self.prompt_getter = PromptGetter()
+        self.prompt_getter = PromptGetter(image_size=config.model.image_size)
         self.prompt_getter.initialize()
         self.prompt_getter.set_default_thresholds(
             config.model.default_threshold_reference, config.model.default_threshold_target
