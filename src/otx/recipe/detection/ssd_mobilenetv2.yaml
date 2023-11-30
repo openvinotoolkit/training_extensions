@@ -124,7 +124,6 @@ model:
           strides:
             - 16
             - 32
-          reclustering_anchors: true
           widths:
             - - 38.641007923271076
               - 92.49516032784699
