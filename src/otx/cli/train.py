@@ -30,7 +30,7 @@ def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
     """
     parser = ArgumentParser()
     parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
-    subcommands_action.add_subcommand("train", parser, help="Training OTX.")
+    subcommands_action.add_subcommand("train", parser, help="Training subcommand for OTX")
 
 
 def otx_train(overrides: list[str]) -> None:
