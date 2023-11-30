@@ -1,7 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from pathlib import Path
 
 from omegaconf import DictConfig
 from otx.cli.utils.hydra import configure_hydra_outputs
