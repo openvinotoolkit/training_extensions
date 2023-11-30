@@ -87,7 +87,7 @@ class IterationTimer(Callback):
         batch: Any,  # noqa: ANN401
         batch_idx: int,
     ) -> None:
-        """Log iteration time on the training batch start."""
+        """Log iteration time on the training batch end."""
         self._on_batch_end(pl_module=pl_module, phase="train")
 
     def on_validation_batch_start(
@@ -110,7 +110,7 @@ class IterationTimer(Callback):
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
-        """Log iteration time on the validation batch start."""
+        """Log iteration time on the validation batch end."""
         self._on_batch_end(pl_module=pl_module, phase="validation")
 
     def on_test_batch_start(
@@ -133,5 +133,5 @@ class IterationTimer(Callback):
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
-        """Log iteration time on the test batch start."""
+        """Log iteration time on the test batch end."""
         self._on_batch_end(pl_module=pl_module, phase="test")
