@@ -40,24 +40,14 @@ class MMPretrainCompatibleModel(OTXClassificationModel):
 
     def _create_model(self) -> nn.Module:
         from mmpretrain.registry import MODELS
-        ### DataPreprocessor config should be converted as tuple
-        ### If not, it MODELS.build() creates the empty data preprocessor
-        ### That's the reason why I added the lines below
-        data_preprocessor_cfg = self.config.pop("data_preprocessor")
-        converted_data_preprocessor_cfg = convert_conf_to_mmconfig_dict(
-            data_preprocessor_cfg, to="list")
+        
         try:
-            converted_cfg = convert_conf_to_mmconfig_dict(self.config, to="tuple")
-            converted_cfg.data_preprocessor = converted_data_preprocessor_cfg.to_dict()
-            model = MODELS.build(converted_cfg)
+            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
         except AssertionError:
-            converted_cfg = convert_conf_to_mmconfig_dict(self.config, to="list")
-            converted_cfg.data_preprocessor = converted_data_preprocessor_cfg.to_dict()
-            model = MODELS.build(converted_cfg)
+            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
 
         if self.load_from is not None:
             load_checkpoint(model, self.load_from)
-
         return model
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
