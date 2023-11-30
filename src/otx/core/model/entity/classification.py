@@ -12,7 +12,7 @@ import otx.algo.classification.model.backbones  # noqa: F401
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.build import build_model
+from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -38,7 +38,7 @@ class MMPretrainCompatibleModel(OTXClassificationModel):
     def _create_model(self) -> nn.Module:
         from mmpretrain.registry import MODELS
 
-        return build_model(self.config, MODELS, self.load_from)
+        return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample

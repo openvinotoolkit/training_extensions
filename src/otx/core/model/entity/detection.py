@@ -12,7 +12,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.build import build_model
+from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -47,7 +47,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         det = MODELS.get("DetDataPreprocessor")
         MMENGINE_MODELS.register_module(module=det)
 
-        return build_model(self.config, MODELS, self.load_from)
+        return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
