@@ -43,8 +43,8 @@ class PromptGetter(nn.Module):
 
     def set_reference(self, label: ScoredLabel, reference_feat: torch.Tensor, results_prompt: torch.Tensor) -> None:
         """Set reference features and prompts."""
-        self.reference_feats[int(label.id)] = reference_feat
-        self.reference_prompts[int(label.id)] = results_prompt
+        self.reference_feats[int(label.id_)] = reference_feat
+        self.reference_prompts[int(label.id_)] = results_prompt
 
     def forward(
         self,
@@ -402,7 +402,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         if annotations:
             pass
 
-        processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x[0].id))  # type: ignore[assignment]
+        processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x[0].id_))  # type: ignore[assignment]
         return processed_prompts
 
     def _generate_masked_features(
