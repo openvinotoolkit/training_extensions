@@ -619,6 +619,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 f"Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead."
             )
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
+        logger.info(f"F-measure after evaluation: {output_resultset.performance}")
         logger.info("OpenVINO metric evaluation completed")
 
     def deploy(self, output_model: ModelEntity) -> None:
