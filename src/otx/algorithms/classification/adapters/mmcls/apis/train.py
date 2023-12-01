@@ -78,7 +78,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     elif cfg.device == "xpu":
         assert len(cfg.gpu_ids) == 1
         model.to(f"xpu:{cfg.gpu_ids[0]}")
-        model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
+        model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids)
     elif cfg.device == "hpu":
         assert len(cfg.gpu_ids) == 1
         model = HPUDataParallel(model.cuda(), dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
@@ -93,7 +93,9 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        dtype = torch.bfloat16 if cfg.optimizer_config.get("bf16_training", False) else torch.float32
+        if cfg.optimizer_config.get("bf16_training", False):
+            logger.warning("XPU supports fp32 training only currently.")
+        dtype = torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
