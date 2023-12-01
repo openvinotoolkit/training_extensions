@@ -8,13 +8,14 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Callable, Generic, List, Optional, Union
 
+import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
 from otx.core.data.entity.base import T_OTXDataEntity
 
 if TYPE_CHECKING:
-    from datumaro import DatasetSubset
+    from datumaro import DatasetSubset, Image
 
 Transforms = Union[Callable, List[Callable]]
 
@@ -72,6 +73,17 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
         msg = f"Reach the maximum refetch number ({self.max_refetch})"
         raise RuntimeError(msg)
+
+    def _get_img_data(self, img: Image) -> np.array:
+        img_data = img.data
+        # TODO(vinnamkim): This is a temporal approach
+        # There is an upcoming Datumaro patch here for this
+        # https://github.com/openvinotoolkit/datumaro/pull/1194
+        if img_data.shape[-1] == 4:
+            img_data = cv2.cvtColor(img_data, cv2.COLOR_BGRA2BGR)
+        if len(img_data.shape) == 2:
+            img_data = cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR)
+        return img_data
 
     @abstractmethod
     def _get_item_impl(self, idx: int) -> Optional[T_OTXDataEntity]:

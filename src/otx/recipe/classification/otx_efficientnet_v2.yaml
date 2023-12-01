@@ -1,0 +1,80 @@
+# @package _global_
+defaults:
+  - override /base: classification
+  - override /data: mmpretrain
+  - override /model: mmpretrain
+data:
+  subsets:
+    train:
+      batch_size: 64
+      transforms:
+        - type: LoadImageFromFile
+        - backend: pillow
+          scale: 224
+          type: RandomResizedCrop
+        - direction: horizontal
+          prob: 0.5
+          type: RandomFlip
+        - type: PackInputs
+    val:
+      batch_size: 64
+      transforms:
+        - type: LoadImageFromFile
+        - backend: pillow
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+model:
+  otx_model:
+    config:
+      backbone:
+        pretrained: true
+        type: OTXEfficientNetV2
+      head:
+        act_cfg:
+          type: HSwish
+        dropout_rate: 0.2
+        in_channels: 1280
+        init_cfg:
+          bias: 0.0
+          layer: Linear
+          mean: 0.0
+          std: 0.01
+          type: Normal
+        loss:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+        mid_channels:
+          - 1280
+        num_classes: 1000
+        topk:
+          - 1
+          - 5
+        type: StackedLinearClsHead
+      neck:
+        type: GlobalAveragePooling
+      data_preprocessor:
+        mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        num_classes: 1000
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: True
+        type: ClsDataPreprocessor
+      type: ImageClassifier
+  optimizer:
+    _target_: torch.optim.SGD
+    _partial_: true
+    lr: 0.0071
+    momentum: 0.9
+    weight_decay: 0.0001
+  scheduler:
+    factor: 0.5
+    patience: 1

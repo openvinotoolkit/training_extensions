@@ -243,7 +243,9 @@ exclude = [
     "venv",
     "tests/assets",
 
-    "src/otx/core/engine/utils/*"   # It will be clean up later
+    # it will be cleaned up later
+    "src/otx/core/engine/utils/*",
+    "src/otx/algo/classification/model/backbones/*",
 ]
 
 # Same as Black.
