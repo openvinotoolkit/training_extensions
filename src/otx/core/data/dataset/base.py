@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Callable, Generic, List, Optional, Union
+from typing import TYPE_CHECKING, Callable, Generic, List, Union
 
 import cv2
 import numpy as np
@@ -40,7 +40,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
     def _sample_another_idx(self) -> int:
         return np.random.default_rng().integers(0, len(self))
 
-    def _apply_transforms(self, entity: T_OTXDataEntity) -> Optional[T_OTXDataEntity]:
+    def _apply_transforms(self, entity: T_OTXDataEntity) -> T_OTXDataEntity | None:
         if callable(self.transforms):
             return self.transforms(entity)
         if isinstance(self.transforms, Iterable):
@@ -48,7 +48,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
         raise TypeError(self.transforms)
 
-    def _iterable_transforms(self, item: T_OTXDataEntity) -> Optional[T_OTXDataEntity]:
+    def _iterable_transforms(self, item: T_OTXDataEntity) -> T_OTXDataEntity | None:
         if not isinstance(self.transforms, list):
             raise TypeError(item)
 
@@ -86,7 +86,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         return img_data
 
     @abstractmethod
-    def _get_item_impl(self, idx: int) -> Optional[T_OTXDataEntity]:
+    def _get_item_impl(self, idx: int) -> T_OTXDataEntity | None:
         pass
 
     @property
