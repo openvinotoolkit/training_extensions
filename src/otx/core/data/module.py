@@ -70,7 +70,8 @@ class OTXDataModule(LightningDataModule):
 
     def train_dataloader(self) -> DataLoader:
         """Get train dataloader."""
-        config, dataset = self._get_config("train"), self._get_dataset("train")
+        config = self._get_config(self.config.train_subset_name)
+        dataset = self._get_dataset(self.config.train_subset_name)
 
         return DataLoader(
             dataset=dataset,
@@ -82,7 +83,8 @@ class OTXDataModule(LightningDataModule):
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
-        config, dataset = self._get_config("val"), self._get_dataset("val")
+        config = self._get_config(self.config.val_subset_name)
+        dataset = self._get_dataset(self.config.val_subset_name)
 
         return DataLoader(
             dataset=dataset,
@@ -94,7 +96,8 @@ class OTXDataModule(LightningDataModule):
 
     def test_dataloader(self) -> DataLoader:
         """Get test dataloader."""
-        config, dataset = self._get_config("test"), self._get_dataset("test")
+        config = self._get_config(self.config.test_subset_name)
+        dataset = self._get_dataset(self.config.test_subset_name)
 
         return DataLoader(
             dataset=dataset,
