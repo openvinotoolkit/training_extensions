@@ -36,7 +36,5 @@ def configure_hydra_outputs(cfg: DictConfig) -> None:
     if cfg.hydra.output_subdir is not None:
         hydra_output = Path(cfg.hydra.runtime.output_dir) / Path(cfg.hydra.output_subdir)
         task_cfg = copy.deepcopy(cfg)
-        # hydra_cfg = copy.deepcopy(HydraConfig.instance().cfg)
         _save_config(task_cfg, "config.yaml", hydra_output)
-        # _save_config(hydra_cfg, "hydra.yaml", hydra_output)
         _save_config(cfg.hydra.overrides.task, "overrides.yaml", hydra_output)
