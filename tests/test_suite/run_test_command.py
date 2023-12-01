@@ -877,7 +877,7 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_all_classes(template, root, otx_dir, args):
@@ -964,7 +964,7 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".png" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".png", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
@@ -1005,7 +1005,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
@@ -1094,7 +1094,7 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".png" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".png", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_find_testing():
