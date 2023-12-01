@@ -11,9 +11,12 @@ from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
+from otx.core.data.factory import OTXDatasetFactory
+from otx.core.data.mem_cache import (
+    MemCacheHandlerSingleton,
+    parse_mem_cache_size_to_int,
+)
 from otx.core.types.task import OTXTaskType
-
-from .factory import OTXDatasetFactory
 
 if TYPE_CHECKING:
     from otx.core.config.data import (
@@ -40,9 +43,14 @@ class OTXDataModule(LightningDataModule):
             format=self.config.data_format,
         )
 
+        mem_cache_mode = "singleprocessing"
+
         for name, dm_subset in dataset.subsets().items():
             try:
                 sub_config = self._get_config(name)
+
+                if sub_config.num_workers > 0:
+                    mem_cache_mode = "multiprocessing"
 
                 self.subsets[name] = OTXDatasetFactory.create(
                     task=self.task,
@@ -52,6 +60,16 @@ class OTXDataModule(LightningDataModule):
                 log.info(f"Add name: {name}, self.subsets: {self.subsets}")
             except KeyError:  # noqa: PERF203
                 log.warning(f"{name} has no config. Skip it")
+
+        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+
+        self.mem_cache_handler = MemCacheHandlerSingleton.create(
+            mode=mem_cache_mode,
+            mem_size=mem_size,
+        )
+
+    def __del__(self) -> None:
+        MemCacheHandlerSingleton.delete()
 
     def _get_config(self, subset: str) -> SubsetConfig:
         if (config := self.config.subsets.get(subset)) is None:

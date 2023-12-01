@@ -1,2 +1,4 @@
 data_format: ???
 data_root: ${base.data_dir}
+
+mem_cache_size: 1GB
