@@ -12,3 +12,7 @@ subsets:
     batch_size: 8
     num_workers: 2
     transform_lib_type: MMPRETRAIN
+  test:
+    batch_size: 8
+    num_workers: 2
+    transform_lib_type: MMPRETRAIN

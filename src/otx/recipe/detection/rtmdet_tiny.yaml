@@ -87,6 +87,34 @@ data:
             - img_shape
             - scale_factor
           type: PackDetInputs
+    test:
+      batch_size: 5
+      transforms:
+        - backend_args: null
+          type: LoadImageFromFile
+        - keep_ratio: true
+          scale:
+            - 640
+            - 640
+          type: Resize
+        - pad_val:
+            img:
+              - 114
+              - 114
+              - 114
+          size:
+            - 640
+            - 640
+          type: Pad
+        - type: LoadAnnotations
+          with_bbox: true
+        - meta_keys:
+            - img_id
+            - img_path
+            - ori_shape
+            - img_shape
+            - scale_factor
+          type: PackDetInputs
 model:
   otx_model:
     config:

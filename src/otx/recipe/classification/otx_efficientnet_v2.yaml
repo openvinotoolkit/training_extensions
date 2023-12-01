@@ -27,6 +27,17 @@ data:
         - crop_size: 224
           type: CenterCrop
         - type: PackInputs
+    test:
+      batch_size: 64
+      transforms:
+        - type: LoadImageFromFile
+        - backend: pillow
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
 model:
   otx_model:
     config:
