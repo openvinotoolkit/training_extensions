@@ -13,4 +13,5 @@ class TransformLibType(str, Enum):
 
     TORCHVISION = "TORCHVISION"
     MMCV = "MMCV"
+    MMPRETRAIN = "MMPRETRAIN"
     MMDET = "MMDET"

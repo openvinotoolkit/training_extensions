@@ -12,7 +12,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -32,9 +32,9 @@ class MMDetCompatibleModel(OTXDetectionModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX detection model
     compatible for OTX pipelines.
     """
-
     def __init__(self, config: DictConfig) -> None:
         self.config = config
+        self.load_from = config.pop("load_from", None)
         super().__init__()
 
     def _create_model(self) -> nn.Module:
@@ -47,12 +47,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         det = MODELS.get("DetDataPreprocessor")
         MMENGINE_MODELS.register_module(module=det)
 
-        try:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
-        except AssertionError:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
-
-        return model
+        return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
