@@ -13,3 +13,5 @@ test: false
 hydra:
   searchpath:
     - pkg://otx
+  runtime:
+    output_dir: ${base.output_dir}
