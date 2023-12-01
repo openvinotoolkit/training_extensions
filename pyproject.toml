@@ -192,8 +192,6 @@ ignore = [
     "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
     # flake8-fixme
     "FIX002",   # line-contains-todo
-
-    "UP007"     # Use `X | Y` for type annotations
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.

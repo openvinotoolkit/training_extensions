@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable
 
 import numpy as np
 import torch
@@ -24,7 +24,7 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
     def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
         super().__init__(dm_subset, transforms)
 
-    def _get_item_impl(self, index: int) -> Optional[DetDataEntity]:
+    def _get_item_impl(self, index: int) -> DetDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data = self._get_img_data(img)

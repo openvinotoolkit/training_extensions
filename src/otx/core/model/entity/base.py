@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Generic, Union
+from typing import Any, Generic
 
 from torch import nn
 
@@ -36,14 +36,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
-    ) -> Union[T_OTXBatchPredEntity, OTXBatchLossEntity]:
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for you model."""
         raise NotImplementedError
 
     def forward(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> Union[T_OTXBatchPredEntity, OTXBatchLossEntity]:
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         # If customize_inputs is overrided
         outputs = (
