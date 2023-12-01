@@ -67,7 +67,7 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             find_unused_parameters=find_unused_parameters,
         )
     else:
-        if not torch.cuda.is_available():
+        if not torch.cuda.is_available():  # noqa
             assert digit_version(mmcv.__version__) >= digit_version(
                 "1.4.4"
             ), "Please use MMCV >= 1.4.4 for CPU training!"

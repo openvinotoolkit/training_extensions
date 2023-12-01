@@ -21,9 +21,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
-from otx.cli.tools.cli import main as otx_cli
 from rich.console import Console
 from rich.table import Table
+
+from otx.cli.tools.cli import main as otx_cli
 
 
 def get_parser() -> argparse.ArgumentParser:
