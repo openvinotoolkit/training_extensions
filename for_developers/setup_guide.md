@@ -47,8 +47,16 @@ otx install --option dev
 
 Please see [requirements-lock.txt](requirements-lock.txt). This is what I got after the above installation steps by `pip freeze`.
 
-## Launch training with demo recipe
+## Launch training with demo template
+
+- Launch detection task ATSS-R50-FPN template
 
 ```
 otx train +recipe=detection/atss_r50_fpn base.data_dir=tests/assets/car_tree_bug model.otx_model.config.bbox_head.num_classes=3 trainer.max_epochs=50 trainer.check_val_every_n_epoch=10 trainer=gpu base.work_dir=outputs/test_work_dir base.output_dir=outputs/test_output_dir
+```
+
+- Change subset names, e.g., "train" -> "train_16" (for training)
+
+```
+otx train ... data.train_subset_name=<arbitrary-name> data.val_subset_name=<arbitrary-name> data.test_subset_name=<arbitrary-name>
 ```

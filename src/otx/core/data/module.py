@@ -40,18 +40,25 @@ class OTXDataModule(LightningDataModule):
             format=self.config.data_format,
         )
 
-        for name, dm_subset in dataset.subsets().items():
-            try:
-                sub_config = self._get_config(name)
+        available_name_mapping = {
+            self.config.train_subset_name: "train",
+            self.config.val_subset_name: "val",
+            self.config.test_subset_name: "test",
+        }
 
-                self.subsets[name] = OTXDatasetFactory.create(
-                    task=self.task,
-                    dm_subset=dm_subset,
-                    config=sub_config,
-                )
-                log.info(f"Add name: {name}, self.subsets: {self.subsets}")
-            except KeyError:  # noqa: PERF203
-                log.warning(f"{name} has no config. Skip it")
+        for name, dm_subset in dataset.subsets().items():
+            if name not in available_name_mapping:
+                log.warning(f"{name} is not available. Skip it")
+                continue
+
+            sub_config = self._get_config(available_name_mapping[name])
+
+            self.subsets[name] = OTXDatasetFactory.create(
+                task=self.task,
+                dm_subset=dm_subset,
+                config=sub_config,
+            )
+            log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
     def _get_config(self, subset: str) -> SubsetConfig:
         if (config := self.config.subsets.get(subset)) is None:
@@ -70,7 +77,7 @@ class OTXDataModule(LightningDataModule):
 
     def train_dataloader(self) -> DataLoader:
         """Get train dataloader."""
-        config = self._get_config(self.config.train_subset_name)
+        config = self._get_config("train")
         dataset = self._get_dataset(self.config.train_subset_name)
 
         return DataLoader(
@@ -83,7 +90,7 @@ class OTXDataModule(LightningDataModule):
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
-        config = self._get_config(self.config.val_subset_name)
+        config = self._get_config("val")
         dataset = self._get_dataset(self.config.val_subset_name)
 
         return DataLoader(
@@ -96,7 +103,7 @@ class OTXDataModule(LightningDataModule):
 
     def test_dataloader(self) -> DataLoader:
         """Get test dataloader."""
-        config = self._get_config(self.config.test_subset_name)
+        config = self._get_config("test")
         dataset = self._get_dataset(self.config.test_subset_name)
 
         return DataLoader(
