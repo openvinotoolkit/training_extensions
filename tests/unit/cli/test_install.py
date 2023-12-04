@@ -32,7 +32,7 @@ class TestInstall:
         assert argument_list == expected_argument
 
     def test_install_extra(self, mocker: MockerFixture) -> None:
-        mock_create_command = mocker.patch("otx.cli.install.create_command")
+        mock_create_command = mocker.patch("pip._internal.commands.create_command")
         mock_create_command.return_value.main.return_value = 0
         status_code = otx_install(option="dev")
         assert status_code == mock_create_command.return_value.main.return_value
@@ -42,7 +42,7 @@ class TestInstall:
         assert "anomalib" not in argument_call_list
 
     def test_install_full(self, mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
-        mock_create_command = mocker.patch("otx.cli.install.create_command")
+        mock_create_command = mocker.patch("pip._internal.commands.create_command")
         mock_create_command.return_value.main.return_value = 0
         mock_mim_installation = mocker.patch("otx.cli.install.mim_installation")
         mock_mim_installation.return_value = 0
