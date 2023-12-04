@@ -44,9 +44,8 @@ dev = [
     "coverage",
     "pytest-timeout",
     "pytest-mock",
-    "onnx==1.13.0",
-    "onnxruntime==1.14.1",
     "pytest-csv",
+    "pytest-cov",
 ]
 docs = [
     "furo",
@@ -90,13 +89,11 @@ build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
-[tool.coverage.run]
+[tool.coverage.paths]
 source = [
-    "src/otx",
+    "src",
 ]
-omit = [
-    "**/__init__.py",
-]
+
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
