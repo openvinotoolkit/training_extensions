@@ -13,8 +13,10 @@ from otx.core.types.transformer_libs import TransformLibType
 @dataclass
 class SubsetConfig:
     """DTO for dataset subset configuration."""
+
     batch_size: int
     num_workers: int
+    subset_name: str
 
     transform_lib_type: TransformLibType
     transforms: list[dict[str, Any]]
@@ -23,6 +25,10 @@ class SubsetConfig:
 @dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
+
     data_format: str
     data_root: str
-    subsets: dict[str, SubsetConfig]
+
+    train_subset: SubsetConfig
+    val_subset: SubsetConfig
+    test_subset: SubsetConfig

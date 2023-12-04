@@ -1,2 +1,9 @@
 data_format: ???
 data_root: ${base.data_dir}
+
+train_subset:
+  subset_name: train
+val_subset:
+  subset_name: val
+test_subset:
+  subset_name: test
