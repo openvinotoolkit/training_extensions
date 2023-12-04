@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
@@ -96,7 +96,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: DetBatchDataEntity,
-    ) -> Union[DetBatchPredEntity, OTXBatchLossEntity]:
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
 
         if self.training:

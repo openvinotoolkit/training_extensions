@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 # classification.model.backbones should be initialized to register the backbones.
 import otx.algo.classification.model.backbones  # noqa: F401
@@ -81,7 +81,7 @@ class MMPretrainCompatibleModel(OTXClassificationModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
-    ) -> Union[MulticlassClsBatchPredEntity, OTXBatchLossEntity]:
+    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample
         if self.training:
             if not isinstance(outputs, dict):

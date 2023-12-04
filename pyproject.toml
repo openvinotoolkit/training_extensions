@@ -98,7 +98,11 @@ source = [
 omit = [
     "**/__init__.py",
 ]
-
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # MYPY CONFIGURATION.                                                         #
@@ -193,8 +197,6 @@ ignore = [
     "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
     # flake8-fixme
     "FIX002",   # line-contains-todo
-
-    "UP007"     # Use `X | Y` for type annotations
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
