@@ -34,22 +34,29 @@ def fxt_datamodule(fxt_asset_dir, fxt_mmcv_det_transform_config) -> OTXDataModul
     batch_size = 8
     num_workers = 0
     config = DataModuleConfig(
-        format="coco_instances",
+        data_format="coco_instances",
         data_root=data_root,
-        subsets={
-            "train": SubsetConfig(
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
-            ),
-            "val": SubsetConfig(
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
-            ),
-        },
+        train_subset=SubsetConfig(
+            subset_name="train",
+            batch_size=batch_size,
+            num_workers=num_workers,
+            transform_lib_type="MMDET",
+            transforms=fxt_mmcv_det_transform_config,
+        ),
+        val_subset=SubsetConfig(
+            subset_name="val",
+            batch_size=batch_size,
+            num_workers=num_workers,
+            transform_lib_type="MMDET",
+            transforms=fxt_mmcv_det_transform_config,
+        ),
+        test_subset=SubsetConfig(
+            subset_name="test",
+            batch_size=batch_size,
+            num_workers=num_workers,
+            transform_lib_type="MMDET",
+            transforms=fxt_mmcv_det_transform_config,
+        ),
     )
     datamodule = OTXDataModule(
         task=OTXTaskType.DETECTION,
