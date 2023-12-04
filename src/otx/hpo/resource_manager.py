@@ -22,6 +22,7 @@ import torch
 
 from otx.hpo.utils import check_positive
 from otx.utils.logger import get_logger
+from otx.algorithms.common.utils import is_xpu_available
 
 logger = get_logger()
 
@@ -93,41 +94,24 @@ class CPUResourceManager(BaseResourceManager):
         return len(self._usage_status) < self._num_parallel_trial
 
 
-class GPUResourceManager(BaseResourceManager):
-    """Resource manager class for GPU.
+class AcceleratorManager(BaseResourceManager):
+    """Abstract Resource manager class for accelerators.
 
     Args:
-        num_gpu_for_single_trial (int, optional): How many GPUs is used for a single trial. Defaults to 1.
-        available_gpu (Optional[str], optional): How many GPUs are available. Defaults to None.
+        num_devices_per_trial (int, optional): Number of devices used for a single trial. Defaults to 1.
+        available_devices (Optional[str], optional): Number of devices available. Defaults to None.
     """
 
-    def __init__(self, num_gpu_for_single_trial: int = 1, available_gpu: Optional[str] = None):
-        check_positive(num_gpu_for_single_trial, "num_gpu_for_single_trial")
+    def __init__(self, num_devices_per_trial: int = 1, available_devices: Optional[str] = None):
+        check_positive(num_devices_per_trial, "num_devices_per_trial")
 
-        self._num_gpu_for_single_trial = num_gpu_for_single_trial
-        self._available_gpu = self._set_available_gpu(available_gpu)
+        self._num_devices_per_trial = num_devices_per_trial
+        self._available_devices = self._set_available_devices(available_devices)
         self._usage_status: Dict[Any, List] = {}
 
-    def _set_available_gpu(self, available_gpu: Optional[str] = None):
-        if available_gpu is None:
-            cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
-            if cuda_visible_devices is not None:
-                available_gpu_arr = self._transform_gpu_format_from_string_to_arr(cuda_visible_devices)
-            else:
-                num_gpus = torch.cuda.device_count()
-                available_gpu_arr = list(range(num_gpus))
-        else:
-            available_gpu_arr = self._transform_gpu_format_from_string_to_arr(available_gpu)
-
-        return available_gpu_arr
-
-    def _transform_gpu_format_from_string_to_arr(self, gpu: str):
-        for val in gpu.split(","):
-            if not val.isnumeric():
-                raise ValueError(
-                    "gpu format is wrong. " "gpu should only have numbers delimited by ','.\n" f"your value is {gpu}"
-                )
-        return [int(val) for val in gpu.split(",")]
+    @abstractmethod
+    def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
+        raise NotImplementedError
 
     def reserve_resource(self, trial_id: Any) -> Optional[Dict]:
         """Reserve a resource under 'trial_id'.
@@ -146,11 +130,15 @@ class GPUResourceManager(BaseResourceManager):
         if trial_id in self._usage_status:
             raise RuntimeError(f"{trial_id} already has reserved resource.")
 
-        resource = list(self._available_gpu[: self._num_gpu_for_single_trial])
-        self._available_gpu = self._available_gpu[self._num_gpu_for_single_trial :]
+        resource = list(self._available_devices[: self._num_devices_per_trial])
+        self._available_devices = self._available_devices[self._num_devices_per_trial :]
 
         self._usage_status[trial_id] = resource
-        return {"CUDA_VISIBLE_DEVICES": ",".join([str(val) for val in resource])}
+        return self._make_env_var_for_train(resource)
+
+    @abstractmethod
+    def _make_env_var_for_train(self, device_arr: List[int]) -> Dict[str, str]:
+        raise NotImplementedError
 
     def release_resource(self, trial_id: Any):
         """Release a resource under 'trial_id'.
@@ -161,39 +149,77 @@ class GPUResourceManager(BaseResourceManager):
         if trial_id not in self._usage_status:
             logger.warning(f"{trial_id} trial don't use resource now.")
         else:
-            self._available_gpu.extend(self._usage_status[trial_id])
+            self._available_devices.extend(self._usage_status[trial_id])
             del self._usage_status[trial_id]
 
     def have_available_resource(self):
         """Check that there is available resource."""
-        return len(self._available_gpu) >= self._num_gpu_for_single_trial
+        return len(self._available_devices) >= self._num_devices_per_trial
+
+
+class GPUResourceManager(AcceleratorManager):
+    """Resource manager class for GPU."""
+    def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
+        if available_devices is None:
+            cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+            if cuda_visible_devices is not None:
+                available_devices_arr = _cvt_comma_delimited_str_to_list(cuda_visible_devices)
+            else:
+                num_gpus = torch.cuda.device_count()
+                available_devices_arr = list(range(num_gpus))
+        else:
+            available_devices_arr = _cvt_comma_delimited_str_to_list(available_devices)
+
+        return available_devices_arr
+
+    def _make_env_var_for_train(self, device_arr: List[int]) -> Dict[str, str]:
+        return {"CUDA_VISIBLE_DEVICES": ",".join([str(val) for val in device_arr])}
+
+
+class XPUResourceManager(AcceleratorManager):
+    """Resource manager class for XPU."""
+    def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
+        if available_devices is None:
+            cuda_visible_devices = os.getenv("ONEAPI_DEVICE_SELECTOR", "").split(":")
+            if len(cuda_visible_devices) > 1:
+                available_devices_arr = _cvt_comma_delimited_str_to_list(cuda_visible_devices[1])
+            else:
+                num_gpus = torch.xpu.device_count()
+                available_devices_arr = list(range(num_gpus))
+        else:
+            available_devices_arr = _cvt_comma_delimited_str_to_list(available_devices)
+
+        return available_devices_arr
+
+    def _make_env_var_for_train(self, device_arr: List[int]) -> Dict[str, str]:
+        return {"ONEAPI_DEVICE_SELECTOR": "level_zero:" + ",".join([str(val) for val in device_arr])}
 
 
 def get_resource_manager(
-    resource_type: Literal["gpu", "cpu"],
+    resource_type: Literal["gpu", "cpu", "xpu"],
     num_parallel_trial: Optional[int] = None,
-    num_gpu_for_single_trial: Optional[int] = None,
-    available_gpu: Optional[str] = None,
+    num_devices_per_trial: Optional[int] = None,
+    available_devices: Optional[str] = None,
 ) -> BaseResourceManager:
     """Get an appropriate resource manager depending on current environment.
 
     Args:
-        resource_type (Literal["gpu", "cpu"]): Which type of resource to use.
+        resource_type (Literal["gpu", "cpu", "xpu"]): Which type of resource to use.
                                                If can be changed depending on environment.
         num_parallel_trial (Optional[int]): How many trials to run in parallel. It's used for CPUResourceManager.
                                             Defaults to None.
-        num_gpu_for_single_trial (Optional[int]): How many GPUs is used for a single trial.
+        num_devices_per_trial (Optional[int]): How many GPUs is used for a single trial.
                                                   It's used for GPUResourceManager. Defaults to None.
-        available_gpu (Optional[str]): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+        available_devices (Optional[str]): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
 
     Raises:
-        ValueError: If resource_type is neither 'gpu' nor 'cpu', then raise an error.
+        ValueError: If resource_type is neither 'gpu', 'cpu', nor 'xpu' then raise an error.
 
     Returns:
         BaseResourceManager: Resource manager to use.
     """
-    if resource_type == "gpu" and not torch.cuda.is_available():
-        logger.warning("GPU can't be used now. resource type is modified to cpu.")
+    if (resource_type == "gpu" and not torch.cuda.is_available()) or (resource_type == "xpu" and not is_xpu_available()):
+        logger.warning("{} can't be used now. resource type is modified to cpu.".format(resource_type))
         resource_type = "cpu"
 
     if resource_type == "cpu":
@@ -201,9 +227,13 @@ def get_resource_manager(
         args = _remove_none_from_dict(args)
         return CPUResourceManager(**args)  # type: ignore
     if resource_type == "gpu":
-        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}  # type: ignore
+        args = {"num_devices_per_trial": num_devices_per_trial, "available_devices": available_devices}  # type: ignore
         args = _remove_none_from_dict(args)
         return GPUResourceManager(**args)  # type: ignore
+    if resource_type == "xpu":
+        args = {"num_devices_per_trial": num_devices_per_trial, "available_devices": available_devices}  # type: ignore
+        args = _remove_none_from_dict(args)
+        return XPUResourceManager(**args)  # type: ignore
     raise ValueError(f"Available resource type is cpu, gpu. Your value is {resource_type}.")
 
 
@@ -212,3 +242,13 @@ def _remove_none_from_dict(dict_val: Dict):
     for key in key_to_remove:
         del dict_val[key]
     return dict_val
+
+
+def _cvt_comma_delimited_str_to_list(string: str):
+    for val in string.split(","):
+        if not val.isnumeric():
+            raise ValueError(
+                "string format is wrong. " "string should only have numbers delimited by ','.\n"
+                f"your value is {string}"
+            )
+    return [int(val) for val in string.split(",")]

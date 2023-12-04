@@ -26,6 +26,7 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
+from otx.algorithms.common.utils import is_xpu_available
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
@@ -459,7 +460,12 @@ class HpoRunner:
         """
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
-        resource_type = "gpu" if torch.cuda.is_available() else "cpu"
+        if torch.cuda.is_available():
+            resource_type = "gpu"
+        elif is_xpu_available():
+            resource_type = "xpu"
+        else:
+            resource_type = "cpu"
         run_hpo_loop(
             hpo_algo,
             partial(
