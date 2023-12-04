@@ -62,8 +62,8 @@ class OTXDataModule(LightningDataModule):
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:
-            msg = (
-                f"Dataset has no '{subset}'. Available subsets = {self.subsets.keys()}"
+            raise KeyError(
+                f"Dataset has no '{subset}'. Available subsets = {list(self.subsets.keys())}",
             )
             raise KeyError(msg)
         return dataset

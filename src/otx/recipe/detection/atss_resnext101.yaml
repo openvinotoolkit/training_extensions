@@ -163,7 +163,8 @@ model:
           use_sigmoid: true
           loss_weight: 1.0
   optimizer:
-    _target_: torch.optim.Adam
+    _target_: torch.optim.SGD
     _partial_: true
-    lr: 1e-4
-    weight_decay: 0.0
+    lr: 0.004
+    weight_decay: 0.001
+    momentum: 0.9

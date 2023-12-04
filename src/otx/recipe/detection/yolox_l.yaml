@@ -6,26 +6,50 @@ defaults:
 data:
   subsets:
     train:
-      batch_size: 4
+      batch_size: 8
       transforms:
         - type: LoadImageFromFile
         - type: LoadAnnotations
           with_bbox: true
-        - type: MinIoURandomCrop
-          min_ious:
-            - 0.1
-            - 0.3
+        - type: CachedMosaic
+          random_pop: false
+          pad_val: 114.0
+          max_cached_images: 20
+          img_scale:
+            - 640
+            - 640
+        - type: RandomAffine
+          scaling_ratio_range:
             - 0.5
-            - 0.7
-            - 0.9
-          min_crop_size: 0.3
+            - 1.5
+          border:
+            - -320
+            - -320
+        - type: CachedMixUp
+          img_scale:
+            - 640
+            - 640
+          ratio_range:
+            - 1.0
+            - 1.0
+          prob: 0.5
+          random_pop: false
+          pad_val:
+            - 114
+            - 114
+            - 114
+          max_cached_images: 10
+        - type: YOLOXHSVRandomAug
         - type: Resize
           scale:
-            - 992
-            - 736
+            - 640
+            - 640
           keep_ratio: false
         - type: RandomFlip
           prob: 0.5
+        - type: Pad
+          pad_to_square: true
+          pad_val: 114
         - type: PackDetInputs
           meta_keys:
             - ori_filename
@@ -105,3 +129,9 @@ model:
         num_classes: 80
         in_channels: 256
         feat_channels: 256
+  optimizer:
+    _target_: torch.optim.SGD
+    _partial_: true
+    lr: 0.001
+    weight_decay: 0.001
+    momentum: 0.9

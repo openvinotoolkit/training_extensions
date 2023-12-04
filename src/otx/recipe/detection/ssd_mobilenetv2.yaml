@@ -11,6 +11,12 @@ data:
         - type: LoadImageFromFile
         - type: LoadAnnotations
           with_bbox: true
+        - type: PhotoMetricDistortion
+          brightness_delta: 32
+          contrast_range:
+            - 0.5
+            - 1.5
+          hue_delta: 18
         - type: MinIoURandomCrop
           min_ious:
             - 0.1
@@ -21,8 +27,8 @@ data:
           min_crop_size: 0.3
         - type: Resize
           scale:
-            - 992
-            - 736
+            - 864
+            - 864
           keep_ratio: false
         - type: RandomFlip
           prob: 0.5
@@ -157,7 +163,8 @@ model:
             - 0.2
             - 0.2
   optimizer:
-    _target_: torch.optim.Adam
+    _target_: torch.optim.SGD
     _partial_: true
-    lr: 1e-2
-    weight_decay: 0.0
+    lr: 0.01
+    weight_decay: 0.001
+    momentum: 0.9
