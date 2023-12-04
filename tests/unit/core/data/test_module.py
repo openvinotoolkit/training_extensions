@@ -19,22 +19,26 @@ class TestModule:
         return DataModuleConfig(
             data_format="coco_instances",
             data_root=".",
-            subsets={
-                "train": MagicMock(spec=SubsetConfig),
-                "val": MagicMock(spec=SubsetConfig),
-                "test": MagicMock(spec=SubsetConfig),
-            },
-            train_subset_name="train_1",
-            val_subset_name="val_1",
-            test_subset_name="test_1",
+            train_subset=MagicMock(spec=SubsetConfig),
+            val_subset=MagicMock(spec=SubsetConfig),
+            test_subset=MagicMock(spec=SubsetConfig),
         )
 
     @patch("otx.core.data.module.OTXDatasetFactory")
     @patch("otx.core.data.module.DmDataset.import_from")
     @pytest.mark.parametrize(
-        "task", [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.DETECTION],
+        "task",
+        [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.DETECTION],
     )
-    def test_init(self, mock_dm_dataset, mock_otx_dataset_factory, task, fxt_config) -> None:
+    def test_init(
+        self, mock_dm_dataset, mock_otx_dataset_factory, task, fxt_config,
+    ) -> None:
+        # Our query for subset name for train, val, test
+        fxt_config.train_subset.subset_name = "train_1"
+        fxt_config.val_subset.subset_name = "val_1"
+        fxt_config.test_subset.subset_name = "test_1"
+
+        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {
             f"{name}_{idx}": MagicMock()
             for name in ["train", "val", "test"]

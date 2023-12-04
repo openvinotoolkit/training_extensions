@@ -5,60 +5,59 @@ defaults:
   - override /model: mmdet
 recipe: detection/atss_r50_fpn
 data:
-  subsets:
-    train:
-      batch_size: 2
-      transforms:
-        - backend_args: null
-          type: LoadImageFromFile
-        - type: LoadAnnotations
-          with_bbox: true
-        - keep_ratio: true
-          scale:
-            - 1333
-            - 800
-          type: Resize
-        - prob: 0.5
-          type: RandomFlip
-        - type: PackDetInputs
-    val:
-      batch_size: 1
-      transforms:
-        - backend_args: null
-          type: LoadImageFromFile
-        - keep_ratio: true
-          scale:
-            - 1333
-            - 800
-          type: Resize
-        - type: LoadAnnotations
-          with_bbox: true
-        - meta_keys:
-            - img_id
-            - img_path
-            - ori_shape
-            - img_shape
-            - scale_factor
-          type: PackDetInputs
-    test:
-      batch_size: 1
-      transforms:
-        - backend_args: null
-          type: LoadImageFromFile
-        - keep_ratio: true
-          scale:
-            - 1333
-            - 800
-          type: Resize
-        - type: LoadAnnotations
-          with_bbox: true
-        - meta_keys:
-            - img_id
-            - img_path
-            - ori_shape
-            - img_shape
-            - scale_factor
-          type: PackDetInputs
+  train_subset:
+    batch_size: 2
+    transforms:
+      - backend_args: null
+        type: LoadImageFromFile
+      - type: LoadAnnotations
+        with_bbox: true
+      - keep_ratio: true
+        scale:
+          - 1333
+          - 800
+        type: Resize
+      - prob: 0.5
+        type: RandomFlip
+      - type: PackDetInputs
+  val_subset:
+    batch_size: 1
+    transforms:
+      - backend_args: null
+        type: LoadImageFromFile
+      - keep_ratio: true
+        scale:
+          - 1333
+          - 800
+        type: Resize
+      - type: LoadAnnotations
+        with_bbox: true
+      - meta_keys:
+          - img_id
+          - img_path
+          - ori_shape
+          - img_shape
+          - scale_factor
+        type: PackDetInputs
+  test_subset:
+    batch_size: 1
+    transforms:
+      - backend_args: null
+        type: LoadImageFromFile
+      - keep_ratio: true
+        scale:
+          - 1333
+          - 800
+        type: Resize
+      - type: LoadAnnotations
+        with_bbox: true
+      - meta_keys:
+          - img_id
+          - img_path
+          - ori_shape
+          - img_shape
+          - scale_factor
+        type: PackDetInputs
 model:
   otx_model:
     config:

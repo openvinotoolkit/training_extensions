@@ -4,37 +4,36 @@ defaults:
   - override /data: mmpretrain
   - override /model: mmpretrain
 data:
-  subsets:
-    train:
-      batch_size: 64
-      transforms:
-        - type: LoadImageFromFile
-        - backend: pillow
-          scale: 224
-          type: RandomResizedCrop
-        - type: PackInputs
-    val:
-      batch_size: 64
-      transforms:
-        - type: LoadImageFromFile
-        - backend: pillow
-          edge: short
-          scale: 256
-          type: ResizeEdge
-        - crop_size: 224
-          type: CenterCrop
-        - type: PackInputs
-    test:
-      batch_size: 64
-      transforms:
-        - type: LoadImageFromFile
-        - backend: pillow
-          edge: short
-          scale: 256
-          type: ResizeEdge
-        - crop_size: 224
-          type: CenterCrop
-        - type: PackInputs
+  train_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        scale: 224
+        type: RandomResizedCrop
+      - type: PackInputs
+  val_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+  test_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
 model:
   otx_model:
     config:

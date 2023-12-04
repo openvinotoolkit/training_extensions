@@ -16,6 +16,7 @@ class SubsetConfig:
 
     batch_size: int
     num_workers: int
+    subset_name: str
 
     transform_lib_type: TransformLibType
     transforms: list[dict[str, Any]]
@@ -27,8 +28,7 @@ class DataModuleConfig:
 
     data_format: str
     data_root: str
-    subsets: dict[str, SubsetConfig]
 
-    train_subset_name: str = "train"
-    val_subset_name: str = "val"
-    test_subset_name: str = "test"
+    train_subset: SubsetConfig
+    val_subset: SubsetConfig
+    test_subset: SubsetConfig
