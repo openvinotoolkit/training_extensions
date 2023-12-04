@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mmengine.runner import load_checkpoint
-
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
@@ -18,6 +16,9 @@ if TYPE_CHECKING:
 
 def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str) -> nn.Module:
     """Build a model by using the registry."""
+    from mmengine.runner import load_checkpoint
+
+
     try:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="tuple"))
     except AssertionError:

@@ -63,6 +63,7 @@ docs = [
 base = [
     "torch==2.1.1",
     "lightning==2.1.2",
+    "pytorchcv"
 ]
 mmlab = [
     "mmdet==3.2.0",

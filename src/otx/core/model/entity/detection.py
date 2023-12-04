@@ -24,8 +24,6 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-# This is an example for MMDetection models
-# In this way, we can easily import some models developed from the MM community
 class MMDetCompatibleModel(OTXDetectionModel):
     """Detection model compatible for MMDet.
 
@@ -41,9 +39,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
     def _create_model(self) -> nn.Module:
         # import mmdet.models as _
         from mmdet.registry import MODELS
-        from mmengine.runner.checkpoint import load_checkpoint
         from mmengine.registry import MODELS as MMENGINE_MODELS
-        from mmengine.logging import MMLogger
 
         # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
         # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
@@ -52,7 +48,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
 
         return build_mm_model(self.config, MODELS, self.load_from)
 
-    def customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
         from mmengine.structures import InstanceData
 
@@ -113,7 +109,8 @@ class MMDetCompatibleModel(OTXDetectionModel):
                 elif isinstance(v, torch.Tensor):
                     losses[k] = v
                 else:
-                    raise TypeError(f"Loss output should be list or torch.tensor but got {type(v)}")
+                    message = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(message)
             return losses
 
         scores = []
