@@ -1,3 +1,8 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Helper to support MMDET data transform functions."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
@@ -12,22 +17,26 @@ from mmdet.datasets.transforms import (
 from mmdet.registry import TRANSFORMS
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo, ImageType
+from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
 
 from .mmcv import MMCVTransformLib
 
 if TYPE_CHECKING:
+    from mmengine.registry import Registry
+
     from otx.core.config.data import SubsetConfig
 
 
 @TRANSFORMS.register_module(force=True)
 class LoadAnnotations(MMDetLoadAnnotations):
+    """Class to override MMDet LoadAnnotations."""
+
     def transform(self, results: dict) -> dict:
+        """Transform OTXDataEntity to MMDet annotation data entity format."""
         if (otx_data_entity := results.get("__otx__")) is None:
-            raise RuntimeError(
-                "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)",
-            )
+            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
+            raise RuntimeError(msg)
 
         if self.with_bbox and isinstance(otx_data_entity, DetDataEntity):
             gt_bboxes = otx_data_entity.bboxes.numpy()
@@ -42,7 +51,10 @@ class LoadAnnotations(MMDetLoadAnnotations):
 
 @TRANSFORMS.register_module(force=True)
 class PackDetInputs(MMDetPackDetInputs):
+    """Class to override PackDetInputs LoadAnnotations."""
+
     def transform(self, results: dict) -> DetDataEntity:
+        """Pack MMDet data entity into DetDataEntity."""
         transformed = super().transform(results)
 
         image = tv_tensors.Image(transformed.get("inputs"))
@@ -75,13 +87,16 @@ class PackDetInputs(MMDetPackDetInputs):
 
 
 class MMDetTransformLib(MMCVTransformLib):
+    """Helper to support MMDET transforms in OTX."""
+
     @classmethod
-    def get_builder(cls):
-        """Transform builder obtained from MMDet"""
+    def get_builder(cls) -> Registry:
+        """Transform builder obtained from MMDet."""
         return TRANSFORMS
 
     @classmethod
     def generate(cls, config: SubsetConfig) -> list[Callable]:
+        """Generate MMDET transforms from the configuration."""
         transforms = super().generate(config)
 
         cls._check_mandatory_transforms(

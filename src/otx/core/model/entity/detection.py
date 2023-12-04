@@ -120,6 +120,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         for output in outputs:
             if not isinstance(output, DetDataSample):
                 raise TypeError(output)
+
             scores.append(output.pred_instances.scores)
             bboxes.append(
                 tv_tensors.BoundingBoxes(

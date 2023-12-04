@@ -1,5 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
 """CLI entrypoint for training."""
 # ruff: noqa
 
@@ -46,6 +47,7 @@ def otx_train(overrides: list[str]) -> None:
     configure_hydra_outputs(cfg)
 
     # train the model
+    from otx.core.engine.train import train
     metric_dict, _ = train(cfg)
 
     # # safely retrieve metric value for hydra-based hyperparameter optimization

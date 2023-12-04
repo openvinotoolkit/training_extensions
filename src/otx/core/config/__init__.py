@@ -27,11 +27,11 @@ class TrainConfig:
     base: BaseConfig
     callbacks: dict
     data: DataModuleConfig
+    trainer: TrainerConfig
     model: ModelConfig
     logger: dict
     recipe: Optional[str]
     train: bool
-    test: bool
 
     seed: Optional[int] = None
 
