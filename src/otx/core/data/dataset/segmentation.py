@@ -6,11 +6,11 @@
 from __future__ import annotations
 
 from typing import Callable, Optional
-
-import cv2
 import numpy as np
 import torch
-from datumaro import Mask, DatasetSubset, Image
+
+import cv2
+from datumaro.components.annotation import Mask, Image
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
@@ -30,15 +30,8 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         if img_data.shape[-1] == 4:
             img_data = cv2.cvtColor(img_data, cv2.COLOR_BGRA2BGR)
         img_shape = img.size
-
-        mask_anns = [ann for ann in item.annotations if isinstance(ann, Mask)]
-
-        breakpoint()
-        masks = (
-            np.stack([ann.points for ann in mask_anns], axis=0).astype(np.float32)
-            if len(mask_anns) > 0
-            else np.zeros((0, 4), dtype=np.float32)
-        )
+        # create 2D class mask. We use np.sum() since Datumaro returns 3D masks (one for each class)
+        mask_anns = np.sum([ann.as_class_mask() for ann in item.annotations if isinstance(ann, Mask)], axis=0, dtype=np.uint8)
 
         entity = SegDataEntity(
             image=img_data,
@@ -49,11 +42,10 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 pad_shape=img_shape,
                 scale_factor=(1.0, 1.0),
             ),
-            bboxes=tv_tensors.Mask(
-                masks
+            gt_seg_map=tv_tensors.Mask(
+                torch.as_tensor(mask_anns, dtype=torch.long)
             )
         )
-
         return self._apply_transforms(entity)
 
     @property

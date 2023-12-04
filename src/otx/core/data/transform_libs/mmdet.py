@@ -84,7 +84,7 @@ class MMDetTransformLib(MMCVTransformLib):
     def generate(cls, config: SubsetConfig) -> list[Callable]:
         transforms = super().generate(config)
 
-        cls.check_mandatory_transforms(
+        cls._check_mandatory_transforms(
             transforms,
             mandatory_transforms={LoadAnnotations, PackDetInputs},
         )

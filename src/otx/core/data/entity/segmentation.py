@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class SegDataEntity(OTXDataEntity):
     """Data entity for segmentation task.
 
-    :param masks: mask annotations
+    :param gt_seg_map: mask annotations
     """
 
     @property
@@ -28,7 +28,7 @@ class SegDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.SEMANTIC_SEGMENTATION
 
-    masks: tv_tensors.Mask
+    gt_seg_map: tv_tensors.Mask
 
 @dataclass
 class SegPredEntity(SegDataEntity, OTXPredEntity):
@@ -56,7 +56,7 @@ class SegBatchDataEntity(OTXBatchDataEntity[SegDataEntity]):
             batch_size=batch_data.batch_size,
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
-            masks=[entity.masks for entity in entities],
+            masks=[entity.gt_seg_map for entity in entities],
         )
 
 @dataclass

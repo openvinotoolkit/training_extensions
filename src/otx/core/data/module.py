@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging as log
 from typing import TYPE_CHECKING
+from pathlib import Path
 
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
@@ -37,10 +38,14 @@ class OTXDataModule(LightningDataModule):
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
 
-        dataset = DmDataset.import_from(
-            self.config.data_root,
-            format=self.config.data_format,
-        )
+        if self.config.data_format == "common_semantic_segmentation":
+            dataset = dict()
+            train_data_roots = Path(self.config.data_root) / "train"
+            val_data_roots = Path(self.config.data_root) / "val"
+            dataset["train"] = DmDataset.import_from(train_data_roots, format=self.config.data_format).subsets()["default"]
+            dataset["val"] = DmDataset.import_from(val_data_roots, format=self.config.data_format).subsets()["default"]
+        else:
+            dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format).subsets()
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,

@@ -17,7 +17,6 @@ from otx.core.data.entity.segmentation import (
 from otx.core.model.entity.segmentation import OTXSegmentationModel
 from otx.core.model.module.base import OTXLitModule
 
-
 class OTXSegmentationLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX segmentation task."""
 
@@ -51,20 +50,20 @@ class OTXSegmentationLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Dice, key: str) -> None:
         results = meter.compute()
-        for k, v in results.items():
-            if not isinstance(v, Tensor):
-                log.debug("Cannot log item which is not Tensor")
-                continue
-            if v.numel() != 1:
-                log.debug("Cannot log Tensor which is not scalar")
-                continue
 
+        if isinstance(results, Tensor):
+            if results.numel() != 1:
+                log.debug("Cannot log Tensor which is not scalar")
+                return
             self.log(
-                f"{key}/{k}",
-                v,
+                f"{key}/Dice",
+                results,
                 sync_dist=True,
                 prog_bar=True,
             )
+        else:
+            log.debug("Cannot log item which is not Tensor")
+
 
     def validation_step(self, inputs: SegBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -87,10 +86,11 @@ class OTXSegmentationLitModule(OTXLitModule):
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-
+        # squeeze second dimension to make a 2D seg map
+        preds = [mask.squeeze(0) for mask in preds.masks]
         return {
-            "preds": preds.masks,
-            "target": inputs.masks
+            "preds": torch.stack(preds, dim=0),
+            "target": torch.stack(inputs.masks, dim=0)
         }
 
     def test_step(self, inputs: SegBatchDataEntity, batch_idx: int) -> None:

@@ -1,17 +1,18 @@
-_target_: otx.core.model.module.classification.OTXClassificationLitModule
+_target_: otx.core.model.module.segmentation.OTXSegmentationLitModule
 
 optimizer:
-  _target_: torch.optim.Adam
+  _target_: torch.optim.AdamW
   _partial_: true
-  lr: 1e-6
-  weight_decay: 1e-5
+  lr: 0.00006
+  betas: [0.9, 0.999]
+  weight_decay: 0.01
 
 scheduler:
   _target_: torch.optim.lr_scheduler.PolynomialLR
   _partial_: true
-  total_iters: 5
-  power: 1.0
-  last_epoch: -1
+  # total_iters: 5
+  # power: 1.0
+  # last_epoch: -1
 
 otx_model:
   _target_: otx.core.model.entity.segmentation.MMSegCompatibleModel

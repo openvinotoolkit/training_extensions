@@ -46,7 +46,6 @@ def otx_train(overrides: list[str]) -> None:
     configure_hydra_outputs(cfg)
 
     # train the model
-    from otx.core.engine.train import train
     metric_dict, _ = train(cfg)
 
     # # safely retrieve metric value for hydra-based hyperparameter optimization

@@ -38,7 +38,6 @@ class OTXLitModule(LightningModule):
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
         train_loss = self.model(inputs)
-        breakpoint()
         if isinstance(train_loss, Tensor):
             self.log(
                 "train/loss",

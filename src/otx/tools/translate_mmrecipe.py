@@ -34,18 +34,18 @@ if __name__ == "__main__":
                 {"override /data": args.data},
                 {"override /model": args.model},
             ],
-            "data": {
-                "subsets": {
-                    "train": {
-                        "batch_size": config["train_dataloader"]["batch_size"],
-                        "transforms": config["train_dataloader"]["dataset"]["pipeline"],
-                    },
-                    "val": {
-                        "batch_size": config["val_dataloader"]["batch_size"],
-                        "transforms": config["val_dataloader"]["dataset"]["pipeline"],
-                    },
-                },
-            },
+            # "data": {
+            #     "subsets": {
+            #         "train": {
+            #             "batch_size": config["train_dataloader"]["batch_size"],
+            #             "transforms": config["train_dataloader"]["dataset"]["pipeline"],
+            #         },
+            #         "val": {
+            #             "batch_size": config["val_dataloader"]["batch_size"],
+            #             "transforms": config["val_dataloader"]["dataset"]["pipeline"],
+            #         },
+            #     },
+            # },
             "model": {"otx_model": {"config": config["model"]}},
         },
     )

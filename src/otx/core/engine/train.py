@@ -60,7 +60,6 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     if cfg.seed is not None:
         seed_everything(cfg.seed, workers=True)
 
-    breakpoint()
     log.info(f"Instantiating datamodule <{cfg.data}>")
     datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
 

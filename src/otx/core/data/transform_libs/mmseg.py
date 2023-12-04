@@ -10,12 +10,15 @@ from typing import TYPE_CHECKING, Callable
 from mmseg.datasets.transforms import (
     PackSegInputs as MMSegPackInputs,
 )
+from mmseg.datasets.transforms import (
+    LoadAnnotations as MMSegLoadAnnotations,
+)
 
 from mmseg.registry import TRANSFORMS
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.classification import SegDataEntity
+from otx.core.data.entity.segmentation import SegDataEntity
 
 from .mmcv import MMCVTransformLib
 
@@ -24,14 +27,30 @@ if TYPE_CHECKING:
 
     from otx.core.config.data import SubsetConfig
 
+
 @TRANSFORMS.register_module(force=True)
-class PackInputs(MMSegPackInputs):
+class LoadAnnotations(MMSegLoadAnnotations):
+    def transform(self, results: dict) -> dict:
+        if (otx_data_entity := results.get("__otx__")) is None:
+            raise RuntimeError(
+                "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)",
+            )
+        if isinstance(otx_data_entity, SegDataEntity):
+            gt_masks = otx_data_entity.gt_seg_map.numpy()
+            results["gt_seg_map"] = gt_masks
+            # we need this to properly handle seg maps during transforms
+            results["seg_fields"] = ["gt_seg_map"]
+
+        return results
+
+
+@TRANSFORMS.register_module(force=True)
+class PackSegInputs(MMSegPackInputs):
     """Class to override PackInputs."""
 
     def transform(self, results: dict) -> SegDataEntity:
         """Pack MMSeg data entity into SegDataEntity."""
         transformed = super().transform(results)
-
         image = tv_tensors.Image(transformed.get("inputs"))
         data_samples = transformed["data_samples"]
 
@@ -39,8 +58,7 @@ class PackInputs(MMSegPackInputs):
         ori_shape = data_samples.ori_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
-
-        masks = results["__otx__"].masks
+        masks = data_samples.gt_sem_seg.data
 
         return SegDataEntity(
             image=image,
@@ -51,7 +69,7 @@ class PackInputs(MMSegPackInputs):
                 pad_shape=pad_shape,
                 scale_factor=scale_factor,
             ),
-            masks=masks,
+            gt_seg_map=masks,
         )
 
 
@@ -70,7 +88,7 @@ class MMSegTransformLib(MMCVTransformLib):
 
         cls._check_mandatory_transforms(
             transforms,
-            mandatory_transforms={PackInputs},
+            mandatory_transforms={LoadAnnotations, PackSegInputs},
         )
 
         return transforms
