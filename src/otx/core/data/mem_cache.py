@@ -211,20 +211,26 @@ class MemCacheHandlerSingleton:
     """A singleton class to create, delete and get MemCacheHandlerBase."""
 
     instance: MemCacheHandlerBase
+    is_shutdown: bool = False
     CPU_MEM_LIMITS_GIB: int = 30
 
     @classmethod
-    def get(cls) -> MemCacheHandlerBase:
+    def get(cls) -> MemCacheHandlerBase | None:
         """Get the created MemCacheHandlerBase.
 
         If no one is created before, raise RuntimeError.
         """
+        if cls.is_shutdown:
+            # Gracefully return None
+            return None
+
         if not hasattr(cls, "instance"):
-            cls_name = cls.__class__.__name__
+            cls_name = cls.__name__
             msg = (
                 f"Before calling {cls_name}.get(), you should call {cls_name}.create() first.",
             )
-            raise MemCacheHandlerError(msg)
+            logger.error(msg)
+            return None
 
         return cls.instance
 
@@ -266,13 +272,20 @@ class MemCacheHandlerSingleton:
             cls.instance.freeze()
         elif mode == "multiprocessing":
             cls.instance = MemCacheHandlerForMP(mem_size)
-            # Should delete if receive sigint to gracefully terminate
-            signal.signal(signal.SIGINT, lambda _, __: cls.delete())
         elif mode == "singleprocessing":
             cls.instance = MemCacheHandlerForSP(mem_size)
         else:
             msg = f"{mode} is unknown mode."
             raise MemCacheHandlerError(msg)
+
+        # Should delete if receive sigint to gracefully terminate
+        original_handler = signal.getsignal(signal.SIGINT)
+
+        def _new_handler(signum, frame) -> None:  # noqa: ANN001
+            original_handler(signum, frame)  # type: ignore[operator, misc]
+            cls.shutdown()
+
+        signal.signal(signal.SIGINT, _new_handler)
 
         return cls.instance
 
@@ -281,3 +294,9 @@ class MemCacheHandlerSingleton:
         """Delete the existing MemCacheHandlerBase instance."""
         if hasattr(cls, "instance"):
             del cls.instance
+
+    @classmethod
+    def shutdown(cls) -> None:
+        """This method will be called if the process terminates by the interrupt signal."""
+        cls.is_shutdown = True
+        cls.delete()

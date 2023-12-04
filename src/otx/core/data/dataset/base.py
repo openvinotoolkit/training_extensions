@@ -77,17 +77,14 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         raise RuntimeError(msg)
 
     def _get_img_data(self, img: Image) -> np.ndarray:
+        handler = MemCacheHandlerSingleton.get()
+
         key = img.path if isinstance(img, ImageFromFile) else id(img)
-        handler = None
 
-        try:
-            handler = MemCacheHandlerSingleton.get()
+        if handler is not None and (img_data := handler.get(key=key)[0]) is not None:
+            return img_data
 
-            if (img_data := handler.get(key=key)[0]) is not None:
-                return img_data
-
-        finally:
-            img_data = img.data
+        img_data = img.data
 
         # TODO(vinnamkim): This is a temporal approach
         # There is an upcoming Datumaro patch here for this
