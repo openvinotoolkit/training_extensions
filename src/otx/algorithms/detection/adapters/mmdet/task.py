@@ -13,8 +13,6 @@ from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
-from mmcv.ops.nms import NMSop
-from mmcv.ops.roi_align import RoIAlign
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmdet import __version__
@@ -42,11 +40,7 @@ from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.detection.adapters.mmdet.apis.train import (
-    monkey_patched_nms,
-    monkey_patched_roi_align,
-    train_detector,
-)
+from otx.algorithms.detection.adapters.mmdet.apis.train import train_detector
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
     IncrDetectionConfigurer,
@@ -347,10 +341,6 @@ class MMDetectionTask(OTXDetectionTask):
                 )
         else:
             target_classes = mm_dataset.CLASSES
-
-        if cfg.device in ["xpu", "hpu"]:
-            NMSop.forward = monkey_patched_nms
-            RoIAlign.forward = monkey_patched_roi_align
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))

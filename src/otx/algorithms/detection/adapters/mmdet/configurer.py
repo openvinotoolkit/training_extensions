@@ -6,6 +6,8 @@
 from typing import Optional, Tuple
 
 from mmcv.utils import ConfigDict
+from mmcv.ops.nms import NMSop
+from mmcv.ops.roi_align import RoIAlign
 
 from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
@@ -17,6 +19,8 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
     patch_tiling,
     should_cluster_anchors,
+    monkey_patched_nms,
+    monkey_patched_roi_align,
 )
 from otx.utils.logger import get_logger
 
@@ -71,6 +75,10 @@ class DetectionConfigurer(BaseConfigurer):
                 self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "default_task_adapt":
                 self.configure_bbox_head(cfg)
+        if cfg.device in ["xpu", "hpu"]:
+            NMSop.forward = monkey_patched_nms
+            RoIAlign.forward = monkey_patched_roi_align
+
 
     def configure_classes(self, cfg):
         """Patch classes for model and dataset."""
