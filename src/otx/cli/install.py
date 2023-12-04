@@ -10,7 +10,6 @@ import os
 from typing import TYPE_CHECKING
 
 from jsonargparse import ArgumentParser
-from pip._internal.commands import create_command
 from pkg_resources import Requirement
 from rich.console import Console
 from rich.logging import RichHandler
@@ -73,6 +72,8 @@ def otx_install(option: str | None = None, verbose: bool = False) -> int:
     Returns:
         int: Status code of the pip install command.
     """
+    from pip._internal.commands import create_command
+
     requirements_dict = get_requirements("otx")
     # Add base and openvino requirements.
     requirements = requirements_dict["base"]
