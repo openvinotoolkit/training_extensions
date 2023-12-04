@@ -63,10 +63,12 @@ docs = [
 base = [
     "torch==2.1.1",
     "lightning==2.1.2",
-    "pytorchcv"
+    "pytorchcv",
+    "timm",
 ]
 mmlab = [
     "mmdet==3.2.0",
+    "mmpretrain==1.1.1",
 ]
 
 [project.scripts]
