@@ -5,7 +5,10 @@ mem_cache_size: 1GB
 
 train_subset:
   subset_name: train
+  num_workers: 2
 val_subset:
   subset_name: val
+  num_workers: 2
 test_subset:
   subset_name: test
+  num_workers: 2

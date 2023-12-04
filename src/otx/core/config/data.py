@@ -28,8 +28,9 @@ class DataModuleConfig:
 
     data_format: str
     data_root: str
-    mem_cache_size: str
 
     train_subset: SubsetConfig
     val_subset: SubsetConfig
     test_subset: SubsetConfig
+
+    mem_cache_size: str = "1GB"

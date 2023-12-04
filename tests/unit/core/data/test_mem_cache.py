@@ -8,7 +8,6 @@ import string
 import numpy as np
 import psutil
 import pytest
-from otx.core.config.data import DataModuleConfig
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
     parse_mem_cache_size_to_int,
@@ -123,12 +122,6 @@ class TestMemCacheHandler:
 )
 def test_parse_mem_size_str(mem_size_arg, expected) -> None:
     try:
-        config = DataModuleConfig(
-            data_format="anonymous",
-            data_root="",
-            subsets={},
-            mem_cache_size=mem_size_arg,
-        )
-        assert parse_mem_cache_size_to_int(config.mem_cache_size) == expected
+        assert parse_mem_cache_size_to_int(mem_size_arg) == expected
     except ValueError:
         assert expected is None

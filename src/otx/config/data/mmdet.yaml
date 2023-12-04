@@ -5,13 +5,10 @@ data_format: coco_instances
 
 train_subset:
   batch_size: 8
-  num_workers: 2
   transform_lib_type: MMDET
 val_subset:
   batch_size: 8
-  num_workers: 2
   transform_lib_type: MMDET
 test_subset:
   batch_size: 8
-  num_workers: 2
   transform_lib_type: MMDET
