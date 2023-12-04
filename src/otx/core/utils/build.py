@@ -18,6 +18,8 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str)
     """Build a model by using the registry."""
     from mmengine.runner import load_checkpoint
 
+    from otx import algo  # noqa: F401
+
 
     try:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="tuple"))
