@@ -109,8 +109,8 @@ class MMDetCompatibleModel(OTXDetectionModel):
                 elif isinstance(v, torch.Tensor):
                     losses[k] = v
                 else:
-                    message = "Loss output should be list or torch.tensor but got {type(v)}"
-                    raise TypeError(message)
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
             return losses
 
         scores = []
