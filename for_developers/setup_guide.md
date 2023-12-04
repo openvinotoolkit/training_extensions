@@ -58,7 +58,7 @@ otx train +recipe=detection/atss_r50_fpn base.data_dir=tests/assets/car_tree_bug
 - Change subset names, e.g., "train" -> "train_16" (for training)
 
 ```console
-otx train ... data.train_subset_name=<arbitrary-name> data.val_subset_name=<arbitrary-name> data.test_subset_name=<arbitrary-name>
+otx train ... data.train_subset.subset_name=<arbitrary-name> data.val_subset.subset_name=<arbitrary-name> data.test_subset.subset_name=<arbitrary-name>
 ```
 
 - Do test with the best validation model checkpoint
