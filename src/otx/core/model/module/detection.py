@@ -59,14 +59,11 @@ class OTXDetectionLitModule(OTXLitModule):
                 log.debug("Cannot log Tensor which is not scalar")
                 continue
 
-            if k != "map_50":
-                continue
-
             self.log(
                 f"{key}/{k}",
                 v,
                 sync_dist=True,
-                prog_bar=True,
+                prog_bar=k == "map_50",
             )
 
     def validation_step(self, inputs: DetBatchDataEntity, batch_idx: int) -> None:
