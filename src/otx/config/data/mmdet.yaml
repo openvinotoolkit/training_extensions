@@ -3,12 +3,15 @@ defaults:
 
 data_format: coco_instances
 
-subsets:
-  train:
-    batch_size: 8
-    num_workers: 2
-    transform_lib_type: MMDET
-  val:
-    batch_size: 8
-    num_workers: 2
-    transform_lib_type: MMDET
+train_subset:
+  batch_size: 8
+  num_workers: 2
+  transform_lib_type: MMDET
+val_subset:
+  batch_size: 8
+  num_workers: 2
+  transform_lib_type: MMDET
+test_subset:
+  batch_size: 8
+  num_workers: 2
+  transform_lib_type: MMDET

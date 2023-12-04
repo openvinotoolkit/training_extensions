@@ -2,3 +2,10 @@ data_format: ???
 data_root: ${base.data_dir}
 
 mem_cache_size: 1GB
+
+train_subset:
+  subset_name: train
+val_subset:
+  subset_name: val
+test_subset:
+  subset_name: test
