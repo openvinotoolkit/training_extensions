@@ -1,40 +1,37 @@
-Helper for conducting experiments
+Experiment helper
 =================================
 
-When you conduct experiments using OTX, you need to execute all necessary cases and parse proper values from output files, which is time consuimg work.
-To reduce that effort, you can use "experiment.py" which automatically run all possible cases and parse values.
-And also it provids additional convenient features.
+experiment.py is a powerful tool designed to streamline and automate the process of conducting experiments using OTX.
+It simplifies the execution of multiple test cases, automatically parses output values,
+and organizes results efficiently.
+The primary goal is to reduce the manual effort required in running experiments and enhance overall productivity.
 
 
-It's festures are as below:
+## Key features
 
-* Given multiple varialbes, it automatically collects all combinations and runs them.
-* Each experiment results are organized and saved as a file.
-* All experiments results are aggregated after all jobs are done.
-* If there are some jobs where error is raised, subsequent jobs will be run independently.
-* All failed jobs are listed after all jobs are done.
-* Proper model files are selected when "otx eval" is executed.
-* Organize all existing values from single workspace and save them as a file.
+### Automated Experiment Execution
+* Given multiple variables, it automatically generates all combinations and runs the experiments.
+* Proper model files are selected automatically when the "otx eval" command is executed, based on the preceding command.
+
+### Fault Tolerance
+* Subsequent jobs are executed independently, irrespective of whether the previous job raised an error.
+* All failed commands are printed and saved in a file after the entire experiment is finished.
+
+### Automated Experiment Execution
+
+* All possible values from a single workspace are organized and saved in a file.
+* Experiment results are aggregated after the completion of all commands.
 
 
-How to use it
+How to Use
 -------------
-It has two features now.
-
-If you pass experiment recipe, it automatically counts all available cases and run them.
-After every runs are done, experiment results are aggregated and  aggregated results are saved as a file
-If you pass workspace, every results which exist are automatically aggregated and save it as a file.
-
+### Feature 1 : run experiments & aggregate results
 
 Arguments
-* -f / --file : path of file descripting how to run experiments. If it's given, all experiments will be run and results are aggregated.
-* -p / --path : path of workspace. If it's given, experiment results in the workspace are aggregated and save it as a file.
+* -f / --file : Path to the YAML file describing the experiment setup. After all runs, results are aggregated and saved.
+* -d / --dryrun : Preview the experiment list before execution. Use with '-f / --file' argument.
 
-You can't set both arguments. Please use either "-f" or "-p".
-
-
-Feature 1 : run experiments ( -f / --file )
-This is a sample experiment recipe yaml file
+Sample Experiment Recipe YAML File:
 
     output_path: research_framework_demo/det_model_test
     constants: # value in constant can't have other constant or variable.
@@ -62,29 +59,36 @@ This is a sample experiment recipe yaml file
 
 
 Arguments for recipe
-* output_path (optional) : The output path where all experiments outputs are saved. If it isn't set, "./experiment_{executed_time}" is set as default.
+* output_path (optional) : Output path where all experiment outputs are saved. Default is "./experiment_{executed_time}"
 * constant (optional) : 
-        it's similar as constant or variable in programming language.
-        You can use it to replace duplicated string by using ${constant_name} in variable or command.
+        It's similar as constant or variable in programming languages.
+        You can use it to replace duplicated string by using ${constant_name} in variables or commands.
 * variables (optional) : 
-        it can be used in a similar way as "constant". But it's different in that "otx experiment" makes all combinations based on variables and summarize experiment results based on the variables.
-        For example, if two model and two dataset are given as variable, then 4 cases will be run automatically. Also key of each varaible are added in a column of experiment result table.
-* repeat (optional) : you can set how many times you want to run experiments. All repeated experiment have different random seed in "otx train" command.
-* command (required) : what you want to run. You can write both single command or list of commands.
+        It can be used in a similar way to "constant". But it's different in that "otx experiment" makes all combinations and summarize experiment results based on variables.
+        For example, if two models and two dataset are given as variable, then total 4 cases will be run as experiment. Also key of each varaible will be row headers of experiment result table.
+* repeat (optional) : Number of times to run experiments. Repeated experiments have different random seeds in "otx train" command.
+* command (required) : Specifies the commands to run. Supports both single commands and lists of commands.
+
+Upon completion of each experiment, the results are organized within the own workspace.
+Following the conclusion of all experiments, all experiment results are aggregated in two distinct formats:
+"all experiments result" and "experiment summary" within the specified output_path.
+If the repeat parameter is set to a value greater than 1, the results of repeated experiments are averaged in the summary format.
+
+All TensorBoard log files are automatically copied to the output_path/tensorboard directory.
+If you want to run tensorboard with all experiments result, you just need to use it as a tensorboard argument.
+If there are failed cases, variables and error logs are both printed and saved as a file after the execution of all commands.
+
+Note that all commands within each case are executed within the same workspace,
+obviating the need to set a template path from the second command.
+When the "otx eval" command is executed, the model file (model weight or exported model, etc.)
+is automatically selected based on the preceding command.
+The output file of "otx eval" is then stored at "workspace_path/outputs/XXXX_{train, export, optimize, etc.}/"
+under the name "performance.json".
 
 
-After each experiments are done, experiment results are aggregated in own workspace.
-After all experiments are done, all experiments results are aggregated in two format, "all experiments result" and "experiment summary" in output_path.
-If you set more than 1 to repeat, Averaged experiment results are provided in summary format.
-All tensorboard log files are copied at output_path/tensorboard directory. If you want to run tensorboard with all experiments result, you just need to use it as a tensorboard argument.
-If there are failed cases, variables and error log of failed cases are printed after all job is done and saved as a file.
-All of this command is executed in a same workspace. It means that you don't have to set template path from the second otx cli.
-When "otx eval" is executed, model file (model weight or exported model, etc.) is automatically selected according to which command is executed just before.
-Output file of "otx eval" is saved at "workspace_path/outputs/XXXX_{train, export, optimize, etc.}/" under the name "performance.json"
+### Feature 2 : organize experiment result from single workspace
 
+Arguments
+* -p / --path : Path to the workspace. Experiment results in the workspace are organized and saved.
 
-Feature 2 : aggregate experiment result from single workspace ( -p / --parse )
-
-
-You can aggregate experiment result from single workspace.
-It tries to parse all results if values exist and saves them as a file.
+This feature parses all possible values from a single workspace and saves them as a file.
