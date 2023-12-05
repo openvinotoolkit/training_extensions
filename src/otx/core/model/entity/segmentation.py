@@ -5,15 +5,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
-from torchvision import tv_tensors
-
+from otx.algo.segmentation.model.backbones import LiteHRNet
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
-from otx.algo.segmentation.model.backbones import LiteHRNet
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
@@ -40,9 +38,9 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        from mmseg.registry import MODELS
         from mmengine.registry import MODELS as MMENGINE_MODELS
         from mmengine.runner.checkpoint import load_checkpoint
+        from mmseg.registry import MODELS
 
         seg = MODELS.get("SegDataPreProcessor")
         MMENGINE_MODELS.register_module(module=seg)
@@ -62,8 +60,8 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         return model
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
-        from mmseg.structures import SegDataSample
         from mmengine.structures import PixelData
+        from mmseg.structures import SegDataSample
 
         mmseg_inputs: dict[str, Any] = {}
         mmseg_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
@@ -77,7 +75,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                     "scale_factor": img_info.scale_factor,
                 },
                 gt_sem_seg=PixelData(
-                    data=masks
+                    data=masks,
                 ),
             )
             for img_info, masks in zip(
@@ -104,7 +102,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: SegBatchDataEntity,
-    ) -> Union[SegBatchPredEntity, OTXBatchLossEntity]:
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
         from mmseg.structures import SegDataSample
         if self.training:
             if not isinstance(outputs, dict):
@@ -117,7 +115,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             return losses
 
         masks = []
-        scores = []
 
         for output in outputs:
             if not isinstance(output, SegDataSample):
@@ -128,6 +125,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=scores,
-            masks=masks
+            scores=[],
+            masks=masks,
         )

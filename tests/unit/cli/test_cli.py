@@ -4,6 +4,7 @@
 import sys
 
 import pytest
+
 from otx.cli import OTXCLI
 
 

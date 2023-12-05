@@ -3,6 +3,7 @@
 
 
 from omegaconf import DictConfig
+
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 

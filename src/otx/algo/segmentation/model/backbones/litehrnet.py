@@ -14,14 +14,13 @@ Modified from:
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
 
 import torch
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, build_conv_layer, build_norm_layer
 from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
-from mmseg.models.builder import BACKBONES
-from mmseg.registry import MODELS
 from torch import nn
 from torch.nn import functional
 
@@ -31,7 +30,6 @@ from otx.algo.segmentation.model.utils import (
     LocalAttentionModule,
     channel_shuffle,
 )
-
 
 
 # pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments
@@ -207,9 +205,9 @@ class SpatialWeighting(nn.Module):
         channels: int,
         ratio: int = 16,
         conv_cfg: dict | None = None,
-        norm_cfg: dict | None = None,  # noqa: ARG002
+        norm_cfg: dict | None = None,
         act_cfg: dict | tuple[dict, dict] = ({"type": "ReLU"}, {"type": "Sigmoid"}),
-        enable_norm: bool = False,  # noqa: ARG002
+        enable_norm: bool = False,
     ) -> None:
         """Spatial weighting.
 

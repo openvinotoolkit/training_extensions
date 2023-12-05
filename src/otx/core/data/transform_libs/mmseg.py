@@ -8,12 +8,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from mmseg.datasets.transforms import (
-    PackSegInputs as MMSegPackInputs,
-)
-from mmseg.datasets.transforms import (
     LoadAnnotations as MMSegLoadAnnotations,
 )
-
+from mmseg.datasets.transforms import (
+    PackSegInputs as MMSegPackInputs,
+)
 from mmseg.registry import TRANSFORMS
 from torchvision import tv_tensors
 
@@ -30,11 +29,12 @@ if TYPE_CHECKING:
 
 @TRANSFORMS.register_module(force=True)
 class LoadAnnotations(MMSegLoadAnnotations):
+    """Class to override MMSeg LoadAnnotations."""
     def transform(self, results: dict) -> dict:
+        """Transform OTXDataEntity to MMSeg annotation data entity format."""
         if (otx_data_entity := results.get("__otx__")) is None:
-            raise RuntimeError(
-                "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)",
-            )
+            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
+            raise RuntimeError(msg)
         if isinstance(otx_data_entity, SegDataEntity):
             gt_masks = otx_data_entity.gt_seg_map.numpy()
             results["gt_seg_map"] = gt_masks

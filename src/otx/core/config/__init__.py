@@ -32,6 +32,7 @@ class TrainConfig:
     logger: dict
     recipe: Optional[str]
     train: bool
+    test: bool
 
     seed: Optional[int] = None
 

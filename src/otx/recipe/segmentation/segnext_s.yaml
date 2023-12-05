@@ -1,45 +1,45 @@
 # @package _global_
 defaults:
-- override /base: segmentation
-- override /data: segmentation
-- override /model: mmseg
+  - override /base: segmentation
+  - override /data: segmentation
+  - override /model: mmseg
 data:
   subsets:
     train:
       batch_size: 8
       transforms:
-      - type: LoadImageFromFile
-      - reduce_zero_label: true
-        type: LoadAnnotations
-      - keep_ratio: true
-        ratio_range:
-        - 0.5
-        - 2.0
-        scale:
-        - 2048
-        - 512
-        type: RandomResize
-      - cat_max_ratio: 0.75
-        crop_size:
-        - 512
-        - 512
-        type: RandomCrop
-      - prob: 0.5
-        type: RandomFlip
-      - type: PhotoMetricDistortion
-      - type: PackSegInputs
+        - type: LoadImageFromFile
+        - reduce_zero_label: true
+          type: LoadAnnotations
+        - keep_ratio: true
+          ratio_range:
+            - 0.5
+            - 2.0
+          scale:
+            - 2048
+            - 512
+          type: RandomResize
+        - cat_max_ratio: 0.75
+          crop_size:
+            - 512
+            - 512
+          type: RandomCrop
+        - prob: 0.5
+          type: RandomFlip
+        - type: PhotoMetricDistortion
+        - type: PackSegInputs
     val:
       batch_size: 1
       transforms:
-      - type: LoadImageFromFile
-      - keep_ratio: true
-        scale:
-        - 2048
-        - 512
-        type: Resize
-      - reduce_zero_label: true
-        type: LoadAnnotations
-      - type: PackSegInputs
+        - type: LoadImageFromFile
+        - keep_ratio: true
+          scale:
+            - 2048
+            - 512
+          type: Resize
+        - reduce_zero_label: true
+          type: LoadAnnotations
+        - type: PackSegInputs
 model:
   otx_model:
     config:
@@ -48,38 +48,38 @@ model:
         act_cfg:
           type: GELU
         attention_kernel_paddings:
-        - 2
-        - - 0
-          - 3
-        - - 0
-          - 5
-        - - 0
-          - 10
+          - 2
+          - - 0
+            - 3
+          - - 0
+            - 5
+          - - 0
+            - 10
         attention_kernel_sizes:
-        - 5
-        - - 1
-          - 7
-        - - 1
-          - 11
-        - - 1
-          - 21
+          - 5
+          - - 1
+            - 7
+          - - 1
+            - 11
+          - - 1
+            - 21
         depths:
-        - 2
-        - 2
-        - 4
-        - 2
+          - 2
+          - 2
+          - 4
+          - 2
         drop_path_rate: 0.1
         drop_rate: 0.0
         embed_dims:
-        - 64
-        - 128
-        - 320
-        - 512
+          - 64
+          - 128
+          - 320
+          - 512
         mlp_ratios:
-        - 8
-        - 8
-        - 4
-        - 4
+          - 8
+          - 8
+          - 4
+          - 4
         norm_cfg:
           requires_grad: true
           type: BN
@@ -87,18 +87,18 @@ model:
       data_preprocessor:
         bgr_to_rgb: true
         mean:
-        - 123.675
-        - 116.28
-        - 103.53
+          - 123.675
+          - 116.28
+          - 103.53
         pad_val: 0
         seg_pad_val: 255
         size:
-        - 512
-        - 512
+          - 512
+          - 512
         std:
-        - 58.395
-        - 57.12
-        - 57.375
+          - 58.395
+          - 57.12
+          - 57.375
         test_cfg:
           size_divisor: 32
         type: SegDataPreProcessor
@@ -115,13 +115,13 @@ model:
           rand_init: true
           train_steps: 6
         in_channels:
-        - 128
-        - 320
-        - 512
+          - 128
+          - 320
+          - 512
         in_index:
-        - 1
-        - 2
-        - 3
+          - 1
+          - 2
+          - 3
         loss_decode:
           loss_weight: 1.0
           type: CrossEntropyLoss

@@ -2,11 +2,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (c) 2020-2021 The MMSegmentation Authors
-# SPDX-License-Identifier: Apache-2.0
-#
 
-from .utils import IterativeAggregator, channel_shuffle, AsymmetricPositionAttentionModule, LocalAttentionModule
+from .utils import AsymmetricPositionAttentionModule, IterativeAggregator, LocalAttentionModule, channel_shuffle
 
 __all__ = [
     "IterativeAggregator",

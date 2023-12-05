@@ -17,6 +17,7 @@ from otx.core.data.entity.segmentation import (
 from otx.core.model.entity.segmentation import OTXSegmentationModel
 from otx.core.model.module.base import OTXLitModule
 
+
 class OTXSegmentationLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX segmentation task."""
 
@@ -87,10 +88,10 @@ class OTXSegmentationLitModule(OTXLitModule):
         inputs: SegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         # squeeze second dimension to make a 2D seg map
-        preds = [mask.squeeze(0) for mask in preds.masks]
+        pred_masks = [mask.squeeze(0) for mask in preds.masks]
         return {
-            "preds": torch.stack(preds, dim=0),
-            "target": torch.stack(inputs.masks, dim=0)
+            "preds": torch.stack(pred_masks, dim=0),
+            "target": torch.stack(inputs.masks, dim=0),
         }
 
     def test_step(self, inputs: SegBatchDataEntity, batch_idx: int) -> None:
