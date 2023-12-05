@@ -71,7 +71,8 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             assert digit_version(mmcv.__version__) >= digit_version(
                 "1.4.4"
             ), "Please use MMCV >= 1.4.4 for CPU training!"
-        elif cfg.device == "hpu":
+
+        if cfg.device == "hpu":
             use_autocast = bool(cfg.get("fp16_", False))
             model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
             model.to(model.src_device_obj)
