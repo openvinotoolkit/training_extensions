@@ -9,6 +9,7 @@ import logging as log
 import torch
 from torch import Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchvision import tv_tensors
 
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -51,19 +52,19 @@ class OTXInstanceSegLitModule(OTXLitModule):
         self._log_metrics(self.test_metric, "test")
         self.test_metric.reset()
 
-    def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
+    def _log_metrics(self, meter: MeanAveragePrecision, subset_name: str) -> None:
         results = meter.compute()
-        for k, v in results.items():
-            if not isinstance(v, Tensor):
+        for metric, value in results.items():
+            if not isinstance(value, Tensor):
                 log.debug("Cannot log item which is not Tensor")
                 continue
-            if v.numel() != 1:
+            if value.numel() != 1:
                 log.debug("Cannot log Tensor which is not scalar")
                 continue
 
             self.log(
-                f"{key}/{k}",
-                v,
+                f"{subset_name}/{metric}",
+                value,
                 sync_dist=True,
                 prog_bar=True,
             )
@@ -90,28 +91,32 @@ class OTXInstanceSegLitModule(OTXLitModule):
         inputs: InstanceSegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         """Convert the prediction entity to the format required by the compute metric function."""
-        # Extracting information from predictions
-        pred_info = [
-            {
+        pred_info = []
+        target_info = []
+
+        for bboxes, masks, scores, labels in zip(
+            preds.bboxes, preds.masks, preds.scores, preds.labels,
+        ):
+            pred_info.append({
                 "boxes": bboxes.data,
                 "masks": masks.data,
                 "scores": scores,
                 "labels": labels,
-            }
-            for bboxes, masks, scores, labels in zip(
-                preds.bboxes, preds.masks, preds.scores, preds.labels,
-            )
-        ]
+            })
 
-        # Extracting information from target inputs
-        target_info = [
-            {
+        # TODO: This is a hack to get the masks from the data samples
+        # converting PolygonMask to BitmapMask
+        data_samples = self.model._customize_inputs(inputs)
+        inputs.masks = [data_sample.gt_instances.masks.to_ndarray() for data_sample in data_samples['data_samples']]
+
+        for bboxes, masks, labels in zip(inputs.bboxes, inputs.masks, inputs.labels):
+            masks = tv_tensors.Mask(masks, dtype=torch.bool)
+            target_info.append({
                 "boxes": bboxes.data,
                 "masks": masks.data,
                 "labels": labels,
-            }
-            for bboxes, masks, labels in zip(inputs.bboxes, inputs.masks, inputs.labels)
-        ]
+            })
+
         return {"preds": pred_info, "target": target_info}
 
     def test_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:

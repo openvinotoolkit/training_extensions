@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
+from datumaro import Polygon
 from mmdet.datasets.transforms import (
     LoadAnnotations as MMDetLoadAnnotations,
 )
@@ -16,7 +17,7 @@ from mmdet.datasets.transforms import (
     PackDetInputs as MMDetPackDetInputs,
 )
 from mmdet.registry import TRANSFORMS
-from mmdet.structures.mask import BitmapMasks
+from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
@@ -45,8 +46,19 @@ class LoadAnnotations(MMDetLoadAnnotations):
             gt_bboxes = otx_data_entity.bboxes.numpy()
             results["gt_bboxes"] = gt_bboxes
         if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
-            gt_masks = otx_data_entity.masks.numpy()
-            results["gt_masks"] = BitmapMasks(gt_masks, *gt_masks.shape[1:])
+            height, width = results['ori_shape']
+            if self.poly2mask:
+                # convert polygon to BitmapMasks
+                gt_masks = otx_data_entity.masks.numpy()
+                gt_masks = BitmapMasks(gt_masks, height, width)
+            else:
+                # convert polygon to PolygonMasks
+                gt_masks = PolygonMasks(
+                            [
+                                [np.array(polygon.points)] for polygon in otx_data_entity.polygons
+                            ], height, width,
+                            )
+            results["gt_masks"] = gt_masks
         if self.with_label and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity)):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
             results["gt_bboxes_labels"] = gt_bboxes_labels
@@ -84,22 +96,22 @@ class PackDetInputs(MMDetPackDetInputs):
                         pad_shape=pad_shape,
                         scale_factor=scale_factor,
                     )
-
-        if isinstance(results['__otx__'], InstanceSegDataEntity):
+        if isinstance(data_samples.gt_instances.masks, BitmapMasks):
             masks = tv_tensors.Mask(data_samples.gt_instances.masks.to_ndarray(), dtype=torch.uint8)
-            return InstanceSegDataEntity(
-                    image=image,
-                    img_info=image_info,
-                    bboxes=bboxes,
-                    masks=masks,
-                    labels=labels,
-                )
+        else:
+            masks = tv_tensors.Mask(torch.empty(0))
 
-        return DetDataEntity(
-            image=image,
-            img_info=image_info,
-            bboxes=bboxes,
-            labels=labels,
+        if isinstance(data_samples.gt_instances.masks, PolygonMasks):
+            polygons = [Polygon(polygon[0]) for polygon in data_samples.gt_instances.masks.masks]
+        else:
+            polygons = []
+        return InstanceSegDataEntity(
+                image=image,
+                img_info=image_info,
+                bboxes=bboxes,
+                masks=masks,
+                labels=labels,
+                polygons=polygons,
         )
 
 

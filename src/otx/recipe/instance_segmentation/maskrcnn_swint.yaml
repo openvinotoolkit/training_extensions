@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - override /base: instance_segmentation
-  - override /data: mmdet
-  - override /model: mmdet_instance_seg
+- override /base: instance_segmentation
+- override /data: mmdet
+- override /model: mmdet_instance_seg
 
-recipe: instance_segmentation/maskrcnn_r50
+recipe: instance_segmentation/maskrcnn_swint
 
 data:
   subsets:
@@ -20,8 +20,8 @@ data:
         - type: Resize
           keep_ratio: true
           scale:
-            - 1024
-            - 1024
+            - 1344
+            - 1344
         - type: RandomFlip
           prob: 0.5
         - type: PackDetInputs
@@ -33,8 +33,8 @@ data:
         - type: Resize
           keep_ratio: true
           scale:
-            - 1024
-            - 1024
+            - 1344
+            - 1344
         - type: LoadAnnotations
           with_bbox: true
           with_mask: true
@@ -54,8 +54,8 @@ data:
         - type: Resize
           keep_ratio: true
           scale:
-            - 1024
-            - 1024
+            - 1344
+            - 1344
         - type: LoadAnnotations
           with_bbox: true
           with_mask: true
@@ -71,160 +71,173 @@ data:
 model:
   otx_model:
     config:
-      load_from: https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth
+      load_from: https://download.openmmlab.com/mmdetection/v2.0/swin/mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco/mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco_20210908_165006-90a4008c.pth
       backbone:
-        depth: 50
-        frozen_stages: 1
+        attn_drop_rate: 0.0
+        convert_weights: true
+        depths:
+        - 2
+        - 2
+        - 6
+        - 2
+        drop_path_rate: 0.2
+        drop_rate: 0.0
+        embed_dims: 96
         init_cfg:
-          checkpoint: "torchvision://resnet50"
-          type: "Pretrained"
-        norm_cfg:
-          requires_grad: true
-          type: "BN"
-        norm_eval: true
-        num_stages: 4
+          checkpoint: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+          type: Pretrained
+        mlp_ratio: 4
+        num_heads:
+        - 3
+        - 6
+        - 12
+        - 24
         out_indices:
-          - 0
-          - 1
-          - 2
-          - 3
-        style: "pytorch"
-        type: "ResNet"
+        - 0
+        - 1
+        - 2
+        - 3
+        patch_norm: true
+        qk_scale: null
+        qkv_bias: true
+        type: SwinTransformer
+        window_size: 7
+        with_cp: false
       data_preprocessor:
         bgr_to_rgb: true
         mean:
-          - 123.675
-          - 116.28
-          - 103.53
+        - 123.675
+        - 116.28
+        - 103.53
         pad_mask: true
         pad_size_divisor: 32
         std:
-          - 58.395
-          - 57.12
-          - 57.375
-        type: "DetDataPreprocessor"
+        - 58.395
+        - 57.12
+        - 57.375
+        type: DetDataPreprocessor
       neck:
         in_channels:
-          - 256
-          - 512
-          - 1024
-          - 2048
+        - 96
+        - 192
+        - 384
+        - 768
         num_outs: 5
         out_channels: 256
-        type: "FPN"
+        type: FPN
       roi_head:
         bbox_head:
           bbox_coder:
             target_means:
-              - 0.0
-              - 0.0
-              - 0.0
-              - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
             target_stds:
-              - 0.1
-              - 0.1
-              - 0.2
-              - 0.2
-            type: "DeltaXYWHBBoxCoder"
+            - 0.1
+            - 0.1
+            - 0.2
+            - 0.2
+            type: DeltaXYWHBBoxCoder
           fc_out_channels: 1024
           in_channels: 256
           loss_bbox:
             loss_weight: 1.0
-            type: "L1Loss"
+            type: L1Loss
           loss_cls:
             loss_weight: 1.0
-            type: "CrossEntropyLoss"
+            type: CrossEntropyLoss
             use_sigmoid: false
-          num_classes: 5
+          num_classes: 80
           reg_class_agnostic: false
           roi_feat_size: 7
-          type: "Shared2FCBBoxHead"
+          type: Shared2FCBBoxHead
         bbox_roi_extractor:
           featmap_strides:
-            - 4
-            - 8
-            - 16
-            - 32
+          - 4
+          - 8
+          - 16
+          - 32
           out_channels: 256
           roi_layer:
             output_size: 7
             sampling_ratio: 0
-            type: "RoIAlign"
-          type: "SingleRoIExtractor"
+            type: RoIAlign
+          type: SingleRoIExtractor
         mask_head:
           conv_out_channels: 256
           in_channels: 256
           loss_mask:
             loss_weight: 1.0
-            type: "CrossEntropyLoss"
+            type: CrossEntropyLoss
             use_mask: true
-          num_classes: 5
+          num_classes: 80
           num_convs: 4
-          type: "FCNMaskHead"
+          type: FCNMaskHead
         mask_roi_extractor:
           featmap_strides:
-            - 4
-            - 8
-            - 16
-            - 32
+          - 4
+          - 8
+          - 16
+          - 32
           out_channels: 256
           roi_layer:
             output_size: 14
             sampling_ratio: 0
-            type: "RoIAlign"
-          type: "SingleRoIExtractor"
-        type: "StandardRoIHead"
+            type: RoIAlign
+          type: SingleRoIExtractor
+        type: StandardRoIHead
       rpn_head:
         anchor_generator:
           ratios:
-            - 0.5
-            - 1.0
-            - 2.0
+          - 0.5
+          - 1.0
+          - 2.0
           scales:
-            - 8
+          - 8
           strides:
-            - 4
-            - 8
-            - 16
-            - 32
-            - 64
-          type: "AnchorGenerator"
+          - 4
+          - 8
+          - 16
+          - 32
+          - 64
+          type: AnchorGenerator
         bbox_coder:
           target_means:
-            - 0.0
-            - 0.0
-            - 0.0
-            - 0.0
+          - 0.0
+          - 0.0
+          - 0.0
+          - 0.0
           target_stds:
-            - 1.0
-            - 1.0
-            - 1.0
-            - 1.0
-          type: "DeltaXYWHBBoxCoder"
+          - 1.0
+          - 1.0
+          - 1.0
+          - 1.0
+          type: DeltaXYWHBBoxCoder
         feat_channels: 256
         in_channels: 256
         loss_bbox:
           loss_weight: 1.0
-          type: "L1Loss"
+          type: L1Loss
         loss_cls:
           loss_weight: 1.0
-          type: "CrossEntropyLoss"
+          type: CrossEntropyLoss
           use_sigmoid: true
-        type: "RPNHead"
+        type: RPNHead
       test_cfg:
         rcnn:
           mask_thr_binary: 0.5
           max_per_img: 100
           nms:
             iou_threshold: 0.5
-            type: "nms"
+            type: nms
           score_thr: 0.05
         rpn:
           max_per_img: 1000
           min_bbox_size: 0
           nms:
             iou_threshold: 0.7
-            type: "nms"
+            type: nms
           nms_pre: 1000
       train_cfg:
         rcnn:
@@ -234,7 +247,7 @@ model:
             min_pos_iou: 0.5
             neg_iou_thr: 0.5
             pos_iou_thr: 0.5
-            type: "MaxIoUAssigner"
+            type: MaxIoUAssigner
           debug: false
           mask_size: 28
           pos_weight: -1
@@ -243,7 +256,7 @@ model:
             neg_pos_ub: -1
             num: 512
             pos_fraction: 0.25
-            type: "RandomSampler"
+            type: RandomSampler
         rpn:
           allowed_border: -1
           assigner:
@@ -252,7 +265,7 @@ model:
             min_pos_iou: 0.3
             neg_iou_thr: 0.3
             pos_iou_thr: 0.7
-            type: "MaxIoUAssigner"
+            type: MaxIoUAssigner
           debug: false
           pos_weight: -1
           sampler:
@@ -260,12 +273,12 @@ model:
             neg_pos_ub: -1
             num: 256
             pos_fraction: 0.5
-            type: "RandomSampler"
+            type: RandomSampler
         rpn_proposal:
           max_per_img: 1000
           min_bbox_size: 0
           nms:
             iou_threshold: 0.7
-            type: "nms"
+            type: nms
           nms_pre: 2000
-      type: "MaskRCNN"
+      type: MaskRCNN

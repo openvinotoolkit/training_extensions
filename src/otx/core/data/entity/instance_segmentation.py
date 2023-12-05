@@ -13,6 +13,7 @@ from otx.core.types.task import OTXTaskType
 from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
 
 if TYPE_CHECKING:
+    from datumaro import Polygon
     from torch import LongTensor
     from torchvision import tv_tensors
 
@@ -34,6 +35,7 @@ class InstanceSegDataEntity(OTXDataEntity):
     bboxes: tv_tensors.BoundingBoxes
     masks: tv_tensors.Mask
     labels: LongTensor
+    polygons: list[Polygon]
 
 
 @dataclass
@@ -53,6 +55,7 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
     bboxes: list[tv_tensors.BoundingBoxes]
     masks: list[tv_tensors.Mask]
     labels: list[LongTensor]
+    polygons: list[Polygon]
 
     @property
     def task(self) -> OTXTaskType:
@@ -70,6 +73,7 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
             bboxes=[entity.bboxes for entity in entities],
             masks=[entity.masks for entity in entities],
             labels=[entity.labels for entity in entities],
+            polygons=[entity.polygons for entity in entities],
         )
 
 

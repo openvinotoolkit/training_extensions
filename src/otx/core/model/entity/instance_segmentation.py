@@ -7,10 +7,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Union
 
+import numpy as np
 import torch
 from mmdet.registry import MODELS
 from mmdet.structures import DetDataSample
-from mmdet.structures.mask import BitmapMasks
+from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from mmengine.registry import MODELS as MMENGINE_MODELS
 from mmengine.runner.checkpoint import load_checkpoint
 from mmengine.structures import InstanceData
@@ -47,8 +48,6 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
-        # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
         det = MODELS.get("DetDataPreprocessor")
         MMENGINE_MODELS.register_module(module=det)
 
@@ -63,12 +62,27 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         return model
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
-
         mmdet_inputs: dict[str, Any] = {}
 
         mmdet_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmdet_inputs["data_samples"] = [
-            DetDataSample(
+        mmdet_inputs["data_samples"] = []
+
+        for img_info, bboxes, masks, polygons, labels in zip(
+            entity.imgs_info,
+            entity.bboxes,
+            entity.masks,
+            entity.polygons,
+            entity.labels,
+        ):
+            height, width = img_info.ori_shape
+            if len(masks):
+                mmdet_masks = BitmapMasks(
+                    masks.data.cpu().numpy(), height, width)
+            else:
+                mmdet_masks = PolygonMasks(
+                    [[np.array(polygon.points)] for polygon in polygons], height, width)
+
+            data_sample = DetDataSample(
                 metainfo={
                     "img_id": img_info.img_idx,
                     "img_shape": img_info.img_shape,
@@ -78,18 +92,12 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
                 },
                 gt_instances=InstanceData(
                     bboxes=bboxes,
-                    # NOTE: converting cuda to cpu could be slow
-                    masks=BitmapMasks(masks.data.cpu().numpy(), *masks.shape[1:]),
+                    masks=mmdet_masks,
                     labels=labels,
                 ),
             )
-            for img_info, bboxes, masks, labels in zip(
-                entity.imgs_info,
-                entity.bboxes,
-                entity.masks,
-                entity.labels,
-            )
-        ]
+            mmdet_inputs["data_samples"].append(data_sample)
+
         preprocessor: DetDataPreprocessor = self.model.data_preprocessor
         # Don't know why but data_preprocessor.device is not automatically
         # converted by the pl.Trainer's instruction unless the model parameters.
@@ -152,5 +160,6 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             scores=scores,
             bboxes=bboxes,
             masks=masks,
+            polygons=[],
             labels=labels,
         )

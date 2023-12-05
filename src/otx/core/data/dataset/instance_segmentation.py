@@ -24,6 +24,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
 
     def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
         super().__init__(dm_subset, transforms)
+        self.poly2mask = 'polygon' not in dm_subset.get_annotated_type()
 
     def _get_item_impl(self, index: int) -> Optional[InstanceSegDataEntity]:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -37,17 +38,20 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
         gt_bboxes = np.zeros(shape=(0, 4), dtype=np.float32)
         gt_labels = np.zeros(shape=(0, ), dtype=int)
         gt_masks = np.zeros(shape=(0, *img_shape), dtype=bool)
+        gt_polygons = []
         for annotation in item.annotations:
             if isinstance(annotation, Polygon):
                 points = np.array(annotation.points).reshape(-1, 2).astype(np.int32)
                 x1, y1 = np.min(points, axis=0)
                 x2, y2 = np.max(points, axis=0)
                 gt_bboxes = np.vstack((gt_bboxes, np.array([x1, y1, x2, y2])))
-
-                mask = np.zeros(img_shape)
-                cv2.fillPoly(mask, [points], 1)
-                gt_masks = np.vstack((gt_masks, mask[np.newaxis]))
                 gt_labels = np.append(gt_labels, annotation.label)
+                if self.poly2mask:
+                    mask = np.zeros(img_shape)
+                    cv2.fillPoly(mask, [points], 1)
+                    gt_masks = np.vstack((gt_masks, mask[np.newaxis]))
+                else:
+                    gt_polygons.append(annotation)
 
         entity = InstanceSegDataEntity(
             image=img_data,
@@ -65,6 +69,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
             ),
             masks=tv_tensors.Mask(gt_masks, dtype=torch.uint8),
             labels=torch.as_tensor(gt_labels),
+            polygons=gt_polygons,
         )
 
         return self._apply_transforms(entity)
