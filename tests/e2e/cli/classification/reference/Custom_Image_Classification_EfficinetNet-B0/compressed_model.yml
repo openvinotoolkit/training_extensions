@@ -12,4 +12,4 @@ TestToolsMultilabelClassification:
   nncf:
     number_of_fakequantizers: 126
   ptq:
-    number_of_fakequantizers: 97
+    number_of_fakequantizers: 94
