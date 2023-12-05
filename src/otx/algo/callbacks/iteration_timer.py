@@ -33,7 +33,9 @@ class IterationTimer(Callback):
         self.start_time: dict[str, float] = defaultdict(float)
         self.end_time: dict[str, float] = defaultdict(float)
 
-    def _on_batch_start(self, pl_module: LightningModule, phase: str) -> None:
+    def _on_batch_start(
+        self, pl_module: LightningModule, phase: str, batch_size: int,
+    ) -> None:
         self.start_time[phase] = time()
 
         if not self.end_time[phase]:
@@ -49,9 +51,12 @@ class IterationTimer(Callback):
             prog_bar=self.prog_bar,
             on_step=self.on_step,
             on_epoch=self.on_epoch,
+            batch_size=batch_size,
         )
 
-    def _on_batch_end(self, pl_module: LightningModule, phase: str) -> None:
+    def _on_batch_end(
+        self, pl_module: LightningModule, phase: str, batch_size: int,
+    ) -> None:
         if not self.end_time[phase]:
             self.end_time[phase] = time()
             return
@@ -67,6 +72,7 @@ class IterationTimer(Callback):
             prog_bar=self.prog_bar,
             on_step=self.on_step,
             on_epoch=self.on_epoch,
+            batch_size=batch_size,
         )
 
     def on_train_batch_start(
@@ -77,7 +83,9 @@ class IterationTimer(Callback):
         batch_idx: int,
     ) -> None:
         """Log iteration data time on the training batch start."""
-        self._on_batch_start(pl_module=pl_module, phase="train")
+        self._on_batch_start(
+            pl_module=pl_module, phase="train", batch_size=batch.batch_size,
+        )
 
     def on_train_batch_end(
         self,
@@ -88,7 +96,9 @@ class IterationTimer(Callback):
         batch_idx: int,
     ) -> None:
         """Log iteration time on the training batch end."""
-        self._on_batch_end(pl_module=pl_module, phase="train")
+        self._on_batch_end(
+            pl_module=pl_module, phase="train", batch_size=batch.batch_size,
+        )
 
     def on_validation_batch_start(
         self,
@@ -99,7 +109,9 @@ class IterationTimer(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         """Log iteration data time on the validation batch start."""
-        self._on_batch_start(pl_module=pl_module, phase="validation")
+        self._on_batch_start(
+            pl_module=pl_module, phase="validation", batch_size=batch.batch_size,
+        )
 
     def on_validation_batch_end(
         self,
@@ -111,7 +123,9 @@ class IterationTimer(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         """Log iteration time on the validation batch end."""
-        self._on_batch_end(pl_module=pl_module, phase="validation")
+        self._on_batch_end(
+            pl_module=pl_module, phase="validation", batch_size=batch.batch_size,
+        )
 
     def on_test_batch_start(
         self,
@@ -122,7 +136,9 @@ class IterationTimer(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         """Log iteration data time on the test batch start."""
-        self._on_batch_start(pl_module=pl_module, phase="test")
+        self._on_batch_start(
+            pl_module=pl_module, phase="test", batch_size=batch.batch_size,
+        )
 
     def on_test_batch_end(
         self,
@@ -134,4 +150,6 @@ class IterationTimer(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         """Log iteration time on the test batch end."""
-        self._on_batch_end(pl_module=pl_module, phase="test")
+        self._on_batch_end(
+            pl_module=pl_module, phase="test", batch_size=batch.batch_size,
+        )
