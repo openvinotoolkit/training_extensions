@@ -12,7 +12,7 @@ from mmcv.runner.hooks.evaluation import EvalHook
 from otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook import (
     EarlyStoppingHook,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -4,6 +4,11 @@
     "label": {
       "label_groups": [
         {
+          "name": "shape",
+          "group_type": "exclusive",
+          "labels": ["blue", "green"]
+        },
+        {
           "name": "blue",
           "group_type": "exclusive",
           "labels": ["blue_rectangle", "blue_circle", "blue_triangle"]

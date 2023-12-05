@@ -27,6 +27,7 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import add_hyper_parameters_sub_parser, get_override_param, get_parser_and_hprams_data
+from otx.utils.logger import config_logger
 
 
 def get_args():
@@ -73,6 +74,7 @@ def main():
     """Main function that is used for model exporting."""
     args, override_param = get_args()
     config_manager = ConfigManager(args, mode="export", workspace_root=args.workspace)
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

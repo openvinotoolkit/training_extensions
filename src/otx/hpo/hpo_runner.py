@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import multiprocessing
 import os
 import queue
@@ -28,8 +27,9 @@ from typing import Any, Callable, Dict, Literal, Optional, Union
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 @dataclass

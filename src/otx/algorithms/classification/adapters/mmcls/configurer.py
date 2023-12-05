@@ -22,7 +22,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

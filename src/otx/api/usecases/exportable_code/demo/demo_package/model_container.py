@@ -1,7 +1,6 @@
 """ModelContainer class used for loading the model in the model wrapper."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 import importlib
 import json
@@ -17,6 +16,7 @@ from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.utils.detection_utils import detection2array
+from otx.api.utils.tiler import Tiler
 
 from .utils import get_model_path, get_parameters
 
@@ -47,9 +47,24 @@ class ModelContainer:
             self._task_type is TaskType.ROTATED_DETECTION or self._task_type is TaskType.INSTANCE_SEGMENTATION
         )
 
+        # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
-        # model already contains correct labels
-        self.model_parameters.pop("labels")
+
+        if self._task_type in (
+            TaskType.ANOMALY_CLASSIFICATION,
+            TaskType.ANOMALY_DETECTION,
+            TaskType.ANOMALY_SEGMENTATION,
+        ):
+            # The anomaly task requires non-empty labels.
+            # modelapi_labels key is used as a workaround as labels key is used for labels in OTX SDK format
+            self.model_parameters["labels"] = (
+                self.model_parameters.pop("modelapi_labels")
+                if "modelapi_labels" in self.model_parameters
+                else ["Normal", "Anomaly"]
+            )
+        else:
+            # model already contains correct labels
+            self.model_parameters.pop("labels")
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(

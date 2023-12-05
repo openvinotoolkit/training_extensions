@@ -6,7 +6,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../../recipes/stages/instance-segmentation/semisl.py",
+    "../../../../../../recipes/stages/instance_segmentation/semisl.py",
     "../../../../../common/adapters/mmcv/configs/backbones/efficientnet_b2b.yaml",
     "../../../base/models/detector.py",
 ]

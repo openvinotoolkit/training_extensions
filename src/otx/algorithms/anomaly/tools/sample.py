@@ -29,7 +29,6 @@ from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
     AnomalyDetectionDataset,
     AnomalySegmentationDataset,
 )
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.tasks import NNCFTask, OpenVINOTask
 from otx.api.configuration.helper import create as create_hyper_parameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -46,8 +45,9 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes

@@ -1,13 +1,14 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Base Algo Requirements.                                                          #
-natsort>=6.0.0
-prettytable
-protobuf>=3.20.0
+# Base Algo Requirements.                                                     #
+natsort==8.1.*
+prettytable==3.9.*
+protobuf==3.20.*
 pyyaml
 datumaro~=1.6.0rc0
-psutil
-scipy>=1.8
-bayesian-optimization>=1.2.0
-tensorboard>=2.11.0
-multiprocess
+psutil==5.9.*
+scipy==1.10.*
+bayesian-optimization==1.4.*
+tensorboard==2.15.*; python_version >= '3.9'
+tensorboard==2.14.*; python_version < '3.9'
+multiprocess==0.70.*
 pynvml==11.*

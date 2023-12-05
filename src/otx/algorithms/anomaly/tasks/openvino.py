@@ -32,7 +32,6 @@ from omegaconf import OmegaConf
 from openvino.model_api.models import AnomalyDetection, AnomalyResult
 
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.ir import check_if_quantized
@@ -71,8 +70,9 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 )
 from otx.api.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class OTXNNCFAnomalyDataloader:
@@ -361,6 +361,8 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
         output_model.precision = [ModelPrecision.INT8]
+        metadata = self.get_metadata()
+        output_model.set_data("metadata", json.dumps(metadata).encode())
 
         self.task_environment.model = output_model
         self.inference_model = self.get_openvino_model()
@@ -401,6 +403,27 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         Args:
             model_file (str): The XML model file.
         """
+        extra_model_data = self._metadata_in_ir_format()
+
+        for key, value in extra_model_data.items():
+            if isinstance(value, np.ndarray):
+                extra_model_data[key] = value.tolist()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            xml_data = self.task_environment.model.get_data("openvino.xml")
+            bin_data = self.task_environment.model.get_data("openvino.bin")
+            with open(f"{temp_dir}/openvino.xml", "wb") as file:
+                file.write(xml_data)
+            with open(f"{temp_dir}/openvino.bin", "wb") as file:
+                file.write(bin_data)
+            embed_ir_model_data(f"{temp_dir}/openvino.xml", extra_model_data)
+            with open(f"{temp_dir}/openvino.xml", "rb") as file:
+                self.task_environment.model.set_data("openvino.xml", file.read())
+            with open(f"{temp_dir}/openvino.bin", "rb") as file:
+                self.task_environment.model.set_data("openvino.bin", file.read())
+
+    def _metadata_in_ir_format(self) -> Dict[Tuple[str, str], Union[str, int, float, List[Union[int, float]]]]:
+        """Return metadata in format of tuple keys that are used in IR with modelAPI."""
         metadata = self.get_metadata()
         extra_model_data: Dict[Tuple[str, str], Any] = {}
         for key, value in metadata.items():
@@ -430,23 +453,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         extra_model_data[("model_info", "reverse_input_channels")] = False
         extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
         extra_model_data[("model_info", "labels")] = "Normal Anomaly"
-
-        for key, value in extra_model_data.items():
-            if isinstance(value, np.ndarray):
-                extra_model_data[key] = value.tolist()
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            xml_data = self.task_environment.model.get_data("openvino.xml")
-            bin_data = self.task_environment.model.get_data("openvino.bin")
-            with open(f"{temp_dir}/openvino.xml", "wb") as file:
-                file.write(xml_data)
-            with open(f"{temp_dir}/openvino.bin", "wb") as file:
-                file.write(bin_data)
-            embed_ir_model_data(f"{temp_dir}/openvino.xml", extra_model_data)
-            with open(f"{temp_dir}/openvino.xml", "rb") as file:
-                self.task_environment.model.set_data("openvino.xml", file.read())
-            with open(f"{temp_dir}/openvino.bin", "rb") as file:
-                self.task_environment.model.set_data("openvino.bin", file.read())
+        return extra_model_data
 
     def _serialize_list(self, arr: Union[Tuple, List]) -> str:
         """Converts a list to space separated string."""
@@ -483,6 +490,17 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         configuration: Dict[str, Any] = {
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
         }
+        # Add new IR keys to parameters
+        for key, value in self._metadata_in_ir_format().items():
+            # since the same key is used to store label info in OTX SDK format
+            if key[1] == "labels":
+                assert isinstance(value, str)
+                configuration["modelapi_labels"] = [name for name in value.split(" ")]
+            elif key[1] in ("mean_values", "scale_values"):
+                assert isinstance(value, str)
+                configuration[key[1]] = [float(x) for x in value.split(" ")]
+            else:
+                configuration[key[1]] = value
 
         return configuration
 

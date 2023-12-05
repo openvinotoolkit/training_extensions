@@ -34,7 +34,6 @@ from pytorch_lightning.loggers import CSVLogger
 
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
     InferenceCallback,
     ZeroShotInferenceCallback,
@@ -66,6 +65,7 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

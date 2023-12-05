@@ -42,6 +42,8 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "4",
+        "--postprocessing.max_num_detections",
+        "200",
     ],
 }
 

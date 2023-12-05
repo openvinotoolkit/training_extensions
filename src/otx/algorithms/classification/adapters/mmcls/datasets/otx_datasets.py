@@ -1,6 +1,6 @@
 """Base Dataset for Classification Task."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -18,10 +18,10 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -174,7 +174,10 @@ class OTXClsDataset(BaseDataset):
         for i in range(self.num_classes):
             cls_pred = pred_label == i
             cls_pred = cls_pred[gt_labels == i]
-            cls_acc = np.sum(cls_pred) / len(cls_pred)
+            if len(cls_pred) > 0:
+                cls_acc = np.sum(cls_pred) / len(cls_pred)
+            else:
+                cls_acc = 0.0
             accracies.append(cls_acc)
         return accracies
 
@@ -295,6 +298,7 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
 
     def __init__(self, **kwargs):
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
+        self.label_schema = kwargs.pop("label_schema", None)
         super().__init__(**kwargs)
 
     def load_annotations(self):
@@ -303,6 +307,13 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         for i, _ in enumerate(self.otx_dataset):
             class_indices = []
             item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            if self.label_schema:
+                # NOTE: Parent labels might be missing in annotations.
+                # This code fills the gap just in case.
+                full_item_labels = set()
+                for label in item_labels:
+                    full_item_labels.update(self.label_schema.get_ancestors(label))
+                item_labels = full_item_labels
             ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
                 num_cls_heads = self.hierarchical_info["num_multiclass_heads"]

@@ -42,6 +42,10 @@ class CustomNonLinearClsHead(NonLinearClsHead):
 
     def forward_train(self, cls_score, gt_label):
         """Forward_train fuction of CustomNonLinearHead class."""
+        bs = cls_score.shape[0]
+        if bs == 1:
+            cls_score = torch.cat([cls_score, cls_score], dim=0)
+            gt_label = torch.cat([gt_label, gt_label], dim=0)
         logit = self.classifier(cls_score)
         losses = self.loss(logit, gt_label, feature=cls_score)
         return losses
