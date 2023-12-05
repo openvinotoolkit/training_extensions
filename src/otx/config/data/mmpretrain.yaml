@@ -1,0 +1,14 @@
+defaults:
+  - default
+
+data_format: imagenet_with_subset_dirs
+
+train_subset:
+  batch_size: 64
+  transform_lib_type: MMPRETRAIN
+val_subset:
+  batch_size: 64
+  transform_lib_type: MMPRETRAIN
+test_subset:
+  batch_size: 64
+  transform_lib_type: MMPRETRAIN

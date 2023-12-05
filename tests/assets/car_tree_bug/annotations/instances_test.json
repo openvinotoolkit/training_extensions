@@ -1,0 +1,88 @@
+{
+  "licenses": [{ "name": "", "id": 0, "url": "" }],
+  "info": {
+    "contributor": "",
+    "date_created": "",
+    "description": "",
+    "url": "",
+    "version": "",
+    "year": ""
+  },
+  "categories": [
+    { "id": 1, "name": "car", "supercategory": "" },
+    { "id": 2, "name": "tree", "supercategory": "" },
+    { "id": 3, "name": "bug", "supercategory": "" }
+  ],
+  "images": [
+    {
+      "id": 7,
+      "width": 1280,
+      "height": 720,
+      "file_name": "Slide3.PNG",
+      "license": 0,
+      "flickr_url": "",
+      "coco_url": "",
+      "date_captured": 0
+    },
+    {
+      "id": 8,
+      "width": 1280,
+      "height": 720,
+      "file_name": "Slide20.PNG",
+      "license": 0,
+      "flickr_url": "",
+      "coco_url": "",
+      "date_captured": 0
+    }
+  ],
+  "annotations": [
+    {
+      "id": 19,
+      "image_id": 7,
+      "category_id": 1,
+      "segmentation": [
+        [184.09, 131.61, 338.06, 129.89, 339.78, 457.63, 183.23, 461.08]
+      ],
+      "area": 51030.0,
+      "bbox": [183.23, 129.89, 156.55, 331.19],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 20,
+      "image_id": 7,
+      "category_id": 2,
+      "segmentation": [
+        [832.69, 104.09, 1018.49, 102.37, 1017.63, 226.24, 825.81, 233.98]
+      ],
+      "area": 23933.0,
+      "bbox": [825.81, 102.37, 192.68, 131.61],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 21,
+      "image_id": 7,
+      "category_id": 3,
+      "segmentation": [
+        [898.92, 490.32, 1195.7, 487.74, 1209.46, 673.55, 913.55, 670.11]
+      ],
+      "area": 54157.0,
+      "bbox": [898.92, 487.74, 310.54, 185.81],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 22,
+      "image_id": 8,
+      "category_id": 3,
+      "segmentation": [
+        [341.51, 373.33, 502.4, 456.8, 341.5, 709.7, 188.39, 612.47]
+      ],
+      "area": 52814.0,
+      "bbox": [188.39, 373.33, 314.01, 336.37],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    }
+  ]
+}

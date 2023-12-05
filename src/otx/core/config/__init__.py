@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Config data type objects."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from .base import BaseConfig
@@ -16,6 +16,7 @@ class TrainConfig:
     """DTO for training."""
 
     base: BaseConfig
+    callbacks: dict
     data: DataModuleConfig
     trainer: TrainerConfig
     model: ModelConfig
@@ -23,7 +24,6 @@ class TrainConfig:
     recipe: Optional[str]  # noqa: FA100
     train: bool
     test: bool
-    callbacks: list = field(default_factory=list)
 
 
 def register_configs() -> None:

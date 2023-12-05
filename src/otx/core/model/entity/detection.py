@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torchvision import tv_tensors
@@ -13,7 +13,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -24,8 +24,6 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-# This is an example for MMDetection models
-# In this way, we can easily import some models developed from the MM community
 class MMDetCompatibleModel(OTXDetectionModel):
     """Detection model compatible for MMDet.
 
@@ -33,10 +31,9 @@ class MMDetCompatibleModel(OTXDetectionModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX detection model
     compatible for OTX pipelines.
     """
-
     def __init__(self, config: DictConfig) -> None:
         self.config = config
-        self.load_from = self.config.pop("load_from", None)
+        self.load_from = config.pop("load_from", None)
         super().__init__()
 
     def _create_model(self) -> nn.Module:
@@ -51,18 +48,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         det = MODELS.get("DetDataPreprocessor")
         MMENGINE_MODELS.register_module(module=det)
 
-        try:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
-        except AssertionError:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
-
-        mm_logger = MMLogger.get_current_instance()
-        mm_logger.setLevel("WARNING")
-        model.init_weights()
-        if self.load_from is not None:
-            load_checkpoint(model, self.load_from)
-
-        return model
+        return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
@@ -111,7 +97,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: DetBatchDataEntity,
-    ) -> Union[DetBatchPredEntity, OTXBatchLossEntity]:
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
 
         if self.training:
@@ -125,7 +111,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
                 elif isinstance(v, torch.Tensor):
                     losses[k] = v
                 else:
-                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
                     raise TypeError(msg)
             return losses
 

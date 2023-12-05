@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from numbers import Number
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal
 
 from mmengine.config import Config as MMConfig
 from omegaconf import OmegaConf
@@ -58,7 +58,7 @@ def convert_conf_to_mmconfig_dict(
     raise ValueError(to)
 
 
-def mmconfig_dict_to_dict(obj: Union[MMConfig, list[MMConfig]]) -> Union[list, dict]:
+def mmconfig_dict_to_dict(obj: MMConfig | list[MMConfig]) -> list | dict:
     """Convert MMEngine config object to Python dictionary."""
     if isinstance(obj, list):
         return [mmconfig_dict_to_dict(x) for x in obj]

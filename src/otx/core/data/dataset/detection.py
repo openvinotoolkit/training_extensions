@@ -5,9 +5,8 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable
 
-import cv2
 import numpy as np
 import torch
 from datumaro import Bbox, DatasetSubset, Image
@@ -25,16 +24,10 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
     def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
         super().__init__(dm_subset, transforms)
 
-    def _get_item_impl(self, index: int) -> Optional[DetDataEntity]:
+    def _get_item_impl(self, index: int) -> DetDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
-
         img = item.media_as(Image)
-        img_data = img.data
-        # TODO(vinnamkim): This is a temporal approach
-        # There is an upcoming Datumaro patch here for this
-        # https://github.com/openvinotoolkit/datumaro/pull/1194
-        if img_data.shape[-1] == 4:
-            img_data = cv2.cvtColor(img_data, cv2.COLOR_BGRA2BGR)
+        img_data = self._get_img_data(img)
         img_shape = img.size
 
         bbox_anns = [ann for ann in item.annotations if isinstance(ann, Bbox)]
