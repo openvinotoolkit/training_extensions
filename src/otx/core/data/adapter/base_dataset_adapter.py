@@ -356,10 +356,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     ) -> Annotation:
         """Get ellipse entity."""
         ellipse = Ellipse(
-            (annotation.x1 - 1 ) / width,
-            (annotation.y1 - 1 ) / height,
-            (annotation.x2 - 1 ) / width,
-            (annotation.y2 - 1 ) / height,
+            annotation.x1 / (width - 1),
+            annotation.y1 / (height - 1),
+            annotation.x2 / (width - 1),
+            annotation.y2 / (height - 1),
         )
         return Annotation(
             ellipse,
