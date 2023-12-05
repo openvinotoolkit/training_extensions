@@ -1,7 +1,8 @@
-"""Utils used for LiteHRNet model."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Utils used for LiteHRNet model."""
+
 from __future__ import annotations
 
 from typing import Callable, ClassVar
