@@ -10,7 +10,7 @@ The primary goal is to reduce the manual effort required in running experiments 
 ### Automated Experiment Execution
 
 - Given multiple variables, it automatically generates all combinations and runs the experiments.
-- Proper model files are selected automatically when the "otx eval" command is executed, based on the preceding command.
+- Proper model files are selected automatically when the "otx eval" or "otx optimize" command is executed, based on the preceding command.
 
 ### Fault Tolerance
 
@@ -80,9 +80,9 @@ If there are failed cases, variables and error logs are both printed and saved a
 
 Note that all commands within each case are executed within the same workspace,
 obviating the need to set a template path from the second command.
-When the "otx eval" command is executed, the model file (model weight or exported model, etc.)
+When the "otx eval" or "otx optimize" command is executed, the model file (model weight or exported model, etc.)
 is automatically selected based on the preceding command.
-The output file of "otx eval" is then stored at "workspace*path/outputs/XXXX*{train, export, optimize, etc.}/"
+The output file of "otx eval" is then stored at "_workspace*path/outputs/XXXX*{train, export, optimize, etc.}/_"
 under the name "performance.json".
 
 ### Feature 2 : organize experiment result from single workspace
