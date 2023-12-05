@@ -1,18 +1,12 @@
+# Copyright (c) 2018-2020 Open-MMLab.
+# SPDX-License-Identifier: Apache-2.0
+#
 """HRNet network modules for base backbone.
 
 Modified from:
 - https://github.com/HRNet/Lite-HRNet
 """
 
-# Copyright (c) 2018-2020 Open-MMLab.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Copyright (c) 2021 DeLightCMU
-# SPDX-License-Identifier: Apache-2.0
-#
-# Copyright (C) 2023 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
 
 from __future__ import annotations
 
