@@ -153,7 +153,8 @@ class MockImageEncoder(nn.Module):
         self.backbone = nn.Linear(1, 1)
 
     def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]])
+        # return torch.Tensor([[1]])
+        return torch.ones((1, 2, 4, 4))
 
 
 class MockPromptEncoder(nn.Module):
@@ -183,5 +184,22 @@ class MockMaskDecoder(nn.Module):
 
 
 class MockScoredLabel:
-    def __init__(self, label: int):
+    def __init__(self, label: int, name: str = "background"):
+        self.name = name
         self.id_ = label
+
+
+class MockPromptGetter(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+    def initialize(self):
+        pass
+
+    def set_default_thresholds(self, *args, **kwargs):
+        pass
+
+    def forward(self, *args, **kwargs):
+        return {
+            MockScoredLabel(label=1, name="label"): (torch.tensor([[0, 0, 0.5], [1, 1, 0.7]]), torch.tensor([[2, 2]]))
+        }
