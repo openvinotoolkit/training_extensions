@@ -7,9 +7,6 @@ from pathlib import Path
 
 import pkg_resources
 import pytest
-from pkg_resources import Requirement
-from pytest_mock import MockerFixture
-
 from otx.cli.utils.installation import (
     add_hardware_suffix_to_torch,
     get_cuda_suffix,
@@ -23,6 +20,8 @@ from otx.cli.utils.installation import (
     parse_requirements,
     update_cuda_version_with_available_torch_cuda_build,
 )
+from pkg_resources import Requirement
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture()

@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
