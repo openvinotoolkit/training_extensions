@@ -241,14 +241,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
             if image.ndim == 3:
                 image = image.unsqueeze(0)
 
-            image_shape = image.shape[2:]
             image_embeddings = self.image_encoder(images)
 
             prompts = self.prompt_getter(
-                image_embeddings=image_embeddings, image_shape=image_shape, padding=padding, original_size=original_size
+                image_embeddings=image_embeddings, padding=padding, original_size=original_size
             )
             predicted_masks: defaultdict = defaultdict(list)
-            used_points = defaultdict(list)
+            used_points: defaultdict = defaultdict(list)
             for label, (points_scores, bg_coords) in prompts.items():
                 for points_score in points_scores:
                     x, y = points_score[:2]

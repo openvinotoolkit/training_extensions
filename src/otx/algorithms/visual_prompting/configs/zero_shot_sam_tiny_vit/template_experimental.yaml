@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Visual_Prompting_SAM_Tiny_ViT
+model_template_id: Zero_Shot_SAM_Tiny_ViT
 name: Zero_Shot_SAM_Tiny_ViT
 task_type: VISUAL_PROMPTING
 task_family: VISION
 instantiation: "CLASS"
-summary: Visual Prompting with TinyViT for the accurate predictions
+summary: Zero SHot Visual Prompting with TinyViT for the accurate predictions
 application: ~
 
 # Algo backend.
