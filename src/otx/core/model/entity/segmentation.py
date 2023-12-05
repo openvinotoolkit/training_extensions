@@ -7,9 +7,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from otx.algo.segmentation.model.backbones import LiteHRNet
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
@@ -38,6 +40,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
 
     def _create_model(self) -> nn.Module:
         from mmengine.registry import MODELS as MMENGINE_MODELS
+        from mmengine.runner.checkpoint import load_checkpoint
         from mmseg.registry import MODELS
 
         seg = MODELS.get("SegDataPreProcessor")
