@@ -13,14 +13,13 @@ from mmdet.registry import MODELS
 from mmdet.structures import DetDataSample
 from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from mmengine.registry import MODELS as MMENGINE_MODELS
-from mmengine.runner.checkpoint import load_checkpoint
 from mmengine.structures import InstanceData
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -35,12 +34,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 # This is an example for MMDetection models
 # In this way, we can easily import some models developed from the MM community
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
-    """Detection model compatible for MMDet.
-
-    It can consume MMDet model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX detection model
-    compatible for OTX pipelines.
-    """
+    """Instance Segmentation model compatible for MMDet."""
 
     def __init__(self, config: DictConfig) -> None:
         self.config = config
@@ -51,15 +45,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         det = MODELS.get("DetDataPreprocessor")
         MMENGINE_MODELS.register_module(module=det)
 
-        try:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
-        except AssertionError:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
-
-        if self.load_from is not None:
-            load_checkpoint(model, self.load_from)
-
-        return model
+        return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
         mmdet_inputs: dict[str, Any] = {}
