@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
@@ -118,7 +118,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: InstanceSegBatchDataEntity,
-    ) -> Union[InstanceSegBatchPredEntity, OTXBatchLossEntity]:
+    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
 
         if self.training:
             if not isinstance(outputs, dict):

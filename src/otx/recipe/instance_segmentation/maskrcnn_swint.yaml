@@ -1,72 +1,76 @@
 # @package _global_
 defaults:
-- override /base: instance_segmentation
-- override /data: mmdet
-- override /model: mmdet_instance_seg
+  - override /base: instance_segmentation
+  - override /data: mmdet
+  - override /model: mmdet_instance_seg
+  - override /callbacks: default
 
-recipe: instance_segmentation/maskrcnn_swint
+callbacks:
+  model_checkpoint:
+    monitor: "val/map_50"
+  early_stopping:
+    monitor: "val/map_50"
 
 data:
-  subsets:
-    train:
-      batch_size: 4
-      transforms:
-        - type: LoadImageFromFile
-          backend_args: null
-        - type: LoadAnnotations
-          with_bbox: true
-          with_mask: true
-          poly2mask: false
-        - type: Resize
-          keep_ratio: true
-          scale:
-            - 1344
-            - 1344
-        - type: RandomFlip
-          prob: 0.5
-        - type: PackDetInputs
-    val:
-      batch_size: 1
-      transforms:
-        - type: LoadImageFromFile
-          backend_args: null
-        - type: Resize
-          keep_ratio: true
-          scale:
-            - 1344
-            - 1344
-        - type: LoadAnnotations
-          with_bbox: true
-          with_mask: true
-          poly2mask: false
-        - type: PackDetInputs
-          meta_keys:
-            - img_id
-            - img_path
-            - ori_shape
-            - img_shape
-            - scale_factor
-    test:
-      batch_size: 1
-      transforms:
-        - type: LoadImageFromFile
-          backend_args: null
-        - type: Resize
-          keep_ratio: true
-          scale:
-            - 1344
-            - 1344
-        - type: LoadAnnotations
-          with_bbox: true
-          with_mask: true
-          poly2mask: false
-        - type: PackDetInputs
-          meta_keys:
-            - img_id
-            - img_path
-            - ori_shape
-            - img_shape
-            - scale_factor
+  train_subset:
+    batch_size: 4
+    transforms:
+      - type: LoadImageFromFile
+        backend_args: null
+      - type: LoadAnnotations
+        with_bbox: true
+        with_mask: true
+        poly2mask: false
+      - type: Resize
+        keep_ratio: true
+        scale:
+          - 1344
+          - 1344
+      - type: RandomFlip
+        prob: 0.5
+      - type: PackDetInputs
+  val_subset:
+    batch_size: 1
+    transforms:
+      - type: LoadImageFromFile
+        backend_args: null
+      - type: Resize
+        keep_ratio: true
+        scale:
+          - 1344
+          - 1344
+      - type: LoadAnnotations
+        with_bbox: true
+        with_mask: true
+        poly2mask: false
+      - type: PackDetInputs
+        meta_keys:
+          - img_id
+          - img_path
+          - ori_shape
+          - img_shape
+          - scale_factor
+  test_subset:
+    batch_size: 1
+    transforms:
+      - type: LoadImageFromFile
+        backend_args: null
+      - type: Resize
+        keep_ratio: true
+        scale:
+          - 1344
+          - 1344
+      - type: LoadAnnotations
+        with_bbox: true
+        with_mask: true
+        poly2mask: false
+      - type: PackDetInputs
+        meta_keys:
+          - img_id
+          - img_path
+          - ori_shape
+          - img_shape
+          - scale_factor
 
 model:
   otx_model:
@@ -76,10 +80,10 @@ model:
         attn_drop_rate: 0.0
         convert_weights: true
         depths:
-        - 2
-        - 2
-        - 6
-        - 2
+          - 2
+          - 2
+          - 6
+          - 2
         drop_path_rate: 0.2
         drop_rate: 0.0
         embed_dims: 96
@@ -88,15 +92,15 @@ model:
           type: Pretrained
         mlp_ratio: 4
         num_heads:
-        - 3
-        - 6
-        - 12
-        - 24
+          - 3
+          - 6
+          - 12
+          - 24
         out_indices:
-        - 0
-        - 1
-        - 2
-        - 3
+          - 0
+          - 1
+          - 2
+          - 3
         patch_norm: true
         qk_scale: null
         qkv_bias: true
@@ -106,22 +110,22 @@ model:
       data_preprocessor:
         bgr_to_rgb: true
         mean:
-        - 123.675
-        - 116.28
-        - 103.53
+          - 123.675
+          - 116.28
+          - 103.53
         pad_mask: true
         pad_size_divisor: 32
         std:
-        - 58.395
-        - 57.12
-        - 57.375
+          - 58.395
+          - 57.12
+          - 57.375
         type: DetDataPreprocessor
       neck:
         in_channels:
-        - 96
-        - 192
-        - 384
-        - 768
+          - 96
+          - 192
+          - 384
+          - 768
         num_outs: 5
         out_channels: 256
         type: FPN
@@ -129,15 +133,15 @@ model:
         bbox_head:
           bbox_coder:
             target_means:
-            - 0.0
-            - 0.0
-            - 0.0
-            - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
             target_stds:
-            - 0.1
-            - 0.1
-            - 0.2
-            - 0.2
+              - 0.1
+              - 0.1
+              - 0.2
+              - 0.2
             type: DeltaXYWHBBoxCoder
           fc_out_channels: 1024
           in_channels: 256
@@ -154,10 +158,10 @@ model:
           type: Shared2FCBBoxHead
         bbox_roi_extractor:
           featmap_strides:
-          - 4
-          - 8
-          - 16
-          - 32
+            - 4
+            - 8
+            - 16
+            - 32
           out_channels: 256
           roi_layer:
             output_size: 7
@@ -176,10 +180,10 @@ model:
           type: FCNMaskHead
         mask_roi_extractor:
           featmap_strides:
-          - 4
-          - 8
-          - 16
-          - 32
+            - 4
+            - 8
+            - 16
+            - 32
           out_channels: 256
           roi_layer:
             output_size: 14
@@ -190,29 +194,29 @@ model:
       rpn_head:
         anchor_generator:
           ratios:
-          - 0.5
-          - 1.0
-          - 2.0
+            - 0.5
+            - 1.0
+            - 2.0
           scales:
-          - 8
+            - 8
           strides:
-          - 4
-          - 8
-          - 16
-          - 32
-          - 64
+            - 4
+            - 8
+            - 16
+            - 32
+            - 64
           type: AnchorGenerator
         bbox_coder:
           target_means:
-          - 0.0
-          - 0.0
-          - 0.0
-          - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
           target_stds:
-          - 1.0
-          - 1.0
-          - 1.0
-          - 1.0
+            - 1.0
+            - 1.0
+            - 1.0
+            - 1.0
           type: DeltaXYWHBBoxCoder
         feat_channels: 256
         in_channels: 256
@@ -282,3 +286,8 @@ model:
             type: nms
           nms_pre: 2000
       type: MaskRCNN
+  optimizer:
+    _target_: torch.optim.AdamW
+    _partial_: true
+    lr: 0.0001
+    weight_decay: 0.05

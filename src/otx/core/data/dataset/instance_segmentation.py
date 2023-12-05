@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable
 
 import cv2
 import numpy as np
@@ -26,7 +26,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
         super().__init__(dm_subset, transforms)
         self.poly2mask = 'polygon' not in dm_subset.get_annotated_type()
 
-    def _get_item_impl(self, index: int) -> Optional[InstanceSegDataEntity]:
+    def _get_item_impl(self, index: int) -> InstanceSegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
 
         img = item.media_as(Image)

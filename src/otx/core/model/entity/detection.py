@@ -39,9 +39,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
     def _create_model(self) -> nn.Module:
         # import mmdet.models as _
         from mmdet.registry import MODELS
-        from mmengine.logging import MMLogger
         from mmengine.registry import MODELS as MMENGINE_MODELS
-        from mmengine.runner.checkpoint import load_checkpoint
 
         # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
         # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
