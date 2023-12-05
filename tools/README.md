@@ -59,7 +59,7 @@ Sample Experiment Recipe YAML File:
 
 Arguments for recipe
 
-- output*path (optional) : Output path where all experiment outputs are saved. Default is "./experiment*{executed_time}"
+- output_path (optional) : Output path where all experiment outputs are saved. Default is "./experiment\_{executed_time}"
 - constant (optional) :
   It's similar as constant or variable in programming languages.
   You can use it to replace duplicated string by using ${constant_name} in variables or commands.
@@ -82,7 +82,7 @@ Note that all commands within each case are executed within the same workspace,
 obviating the need to set a template path from the second command.
 When the "otx eval" or "otx optimize" command is executed, the model file (model weight or exported model, etc.)
 is automatically selected based on the preceding command.
-The output file of "otx eval" is then stored at "_workspace*path/outputs/XXXX*{train, export, optimize, etc.}/_"
+The output file of "otx eval" is then stored at "workspace_path/outputs/XXXX\_{train, export, optimize, etc.}/"
 under the name "performance.json".
 
 ### Feature 2 : organize experiment result from single workspace
