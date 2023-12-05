@@ -19,7 +19,10 @@ RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.y
 DATASET = {
     "classification": {
         "data_dir": "tests/assets/classification_dataset",
-        "overrides": ["model.otx_model.config.head.num_classes=2"],
+        "overrides": [
+            "model.otx_model.config.head.num_classes=2",
+            "model.otx_model.config.data_preprocessor.num_classes=2",
+        ],
     },
     "detection": {
         "data_dir": "tests/assets/car_tree_bug",
