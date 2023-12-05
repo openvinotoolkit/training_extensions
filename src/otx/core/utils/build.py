@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
-import torch
+
 if TYPE_CHECKING:
     from mmengine.registry import Registry
     from omegaconf import DictConfig
