@@ -23,6 +23,7 @@ from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
 from torch import nn
 from torch.nn import functional
+from mmseg.registry import MODELS
 
 from otx.algo.segmentation.model.utils import (
     AsymmetricPositionAttentionModule,
@@ -1267,7 +1268,7 @@ class LiteHRModule(nn.Module):
 
         return out
 
-
+@MODELS.register_module()
 class LiteHRNet(BaseModule):
     """Lite-HRNet backbone.
 

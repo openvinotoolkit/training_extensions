@@ -39,13 +39,15 @@ class OTXDataModule(LightningDataModule):
         self.save_hyperparameters()
 
         if self.config.data_format == "common_semantic_segmentation":
+            # temporary hack, should be fixed later
             dataset = {}
             train_data_roots = Path(self.config.data_root) / "train"
             val_data_roots = Path(self.config.data_root) / "val"
-            dataset["train"] = DmDataset.import_from(train_data_roots,
+
+            for subset_name, subset_path in zip(("train", "val", "test"),
+                                           (train_data_roots, val_data_roots, val_data_roots)):
+                dataset[subset_name] = DmDataset.import_from(subset_path,
                                                      format=self.config.data_format).subsets()["default"]
-            dataset["val"] = DmDataset.import_from(val_data_roots,
-                                                   format=self.config.data_format).subsets()["default"]
         else:
             dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format).subsets()
 

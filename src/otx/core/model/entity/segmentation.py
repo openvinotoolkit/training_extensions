@@ -12,6 +12,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
@@ -44,18 +45,12 @@ class MMSegCompatibleModel(OTXSegmentationModel):
 
         seg = MODELS.get("SegDataPreProcessor")
         MMENGINE_MODELS.register_module(module=seg)
-        MODELS.register_module(module=LiteHRNet)
 
-        try:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="tuple"))
-        except AssertionError:
-            model = MODELS.build(convert_conf_to_mmconfig_dict(self.config, to="list"))
-
-        if self.load_from is not None:
-            if isinstance(model.backbone, LiteHRNet):
-                load_checkpoint(model, self.load_from)
-            else:
-                load_checkpoint(model.backbone, self.load_from)
+        if self.config.backbone.type == 'LiteHRNet':
+            model = build_mm_model(self.config, MODELS, self.load_from)
+        else:
+            # for other mmseg models load only backbone
+            model = build_mm_model(self.config, MODELS, self.load_from, True)
 
         return model
 
