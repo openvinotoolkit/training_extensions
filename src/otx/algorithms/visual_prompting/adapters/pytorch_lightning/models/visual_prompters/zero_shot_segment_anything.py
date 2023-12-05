@@ -12,9 +12,9 @@ from omegaconf import DictConfig
 from torch import nn
 from torch.nn import functional as F
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 from otx.api.entities.scored_label import ScoredLabel
+from otx.utils.logger import get_logger
 
 from .segment_anything import SegmentAnything
 

@@ -30,7 +30,11 @@ otx_dir = os.getcwd()
 
 
 templates = [
-    template for template in Registry("src/otx/algorithms/visual_prompting", experimental=True).filter(task_type="VISUAL_PROMPTING").templates if "Zero_Shot" in template.name
+    template
+    for template in Registry("src/otx/algorithms/visual_prompting", experimental=True)
+    .filter(task_type="VISUAL_PROMPTING")
+    .templates
+    if "Zero_Shot" in template.name
 ]
 templates_ids = [template.model_template_id for template in templates]
 
@@ -41,7 +45,7 @@ class TestVisualPromptingCLI:
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "zero_shot_visual_prompting"
         otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=True)
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
