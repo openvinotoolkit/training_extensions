@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import torch
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -23,8 +24,6 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-# This is an example for MMDetection models
-# In this way, we can easily import some models developed from the MM community
 class MMDetCompatibleModel(OTXDetectionModel):
     """Detection model compatible for MMDet.
 
@@ -105,7 +104,13 @@ class MMDetCompatibleModel(OTXDetectionModel):
 
             losses = OTXBatchLossEntity()
             for k, v in outputs.items():
-                losses[k] = sum(v)
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
             return losses
 
         scores = []

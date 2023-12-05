@@ -13,11 +13,6 @@ scheduler:
   factor: 0.1
   patience: 10
 
-# scheduler:
-#   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
-#   _partial_: true
-#   T_max: ${trainer.max_epochs}
-
 otx_model:
   _target_: otx.core.model.entity.detection.MMDetCompatibleModel
   config: ???
