@@ -17,6 +17,7 @@ from otx.core.data.entity.instance_segmentation import (
 )
 from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 
 class OTXInstanceSegLitModule(OTXLitModule):
@@ -104,16 +105,20 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 "labels": labels,
             })
 
-        # TODO: This is a hack to get the masks from the data samples
+        # This is a hack to get the masks from DataSample
         # converting PolygonMask to BitmapMask
-        data_samples = self.model._customize_inputs(inputs)
-        inputs.masks = [data_sample.gt_instances.masks.to_ndarray() for data_sample in data_samples['data_samples']]
-
-        for bboxes, masks, labels in zip(inputs.bboxes, inputs.masks, inputs.labels):
-            masks = tv_tensors.Mask(masks, dtype=torch.bool)
+        for imgs_info, bboxes, masks, polygons, labels in zip(
+            inputs.imgs_info,
+            inputs.bboxes,
+            inputs.masks,
+            inputs.polygons,
+            inputs.labels,
+        ):
+            # This is a hack to get the masks from DataSample
+            bit_masks = polygon_to_bitmap(polygons, *imgs_info.img_shape) if polygons else masks
             target_info.append({
                 "boxes": bboxes.data,
-                "masks": masks.data,
+                "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
                 "labels": labels,
             })
 
