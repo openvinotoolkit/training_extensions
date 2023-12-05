@@ -265,7 +265,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         image_embeddings=image_embeddings,
                         points_score=points_score,
                         bg_coords=bg_coords,
-                        image_shape=image_shape,
                         padding=padding,
                         original_size=original_size,
                     )
@@ -281,7 +280,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
         image_embeddings: torch.Tensor,
         points_score: torch.Tensor,
         bg_coords: torch.Tensor,
-        image_shape: Tuple[int, int],
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -308,7 +306,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         # annotations = batch["annotations"]
 
         # organize prompts based on label
-        processed_prompts = self._preprocess_prompts(bboxes=bboxes, labels=labels)
+        processed_prompts = self._preprocess_prompts(bboxes=bboxes[0], labels=labels[0])
 
         self.learn(
             images=batch["images"],
@@ -350,51 +348,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
             (defaultdict[Any, List[Dict[str, Any]]]): Processed and arranged each single prompt
                 using label information as keys. Unlike other prompts, `annotation` prompts will be aggregated
                 as single annotation.
-
-                [Example]
-                processed_prompts = {
-                    0: [ # background
-                        {
-                            "point_coords": torch.Tensor,
-                            "point_labels": torch.Tensor,
-                        },
-                        {
-                            "box": torch.Tensor,
-                        },
-                        {
-                            "annotation": torch.Tensor, # there is only single processed annotation prompt
-                        },
-                        ...
-                    ],
-                    1: [
-                        {
-                            "point_coords": torch.Tensor,
-                            "point_labels": torch.Tensor,
-                        },
-                        {
-                            "point_coords": torch.Tensor,
-                            "point_labels": torch.Tensor,
-                        },
-                        {
-                            "annotation": torch.Tensor, # there is only single processed annotation prompt
-                        },
-                        ...
-                    ],
-                    2: [
-                        {
-                            "box": torch.Tensor,
-                        },
-                        {
-                            "box": torch.Tensor,
-                        },
-                        ...
-                    ]
-                }
         """
         processed_prompts = defaultdict(list)
         # TODO (sungchul): will be updated
-        if bboxes:
-            for bbox, label in zip(bboxes[0], labels[0]):
+        if bboxes is not None:
+            for bbox, label in zip(bboxes, labels):
                 processed_prompts[label].append({"box": bbox.reshape(-1, 4)})
 
         if points:
@@ -496,9 +454,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
         """
         merged_input_prompts = deepcopy(input_prompts)
         for other_label, other_input_prompts in processed_prompts.items():
-            if other_label == label:
+            if other_label.id_ == label.id_:
                 continue
-            if (use_only_background and other_label == 0) or (not use_only_background):
+            if (use_only_background and other_label.id_ == 0) or (not use_only_background):
                 # only add point (and scribble) prompts
                 # use_only_background=True -> background prompts are only added as background
                 # use_only_background=False -> other prompts are added as background
