@@ -105,8 +105,6 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 "labels": labels,
             })
 
-        # This is a hack to get the masks from DataSample
-        # converting PolygonMask to BitmapMask
         for imgs_info, bboxes, masks, polygons, labels in zip(
             inputs.imgs_info,
             inputs.bboxes,
@@ -114,8 +112,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             inputs.polygons,
             inputs.labels,
         ):
-            # This is a hack to get the masks from DataSample
-            bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.img_shape)
+            bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
             target_info.append({
                 "boxes": bboxes.data,
                 "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
