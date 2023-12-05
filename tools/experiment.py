@@ -667,7 +667,10 @@ class OtxCommandRunner:
         repeat_idx (int): repeat index.
     """
 
-    OUTPUT_FILE_NAME = {"export": "openvino.bin", "optimize": "weights.pth"}
+    OUTPUT_FILE_NAME: Dict[str, List[str]] = {
+        "export": ["openvino.bin"],
+        "optimize": ["weights.pth", "openvino.bin"]
+    }
 
     def __init__(self, command_ins: Command, repeat_idx: int):
         self._command_ins = command_ins
@@ -676,7 +679,7 @@ class OtxCommandRunner:
         self._workspace = Path("_".join(self._command_var.values()).replace("/", "_") + f"_repeat_{repeat_idx}")
         self._command_var["repeat"] = str(repeat_idx)
         self._fail_logs: List[CommandFailInfo] = []
-        self._previous_cmd_entry: Optional[str] = None
+        self._previous_cmd_entry: Optional[List[str]] = []
 
     @property
     def fail_logs(self) -> List[CommandFailInfo]:
@@ -696,7 +699,7 @@ class OtxCommandRunner:
             else:
                 print(" ".join(command))
 
-            self._previous_cmd_entry = command[1]
+            self._previous_cmd_entry.append(command[1])
 
         if not dryrun:
             organize_exp_result(self._workspace, self._command_var)
@@ -704,11 +707,16 @@ class OtxCommandRunner:
     def _prepare_run_command(self, command: List[str]) -> bool:
         self.set_arguments_to_cmd(command, "--workspace", str(self._workspace))
         cmd_entry = command[1]
+        previous_cmd = None
+        for previous_cmd in reversed(self._previous_cmd_entry):
+            if previous_cmd != "eval":
+                break
+
         if cmd_entry == "train":
             self.set_arguments_to_cmd(command, "--seed", str(self._repeat_idx))
         elif cmd_entry == "eval":
-            if self._previous_cmd_entry in self.OUTPUT_FILE_NAME:
-                file_path = self._find_model_path(self._previous_cmd_entry)
+            if previous_cmd in ["export", "optimize"]:
+                file_path = self._find_model_path(previous_cmd)
                 if file_path is None:
                     return False
                 self.set_arguments_to_cmd(command, "--load-weights", str(file_path))
@@ -716,6 +724,12 @@ class OtxCommandRunner:
             else:
                 output_path = str(self._workspace / "outputs" / "latest_trained_model")
             self.set_arguments_to_cmd(command, "--output", output_path)
+        elif cmd_entry == "optimize":
+            if previous_cmd == "export":
+                file_path = self._find_model_path(previous_cmd)
+                if file_path is None:
+                    return False
+                self.set_arguments_to_cmd(command, "--load-weights", str(file_path))
 
         return True
 
@@ -731,11 +745,13 @@ class OtxCommandRunner:
         if output_dir is None:
             print(f"There is no {cmd_entry} output directory.")
             return None
-        file_path = list(output_dir.rglob(self.OUTPUT_FILE_NAME[cmd_entry]))
-        if not file_path:
-            print(f"{self.OUTPUT_FILE_NAME[cmd_entry]} can't be found.")
-            return None
-        return file_path[0]
+        for file_name in self.OUTPUT_FILE_NAME[cmd_entry]:
+            file_path = list(output_dir.rglob(file_name))
+            if file_path:
+                return file_path[0]
+
+        print(f"{', '.join(self.OUTPUT_FILE_NAME[cmd_entry])} can't be found.")
+        return None
 
     @staticmethod
     def set_arguments_to_cmd(command: List[str], key: str, value: Optional[str] = None, before_params: bool = True):
