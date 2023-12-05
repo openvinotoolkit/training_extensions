@@ -23,16 +23,14 @@ def build_mm_model(config: DictConfig,
 
     from otx import algo  # noqa: F401
 
-
     try:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="tuple"))
     except AssertionError:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="list"))
-    model_device = next(model.parameters()).device
 
-    if load_backbone_only:
-        load_checkpoint(model.backbone, load_from, map_location=model_device)
+    if load_backbone_only and load_from is not None:
+        load_checkpoint(model.backbone, load_from)
     elif load_from is not None:
-        load_checkpoint(model, load_from, map_location=model_device)
+        load_checkpoint(model, load_from)
 
     return model

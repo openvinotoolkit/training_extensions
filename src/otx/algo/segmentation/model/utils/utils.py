@@ -57,7 +57,6 @@ class PSPModule(nn.Module):
 
         return torch.cat(priors, -1)
 
-# pylint: disable=too-many-instance-attributes
 class AsymmetricPositionAttentionModule(nn.Module):
     """AsymmetricPositionAttentionModule.
 
@@ -175,7 +174,6 @@ def normalize(x: torch.Tensor, dim: int, p: int = 2, eps: float = 1e-12) -> torc
         return OnnxLpNormalization.apply(x, dim, p, eps)
     return torch.nn.functional.normalize(x, dim=dim, p=p, eps=eps)
 
-# pylint: disable=invalid-name
 class IterativeAggregator(nn.Module):
     """IterativeAggregator.
 
