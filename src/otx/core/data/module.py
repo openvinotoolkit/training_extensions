@@ -11,9 +11,12 @@ from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
+from otx.core.data.factory import OTXDatasetFactory
+from otx.core.data.mem_cache import (
+    MemCacheHandlerSingleton,
+    parse_mem_cache_size_to_int,
+)
 from otx.core.types.task import OTXTaskType
-
-from .factory import OTXDatasetFactory
 
 if TYPE_CHECKING:
     from otx.core.config.data import (
@@ -56,6 +59,21 @@ class OTXDataModule(LightningDataModule):
                 config=config_mapping[name],
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
+
+        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+        mem_cache_mode = (
+            "singleprocessing"
+            if all(config.num_workers == 0 for config in config_mapping.values())
+            else "multiprocessing"
+        )
+
+        self.mem_cache_handler = MemCacheHandlerSingleton.create(
+            mode=mem_cache_mode,
+            mem_size=mem_size,
+        )
+
+    def __del__(self) -> None:
+        MemCacheHandlerSingleton.delete()
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:

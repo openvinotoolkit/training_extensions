@@ -16,13 +16,18 @@ from otx.core.data.module import (
 class TestModule:
     @pytest.fixture()
     def fxt_config(self) -> DataModuleConfig:
-        return DataModuleConfig(
-            data_format="coco_instances",
-            data_root=".",
-            train_subset=MagicMock(spec=SubsetConfig),
-            val_subset=MagicMock(spec=SubsetConfig),
-            test_subset=MagicMock(spec=SubsetConfig),
-        )
+        mock = MagicMock(spec=DataModuleConfig)
+        mock.data_format = "coco_instances"
+        mock.data_root = "."
+        mock.mem_cache_size = "1GB"
+        mock.train_subset = MagicMock(spec=SubsetConfig)
+        mock.train_subset.num_workers = 0
+        mock.val_subset = MagicMock(spec=SubsetConfig)
+        mock.val_subset.num_workers = 0
+        mock.test_subset = MagicMock(spec=SubsetConfig)
+        mock.test_subset.num_workers = 0
+
+        return mock
 
     @patch("otx.core.data.module.OTXDatasetFactory")
     @patch("otx.core.data.module.DmDataset.import_from")
@@ -31,7 +36,11 @@ class TestModule:
         [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.DETECTION],
     )
     def test_init(
-        self, mock_dm_dataset, mock_otx_dataset_factory, task, fxt_config,
+        self,
+        mock_dm_dataset,
+        mock_otx_dataset_factory,
+        task,
+        fxt_config,
     ) -> None:
         # Our query for subset name for train, val, test
         fxt_config.train_subset.subset_name = "train_1"

@@ -15,12 +15,12 @@ class SubsetConfig:
     """DTO for dataset subset configuration."""
 
     batch_size: int
-    num_workers: int
     subset_name: str
 
     transform_lib_type: TransformLibType
     transforms: list[dict[str, Any]]
 
+    num_workers: int = 2
 
 @dataclass
 class DataModuleConfig:
@@ -32,3 +32,5 @@ class DataModuleConfig:
     train_subset: SubsetConfig
     val_subset: SubsetConfig
     test_subset: SubsetConfig
+
+    mem_cache_size: str = "1GB"
