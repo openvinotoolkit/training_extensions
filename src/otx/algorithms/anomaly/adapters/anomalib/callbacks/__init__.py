@@ -16,6 +16,5 @@
 
 from .inference import AnomalyInferenceCallback
 from .progress import ProgressCallback
-from .xpu import XPUCallback
 
-__all__ = ["AnomalyInferenceCallback", "ProgressCallback", "XPUCallback"]
+__all__ = ["AnomalyInferenceCallback", "ProgressCallback"]
