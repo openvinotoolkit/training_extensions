@@ -11,7 +11,10 @@ import torch
 from datumaro import DatasetSubset, Image, Label
 
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsDataEntity
+from otx.core.data.entity.classification import (
+    MulticlassClsBatchDataEntity,
+    MulticlassClsDataEntity,
+)
 
 from .base import OTXDataset, Transforms
 
@@ -19,14 +22,23 @@ from .base import OTXDataset, Transforms
 class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     """OTXDataset class for multi-class classification task."""
 
-    def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
-        super().__init__(dm_subset, transforms)
+    def __init__(
+        self,
+        dm_subset: DatasetSubset,
+        transforms: Transforms,
+        mem_cache_img_max_size: tuple[int, int] | None = None,
+    ) -> None:
+        super().__init__(
+            dm_subset=dm_subset,
+            transforms=transforms,
+            mem_cache_img_max_size=mem_cache_img_max_size,
+        )
 
     def _get_item_impl(self, index: int) -> MulticlassClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data = self._get_img_data(img)
-        img_shape = img.size
+        img_shape = img_data.shape[:2]
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
 
