@@ -40,8 +40,11 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         from mmengine.registry import MODELS as MMENGINE_MODELS
         from mmseg.registry import MODELS
 
-        seg = MODELS.get("SegDataPreProcessor")
-        MMENGINE_MODELS.register_module(module=seg)
+        try:
+            seg = MODELS.get("SegDataPreProcessor")
+            MMENGINE_MODELS.register_module(module=seg)
+        except KeyError:
+            pass
 
         if self.config.backbone.type == 'LiteHRNet':
             model = build_mm_model(self.config, MODELS, self.load_from)

@@ -1,7 +1,7 @@
 defaults:
   - default
 
-data_format: common_semantic_segmentation
+data_format: common_semantic_segmentation_with_subset_dirs
 
 train_subset:
   batch_size: 8

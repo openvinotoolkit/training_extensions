@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import logging as log
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from datumaro import Dataset as DmDataset
@@ -38,18 +37,7 @@ class OTXDataModule(LightningDataModule):
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
 
-        if self.config.data_format == "common_semantic_segmentation":
-            # temporary hack, should be fixed later
-            dataset = {}
-            train_data_roots = Path(self.config.data_root) / "train"
-            val_data_roots = Path(self.config.data_root) / "val"
-
-            for subset_name, subset_path in zip(("train", "val", "test"),
-                                           (train_data_roots, val_data_roots, val_data_roots)):
-                dataset[subset_name] = DmDataset.import_from(subset_path,
-                                                     format=self.config.data_format).subsets()["default"]
-        else:
-            dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format).subsets()
+        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -57,7 +45,7 @@ class OTXDataModule(LightningDataModule):
             self.config.test_subset.subset_name: self.config.test_subset,
         }
 
-        for name, dm_subset in dataset.items():
+        for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
                 continue
