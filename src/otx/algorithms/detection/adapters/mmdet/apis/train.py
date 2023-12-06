@@ -107,6 +107,9 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
 
     fp16_cfg = cfg.get("fp16_", None)
     # put model on gpus
+    if cfg.device == "xpu":
+        model.to(f"xpu:{cfg.gpu_ids[0]}")
+
     if distributed:
         find_unused_parameters = cfg.get("find_unused_parameters", False)
         # Sets the `find_unused_parameters` parameter in
@@ -118,9 +121,6 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters,
         )
-    elif cfg.device == "xpu":
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
-        model.to(f"xpu:{cfg.gpu_ids[0]}")
     elif cfg.device == "hpu":
         model = build_dp(
             model, cfg.device, device_ids=cfg.gpu_ids, dim=0, enable_autocast=bool(fp16_cfg), put_gt_on_device=False
@@ -142,7 +142,9 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        dtype = torch.bfloat16 if cfg.optimizer_config.get("bf16_training", False) else torch.float32
+        if cfg.optimizer_config.get("bf16_training", False):
+            logger.warning("XPU supports fp32 training only currently.")
+        dtype = torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
