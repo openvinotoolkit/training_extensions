@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from .base import BaseConfig
 from .data import DataModuleConfig
@@ -29,11 +30,11 @@ class TrainConfig:
     trainer: TrainerConfig
     model: ModelConfig
     logger: dict
-    recipe: str | None
+    recipe: Optional[str]
     train: bool
     test: bool
 
-    seed: int | None = None
+    seed: Optional[int] = None
 
 
 def register_configs() -> None:
