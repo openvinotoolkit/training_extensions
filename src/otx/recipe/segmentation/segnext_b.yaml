@@ -56,7 +56,7 @@ model:
     config:
       backbone:
         init_cfg:
-          checkpoint: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain_hui/segnext/mscan_b_20230227-3ab7d230.pth
+          checkpoint: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth
           type: Pretrained
         act_cfg:
           type: GELU
