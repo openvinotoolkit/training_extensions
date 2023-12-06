@@ -39,11 +39,8 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         from mmengine.registry import MODELS as MMENGINE_MODELS
         from mmseg.registry import MODELS
 
-        try:
-            seg = MODELS.get("SegDataPreProcessor")
-            MMENGINE_MODELS.register_module(module=seg)
-        except KeyError:
-            pass
+        seg = MODELS.get("SegDataPreProcessor")
+        MMENGINE_MODELS.register_module(module=seg)
 
         return build_mm_model(self.config, MODELS, self.load_from)
 
