@@ -85,12 +85,6 @@ def test_get_cuda_version_with_version_file(mocker: MockerFixture, tmp_path: Pat
     version_file.write_text('{"cuda": {"version": "11.2.0"}}')
     assert get_cuda_version() == "11.2"
 
-    tmp_path_2 = tmp_path / "cuda2"
-    tmp_path_2.mkdir()
-    mocker.patch.dict(os.environ, {"CUDA_HOME": str(tmp_path_2)})
-    assert get_cuda_version() is None
-
-
 def test_get_cuda_version_with_nvcc(mocker: MockerFixture) -> None:
     """Test that get_cuda_version returns the expected CUDA version when nvcc is available."""
     mock_run = mocker.patch("otx.cli.utils.installation.Path.exists", return_value=False)

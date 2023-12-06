@@ -47,6 +47,8 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     :param cfg: A DictConfig configuration composed by Hydra.
     :return: A tuple with Pytorch Lightning Trainer and Python dict of metrics
     """
+    from lightning import seed_everything
+
     from otx.core.data.module import OTXDataModule
     from otx.core.engine.utils.instantiators import (
         instantiate_callbacks,
@@ -55,8 +57,8 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     from otx.core.engine.utils.logging_utils import log_hyperparameters
 
     # set seed for random number generators in pytorch, numpy and python.random
-    # if cfg.get("seed"):
-    #     L.seed_everything(cfg.seed, workers=True)
+    if cfg.seed is not None:
+        seed_everything(cfg.seed, workers=True)
 
     log.info(f"Instantiating datamodule <{cfg.data}>")
     datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
