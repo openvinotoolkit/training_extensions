@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Config data type objects."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Optional
 
@@ -13,7 +16,13 @@ from .trainer import TrainerConfig
 
 @dataclass
 class TrainConfig:
-    """DTO for training."""
+    """DTO for training.
+
+    Attributes:
+        seed: If set it with an integer value, e.g. `seed=1`,
+            Lightning derives unique seeds across all dataloader workers and processes
+            for torch, numpy and stdlib random number generators.
+    """
 
     base: BaseConfig
     callbacks: dict
@@ -21,9 +30,11 @@ class TrainConfig:
     trainer: TrainerConfig
     model: ModelConfig
     logger: dict
-    recipe: Optional[str]  # noqa: FA100
+    recipe: Optional[str]
     train: bool
     test: bool
+
+    seed: Optional[int] = None
 
 
 def register_configs() -> None:
