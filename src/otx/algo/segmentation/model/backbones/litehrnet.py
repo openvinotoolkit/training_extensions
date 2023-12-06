@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2020 Open-MMLab.
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """HRNet network modules for base backbone.
@@ -27,8 +27,6 @@ from otx.algo.segmentation.model.utils import (
 )
 
 
-# pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments
-# pylint: disable=unused-argument, consider-using-enumerate
 class NeighbourSupport(nn.Module):
     """Neighbour support module."""
 

@@ -21,8 +21,7 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-# This is an example for MMDetection models
-# In this way, we can easily import some models developed from the MM community
+
 class MMSegCompatibleModel(OTXSegmentationModel):
     """Segmentation model compatible for MMSeg.
 
@@ -46,11 +45,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         except KeyError:
             pass
 
-        if self.config.backbone.type == 'LiteHRNet':
-            model = build_mm_model(self.config, MODELS, self.load_from)
-        else:
-            # for other mmseg models load only backbone
-            model = build_mm_model(self.config, MODELS, self.load_from, True)
+        model = build_mm_model(self.config, MODELS, self.load_from)
 
         return model
 

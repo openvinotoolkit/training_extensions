@@ -54,8 +54,10 @@ data:
 model:
   otx_model:
     config:
-      load_from: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth
       backbone:
+        init_cfg:
+          checkpoint: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth
+          type: Pretrained
         act_cfg:
           type: GELU
         attention_kernel_paddings:

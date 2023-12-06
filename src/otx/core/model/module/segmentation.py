@@ -8,7 +8,7 @@ import logging as log
 
 import torch
 from torch import Tensor
-from torchmetrics.classification import Dice
+from torchmetrics import JaccardIndex
 
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
@@ -29,9 +29,12 @@ class OTXSegmentationLitModule(OTXLitModule):
         torch_compile: bool,
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        metric_params = {"task": "multiclass",
+                         "num_classes": otx_model.model.decode_head.num_classes,
+                         "ignore_index": 255}
 
-        self.val_metric = Dice()
-        self.test_metric = Dice()
+        self.val_metric = JaccardIndex(**metric_params)
+        self.test_metric = JaccardIndex(**metric_params)
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -49,7 +52,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.test_metric, "test")
 
-    def _log_metrics(self, meter: Dice, key: str) -> None:
+    def _log_metrics(self, meter: JaccardIndex, key: str) -> None:
         results = meter.compute()
 
         if isinstance(results, Tensor):
@@ -57,7 +60,7 @@ class OTXSegmentationLitModule(OTXLitModule):
                 log.debug("Cannot log Tensor which is not scalar")
                 return
             self.log(
-                f"{key}/Dice",
+                f"{key}/mIoU",
                 results,
                 sync_dist=True,
                 prog_bar=True,
@@ -87,11 +90,10 @@ class OTXSegmentationLitModule(OTXLitModule):
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-        # squeeze second dimension to make a 2D seg map
-        pred_masks = [mask.squeeze(0) for mask in preds.masks]
+
         return {
-            "preds": torch.stack(pred_masks, dim=0),
-            "target": torch.stack(inputs.masks, dim=0),
+            "preds": torch.cat(preds.masks, dim=0),
+            "target": torch.cat(inputs.masks, dim=0),
         }
 
     def test_step(self, inputs: SegBatchDataEntity, batch_idx: int) -> None:

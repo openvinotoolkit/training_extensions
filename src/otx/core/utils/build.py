@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 
 def build_mm_model(config: DictConfig,
                    model_registry: Registry,
-                   load_from: str,
-                   load_backbone_only: bool = False) -> nn.Module:
+                   load_from: str) -> nn.Module:
     """Build a model by using the registry."""
     from mmengine.runner import load_checkpoint
 
@@ -28,9 +27,8 @@ def build_mm_model(config: DictConfig,
     except AssertionError:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="list"))
 
-    if load_backbone_only and load_from is not None:
-        load_checkpoint(model.backbone, load_from)
-    elif load_from is not None:
+    model.init_weights()
+    if load_from is not None:
         load_checkpoint(model, load_from)
 
     return model
