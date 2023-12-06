@@ -185,11 +185,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
         original_size: Tuple[int, int],
     ) -> None:
         """Get reference features.
-        
+
         Using given images, get reference features and save it to PromptGetter.
         These reference features will be used for `infer` to get target results.
         Currently, single batch is only supported.
-        
+
         Args:
             images (torch.Tensor): Given images for reference features.
             processed_prompts (Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]): The whole class-wise prompts
@@ -247,14 +247,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self, images: torch.Tensor, padding: Tuple[int, ...], original_size: Tuple[int, int]
     ) -> List[List[DefaultDict[int, List[torch.Tensor]]]]:
         """Zero-shot inference with reference features.
-        
+
         Get target results by using reference features and target images' features.
-        
+
         Args:
             images (torch.Tensor): Given images for target results.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
-        
+
         Returns:
             (List[List[DefaultDict[int, List[torch.Tensor]]]]): Target results.
                 Lists wrapping results is following this order:
@@ -311,14 +311,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
         original_size: Tuple[int, int],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Predict point prompts and predicted masks.
-        
+
         Args:
             image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
             points_score (torch.Tensor): Foreground point prompts from point selection algorithm.
             bg_coords (torch.Tensor): Background point prompts from point selection algorithm.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
-        
+
         Returns:
             (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.
         """
