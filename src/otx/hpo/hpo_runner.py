@@ -251,5 +251,7 @@ def run_hpo_loop(
                                                     It's used for GPUResourceManager and XPUResourceManager.
                                                     Defaults to None.
     """
-    hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_devices_per_trial, available_devices)
+    hpo_loop = HpoLoop(
+        hpo_algo, train_func, resource_type, num_parallel_trial, num_devices_per_trial, available_devices
+    )
     hpo_loop.run()

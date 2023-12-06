@@ -5,9 +5,9 @@
 
 from typing import Optional, Tuple
 
-from mmcv.utils import ConfigDict
 from mmcv.ops.nms import NMSop
 from mmcv.ops.roi_align import RoIAlign
+from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
@@ -17,10 +17,10 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
-    patch_tiling,
-    should_cluster_anchors,
     monkey_patched_nms,
     monkey_patched_roi_align,
+    patch_tiling,
+    should_cluster_anchors,
 )
 from otx.utils.logger import get_logger
 
@@ -78,7 +78,6 @@ class DetectionConfigurer(BaseConfigurer):
         if cfg.device in ["xpu", "hpu"]:
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
-
 
     def configure_classes(self, cfg):
         """Patch classes for model and dataset."""

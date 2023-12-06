@@ -20,9 +20,9 @@ from typing import Any, Dict, List, Literal, Optional
 
 import torch
 
+from otx.algorithms.common.utils import is_xpu_available
 from otx.hpo.utils import check_positive
 from otx.utils.logger import get_logger
-from otx.algorithms.common.utils import is_xpu_available
 
 logger = get_logger()
 
@@ -159,6 +159,7 @@ class AcceleratorManager(BaseResourceManager):
 
 class GPUResourceManager(AcceleratorManager):
     """Resource manager class for GPU."""
+
     def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
         if available_devices is None:
             cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
@@ -178,6 +179,7 @@ class GPUResourceManager(AcceleratorManager):
 
 class XPUResourceManager(AcceleratorManager):
     """Resource manager class for XPU."""
+
     def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
         if available_devices is None:
             cuda_visible_devices = os.getenv("ONEAPI_DEVICE_SELECTOR", "").split(":")
@@ -210,7 +212,8 @@ def get_resource_manager(
                                             Defaults to None.
         num_devices_per_trial (Optional[int]): How many GPUs is used for a single trial.
                                                   It's used for GPUResourceManager. Defaults to None.
-        available_devices (Optional[str]): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+        available_devices (Optional[str]): How many GPUs are available. It's used for GPUResourceManager.
+                                            Defaults to None.
 
     Raises:
         ValueError: If resource_type is neither 'gpu', 'cpu', nor 'xpu' then raise an error.
@@ -218,7 +221,9 @@ def get_resource_manager(
     Returns:
         BaseResourceManager: Resource manager to use.
     """
-    if (resource_type == "gpu" and not torch.cuda.is_available()) or (resource_type == "xpu" and not is_xpu_available()):
+    if (resource_type == "gpu" and not torch.cuda.is_available()) or (
+        resource_type == "xpu" and not is_xpu_available()
+    ):
         logger.warning("{} can't be used now. resource type is modified to cpu.".format(resource_type))
         resource_type = "cpu"
 
@@ -248,7 +253,8 @@ def _cvt_comma_delimited_str_to_list(string: str):
     for val in string.split(","):
         if not val.isnumeric():
             raise ValueError(
-                "string format is wrong. " "string should only have numbers delimited by ','.\n"
+                "string format is wrong. "
+                "string should only have numbers delimited by ','.\n"
                 f"your value is {string}"
             )
     return [int(val) for val in string.split(",")]

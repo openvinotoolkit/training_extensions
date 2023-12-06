@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-from torchvision.ops import nms as tv_nms
-from torchvision.ops import roi_align as tv_roi_align
 from mmcv import Config, ConfigDict
 from mmcv.utils import ext_loader
+from torchvision.ops import nms as tv_nms
+from torchvision.ops import roi_align as tv_roi_align
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     InputSizeManager,
