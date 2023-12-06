@@ -2,6 +2,7 @@ data_format: ???
 data_root: ${base.data_dir}
 
 mem_cache_size: 1GB
+mem_cache_img_resize: ${as_int_tuple:1333,800}
 
 train_subset:
   subset_name: train

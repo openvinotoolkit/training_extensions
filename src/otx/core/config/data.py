@@ -34,3 +34,4 @@ class DataModuleConfig:
     test_subset: SubsetConfig
 
     mem_cache_size: str = "1GB"
+    mem_cache_img_resize: tuple[int, int] = (1333, 800)
