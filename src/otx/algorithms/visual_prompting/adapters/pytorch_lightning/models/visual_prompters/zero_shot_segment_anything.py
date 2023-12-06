@@ -87,7 +87,7 @@ class PromptGetter(nn.Module):
         threshold: float,
         num_bg_points: int = 1,
         downsizing: int = 16,
-    ) -> Tuple[torch.Tensor, ...]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Select point used as point prompts."""
         _, w_sim = mask_sim.shape
 
@@ -184,7 +184,19 @@ class ZeroShotSegmentAnything(SegmentAnything):
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> None:
-        """Get reference features."""
+        """Get reference features.
+        
+        Using given images, get reference features and save it to PromptGetter.
+        These reference features will be used for `infer` to get target results.
+        Currently, single batch is only supported.
+        
+        Args:
+            images (torch.Tensor): Given images for reference features.
+            processed_prompts (Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]): The whole class-wise prompts
+                processed at _preprocess_prompts.
+            padding (Tuple[int, ...]): Padding size.
+            original_size (Tuple[int, int]): Original image size.
+        """
         assert images.shape[0] == 1, "Only single batch is supported."
 
         self.prompt_getter.initialize()
@@ -231,8 +243,24 @@ class ZeroShotSegmentAnything(SegmentAnything):
             self.prompt_getter.set_reference(label, reference_feat.detach().cpu(), reference_prompt.detach().cpu())
 
     @torch.no_grad()
-    def infer(self, images: torch.Tensor, padding: Tuple[int, ...], original_size: Tuple[int, int]) -> List:
-        """Zero-shot inference with reference features."""
+    def infer(
+        self, images: torch.Tensor, padding: Tuple[int, ...], original_size: Tuple[int, int]
+    ) -> List[List[DefaultDict[int, List[torch.Tensor]]]]:
+        """Zero-shot inference with reference features.
+        
+        Get target results by using reference features and target images' features.
+        
+        Args:
+            images (torch.Tensor): Given images for target results.
+            padding (Tuple[int, ...]): Padding size.
+            original_size (Tuple[int, int]): Original image size.
+        
+        Returns:
+            (List[List[DefaultDict[int, List[torch.Tensor]]]]): Target results.
+                Lists wrapping results is following this order:
+                    1. Target images
+                    2. Tuple of predicted masks and used points gotten by point selection
+        """
         assert images.shape[0] == 1, "Only single batch is supported."
 
         total_results = []
@@ -282,7 +310,18 @@ class ZeroShotSegmentAnything(SegmentAnything):
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Predict point prompts and predicted masks."""
+        """Predict point prompts and predicted masks.
+        
+        Args:
+            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
+            points_score (torch.Tensor): Foreground point prompts from point selection algorithm.
+            bg_coords (torch.Tensor): Background point prompts from point selection algorithm.
+            padding (Tuple[int, ...]): Padding size.
+            original_size (Tuple[int, int]): Original image size.
+        
+        Returns:
+            (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.
+        """
         point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
         point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
         point_labels = torch.tensor([1] + [0] * len(bg_coords), dtype=torch.int32).unsqueeze(0)
@@ -323,28 +362,24 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def _preprocess_prompts(
         self,
-        bboxes: Optional[List[torch.Tensor]] = None,
-        points: Optional[List[torch.Tensor]] = None,
-        annotations: Optional[List[torch.Tensor]] = None,
-        labels: Optional[List[torch.Tensor]] = None,
-    ) -> DefaultDict[Any, List[Dict[str, Any]]]:
+        bboxes: Optional[torch.Tensor] = None,
+        points: Optional[torch.Tensor] = None,
+        annotations: Optional[torch.Tensor] = None,
+        labels: Optional[torch.Tensor] = None,
+    ) -> Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]:
         """Preprocess prompts.
-
-        This function proceeds such below thigs:
-            1. Gather prompts which have the same labels
-            3. If there are box prompts, the key `point_coords` is changed to `box`
 
         Currently, preprocessing for bounding boxes is only supported.
 
         Args:
-            bboxes (list, optional): Bounding box prompts to be preprocessed.
-            points (list, optional): Point prompts to be preprocessed, to be supported.
-            annotations (list, optional): annotation prompts to be preprocessed, to be supported.
-            labels (list, optional): Assigned labels according to given prompts.
+            bboxes (torch.Tensor, optional): Bounding box prompts to be preprocessed.
+            points (torch.Tensor, optional): Point prompts to be preprocessed, to be supported.
+            annotations (torch.Tensor, optional): annotation prompts to be preprocessed, to be supported.
+            labels (torch.Tensor, optional): Assigned labels according to given prompts.
                 Currently, it is only matched to bboxes, and it will be deprecated.
 
         Returns:
-            (defaultdict[Any, List[Dict[str, Any]]]): Processed and arranged each single prompt
+            (defaultdict[ScoredLabel, List[Dict[str, torch.Tensor]]]): Processed and arranged each single prompt
                 using label information as keys. Unlike other prompts, `annotation` prompts will be aggregated
                 as single annotation.
         """
@@ -433,23 +468,24 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def _merge_prompts(
         self,
         label: ScoredLabel,
-        input_prompts: Dict[str, Any],
-        processed_prompts: Dict[ScoredLabel, List[Dict[str, Any]]],
+        input_prompts: Dict[str, torch.Tensor],
+        processed_prompts: Dict[ScoredLabel, List[Dict[str, torch.Tensor]]],
         use_only_background: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, torch.Tensor]:
         """Merge target prompt and other prompts.
 
         Merge a foreground prompt and other prompts (background or prompts with other classes).
 
         Args:
-            label (int): Label information. Background is 0 and other foregrounds are >= 0.
-            input_prompts (Dict[str, Any]): A foreground prompt to be merged with other prompts.
-            processed_prompts (Dict[str, Any]): The whole class-wise prompts processed at _preprocess_prompts.
+            label (ScoredLabel): Label information. Background is 0 and other foregrounds are >= 0.
+            input_prompts (Dict[str, torch.Tensor]): A foreground prompt to be merged with other prompts.
+            processed_prompts (Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]): The whole class-wise prompts
+                processed at _preprocess_prompts.
             use_only_background (bool): Whether merging only background prompt, defaults to True.
                 It is applied to only point_coords.
 
         Returns:
-            (Dict[str, Any]): Merged prompts.
+            (Dict[str, torch.Tensor]): Merged prompts.
         """
         merged_input_prompts = deepcopy(input_prompts)
         for other_label, other_input_prompts in processed_prompts.items():
@@ -473,7 +509,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def _predict_target_mask(
         self,
         image_embeddings: torch.Tensor,
-        input_prompts: Dict[str, Any],
+        input_prompts: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> torch.Tensor:
@@ -481,8 +517,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-                If it is a zero tensor, the image embedding will be computed from the image.
-            input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.
+            input_prompts (Dict[str, Tuple[torch.Tensor, torch.Tensor]]): Dictionary including point, box,
+                and mask prompts. index=1 of tuple is point labels which indicate whether foreground or background.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
 
@@ -534,7 +570,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-                If it is a zero tensor, the image embedding will be computed from the image.
             input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
