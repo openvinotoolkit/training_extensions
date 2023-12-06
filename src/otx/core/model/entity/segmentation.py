@@ -45,9 +45,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         except KeyError:
             pass
 
-        model = build_mm_model(self.config, MODELS, self.load_from)
-
-        return model
+        return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         from mmengine.structures import PixelData
