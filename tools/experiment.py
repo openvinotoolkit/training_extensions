@@ -725,7 +725,7 @@ class OtxCommandRunner:
                 output_path = str(self._workspace / "outputs" / "latest_trained_model")
             self.set_arguments_to_cmd(command, "--output", output_path)
         elif cmd_entry == "optimize":
-            if previous_cmd == "export":
+            if previous_cmd == "export":  # execute PTQ. If not, execute QAT
                 file_path = self._find_model_path(previous_cmd)
                 if file_path is None:
                     return False
