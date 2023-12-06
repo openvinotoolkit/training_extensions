@@ -45,18 +45,13 @@ class SingleXPUStrategy(SingleDeviceStrategy):
         """Returns true if the strategy supports distributed training."""
         return False
 
-    def setup(self, trainer: "pl.Trainer") -> None:
-        """Sets up strategy."""
-        self.model_to_device()
-        super().setup(trainer)
-
     def setup_optimizers(self, trainer: "pl.Trainer") -> None:
         """Sets up optimizers."""
         super().setup_optimizers(trainer)
-        if len(trainer.optimizers) != 1:
+        if len(self.optimizers) != 1:
             raise RuntimeError("XPU strategy doesn't support multiple optimizers")
-        model, optimizer = torch.xpu.optimize(trainer.model, optimizer=trainer.optimizers[0])
-        trainer.optimizers = [optimizer]
+        model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])
+        self.optimizers = [optimizer]
         trainer.model = model
 
 
