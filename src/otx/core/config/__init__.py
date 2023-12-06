@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Config data type objects."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -31,11 +30,19 @@ class TrainConfig:
     model: ModelConfig
     logger: dict
     recipe: Optional[str]
+<<<<<<< HEAD
     debug: Optional[str]
+=======
+>>>>>>> 5d32efc6e (Update data config)
     train: bool
     test: bool
 
     seed: Optional[int] = None
+
+
+def as_int_tuple(*args) -> tuple[int, ...]:
+    """Resolve YAML list into Python integer tuple."""
+    return tuple(int(arg) for arg in args)
 
 
 def as_int_tuple(*args) -> tuple[int, ...]:
