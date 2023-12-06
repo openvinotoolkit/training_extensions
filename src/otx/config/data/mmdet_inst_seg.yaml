@@ -1,0 +1,14 @@
+defaults:
+  - default
+
+data_format: coco_instances
+
+train_subset:
+  batch_size: 8
+  transform_lib_type: MMDET_INST_SEG
+val_subset:
+  batch_size: 8
+  transform_lib_type: MMDET_INST_SEG
+test_subset:
+  batch_size: 8
+  transform_lib_type: MMDET_INST_SEG

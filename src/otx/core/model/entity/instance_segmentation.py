@@ -1,7 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for detection model entity used in OTX."""
+"""Class definition for instance segmentation model entity used in OTX."""
 
 from __future__ import annotations
 
@@ -31,8 +31,6 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     """Base class for the detection models used in OTX."""
 
 
-# This is an example for MMDetection models
-# In this way, we can easily import some models developed from the MM community
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
@@ -118,9 +116,9 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
                     losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
             return losses
 
-        scores: list[float] = []
+        scores: list[torch.Tensor] = []
         bboxes: list[tv_tensors.BoundingBoxes] = []
-        labels: list[int] = []
+        labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
 
         for output in outputs:

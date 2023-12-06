@@ -1,7 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for detection lightning module used in OTX."""
+"""Class definition for instance segmentation lightning module used in OTX."""
 from __future__ import annotations
 
 import logging as log
@@ -21,7 +21,7 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 
 
 class OTXInstanceSegLitModule(OTXLitModule):
-    """Base class for the lightning module used in OTX detection task."""
+    """Base class for the lightning module used in OTX instance segmentation task."""
 
     def __init__(
         self,
@@ -73,9 +73,15 @@ class OTXInstanceSegLitModule(OTXLitModule):
     def validation_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
+        Args:
+            inputs (InstanceSegBatchDataEntity): The input data for the validation step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type InstanceSegBatchPredEntity.
+
+        Returns:
+            None
         """
         preds = self.model(inputs)
 
@@ -124,9 +130,12 @@ class OTXInstanceSegLitModule(OTXLitModule):
     def test_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
 
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
+        Args:
+            inputs (InstanceSegBatchDataEntity): The input data for the test step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type InstanceSegBatchPredEntity.
         """
         preds = self.model(inputs)
 

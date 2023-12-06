@@ -1,7 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for OTX detection data entities."""
+"""Module for OTX instance segmentation data entities."""
 
 from __future__ import annotations
 
@@ -20,11 +20,13 @@ if TYPE_CHECKING:
 
 @dataclass
 class InstanceSegDataEntity(OTXDataEntity):
-    """Data entity for detection task.
+    """Data entity for instance segmentation task.
 
-    :param bboxes: Bbox annotations as top-left-bottom-right
-        (x1, y1, x2, y2) format with absolute coordinate values
-    :param labels: Bbox labels as integer indices
+    Attributes:
+        bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the instances.
+        masks (tv_tensors.Mask): The masks of the instances.
+        labels (LongTensor): The labels of the instances.
+        polygons (list[Polygon]): The polygons of the instances.
     """
 
     @property
@@ -45,26 +47,35 @@ class InstanceSegPredEntity(InstanceSegDataEntity, OTXPredEntity):
 
 @dataclass
 class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
-    """Data entity for detection task.
+    """Batch entity for InstanceSegDataEntity.
 
-    :param bboxes: A list of bbox annotations as top-left-bottom-right
-        (x1, y1, x2, y2) format with absolute coordinate values
-    :param labels: A list of bbox labels as integer indices
+    Attributes:
+        bboxes (list[tv_tensors.BoundingBoxes]): List of bounding boxes.
+        masks (list[tv_tensors.Mask]): List of masks.
+        labels (list[LongTensor]): List of labels.
+        polygons (list[list[Polygon]]): List of polygons.
     """
 
     bboxes: list[tv_tensors.BoundingBoxes]
     masks: list[tv_tensors.Mask]
     labels: list[LongTensor]
-    polygons: list[Polygon]
+    polygons: list[list[Polygon]]
 
     @property
     def task(self) -> OTXTaskType:
         """OTX Task type definition."""
-        return OTXTaskType.DETECTION
+        return OTXTaskType.INSTANCE_SEGMENTATION
 
     @classmethod
     def collate_fn(cls, entities: list[InstanceSegDataEntity]) -> InstanceSegBatchDataEntity:
-        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
+        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
+
+        Args:
+            entities (list[InstanceSegDataEntity]): List of InstanceSegDataEntity objects.
+
+        Returns:
+            InstanceSegBatchDataEntity: The collated batch data entity.
+        """
         batch_data = super().collate_fn(entities)
         return InstanceSegBatchDataEntity(
             batch_size=batch_data.batch_size,

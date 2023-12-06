@@ -41,6 +41,11 @@ class TransformLibFactory:
 
             return MMDetTransformLib.generate(config)
 
+        if config.transform_lib_type == TransformLibType.MMDET_INST_SEG:
+            from .transform_libs.mmdet_inst_seg import MMDetInstSegTransformLib
+
+            return MMDetInstSegTransformLib.generate(config)
+
         raise NotImplementedError(config.transform_lib_type)
 
 

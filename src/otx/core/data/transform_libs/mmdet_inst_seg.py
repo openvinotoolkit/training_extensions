@@ -1,13 +1,15 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Helper to support MMDET data transform functions."""
+"""Helper to support MMDET Instance Segmentation data transform functions."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
+import torch
+from datumaro import Polygon
 from mmdet.datasets.transforms import (
     LoadAnnotations as MMDetLoadAnnotations,
 )
@@ -15,10 +17,11 @@ from mmdet.datasets.transforms import (
     PackDetInputs as MMDetPackDetInputs,
 )
 from mmdet.registry import TRANSFORMS
+from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.detection import DetDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 
 from .mmcv import MMCVTransformLib
 
@@ -38,10 +41,17 @@ class LoadAnnotations(MMDetLoadAnnotations):
             msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
             raise RuntimeError(msg)
 
-        if self.with_bbox and isinstance(otx_data_entity, DetDataEntity):
+        if self.with_bbox and isinstance(otx_data_entity, InstanceSegDataEntity):
             gt_bboxes = otx_data_entity.bboxes.numpy()
             results["gt_bboxes"] = gt_bboxes
-        if self.with_label and isinstance(otx_data_entity, DetDataEntity):
+        if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
+            height, width = results['ori_shape']
+            polygon_masks = PolygonMasks(
+                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons], height, width,
+            )
+            gt_masks = polygon_masks.to_bitmap() if self.poly2mask else polygon_masks
+            results["gt_masks"] = gt_masks
+        if self.with_label and isinstance(otx_data_entity, InstanceSegDataEntity):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
             results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
@@ -53,7 +63,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
 class PackDetInputs(MMDetPackDetInputs):
     """Class to override PackDetInputs LoadAnnotations."""
 
-    def transform(self, results: dict) -> DetDataEntity:
+    def transform(self, results: dict) -> InstanceSegDataEntity:
         """Pack MMDet data entity into DetDataEntity."""
         transformed = super().transform(results)
 
@@ -71,23 +81,34 @@ class PackDetInputs(MMDetPackDetInputs):
             canvas_size=img_shape,
         )
         labels = data_samples.gt_instances.labels
+        image_info = ImageInfo(
+                        img_idx=0,
+                        img_shape=img_shape,
+                        ori_shape=ori_shape,
+                        pad_shape=pad_shape,
+                        scale_factor=scale_factor,
+                    )
+        if isinstance(data_samples.gt_instances.masks, BitmapMasks):
+            masks = tv_tensors.Mask(data_samples.gt_instances.masks.to_ndarray(), dtype=torch.uint8)
+        else:
+            masks = tv_tensors.Mask(torch.empty(0))
 
-        return DetDataEntity(
-            image=image,
-            img_info=ImageInfo(
-                img_idx=0,
-                img_shape=img_shape,
-                ori_shape=ori_shape,
-                pad_shape=pad_shape,
-                scale_factor=scale_factor,
-            ),
-            bboxes=bboxes,
-            labels=labels,
+        if isinstance(data_samples.gt_instances.masks, PolygonMasks):
+            polygons = [Polygon(polygon[0]) for polygon in data_samples.gt_instances.masks.masks]
+        else:
+            polygons = []
+        return InstanceSegDataEntity(
+                image=image,
+                img_info=image_info,
+                bboxes=bboxes,
+                masks=masks,
+                labels=labels,
+                polygons=polygons,
         )
 
 
-class MMDetTransformLib(MMCVTransformLib):
-    """Helper to support MMDET transforms in OTX."""
+class MMDetInstSegTransformLib(MMCVTransformLib):
+    """Helper to support MMDET instance segmentation transform functions."""
 
     @classmethod
     def get_builder(cls) -> Registry:
@@ -96,7 +117,7 @@ class MMDetTransformLib(MMCVTransformLib):
 
     @classmethod
     def generate(cls, config: SubsetConfig) -> list[Callable]:
-        """Generate MMDET transforms from the configuration."""
+        """Generate MMDET instance segmentation transforms from the configuration."""
         transforms = super().generate(config)
 
         cls._check_mandatory_transforms(

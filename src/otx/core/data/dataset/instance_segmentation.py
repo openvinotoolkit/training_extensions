@@ -1,13 +1,12 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for OTXDetectionDataset."""
+"""Module for OTXInstanceSegDataset."""
 
 from __future__ import annotations
 
 from typing import Callable
 
-import cv2
 import numpy as np
 import torch
 from datumaro import DatasetSubset, Image, Polygon
@@ -15,12 +14,13 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .base import OTXDataset, Transforms
 
 
 class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
-    """OTXDataset class for detection task."""
+    """OTXDataset class for instance segmentation."""
 
     def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
         super().__init__(dm_subset, transforms)
@@ -32,23 +32,25 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
         img_data = self._get_img_data(img)
         img_shape = img.size
 
-        gt_bboxes = np.zeros(shape=(0, 4), dtype=np.float32)
-        gt_labels = np.zeros(shape=(0, ), dtype=int)
-        gt_masks = np.zeros(shape=(0, *img_shape), dtype=bool)
-        gt_polygons = []
+        gt_bboxes, gt_labels, gt_masks, gt_polygons = [], [], [], []
+
         for annotation in item.annotations:
             if isinstance(annotation, Polygon):
-                points = np.array(annotation.points).reshape(-1, 2).astype(np.int32)
-                x1, y1 = np.min(points, axis=0)
-                x2, y2 = np.max(points, axis=0)
-                gt_bboxes = np.vstack((gt_bboxes, np.array([x1, y1, x2, y2])))
-                gt_labels = np.append(gt_labels, annotation.label)
+                bbox = np.array(annotation.get_bbox(), dtype=np.int32)
+                gt_bboxes.append(bbox)
+                gt_labels.append(annotation.label)
+
                 if self.poly2mask:
-                    mask = np.zeros(img_shape)
-                    cv2.fillPoly(mask, [points], 1)
-                    gt_masks = np.vstack((gt_masks, mask[np.newaxis]))
+                    gt_masks.append(polygon_to_bitmap([annotation], *img_shape)[0])
                 else:
-                    gt_polygons.append(annotation)
+                    gt_polygons.append(annotation.points)
+
+        # convert xywh to xyxy format
+        bboxes = np.array(gt_bboxes, dtype=np.int32)
+        bboxes[:, 2:] += bboxes[:, :2]
+
+        masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)
+        labels = np.array(gt_labels, dtype=np.int64)
 
         entity = InstanceSegDataEntity(
             image=img_data,
@@ -60,12 +62,12 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                 scale_factor=(1.0, 1.0),
             ),
             bboxes=tv_tensors.BoundingBoxes(
-                gt_bboxes,
+                bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            masks=tv_tensors.Mask(gt_masks, dtype=torch.uint8),
-            labels=torch.as_tensor(gt_labels),
+            masks=tv_tensors.Mask(masks, dtype=torch.uint8),
+            labels=torch.as_tensor(labels),
             polygons=gt_polygons,
         )
 
@@ -73,5 +75,5 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
 
     @property
     def collate_fn(self) -> Callable:
-        """Collection function to collect DetDataEntity into InstanceSegDataEntity in data loader."""
+        """Collection function to collect InstanceSegDataEntity into InstanceSegDataEntity in dataloader."""
         return InstanceSegBatchDataEntity.collate_fn
