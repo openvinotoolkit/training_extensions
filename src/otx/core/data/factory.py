@@ -26,6 +26,11 @@ class TransformLibFactory:
     @classmethod
     def generate(cls: type[TransformLibFactory], config: SubsetConfig) -> Transforms:
         """Create transforms from factory."""
+        if config.transform_lib_type == TransformLibType.TORCHVISION:
+            from .transform_libs.torchvision import TorchVisionTransformLib
+
+            return TorchVisionTransformLib.generate(config)
+
         if config.transform_lib_type == TransformLibType.MMCV:
             from .transform_libs.mmcv import MMCVTransformLib
 
