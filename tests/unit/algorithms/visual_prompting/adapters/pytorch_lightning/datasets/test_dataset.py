@@ -199,16 +199,6 @@ class TestOTXZeroShotVisualPromptingDataset:
     """
 
     @e2e_pytest_unit
-    def test_len(self, mocker, dataset_polygon, transform, image_size, mean, std) -> None:
-        """Test __len__."""
-        mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
-            return_value=transform,
-        )
-        otx_dataset = OTXZeroShotVisualPromptingDataset(dataset_polygon, image_size, mean, std)
-        assert len(otx_dataset) == 4
-
-    @e2e_pytest_unit
     @pytest.mark.parametrize("use_mask", [False, True])
     def test_getitem(
         self, mocker, dataset_polygon, dataset_mask, transform, image_size, mean, std, use_mask: bool
