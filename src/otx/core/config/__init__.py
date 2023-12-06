@@ -22,6 +22,7 @@ class TrainConfig:
     model: ModelConfig
     logger: dict
     recipe: Optional[str]  # noqa: FA100
+    debug: Optional[str]  # noqa: FA100
     train: bool
     test: bool
 
