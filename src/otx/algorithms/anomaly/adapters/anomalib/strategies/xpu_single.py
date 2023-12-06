@@ -53,13 +53,11 @@ class SingleXPUStrategy(SingleDeviceStrategy):
     def setup_optimizers(self, trainer: "pl.Trainer") -> None:
         """Sets up optimizers."""
         super().setup_optimizers(trainer)
+        if len(trainer.optimizers) != 1:
+            raise RuntimeError("XPU strategy doesn't support multiple optimizers")
         model, optimizer = torch.xpu.optimize(trainer.model, optimizer=trainer.optimizers[0])
         trainer.optimizers = [optimizer]
         trainer.model = model
-
-    def model_to_device(self) -> None:
-        """Moves model to the target device."""
-        self.model.to(self.root_device)
 
 
 StrategyRegistry.register(

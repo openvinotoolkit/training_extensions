@@ -50,6 +50,10 @@ class XPUAccelerator(Accelerator):
         """Returns XPU devices stats."""
         return {}
 
+    def teardown(self) -> None:
+        """Cleans-up XPU-related resources."""
+        pass
+
 
 AcceleratorRegistry.register(
     XPUAccelerator.accelerator_name, XPUAccelerator, description="Accelerator supports XPU devices"
