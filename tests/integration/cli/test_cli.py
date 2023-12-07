@@ -78,7 +78,7 @@ def test_otx_train(recipe: str, tmp_path: Path) -> None:
     assert (tmp_path / "outputs").exists()
     assert (tmp_path / "outputs" / "otx_train.log").exists()
     assert (tmp_path / "outputs" / "csv").exists()
-    assert (tmp_path / "outputs" / "csv" / "version_0").exists()
-    assert (tmp_path / "outputs" / "csv" / "version_0" / "checkpoints").exists()
-    ckpt_files = list((tmp_path / "outputs" / "csv" / "version_0" / "checkpoints").glob(pattern="*.ckpt"))
+    assert (tmp_path / "outputs").exists()
+    assert (tmp_path / "outputs" / "checkpoints").exists()
+    ckpt_files = list((tmp_path / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
