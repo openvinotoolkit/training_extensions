@@ -1,7 +1,7 @@
-"""Custom Anchor Generator for SSD."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Custom Anchor Generator for SSD."""
 
 from __future__ import annotations
 

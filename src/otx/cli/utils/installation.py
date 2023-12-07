@@ -155,28 +155,26 @@ def get_cuda_version() -> str | None:
     if Path(cuda_home).exists():
         # Check $CUDA_HOME/version.json file.
         version_file = Path(cuda_home) / "version.json"
-        if not version_file.is_file():
-            return None
-        with Path(version_file).open() as file:
-            data = json.load(file)
-            cuda_version = data.get("cuda", {}).get("version", None)
-            if cuda_version is not None:
-                cuda_version_parts = cuda_version.split(".")
-                return ".".join(cuda_version_parts[:2])
-    else:
-        # 2. 'nvcc --version' check
-        try:
-            result = subprocess.run(args=["nvcc", "--version"], capture_output=True, text=True, check=False)
-            output = result.stdout
+        if version_file.is_file():
+            with Path(version_file).open() as file:
+                data = json.load(file)
+                cuda_version = data.get("cuda", {}).get("version", None)
+                if cuda_version is not None:
+                    cuda_version_parts = cuda_version.split(".")
+                    return ".".join(cuda_version_parts[:2])
+    # 2. 'nvcc --version' check & without version.json case
+    try:
+        result = subprocess.run(args=["nvcc", "--version"], capture_output=True, text=True, check=False)
+        output = result.stdout
 
-            cuda_version_pattern = r"cuda_(\d+\.\d+)"
-            cuda_version_match = re.search(cuda_version_pattern, output)
+        cuda_version_pattern = r"cuda_(\d+\.\d+)"
+        cuda_version_match = re.search(cuda_version_pattern, output)
 
-            if cuda_version_match is not None:
-                return cuda_version_match.group(1)
-        except Exception:
-            msg = "Could not find cuda-version. Instead, the CPU version of torch will be installed."
-            warn(msg, stacklevel=2)
+        if cuda_version_match is not None:
+            return cuda_version_match.group(1)
+    except Exception:
+        msg = "Could not find cuda-version. Instead, the CPU version of torch will be installed."
+        warn(msg, stacklevel=2)
     return None
 
 

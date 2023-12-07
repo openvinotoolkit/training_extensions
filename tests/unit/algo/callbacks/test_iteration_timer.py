@@ -14,6 +14,8 @@ class TestIterationTimer:
         mock_trainer = MagicMock()
         mock_pl_module = MagicMock()
         mock_batch = MagicMock()
+        batch_size = 64
+        mock_batch.batch_size = batch_size
         mock_outputs = MagicMock()
 
         timer = IterationTimer()
@@ -46,6 +48,7 @@ class TestIterationTimer:
                     prog_bar=timer.prog_bar,
                     on_step=timer.on_step,
                     on_epoch=timer.on_epoch,
+                    batch_size=batch_size,
                 )
 
             getattr(timer, f"on_{phase}_batch_end")(
@@ -70,4 +73,5 @@ class TestIterationTimer:
                     prog_bar=timer.prog_bar,
                     on_step=timer.on_step,
                     on_epoch=timer.on_epoch,
+                    batch_size=batch_size,
                 )
