@@ -44,7 +44,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
         # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
         det = MODELS.get("DetDataPreprocessor")
-        MMENGINE_MODELS.register_module(module=det)
+        MMENGINE_MODELS.register_module(module=det, force=True)
 
         return build_mm_model(self.config, MODELS, self.load_from)
 

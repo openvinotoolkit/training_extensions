@@ -5,10 +5,11 @@
 import importlib
 import inspect
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
-
-from tests.integration.cli.test_helper import check_run
+from hydra.core.global_hydra import GlobalHydra
+from otx.cli import main
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
@@ -50,19 +51,21 @@ def test_otx_train(recipe: str, tmp_path: Path) -> None:
     task = recipe.split("/")[0]
     model_name = recipe.split("/")[1].split(".")[0]
     tmp_path = tmp_path / f"otx_train_{model_name}"
-    command_line = [
+    command_cfg = [
         "otx", "train",
         f"+recipe={recipe}",
         f"base.data_dir={DATASET[task]['data_dir']}",
-        "trainer.max_epochs=1",
-        "trainer.check_val_every_n_epoch=1",
-        "trainer=auto",
         f"base.work_dir={tmp_path}",
         f"base.output_dir={tmp_path / 'outputs'}",
+        "+debug=intg_test",
         *DATASET[task]['overrides'],
     ]
-    rc, stdout, _ = check_run(command_line)
-    assert rc == 0
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    # Clear the Hydra instances.
+    GlobalHydra().clear()
 
     # Currently, a simple output check
     assert (tmp_path / "outputs").exists()
