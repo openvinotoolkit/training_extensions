@@ -4,10 +4,12 @@
 
 import importlib
 import inspect
-import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+from hydra.core.global_hydra import GlobalHydra
+from otx.cli import main
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
@@ -54,10 +56,12 @@ def test_otx_train(recipe: str, tmp_path: Path) -> None:
         "+debug=intg_test",
         *DATASET[task]['overrides'],
     ]
-    command = " ".join(command_cfg)
 
-    rc = os.system(command=command)
-    assert rc == 0
+    with patch("sys.argv", command_cfg):
+        main()
+
+    # Clear the Hydra instances.
+    GlobalHydra().clear()
 
     # Currently, a simple output check
     assert (tmp_path / "outputs").exists()
