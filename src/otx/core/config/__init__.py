@@ -50,11 +50,6 @@ def as_int_tuple(*args) -> tuple[int, ...]:
     return tuple(int(arg) for arg in args)
 
 
-def as_int_tuple(*args) -> tuple[int, ...]:
-    """Resolve YAML list into Python integer tuple."""
-    return tuple(int(arg) for arg in args)
-
-
 def as_torch_dtype(arg: str) -> dtype:
     """Resolve YAML string into PyTorch dtype.
 
