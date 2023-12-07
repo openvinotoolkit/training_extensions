@@ -29,8 +29,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
     def _get_item_impl(self, index: int) -> InstanceSegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        img_data = self._get_img_data(img)
-        img_shape = img.size
+        img_data, img_shape = self._get_img_data_and_shape(img)
 
         gt_bboxes, gt_labels, gt_masks, gt_polygons = [], [], [], []
 
@@ -43,7 +42,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                 if self.poly2mask:
                     gt_masks.append(polygon_to_bitmap([annotation], *img_shape)[0])
                 else:
-                    gt_polygons.append(annotation.points)
+                    gt_polygons.append(annotation)
 
         # convert xywh to xyxy format
         bboxes = np.array(gt_bboxes, dtype=np.int32)

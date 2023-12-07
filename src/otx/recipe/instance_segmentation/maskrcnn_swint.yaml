@@ -1,16 +1,9 @@
 # @package _global_
 defaults:
   - override /base: instance_segmentation
+  - override /callbacks: instance_segmentation
   - override /data: mmdet_inst_seg
   - override /model: mmdet_inst_seg
-  - override /callbacks: default
-
-callbacks:
-  model_checkpoint:
-    monitor: "val/map_50"
-    dirpath: null # save under csv/version_0/checkpoints instead of ${base.output_dir}/checkpoints
-  early_stopping:
-    monitor: "val/map_50"
 
 data:
   train_subset:

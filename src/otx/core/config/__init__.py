@@ -38,9 +38,17 @@ class TrainConfig:
     seed: Optional[int] = None
 
 
+def as_int_tuple(*args) -> tuple[int, ...]:
+    """Resolve YAML list into Python integer tuple."""
+    return tuple(int(arg) for arg in args)
+
+
 def register_configs() -> None:
     """Register DTO as default to hydra."""
     from hydra.core.config_store import ConfigStore
+    from omegaconf import OmegaConf
 
     cs = ConfigStore.instance()
     cs.store(name="base_config", node=TrainConfig)
+
+    OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple)

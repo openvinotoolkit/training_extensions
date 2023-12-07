@@ -33,7 +33,11 @@ class TestModule:
     @patch("otx.core.data.module.DmDataset.import_from")
     @pytest.mark.parametrize(
         "task",
-        [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.DETECTION],
+        [
+            OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.DETECTION,
+            OTXTaskType.SEMANTIC_SEGMENTATION,
+        ],
     )
     def test_init(
         self,

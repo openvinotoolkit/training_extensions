@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from hydra import compose, initialize
+from hydra import compose, initialize, core
 from jsonargparse import ArgumentParser
 
 from otx.cli.utils.hydra import configure_hydra_outputs
@@ -42,6 +42,8 @@ def otx_train(overrides: list[str]) -> None:
     # apply extra utilities
     # (e.g. ask for tags if none are provided in cfg, print cfg tree, etc.)
     # utils.extras(cfg)
+    if core.global_hydra.GlobalHydra().is_initialized():
+        core.global_hydra.GlobalHydra().clear()
     initialize(config_path="../config", version_base="1.3", job_name="otx_train")
     cfg = compose(config_name="train", overrides=overrides, return_hydra_config=True)
     configure_hydra_outputs(cfg)

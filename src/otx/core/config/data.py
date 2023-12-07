@@ -22,6 +22,7 @@ class SubsetConfig:
 
     num_workers: int = 2
 
+
 @dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
@@ -34,3 +35,4 @@ class DataModuleConfig:
     test_subset: SubsetConfig
 
     mem_cache_size: str = "1GB"
+    mem_cache_img_max_size: tuple[int, int] | None = None

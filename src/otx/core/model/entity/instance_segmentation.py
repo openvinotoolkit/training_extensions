@@ -40,8 +40,10 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        det = MODELS.get("DetDataPreprocessor")
-        MMENGINE_MODELS.register_module(module=det)
+        # Check if DetDataPreprocessor is registered in MMENGINE_MODELS
+        if not MMENGINE_MODELS.get("DetDataPreprocessor"):
+            det = MODELS.get("DetDataPreprocessor")
+            MMENGINE_MODELS.register_module(module=det)
 
         return build_mm_model(self.config, MODELS, self.load_from)
 
