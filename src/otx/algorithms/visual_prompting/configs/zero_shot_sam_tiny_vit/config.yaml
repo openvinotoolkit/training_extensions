@@ -29,7 +29,7 @@ model:
   freeze_mask_decoder: true
   checkpoint: https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt
   # just for inference
-  return_single_mask: true
+  return_single_mask: false
   use_stability_score: false
   stability_score_offset: 1.
   return_extra_metrics: false

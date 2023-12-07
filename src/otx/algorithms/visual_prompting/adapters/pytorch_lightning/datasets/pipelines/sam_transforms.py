@@ -76,9 +76,9 @@ class ResizeLongestSide:
         old_h, old_w = original_size
         new_h, new_w = cls.get_preprocess_shape(original_size[0], original_size[1], target_length)
         if isinstance(coords, np.ndarray):
-            coords = deepcopy(coords).astype(np.float32)
+            coords = coords.astype(float)
         else:
-            coords = deepcopy(coords).to(torch.float32)
+            coords = coords.to(torch.float)
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
