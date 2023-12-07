@@ -5,13 +5,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, fields
 from enum import IntEnum, auto
-from typing import Dict, Generic, TypeVar
+from typing import Any, Dict, Generic, Iterator, TypeVar
 
 import numpy as np
 from torch import Tensor
 from torchvision import tv_tensors
+from torchvision.transforms.v2.functional import to_image
 
 from otx.core.types.task import OTXTaskType
 
@@ -48,7 +50,7 @@ T_OTXDataEntity = TypeVar(
 
 
 @dataclass
-class OTXDataEntity:
+class OTXDataEntity(Mapping):
     """Base data entity for OTX.
 
     This entity is the output of each OTXDataset,
@@ -79,6 +81,25 @@ class OTXDataEntity:
             return ImageType.TV_IMAGE
 
         raise TypeError(self.image)
+
+    def to_tv_image(self: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Convert `self.image` to TorchVision Image if it is a Numpy array (inplace operation)."""
+        if isinstance(self.image, tv_tensors.Image):
+            return self
+
+        self.image = to_image(self.image)
+        return self
+
+    def __iter__(self) -> Iterator[str]:
+        for field in fields(self):
+            yield field.name
+
+    def __getitem__(self, key: str) -> Any:  # noqa: ANN401
+        return getattr(self, key)
+
+    def __len__(self) -> int:
+        """Get the number of fields in this data entity."""
+        return len(fields(self))
 
 
 @dataclass
