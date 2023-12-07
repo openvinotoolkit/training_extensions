@@ -80,13 +80,13 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         msg = f"Reach the maximum refetch number ({self.max_refetch})"
         raise RuntimeError(msg)
 
-    def _get_img_data(self, img: Image) -> np.ndarray:
+    def _get_img_data_and_shape(self, img: Image) -> tuple[np.ndarray, tuple[int, int]]:
         handler = MemCacheHandlerSingleton.get()
 
         key = img.path if isinstance(img, ImageFromFile) else id(img)
 
         if handler is not None and (img_data := handler.get(key=key)[0]) is not None:
-            return img_data
+            return img_data, img_data.shape[:2]
 
         img_data = img.data
 
@@ -106,7 +106,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
                 img_size=img.size,
             )
 
-        return img_data
+        return img_data, img_data.shape[:2]
 
     def _cache_img(
         self,
