@@ -28,18 +28,19 @@ class TransformLibFactory:
         """Create transforms from factory."""
         if config.transform_lib_type == TransformLibType.MMCV:
             from .transform_libs.mmcv import MMCVTransformLib
-
             return MMCVTransformLib.generate(config)
 
         if config.transform_lib_type == TransformLibType.MMPRETRAIN:
             from .transform_libs.mmpretrain import MMPretrainTransformLib
-
             return MMPretrainTransformLib.generate(config)
 
         if config.transform_lib_type == TransformLibType.MMDET:
             from .transform_libs.mmdet import MMDetTransformLib
-
             return MMDetTransformLib.generate(config)
+
+        if config.transform_lib_type == TransformLibType.MMSEG:
+            from .transform_libs.mmseg import MMSegTransformLib
+            return MMSegTransformLib.generate(config)
 
         raise NotImplementedError(config.transform_lib_type)
 
@@ -58,12 +59,14 @@ class OTXDatasetFactory:
         transforms = TransformLibFactory.generate(config)
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
-
             return OTXMulticlassClsDataset(dm_subset, transforms)
 
         if task == OTXTaskType.DETECTION:
             from .dataset.detection import OTXDetectionDataset
-
             return OTXDetectionDataset(dm_subset, transforms)
+
+        if task == OTXTaskType.SEMANTIC_SEGMENTATION:
+            from .dataset.segmentation import OTXSegmentationDataset
+            return OTXSegmentationDataset(dm_subset, transforms)
 
         raise NotImplementedError(task)

@@ -1,0 +1,17 @@
+defaults:
+  - default
+
+data_format: common_semantic_segmentation_with_subset_dirs
+
+train_subset:
+  batch_size: 8
+  num_workers: 4
+  transform_lib_type: MMSEG
+val_subset:
+  batch_size: 8
+  num_workers: 4
+  transform_lib_type: MMSEG
+test_subset:
+  batch_size: 8
+  num_workers: 4
+  transform_lib_type: MMSEG
