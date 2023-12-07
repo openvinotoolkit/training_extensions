@@ -546,7 +546,7 @@ class ZeroShotTask(InferenceTask):
         self.trainer.predict(model=self.model, datamodule=datamodule)
 
         return inference_callback.otx_dataset
-        
+
     def export(  # noqa: D102
         self,
         export_type: ExportType,
@@ -633,7 +633,7 @@ class ZeroShotTask(InferenceTask):
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
-    
+
     def _export_to_onnx(self, onnx_path: Dict[str, str]):
         """Export model to ONNX.
 
@@ -647,15 +647,16 @@ class ZeroShotTask(InferenceTask):
                 output_names = ["image_embeddings"]
                 dynamic_axes = None
                 model_to_export = self.model.image_encoder
-                
+
             elif module == "zero_shot_prompt_getter":
                 embed_dim = self.model.prompt_encoder.embed_dim
                 embed_size = self.model.prompt_encoder.image_embedding_size
                 dummy_inputs = {
                     "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
                     "padding": (0, 0, 0, 0),
-                    "original_size": (height, width)}
-                output_names = None#["prompts"]
+                    "original_size": (height, width),
+                }
+                output_names = None  # ["prompts"]
                 dynamic_axes = None
                 model_to_export = self.model.prompt_getter
 
@@ -663,27 +664,15 @@ class ZeroShotTask(InferenceTask):
                 # sam without backbone
                 embed_dim = self.model.prompt_encoder.embed_dim
                 embed_size = self.model.prompt_encoder.image_embedding_size
-                dynamic_axes = {
-                    "bg_coords": {0: "num_points"}
-                }
-                # mask_input_size = [4 * x for x in embed_size]
-                # dynamic_axes = {
-                #     "point_coords": {1: "num_points"},
-                #     "point_labels": {1: "num_points"},
-                # }
+                dynamic_axes = None
                 dummy_inputs = {
-                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
-                    "points_score": torch.rand(3) * torch.tensor([height, width, 1]),
-                    "bg_coords": torch.randint(low=0, high=height, size=(1, 2), dtype=torch.float),
+                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float),
+                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
+                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
                     "padding": torch.randint(low=0, high=height // 2, size=(4,)),
-                    # "original_size": torch.randint(low=0, high=image_size, size=(2,)),
                     "original_size": (height, height),
-                    # "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
-                    # "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
-                    # "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
-                    # "has_mask_input": torch.tensor([[1]], dtype=torch.float),
                 }
-                output_names = ["predicted_masks", "used_points"]
+                output_names = ["predicted_masks"]
                 model_to_export = self.model
 
             with warnings.catch_warnings():
@@ -702,7 +691,7 @@ class ZeroShotTask(InferenceTask):
                         output_names=output_names,
                         dynamic_axes=dynamic_axes,
                     )
-        
+
     def save_model(self, output_model: ModelEntity) -> None:
         """Save the model after training is completed.
 

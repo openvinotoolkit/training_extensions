@@ -288,15 +288,20 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     if is_done:
                         continue
 
-                    mask, used_point_score = self(
+                    point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
+                    point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
+                    point_labels = torch.tensor(
+                        [1] + [0] * len(bg_coords), dtype=torch.float32, device=point_coords.device
+                    ).unsqueeze(0)
+                    mask = self(
                         image_embeddings=image_embeddings,
-                        points_score=points_score,
-                        bg_coords=bg_coords,
+                        point_coords=point_coords,
+                        point_labels=point_labels,
                         padding=padding,
                         original_size=original_size,
                     )
                     predicted_masks[label].append(mask)
-                    used_points[label].append(used_point_score)
+                    used_points[label].append(points_score)
 
             total_results.append([predicted_masks, used_points])
         return total_results
@@ -305,8 +310,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def forward(
         self,
         image_embeddings: torch.Tensor,
-        points_score: torch.Tensor,
-        bg_coords: torch.Tensor,
+        point_coords: torch.Tensor,
+        point_labels: torch.Tensor,
         padding: Tuple[int, ...],
         original_size: Tuple[int, int],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -314,25 +319,66 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            points_score (torch.Tensor): Foreground point prompts from point selection algorithm.
-            bg_coords (torch.Tensor): Background point prompts from point selection algorithm.
+            point_coords (torch.Tensor): Foreground point prompts from point selection algorithm.
+            point_labels (torch.Tensor): Background point prompts from point selection algorithm.
             padding (Tuple[int, ...]): Padding size.
             original_size (Tuple[int, int]): Original image size.
 
         Returns:
             (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.
         """
-        point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
-        point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
-        point_labels = torch.tensor([1] + [0] * len(bg_coords), dtype=torch.int32, device=point_coords.device).unsqueeze(0)
-        mask = self._predict_target_mask(
-            image_embeddings=image_embeddings,
-            input_prompts={"points": (point_coords, point_labels)},
-            padding=padding,
-            original_size=original_size,
-        )
+        device = point_coords.device
 
-        return mask.detach().cpu().to(torch.uint8), points_score.detach().cpu()
+        # First-step prediction
+        _, logits = super().forward(
+            image_embeddings=image_embeddings,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=device),
+            has_mask_input=torch.tensor([[0.]], device=device),
+        )
+        best_idx = 1
+
+        # Cascaded Post-refinement-1
+        scores, low_res_masks = super().forward(
+            image_embeddings=image_embeddings,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            mask_input=logits[:, best_idx : best_idx + 1, :, :],
+            has_mask_input=torch.tensor([[1.]], device=device),
+        )
+        best_idx = torch.argmax(scores[0, 1:]) + 1
+        high_res_masks = self.postprocess_masks(
+            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+        )
+        masks = high_res_masks > self.config.model.mask_threshold
+
+        # Cascaded Post-refinement-2
+        coords = torch.nonzero(masks[0, best_idx])
+        y, x = coords[:, 0], coords[:, 1]
+        new_point_coords = torch.cat(
+            (
+                point_coords,
+                torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=device),
+            ),
+            dim=1,
+        )
+        new_point_labels = torch.cat((point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=device)), dim=1)
+        scores, low_res_masks = super().forward(
+            image_embeddings=image_embeddings,
+            point_coords=new_point_coords,
+            point_labels=new_point_labels,
+            mask_input=logits[:, best_idx : best_idx + 1, :, :],
+            has_mask_input=torch.tensor([[1.]], device=device),
+        )
+        best_idx = torch.argmax(scores[0, 1:]) + 1
+
+        high_res_masks = self.postprocess_masks(
+            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+        )
+        masks = high_res_masks > self.config.model.mask_threshold
+
+        return masks[0, best_idx]
 
     def training_step(self, batch, batch_idx) -> None:
         """Training step for `learn`."""
@@ -505,90 +551,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             torch.zeros_like(other_input_prompt.get("point_labels")),
                         )
         return merged_input_prompts
-
-    def _predict_target_mask(
-        self,
-        image_embeddings: torch.Tensor,
-        input_prompts: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-    ) -> torch.Tensor:
-        """Predict target masks.
-
-        Args:
-            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            input_prompts (Dict[str, Tuple[torch.Tensor, torch.Tensor]]): Dictionary including point, box,
-                and mask prompts. index=1 of tuple is point labels which indicate whether foreground or background.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
-
-        Return:
-            (torch.Tensor): Predicted mask.
-        """
-        device = input_prompts.get("points")[0].device
-
-        # First-step prediction
-        # _, _, logits = self._predict_mask(image_embeddings, input_prompts, padding, original_size, multimask_output=False)
-        _, logits = super().forward(
-            image_embeddings=image_embeddings,
-            point_coords=input_prompts.get("points")[0], 
-            point_labels=input_prompts.get("points")[1],
-            mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=device),
-            has_mask_input=torch.tensor(0, device=device))
-            # padding, original_size, multimask_output=False)
-        best_idx = 1
-
-        # Cascaded Post-refinement-1
-        # input_prompts.update({"masks": logits[:, best_idx: best_idx + 1, :, :]})
-        # masks, scores, logits = self._predict_mask(image_embeddings, input_prompts, padding, original_size, multimask_output=True)
-        scores, low_res_masks = super().forward(
-            image_embeddings=image_embeddings,
-            point_coords=input_prompts.get("points")[0], 
-            point_labels=input_prompts.get("points")[1],
-            mask_input=logits[:, best_idx : best_idx + 1, :, :],
-            has_mask_input=torch.tensor(1, device=device))
-        best_idx = torch.argmax(scores[0,1:]) + 1
-        high_res_masks = self.postprocess_masks(
-            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
-        )
-        masks = high_res_masks > self.config.model.mask_threshold
-
-        # Cascaded Post-refinement-2
-        coords = torch.nonzero(masks[0, best_idx])
-        y, x = coords[:, 0], coords[:, 1]
-        x_min = x.min()
-        x_max = x.max()
-        y_min = y.min()
-        y_max = y.max()
-        # input_prompts.update(
-        #     {
-        #         "masks": logits[:, best_idx : best_idx + 1, :, :],
-        #         "box": torch.tensor([x_min, y_min, x_max, y_max], device=logits.device),
-        #     }
-        # )
-        # masks, scores, _ = self._predict_mask(
-        #     image_embeddings, input_prompts, padding, original_size, multimask_output=True
-        # )
-        new_input_prompts = {
-            "points": (
-                torch.cat((input_prompts.get("points")[0], torch.tensor([[[x_min, y_min], [x_max, y_max]]], device=device)), dim=1),
-                torch.cat((input_prompts.get("points")[1], torch.tensor([[2, 3]], device=device)), dim=1),
-            )
-        }
-        scores, low_res_masks = super().forward(
-            image_embeddings=image_embeddings,
-            point_coords=new_input_prompts.get("points")[0], 
-            point_labels=new_input_prompts.get("points")[1],
-            mask_input=logits[:, best_idx: best_idx + 1, :, :],
-            has_mask_input=torch.tensor(1, device=device))
-        best_idx = torch.argmax(scores[0,1:]) + 1
-        
-        high_res_masks = self.postprocess_masks(
-            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
-        )
-        masks = high_res_masks > self.config.model.mask_threshold
-
-        return masks[0, best_idx]
 
     def _predict_mask(
         self,
