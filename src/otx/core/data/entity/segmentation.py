@@ -8,14 +8,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
+from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
-
-from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
 
 if TYPE_CHECKING:
     from torchvision import tv_tensors
 
-
+@register_pytree_node
 @dataclass
 class SegDataEntity(OTXDataEntity):
     """Data entity for segmentation task.
