@@ -16,3 +16,4 @@ class TransformLibType(str, Enum):
     MMPRETRAIN = "MMPRETRAIN"
     MMDET = "MMDET"
     MMDET_INST_SEG = "MMDET_INST_SEG"
+    MMSEG = "MMSEG"
