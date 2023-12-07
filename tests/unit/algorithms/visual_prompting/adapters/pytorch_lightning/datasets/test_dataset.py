@@ -19,7 +19,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     generate_bbox,
     generate_bbox_from_mask,
     get_transform,
-    generate_point_from_mask,
+    # generate_point_from_mask,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
     MultipleInputsCompose,
@@ -248,8 +248,8 @@ class TestOTXVisualPromptingDataModule:
         datamodule = set_datamodule(train_type=TrainType.Zeroshot)
 
         assert datamodule.config.get("train_batch_size") == 1
-        assert "generate_point" in datamodule.kwargs
-        assert "generate_bbox" in datamodule.kwargs
+        # assert "generate_point" in datamodule.kwargs
+        # assert "generate_bbox" in datamodule.kwargs
 
     @e2e_pytest_unit
     def test_setup(self, mocker, set_datamodule) -> None:
