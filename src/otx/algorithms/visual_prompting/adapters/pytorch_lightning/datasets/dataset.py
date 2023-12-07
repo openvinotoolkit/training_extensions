@@ -246,7 +246,7 @@ class OTXVisualPromptingDataset(Dataset):
 
 class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
     """Visual Prompting for Zero-shot learning Dataset Adaptor."""
-    
+
     def __init__(
         self,
         dataset: DatasetEntity,
@@ -255,7 +255,7 @@ class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
         std: List[float],
         generate_point: bool = False,
         generate_bbox: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(dataset, image_size, mean, std, offset_bbox=0)
         self.generate_point = generate_point
