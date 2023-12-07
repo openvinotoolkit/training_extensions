@@ -112,5 +112,5 @@ def register_configs() -> None:
     cs = ConfigStore.instance()
     cs.store(name="base_config", node=TrainConfig)
 
-    OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple)
-    OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype)
+    OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple, replace=True)
+    OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype, replace=True)

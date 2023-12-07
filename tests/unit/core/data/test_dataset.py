@@ -9,7 +9,9 @@ from datumaro.components.media import Image
 
 class TestDataset:
     def test_get_item(
-        self, fxt_dataset_and_data_entity_cls, fxt_mock_dm_subset: MagicMock,
+        self,
+        fxt_dataset_and_data_entity_cls,
+        fxt_mock_dm_subset: MagicMock,
     ) -> None:
         dataset_cls, data_entity_cls = fxt_dataset_and_data_entity_cls
         dataset = dataset_cls(

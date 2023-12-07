@@ -5,6 +5,6 @@ import pytest
 from otx.core.config import register_configs
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_register_configs() -> None:
     register_configs()

@@ -53,4 +53,27 @@ class TestTorchVisionTransformLib:
             mem_cache_img_max_size=None,
         )
 
-        _ = dataset[0]
+        item = dataset[0]
+        assert isinstance(item, data_entity_cls)
+
+    @pytest.mark.xfail(
+        reason="Our `ImageInfo` entity is registered to TorchVision V2 transforms yet",
+    )
+    def test_image_info(
+        self,
+        fxt_config,
+        fxt_dataset_and_data_entity_cls,
+        fxt_mock_dm_subset,
+    ) -> None:
+        transform = TorchVisionTransformLib.generate(fxt_config)
+        assert isinstance(transform, v2.Compose)
+
+        dataset_cls, data_entity_cls = fxt_dataset_and_data_entity_cls
+        dataset = dataset_cls(
+            dm_subset=fxt_mock_dm_subset,
+            transforms=transform,
+            mem_cache_img_max_size=None,
+        )
+
+        item = dataset[0]
+        assert item.img_info.img_shape == item.image.shape[1:]

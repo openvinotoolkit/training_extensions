@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
-Transforms = Union[Compose, List[Callable]]
+Transforms = Union[Compose, Callable, List[Callable]]
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -53,6 +53,8 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
             return self.transforms(entity)
         if isinstance(self.transforms, Iterable):
             return self._iterable_transforms(entity)
+        if callable(self.transforms):
+            return self.transforms(entity)
 
         raise TypeError(self.transforms)
 

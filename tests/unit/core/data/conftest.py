@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-from datumaro.components.annotation import Bbox, Label
+from datumaro.components.annotation import Bbox, Label, Mask
 from datumaro.components.dataset import DatasetSubset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
@@ -18,6 +18,10 @@ from otx.core.data.dataset.classification import (
 from otx.core.data.dataset.detection import (
     DetDataEntity,
     OTXDetectionDataset,
+)
+from otx.core.data.dataset.segmentation import (
+    OTXSegmentationDataset,
+    SegDataEntity,
 )
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
 
@@ -42,6 +46,7 @@ def fxt_dm_item() -> DatasetItem:
         annotations=[
             Label(label=0),
             Bbox(x=0, y=0, w=1, h=1, label=0),
+            Mask(label=0, image=np.zeros(shape=(10, 10), dtype=np.uint8)),
         ],
     )
 
@@ -59,7 +64,9 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
     params=[
         (OTXMulticlassClsDataset, MulticlassClsDataEntity),
         (OTXDetectionDataset, DetDataEntity),
+        (OTXSegmentationDataset, SegDataEntity),
     ],
+    ids=["multi_class_cls", "detection", "semantic_seg"],
 )
 def fxt_dataset_and_data_entity_cls(
     request: pytest.FixtureRequest,
