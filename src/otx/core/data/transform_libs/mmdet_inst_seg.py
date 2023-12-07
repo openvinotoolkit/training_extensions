@@ -46,10 +46,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
             results["gt_bboxes"] = gt_bboxes
         if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
             height, width = results['ori_shape']
-            polygon_masks = PolygonMasks(
-                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons], height, width,
-            )
-            gt_masks = polygon_masks.to_bitmap() if self.poly2mask else polygon_masks
+            gt_masks = self._generate_gt_masks(otx_data_entity, height, width)
             results["gt_masks"] = gt_masks
         if self.with_label and isinstance(otx_data_entity, InstanceSegDataEntity):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
@@ -57,6 +54,26 @@ class LoadAnnotations(MMDetLoadAnnotations):
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
 
         return results
+
+    def _generate_gt_masks(
+            self, otx_data_entity: InstanceSegDataEntity, height: int, width: int) -> BitmapMasks | PolygonMasks:
+        """Generate ground truth masks based on the given otx_data_entity.
+
+        Args:
+            otx_data_entity (OTXDataEntity): The data entity containing the masks or polygons.
+            height (int): The height of the masks.
+            width (int): The width of the masks.
+
+        Returns:
+            gt_masks (BitmapMasks or PolygonMasks): The generated ground truth masks.
+        """
+        if len(otx_data_entity.masks):
+            gt_masks = BitmapMasks(otx_data_entity.masks.numpy(), height, width)
+        else:
+            gt_masks = PolygonMasks(
+                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons], height, width,
+            )
+        return gt_masks
 
 
 @TRANSFORMS.register_module(force=True)
@@ -89,7 +106,7 @@ class PackDetInputs(MMDetPackDetInputs):
                         scale_factor=scale_factor,
                     )
         if isinstance(data_samples.gt_instances.masks, BitmapMasks):
-            masks = tv_tensors.Mask(data_samples.gt_instances.masks.to_ndarray(), dtype=torch.uint8)
+            masks = tv_tensors.Mask(data_samples.gt_instances.masks.to_ndarray(), dtype=torch.int8)
         else:
             masks = tv_tensors.Mask(torch.empty(0))
 

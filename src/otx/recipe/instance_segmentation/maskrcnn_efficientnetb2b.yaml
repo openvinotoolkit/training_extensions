@@ -14,7 +14,6 @@ data:
       - type: LoadAnnotations
         with_bbox: true
         with_mask: true
-        poly2mask: false
       - type: Resize
         keep_ratio: true
         scale:
@@ -36,7 +35,6 @@ data:
       - type: LoadAnnotations
         with_bbox: true
         with_mask: true
-        poly2mask: false
       - type: PackDetInputs
         meta_keys:
           - img_id
@@ -57,7 +55,6 @@ data:
       - type: LoadAnnotations
         with_bbox: true
         with_mask: true
-        poly2mask: false
       - type: PackDetInputs
         meta_keys:
           - img_id

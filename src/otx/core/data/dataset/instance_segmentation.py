@@ -24,7 +24,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
 
     def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
         super().__init__(dm_subset, transforms)
-        self.poly2mask = 'polygon' not in dm_subset.get_annotated_type()
+        self.use_polygon = True
 
     def _get_item_impl(self, index: int) -> InstanceSegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -35,17 +35,17 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
 
         for annotation in item.annotations:
             if isinstance(annotation, Polygon):
-                bbox = np.array(annotation.get_bbox(), dtype=np.int32)
+                bbox = np.array(annotation.get_bbox(), dtype=np.float32)
                 gt_bboxes.append(bbox)
                 gt_labels.append(annotation.label)
 
-                if self.poly2mask:
-                    gt_masks.append(polygon_to_bitmap([annotation], *img_shape)[0])
-                else:
+                if self.use_polygon:
                     gt_polygons.append(annotation)
+                else:
+                    gt_masks.append(polygon_to_bitmap([annotation], *img_shape)[0])
 
         # convert xywh to xyxy format
-        bboxes = np.array(gt_bboxes, dtype=np.int32)
+        bboxes = np.array(gt_bboxes, dtype=np.float32)
         bboxes[:, 2:] += bboxes[:, :2]
 
         masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)

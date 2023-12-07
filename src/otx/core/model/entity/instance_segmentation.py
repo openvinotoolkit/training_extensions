@@ -60,7 +60,8 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             entity.polygons,
             entity.labels,
         ):
-            height, width = img_info.ori_shape
+            # NOTE: ground-truth masks are resized in training, but not in inference
+            height, width = img_info.img_shape if self.training else img_info.ori_shape
             if len(masks):
                 mmdet_masks = BitmapMasks(
                     masks.data.cpu().numpy(), height, width)
