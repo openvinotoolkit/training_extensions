@@ -269,6 +269,10 @@ max-returns = 10
 "src/otx/**/*.py" = [
     "ERA001",
 ]
+# See https://github.com/openvinotoolkit/training_extensions/actions/runs/7109500350/job/19354528819?pr=2700
+"src/otx/core/config/**/*.py" = [
+    "UP007"
+]
 
 [tool.ruff.pydocstyle]
 convention = "google"
