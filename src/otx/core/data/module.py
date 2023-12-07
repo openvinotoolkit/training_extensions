@@ -37,10 +37,7 @@ class OTXDataModule(LightningDataModule):
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
 
-        dataset = DmDataset.import_from(
-            self.config.data_root,
-            format=self.config.data_format,
-        )
+        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -56,7 +53,8 @@ class OTXDataModule(LightningDataModule):
             self.subsets[name] = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset,
-                config=config_mapping[name],
+                cfg_subset=config_mapping[name],
+                cfg_data_module=config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 

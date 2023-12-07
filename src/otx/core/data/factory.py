@@ -15,7 +15,7 @@ from .dataset.base import OTXDataset, Transforms
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
-    from otx.core.config.data import SubsetConfig
+    from otx.core.config.data import DataModuleConfig, SubsetConfig
 
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
 
@@ -41,6 +41,11 @@ class TransformLibFactory:
 
             return MMDetTransformLib.generate(config)
 
+        if config.transform_lib_type == TransformLibType.MMSEG:
+            from .transform_libs.mmseg import MMSegTransformLib
+
+            return MMSegTransformLib.generate(config)
+
         raise NotImplementedError(config.transform_lib_type)
 
 
@@ -52,18 +57,36 @@ class OTXDatasetFactory:
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DatasetSubset,
-        config: SubsetConfig,
+        cfg_subset: SubsetConfig,
+        cfg_data_module: DataModuleConfig,
     ) -> OTXDataset:
         """Create OTXDataset."""
-        transforms = TransformLibFactory.generate(config)
+        transforms = TransformLibFactory.generate(cfg_subset)
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
 
-            return OTXMulticlassClsDataset(dm_subset, transforms)
+            return OTXMulticlassClsDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
 
         if task == OTXTaskType.DETECTION:
             from .dataset.detection import OTXDetectionDataset
 
-            return OTXDetectionDataset(dm_subset, transforms)
+            return OTXDetectionDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
+
+        if task == OTXTaskType.SEMANTIC_SEGMENTATION:
+            from .dataset.segmentation import OTXSegmentationDataset
+
+            return OTXSegmentationDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
 
         raise NotImplementedError(task)

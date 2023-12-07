@@ -1,6 +1,7 @@
 # @package _global_
 defaults:
   - override /base: detection
+  - override /callbacks: detection
   - override /data: mmdet
   - override /model: mmdet
 recipe: detection/rtmdet_tiny

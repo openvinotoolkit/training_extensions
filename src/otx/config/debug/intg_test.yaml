@@ -1,0 +1,19 @@
+# @package _global_
+
+# default Integration Test setup, runs 2 epochs
+
+# sets level of all command line loggers to 'DEBUG'
+# https://hydra.cc/docs/tutorials/basic/running_your_app/logging/
+hydra:
+  job_logging:
+    root:
+      level: DEBUG
+
+  # use this to also set hydra loggers to 'DEBUG'
+  # verbose: True
+
+trainer:
+  max_epochs: 2
+  accelerator: gpu
+  check_val_every_n_epoch: 1
+  devices: 1

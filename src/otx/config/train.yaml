@@ -1,7 +1,7 @@
 defaults:
   - base_config
   - base: default
-  - callbacks: iteration_timer
+  - callbacks: default
   - data: default
   - trainer: default
   - model: mmdet
