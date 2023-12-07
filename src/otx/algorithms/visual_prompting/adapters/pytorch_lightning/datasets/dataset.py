@@ -300,12 +300,12 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 )
                 self.config["train_batch_size"] = 1
 
-            self.kwargs.update(
-                {
-                    "generate_point": self.config.get("generate_point", False),
-                    "generate_bbox": self.config.get("generate_bbox", False),
-                }
-            )
+            # self.kwargs.update(
+            #     {
+            #         "generate_point": self.config.get("generate_point", False),
+            #         "generate_bbox": self.config.get("generate_bbox", False),
+            #     }
+            # )
 
         self.train_otx_dataset: DatasetEntity
         self.val_otx_dataset: DatasetEntity
