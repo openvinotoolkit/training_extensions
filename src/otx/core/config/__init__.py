@@ -43,9 +43,12 @@ class TrainConfig:
 def as_int_tuple(*args) -> tuple[int, ...]:
     """Resolve YAML list into Python integer tuple.
 
-    ```yaml
-    mem_cache_img_max_size: ${as_int_tuple:500,500}
-    ```
+    Example:
+        YAML file example::
+
+            ```yaml
+            mem_cache_img_max_size: ${as_int_tuple:500,500}
+            ```
     """
     return tuple(int(arg) for arg in args)
 
@@ -53,11 +56,15 @@ def as_int_tuple(*args) -> tuple[int, ...]:
 def as_torch_dtype(arg: str) -> dtype:
     """Resolve YAML string into PyTorch dtype.
 
-    ```yaml
-    uint8: ${as_torch_dtype:torch.uint8}
-    int64: ${as_torch_dtype:torch.int64}
-    float32: ${as_torch_dtype:torch.float32}
-    ```
+    Example:
+        YAML file example::
+
+            ```yaml
+            transforms:
+              - _target_: torchvision.transforms.v2.ToDtype
+                dtype: ${as_torch_dtype:torch.float32}
+                scale: True
+            ```
     """
     import torch
 
