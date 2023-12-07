@@ -288,7 +288,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         self.config = config
         self.dataset = dataset
         self.train_type = train_type
-        self.kwargs = {}
+        # self.kwargs = {}
         if self.train_type == TrainType.Zeroshot:
             # check zero-shot configs
             if self.config.get("train_batch_size", 1) != 1:
@@ -331,7 +331,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 mean=mean,
                 std=std,
                 offset_bbox=self.config.offset_bbox,
-                **self.kwargs,
+                # **self.kwargs,
             )
 
             # self.val_dataset = None
@@ -347,7 +347,11 @@ class OTXVisualPromptingDataModule(LightningDataModule):
 
         if stage == "predict":
             self.predict_dataset = self.DATASETS[self.train_type](
-                dataset=self.dataset, image_size=image_size, mean=mean, std=std, **self.kwargs
+                dataset=self.dataset,
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                # **self.kwargs
             )
 
     def summary(self):
