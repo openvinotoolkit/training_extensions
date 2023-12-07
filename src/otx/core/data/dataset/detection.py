@@ -9,29 +9,17 @@ from typing import Callable
 
 import numpy as np
 import torch
-from datumaro import Bbox, DatasetSubset, Image
+from datumaro import Bbox, Image
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 
-from .base import OTXDataset, Transforms
+from .base import OTXDataset
 
 
 class OTXDetectionDataset(OTXDataset[DetDataEntity]):
     """OTXDataset class for detection task."""
-
-    def __init__(
-        self,
-        dm_subset: DatasetSubset,
-        transforms: Transforms,
-        mem_cache_img_max_size: tuple[int, int] | None = None,
-    ) -> None:
-        super().__init__(
-            dm_subset=dm_subset,
-            transforms=transforms,
-            mem_cache_img_max_size=mem_cache_img_max_size,
-        )
 
     def _get_item_impl(self, index: int) -> DetDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)

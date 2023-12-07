@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Callable
 
 import torch
-from datumaro import DatasetSubset, Image, Label
+from datumaro import Image, Label
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
@@ -16,23 +16,11 @@ from otx.core.data.entity.classification import (
     MulticlassClsDataEntity,
 )
 
-from .base import OTXDataset, Transforms
+from .base import OTXDataset
 
 
 class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     """OTXDataset class for multi-class classification task."""
-
-    def __init__(
-        self,
-        dm_subset: DatasetSubset,
-        transforms: Transforms,
-        mem_cache_img_max_size: tuple[int, int] | None = None,
-    ) -> None:
-        super().__init__(
-            dm_subset=dm_subset,
-            transforms=transforms,
-            mem_cache_img_max_size=mem_cache_img_max_size,
-        )
 
     def _get_item_impl(self, index: int) -> MulticlassClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)

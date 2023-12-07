@@ -41,6 +41,11 @@ class TransformLibFactory:
 
             return MMDetTransformLib.generate(config)
 
+        if config.transform_lib_type == TransformLibType.MMSEG:
+            from .transform_libs.mmseg import MMSegTransformLib
+
+            return MMSegTransformLib.generate(config)
+
         raise NotImplementedError(config.transform_lib_type)
 
 
@@ -70,6 +75,15 @@ class OTXDatasetFactory:
             from .dataset.detection import OTXDetectionDataset
 
             return OTXDetectionDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
+
+        if task == OTXTaskType.SEMANTIC_SEGMENTATION:
+            from .dataset.segmentation import OTXSegmentationDataset
+
+            return OTXSegmentationDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,

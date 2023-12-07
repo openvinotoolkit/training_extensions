@@ -31,6 +31,7 @@ class TrainConfig:
     model: ModelConfig
     logger: dict
     recipe: Optional[str]
+    debug: Optional[str]
     train: bool
     test: bool
 
