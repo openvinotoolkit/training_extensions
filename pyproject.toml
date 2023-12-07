@@ -232,7 +232,7 @@ exclude = [
 
     # it will be cleaned up later
     "src/otx/core/engine/utils/*",
-    "src/otx/algo/classification/model/backbones/*",
+    "src/otx/algo/classification/backbones/*",
 ]
 
 # Same as Black.
