@@ -34,6 +34,8 @@ dependencies = [
     "rich",
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks
+    "ftfy",
+    "regex"
 ]
 
 [project.optional-dependencies]
@@ -69,6 +71,7 @@ base = [
 mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
+    "mmsegmentation==1.2.1"
 ]
 
 [project.scripts]
@@ -268,6 +271,10 @@ max-returns = 10
 ]
 "src/otx/**/*.py" = [
     "ERA001",
+]
+# See https://github.com/openvinotoolkit/training_extensions/actions/runs/7109500350/job/19354528819?pr=2700
+"src/otx/core/config/**/*.py" = [
+    "UP007"
 ]
 
 [tool.ruff.pydocstyle]
