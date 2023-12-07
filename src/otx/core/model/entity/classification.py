@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-from torch import nn
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
@@ -21,7 +20,6 @@ if TYPE_CHECKING:
 
 class OTXClassificationModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):
     """Base class for the classification models used in OTX."""
-        
 
 class MMPretrainCompatibleModel(OTXClassificationModel):
     """Classification model compatible for MMPretrain.
