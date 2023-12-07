@@ -53,7 +53,8 @@ class OTXDataModule(LightningDataModule):
             self.subsets[name] = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset,
-                config=config_mapping[name],
+                cfg_subset=config_mapping[name],
+                cfg_data_module=config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
