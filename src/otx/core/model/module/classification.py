@@ -59,7 +59,6 @@ class OTXClassificationLitModule(OTXLitModule):
         :param batch_idx: The index of the current batch.
         """
         preds = self.model(inputs)
-
         if not isinstance(preds, MulticlassClsBatchPredEntity):
             raise TypeError(preds)
 

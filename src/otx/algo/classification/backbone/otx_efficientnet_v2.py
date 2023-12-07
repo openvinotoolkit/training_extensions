@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 """EfficientNetV2 model.
 
 Original papers:
@@ -12,9 +12,9 @@ Original papers:
 import os
 
 import timm
+from torch import nn
 from mmengine.runner import load_checkpoint
 from mmpretrain.registry import MODELS
-from torch import nn
 
 PRETRAINED_ROOT = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/"
 pretrained_urls = {
