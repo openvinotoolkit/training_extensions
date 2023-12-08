@@ -20,11 +20,19 @@ from .base import OTXDataset, Transforms
 
 
 class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
-    """OTXDataset class for instance segmentation."""
+    """OTXDataset class for instance segmentation.
 
-    def __init__(self, dm_subset: DatasetSubset, transforms: Transforms) -> None:
-        super().__init__(dm_subset, transforms)
-        self.use_polygon = True
+    Args:
+        dm_subset (DatasetSubset): The subset of the dataset.
+        transforms (Transforms): Data transformations to be applied.
+        include_polygons (bool): Flag indicating whether to include polygons in the dataset.
+            If set to False, polygons will be converted to bitmaps, and bitmaps will be used for training.
+        **kwargs: Additional keyword arguments passed to the base class.
+    """
+
+    def __init__(self, dm_subset: DatasetSubset, transforms: Transforms, include_polygons: bool, **kwargs) -> None:
+        super().__init__(dm_subset, transforms, **kwargs)
+        self.include_polygons = include_polygons
 
     def _get_item_impl(self, index: int) -> InstanceSegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -39,7 +47,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                 gt_bboxes.append(bbox)
                 gt_labels.append(annotation.label)
 
-                if self.use_polygon:
+                if self.include_polygons:
                     gt_polygons.append(annotation)
                 else:
                     gt_masks.append(polygon_to_bitmap([annotation], *img_shape)[0])

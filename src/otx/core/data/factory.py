@@ -92,11 +92,14 @@ class OTXDatasetFactory:
 
         if task == OTXTaskType.INSTANCE_SEGMENTATION:
             from .dataset.instance_segmentation import OTXInstanceSegDataset
-
+            # NOTE: DataModuleConfig does not have include_polygons attribute
+            include_polygons = getattr(cfg_data_module, 'include_polygons', False)
             return OTXInstanceSegDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
-                include_polygons=cfg_data_module.include_polygons)
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+                include_polygons=include_polygons,
+            )
 
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:
             from .dataset.segmentation import OTXSegmentationDataset
