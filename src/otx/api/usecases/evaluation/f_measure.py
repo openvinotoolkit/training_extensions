@@ -821,7 +821,7 @@ class FMeasure(IPerformanceProvider):
         return MultiScorePerformance(
             primary_score=self.f_measure,
             additional_scores=[self._precision, self._recall],
-            dashboard_metrics=dashboard_metrics
+            dashboard_metrics=dashboard_metrics,
         )
 
     @staticmethod

@@ -15,7 +15,6 @@ from otx.api.entities.image import Image
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
-from otx.api.entities.shapes.ellipse import Ellipse
 
 
 class DetectionDatasetAdapter(BaseDatasetAdapter):

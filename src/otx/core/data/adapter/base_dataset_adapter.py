@@ -39,9 +39,9 @@ from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchem
 from otx.api.entities.media import IMediaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.subset import Subset
 from otx.core.data.caching.storage_cache import init_arrow_cache
 
