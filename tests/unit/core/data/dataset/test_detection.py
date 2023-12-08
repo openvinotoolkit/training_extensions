@@ -39,7 +39,7 @@ class TestOTXDetectionDataset:
 
         random_genertor = np.random.default_rng(1)
         mock_img = random_genertor.integers(0, 256, size=(224, 224, 3)).astype(np.float32)
-        mocker.patch.object(OTXDetectionDataset, "_get_img_data", return_value=mock_img)
+        mocker.patch.object(OTXDetectionDataset, "_get_img_data_and_shape", return_value=(mock_img, (224, 224)))
 
         self.dataset = OTXDetectionDataset(MockDMSubset([MockItem(0), MockItem(1)]), mock_transform)
         out = self.dataset._get_item_impl(0)
