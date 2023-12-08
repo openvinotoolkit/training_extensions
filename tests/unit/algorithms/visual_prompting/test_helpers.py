@@ -153,7 +153,6 @@ class MockImageEncoder(nn.Module):
         self.backbone = nn.Linear(1, 1)
 
     def forward(self, *args, **kwargs):
-        # return torch.Tensor([[1]])
         return torch.ones((1, 2, 4, 4))
 
 
@@ -181,6 +180,9 @@ class MockMaskDecoder(nn.Module):
 
     def forward(self, *args, **kwargs):
         return torch.Tensor([[1]]), torch.Tensor([[1]])
+    
+    def predict_mask(self, *args, **kwargs):
+        return self(*args, **kwargs)
 
 
 class MockScoredLabel:

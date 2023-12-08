@@ -212,22 +212,41 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             # generate reference mask
             # TODO (sungchul): ensemble multi reference features (current : use merged masks)
-            reference_prompt = torch.zeros(original_size, dtype=torch.uint8, device=images.device)
+            reference_prompt = torch.zeros(original_size, dtype=torch.uint8, device=self.device)
             for input_prompt in input_prompts:
                 if "annotation" in input_prompt:
                     # directly use annotation information as a mask
                     reference_prompt[input_prompt.get("annotation") == 1] += 1
                 else:
                     merged_input_prompts = self._merge_prompts(label, input_prompt, processed_prompts)
-                    masks, scores, logits = self._predict_mask(
+                    # TODO (sungchul): they must be processed in `_merge_prompts` and it is required to be expanded to other prompts.
+                    point_coords = []
+                    point_labels = []
+                    if "box" in merged_input_prompts:
+                        for box in merged_input_prompts["box"]:
+                            point_coords.append(box[:2])
+                            point_labels.append(2)
+                            point_coords.append(box[2:])
+                            point_labels.append(3)
+                            
+                    if "points" in merged_input_prompts:
+                        raise NotImplementedError()
+
+                    if "annotations" in merged_input_prompts:
+                        raise NotImplementedError()
+                        
+                    point_coords = torch.stack(point_coords, dim=0).unsqueeze(0)
+                    point_labels = torch.tensor([point_labels], device=self.device)
+                    masks, _, _ = self._predict_mask(
                         image_embeddings=image_embeddings,
-                        input_prompts=merged_input_prompts,
+                        point_coords=point_coords,
+                        point_labels=point_labels,
+                        mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device),
+                        has_mask_input=torch.tensor([[0.]], device=self.device),
                         padding=padding,
                         original_size=original_size,
-                        multimask_output=True,
-                    )
-                    best_idx = torch.argmax(scores)
-                    reference_prompt[masks[0, best_idx]] += 1
+                        is_postprocess=True)
+                    reference_prompt[masks] += 1
             reference_prompt = torch.clip(reference_prompt, 0, 1)
 
             ref_mask = torch.tensor(reference_prompt, dtype=torch.float32)
@@ -291,7 +310,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
                     point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
                     point_labels = torch.tensor(
-                        [1] + [0] * len(bg_coords), dtype=torch.float32, device=point_coords.device
+                        [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
                     ).unsqueeze(0)
                     mask = self(
                         image_embeddings=image_embeddings,
@@ -327,58 +346,77 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Returns:
             (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.
         """
-        device = point_coords.device
-
         # First-step prediction
-        _, logits = super().forward(
+        _, _, logits = self._predict_mask(
             image_embeddings=image_embeddings,
             point_coords=point_coords,
             point_labels=point_labels,
-            mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=device),
-            has_mask_input=torch.tensor([[0.]], device=device),
-        )
-        best_idx = 1
+            mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device),
+            has_mask_input=torch.tensor([[0.]], device=self.device),
+            is_postprocess=False)
 
         # Cascaded Post-refinement-1
-        scores, low_res_masks = super().forward(
+        masks, scores, logits = self._predict_mask(
             image_embeddings=image_embeddings,
             point_coords=point_coords,
             point_labels=point_labels,
-            mask_input=logits[:, best_idx : best_idx + 1, :, :],
-            has_mask_input=torch.tensor([[1.]], device=device),
-        )
-        best_idx = torch.argmax(scores[0, 1:]) + 1
-        high_res_masks = self.postprocess_masks(
-            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
-        )
-        masks = high_res_masks > self.config.model.mask_threshold
+            mask_input=logits,
+            has_mask_input=torch.tensor([[1.]], device=self.device),
+            padding=padding,
+            original_size=original_size,
+            is_postprocess=True)
 
         # Cascaded Post-refinement-2
-        coords = torch.nonzero(masks[0, best_idx])
+        coords = torch.nonzero(masks)
         y, x = coords[:, 0], coords[:, 1]
         new_point_coords = torch.cat(
             (
                 point_coords,
-                torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=device),
+                torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
             ),
             dim=1,
         )
-        new_point_labels = torch.cat((point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=device)), dim=1)
-        scores, low_res_masks = super().forward(
+        new_point_labels = torch.cat((point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=self.device)), dim=1)
+        masks, _, _ = self._predict_mask(
             image_embeddings=image_embeddings,
             point_coords=new_point_coords,
             point_labels=new_point_labels,
-            mask_input=logits[:, best_idx : best_idx + 1, :, :],
-            has_mask_input=torch.tensor([[1.]], device=device),
-        )
-        best_idx = torch.argmax(scores[0, 1:]) + 1
+            mask_input=logits,
+            has_mask_input=torch.tensor([[1.]], device=self.device),
+            padding=padding,
+            original_size=original_size,
+            is_postprocess=True)
 
-        high_res_masks = self.postprocess_masks(
-            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+        return masks
+    
+    def _predict_mask(
+        self,
+        image_embeddings: torch.Tensor,
+        point_coords: torch.Tensor,
+        point_labels: torch.Tensor,
+        mask_input: torch.Tensor,
+        has_mask_input: torch.Tensor,
+        padding: Optional[Tuple[int, ...]] = None,
+        original_size: Optional[Tuple[int, int]] = None,
+        is_postprocess: bool = True,
+    ) -> torch.Tensor:
+        """Predict target masks."""
+        scores, logits = super().forward(
+            image_embeddings=image_embeddings,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            mask_input=mask_input,
+            has_mask_input=has_mask_input,
         )
-        masks = high_res_masks > self.config.model.mask_threshold
-
-        return masks[0, best_idx]
+        best_idx  = torch.argmax(scores[0, 1:]) + 1
+        if is_postprocess:
+            high_res_masks = self.postprocess_masks(
+                logits, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+            )
+            masks = high_res_masks > self.config.model.mask_threshold
+            masks = masks[0, best_idx]
+            return masks, scores, logits[:, best_idx : best_idx + 1, :, :]
+        return None, scores, logits[:, best_idx : best_idx + 1, :, :]
 
     def training_step(self, batch, batch_idx) -> None:
         """Training step for `learn`."""
@@ -551,46 +589,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             torch.zeros_like(other_input_prompt.get("point_labels")),
                         )
         return merged_input_prompts
-
-    def _predict_mask(
-        self,
-        image_embeddings: torch.Tensor,
-        input_prompts: Dict[str, torch.Tensor],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-        multimask_output: bool = True,
-    ) -> Tuple[torch.Tensor, ...]:
-        """Predict target masks.
-
-        Args:
-            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
-            multimask_output (bool): Whether getting multi mask outputs or not. Defaults to True.
-
-        Return:
-            (Tuple[torch.Tensor, ...]): Predicted mask, score, and logit.
-        """
-        sparse_embeddings, dense_embeddings = self.prompt_encoder(
-            points=input_prompts.get("points", None),
-            boxes=input_prompts.get("box", None),  # TODO (sungchul): change key box -> boxes to use **input_prompts
-            masks=input_prompts.get("masks", None),
-        )
-
-        low_res_masks, scores = self.mask_decoder(
-            image_embeddings=image_embeddings,
-            image_pe=self.prompt_encoder.get_dense_pe(),
-            sparse_prompt_embeddings=sparse_embeddings,
-            dense_prompt_embeddings=dense_embeddings,
-            multimask_output=multimask_output,
-        )
-        high_res_masks = self.postprocess_masks(
-            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
-        )
-        masks = high_res_masks > self.config.model.mask_threshold
-
-        return masks, scores, low_res_masks
 
     def set_metrics(self) -> None:
         """Skip set_metrics unused in zero-shot learning."""
