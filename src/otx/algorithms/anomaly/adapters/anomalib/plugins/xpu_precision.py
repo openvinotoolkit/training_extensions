@@ -1,4 +1,4 @@
-"""Plugin for mixed-precision training on XPU"""
+"""Plugin for mixed-precision training on XPU."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -6,15 +6,14 @@
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Generator, Optional, Union
 
-import torch
-from torch import Tensor
-from torch.optim import LBFGS, Optimizer
-
 import pytorch_lightning as pl
+import torch
 from lightning_fabric.utilities.types import Optimizable
 from pytorch_lightning.plugins.precision.precision_plugin import PrecisionPlugin
 from pytorch_lightning.utilities import GradClipAlgorithmType
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from torch import Tensor
+from torch.optim import LBFGS, Optimizer
 
 
 class MixedPrecisionXPUPlugin(PrecisionPlugin):
@@ -24,12 +23,11 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
         scaler: An optional :class:`torch.cuda.amp.GradScaler` to use.
     """
 
-    def __init__(
-        self, scaler: Optional[Any] = None
-    ) -> None:
+    def __init__(self, scaler: Optional[Any] = None) -> None:
         self.scaler = scaler
 
-    def pre_backward(self, tensor: Tensor, module: "pl.LightningModule") -> Tensor:  # type: ignore[override]
+    def pre_backward(self, tensor: Tensor, module: "pl.LightningModule") -> Tensor:
+        """Apply grad scaler before backward."""
         if self.scaler is not None:
             tensor = self.scaler.scale(tensor)
         return super().pre_backward(tensor, module)
@@ -42,6 +40,7 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
         closure: Callable[[], Any],
         **kwargs: Any,
     ) -> Any:
+        """Make an optimizer step using scaler if it was passed."""
         if self.scaler is None:
             # skip scaler logic, as bfloat16 does not require scaler
             return super().optimizer_step(
@@ -75,6 +74,7 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
         clip_val: Union[int, float] = 0.0,
         gradient_clip_algorithm: GradClipAlgorithmType = GradClipAlgorithmType.NORM,
     ) -> None:
+        """Handle grad clipping with scaler."""
         if clip_val > 0 and _optimizer_handles_unscaling(optimizer):
             raise RuntimeError(
                 f"The current optimizer, {type(optimizer).__qualname__}, does not allow for gradient clipping"
@@ -89,18 +89,19 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
             yield
 
     def state_dict(self) -> Dict[str, Any]:
+        """Returns state dict of the plugin."""
         if self.scaler is not None:
             return self.scaler.state_dict()
         return {}
 
     def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
+        """Loads state dict to the plugin."""
         if self.scaler is not None:
             self.scaler.load_state_dict(state_dict)
 
 
 def _optimizer_handles_unscaling(optimizer: Any) -> bool:
-    """Determines whether a PyTorch optimizer handles unscaling gradients in the step method rather than through the
-    :class:`torch.cuda.amp.GradScaler`.
+    """Determines if a PyTorch optimizer handles unscaling gradients in the step method ratherthan through the scaler.
 
     Since, the current implementation of this function checks a PyTorch internal variable on the optimizer, the return
     value will only be reliable for built-in PyTorch optimizers.
