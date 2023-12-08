@@ -3,28 +3,29 @@
 
 from __future__ import annotations
 
-import torch
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+import torch
 from otx.algo.classification import DINOv2
 
 
 class TestDINOv2:
-    @pytest.fixture
+    @pytest.fixture()
     def model(self) -> None:
         mock_backbone = MagicMock()
         mock_backbone.return_value = torch.randn(1, 12)
-        
+
         with patch('torch.hub.load', autospec=True) as mock_load:
             mock_load.return_value = mock_backbone
-            
+
             return DINOv2(
                 backbone_name="dinov2_vits14_reg",
                 freeze_backbone=True,
                 head_in_channels=12,
                 num_classes=2,
             )
-        
+
 
     def test_freeze_backbone(self, model) -> None:
         for _, v in model.backbone.named_parameters():

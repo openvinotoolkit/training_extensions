@@ -11,13 +11,13 @@ data:
       - type: LoadImageFromFile
         to_float32: true
       - mean:
-        - 123.675
-        - 116.28
-        - 103.53
+          - 123.675
+          - 116.28
+          - 103.53
         std:
-        - 58.395
-        - 57.12
-        - 57.375
+          - 58.395
+          - 57.12
+          - 57.375
         to_rgb: true
         type: Normalize
       - backend: cv2
