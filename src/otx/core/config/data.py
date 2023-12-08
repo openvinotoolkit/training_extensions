@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Config data type objects for data."""
-from __future__ import annotations
-
+# NOTE: omegaconf would fail to parse dataclass with `from __future__ import annotations` in Python 3.8, 3.9
+# ruff: noqa: FA100
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -18,7 +18,7 @@ class SubsetConfig:
     subset_name: str
 
     transform_lib_type: TransformLibType
-    transforms: list[dict[str, Any]]
+    transforms: List[Dict[str, Any]]
 
     num_workers: int = 2
 
@@ -35,7 +35,7 @@ class DataModuleConfig:
     test_subset: SubsetConfig
 
     mem_cache_size: str = "1GB"
-    mem_cache_img_max_size: tuple[int, int] | None = None
+    mem_cache_img_max_size: Optional[Tuple[int, int]] = None
 
 
 @dataclass
