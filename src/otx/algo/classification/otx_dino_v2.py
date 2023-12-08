@@ -25,7 +25,6 @@ class DINOv2(nn.Module):
         freeze_backbone: bool,
         head_in_channels: int,
         num_classes: int,
-        training: bool,
     ):
         super().__init__()
         self.backbone = torch.hub.load(
@@ -43,8 +42,6 @@ class DINOv2(nn.Module):
 
         self.loss = nn.CrossEntropyLoss()
         self.softmax = nn.Softmax()
-
-        self.training = training
 
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""
@@ -72,7 +69,6 @@ class DINOv2RegisterClassifier(OTXClassificationModel):
             freeze_backbone=self.config.backbone.frozen,
             head_in_channels=self.config.head.in_channels,
             num_classes=self.config.head.num_classes,
-            training=self.training,
         )
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
