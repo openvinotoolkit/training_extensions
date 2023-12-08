@@ -114,3 +114,6 @@ def register_configs() -> None:
 
     OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple, replace=True)
     OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype, replace=True)
+
+
+register_configs()

@@ -12,12 +12,10 @@ from hydra import compose, initialize
 from jsonargparse import ArgumentParser
 
 from otx.cli.utils.hydra import configure_hydra_outputs
-from otx.core.config import register_configs
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
-register_configs()
 
 def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for train command.
