@@ -15,7 +15,7 @@ from .dataset.base import OTXDataset, Transforms
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
-    from otx.core.config.data import DataModuleConfig, SubsetConfig
+    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
 
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
 
@@ -68,7 +68,7 @@ class OTXDatasetFactory:
         task: OTXTaskType,
         dm_subset: DatasetSubset,
         cfg_subset: SubsetConfig,
-        cfg_data_module: DataModuleConfig,
+        cfg_data_module: DataModuleConfig | InstSegDataModuleConfig,
     ) -> OTXDataset:
         """Create OTXDataset."""
         transforms = TransformLibFactory.generate(cfg_subset)
@@ -93,7 +93,10 @@ class OTXDatasetFactory:
         if task == OTXTaskType.INSTANCE_SEGMENTATION:
             from .dataset.instance_segmentation import OTXInstanceSegDataset
 
-            return OTXInstanceSegDataset(dm_subset, transforms)
+            return OTXInstanceSegDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                include_polygons=cfg_data_module.include_polygons)
 
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:
             from .dataset.segmentation import OTXSegmentationDataset

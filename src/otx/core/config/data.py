@@ -36,3 +36,10 @@ class DataModuleConfig:
 
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: tuple[int, int] | None = None
+
+
+@dataclass
+class InstSegDataModuleConfig(DataModuleConfig):
+    """DTO for instance segmentation data module configuration."""
+
+    include_polygons: bool = True
