@@ -65,18 +65,6 @@ class DINOv2RegisterClassifier(OTXClassificationModel):
         self.config = config
         super().__init__() # create the model
 
-        # NOTE,
-        # We've decided to use MMpretrain's pipeline for this model
-        # It's hard to use ClsDataPreprocessor since the model is not related to MMpretrain
-        # That's the reason why I implemented the below preprocess things
-        self.data_preprocess_cfg = self.config.data_preprocess
-        self.register_buffer(
-            'mean', torch.tensor(self.data_preprocess_cfg.mean).view(-1, 1, 1), False,
-        )
-        self.register_buffer(
-            'std', torch.tensor(self.data_preprocess_cfg.std).view(-1, 1, 1), False,
-        )
-
     def _create_model(self) -> nn.Module:
         """Create the model."""
         return DINOv2(
@@ -87,18 +75,10 @@ class DINOv2RegisterClassifier(OTXClassificationModel):
             training=self.training,
         )
 
-    def _preprocess_img(self, imgs: torch.Tensor) -> torch.Tensor:
-        """Control normalize and BGR/RGB conversion."""
-        # BGR -> RGB
-        if self.data_preprocess_cfg.to_rgb and imgs.size(1) == 3:
-            imgs = imgs.flip(1)
-        return (imgs - self.mean) / self.std
-
-
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         """Customize the inputs for the model."""
         inputs: dict[str, Any] = {}
-        inputs["imgs"] = self._preprocess_img(torch.stack(entity.images))
+        inputs["imgs"] = torch.stack(entity.images)
         inputs["labels"] = torch.cat(entity.labels)
         return inputs
 
