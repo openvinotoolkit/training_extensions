@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from hydra import compose, initialize, core
+from hydra import compose, initialize
 from jsonargparse import ArgumentParser
 
 from otx.cli.utils.hydra import configure_hydra_outputs
