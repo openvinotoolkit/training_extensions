@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from hydra import compose, initialize
 from jsonargparse import ArgumentParser
+from hydra.core.global_hydra import GlobalHydra
 
 from otx.cli.utils.hydra import configure_hydra_outputs
 from otx.core.config import register_configs
@@ -54,6 +55,8 @@ def otx_train(overrides: list[str]) -> None:
     # metric_value = utils.get_metric_value(
     #     metric_dict=metric_dict, metric_name=cfg.get("optimized_metric")
     # )
+    # Clear the Hydra instances.
+    GlobalHydra().clear()
 
     # # return optimized metric
     # return metric_value

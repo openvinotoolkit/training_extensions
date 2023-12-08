@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from hydra import compose, initialize
 from jsonargparse import ArgumentParser
+from hydra.core.global_hydra import GlobalHydra
 
 from otx.cli.utils.hydra import configure_hydra_outputs
 
@@ -43,3 +44,6 @@ def otx_test(overrides: list[str]) -> None:
     # test the model
     from otx.core.engine.test import test
     metric_dict, _ = test(cfg)
+
+    # Clear the Hydra instances.
+    GlobalHydra().clear()

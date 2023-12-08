@@ -8,7 +8,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from hydra.core.global_hydra import GlobalHydra
 from otx.cli import main
 
 # This assumes have OTX installed in environment.
@@ -34,17 +33,6 @@ DATASET = {
         "overrides": ["model.otx_model.config.decode_head.num_classes=2"],
     },
 }
-
-
-@pytest.fixture(autouse=True)
-def clear_hydra() -> None:
-    """
-    Clear the Hydra instances.
-
-    Returns:
-        None
-    """
-    GlobalHydra().clear()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
@@ -79,9 +67,6 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
 
     with patch("sys.argv", command_cfg):
         main()
-
-    # Clear the Hydra instances.
-    GlobalHydra().clear()
 
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
