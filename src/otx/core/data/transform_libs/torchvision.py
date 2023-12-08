@@ -5,7 +5,11 @@
 
 from __future__ import annotations
 
+from inspect import isclass
 from typing import TYPE_CHECKING
+
+import hydra
+import torchvision.transforms.v2 as tvt_v2
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
@@ -13,10 +17,33 @@ if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
 
 
-class TorchvisionTransformLib:
-    """Helper to support TorchVision transforms in OTX."""
+class TorchVisionTransformLib:
+    """Helper to support TorchVision transforms (only V2) in OTX."""
+
+    @classmethod
+    def list_available_transforms(cls) -> list[type[tvt_v2.Transform]]:
+        """List available TorchVision transform (only V2) classes."""
+        return [
+            obj
+            for name in dir(tvt_v2)
+            if (obj := getattr(tvt_v2, name))
+            and isclass(obj)
+            and issubclass(obj, tvt_v2.Transform)
+        ]
 
     @classmethod
     def generate(cls, config: SubsetConfig) -> Compose:
         """Generate TorchVision transforms from the configuration."""
-        raise NotImplementedError
+        availables = set(cls.list_available_transforms())
+
+        transforms = []
+        for cfg in config.transforms:
+            transform = hydra.utils.instantiate(cfg)
+
+            if type(transform) not in availables:
+                msg = f"transform={transform} is not a valid TorchVision V2 transform"
+                raise ValueError(msg)
+
+            transforms.append(transform)
+
+        return tvt_v2.Compose(transforms)

@@ -8,14 +8,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from otx.core.data.entity.base import (
+    OTXBatchDataEntity,
+    OTXBatchPredEntity,
+    OTXDataEntity,
+    OTXPredEntity,
+)
+from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
-
-from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
 
 if TYPE_CHECKING:
     from torch import LongTensor
 
 
+@register_pytree_node
 @dataclass
 class MulticlassClsDataEntity(OTXDataEntity):
     """Data entity for multi-class classification task.
@@ -51,7 +57,9 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
         return OTXTaskType.MULTI_CLASS_CLS
 
     @classmethod
-    def collate_fn(cls, entities: list[MulticlassClsDataEntity]) -> MulticlassClsBatchDataEntity:
+    def collate_fn(
+        cls, entities: list[MulticlassClsDataEntity],
+    ) -> MulticlassClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch_data = super().collate_fn(entities)
         return MulticlassClsBatchDataEntity(
