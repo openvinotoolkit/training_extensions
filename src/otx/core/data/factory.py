@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
 
+
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
 
 
