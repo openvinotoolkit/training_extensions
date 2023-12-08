@@ -67,10 +67,22 @@ Please see [requirements-lock.txt](requirements-lock.txt). This is what I got af
   otx train ... test=true
   ```
 
+- Do train with the existing model checkpoint for resume
+
+  ```console
+  otx train ... checkpoint=<checkpoint-path>
+  ```
+
 - Do experiment with deterministic operations and the fixed seed
 
   ```console
   otx train ... trainer.deterministic=True seed=<arbitrary-seed>
+  ```
+
+- Do test with the existing model checkpoint
+
+  ```console
+  otx test ... checkpoint=<checkpoint-path>
   ```
 
   `trainer.deterministic=True` might affect to the model performance. Please see [this link](https://lightning.ai/docs/pytorch/stable/common/trainer.html#deterministic). Therefore, it is not recommended to turn on this option for the model performance comparison.
