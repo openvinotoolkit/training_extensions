@@ -9,6 +9,7 @@ import logging
 import multiprocessing as mp
 import re
 import signal
+import warnings
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -226,10 +227,8 @@ class MemCacheHandlerSingleton:
 
         if not hasattr(cls, "instance"):
             cls_name = cls.__name__
-            msg = (
-                f"Before calling {cls_name}.get(), you should call {cls_name}.create() first.",
-            )
-            logger.error(msg)
+            msg = f"Before calling {cls_name}.get(), you should call {cls_name}.create() first."
+            warnings.warn(message=msg, stacklevel=1)
             return None
 
         return cls.instance

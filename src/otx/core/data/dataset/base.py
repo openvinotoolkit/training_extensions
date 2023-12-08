@@ -12,6 +12,7 @@ import cv2
 import numpy as np
 from datumaro.components.media import ImageFromFile
 from torch.utils.data import Dataset
+from torchvision.transforms.v2 import Compose
 
 from otx.core.data.entity.base import T_OTXDataEntity
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
-Transforms = Union[Callable, List[Callable]]
+Transforms = Union[Compose, Callable, List[Callable]]
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -47,10 +48,13 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         return np.random.default_rng().integers(0, len(self))
 
     def _apply_transforms(self, entity: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        if callable(self.transforms):
+        if isinstance(self.transforms, Compose):
+            entity = entity.to_tv_image()
             return self.transforms(entity)
         if isinstance(self.transforms, Iterable):
             return self._iterable_transforms(entity)
+        if callable(self.transforms):
+            return self.transforms(entity)
 
         raise TypeError(self.transforms)
 
