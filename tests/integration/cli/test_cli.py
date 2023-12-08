@@ -21,7 +21,6 @@ DATASET = {
         "data_dir": "tests/assets/classification_dataset",
         "overrides": [
             "model.otx_model.config.head.num_classes=2",
-            "model.otx_model.config.data_preprocessor.num_classes=2",
         ],
     },
     "detection": {
