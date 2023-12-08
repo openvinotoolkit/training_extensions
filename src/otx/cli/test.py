@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 
 from hydra import compose, initialize
 from jsonargparse import ArgumentParser
-from hydra.core.global_hydra import GlobalHydra
 
 from otx.cli.utils.hydra import configure_hydra_outputs
 
@@ -37,13 +36,10 @@ def otx_test(overrides: list[str]) -> None:
     :param overrides: Override List values.
     :return: Optional[float] with optimized metric value.
     """
-    initialize(config_path="../config", version_base="1.3", job_name="otx_test")
-    cfg = compose(config_name="test", overrides=overrides, return_hydra_config=True)
-    configure_hydra_outputs(cfg)
+    with initialize(config_path="../config", version_base="1.3", job_name="otx_test"):
+        cfg = compose(config_name="test", overrides=overrides, return_hydra_config=True)
+        configure_hydra_outputs(cfg)
 
-    # test the model
-    from otx.core.engine.test import test
-    metric_dict, _ = test(cfg)
-
-    # Clear the Hydra instances.
-    GlobalHydra().clear()
+        # test the model
+        from otx.core.engine.test import test
+        metric_dict, _ = test(cfg)

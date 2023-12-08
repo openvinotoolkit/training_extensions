@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 
 from hydra import compose, initialize
 from jsonargparse import ArgumentParser
-from hydra.core.global_hydra import GlobalHydra
 
 from otx.cli.utils.hydra import configure_hydra_outputs
 from otx.core.config import register_configs
@@ -43,20 +42,18 @@ def otx_train(overrides: list[str]) -> None:
     # apply extra utilities
     # (e.g. ask for tags if none are provided in cfg, print cfg tree, etc.)
     # utils.extras(cfg)
-    initialize(config_path="../config", version_base="1.3", job_name="otx_train")
-    cfg = compose(config_name="train", overrides=overrides, return_hydra_config=True)
-    configure_hydra_outputs(cfg)
+    with initialize(config_path="../config", version_base="1.3", job_name="otx_train"):
+        cfg = compose(config_name="train", overrides=overrides, return_hydra_config=True)
+        configure_hydra_outputs(cfg)
 
-    # train the model
-    from otx.core.engine.train import train
-    metric_dict, _ = train(cfg)
+        # train the model
+        from otx.core.engine.train import train
+        metric_dict, _ = train(cfg)
 
     # # safely retrieve metric value for hydra-based hyperparameter optimization
     # metric_value = utils.get_metric_value(
     #     metric_dict=metric_dict, metric_name=cfg.get("optimized_metric")
     # )
-    # Clear the Hydra instances.
-    GlobalHydra().clear()
 
     # # return optimized metric
     # return metric_value
