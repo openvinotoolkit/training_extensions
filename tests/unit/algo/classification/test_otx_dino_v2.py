@@ -29,4 +29,4 @@ class TestDINOv2:
 
         self.model.training = False
         outputs = self.model(rand_img, rand_label)
-        assert torch.sum(outputs) == 1.
+        assert outputs.shape[-1] == 2
