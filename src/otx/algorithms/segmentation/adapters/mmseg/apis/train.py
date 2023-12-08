@@ -51,6 +51,9 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
     train_loader_cfg = {**loader_cfg, **cfg.data.get("train_dataloader", {})}
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
+    if cfg.device == "xpu":
+        model.to(f"xpu:{cfg.gpu_ids[0]}")
+
     # put model on devices
     if distributed:
         find_unused_parameters = cfg.get("find_unused_parameters", False)
@@ -64,16 +67,12 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             find_unused_parameters=find_unused_parameters,
         )
     else:
-        if not torch.cuda.is_available():
+        if not torch.cuda.is_available():  # noqa
             assert digit_version(mmcv.__version__) >= digit_version(
                 "1.4.4"
             ), "Please use MMCV >= 1.4.4 for CPU training!"
 
-        if cfg.device == "xpu":
-            use_autocast = bool(cfg.get("fp16_", False))
-            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
-            model.to(f"xpu:{cfg.gpu_ids[0]}")
-        elif cfg.device == "hpu":
+        if cfg.device == "hpu":
             use_autocast = bool(cfg.get("fp16_", False))
             model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
             model.to(model.src_device_obj)
@@ -92,7 +91,9 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        dtype = torch.bfloat16 if cfg.optimizer_config.get("bf16_training", False) else torch.float32
+        if cfg.optimizer_config.get("bf16_training", False):
+            logger.warning("XPU supports fp32 training only currently.")
+        dtype = torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
