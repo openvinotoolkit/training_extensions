@@ -108,7 +108,7 @@ def train(
 
     if cfg.train:
         log.info("Starting training!")
-        trainer.fit(model=model, datamodule=datamodule)
+        trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
 
     train_metrics = trainer.callback_metrics
 

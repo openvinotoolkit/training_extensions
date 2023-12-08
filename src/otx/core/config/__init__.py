@@ -24,6 +24,9 @@ class TrainConfig:
         seed: If set it with an integer value, e.g. `seed=1`,
             Lightning derives unique seeds across all dataloader workers and processes
             for torch, numpy and stdlib random number generators.
+        checkpoint: The path to the checkpoint file. e.g. `checkpoint=outputs/checkpoints/epoch_000.ckpt`
+            Path/URL of the checkpoint from which training is resumed.
+            If there is no checkpoint file at the path, an exception is raised.
     """
 
     base: BaseConfig
@@ -38,6 +41,7 @@ class TrainConfig:
     test: bool
 
     seed: Optional[int] = None
+    checkpoint: Optional[str] = None
 
 
 def as_int_tuple(*args) -> tuple[int, ...]:
