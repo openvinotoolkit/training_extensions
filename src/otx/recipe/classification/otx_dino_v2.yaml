@@ -59,4 +59,5 @@ model:
           - 57.375
         to_rgb: True
   optimizer:
+    _target_: torch.optim.AdamW
     lr: 1e-5

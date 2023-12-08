@@ -117,8 +117,8 @@ class DINOv2RegisterClassifier(OTXClassificationModel):
             return losses
 
         max_pred_elements, max_pred_idxs = torch.max(outputs, dim=1)
-        pred_scores = max_pred_elements.detach()
-        pred_labels = max_pred_idxs.detach()
+        pred_scores = max_pred_elements
+        pred_labels = max_pred_idxs
 
         scores = torch.unbind(pred_scores, dim=0)
         labels = torch.unbind(pred_labels, dim=0)
