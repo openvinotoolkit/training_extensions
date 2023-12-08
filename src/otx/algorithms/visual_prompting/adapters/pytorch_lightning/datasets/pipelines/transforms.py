@@ -33,7 +33,7 @@ def collate_fn(batch: List[Any]) -> Dict:
             List: List of batch data.
         """
         func = torch.stack if x == "gt_masks" else torch.tensor
-        items = [func(item[x]) for item in batch if item[x] is not None]
+        items = [func(item[x]).to(torch.float32) for item in batch if item[x] is not None]
         return None if len(items) == 0 else items
 
     index = [item["index"] for item in batch]
