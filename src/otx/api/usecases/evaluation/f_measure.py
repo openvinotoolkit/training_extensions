@@ -218,7 +218,7 @@ class _AggregatedResults:
         self.all_classes_f_measure_curve: List[float] = []
         self.best_f_measure: float = 0.0
         self.best_threshold: float = 0.0
-        self.best_f_measure_metrics: _Metrics = None
+        self.best_f_measure_metrics: _Metrics = _Metrics(0.0, 0.0, 0.0)
 
 
 class _OverallResults:
