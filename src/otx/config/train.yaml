@@ -14,6 +14,7 @@ test: false
 # If set it with an integer value, e.g. `seed: 1`,
 # Lightning derives unique seeds across all dataloader workers and processes for torch, numpy and stdlib random number generators.
 seed: null
+checkpoint: null
 
 hydra:
   searchpath:
