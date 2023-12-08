@@ -1,6 +1,7 @@
 # @package _global_
 defaults:
   - override /base: classification
+  - override /callbacks: classification
   - override /data: mmpretrain
   - override /model: torch_classification
 data:
@@ -58,11 +59,4 @@ model:
           - 57.375
         to_rgb: True
   optimizer:
-    _target_: torch.optim.SGD
-    _partial_: true
-    lr: 0.007
-    momentum: 0.9
-    weight_decay: 0.0001
-  scheduler:
-    factor: 0.5
-    patience: 1
+    lr: 1e-5

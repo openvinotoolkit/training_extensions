@@ -3,43 +3,30 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import torch
+from otx.algo.classification import DINOv2
 
-import pytest
-from otx.algo.classification import DINOv2RegisterClassifier
-from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
-from torch import nn
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
+class TestDINOv2:
+    def setup(self) -> None:
+        self.model = DINOv2(
+            backbone_name="dinov2_vits14_reg",
+            freeze_backbone=True,
+            head_in_channels=384,
+            num_classes=2,
+            training=True,
+        )
 
-class TestDINOv2RegisterClassifier:
-    def test__init(self, fxt_config_mock: DictConfig) -> None:
-        dino_classifier = DINOv2RegisterClassifier(fxt_config_mock)
-        assert isinstance(dino_classifier.get_submodule("backbone"), nn.Module)
-        assert isinstance(dino_classifier.get_submodule("head"), nn.Module)
-
-    def test__freeze_backbone(self, fxt_config_mock: DictConfig) -> None:
-        mock_config = fxt_config_mock
-        mock_config.backbone.frozen = True
-
-        dino_classifier_frozen = DINOv2RegisterClassifier(mock_config)
-        for _, v in dino_classifier_frozen.backbone.named_parameters():
+    def test_freeze_backbone(self) -> None:
+        for _, v in self.model.backbone.named_parameters():
             assert v.requires_grad is False
 
-    @pytest.mark.parametrize("training", [True, False])
-    def test_forward(
-        self,
-        fxt_config_mock: DictConfig,
-        fxt_multiclass_cls_batch_data_entity : MulticlassClsBatchDataEntity,
-        training: bool,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
-        dino_classifier = DINOv2RegisterClassifier(fxt_config_mock)
-        dino_classifier.training = training
+    def test_forward(self) -> None:
+        rand_img = torch.randn([1, 3, 224, 224], dtype=torch.float32)
+        rand_label = torch.ones([1], dtype=torch.int64)
+        outputs = self.model(rand_img, rand_label)
+        assert isinstance(outputs, torch.Tensor)
 
-        outputs = dino_classifier(fxt_multiclass_cls_batch_data_entity)
-        if training:
-            assert isinstance(outputs, OTXBatchLossEntity)
-        else:
-            assert isinstance(outputs, MulticlassClsBatchPredEntity)
+        self.model.training = False
+        outputs = self.model(rand_img, rand_label)
+        assert torch.sum(outputs) == 1.
