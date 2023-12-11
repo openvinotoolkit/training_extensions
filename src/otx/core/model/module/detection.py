@@ -63,7 +63,7 @@ class OTXDetectionLitModule(OTXLitModule):
                 f"{key}/{k}",
                 v,
                 sync_dist=True,
-                prog_bar=k == "map_50",
+                prog_bar=True,
             )
 
     def validation_step(self, inputs: DetBatchDataEntity, batch_idx: int) -> None:
