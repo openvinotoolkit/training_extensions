@@ -11,6 +11,7 @@ from datumaro import Dataset as DmDataset
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
 from otx.core.data.entity.segmentation import SegDataEntity
 
+
 class TestOTXSegmentationDataset:
     @pytest.fixture()
     def dataset_generator(self) -> OTXSegmentationDataset:
