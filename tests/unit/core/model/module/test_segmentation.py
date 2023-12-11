@@ -10,12 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
-from hydra import compose, initialize
-from hydra.core.global_hydra import GlobalHydra
-from otx.cli.utils.hydra import configure_hydra_outputs
-from otx.core.config import register_configs
 from omegaconf import OmegaConf
-
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
