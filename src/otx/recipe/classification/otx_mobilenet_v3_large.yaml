@@ -44,7 +44,7 @@ model:
       backbone:
         type: OTXMobileNetV3
       head:
-        in_channels: 1280
+        in_channels: 960
         loss:
           loss_weight: 1.0
           type: CrossEntropyLoss
