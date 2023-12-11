@@ -75,6 +75,9 @@ class DetectionConfigurer(BaseConfigurer):
                 self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "default_task_adapt":
                 self.configure_bbox_head(cfg)
+
+    def configure_device(self, cfg):
+        super().configure_device(cfg)
         if cfg.device in ["xpu", "hpu"]:
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
