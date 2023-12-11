@@ -26,12 +26,13 @@ from tests.unit.algorithms.detection.test_helpers import (
     generate_det_dataset,
 )
 
+
 @pytest.fixture
 def device_availability_func(mocker):
     return {
-        "cuda" : mocker.patch("torch.cuda.is_available"),
-        "xpu" : mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.is_xpu_available"),
-        "hpu" : mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.is_hpu_available"),
+        "cuda": mocker.patch("torch.cuda.is_available"),
+        "xpu": mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.is_xpu_available"),
+        "hpu": mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.is_hpu_available"),
     }
 
 

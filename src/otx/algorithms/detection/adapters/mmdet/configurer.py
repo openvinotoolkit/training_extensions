@@ -77,6 +77,7 @@ class DetectionConfigurer(BaseConfigurer):
                 self.configure_bbox_head(cfg)
 
     def configure_device(self, cfg):
+        """Setting device for training and inference."""
         super().configure_device(cfg)
         if cfg.device in ["xpu", "hpu"]:
             NMSop.forward = monkey_patched_nms
