@@ -238,17 +238,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                     point_coords = torch.stack(point_coords, dim=0).unsqueeze(0)
                     point_labels = torch.tensor([point_labels], device=self.device)
-                    masks, _, _ = self._predict_mask(
+                    masks = self._predict_masks(
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
-                        mask_input=torch.zeros(
-                            1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device
-                        ),
-                        has_mask_input=torch.tensor([[0.0]], device=self.device),
                         padding=padding,
                         original_size=original_size,
-                        is_postprocess=True,
+                        is_cascade=False,
                     )
                     reference_prompt[masks] += 1
             reference_prompt = torch.clip(reference_prompt, 0, 1)
@@ -318,116 +314,77 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     point_labels = torch.tensor(
                         [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
                     ).unsqueeze(0)
-                    mask = self(
+                    mask = self._predict_masks(
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
                         padding=padding,
                         original_size=original_size,
                     )
-                    predicted_masks[label].append(mask)
-                    used_points[label].append(points_score)
+                    predicted_masks[label].append(mask.detach().cpu())
+                    used_points[label].append(points_score.detach().cpu())
 
             total_results.append([predicted_masks, used_points])
         return total_results
 
-    @torch.no_grad()
-    def forward(
+    def _predict_masks(
         self,
         image_embeddings: torch.Tensor,
         point_coords: torch.Tensor,
         point_labels: torch.Tensor,
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Predict point prompts and predicted masks.
-
-        Args:
-            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            point_coords (torch.Tensor): Foreground point prompts from point selection algorithm.
-            point_labels (torch.Tensor): Background point prompts from point selection algorithm.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
-
-        Returns:
-            (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.
-        """
-        # First-step prediction
-        _, _, logits = self._predict_mask(
-            image_embeddings=image_embeddings,
-            point_coords=point_coords,
-            point_labels=point_labels,
-            mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device),
-            has_mask_input=torch.tensor([[0.0]], device=self.device),
-            is_postprocess=False,
-        )
-
-        # Cascaded Post-refinement-1
-        masks, scores, logits = self._predict_mask(
-            image_embeddings=image_embeddings,
-            point_coords=point_coords,
-            point_labels=point_labels,
-            mask_input=logits,
-            has_mask_input=torch.tensor([[1.0]], device=self.device),
-            padding=padding,
-            original_size=original_size,
-            is_postprocess=True,
-        )
-
-        # Cascaded Post-refinement-2
-        coords = torch.nonzero(masks)
-        y, x = coords[:, 0], coords[:, 1]
-        new_point_coords = torch.cat(
-            (
-                point_coords,
-                torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
-            ),
-            dim=1,
-        )
-        new_point_labels = torch.cat(
-            (point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=self.device)), dim=1
-        )
-        masks, _, _ = self._predict_mask(
-            image_embeddings=image_embeddings,
-            point_coords=new_point_coords,
-            point_labels=new_point_labels,
-            mask_input=logits,
-            has_mask_input=torch.tensor([[1.0]], device=self.device),
-            padding=padding,
-            original_size=original_size,
-            is_postprocess=True,
-        )
-
-        return masks
-
-    def _predict_mask(
-        self,
-        image_embeddings: torch.Tensor,
-        point_coords: torch.Tensor,
-        point_labels: torch.Tensor,
-        mask_input: torch.Tensor,
-        has_mask_input: torch.Tensor,
         padding: Optional[Tuple[int, ...]] = None,
         original_size: Optional[Tuple[int, int]] = None,
-        is_postprocess: bool = True,
+        is_cascade: bool = True,
     ) -> torch.Tensor:
         """Predict target masks."""
-        scores, logits = super().forward(
-            image_embeddings=image_embeddings,
-            point_coords=point_coords,
-            point_labels=point_labels,
-            mask_input=mask_input,
-            has_mask_input=has_mask_input,
-        )
-        best_idx = torch.argmax(scores[0, 1:]) + 1
-        if is_postprocess:
-            high_res_masks = self.postprocess_masks(
-                logits, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+        logits: torch.Tensor
+        scores: torch.Tensor
+        for i in range(3):
+            if i == 0:
+                # First-step prediction
+                mask_input = torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device)
+                has_mask_input = torch.tensor([[0.0]], device=self.device)
+
+            elif is_cascade and i == 1:
+                # Cascaded Post-refinement-1
+                mask_input, masks = self._postprocess_masks(logits, scores, padding, original_size)  # noqa: F821
+                if masks.sum() == 0:
+                    return masks
+
+                has_mask_input = torch.tensor([[1.0]], device=self.device)
+
+            elif is_cascade and i == 2:
+                # Cascaded Post-refinement-2
+                mask_input, masks = self._postprocess_masks(logits, scores, padding, original_size)  # noqa: F821
+                if masks.sum() == 0:
+                    return masks
+
+                has_mask_input = torch.tensor([[1.0]], device=self.device)
+                coords = torch.nonzero(masks)
+                y, x = coords[:, 0], coords[:, 1]
+                point_coords = torch.cat(
+                    (
+                        point_coords,
+                        torch.tensor(
+                            [[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device
+                        ),
+                    ),
+                    dim=1,
+                )
+                point_labels = torch.cat(
+                    (point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=self.device)), dim=1
+                )
+
+            scores, logits = self(
+                image_embeddings=image_embeddings,
+                point_coords=point_coords,
+                point_labels=point_labels,
+                mask_input=mask_input,
+                has_mask_input=has_mask_input,
             )
-            masks = high_res_masks > self.config.model.mask_threshold
-            masks = masks[0, best_idx]
-            return masks, scores, logits[:, best_idx : best_idx + 1, :, :]
-        return None, scores, logits[:, best_idx : best_idx + 1, :, :]
+
+        _, masks = self._postprocess_masks(logits, scores, padding, original_size)
+        return masks
 
     def training_step(self, batch, batch_idx) -> None:
         """Training step for `learn`."""
@@ -517,7 +474,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         # Post-process masks
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=resized_size, mode="bilinear").squeeze()
-        masks = self._preprocess_mask(masks)
+        masks = self._preprocess_masks(masks)
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=feats.shape[0:2], mode="bilinear").squeeze()
 
         # Target feature extraction
@@ -531,7 +488,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         return masked_feat
 
-    def _preprocess_mask(self, x: torch.Tensor) -> torch.Tensor:
+    def _preprocess_masks(self, x: torch.Tensor) -> torch.Tensor:
         """Normalize pixel values and pad to a square input.
 
         Args:
@@ -546,6 +503,31 @@ class ZeroShotSegmentAnything(SegmentAnything):
         padw = self.config.model.image_size - w
         x = F.pad(x, (0, padw, 0, padh))
         return x
+
+    def _postprocess_masks(
+        self, logits: torch.Tensor, scores: torch.Tensor, padding: Tuple[int, ...], original_size: Tuple[int, int]
+    ):
+        """Post-process masks for cascaded post-refinements."""
+        high_res_masks = self.postprocess_masks(
+            logits, (self.config.model.image_size, self.config.model.image_size), padding, original_size
+        )
+        masks = high_res_masks > self.config.model.mask_threshold
+
+        # skip the first index components
+        scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+
+        # filter zero masks
+        while len(scores[0]) > 0 and masks[0, (best_idx := torch.argmax(scores[0]))].sum() == 0:
+            scores, masks, logits = map(
+                lambda x: torch.cat((x[:, :best_idx], x[:, best_idx + 1 :]), dim=1), (scores, masks, logits)
+            )
+
+        if len(scores[0]) == 0:
+            # all predicted masks were zero masks, ignore them.
+            return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
+
+        best_idx = torch.argmax(scores[0])
+        return logits[:, best_idx], masks[0, best_idx]
 
     def _update_value(self, target: Dict[str, Any], key: str, value: torch.Tensor) -> None:
         """Update tensor to target dictionary.

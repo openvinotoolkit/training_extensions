@@ -176,12 +176,8 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         mocker.patch.object(
             zero_shot_segment_anything,
-            "_predict_mask",
-            return_value=(
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-                torch.tensor([1, 0, 0]),
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-            ),
+            "_predict_masks",
+            return_value=torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
         )
 
         processed_prompts = {MockScoredLabel(label=1, name="label"): [{"box": torch.tensor([[0, 0, 1, 1]])}]}
@@ -207,7 +203,9 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.prompt_getter.reference_feats = {1: torch.rand((1, 2))}
         zero_shot_segment_anything.prompt_getter.reference_prompts = {1: torch.zeros((8, 8))}
-        mocker.patch.object(zero_shot_segment_anything, "forward", return_value=torch.ones((8, 8)))
+        mocker.patch.object(
+            SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+        )
 
         total_results = zero_shot_segment_anything.infer(
             images=torch.ones((1, 3, 8, 8)), padding=(0, 0, 0, 0), original_size=(8, 8)
@@ -218,8 +216,9 @@ class TestZeroShotSegmentAnything:
                 assert torch.equal(result[0], expected[i])
 
     @e2e_pytest_unit
-    def test_forward(self, mocker, set_zero_shot_segment_anything) -> None:
-        """Test forward."""
+    @pytest.mark.parametrize("is_postprocess", [True, False])
+    def test_predict_masks(self, mocker, set_zero_shot_segment_anything, is_postprocess: bool) -> None:
+        """Test _predict_masks."""
         mocker.patch.object(
             SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
         )
@@ -227,7 +226,7 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.config.model.image_size = 6
 
-        mask = zero_shot_segment_anything(
+        mask = zero_shot_segment_anything._predict_masks(
             image_embeddings=torch.rand(1),
             point_coords=torch.rand(1, 2, 2),
             point_labels=torch.randint(low=0, high=2, size=(1, 2)),
@@ -235,35 +234,30 @@ class TestZeroShotSegmentAnything:
             original_size=(8, 8),
         )
         assert mask.shape == (8, 8)
+        # mocker.patch.object(
+        #     SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+        # )
 
-    @e2e_pytest_unit
-    @pytest.mark.parametrize("is_postprocess", [True, False])
-    def test_predict_mask(self, mocker, set_zero_shot_segment_anything, is_postprocess: bool) -> None:
-        """Test _predict_mask."""
-        mocker.patch.object(
-            SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
-        )
+        # zero_shot_segment_anything = set_zero_shot_segment_anything()
+        # zero_shot_segment_anything.config.model.image_size = 6
 
-        zero_shot_segment_anything = set_zero_shot_segment_anything()
-        zero_shot_segment_anything.config.model.image_size = 6
+        # masks, scores, logits = zero_shot_segment_anything._predict_masks(
+        #     image_embeddings=torch.rand(1),
+        #     point_coords=torch.rand(1, 2, 2),
+        #     point_labels=torch.randint(low=0, high=2, size=(1, 2)),
+        #     mask_input=torch.zeros(1, 2, 4, 4),
+        #     has_mask_input=torch.tensor([[0.0]]),
+        #     padding=(0, 0, 0, 0),
+        #     original_size=(8, 8),
+        #     is_postprocess=is_postprocess,
+        # )
 
-        masks, scores, logits = zero_shot_segment_anything._predict_mask(
-            image_embeddings=torch.rand(1),
-            point_coords=torch.rand(1, 2, 2),
-            point_labels=torch.randint(low=0, high=2, size=(1, 2)),
-            mask_input=torch.zeros(1, 2, 4, 4),
-            has_mask_input=torch.tensor([[0.0]]),
-            padding=(0, 0, 0, 0),
-            original_size=(8, 8),
-            is_postprocess=is_postprocess,
-        )
-
-        if is_postprocess:
-            assert masks.dtype == torch.bool
-        else:
-            assert masks is None
-        assert scores.shape[1] == 4
-        assert logits.shape[1] == 1
+        # if is_postprocess:
+        #     assert masks.dtype == torch.bool
+        # else:
+        #     assert masks is None
+        # assert scores.shape[1] == 4
+        # assert logits.shape[1] == 1
 
     @e2e_pytest_unit
     def test_preprocess_prompts(self, set_zero_shot_segment_anything) -> None:
@@ -298,17 +292,37 @@ class TestZeroShotSegmentAnything:
         assert masked_feat.shape == (1, 1)
 
     @e2e_pytest_unit
-    def test_preprocess_mask(self, set_zero_shot_segment_anything) -> None:
-        """Test _preprocess_mask."""
+    def test_preprocess_masks(self, set_zero_shot_segment_anything) -> None:
+        """Test _preprocess_masks."""
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.config.model.image_size = 16
 
-        result = zero_shot_segment_anything._preprocess_mask(x=torch.ones(1, 1, 8, 8))
+        result = zero_shot_segment_anything._preprocess_masks(x=torch.ones(1, 1, 8, 8))
 
         assert result[:8, :8].sum() == 8**2
         assert result[:8, 8:].sum() == 0
         assert result[8:, :8].sum() == 0
         assert result[8:, 8:].sum() == 0
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "logits,expected",
+        [
+            (torch.ones(1, 4, 4, 4), torch.ones(4, 4, dtype=torch.bool)),
+            (torch.zeros(1, 4, 4, 4), torch.zeros(4, 4, dtype=torch.bool)),
+        ],
+    )
+    def test_postprocess_masks(
+        self, set_zero_shot_segment_anything, logits: torch.Tensor, expected: torch.Tensor
+    ) -> None:
+        """Test _postprocess_masks."""
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        zero_shot_segment_anything.config.model.image_size = 4
+        scores = torch.tensor([[0.0, 0.1, 0.2, 0.3]])
+
+        _, result = zero_shot_segment_anything._postprocess_masks(logits, scores, (0, 0, 0, 0), (4, 4))
+
+        assert torch.equal(result, expected)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_only_background", [True, False])
