@@ -182,9 +182,9 @@ class XPUResourceManager(AcceleratorManager):
 
     def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
         if available_devices is None:
-            cuda_visible_devices = os.getenv("ONEAPI_DEVICE_SELECTOR", "").split(":")
-            if len(cuda_visible_devices) > 1:
-                available_devices_arr = _cvt_comma_delimited_str_to_list(cuda_visible_devices[1])
+            visible_devices = os.getenv("ONEAPI_DEVICE_SELECTOR", "").split(":")
+            if len(visible_devices) > 1:
+                available_devices_arr = _cvt_comma_delimited_str_to_list(visible_devices[1])
             else:
                 num_gpus = torch.xpu.device_count()
                 available_devices_arr = list(range(num_gpus))
