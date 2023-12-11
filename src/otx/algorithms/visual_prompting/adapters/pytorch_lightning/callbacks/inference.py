@@ -17,6 +17,7 @@
 from typing import Any, List
 
 import numpy as np
+import torch
 from bson import ObjectId
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import Callback
@@ -25,6 +26,7 @@ from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
@@ -94,3 +96,39 @@ class InferenceCallback(Callback):
                 dataset_item.annotation_scene.append_annotations(annotations)
             else:
                 dataset_item.append_annotations(annotations)
+
+
+class ZeroShotInferenceCallback(Callback):
+    """Callback that updates otx_dataset during zero-shot inference.
+
+    Args:
+        otx_dataset (DatasetEntity): Dataset that predictions will be updated.
+        label_schema (LabelSchemaEntity): Label schema information.
+    """
+
+    def __init__(self, otx_dataset: DatasetEntity, label_schema: LabelSchemaEntity):
+        # TODO (sungchul): consider use_mask
+        self.otx_dataset = otx_dataset.with_empty_annotations()
+        self.label_schema = {int(label.id): label for label in label_schema.get_labels(include_empty=True)}
+
+    def on_predict_epoch_end(self, _trainer: Trainer, _pl_module: LightningModule, outputs: List[Any]) -> None:
+        """Call when the predict epoch ends."""
+        for batch_output, dataset_item in zip(outputs[0], self.otx_dataset):
+            # TODO (sungchul): currently, single batch inference is only supported
+            output = batch_output[0]
+            annotations: List[Annotation] = []
+            for label, masks in output.items():
+                hard_prediction = torch.where(torch.stack(masks, dim=0).sum(dim=0) > 0, 1, 0)
+                hard_prediction = hard_prediction.numpy()
+
+                # TODO (sungchul): consider use_mask
+                # generate polygon annotations
+                annotation = create_annotation_from_segmentation_map(
+                    hard_prediction=hard_prediction,
+                    soft_prediction=hard_prediction,
+                    label_map={1: self.label_schema.get(label)},
+                )
+                annotations.extend(annotation)
+
+            # TODO (sungchul): consider use_mask
+            dataset_item.append_annotations(annotations)
