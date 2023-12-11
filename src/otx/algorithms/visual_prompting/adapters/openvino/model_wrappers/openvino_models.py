@@ -59,6 +59,18 @@ class ImageEncoder(ImageModel):
         return dict_inputs, meta
 
 
+class PromptGetter(ImageModel):
+    """PromptGetter class for zero-shot visual prompting of openvino model wrapper."""
+
+    __model__ = "prompt_getter"
+
+    @classmethod
+    def parameters(cls):  # noqa: D102
+        parameters = super().parameters()
+        parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
+        return parameters
+
+
 class Decoder(SegmentationModel):
     """Decoder class for visual prompting of openvino model wrapper."""
 

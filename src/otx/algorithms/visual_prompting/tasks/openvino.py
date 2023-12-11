@@ -194,6 +194,75 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         self.model["decoder"].await_all()
 
 
+class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInferencer):
+    """Inferencer implementation for Zero-shot Visual Prompting using OpenVINO backend.
+
+    This inferencer has two models, image encoder and decoder.
+
+    Args:
+        hparams (VisualPromptingBaseConfig): Hyper parameters that the model should use.
+        label_schema (LabelSchemaEntity): LabelSchemaEntity that was used during model training.
+        model_files (Dict[str, Union[str, Path, bytes]]): Path or bytes to model to load,
+            `.xml`, `.bin` or `.onnx` file.
+        weight_files (Dict[str, Union[str, Path, bytes, None]], optional): Path or bytes to weights to load,
+            `.xml`, `.bin` or `.onnx` file. Defaults to None.
+        device (str): Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
+        num_requests (int) : Maximum number of requests that the inferencer can make.
+            Good value is the number of available cores. Defaults to 1.
+    """
+
+    def __init__(
+        self,
+        hparams: VisualPromptingBaseConfig,
+        label_schema: LabelSchemaEntity,
+        model_files: Dict[str, Union[str, Path, bytes]],
+        weight_files: Optional[Dict[str, Union[str, Path, bytes, None]]] = {},
+        device: str = "CPU",
+        num_requests: int = 1,
+    ):
+
+        assert all(module in model_files for module in ["image_encoder", "prompt_getter", "decoder"])
+
+        self.model = {}
+        model_parameters = {
+            "prompt_getter": {"input_layouts": "image_embeddings:NCHW"},
+            "decoder": {"input_layouts": "image_embeddings:NCHW"},
+        }
+        self.configuration = {
+            "image_encoder": {
+                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size"])
+            },
+            "prompt_getter": {
+                **attr.asdict(
+                    hparams.postprocessing,
+                    filter=lambda attr, value: attr.name
+                    not in ["header", "description", "type", "visible_in_ui", "class_name"],
+                )
+            },
+            "decoder": {
+                **attr.asdict(
+                    hparams.postprocessing,
+                    filter=lambda attr, value: attr.name
+                    not in ["header", "description", "type", "visible_in_ui", "class_name"],
+                )
+            },
+        }
+        for name in ["image_encoder", "prompt_getter", "decoder"]:
+            model_adapter = OpenvinoAdapter(
+                core=create_core(),
+                model=model_files.get(name),
+                weights_path=weight_files.get(name, None),
+                model_parameters=model_parameters.get(name, {}),
+                device=device,
+                max_num_requests=num_requests,
+                plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
+            )
+            self.model[name] = Model.create_model(model_adapter, name, self.configuration.get(name, {}), preload=True)
+        self.converter = VisualPromptingToAnnotationConverter()
+        self.labels = label_schema.get_labels(include_empty=False)
+        self.transform = get_transform()  # TODO (sungchul): insert args
+
+
 class OTXOpenVinoDataLoader:
     """DataLoader implementation for VisualPromptingOpenVINOTask."""
 
@@ -484,3 +553,27 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
         logger.info("PTQ optimization completed")
+
+
+class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
+    """Task implementation for Zero-shot Visual Prompting using OpenVINO backend."""
+
+    def load_inferencer(self) -> OpenVINOZeroShotVisualPromptingInferencer:
+        """Load OpenVINO Zero-shot Visual Prompting Inferencer."""
+        if self.model is None:
+            raise RuntimeError("load_inferencer failed, model is None")
+        return OpenVINOZeroShotVisualPromptingInferencer(
+            self.hparams,
+            self.task_environment.label_schema,
+            {
+                "image_encoder": self.model.get_data("visual_prompting_image_encoder.xml"),
+                "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.xml"),
+                "decoder": self.model.get_data("visual_prompting_decoder.xml"),
+            },
+            {
+                "image_encoder": self.model.get_data("visual_prompting_image_encoder.bin"),
+                "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.xml"),
+                "decoder": self.model.get_data("visual_prompting_decoder.bin"),
+            },
+            num_requests=get_default_async_reqs_num(),
+        )
