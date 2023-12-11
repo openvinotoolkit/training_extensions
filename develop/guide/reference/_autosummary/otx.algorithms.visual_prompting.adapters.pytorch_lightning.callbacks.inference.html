@@ -396,6 +396,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.InferenceCallback" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.InferenceCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InferenceCallback</span></code></a>(otx_dataset)</p></td>
 <td><p>Callback that updates otx_dataset during inference.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZeroShotInferenceCallback</span></code></a>(otx_dataset, ...)</p></td>
+<td><p>Callback that updates otx_dataset during zero-shot inference.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -411,6 +414,27 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.InferenceCallback.on_predict_epoch_end">
 <span class="sig-name descname"><span class="pre">on_predict_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_pl_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LightningModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/callbacks/inference.html#InferenceCallback.on_predict_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.InferenceCallback.on_predict_epoch_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Call when the predict epoch ends.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.</span></span><span class="sig-name descname"><span class="pre">ZeroShotInferenceCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.label_schema.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/callbacks/inference.html#ZeroShotInferenceCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>Callback that updates otx_dataset during zero-shot inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>otx_dataset</strong> (<a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – Dataset that predictions will be updated.</p></li>
+<li><p><strong>label_schema</strong> (<a class="reference internal" href="otx.api.entities.label_schema.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label schema information.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback.on_predict_epoch_end">
+<span class="sig-name descname"><span class="pre">on_predict_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_pl_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LightningModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/callbacks/inference.html#ZeroShotInferenceCallback.on_predict_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback.on_predict_epoch_end" title="Permalink to this definition">#</a></dt>
 <dd><p>Call when the predict epoch ends.</p>
 </dd></dl>
 
@@ -470,6 +494,26 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        InferenceCallback.on_predict_epoch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ZeroShotInferenceCallback
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference.ZeroShotInferenceCallback.on_predict_epoch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ZeroShotInferenceCallback.on_predict_epoch_end()
       </span>
      </code>
     </a>

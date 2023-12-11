@@ -402,7 +402,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_bbox_from_mask" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_bbox_from_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_bbox_from_mask</span></code></a>(gt_mask, width, height)</p></td>
 <td><p>Generate bounding box from given mask.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transform</span></code></a>([image_size, mean, std])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_point_from_mask" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_point_from_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_point_from_mask</span></code></a>(gt_mask)</p></td>
+<td><p>Randomly generate point from given mask.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transform</span></code></a>([image_size, mean, std])</p></td>
 <td><p>Get transform pipeline.</p></td>
 </tr>
 </tbody>
@@ -416,11 +419,14 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataset" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXVisualPromptingDataset</span></code></a>(dataset, ...[, ...])</p></td>
 <td><p>Visual Prompting Dataset Adaptor.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXZeroShotVisualPromptingDataset" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXZeroShotVisualPromptingDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXZeroShotVisualPromptingDataset</span></code></a>(dataset, ...)</p></td>
+<td><p>Visual Prompting for Zero-shot learning Dataset Adaptor.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataModule">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.</span></span><span class="sig-name descname"><span class="pre">OTXVisualPromptingDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/dataset.html#OTXVisualPromptingDataModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataModule" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.</span></span><span class="sig-name descname"><span class="pre">OTXVisualPromptingDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.algorithms.common.configs.training_base.html#otx.algorithms.common.configs.training_base.TrainType" title="otx.algorithms.common.configs.training_base.TrainType"><span class="pre">TrainType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TrainType.Incremental</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/dataset.html#OTXVisualPromptingDataModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataModule" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></p>
 <p>Visual Prompting DataModule.</p>
 <dl class="field-list simple">
@@ -558,6 +564,13 @@ Default value is False.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXZeroShotVisualPromptingDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.</span></span><span class="sig-name descname"><span class="pre">OTXZeroShotVisualPromptingDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/dataset.html#OTXZeroShotVisualPromptingDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXZeroShotVisualPromptingDataset" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataset" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXVisualPromptingDataset</span></code></a></p>
+<p>Visual Prompting for Zero-shot learning Dataset Adaptor.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.convert_polygon_to_mask">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.</span></span><span class="sig-name descname"><span class="pre">convert_polygon_to_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.shapes.polygon.html#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon"><span class="pre">Polygon</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/dataset.html#convert_polygon_to_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.convert_polygon_to_mask" title="Permalink to this definition">#</a></dt>
@@ -623,6 +636,12 @@ Default value is False.</p>
 <dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_point_from_mask">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.</span></span><span class="sig-name descname"><span class="pre">generate_point_from_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gt_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/dataset.html#generate_point_from_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_point_from_mask" title="Permalink to this definition">#</a></dt>
+<dd><p>Randomly generate point from given mask.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -790,6 +809,15 @@ Default value is False.</p>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXZeroShotVisualPromptingDataset">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTXZeroShotVisualPromptingDataset
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.convert_polygon_to_mask">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -812,6 +840,15 @@ Default value is False.</p>
    <code class="docutils literal notranslate">
     <span class="pre">
      generate_bbox_from_mask()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_point_from_mask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     generate_point_from_mask()
     </span>
    </code>
   </a>

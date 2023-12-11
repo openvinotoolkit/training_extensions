@@ -18,6 +18,7 @@ otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.callbacks.inference
    .. autosummary::
    
       InferenceCallback
+      ZeroShotInferenceCallback
    
    
 

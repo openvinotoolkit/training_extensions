@@ -28,4 +28,5 @@ otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.models.visual\_prom
    :recursive:
 
    otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything
 

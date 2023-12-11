@@ -1,0 +1,933 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../../../../_static/jquery.js"></script>
+    <script src="../../../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../../../../_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/visual_prompters/zero_shot_segment_anything';</script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SAM module for visual prompting zero-shot learning.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines</span> <span class="kn">import</span> <span class="n">ResizeLongestSide</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.scored_label</span> <span class="kn">import</span> <span class="n">ScoredLabel</span>
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="kn">from</span> <span class="nn">.segment_anything</span> <span class="kn">import</span> <span class="n">SegmentAnything</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="PromptGetter"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.PromptGetter">[docs]</a><span class="k">class</span> <span class="nc">PromptGetter</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt getter for zero-shot learning.&quot;&quot;&quot;</span>
+
+    <span class="n">default_threshold_reference</span> <span class="o">=</span> <span class="mf">0.3</span>
+    <span class="n">default_threshold_target</span> <span class="o">=</span> <span class="mf">0.65</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="n">image_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PromptGetter.initialize"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.PromptGetter.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize reference features and prompts.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_prompts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="PromptGetter.set_default_thresholds"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.PromptGetter.set_default_thresholds">[docs]</a>    <span class="k">def</span> <span class="nf">set_default_thresholds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_threshold_reference</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">default_threshold_target</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set default thresholds.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_threshold_reference</span> <span class="o">=</span> <span class="n">default_threshold_reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_threshold_target</span> <span class="o">=</span> <span class="n">default_threshold_target</span></div>
+
+<div class="viewcode-block" id="PromptGetter.set_reference"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.PromptGetter.set_reference">[docs]</a>    <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">ScoredLabel</span><span class="p">,</span> <span class="n">reference_feats</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">reference_prompts</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set reference features and prompts.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">id_</span><span class="p">)]</span> <span class="o">=</span> <span class="n">reference_feats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_prompts</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">id_</span><span class="p">)]</span> <span class="o">=</span> <span class="n">reference_prompts</span></div>
+
+<div class="viewcode-block" id="PromptGetter.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.PromptGetter.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">image_embeddings</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get prompt candidates.&quot;&quot;&quot;</span>
+        <span class="n">target_feat</span> <span class="o">=</span> <span class="n">image_embeddings</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">c_feat</span><span class="p">,</span> <span class="n">h_feat</span><span class="p">,</span> <span class="n">w_feat</span> <span class="o">=</span> <span class="n">target_feat</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">target_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_target_feat</span><span class="p">(</span><span class="n">target_feat</span><span class="p">,</span> <span class="n">c_feat</span><span class="p">,</span> <span class="n">h_feat</span><span class="p">,</span> <span class="n">w_feat</span><span class="p">)</span>
+
+        <span class="n">prompts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">reference_feat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sim</span> <span class="o">=</span> <span class="n">reference_feat</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">target_feat</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">@</span> <span class="n">target_feat</span>
+            <span class="n">sim</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">h_feat</span><span class="p">,</span> <span class="n">w_feat</span><span class="p">)</span>
+            <span class="n">sim</span> <span class="o">=</span> <span class="n">ZeroShotSegmentAnything</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span>
+                <span class="n">sim</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">),</span> <span class="n">padding</span><span class="p">,</span> <span class="n">original_size</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+            <span class="c1"># threshold = 0.85 * sim.max() if num_classes &gt; 1 else self.default_threshold_target</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_threshold_target</span>
+            <span class="n">points_scores</span><span class="p">,</span> <span class="n">bg_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_point_selection</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">original_size</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">points_scores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># skip if there is no point with score &gt; threshold</span>
+                <span class="k">continue</span>
+            <span class="n">prompts</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">points_scores</span><span class="p">,</span> <span class="n">bg_coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prompts</span></div>
+
+    <span class="k">def</span> <span class="nf">_preprocess_target_feat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_feat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">c_feat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">h_feat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">w_feat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">target_feat</span> <span class="o">=</span> <span class="n">target_feat</span> <span class="o">/</span> <span class="n">target_feat</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">target_feat</span> <span class="o">=</span> <span class="n">target_feat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">c_feat</span><span class="p">,</span> <span class="n">h_feat</span> <span class="o">*</span> <span class="n">w_feat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">target_feat</span>
+
+    <span class="k">def</span> <span class="nf">_point_selection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mask_sim</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">num_bg_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">downsizing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select point used as point prompts.&quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">w_sim</span> <span class="o">=</span> <span class="n">mask_sim</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># Top-last point selection</span>
+        <span class="n">bg_indices</span> <span class="o">=</span> <span class="n">mask_sim</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">num_bg_points</span><span class="p">,</span> <span class="n">largest</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bg_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">bg_indices</span> <span class="o">//</span> <span class="n">w_sim</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">bg_y</span> <span class="o">=</span> <span class="n">bg_indices</span> <span class="o">-</span> <span class="n">bg_x</span> <span class="o">*</span> <span class="n">w_sim</span>
+        <span class="n">bg_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">bg_y</span><span class="p">,</span> <span class="n">bg_x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">bg_coords</span> <span class="o">=</span> <span class="n">bg_coords</span>
+
+        <span class="n">point_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask_sim</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">fg_coords_scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">point_coords</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">mask_sim</span><span class="p">[</span><span class="n">point_coords</span><span class="p">],),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">original_size</span><span class="p">)</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">/</span> <span class="n">max_len</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">),</span> <span class="n">original_size</span><span class="p">)</span>
+        <span class="n">n_w</span> <span class="o">=</span> <span class="n">width</span> <span class="o">//</span> <span class="n">downsizing</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">fg_coords_scores</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">//</span> <span class="n">downsizing</span> <span class="o">*</span> <span class="n">n_w</span> <span class="o">+</span> <span class="n">fg_coords_scores</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">//</span> <span class="n">downsizing</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+        <span class="p">)</span>
+        <span class="n">points_scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">fg_coords_scores</span><span class="p">[</span><span class="n">res</span> <span class="o">==</span> <span class="n">r</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">res</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">points_scores</span> <span class="o">=</span> <span class="n">points_scores</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">points_scores</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">points_scores</span><span class="p">,</span> <span class="n">bg_coords</span></div>
+
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything">[docs]</a><span class="k">class</span> <span class="nc">ZeroShotSegmentAnything</span><span class="p">(</span><span class="n">SegmentAnything</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Zero-shot learning module using Segment Anything.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DictConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OrderedDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_default_config</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">freeze_image_encoder</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;config.model.freeze_image_encoder(=False) must be set to True, changed.&quot;</span><span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">freeze_image_encoder</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">freeze_prompt_encoder</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;config.model.freeze_prompt_encoder(=False) must be set to True, changed.&quot;</span><span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">freeze_prompt_encoder</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">freeze_mask_decoder</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;config.model.freeze_mask_decoder(=False) must be set to True, changed.&quot;</span><span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">freeze_mask_decoder</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">prompt_getter_reference_feats</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">prompt_getter_reference_prompts</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">state_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;prompt_getter.reference_feats&quot;</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="p">:</span>
+                <span class="n">prompt_getter_reference_feats</span> <span class="o">=</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;prompt_getter.reference_feats&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;prompt_getter.reference_prompts&quot;</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="p">:</span>
+                <span class="n">prompt_getter_reference_prompts</span> <span class="o">=</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;prompt_getter.reference_prompts&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span> <span class="o">=</span> <span class="n">PromptGetter</span><span class="p">(</span><span class="n">image_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">set_default_thresholds</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">default_threshold_reference</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">default_threshold_target</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prompt_getter_reference_feats</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">reference_feats</span> <span class="o">=</span> <span class="n">prompt_getter_reference_feats</span>
+        <span class="k">if</span> <span class="n">prompt_getter_reference_prompts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">reference_prompts</span> <span class="o">=</span> <span class="n">prompt_getter_reference_prompts</span>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.set_default_config"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.set_default_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_default_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DictConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set default config when using independently.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DictConfig</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;backbone&quot;</span><span class="p">:</span> <span class="s2">&quot;tiny_vit&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;checkpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default_threshold_reference&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+                    <span class="s2">&quot;default_threshold_target&quot;</span><span class="p">:</span> <span class="mf">0.65</span><span class="p">,</span>
+                    <span class="s2">&quot;freeze_image_encoder&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s2">&quot;freeze_mask_decoder&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s2">&quot;freeze_prompt_encoder&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s2">&quot;image_size&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+                    <span class="s2">&quot;mask_threshold&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.learn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.learn">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">images</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">processed_prompts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get reference features.</span>
+
+<span class="sd">        Using given images, get reference features and save it to PromptGetter.</span>
+<span class="sd">        These reference features will be used for `infer` to get target results.</span>
+<span class="sd">        Currently, single batch is only supported.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            images (torch.Tensor): Given images for reference features.</span>
+<span class="sd">            processed_prompts (Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]): The whole class-wise prompts</span>
+<span class="sd">                processed at _preprocess_prompts.</span>
+<span class="sd">            padding (Tuple[int, ...]): Padding size.</span>
+<span class="sd">            original_size (Tuple[int, int]): Original image size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Only single batch is supported.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+
+        <span class="n">image_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_encoder</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+        <span class="n">ref_feat</span> <span class="o">=</span> <span class="n">image_embeddings</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">input_prompts</span> <span class="ow">in</span> <span class="n">processed_prompts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;background&quot;</span><span class="p">:</span>
+                <span class="c1"># skip background</span>
+                <span class="c1"># TODO (sungchul): how to skip background class</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># generate reference mask</span>
+            <span class="c1"># TODO (sungchul): ensemble multi reference features (current : use merged masks)</span>
+            <span class="n">reference_prompt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">original_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">images</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">input_prompt</span> <span class="ow">in</span> <span class="n">input_prompts</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;annotation&quot;</span> <span class="ow">in</span> <span class="n">input_prompt</span><span class="p">:</span>
+                    <span class="c1"># directly use annotation information as a mask</span>
+                    <span class="n">reference_prompt</span><span class="p">[</span><span class="n">input_prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;annotation&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">merged_input_prompts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_prompts</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">input_prompt</span><span class="p">,</span> <span class="n">processed_prompts</span><span class="p">)</span>
+                    <span class="n">masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_mask</span><span class="p">(</span>
+                        <span class="n">image_embeddings</span><span class="o">=</span><span class="n">image_embeddings</span><span class="p">,</span>
+                        <span class="n">input_prompts</span><span class="o">=</span><span class="n">merged_input_prompts</span><span class="p">,</span>
+                        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                        <span class="n">original_size</span><span class="o">=</span><span class="n">original_size</span><span class="p">,</span>
+                        <span class="n">multimask_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">best_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+                    <span class="n">reference_prompt</span><span class="p">[</span><span class="n">masks</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">best_idx</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">reference_prompt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">reference_prompt</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">ref_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">reference_prompt</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">reference_feat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">default_threshold_reference</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">default_threshold_reference</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">reference_feat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[*] default_threshold_reference : </span><span class="si">{</span><span class="n">default_threshold_reference</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">reference_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_masked_features</span><span class="p">(</span>
+                    <span class="n">ref_feat</span><span class="p">,</span> <span class="n">ref_mask</span><span class="p">,</span> <span class="n">default_threshold_reference</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span>
+                <span class="p">)</span>
+                <span class="n">default_threshold_reference</span> <span class="o">-=</span> <span class="mf">0.05</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">set_reference</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">reference_feat</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">reference_prompt</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.infer"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.infer">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Zero-shot inference with reference features.</span>
+
+<span class="sd">        Get target results by using reference features and target images&#39; features.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            images (torch.Tensor): Given images for target results.</span>
+<span class="sd">            padding (Tuple[int, ...]): Padding size.</span>
+<span class="sd">            original_size (Tuple[int, int]): Original image size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (List[List[DefaultDict[int, List[torch.Tensor]]]]): Target results.</span>
+<span class="sd">                Lists wrapping results is following this order:</span>
+<span class="sd">                    1. Target images</span>
+<span class="sd">                    2. Tuple of predicted masks and used points gotten by point selection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Only single batch is supported.&quot;</span>
+
+        <span class="n">total_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># num_classes = len(self.reference_feats.keys())</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">image_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_encoder</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+
+            <span class="n">prompts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_getter</span><span class="p">(</span>
+                <span class="n">image_embeddings</span><span class="o">=</span><span class="n">image_embeddings</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="n">original_size</span>
+            <span class="p">)</span>
+            <span class="n">predicted_masks</span><span class="p">:</span> <span class="n">defaultdict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="n">used_points</span><span class="p">:</span> <span class="n">defaultdict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">points_scores</span><span class="p">,</span> <span class="n">bg_coords</span><span class="p">)</span> <span class="ow">in</span> <span class="n">prompts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">points_score</span> <span class="ow">in</span> <span class="n">points_scores</span><span class="p">:</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">points_score</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">for</span> <span class="n">pm</span> <span class="ow">in</span> <span class="n">predicted_masks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">[]):</span>
+                        <span class="c1"># check if that point is already assigned</span>
+                        <span class="k">if</span> <span class="n">pm</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">mask</span><span class="p">,</span> <span class="n">used_point_score</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span>
+                        <span class="n">image_embeddings</span><span class="o">=</span><span class="n">image_embeddings</span><span class="p">,</span>
+                        <span class="n">points_score</span><span class="o">=</span><span class="n">points_score</span><span class="p">,</span>
+                        <span class="n">bg_coords</span><span class="o">=</span><span class="n">bg_coords</span><span class="p">,</span>
+                        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                        <span class="n">original_size</span><span class="o">=</span><span class="n">original_size</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">predicted_masks</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+                    <span class="n">used_points</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_point_score</span><span class="p">)</span>
+
+            <span class="n">total_results</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">predicted_masks</span><span class="p">,</span> <span class="n">used_points</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">total_results</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.forward">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">image_embeddings</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">points_score</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">bg_coords</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict point prompts and predicted masks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.</span>
+<span class="sd">            points_score (torch.Tensor): Foreground point prompts from point selection algorithm.</span>
+<span class="sd">            bg_coords (torch.Tensor): Background point prompts from point selection algorithm.</span>
+<span class="sd">            padding (Tuple[int, ...]): Padding size.</span>
+<span class="sd">            original_size (Tuple[int, int]): Original image size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">point_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">points_score</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">bg_coords</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">point_coords</span> <span class="o">=</span> <span class="n">ResizeLongestSide</span><span class="o">.</span><span class="n">apply_coords</span><span class="p">(</span><span class="n">point_coords</span><span class="p">,</span> <span class="n">original_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
+        <span class="n">point_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">bg_coords</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_target_mask</span><span class="p">(</span>
+            <span class="n">image_embeddings</span><span class="o">=</span><span class="n">image_embeddings</span><span class="p">,</span>
+            <span class="n">input_prompts</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;points&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">point_coords</span><span class="p">,</span> <span class="n">point_labels</span><span class="p">)},</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+            <span class="n">original_size</span><span class="o">=</span><span class="n">original_size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">mask</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">points_score</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.training_step"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.training_step">[docs]</a>    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Training step for `learn`.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO (sungchul): each prompt will be assigned with each label</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span>
+        <span class="c1"># TODO (sungchul): support other below prompts</span>
+        <span class="c1"># points = batch[&quot;points&quot;]</span>
+        <span class="c1"># annotations = batch[&quot;annotations&quot;]</span>
+
+        <span class="c1"># organize prompts based on label</span>
+        <span class="n">processed_prompts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_prompts</span><span class="p">(</span><span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">],</span>
+            <span class="n">processed_prompts</span><span class="o">=</span><span class="n">processed_prompts</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;padding&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">original_size</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;original_size&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.predict_step"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.predict_step">[docs]</a>    <span class="k">def</span> <span class="nf">predict_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict step for `infer`.&quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;padding&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">original_size</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;original_size&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>  <span class="c1"># tmp: only mask</span></div>
+
+    <span class="k">def</span> <span class="nf">_preprocess_prompts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bboxes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Preprocess prompts.</span>
+
+<span class="sd">        Currently, preprocessing for bounding boxes is only supported.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bboxes (torch.Tensor, optional): Bounding box prompts to be preprocessed.</span>
+<span class="sd">            points (torch.Tensor, optional): Point prompts to be preprocessed, to be supported.</span>
+<span class="sd">            annotations (torch.Tensor, optional): annotation prompts to be preprocessed, to be supported.</span>
+<span class="sd">            labels (torch.Tensor, optional): Assigned labels according to given prompts.</span>
+<span class="sd">                Currently, it is only matched to bboxes, and it will be deprecated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (defaultdict[ScoredLabel, List[Dict[str, torch.Tensor]]]): Processed and arranged each single prompt</span>
+<span class="sd">                using label information as keys. Unlike other prompts, `annotation` prompts will be aggregated</span>
+<span class="sd">                as single annotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processed_prompts</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="c1"># TODO (sungchul): will be updated</span>
+        <span class="k">if</span> <span class="n">bboxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bbox</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+                <span class="n">processed_prompts</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;box&quot;</span><span class="p">:</span> <span class="n">bbox</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)})</span>
+
+        <span class="k">if</span> <span class="n">points</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">annotations</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">processed_prompts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">processed_prompts</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id_</span><span class="p">))</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="k">return</span> <span class="n">processed_prompts</span>
+
+    <span class="k">def</span> <span class="nf">_generate_masked_features</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">threshold_mask</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate masked features.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            feats (torch.Tensor): Raw reference features. It will be filtered with masks.</span>
+<span class="sd">            masks (torch.Tensor): Reference masks used to filter features.</span>
+<span class="sd">            threshold_mask (float): Threshold to control masked region.</span>
+<span class="sd">            padding (Tuple[int, ...], optional): Padding size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (torch.Tensor): Masked features.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">padding</span><span class="p">:</span>
+            <span class="n">resized_size</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resized_size</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
+
+        <span class="c1"># Post-process masks</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">resized_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_mask</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">feats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+        <span class="c1"># Target feature extraction</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">masks</span> <span class="o">&gt;</span> <span class="n">threshold_mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># (for stability) there is no area to be extracted</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">masked_feat</span> <span class="o">=</span> <span class="n">feats</span><span class="p">[</span><span class="n">masks</span> <span class="o">&gt;</span> <span class="n">threshold_mask</span><span class="p">]</span>
+        <span class="n">masked_feat</span> <span class="o">=</span> <span class="n">masked_feat</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">masked_feat</span> <span class="o">=</span> <span class="n">masked_feat</span> <span class="o">/</span> <span class="n">masked_feat</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">masked_feat</span>
+
+    <span class="k">def</span> <span class="nf">_preprocess_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize pixel values and pad to a square input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Mask to be padded.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (torch.Tensor): Padded mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Pad</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">padh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span> <span class="o">-</span> <span class="n">h</span>
+        <span class="n">padw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span> <span class="o">-</span> <span class="n">w</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">padw</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">padh</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">_update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update tensor to target dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target (Dict[str, Any]): Target dictionary to be updated.</span>
+<span class="sd">            key (str): Key to be used for update.</span>
+<span class="sd">            value (torch.Tensor): Value to be used for update.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">target</span><span class="p">:</span>
+            <span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">_merge_prompts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">label</span><span class="p">:</span> <span class="n">ScoredLabel</span><span class="p">,</span>
+        <span class="n">input_prompts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">processed_prompts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]],</span>
+        <span class="n">use_only_background</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge target prompt and other prompts.</span>
+
+<span class="sd">        Merge a foreground prompt and other prompts (background or prompts with other classes).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label (ScoredLabel): Label information. Background is 0 and other foregrounds are &gt;= 0.</span>
+<span class="sd">            input_prompts (Dict[str, torch.Tensor]): A foreground prompt to be merged with other prompts.</span>
+<span class="sd">            processed_prompts (Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]): The whole class-wise prompts</span>
+<span class="sd">                processed at _preprocess_prompts.</span>
+<span class="sd">            use_only_background (bool): Whether merging only background prompt, defaults to True.</span>
+<span class="sd">                It is applied to only point_coords.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (Dict[str, torch.Tensor]): Merged prompts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">merged_input_prompts</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">input_prompts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">other_label</span><span class="p">,</span> <span class="n">other_input_prompts</span> <span class="ow">in</span> <span class="n">processed_prompts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">other_label</span><span class="o">.</span><span class="n">id_</span> <span class="o">==</span> <span class="n">label</span><span class="o">.</span><span class="n">id_</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">use_only_background</span> <span class="ow">and</span> <span class="n">other_label</span><span class="o">.</span><span class="n">id_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">use_only_background</span><span class="p">):</span>
+                <span class="c1"># only add point (and scribble) prompts</span>
+                <span class="c1"># use_only_background=True -&gt; background prompts are only added as background</span>
+                <span class="c1"># use_only_background=False -&gt; other prompts are added as background</span>
+                <span class="k">for</span> <span class="n">other_input_prompt</span> <span class="ow">in</span> <span class="n">other_input_prompts</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;point_coords&quot;</span> <span class="ow">in</span> <span class="n">other_input_prompt</span><span class="p">:</span>
+                        <span class="c1"># point, scribble</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span><span class="n">merged_input_prompts</span><span class="p">,</span> <span class="s2">&quot;point_coords&quot;</span><span class="p">,</span> <span class="n">other_input_prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;point_coords&quot;</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span>
+                            <span class="n">merged_input_prompts</span><span class="p">,</span>
+                            <span class="s2">&quot;point_labels&quot;</span><span class="p">,</span>
+                            <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">other_input_prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;point_labels&quot;</span><span class="p">)),</span>
+                        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_input_prompts</span>
+
+    <span class="k">def</span> <span class="nf">_predict_target_mask</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">image_embeddings</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">input_prompts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict target masks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.</span>
+<span class="sd">            input_prompts (Dict[str, Tuple[torch.Tensor, torch.Tensor]]): Dictionary including point, box,</span>
+<span class="sd">                and mask prompts. index=1 of tuple is point labels which indicate whether foreground or background.</span>
+<span class="sd">            padding (Tuple[int, ...]): Padding size.</span>
+<span class="sd">            original_size (Tuple[int, int]): Original image size.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            (torch.Tensor): Predicted mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First-step prediction</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_mask</span><span class="p">(</span>
+            <span class="n">image_embeddings</span><span class="p">,</span> <span class="n">input_prompts</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">original_size</span><span class="p">,</span> <span class="n">multimask_output</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Cascaded Post-refinement-1</span>
+        <span class="n">input_prompts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">logits</span><span class="p">[:,</span> <span class="n">best_idx</span> <span class="p">:</span> <span class="n">best_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]})</span>
+        <span class="n">masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_mask</span><span class="p">(</span>
+            <span class="n">image_embeddings</span><span class="p">,</span> <span class="n">input_prompts</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">original_size</span><span class="p">,</span> <span class="n">multimask_output</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+
+        <span class="c1"># Cascaded Post-refinement-2</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">masks</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">best_idx</span><span class="p">])</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">x_min</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">x_max</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">y_min</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">y_max</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">input_prompts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">logits</span><span class="p">[:,</span> <span class="n">best_idx</span> <span class="p">:</span> <span class="n">best_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span>
+                <span class="s2">&quot;box&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">logits</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_mask</span><span class="p">(</span>
+            <span class="n">image_embeddings</span><span class="p">,</span> <span class="n">input_prompts</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">original_size</span><span class="p">,</span> <span class="n">multimask_output</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">masks</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">best_idx</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_predict_mask</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">image_embeddings</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">input_prompts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">multimask_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict target masks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.</span>
+<span class="sd">            input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.</span>
+<span class="sd">            padding (Tuple[int, ...]): Padding size.</span>
+<span class="sd">            original_size (Tuple[int, int]): Original image size.</span>
+<span class="sd">            multimask_output (bool): Whether getting multi mask outputs or not. Defaults to True.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            (Tuple[torch.Tensor, ...]): Predicted mask, score, and logit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sparse_embeddings</span><span class="p">,</span> <span class="n">dense_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="p">(</span>
+            <span class="n">points</span><span class="o">=</span><span class="n">input_prompts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;points&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">boxes</span><span class="o">=</span><span class="n">input_prompts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;box&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># TODO (sungchul): change key box -&gt; boxes to use **input_prompts</span>
+            <span class="n">masks</span><span class="o">=</span><span class="n">input_prompts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">low_res_masks</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_decoder</span><span class="p">(</span>
+            <span class="n">image_embeddings</span><span class="o">=</span><span class="n">image_embeddings</span><span class="p">,</span>
+            <span class="n">image_pe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="o">.</span><span class="n">get_dense_pe</span><span class="p">(),</span>
+            <span class="n">sparse_prompt_embeddings</span><span class="o">=</span><span class="n">sparse_embeddings</span><span class="p">,</span>
+            <span class="n">dense_prompt_embeddings</span><span class="o">=</span><span class="n">dense_embeddings</span><span class="p">,</span>
+            <span class="n">multimask_output</span><span class="o">=</span><span class="n">multimask_output</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">high_res_masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span>
+            <span class="n">low_res_masks</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">),</span> <span class="n">padding</span><span class="p">,</span> <span class="n">original_size</span>
+        <span class="p">)</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">high_res_masks</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mask_threshold</span>
+
+        <span class="k">return</span> <span class="n">masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">low_res_masks</span>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.set_metrics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.set_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">set_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip set_metrics unused in zero-shot learning.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.configure_optimizers"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.configure_optimizers">[docs]</a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip configure_optimizers unused in zero-shot learning.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ZeroShotSegmentAnything.training_epoch_end"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything.training_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">training_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip training_epoch_end unused in zero-shot learning.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

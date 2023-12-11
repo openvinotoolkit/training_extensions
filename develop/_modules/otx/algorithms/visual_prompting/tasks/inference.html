@@ -267,10 +267,13 @@
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span><span class="p">,</span> <span class="n">Trainer</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="kn">import</span> <span class="n">TQDMProgressBar</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.loggers</span> <span class="kn">import</span> <span class="n">CSVLogger</span>
 
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.configs.training_base</span> <span class="kn">import</span> <span class="n">TrainType</span>
 <span class="kn">from</span> <span class="nn">otx.algorithms.common.utils</span> <span class="kn">import</span> <span class="n">set_random_seed</span>
 <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">InferenceCallback</span><span class="p">,</span>
+    <span class="n">ZeroShotInferenceCallback</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.config</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_visual_promtping_config</span><span class="p">,</span>
@@ -292,6 +295,7 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.resultset</span> <span class="kn">import</span> <span class="n">ResultSetEntity</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.task_environment</span> <span class="kn">import</span> <span class="n">TaskEnvironment</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.train_parameters</span> <span class="kn">import</span> <span class="n">TrainParameters</span>
 <span class="kn">from</span> <span class="nn">otx.api.serialization.label_mapper</span> <span class="kn">import</span> <span class="n">label_schema_to_bytes</span>
 <span class="kn">from</span> <span class="nn">otx.api.usecases.evaluation.metrics_helper</span> <span class="kn">import</span> <span class="n">MetricsHelper</span>
 <span class="kn">from</span> <span class="nn">otx.api.usecases.tasks.interfaces.evaluate_interface</span> <span class="kn">import</span> <span class="n">IEvaluationTask</span>
@@ -321,6 +325,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span> <span class="o">=</span> <span class="n">task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">task_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">task_environment</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="p">:</span> <span class="n">VisualPromptingBaseConfig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">get_hyper_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="o">.</span><span class="n">algo_backend</span><span class="o">.</span><span class="n">train_type</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
         <span class="n">template_file_path</span> <span class="o">=</span> <span class="n">task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">model_template_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">template_file_path</span><span class="p">))</span>
@@ -365,8 +371,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[DictConfig, ListConfig]: Visual Prompting config.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyper_parameters</span><span class="p">:</span> <span class="n">VisualPromptingBaseConfig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">get_hyper_parameters</span><span class="p">()</span>
-
         <span class="c1"># set checkpoints</span>
         <span class="n">model_checkpoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">resume_from_checkpoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -404,13 +408,18 @@
 <span class="sd">            LightningModule: Visual prompting model with/without weights.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OrderedDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">train_type</span><span class="p">:</span> <span class="n">TrainType</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OrderedDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;SAM&quot;</span><span class="p">:</span>
-                <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models</span> <span class="kn">import</span> <span class="p">(</span>
-                    <span class="n">SegmentAnything</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Incremental</span><span class="p">:</span>
+                    <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models</span> <span class="kn">import</span> <span class="p">(</span>
+                        <span class="n">SegmentAnything</span> <span class="k">as</span> <span class="n">VisualPrompter</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Zeroshot</span><span class="p">:</span>
+                    <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models</span> <span class="kn">import</span> <span class="p">(</span>
+                        <span class="n">ZeroShotSegmentAnything</span> <span class="k">as</span> <span class="n">VisualPrompter</span><span class="p">,</span>
+                    <span class="p">)</span>
 
-                <span class="n">model</span> <span class="o">=</span> <span class="n">SegmentAnything</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">)</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">VisualPrompter</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                     <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current selected model </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not implemented. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Use SAM instead.&quot;</span><span class="p">)</span>
@@ -453,7 +462,7 @@
                 <span class="n">state_dict</span> <span class="o">=</span> <span class="n">model_data</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">)</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">train_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Complete to load model.&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not load the saved model. The model file structure is invalid.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exception</span>
@@ -475,7 +484,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Performing inference on the validation set using the base torch model.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">otx_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
-        <span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataModule</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataModule</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">train_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span>
+        <span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Inference Configs &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
@@ -701,6 +712,102 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove model checkpoints and otx logs.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_path</span><span class="p">):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ZeroShotTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.tasks.inference.html#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask">[docs]</a><span class="k">class</span> <span class="nc">ZeroShotTask</span><span class="p">(</span><span class="n">InferenceTask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Learn task for Zero-shot learning.</span>
+
+<span class="sd">    **There are two ways to be decided:</span>
+<span class="sd">    1. use it independently &lt;-- temporarily current setting</span>
+<span class="sd">    2. use it depending on template</span>
+
+<span class="sd">    The objective of this task is to get reference features and export it with decoder modules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">,</span>
+        <span class="n">train_parameters</span><span class="p">:</span> <span class="n">TrainParameters</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Training the model.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deterministic</span> <span class="o">=</span> <span class="n">deterministic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_seed</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">deterministic</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span> <span class="k">if</span> <span class="n">deterministic</span> <span class="k">else</span> <span class="n">deterministic</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training Configs </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">otx_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataModule</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">train_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">CSVLogger</span><span class="p">(</span><span class="n">save_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">trainer</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
+
+        <span class="c1"># save resulting model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">output_model</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ZeroShotTask.infer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.tasks.inference.html#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">InferenceParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform inference on a dataset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dataset (DatasetEntity): Dataset to infer.</span>
+<span class="sd">            inference_parameters (InferenceParameters): Inference parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DatasetEntity: Output dataset with predictions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Performing inference on the validation set using the base torch model.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">otx_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataModule</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">train_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span>
+        <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Inference Configs &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Callbacks</span>
+        <span class="n">inference_callback</span> <span class="o">=</span> <span class="n">ZeroShotInferenceCallback</span><span class="p">(</span>
+            <span class="n">otx_dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">label_schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">label_schema</span>
+        <span class="p">)</span>
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">TQDMProgressBar</span><span class="p">(),</span> <span class="n">inference_callback</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inference_callback</span><span class="o">.</span><span class="n">otx_dataset</span></div>
+
+<div class="viewcode-block" id="ZeroShotTask.save_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.tasks.inference.html#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the model after training is completed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_model (ModelEntity): Output model onto which the weights are saved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving the model weights and reference features.&quot;</span><span class="p">)</span>
+
+        <span class="n">model_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+        <span class="c1"># TODO (sungchul): is there more efficient way not to manually add properties?</span>
+        <span class="n">model_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;prompt_getter.reference_feats&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">,</span>
+                <span class="s2">&quot;prompt_getter.reference_prompts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">prompt_getter</span><span class="o">.</span><span class="n">reference_prompts</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model_info</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;weights.pth&quot;</span><span class="p">,</span> <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;label_schema.json&quot;</span><span class="p">,</span> <span class="n">label_schema_to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">label_schema</span><span class="p">))</span>
+
+        <span class="n">output_model</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span>
+        <span class="n">output_model</span><span class="o">.</span><span class="n">optimization_methods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_methods</span></div></div>
 </pre></div>
 
             </article>

@@ -333,7 +333,13 @@
     <span class="n">groups</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">otx_config</span><span class="p">,</span> <span class="s2">&quot;groups&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">groups</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;learning_parameters&quot;</span><span class="p">,</span> <span class="s2">&quot;nncf_optimization&quot;</span><span class="p">,</span> <span class="s2">&quot;pot_parameters&quot;</span><span class="p">,</span> <span class="s2">&quot;postprocessing&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="s2">&quot;learning_parameters&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nncf_optimization&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pot_parameters&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;postprocessing&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;algo_backend&quot;</span><span class="p">,</span>
+            <span class="p">]:</span>
                 <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;nncf_optimization&quot;</span><span class="p">]:</span>
                     <span class="c1"># TODO (sungchul): Consider nncf_optimization</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> will be implemented.&quot;</span><span class="p">)</span>

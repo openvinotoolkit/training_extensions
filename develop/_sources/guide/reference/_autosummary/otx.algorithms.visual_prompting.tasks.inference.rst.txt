@@ -18,6 +18,7 @@ otx.algorithms.visual\_prompting.tasks.inference
    .. autosummary::
    
       InferenceTask
+      ZeroShotTask
    
    
 

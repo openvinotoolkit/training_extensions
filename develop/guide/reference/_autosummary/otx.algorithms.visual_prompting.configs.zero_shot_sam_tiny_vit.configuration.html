@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+    <title>otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything" href="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html" />
-    <link rel="prev" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils.mlp_block" href="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils.mlp_block.html" />
+    <link rel="next" title="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.ptq_optimization_config" href="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.ptq_optimization_config.html" />
+    <link rel="prev" title="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit" href="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -387,20 +387,25 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters">
-<span id="otx-algorithms-visual-prompting-adapters-pytorch-lightning-models-visual-prompters"></span><h1>otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters<a class="headerlink" href="#module-otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters" title="Permalink to this heading">#</a></h1>
-<p>Visual prompters.</p>
-<p class="rubric">Modules</p>
+  <section id="module-otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration">
+<span id="otx-algorithms-visual-prompting-configs-zero-shot-sam-tiny-vit-configuration"></span><h1>otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration<a class="headerlink" href="#module-otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration" title="Permalink to this heading">#</a></h1>
+<p>Configuration file of OTX Visual Prompting.</p>
+<p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#module-otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything</span></code></a></p></td>
-<td><p>SAM module for visual prompting.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.html#module-otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything" title="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything</span></code></a></p></td>
-<td><p>SAM module for visual prompting zero-shot learning.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.VisualPromptingConfig" title="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.VisualPromptingConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VisualPromptingConfig</span></code></a>([visible_in_ui, ...])</p></td>
+<td><p>Configurable parameters for Visual Prompting task.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.VisualPromptingConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.</span></span><span class="sig-name descname"><span class="pre">VisualPromptingConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiling_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.algorithms.common.configs.training_base.html#otx.algorithms.common.configs.training_base.BaseConfig.BaseTilingParameters" title="otx.algorithms.common.configs.training_base.BaseConfig.BaseTilingParameters"><span class="pre">BaseTilingParameters</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">_Nothing.NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">__LearningParameters</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">_Nothing.NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algo_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">__AlgoBackend</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">_Nothing.NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">postprocessing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">__Postprocessing</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">_Nothing.NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">__POTParameter</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">_Nothing.NOTHING</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="otx.api.entities.id.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ID()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">a</span> <span class="pre">visual</span> <span class="pre">prompting</span> <span class="pre">task</span> <span class="pre">of</span> <span class="pre">OTX'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">a</span> <span class="pre">visual</span> <span class="pre">prompting</span> <span class="pre">task</span> <span class="pre">of</span> <span class="pre">OTX'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/configs/zero_shot_sam_tiny_vit/configuration.html#VisualPromptingConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.VisualPromptingConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.algorithms.visual_prompting.configs.base.configuration.html#otx.algorithms.visual_prompting.configs.base.configuration.VisualPromptingBaseConfig" title="otx.algorithms.visual_prompting.configs.base.configuration.VisualPromptingBaseConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisualPromptingBaseConfig</span></code></a></p>
+<p>Configurable parameters for Visual Prompting task.</p>
+<p>Method generated by attrs for class VisualPromptingConfig.</p>
+</dd></dl>
+
 </section>
 
 
@@ -411,17 +416,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils.mlp_block.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils.mlp_block</p>
+          <p class="prev-next-title">otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.ptq_optimization_config.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything</p>
+      <p class="prev-next-title">otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.ptq_optimization_config</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -436,6 +441,27 @@
               
 <div class="toc-item">
   
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.VisualPromptingConfig">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     VisualPromptingConfig
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
 <div id="searchbox"></div>
 </div>
 
@@ -446,7 +472,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

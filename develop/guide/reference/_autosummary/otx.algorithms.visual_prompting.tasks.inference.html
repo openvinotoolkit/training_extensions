@@ -396,6 +396,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.inference.InferenceTask" title="otx.algorithms.visual_prompting.tasks.inference.InferenceTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InferenceTask</span></code></a>(task_environment[, output_path])</p></td>
 <td><p>Base Visual Prompting Task.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask" title="otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZeroShotTask</span></code></a>(task_environment[, output_path])</p></td>
+<td><p>Learn task for Zero-shot learning.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -547,6 +550,48 @@ If other visual prompting model is added, loading model process must be changed.
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.tasks.inference.</span></span><span class="sig-name descname"><span class="pre">ZeroShotTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.task_environment.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/inference.html#ZeroShotTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.inference.InferenceTask" title="otx.algorithms.visual_prompting.tasks.inference.InferenceTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">InferenceTask</span></code></a></p>
+<p>Learn task for Zero-shot learning.</p>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a>There are two ways to be decided:
+1. use it independently &lt;– temporarily current setting
+2. use it depending on template</p>
+<p>The objective of this task is to get reference features and export it with decoder modules.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.inference_parameters.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/inference.html#ZeroShotTask.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform inference on a dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – Dataset to infer.</p></li>
+<li><p><strong>inference_parameters</strong> (<a class="reference internal" href="otx.api.entities.inference_parameters.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><em>InferenceParameters</em></a>) – Inference parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output dataset with predictions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity">DatasetEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.model.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/inference.html#ZeroShotTask.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.save_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Save the model after training is completed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_model</strong> (<a class="reference internal" href="otx.api.entities.model.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Output model onto which the weights are saved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -682,6 +727,35 @@ If other visual prompting model is added, loading model process must be changed.
      <code class="docutils literal notranslate">
       <span class="pre">
        InferenceTask.unload()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ZeroShotTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ZeroShotTask.infer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.save_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ZeroShotTask.save_model()
       </span>
      </code>
     </a>

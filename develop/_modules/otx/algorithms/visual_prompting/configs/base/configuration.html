@@ -281,6 +281,11 @@
         <span class="n">description</span> <span class="o">=</span> <span class="n">header</span>
 
     <span class="nd">@attrs</span>
+    <span class="k">class</span> <span class="nc">__AlgoBackend</span><span class="p">(</span><span class="n">BaseConfig</span><span class="o">.</span><span class="n">BaseAlgoBackendParameters</span><span class="p">):</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">string_attribute</span><span class="p">(</span><span class="s2">&quot;Parameters for the OTX algo-backend&quot;</span><span class="p">)</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">header</span>
+
+    <span class="nd">@attrs</span>
     <span class="k">class</span> <span class="nc">__Postprocessing</span><span class="p">(</span><span class="n">ParameterGroup</span><span class="p">):</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">string_attribute</span><span class="p">(</span><span class="s2">&quot;Postprocessing&quot;</span><span class="p">)</span>
         <span class="n">description</span> <span class="o">=</span> <span class="n">header</span>
@@ -349,6 +354,7 @@
         <span class="p">)</span>
 
     <span class="n">learning_parameters</span> <span class="o">=</span> <span class="n">add_parameter_group</span><span class="p">(</span><span class="n">__LearningParameters</span><span class="p">)</span>
+    <span class="n">algo_backend</span> <span class="o">=</span> <span class="n">add_parameter_group</span><span class="p">(</span><span class="n">__AlgoBackend</span><span class="p">)</span>
     <span class="n">postprocessing</span> <span class="o">=</span> <span class="n">add_parameter_group</span><span class="p">(</span><span class="n">__Postprocessing</span><span class="p">)</span>
     <span class="n">pot_parameters</span> <span class="o">=</span> <span class="n">add_parameter_group</span><span class="p">(</span><span class="n">__POTParameter</span><span class="p">)</span></div>
 </pre></div>

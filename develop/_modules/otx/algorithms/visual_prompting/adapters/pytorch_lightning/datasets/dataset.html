@@ -261,6 +261,7 @@
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Dataset</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
 
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.configs.training_base</span> <span class="kn">import</span> <span class="n">TrainType</span>
 <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MultipleInputsCompose</span><span class="p">,</span>
     <span class="n">Pad</span><span class="p">,</span>
@@ -364,6 +365,13 @@
     <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x_indices</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x_indices</span><span class="p">)</span>
     <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y_indices</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y_indices</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">generate_bbox</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="generate_point_from_mask"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.generate_point_from_mask">[docs]</a><span class="k">def</span> <span class="nf">generate_point_from_mask</span><span class="p">(</span><span class="n">gt_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Randomly generate point from given mask.&quot;&quot;&quot;</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">gt_mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="OTXVisualPromptingDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataset">[docs]</a><span class="k">class</span> <span class="nc">OTXVisualPromptingDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
@@ -473,6 +481,27 @@
         <span class="k">return</span> <span class="n">item</span></div>
 
 
+<div class="viewcode-block" id="OTXZeroShotVisualPromptingDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXZeroShotVisualPromptingDataset">[docs]</a><span class="k">class</span> <span class="nc">OTXZeroShotVisualPromptingDataset</span><span class="p">(</span><span class="n">OTXVisualPromptingDataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Visual Prompting for Zero-shot learning Dataset Adaptor.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dataset item.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): Index of the dataset sample.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Union[int, List, Tensor]]: Dataset item.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="n">index</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">numpy</span><span class="p">}</span>
+
+        <span class="n">prompts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_prompts</span><span class="p">(</span><span class="n">dataset_item</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>  <span class="c1"># , self.generate_point, self.generate_bbox)</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="o">**</span><span class="n">prompts</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">media</span><span class="o">.</span><span class="n">path</span><span class="p">})</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">item</span></div>
+
+
 <div class="viewcode-block" id="OTXVisualPromptingDataModule"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataModule">[docs]</a><span class="k">class</span> <span class="nc">OTXVisualPromptingDataModule</span><span class="p">(</span><span class="n">LightningDataModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Visual Prompting DataModule.</span>
 
@@ -481,10 +510,39 @@
 <span class="sd">        dataset (DatasetEntity): Dataset entity.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">],</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">DATASETS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">TrainType</span><span class="o">.</span><span class="n">Incremental</span><span class="p">:</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">,</span>
+        <span class="n">TrainType</span><span class="o">.</span><span class="n">Zeroshot</span><span class="p">:</span> <span class="n">OTXZeroShotVisualPromptingDataset</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">],</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+        <span class="n">train_type</span><span class="p">:</span> <span class="n">TrainType</span> <span class="o">=</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Incremental</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_type</span> <span class="o">=</span> <span class="n">train_type</span>
+        <span class="c1"># self.kwargs = {}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Zeroshot</span><span class="p">:</span>
+            <span class="c1"># check zero-shot configs</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Zero-shot learning only supports single batch, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;update </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;train_batch_size&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> to 1.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="c1"># self.kwargs.update(</span>
+            <span class="c1">#     {</span>
+            <span class="c1">#         &quot;generate_point&quot;: self.config.get(&quot;generate_point&quot;, False),</span>
+            <span class="c1">#         &quot;generate_bbox&quot;: self.config.get(&quot;generate_bbox&quot;, False),</span>
+            <span class="c1">#     }</span>
+            <span class="c1"># )</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">train_otx_dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val_otx_dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span>
@@ -504,21 +562,34 @@
         <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">normalize</span><span class="o">.</span><span class="n">mean</span>
         <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">normalize</span><span class="o">.</span><span class="n">std</span>
         <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;fit&quot;</span> <span class="ow">or</span> <span class="n">stage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">train_otx_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">)</span>
-            <span class="n">val_otx_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">VALIDATION</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">(</span>
-                <span class="n">train_otx_dataset</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">offset_bbox</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">offset_bbox</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASETS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span><span class="p">](</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">),</span>
+                <span class="n">image_size</span><span class="o">=</span><span class="n">image_size</span><span class="p">,</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+                <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+                <span class="n">offset_bbox</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">offset_bbox</span><span class="p">,</span>
+                <span class="c1"># **self.kwargs,</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">(</span><span class="n">val_otx_dataset</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>
+
+            <span class="c1"># self.val_dataset = None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_type</span> <span class="o">==</span> <span class="n">TrainType</span><span class="o">.</span><span class="n">Incremental</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASETS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span><span class="p">](</span>
+                    <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">VALIDATION</span><span class="p">),</span> <span class="n">image_size</span><span class="o">=</span><span class="n">image_size</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span>
+                <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span>
-            <span class="n">test_otx_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">TESTING</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">(</span><span class="n">test_otx_dataset</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASETS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span><span class="p">](</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">TESTING</span><span class="p">),</span> <span class="n">image_size</span><span class="o">=</span><span class="n">image_size</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
-            <span class="n">predict_otx_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">predict_dataset</span> <span class="o">=</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">(</span><span class="n">predict_otx_dataset</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">predict_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASETS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">train_type</span><span class="p">](</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">image_size</span><span class="o">=</span><span class="n">image_size</span><span class="p">,</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+                <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+                <span class="c1"># **self.kwargs</span>
+            <span class="p">)</span></div>
 
 <div class="viewcode-block" id="OTXVisualPromptingDataModule.summary"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.OTXVisualPromptingDataModule.summary">[docs]</a>    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print size of the dataset, number of images.&quot;&quot;&quot;</span>
