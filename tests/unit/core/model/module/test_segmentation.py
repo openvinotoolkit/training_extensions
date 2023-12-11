@@ -12,7 +12,6 @@ import pytest
 import torch
 from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
-
 from otx.cli.utils.hydra import configure_hydra_outputs
 from otx.core.config import register_configs
 from otx.core.data.entity.base import ImageInfo
@@ -20,7 +19,6 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEn
 
 if TYPE_CHECKING:
     from omegaconf.dictconfig import DictConfig
-
     from otx.core.model.module.segmentation import OTXSegmentationLitModule
 
 

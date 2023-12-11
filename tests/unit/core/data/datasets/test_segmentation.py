@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import pytest
 from datumaro import Dataset as DmDataset
-
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
 from otx.core.data.entity.segmentation import SegDataEntity
 
