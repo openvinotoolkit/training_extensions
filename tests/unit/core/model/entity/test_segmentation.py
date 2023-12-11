@@ -7,34 +7,30 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import hydra
 import pytest
 import torch
 from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
 from otx.cli.utils.hydra import configure_hydra_outputs
 from otx.core.config import register_configs
+from omegaconf import OmegaConf
+
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity
+from otx.core.model.entity.segmentation import MMSegCompatibleModel
 
 if TYPE_CHECKING:
     from omegaconf.dictconfig import DictConfig
-    from otx.core.model.entity.segmentation import MMSegCompatibleModel
+
 
 class TestOTXSegmentationModel:
     @pytest.fixture()
     def config(self) -> DictConfig:
-        GlobalHydra.instance().clear()
-        register_configs()
-        initialize(config_path="../../../../../src/otx/config", version_base="1.3", job_name="otx_train")
-        overrides_list = ['+recipe=segmentation/segnext_s.yaml', 'base.output_dir=/tmp/']
-        cfg = compose(config_name="train", overrides=overrides_list, return_hydra_config=True)
-        configure_hydra_outputs(cfg)
-        return cfg
+        return OmegaConf.load("src/otx/recipe/segmentation/segnext_s.yaml")
 
     @pytest.fixture()
     def model(self, config) -> MMSegCompatibleModel:
-        return hydra.utils.instantiate(config.model.otx_model)
+        return MMSegCompatibleModel(config.model.otx_model.config)
 
     @pytest.fixture(autouse=True)
     def data_entity(self) -> SegBatchDataEntity:
