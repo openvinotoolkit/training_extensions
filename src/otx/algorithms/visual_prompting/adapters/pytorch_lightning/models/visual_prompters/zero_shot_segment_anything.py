@@ -219,7 +219,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     reference_prompt[input_prompt.get("annotation") == 1] += 1
                 else:
                     merged_input_prompts = self._merge_prompts(label, input_prompt, processed_prompts)
-                    # TODO (sungchul): they must be processed in `_merge_prompts` and it is required to be expanded to other prompts.
+                    # TODO (sungchul): they must be processed in `_merge_prompts`
+                    # and it is required to be expanded to other prompts.
                     point_coords = []
                     point_labels = []
                     if "box" in merged_input_prompts:
@@ -228,24 +229,27 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             point_labels.append(2)
                             point_coords.append(box[2:])
                             point_labels.append(3)
-                            
+
                     if "points" in merged_input_prompts:
                         raise NotImplementedError()
 
                     if "annotations" in merged_input_prompts:
                         raise NotImplementedError()
-                        
+
                     point_coords = torch.stack(point_coords, dim=0).unsqueeze(0)
                     point_labels = torch.tensor([point_labels], device=self.device)
                     masks, _, _ = self._predict_mask(
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
-                        mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device),
-                        has_mask_input=torch.tensor([[0.]], device=self.device),
+                        mask_input=torch.zeros(
+                            1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device
+                        ),
+                        has_mask_input=torch.tensor([[0.0]], device=self.device),
                         padding=padding,
                         original_size=original_size,
-                        is_postprocess=True)
+                        is_postprocess=True,
+                    )
                     reference_prompt[masks] += 1
             reference_prompt = torch.clip(reference_prompt, 0, 1)
 
@@ -308,7 +312,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         continue
 
                     point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
-                    point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
+                    point_coords = ResizeLongestSide.apply_coords(
+                        point_coords, original_size, self.config.model.image_size
+                    )
                     point_labels = torch.tensor(
                         [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
                     ).unsqueeze(0)
@@ -352,8 +358,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
             point_coords=point_coords,
             point_labels=point_labels,
             mask_input=torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device),
-            has_mask_input=torch.tensor([[0.]], device=self.device),
-            is_postprocess=False)
+            has_mask_input=torch.tensor([[0.0]], device=self.device),
+            is_postprocess=False,
+        )
 
         # Cascaded Post-refinement-1
         masks, scores, logits = self._predict_mask(
@@ -361,10 +368,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
             point_coords=point_coords,
             point_labels=point_labels,
             mask_input=logits,
-            has_mask_input=torch.tensor([[1.]], device=self.device),
+            has_mask_input=torch.tensor([[1.0]], device=self.device),
             padding=padding,
             original_size=original_size,
-            is_postprocess=True)
+            is_postprocess=True,
+        )
 
         # Cascaded Post-refinement-2
         coords = torch.nonzero(masks)
@@ -376,19 +384,22 @@ class ZeroShotSegmentAnything(SegmentAnything):
             ),
             dim=1,
         )
-        new_point_labels = torch.cat((point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=self.device)), dim=1)
+        new_point_labels = torch.cat(
+            (point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=self.device)), dim=1
+        )
         masks, _, _ = self._predict_mask(
             image_embeddings=image_embeddings,
             point_coords=new_point_coords,
             point_labels=new_point_labels,
             mask_input=logits,
-            has_mask_input=torch.tensor([[1.]], device=self.device),
+            has_mask_input=torch.tensor([[1.0]], device=self.device),
             padding=padding,
             original_size=original_size,
-            is_postprocess=True)
+            is_postprocess=True,
+        )
 
         return masks
-    
+
     def _predict_mask(
         self,
         image_embeddings: torch.Tensor,
@@ -408,7 +419,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             mask_input=mask_input,
             has_mask_input=has_mask_input,
         )
-        best_idx  = torch.argmax(scores[0, 1:]) + 1
+        best_idx = torch.argmax(scores[0, 1:]) + 1
         if is_postprocess:
             high_res_masks = self.postprocess_masks(
                 logits, (self.config.model.image_size, self.config.model.image_size), padding, original_size

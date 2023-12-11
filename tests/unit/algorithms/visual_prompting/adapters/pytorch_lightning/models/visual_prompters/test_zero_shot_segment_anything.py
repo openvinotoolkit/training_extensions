@@ -11,12 +11,19 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 import torch
 from omegaconf import DictConfig
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import SegmentAnything
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import (
+    SegmentAnything,
+)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything import (
     PromptGetter,
     ZeroShotSegmentAnything,
 )
-from tests.unit.algorithms.visual_prompting.test_helpers import MockScoredLabel, MockImageEncoder, MockPromptGetter, MockMaskDecoder
+from tests.unit.algorithms.visual_prompting.test_helpers import (
+    MockScoredLabel,
+    MockImageEncoder,
+    MockPromptGetter,
+    MockMaskDecoder,
+)
 
 
 class TestPromptGetter:
@@ -189,9 +196,7 @@ class TestZeroShotSegmentAnything:
         assert zero_shot_segment_anything.prompt_getter.reference_prompts.get(1).shape == (8, 8)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize(
-        "expected", [[torch.ones((8, 8)), torch.tensor([0.0, 0.0, 0.5])]]
-    )
+    @pytest.mark.parametrize("expected", [[torch.ones((8, 8)), torch.tensor([0.0, 0.0, 0.5])]])
     def test_infer(self, monkeypatch, mocker, set_zero_shot_segment_anything, expected: torch.Tensor) -> None:
         """Test infer."""
         monkeypatch.setattr(
@@ -211,13 +216,14 @@ class TestZeroShotSegmentAnything:
         for i, results in enumerate(total_results[0]):
             for _, result in results.items():
                 assert torch.equal(result[0], expected[i])
-                
-    
+
     @e2e_pytest_unit
     def test_forward(self, mocker, set_zero_shot_segment_anything) -> None:
         """Test forward."""
-        mocker.patch.object(SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4)))
-        
+        mocker.patch.object(
+            SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+        )
+
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.config.model.image_size = 6
 
@@ -226,15 +232,17 @@ class TestZeroShotSegmentAnything:
             point_coords=torch.rand(1, 2, 2),
             point_labels=torch.randint(low=0, high=2, size=(1, 2)),
             padding=(0, 0, 0, 0),
-            original_size=(8, 8)
+            original_size=(8, 8),
         )
         assert mask.shape == (8, 8)
-        
+
     @e2e_pytest_unit
     @pytest.mark.parametrize("is_postprocess", [True, False])
     def test_predict_mask(self, mocker, set_zero_shot_segment_anything, is_postprocess: bool) -> None:
         """Test _predict_mask."""
-        mocker.patch.object(SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4)))
+        mocker.patch.object(
+            SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+        )
 
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.config.model.image_size = 6
@@ -244,10 +252,11 @@ class TestZeroShotSegmentAnything:
             point_coords=torch.rand(1, 2, 2),
             point_labels=torch.randint(low=0, high=2, size=(1, 2)),
             mask_input=torch.zeros(1, 2, 4, 4),
-            has_mask_input=torch.tensor([[0.]]),
+            has_mask_input=torch.tensor([[0.0]]),
             padding=(0, 0, 0, 0),
             original_size=(8, 8),
-            is_postprocess=is_postprocess)
+            is_postprocess=is_postprocess,
+        )
 
         if is_postprocess:
             assert masks.dtype == torch.bool

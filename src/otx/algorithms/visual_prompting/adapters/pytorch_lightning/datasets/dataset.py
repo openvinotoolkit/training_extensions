@@ -262,14 +262,21 @@ class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
         self.generate_bbox = generate_bbox
 
     # @staticmethod
-    # def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity], generate_point: bool = False, generate_bbox: bool = False) -> Dict[str, Any]:
+    # def get_prompts(
+    #     dataset_item: DatasetItemEntity,
+    #     dataset_labels: List[LabelEntity],
+    #     generate_point: bool = False,
+    #     generate_bbox: bool = False
+    # ) -> Dict[str, Any]:
     #     """Get propmts from dataset_item.
 
     #     Args:
     #         dataset_item (DatasetItemEntity): Dataset item entity.
     #         dataset_labels (List[LabelEntity]): Label information.
-    #         generate_point (bool): Randomly generate a point based on a mask instead of using the mask, defaults to False.
-    #         generate_bbox (bool): Randomly generate a bouding box based on a mask instead of using the mask, defaults to False.
+    #         generate_point (bool): Randomly generate a point based on a mask instead of using the mask,
+    #               defaults to False.
+    #         generate_bbox (bool): Randomly generate a bouding box based on a mask instead of using the mask,
+    #               defaults to False.
 
     #     Returns:
     #         List[Dict[str, Any]]: Processed prompts with ground truths.

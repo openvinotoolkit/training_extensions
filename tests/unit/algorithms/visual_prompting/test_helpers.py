@@ -180,7 +180,7 @@ class MockMaskDecoder(nn.Module):
 
     def forward(self, *args, **kwargs):
         return torch.Tensor([[1]]), torch.Tensor([[1]])
-    
+
     def predict_mask(self, *args, **kwargs):
         return self(*args, **kwargs)
 
