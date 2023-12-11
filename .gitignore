@@ -37,3 +37,6 @@ dmypy.json
 src/**/*.c
 src/**/*.html
 src/**/*.so
+
+# For regression test data storage
+for_developers/regression_test/postgres_data/**/*
