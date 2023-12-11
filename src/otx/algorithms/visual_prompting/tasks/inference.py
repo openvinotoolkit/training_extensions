@@ -284,7 +284,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         height = width = self.config.model.image_size
         for module, path in onnx_path.items():
             if module == "visual_prompting_image_encoder":
-                dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
+                dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float32)}
                 output_names = ["image_embeddings"]
                 dynamic_axes = None
                 model_to_export = self.model.image_encoder
@@ -299,11 +299,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     "point_labels": {1: "num_points"},
                 }
                 dummy_inputs = {
-                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
-                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
-                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
-                    "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
-                    "has_mask_input": torch.tensor([[1]], dtype=torch.float),
+                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float32),
+                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
+                    "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float32),
+                    "has_mask_input": torch.tensor([[1]], dtype=torch.float32),
                 }
                 output_names = ["iou_predictions", "low_res_masks"]
                 model_to_export = self.model
@@ -592,9 +592,9 @@ class ZeroShotTask(InferenceTask):
 
         logger.info("Exporting to the OpenVINO model.")
         onnx_path = {
-            "zero_shot_image_encoder": os.path.join(self.output_path, "zero_shot_image_encoder.onnx"),
-            "zero_shot_prompt_getter": os.path.join(self.output_path, "zero_shot_prompt_getter.onnx"),
-            "zero_shot_decoder": os.path.join(self.output_path, "zero_shot_decoder.onnx"),
+            "visual_prompting_image_encoder": os.path.join(self.output_path, "visual_prompting_image_encoder.onnx"),
+            "visual_prompting_prompt_getter": os.path.join(self.output_path, "visual_prompting_prompt_getter.onnx"),
+            "visual_prompting_decoder": os.path.join(self.output_path, "visual_prompting_decoder.onnx"),
         }
         self._export_to_onnx(onnx_path)
 
@@ -613,7 +613,7 @@ class ZeroShotTask(InferenceTask):
                     "--model_name",
                     module,
                 ]
-                if module == "zero_shot_image_encoder":
+                if module == "visual_prompting_image_encoder":
                     optimize_command += [
                         "--mean_values",
                         str(self.config.dataset.normalize.mean).replace(", ", ","),
@@ -640,40 +640,44 @@ class ZeroShotTask(InferenceTask):
         Args:
              onnx_path (Dict[str, str]): Paths to save ONNX models.
         """
-        height = width = self.config.model.image_size
+        image_size = self.config.model.image_size
+        embed_dim = self.model.prompt_encoder.embed_dim
+        embed_size = self.model.prompt_encoder.image_embedding_size
         for module, path in onnx_path.items():
-            if module == "zero_shot_image_encoder":
-                dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
+            if module == "visual_prompting_image_encoder":
+                dummy_inputs = {"images": torch.randn(1, 3, image_size, image_size, dtype=torch.float32)}
                 output_names = ["image_embeddings"]
                 dynamic_axes = None
                 model_to_export = self.model.image_encoder
 
-            elif module == "zero_shot_prompt_getter":
-                embed_dim = self.model.prompt_encoder.embed_dim
-                embed_size = self.model.prompt_encoder.image_embedding_size
+            elif module == "visual_prompting_prompt_getter":
                 dummy_inputs = {
-                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
-                    "padding": (0, 0, 0, 0),
-                    "original_size": (height, width),
+                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int32),
+                    "original_size": torch.tensor([image_size, image_size], dtype=torch.int32),
+                    "threshold": torch.rand(1, dtype=torch.float32)
                 }
-                output_names = None  # ["prompts"]
+                output_names = ["points_scores", "bg_coords"]
                 dynamic_axes = None
                 model_to_export = self.model.prompt_getter
 
-            else:
+            elif module == "visual_prompting_decoder":
                 # sam without backbone
-                embed_dim = self.model.prompt_encoder.embed_dim
-                embed_size = self.model.prompt_encoder.image_embedding_size
                 dynamic_axes = None
                 dummy_inputs = {
-                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float),
-                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
-                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
-                    "padding": torch.randint(low=0, high=height // 2, size=(4,)),
-                    "original_size": (height, height),
+                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float32),
+                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
+                    "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int32),
+                    "original_size": torch.tensor([image_size, image_size], dtype=torch.int32),
                 }
                 output_names = ["predicted_masks"]
                 model_to_export = self.model
+                
+            else:
+                raise ValueError((
+                    f"{module} is undefined, use visual_prompting_image_encoder, visual_prompting_prompt_getter, or visual_prompting_decoder."
+                ))
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
