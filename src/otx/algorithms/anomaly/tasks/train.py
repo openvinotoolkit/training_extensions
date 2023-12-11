@@ -91,12 +91,14 @@ class TrainingTask(InferenceTask, ITrainingTask):
         ]
 
         plugins = []
+        if config.trainer.plugins is not None:
+            plugins.extend(config.trainer.plugins)
+        config.trainer.pop("plugins")
 
         if is_xpu_available():
             config.trainer.strategy = "xpu_single"
             config.trainer.accelerator = "xpu"
             if config.trainer.precision == 16:
-                config.trainer.pop("plugins")
                 plugins.append(MixedPrecisionXPUPlugin())
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks, plugins=plugins)
