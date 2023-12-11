@@ -1,18 +1,7 @@
 """Collections of Utils for common OTX algorithms."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 import importlib
 import inspect
@@ -98,7 +87,7 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
     return tuple(args)
 
 
-def set_random_seed(seed, logger, deterministic=False):
+def set_random_seed(seed, logger=None, deterministic=False):
     """Set random seed.
 
     Args:
@@ -116,7 +105,8 @@ def set_random_seed(seed, logger, deterministic=False):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
-    logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
+    if logger:
+        logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
     if deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
@@ -156,7 +146,7 @@ def read_py_config(filename: str) -> adict:
     return cfg_dict
 
 
-def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str], Any]) -> None:
+def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str], Any]) -> None:
     """Embeds model api config to onnx file."""
     model = onnx.load(onnx_file)
 
@@ -164,6 +154,6 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str], Any
         meta = model.metadata_props.add()
         attr_path = " ".join(map(str, item))
         meta.key = attr_path.strip()
-        meta.value = extra_model_data[item]
+        meta.value = str(extra_model_data[item])
 
     onnx.save(model, onnx_file)

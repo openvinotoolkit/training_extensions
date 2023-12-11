@@ -18,7 +18,6 @@ from pathlib import Path
 
 # Update environment variables for CLI use
 import otx.cli  # noqa: F401
-from otx.api.configuration.helper import create
 from otx.api.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
@@ -27,12 +26,13 @@ from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.nncf import is_checkpoint_nncf
-from otx.cli.utils.parser import get_parser_and_hprams_data
+from otx.cli.utils.parser import add_hyper_parameters_sub_parser, get_override_param, get_parser_and_hprams_data
+from otx.utils.logger import config_logger
 
 
 def get_args():
     """Parses command line arguments."""
-    parser, _, _ = get_parser_and_hprams_data()
+    parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--load-weights",
@@ -64,13 +64,17 @@ def get_args():
         default="openvino",
     )
 
-    return parser.parse_args()
+    add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
+    override_param = get_override_param(params)
+
+    return parser.parse_args(), override_param
 
 
 def main():
     """Main function that is used for model exporting."""
-    args = get_args()
+    args, override_param = get_args()
     config_manager = ConfigManager(args, mode="export", workspace_root=args.workspace)
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -88,7 +92,7 @@ def main():
     task_class = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
 
     # Get hyper parameters schema.
-    hyper_parameters = create(template.hyper_parameters.data)
+    hyper_parameters = config_manager.get_hyparams_config(override_param)
     assert hyper_parameters
 
     environment = TaskEnvironment(

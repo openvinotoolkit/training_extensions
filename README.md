@@ -33,15 +33,16 @@
 ## Introduction
 
 OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision.
-The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™
-toolkit](https://software.intel.com/en-us/openvino-toolkit).
+The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field.
+OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™ toolkit](https://software.intel.com/en-us/openvino-toolkit).
 
 OpenVINO™ Training Extensions provides a "model template" for every supported task type, which consolidates necessary information to build a model.
 Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general.
-If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
+If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [mmcv](https://github.com/open-mmlab/mmcv), [timm](https://github.com/huggingface/pytorch-image-models) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
 
-Furthermore, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters.
-The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
+Furthermore, OpenVINO™ Training Extensions provides automatic configuration for ease of use.
+The framework will analyze your dataset and identify the most suitable model and figure out the best input size setting and other hyper-parameters.
+The development team is continuously extending this [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/auto_configuration.html) functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
 
 ### Key Features
 
@@ -60,13 +61,13 @@ OpenVINO™ Training Extensions supports the [following learning methods](https:
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
-OpenVINO™ Training Extensions will provide the following features in coming releases:
+OpenVINO™ Training Extensions provides the following usability features:
 
+- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model with appropriate input size to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- [Datumaro](https://openvinotoolkit.github.io/datumaro/stable/index.html) data frontend: OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We are constantly working to extend supported formats to give more freedom of datasets format choice.
 - **Distributed training** to accelerate the training process when you have multiple GPUs
-- **Half-precision training** to save GPUs memory and use larger batch sizes
-- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
-- OpenVINO™ Training Extensions uses [Datumaro](https://openvinotoolkit.github.io/datumaro/stable/index.html) as the backend to hadle datasets. Thanks to that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
-- [Auto-configuration functionality](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- **Mixed-precision training** to save GPUs memory and use larger batch sizes
+- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/stable/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 
 ---
 
@@ -76,7 +77,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
 
-Note: Python 3.8 and 3.9 were tested, along with Ubuntu 18.04 and 20.04.
+Note: Python 3.8, 3.9 and 3.10 were tested, along with Ubuntu 18.04, 20.04 and 22.04.
 
 ### OpenVINO™ Training Extensions CLI Commands
 
@@ -96,16 +97,20 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.4.0 (3Q23)
+### v1.5.0 (4Q23)
 
-- Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
-- Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
-- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (<https://github.com/openvinotoolkit/training_extensions/pull/2195>)
-- Add per-class XAI saliency maps for Mask R-CNN model (<https://github.com/openvinotoolkit/training_extensions/pull/2227>)
-- Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
-- Add new object detector DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
-- Add new visual prompting task (<https://github.com/openvinotoolkit/training_extensions/pull/2203>, <https://github.com/openvinotoolkit/training_extensions/pull/2274>, <https://github.com/openvinotoolkit/training_extensions/pull/2311>, <https://github.com/openvinotoolkit/training_extensions/pull/2354>, <https://github.com/openvinotoolkit/training_extensions/pull/2318>)
-- Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
+- Enable configurable confidence threshold for otx eval and export (<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
+- Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
+- Enable FeatureVectorHook to support action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
+- Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
+- Add a new feature to configure input size (<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
+- Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
+- Add a new object detector Lite-DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
+- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task (<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
+- Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2485>)
+- Add new argument to track resource usage in train command (<https://github.com/openvinotoolkit/training_extensions/pull/2500>)
+- Add Self-SL for semantic segmentation of SegNext families (<https://github.com/openvinotoolkit/training_extensions/pull/2215>)
+- Adapt input size automatically based on dataset statistics (<https://github.com/openvinotoolkit/training_extensions/pull/2499>)
 
 ### Release History
 
@@ -137,6 +142,15 @@ Please use [Issues](https://github.com/openvinotoolkit/training_extensions/issue
 
 ## Known limitations
 
-[misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch. These scripts are not ready for production. They are exploratory and have not been validated.
+[misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch.
+These scripts are not ready for production. They are exploratory and have not been validated.
+
+---
+
+## Disclaimer
+
+Intel is committed to respecting human rights and avoiding complicity in human rights abuses.
+See Intel's [Global Human Rights Principles](https://www.intel.com/content/www/us/en/policy/policy-human-rights.html).
+Intel's products and software are intended only to be used in applications that do not cause or contribute to a violation of an internationally recognized human right.
 
 ---

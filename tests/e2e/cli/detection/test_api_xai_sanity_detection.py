@@ -8,6 +8,8 @@ import tempfile
 
 import torch
 
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
+from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.openvino.task import OpenVINODetectionTask
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -22,7 +24,7 @@ from tests.e2e.cli.classification.test_api_xai_sanity_classification import sali
 from tests.integration.api.detection.api_detection import DetectionTaskAPIBase, DEFAULT_DET_TEMPLATE_DIR
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-torch.manual_seed(0)
+set_random_seed(0)
 
 assert_text_explain_all = "The number of saliency maps should be equal to the number of all classes."
 assert_text_explain_predicted = "The number of saliency maps should be equal to the number of predicted classes."
@@ -30,7 +32,7 @@ assert_text_explain_predicted = "The number of saliency maps should be equal to 
 
 class TestOVDetXAIAPI(DetectionTaskAPIBase):
     ref_raw_saliency_shapes = {
-        "ATSS": (6, 8),
+        "MobileNetV2-ATSS": (16, 16),  # Need to be adapted to configurable or adaptive input size
     }
 
     @e2e_pytest_api
@@ -39,6 +41,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
             hyper_parameters, model_template = self.setup_configurable_parameters(
                 DEFAULT_DET_TEMPLATE_DIR, num_iters=15
             )
+            hyper_parameters.learning_parameters.input_size = InputSizePreset._512x512  # To fix saliency map size
             task_env, dataset = self.init_environment(hyper_parameters, model_template, 10)
 
             train_task = MMDetectionTask(task_environment=task_env)

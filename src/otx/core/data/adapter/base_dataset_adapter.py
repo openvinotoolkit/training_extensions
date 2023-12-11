@@ -368,6 +368,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             used_labels (List): list for index of used label
         """
         clean_label_entities = []
+
         for used_label in used_labels:
             clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities

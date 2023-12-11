@@ -52,8 +52,8 @@ Dataset preparation
   Currently, we support the following object detection dataset formats:
 
   - `COCO <https://cocodataset.org/#format-data>`_
-  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
-  - `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
+  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
+  - `YOLO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/yolo.html>`_
 
 1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.
@@ -134,13 +134,17 @@ The list of supported templates for object detection is available with the comma
 .. code-block::
 
   (otx) ...$ otx find --template --task DETECTION
-  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
-  |    TASK   |                       ID                      |       NAME       |                                   BASE PATH                                   |
-  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
-  | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
-  | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-  | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
-  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+v
+  +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
+  |    TASK   |                 ID                |       NAME       |                                     BASE PATH                                      |
+  +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
+  | DETECTION | Custom_Object_Detection_Gen3_ATSS | MobileNetV2-ATSS |   src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml    |
+  | DETECTION |  Object_Detection_ResNeXt101_ATSS | ResNeXt101-ATSS  |    src/otx/algorithms/detection/configs/detection/resnext101_atss/template.yaml    |
+  | DETECTION |  Custom_Object_Detection_Gen3_SSD |       SSD        |    src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml    |
+  | DETECTION |      Object_Detection_YOLOX_L     |     YOLOX-L      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template.yaml   |
+  | DETECTION |      Object_Detection_YOLOX_S     |     YOLOX-S      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template.yaml   |
+  | DETECTION |   Custom_Object_Detection_YOLOX   |    YOLOX-TINY    | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_tiny/template.yaml |
+  | DETECTION |      Object_Detection_YOLOX_X     |     YOLOX-X      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template.yaml   |
+  +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+  
 
 .. _detection_workspace:
 
@@ -168,7 +172,7 @@ Let's prepare the object detection workspace running the following command:
   (otx) ...$ otx build MobileNetV2-ATSS --train-data-roots data/wgisd
 
   # or its path
-  (otx) ...$ otx build otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
+  (otx) ...$ otx build src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
 
   ...
   [*] Workspace Path: otx-workspace-DETECTION
@@ -326,7 +330,7 @@ Export
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
-Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``../outputs/weights.pth``
 from the previous section and save the exported model to the ``../outputs/openvino/`` folder.
@@ -359,16 +363,32 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
   Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 
 
+4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
+Learn more about template-specific parameters using ``otx export params --help``.
+
+For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.
+
+Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
+
+.. code-block::
+
+  (otx) ...$ otx export --load-weights ../outputs/weights.pth \
+                      --output ../outputs \
+                      params \
+                      --postprocessing.confidence_threshold 0.5 \
+                      --postprocessing.result_based_confidence_threshold false
+
+
 *************
 Optimization
 *************
 
 1. We can further optimize the model with ``otx optimize``.
-It uses NNCF or POT depending on the model format.
+It uses NNCF or PTQ depending on the model and transforms it to ``INT8`` format.
 
 ``NNCF`` optimization is used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
 
-``POT`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
+``PTQ`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
 The function results with the following files, which could be used to run :doc:`otx demo <../demo>` as well with PyTorch (`.pth`) and IR model (`.xml`):
 
@@ -400,20 +420,20 @@ with OpenVINO NNCF.
 
 
 3.  Command example for optimizing OpenVINO™ model (.xml)
-with OpenVINO™ POT.
+with OpenVINO™ PTQ.
 
 .. code-block::
 
   (otx) ...$ otx optimize  --load-weights ../outputs/openvino/openvino.xml \
-                           --output ../outputs/pot \
-                           --output ../outputs/pot
+                           --output ../outputs/ptq \
+                           --output ../outputs/ptq
 
   ...
 
   2023-01-10 06:29:46,751 | INFO : Loading OpenVINO OTXDetectionTask
   2023-01-10 06:29:47,685 | INFO : OpenVINO task initialization completed
-  2023-01-10 06:29:47,685 | INFO : Start POT optimization
-  2023-01-10 06:34:29,304 | INFO : POT optimization completed
+  2023-01-10 06:29:47,685 | INFO : Start PTQ optimization
+  2023-01-10 06:34:29,304 | INFO : PTQ optimization completed
   2023-01-10 06:34:29,419 | INFO : Start OpenVINO inference
   2023-01-10 06:34:33,275 | INFO : OpenVINO inference completed
   2023-01-10 06:34:33,275 | INFO : Start OpenVINO metric evaluation
@@ -421,7 +441,7 @@ with OpenVINO™ POT.
   Performance(score: 0.5389435989256938, dashboard: (1 metric groups))
 
 The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
-Please note, that POT will take some time without logging to optimize the model.
+Please note, that PTQ will take some time without logging to optimize the model.
 
 4. Finally, we can also evaluate the optimized model by passing
 it to the ``otx eval`` function.

@@ -11,9 +11,10 @@ _base_ = [
 ]
 
 model = dict(
-    super_type="UnbiasedTeacher",
+    super_type="MeanTeacher",
     pseudo_conf_thresh=0.25,
-    unlabeled_loss_weight=1.0,
+    unlabeled_loss_weights={"cls": 0.1, "bbox": 0.0, "obj": 0.0, "centerness": 0.0},
+    filter_empty_annotations=True,
     type="CustomATSS",
     backbone=dict(
         type="ResNeXt",

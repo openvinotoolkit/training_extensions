@@ -29,6 +29,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders 
 )
 
 CKPT_PATHS = {
+    "tiny_vit": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
     "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
     "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
     "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
@@ -172,7 +173,7 @@ class SegmentAnything(LightningModule):
                     with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)
-                self.load_state_dict(state_dict)
+                self.load_state_dict(state_dict, strict=False)
 
     ##########################################################
     #     forward for inference (export/deploy/optimize)     #
@@ -551,8 +552,8 @@ class SegmentAnything(LightningModule):
 
         return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"], labels=batch["labels"])
 
+    @staticmethod
     def postprocess_masks(
-        self,
         masks: Tensor,
         input_size: Tuple[int, int],
         padding: Tuple[int, ...],

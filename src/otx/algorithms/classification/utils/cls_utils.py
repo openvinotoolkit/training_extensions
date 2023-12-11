@@ -87,7 +87,7 @@ def get_cls_inferencer_configuration(label_schema: LabelSchemaEntity):
 def get_cls_deploy_config(label_schema: LabelSchemaEntity, inference_config: Dict[str, Any]):
     """Get classification deploy config."""
     parameters = {}  # type: Dict[Any, Any]
-    parameters["type_of_model"] = "otx_classification"
+    parameters["type_of_model"] = "Classification"
     parameters["converter_type"] = "CLASSIFICATION"
     parameters["model_parameters"] = inference_config
     parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(label_schema)
@@ -98,16 +98,20 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     """Get ModelAPI config."""
     mapi_config = {}
     mapi_config[("model_info", "model_type")] = "Classification"
+    mapi_config[("model_info", "task_type")] = "classification"
     mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
     mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
     mapi_config[("model_info", "hierarchical")] = str(inference_config["hierarchical"])
     mapi_config[("model_info", "output_raw_scores")] = str(True)
 
     all_labels = ""
+    all_label_ids = ""
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
-    all_labels = all_labels.strip()
-    mapi_config[("model_info", "labels")] = all_labels
+        all_label_ids += f"{lbl.id_} "
+
+    mapi_config[("model_info", "labels")] = all_labels.strip()
+    mapi_config[("model_info", "label_ids")] = all_label_ids.strip()
 
     hierarchical_config = {}
     hierarchical_config["cls_heads_info"] = get_multihead_class_info(label_schema)
@@ -117,3 +121,24 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
 
     mapi_config[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
     return mapi_config
+
+
+def get_hierarchical_label_list(hierarchical_info, labels):
+    """Return hierarchical labels list which is adjusted to model outputs classes."""
+    hierarchical_labels = []
+    for head_idx in range(hierarchical_info["num_multiclass_heads"]):
+        logits_begin, logits_end = hierarchical_info["head_idx_to_logits_range"][str(head_idx)]
+        for logit in range(0, logits_end - logits_begin):
+            label_str = hierarchical_info["all_groups"][head_idx][logit]
+            label_idx = hierarchical_info["label_to_idx"][label_str]
+            hierarchical_labels.append(labels[label_idx])
+
+    if hierarchical_info["num_multilabel_classes"]:
+        logits_begin = hierarchical_info["num_single_label_classes"]
+        logits_end = len(labels)
+        for logit_idx, logit in enumerate(range(0, logits_end - logits_begin)):
+            label_str_idx = hierarchical_info["num_multiclass_heads"] + logit_idx
+            label_str = hierarchical_info["all_groups"][label_str_idx][0]
+            label_idx = hierarchical_info["label_to_idx"][label_str]
+            hierarchical_labels.append(labels[label_idx])
+    return hierarchical_labels

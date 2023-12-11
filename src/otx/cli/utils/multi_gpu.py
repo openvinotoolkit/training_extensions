@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
+import datetime
 import os
 import signal
 import socket
@@ -30,8 +30,9 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from otx.api.configuration import ConfigurableParameters
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _get_free_port():
@@ -118,6 +119,8 @@ class MultiGPUManager:
         rdzv_endpoint (str): Rendezvous endpoint for multi-node training.
         base_rank (int): Base rank of the worker.
         world_size (int): Total number of workers in a worker group.
+        start_time (Optional[datetime.datetime]): Time when process starts.
+            This value is used to decide timeout argument of distributed training.
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -129,6 +132,7 @@ class MultiGPUManager:
         rdzv_endpoint: str = "localhost:0",
         base_rank: int = 0,
         world_size: int = 0,
+        start_time: Optional[datetime.datetime] = None,
     ):
         if ":" not in rdzv_endpoint:
             raise ValueError("rdzv_endpoint must be in form <host>:<port>.")
@@ -147,6 +151,11 @@ class MultiGPUManager:
         self._world_size = world_size
         self._main_pid = os.getpid()
         self._processes: List[mp.Process] = []
+
+        if start_time is not None:
+            elapsed_time = datetime.datetime.now() - start_time
+            if elapsed_time > datetime.timedelta(seconds=40):
+                os.environ["TORCH_DIST_TIMEOUT"] = str(int(elapsed_time.total_seconds() * 1.5))
 
     def is_available(self) -> bool:
         """Check multi GPU training is available.

@@ -17,8 +17,7 @@ def channel_shuffle(x, groups):
 
     Args:
         x (Tensor): The input tensor.
-        groups (int): The number of groups to divide the input tensor
-                      in the channel dimension.
+        groups (int): The number of groups to divide the input tensor in the channel dimension.
 
     Returns:
         Tensor: The output tensor after channel shuffle operation.

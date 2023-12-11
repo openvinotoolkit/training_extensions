@@ -29,7 +29,7 @@ class TestLossDynamicsTrackingMixin:
                         type="LoadAnnotationFromOTXDataset",
                         with_bbox=True,
                         with_mask=False,
-                        domain=Domain.DETECTION,
+                        domain="detection",
                         min_size=-1,
                     ),
                     dict(type="RandomFlip", flip_ratio=0.5),
@@ -51,7 +51,7 @@ class TestLossDynamicsTrackingMixin:
                 ],
                 otx_dataset=fxt_det_dataset_entity,
                 labels=fxt_det_dataset_entity.get_labels(),
-                domain=Domain.DETECTION,
+                # domain=Domain.DETECTION,
             )
         )
 

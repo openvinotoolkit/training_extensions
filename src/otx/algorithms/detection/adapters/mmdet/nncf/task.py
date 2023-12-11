@@ -1,26 +1,13 @@
 """NNCF Task of OTX Detection."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
-
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from functools import partial
 from typing import Optional
 
 import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -34,6 +21,7 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -47,9 +35,17 @@ class DetectionNNCFTask(NNCFBaseTask, MMDetectionTask):
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
 
-    def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):
-        super(NNCFBaseTask, self)._init_task(dataset, export)
+    def configure(
+        self,
+        training=True,
+        ir_options=None,
+        train_dataset=None,
+        export=False,
+    ):
+        """Configure configs for nncf task."""
+        super(NNCFBaseTask, self).configure(training, ir_options, train_dataset, export)
         self._prepare_optimize(export)
+        return self._config
 
     def _prepare_optimize(self, export=False):
         super()._prepare_optimize()
@@ -116,3 +112,4 @@ class DetectionNNCFTask(NNCFBaseTask, MMDetectionTask):
             self._update_anchors(modelinfo["anchors"], self.config.model.bbox_head.anchor_generator)
 
         modelinfo["confidence_threshold"] = self.confidence_threshold
+        modelinfo["input_size"] = self._input_size

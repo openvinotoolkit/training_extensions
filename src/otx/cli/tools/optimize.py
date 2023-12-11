@@ -32,9 +32,11 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import config_logger
 
 # pylint: disable=too-many-locals
 
@@ -55,6 +57,10 @@ def get_args():
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
+        "--unlabeled-data-roots",
+        help="Comma-separated paths to unlabeled data folders.",
+    )
+    parser.add_argument(
         "--load-weights",
         help="Load weights of trained model",
     )
@@ -70,7 +76,7 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 
@@ -82,6 +88,7 @@ def main():
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode="optimize")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -108,7 +115,7 @@ def main():
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
-    dataset_config = config_manager.get_dataset_config(subsets=["train", "val"])
+    dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 

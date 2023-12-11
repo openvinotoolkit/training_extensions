@@ -47,10 +47,12 @@ def saliency_maps_check(
                         assert metadata.data.numpy.ndim == 3, "Number of dims is incorrect."
                         assert metadata.data.numpy.shape == (data_point.height, data_point.width, 3)
                     else:
-                        assert metadata.data.numpy.ndim == 2, "Raw saliency map ahs to be two-dimensional."
+                        assert metadata.data.numpy.ndim == 2, "Raw saliency map has to be two-dimensional."
                         if raw_sal_map_shape:
-                            assert metadata.data.numpy.shape == raw_sal_map_shape, "Raw sak map shape is incorrect."
-                    assert metadata.data.numpy.dtype == np.uint8, "Sal map has to be uint8 dtype."
+                            assert (
+                                metadata.data.numpy.shape == raw_sal_map_shape
+                            ), "Raw saliency map shape is incorrect."
+                    assert metadata.data.numpy.dtype == np.uint8, "Saliency map has to be uint8 dtype."
         if only_predicted:
             assert saliency_map_counter == len(data_point.annotation_scene.get_labels()), assert_text_explain_predicted
         else:

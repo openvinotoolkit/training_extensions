@@ -160,7 +160,6 @@ class OTXDetDataset(CustomDataset):
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        domain: Domain,
         test_mode: bool = False,
         **kwargs,
     ):
@@ -170,7 +169,7 @@ class OTXDetDataset(CustomDataset):
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
-        self.domain = domain
+        self.domain = self.labels[0].domain
         self.test_mode = test_mode
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
@@ -277,7 +276,7 @@ class OTXDetDataset(CustomDataset):
         assert isinstance(iou_thrs, list)
         mean_aps = []
         for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
-            print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
+            print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}', logger)
             mean_ap, _ = self.evaluator.evaluate(results, logger, iou_thr, scale_ranges)
             mean_aps.append(mean_ap)
             eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)

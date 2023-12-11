@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_DINO
+model_template_id: Object_Detection_DINO
 name: DINO
 task_type: DETECTION
 task_family: VISION
@@ -28,6 +28,8 @@ hyper_parameters:
       batch_size:
         default_value: 2
         auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 2
       learning_rate:
         default_value: 0.0001
         auto_hpo_state: POSSIBLE

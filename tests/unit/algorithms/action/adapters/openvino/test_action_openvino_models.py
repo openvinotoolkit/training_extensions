@@ -91,15 +91,15 @@ def test_get_multiclass_predictions(mocker) -> None:
 
     inputs = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     outputs = get_multiclass_predictions(inputs, False)
-    assert 4 == outputs[0][0]
-    assert 5.0 == outputs[0][1]
+    assert 4 == outputs.top_labels[0][0]
+    assert 5.0 == outputs.top_labels[0][1]
 
     mocker.patch(
         "otx.algorithms.action.adapters.openvino.model_wrappers.openvino_models.softmax_numpy", return_value=inputs
     )
     outputs = get_multiclass_predictions(inputs, False)
-    assert 4 == outputs[0][0]
-    assert 5.0 == outputs[0][1]
+    assert 4 == outputs.top_labels[0][0]
+    assert 5.0 == outputs.top_labels[0][1]
 
 
 class TestOTXOVActionCls:
@@ -159,7 +159,7 @@ class TestOTXOVActionCls:
 
         sample_output = {"logits": np.array([1.0, 2.0, 3.0, 4.0, 5.0])}
         out = self.model.postprocess(sample_output, meta={"Any": "Any"})
-        assert out[0][0] == 4
+        assert out.top_labels[0][0] == 4
 
 
 class TestOTXOVActionDet:

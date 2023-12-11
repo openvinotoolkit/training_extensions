@@ -47,7 +47,7 @@ class TestResizeLongestSide:
     )
     def test_apply_coords(self, coords: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
         """Test apply_coords."""
-        result = self.resize_longest_side.apply_coords(coords, original_size)
+        result = self.resize_longest_side.apply_coords(coords, original_size, self.resize_longest_side.target_length)
 
         assert np.array_equal(result, expected)
 

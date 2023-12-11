@@ -1,18 +1,7 @@
 """Task of OTX Detection."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 import os
@@ -24,13 +13,14 @@ import psutil
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
-from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
@@ -64,6 +54,8 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -83,11 +75,13 @@ class OTXDetectionTask(OTXTask, ABC):
         )
         self._anchors: Dict[str, int] = {}
 
+        self.confidence_threshold = 0.0
+        self.max_num_detections = 0
         if hasattr(self._hyperparams, "postprocessing"):
             if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
                 self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        else:
-            self.confidence_threshold = 0.0
+            if hasattr(self._hyperparams.postprocessing, "max_num_detections"):
+                self.max_num_detections = self._hyperparams.postprocessing.max_num_detections
 
         if task_environment.model is not None:
             self._load_model()
@@ -99,12 +93,20 @@ class OTXDetectionTask(OTXTask, ABC):
         else:
             self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            # Disable auto input size if tiling is enabled
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
+
     def _load_postprocessing(self, model_data):
         """Load postprocessing configs form PyTorch model.
 
         Args:
             model_data: The model data.
-
         """
         loaded_postprocessing = model_data.get("config", {}).get("postprocessing", {})
         hparams = self._hyperparams.postprocessing
@@ -112,6 +114,19 @@ class OTXDetectionTask(OTXTask, ABC):
             hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
         else:
             hparams.use_ellipse_shapes = False
+        if "max_num_detections" in loaded_postprocessing:
+            trained_max_num_detections = loaded_postprocessing["max_num_detections"]["value"]
+            # Prefer new hparam value set by user (>0) intentionally than trained value
+            if self.max_num_detections == 0:
+                self.max_num_detections = trained_max_num_detections
+
+        # If confidence threshold is adaptive then up-to-date value should be stored in the model
+        # and should not be changed during inference. Otherwise user-specified value should be taken.
+        if hparams.result_based_confidence_threshold:
+            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+        else:
+            self.confidence_threshold = hparams.confidence_threshold
+        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
     def _load_tiling_parameters(self, model_data):
         """Load tiling parameters from PyTorch model.
@@ -158,8 +173,6 @@ class OTXDetectionTask(OTXTask, ABC):
             buffer = io.BytesIO(model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
-            # set confidence_threshold as well
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
             self._load_postprocessing(model_data)
@@ -222,6 +235,8 @@ class OTXDetectionTask(OTXTask, ABC):
         val_dataset = dataset.get_subset(Subset.VALIDATION)
         val_dataset.purpose = DatasetPurpose.INFERENCE
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
+
+        MemCacheHandlerSingleton.delete()
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         if self._hyperparams.postprocessing.result_based_confidence_threshold:
@@ -287,11 +302,6 @@ class OTXDetectionTask(OTXTask, ABC):
             explain_predicted_classes = inference_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
-        if not self._hyperparams.postprocessing.result_based_confidence_threshold:
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
         dataset.purpose = DatasetPurpose.INFERENCE
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
@@ -333,20 +343,25 @@ class OTXDetectionTask(OTXTask, ABC):
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
+        ir_extra_data = get_det_model_api_configuration(
+            self._task_environment.label_schema,
+            self._task_type,
+            self.confidence_threshold,
+            self._hyperparams.tiling_parameters,
+        )
+
         if export_type == ExportType.ONNX:
+            ir_extra_data[("model_info", "mean_values")] = results.get("inference_parameters").get("mean_values")
+            ir_extra_data[("model_info", "scale_values")] = results.get("inference_parameters").get("scale_values")
+
             onnx_file = outputs.get("onnx")
+            embed_onnx_model_data(onnx_file, ir_extra_data)
             with open(onnx_file, "rb") as f:
                 output_model.set_data("model.onnx", f.read())
         else:
             bin_file = outputs.get("bin")
             xml_file = outputs.get("xml")
 
-            ir_extra_data = get_det_model_api_configuration(
-                self._task_environment.label_schema,
-                self._task_type,
-                self.confidence_threshold,
-                self._hyperparams.tiling_parameters,
-            )
             embed_ir_model_data(xml_file, ir_extra_data)
 
             with open(bin_file, "rb") as f:
@@ -494,7 +509,7 @@ class OTXDetectionTask(OTXTask, ABC):
                 self._task_type is TaskType.ROTATED_DETECTION,
             )
         else:
-            raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
+            raise RuntimeError(f"OTX results assignment not implemented for task: {self._task_type}")
         return shapes
 
     def _add_explanations_to_dataset(
@@ -580,6 +595,7 @@ class OTXDetectionTask(OTXTask, ABC):
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
         torch.save(modelinfo, buffer)

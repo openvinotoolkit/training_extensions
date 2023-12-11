@@ -24,7 +24,7 @@ It will recognize the task by analyzing the dataset and if there is no splits fo
 
 .. note::
 
-    Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (multi-class classification), `COCO <https://cocodataset.org/#format-data>`_ (detection) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_ (semantic segmentation).
+    Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (multi-class classification), `COCO <https://cocodataset.org/#format-data>`_ (detection) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/cityscapes.html>`_ (semantic segmentation).
 
 After dataset preparation, the training will be started with the middle-sized template to achieve competitive accuracy preserving fast inference.
 
@@ -32,14 +32,14 @@ After dataset preparation, the training will be started with the middle-sized te
 Supported dataset formats for each task:
 
 - classification: `Imagenet <https://www.image-net.org/>`_, `COCO <https://cocodataset.org/#format-data>`_ (multi-label), :ref:`custom hierarchical <hierarchical_dataset>`
-- object detection: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
-- semantic segmentation: `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_, `ADE20k <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_
+- object detection: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_, `YOLO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/yolo.html>`_
+- semantic segmentation: `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/common_semantic_segmentation.html>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/cityscapes.html>`_, `ADE20k <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/ade20k2020.html>`_
 - action classification: `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
 - action detection: `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
 - anomaly classification: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
 - anomaly detection: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
 - anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
-- instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
+- instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
 
 If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type and use ``otx build`` first with an additional CLI option. If not, OpenVINO™ Training Extensions automatically chooses the task type that you might not intend:
 
@@ -120,3 +120,10 @@ OpenVINO™ Training Extensions will automatically recognize these types of task
 
 .. note::
     To use auto template configuration with Self-SL training type `--task` option is required since it is impossible to recognize task type by folder with only images.
+
+Auto-adapt input size
+---------------------
+
+"Auto" input size feature tries to automatically select the right model input size
+based on given dataset statictics.
+See :ref:`adaptive-input-size`.

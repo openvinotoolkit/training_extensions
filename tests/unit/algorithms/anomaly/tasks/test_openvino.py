@@ -3,26 +3,39 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import pytest
+import json
 from copy import deepcopy
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 
 from otx.algorithms.anomaly.tasks.openvino import OpenVINOTask
 from otx.algorithms.anomaly.tasks.train import TrainingTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelEntity, ModelOptimizationType
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.cli.utils.io import read_model
 
 
 class TestOpenVINOTask:
     """Tests methods in the OpenVINO task."""
+
+    @pytest.fixture
+    def tmp_dir(self):
+        with TemporaryDirectory() as tmp_dir:
+            yield tmp_dir
 
     def set_normalization_params(self, output_model: ModelEntity):
         """Sets normalization parameters for an untrained output model.
@@ -77,3 +90,54 @@ class TestOpenVINOTask:
         # deploy
         openvino_task.deploy(output_model)
         assert output_model.exportable_code is not None
+
+    @patch.multiple(OpenVINOTask, get_config=MagicMock(), get_openvino_model=MagicMock())
+    @patch("otx.algorithms.anomaly.tasks.openvino.get_transforms", MagicMock())
+    def test_anomaly_legacy_keys(self, mocker, tmp_dir):
+        """Checks whether the model is loaded correctly with legacy and current keys."""
+
+        tmp_dir = Path(tmp_dir)
+        xml_model_path = tmp_dir / "model.xml"
+        xml_model_path.write_text("xml_model")
+        bin_model_path = tmp_dir / "model.bin"
+        bin_model_path.write_text("bin_model")
+
+        # Test loading legacy keys
+        legacy_keys = ("image_threshold", "pixel_threshold", "min", "max")
+        for key in legacy_keys:
+            (tmp_dir / key).write_bytes(np.zeros(1, dtype=np.float32).tobytes())
+
+        model = read_model(mocker.MagicMock(), str(xml_model_path), mocker.MagicMock())
+        task_environment = TaskEnvironment(
+            model_template=mocker.MagicMock(),
+            model=model,
+            hyper_parameters=mocker.MagicMock(),
+            label_schema=LabelSchemaEntity.from_labels(
+                [
+                    LabelEntity("Anomalous", is_anomalous=True, domain=Domain.ANOMALY_SEGMENTATION),
+                    LabelEntity("Normal", domain=Domain.ANOMALY_SEGMENTATION),
+                ]
+            ),
+        )
+        openvino_task = OpenVINOTask(task_environment)
+        metadata = openvino_task.get_metadata()
+        for key in legacy_keys:
+            assert metadata[key] == np.zeros(1, dtype=np.float32)
+
+        # cleanup legacy keys
+        for key in legacy_keys:
+            (tmp_dir / key).unlink()
+
+        # Test loading new keys
+        new_metadata = {
+            "image_threshold": np.zeros(1, dtype=np.float32).tolist(),
+            "pixel_threshold": np.zeros(1, dtype=np.float32).tolist(),
+            "min": np.zeros(1, dtype=np.float32).tolist(),
+            "max": np.zeros(1, dtype=np.float32).tolist(),
+        }
+        (tmp_dir / "metadata").write_bytes(json.dumps(new_metadata).encode())
+        task_environment.model = read_model(mocker.MagicMock(), str(xml_model_path), mocker.MagicMock())
+        openvino_task = OpenVINOTask(task_environment)
+        metadata = openvino_task.get_metadata()
+        for key in new_metadata.keys():
+            assert metadata[key] == np.zeros(1, dtype=np.float32)

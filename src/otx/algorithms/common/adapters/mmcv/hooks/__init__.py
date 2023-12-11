@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .adaptive_repeat_data_hook import AdaptiveRepeatDataHook
 from .adaptive_training_hook import AdaptiveTrainSchedulingHook
 from .cancel_hook import CancelInterfaceHook, CancelTrainingHook
 from .checkpoint_hook import (
@@ -36,6 +37,7 @@ from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import LoggerReplaceHook, OTXLoggerHook
 from .loss_dynamics_tracking_hook import LossDynamicsTrackingHook
+from .mean_teacher_hook import MeanTeacherHook
 from .mem_cache_hook import MemCacheHook
 from .model_ema_v2_hook import ModelEmaV2Hook
 from .no_bias_decay_hook import NoBiasDecayHook
@@ -50,9 +52,9 @@ from .sam_optimizer_hook import SAMOptimizerHook
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook
-from .unbiased_teacher_hook import UnbiasedTeacherHook
 
 __all__ = [
+    "AdaptiveRepeatDataHook",
     "AdaptiveTrainSchedulingHook",
     "CancelInterfaceHook",
     "CancelTrainingHook",
@@ -85,7 +87,7 @@ __all__ = [
     "SemiSLClsHook",
     "TaskAdaptHook",
     "TwoCropTransformHook",
-    "UnbiasedTeacherHook",
+    "MeanTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",
 ]

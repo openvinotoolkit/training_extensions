@@ -117,7 +117,7 @@ pot_parameters:
     description: Number of data samples used for post-training optimization
     editable: true
     header: Number of data samples
-    max_value: 9223372036854775807
+    max_value: 100000
     min_value: 1
     type: INTEGER
     ui_rules:
@@ -169,5 +169,67 @@ postprocessing:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
+algo_backend:
+  description: parameters for algo backend
+  header: Algo backend parameters
+  train_type:
+    affects_outcome_of: TRAINING
+    default_value: Incremental
+    description: Training scheme option that determines how to train the model
+    editable: True
+    enum_name: TrainType
+    header: Train type
+    options:
+      Incremental: "Incremental"
+      Zeroshot: "Zeroshot"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Incremental
+    visible_in_ui: false
+    warning: null
+  mem_cache_size:
+    affects_outcome_of: TRAINING
+    default_value: 1000000000
+    description: Size of memory pool for caching decoded data to load data faster (bytes).
+    editable: true
+    header: Size of memory pool
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme for storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: false
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true

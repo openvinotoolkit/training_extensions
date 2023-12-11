@@ -30,7 +30,6 @@ from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix, set_random_seed
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -46,6 +45,7 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.utils.logger import get_logger
 
 TRAIN_TYPE_DIR_PATH = {
     TrainType.Incremental.name: ".",
@@ -107,7 +107,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._model_label_schema: List[LabelEntity] = []
         self._resume = False
-        self._should_stop = False
+        self._should_stop: bool = False
         self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self._model_ckpt = None
@@ -138,7 +138,11 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     def _setup_distributed_training():
         if not dist.is_initialized():
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
-            dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
+            dist.init_process_group(
+                backend="nccl",
+                init_method="env://",
+                timeout=timedelta(seconds=int(os.environ.get("TORCH_DIST_TIMEOUT", 60))),
+            )
             rank = dist.get_rank()
             logger.info(f"Dist info: rank {rank} / {dist.get_world_size()} world_size")
             if rank != 0:

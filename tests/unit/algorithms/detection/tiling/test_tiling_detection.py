@@ -14,8 +14,9 @@ from mmdet.models import DETECTORS
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from torch import nn
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
+from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from otx.api.configuration.helper import create
@@ -116,13 +117,12 @@ class TestTilingDetection:
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
                             with_mask=False,
-                            domain=Domain.DETECTION,
+                            domain="detection",
                             min_size=-1,
                         ),
                     ],
                     otx_dataset=self.otx_dataset,
                     labels=self.labels,
-                    domain=Domain.DETECTION,
                 ),
                 **self.tile_cfg
             )
@@ -150,7 +150,6 @@ class TestTilingDetection:
                     pipeline=[dict(type="LoadImageFromOTXDataset")],
                     otx_dataset=self.otx_dataset.with_empty_annotations(),
                     labels=list(self.labels),
-                    domain=Domain.DETECTION,
                 ),
                 test_mode=True,
                 **self.tile_cfg
@@ -271,7 +270,7 @@ class TestTilingDetection:
 
     @e2e_pytest_unit
     def test_load_tiling_parameters(self, tmp_dir_path):
-        maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        maskrcnn_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
 
         # Enable tiling and save weights
@@ -304,7 +303,9 @@ class TestTilingDetection:
     @e2e_pytest_unit
     def test_patch_tiling_func(self):
         """Test that patch_tiling function works correctly."""
-        cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "data_pipeline.py"))
+        cfg.merge_from_dict(data_pipeline_cfg)
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.tiling_parameters.enable_tiling = True
@@ -365,7 +366,8 @@ class TestTilingDetection:
             assert os.path.exists(openvino_path)
 
         task._init_task()
-        original_width, original_height = task._recipe_cfg.data.test.pipeline[0].img_scale  # w, h
+        task.configure(True, None, get_dataset(self.otx_dataset, Subset.TRAINING))
+        original_width, original_height = task._config.data.test.pipeline[0].img_scale  # w, h
 
         model_adapter = OpenvinoAdapter(create_core(), openvino_paths[0], openvino_paths[1])
 
@@ -408,13 +410,12 @@ class TestTilingDetection:
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
                             with_mask=True,
-                            domain=Domain.INSTANCE_SEGMENTATION,
+                            domain="instance_segmentation",
                             min_size=-1,
                         ),
                     ],
                     otx_dataset=otx_dataset,
                     labels=labels,
-                    domain=Domain.INSTANCE_SEGMENTATION,
                 ),
                 **tile_cfg
             )

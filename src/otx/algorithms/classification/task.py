@@ -1,18 +1,7 @@
 """Task of OTX Classification."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 import json
@@ -28,15 +17,16 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
     get_cls_model_api_configuration,
+    get_hierarchical_label_list,
 )
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
 from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -79,6 +69,8 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -127,6 +119,17 @@ class OTXClassificationTask(OTXTask, ABC):
 
         if self._task_environment.model is not None:
             self._load_model()
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
+
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
 
     def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
         """Check whether the current training mode is multi-label or not."""
@@ -213,6 +216,8 @@ class OTXClassificationTask(OTXTask, ABC):
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
         results = self._train_model(dataset)
+
+        MemCacheHandlerSingleton.delete()
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
@@ -350,6 +355,10 @@ class OTXClassificationTask(OTXTask, ABC):
 
         dataset_size = len(dataset)
         pos_thr = 0.5
+        label_list = self._labels
+        # Fix the order for hierarchical labels to adjust classes with model outputs
+        if self._hierarchical:
+            label_list = get_hierarchical_label_list(self._hierarchical_info, label_list)
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
@@ -378,7 +387,7 @@ class OTXClassificationTask(OTXTask, ABC):
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self._task_environment.model,
-                    labels=self._labels,
+                    labels=label_list,
                     predicted_scored_labels=item_labels,
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
@@ -388,7 +397,6 @@ class OTXClassificationTask(OTXTask, ABC):
     # pylint: disable=too-many-locals
     def _get_item_labels(self, prediction_item, pos_thr):
         item_labels = []
-
         if self._multilabel:
             if max(prediction_item) < pos_thr:
                 logger.info("Confidence is smaller than pos_thr, empty_label will be appended to item_labels.")
@@ -416,7 +424,7 @@ class OTXClassificationTask(OTXTask, ABC):
                         label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
                         otx_label = next(x for x in self._labels if x.name == label_str)
                         item_labels.append(ScoredLabel(label=otx_label, probability=float(logit)))
-            item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
+            item_labels = self._task_environment.label_schema.resolve_labels_greedily(item_labels)
             if not item_labels:
                 logger.info("item_labels is empty.")
                 item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
@@ -441,13 +449,17 @@ class OTXClassificationTask(OTXTask, ABC):
     ):
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
+        label_list = self._labels
+        # Fix the order for hierarchical labels to adjust classes with model outputs
+        if self._hierarchical:
+            label_list = get_hierarchical_label_list(self._hierarchical_info, label_list)
         for i, (dataset_item, prediction_item, saliency_map) in enumerate(zip(dataset, predictions, saliency_maps)):
             item_labels = self._get_item_labels(prediction_item, pos_thr=0.5)
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
-                labels=self._labels,
+                labels=label_list,
                 predicted_scored_labels=item_labels,
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
@@ -468,6 +480,7 @@ class OTXClassificationTask(OTXTask, ABC):
             "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
 
@@ -491,7 +504,7 @@ class OTXClassificationTask(OTXTask, ABC):
         elif self._hierarchical:
             metric_key = "val/MHAcc"
         else:
-            metric_key = "val/accuracy_top-1"
+            metric_key = "val/accuracy (%)"
 
         # Learning curves
         best_acc = -1

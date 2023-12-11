@@ -1,12 +1,23 @@
 """Data Pipeline for Semi-SL model of Segmentation Task."""
 
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 __common_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations"),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(type="LoadAnnotationFromOTXDataset"),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_scale,
+            downscale_only=True,
+        ),  # Resize to intermediate size if org image is bigger
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
     dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0), keep_ratio=False),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),
@@ -18,11 +29,53 @@ train_pipeline = [
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size=__crop_size, pad_val=0, seg_pad_val=255),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_semantic_seg"],
+        meta_keys=[
+            "ori_shape",
+            "pad_shape",
+            "ori_filename",
+            "filename",
+            "scale_factor",
+            "flip",
+            "img_norm_cfg",
+            "flip_direction",
+            "ignored_labels",
+            "img_shape",
+        ],
+    ),
+]
+
+val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_scale,
+            keep_ratio=False,
+            downscale_only=False,
+        ),
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_scale,
+        flip=False,
+        transforms=[
+            dict(type="RandomFlip"),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
+        ],
+    ),
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=__img_scale,
@@ -32,7 +85,10 @@ test_pipeline = [
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
-            dict(type="Collect", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
         ],
     ),
 ]
@@ -58,13 +114,15 @@ unlabeled_pipeline = [
     dict(type="RandomCutOut", prob=0.35, n_holes=(1, 8), cutout_ratio=(0.2, 0.4)),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "ul_w_img"]),
+    dict(
+        type="Collect",
+        keys=["img", "ul_w_img"],
+    ),
 ]
 
-# TODO (Soobee) : Remove Repeatdataset in data config
 data = dict(
-    train=dict(dataset=dict(pipeline=train_pipeline)),
-    val=dict(pipeline=test_pipeline),
-    test=dict(pipeline=test_pipeline),
-    unlabeled=dict(pipeline=unlabeled_pipeline),
+    train=dict(type="OTXSegDataset", pipeline=train_pipeline),
+    val=dict(type="OTXSegDataset", pipeline=val_pipeline),
+    test=dict(type="OTXSegDataset", pipeline=test_pipeline),
+    unlabeled=dict(type="OTXSegDataset", pipeline=unlabeled_pipeline),
 )

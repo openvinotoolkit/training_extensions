@@ -325,14 +325,13 @@ class Tiler:
         Returns:
             merged_maps (np.ndarray): Merged saliency maps for entire image.
         """
-
         (_, image_saliency_map), image_meta = features[0]
 
         num_classes, feat_h, feat_w = image_saliency_map.shape
         dtype = image_saliency_map[0][0].dtype
 
         image_h, image_w, _ = image_meta["original_shape"]
-        ratio = np.array([feat_h, feat_w]) / self.tile_size
+        ratio = np.array([feat_h / min(self.tile_size, image_h), feat_w / min(self.tile_size, image_w)])
 
         image_map_h = int(image_h * ratio[0])
         image_map_w = int(image_w * ratio[1])

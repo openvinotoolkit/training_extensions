@@ -12,8 +12,6 @@ from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 
 # pylint: disable=no-name-in-module
-from mmseg.utils import get_root_logger  # type: ignore
-
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
@@ -22,8 +20,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 from otx.algorithms.segmentation.adapters.mmseg.utils import build_segmentor
+from otx.utils.logger import get_logger
 
-logger = get_root_logger()
+logger = get_logger()
 
 
 def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-many-statements
@@ -169,7 +168,7 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
             compression_ctrl=compression_ctrl,
         )
     )
-    # TODO: move this to OTX task when MPA is absorbed into OTX
+    # TODO: move this to OTX task
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
     remove_from_configs_by_type(custom_hooks, "LazyEarlyStoppingHook")

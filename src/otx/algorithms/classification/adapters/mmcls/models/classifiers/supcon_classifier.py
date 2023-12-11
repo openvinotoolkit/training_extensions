@@ -12,9 +12,10 @@ from mmcls.models.classifiers.image import ImageClassifier
 class SupConClassifier(ImageClassifier):
     """SupConClassifier with support for classification tasks."""
 
-    def __init__(self, backbone, neck=None, head=None, pretrained=None, **kwargs):
+    def __init__(self, backbone, neck=None, head=None, pretrained=None, task_adapt=None, **kwargs):
         self.multilabel = kwargs.pop("multilabel", False)
         self.hierarchical = kwargs.pop("hierarchical", False)
+        self.task_adapt = task_adapt
         super().__init__(backbone, neck=neck, head=head, pretrained=pretrained, **kwargs)
 
     def forward_train(self, img, gt_label, **kwargs):

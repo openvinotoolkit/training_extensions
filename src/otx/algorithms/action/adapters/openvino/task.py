@@ -16,7 +16,6 @@
 
 import io
 import json
-import logging
 import os
 import random
 import tempfile
@@ -59,7 +58,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     ClassificationToAnnotationConverter,
     DetectionBoxToAnnotationConverter,
@@ -72,12 +71,13 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # TODO: refactoring to Sphinx style.
-class ActionOpenVINOInferencer(BaseInferencer):
+class ActionOpenVINOInferencer(IInferencer):
     """ActionOpenVINOInferencer class in OpenVINO task for action recognition."""
 
     def __init__(
@@ -144,7 +144,7 @@ class ActionOpenVINOInferencer(BaseInferencer):
 class DataLoaderWrapper:
     """DataLoader implementation for ActionOpenVINOTask."""
 
-    def __init__(self, dataloader: Any, inferencer: BaseInferencer, shuffle: bool = True):
+    def __init__(self, dataloader: Any, inferencer: IInferencer, shuffle: bool = True):
         self.dataloader = dataloader
         self.inferencer = inferencer
         self.shuffler = None
@@ -159,7 +159,7 @@ class DataLoaderWrapper:
 
         item = self.dataloader[index]
         annotation = item[len(item) // 2].annotation_scene
-        inputs, _ = self.inferencer.pre_process(item)
+        inputs, _ = self.inferencer.model.preprocess(item)
         return inputs, annotation
 
     def __len__(self):

@@ -19,6 +19,7 @@ and build models with new backbone replacements.
 
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME, ConfigManager
 from otx.cli.utils.parser import get_parser_and_hprams_data
+from otx.utils.logger import config_logger
 
 SUPPORTED_TASKS = (
     "CLASSIFICATION",
@@ -101,6 +102,7 @@ def main():
 
     args = get_args()
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode="build")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     if args.task:
         config_manager.task_type = args.task.upper()
 

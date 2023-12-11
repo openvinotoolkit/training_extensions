@@ -1,18 +1,7 @@
 """Task of OTX Segmentation using mmsegmentation training backend."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import glob
 import io
@@ -40,18 +29,16 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
-    patch_data_pipeline,
-    patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    MPAConfig,
-    update_or_add_custom_hook,
+    InputSizeManager,
+    OTXConfig,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     IncrSegmentationConfigurer,
     SegmentationConfigurer,
@@ -74,7 +61,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -92,48 +79,13 @@ class MMSegmentationTask(OTXSegmentationTask):
         self._recipe_cfg: Optional[Config] = None
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, export: bool = False):  # noqa
+    def _init_task(self):  # noqa
         """Initialize task."""
-        self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
         self.set_seed()
-
-        # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-
-        if not export:
-            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
-
-        if "custom_hooks" in self.override_configs:
-            override_custom_hooks = self.override_configs.pop("custom_hooks")
-            for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
-        if len(self.override_configs) > 0:
-            logger.info(f"before override configs merging = {self._recipe_cfg}")
-            self._recipe_cfg.merge_from_dict(self.override_configs)
-            logger.info(f"after override configs merging = {self._recipe_cfg}")
-
-        # add Cancel training hook
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
-        )
-        if self._time_monitor is not None:
-            update_or_add_custom_hook(
-                self._recipe_cfg,
-                ConfigDict(
-                    type="OTXProgressHook",
-                    time_monitor=self._time_monitor,
-                    verbose=True,
-                    priority=71,
-                ),
-            )
-        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
-
-        # Update recipe with caching modules
-        self._update_caching_modules(self._recipe_cfg.data)
 
         logger.info("initialized.")
 
@@ -141,13 +93,13 @@ class MMSegmentationTask(OTXSegmentationTask):
     def configure(
         self,
         training=True,
-        subset="train",
         ir_options=None,
+        export=False,
     ):
         """Patch mmcv configs for OTX segmentation settings."""
 
         # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
+        # changes under Configuerer and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
@@ -161,22 +113,49 @@ class MMSegmentationTask(OTXSegmentationTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrSegmentationConfigurer()
+            configurer = IncrSegmentationConfigurer(
+                "segmentation",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLSegmentationConfigurer()
+            configurer = SemiSLSegmentationConfigurer(
+                "segmentation",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         else:
-            configurer = SegmentationConfigurer()
+            configurer = SegmentationConfigurer(
+                "segmentation",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         cfg = configurer.configure(
             recipe_cfg,
+            self.data_pipeline_path,
+            self._hyperparams,
             self._model_ckpt,
             self._data_cfg,
-            training,
-            subset,
             ir_options,
             data_classes,
             model_classes,
+            self._input_size,
         )
         self._config = cfg
+        self._input_size = cfg.model.pop("input_size", None)
+
         return cfg
 
     def build_model(
@@ -215,7 +194,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
         logger.info("infer!")
 
         # FIXME: Currently segmentor does not support multi batch inference.
@@ -324,7 +303,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         self._init_task()
 
-        cfg = self.configure(True, "train", None)
+        cfg = self.configure(True, None)
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -374,7 +353,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 
@@ -435,9 +414,9 @@ class MMSegmentationTask(OTXSegmentationTask):
                 ),
             )
         )
-        self._init_task(export=True)
+        self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None, export=True)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
@@ -459,14 +438,27 @@ class MMSegmentationTask(OTXSegmentationTask):
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
+        backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
+            backend_cfg_backup = export_options["deploy_cfg"]["backend_config"]
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
+            export_options["deploy_cfg"]["ir_config"]["dynamic_axes"]["input"] = {0: "batch"}
 
         exporter = SegmentationExporter()
         results = exporter.run(
             cfg,
             **export_options,
         )
+
+        if export_format == ExportType.ONNX:
+            results["inference_parameters"] = {}
+            results["inference_parameters"]["mean_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+            )
+            results["inference_parameters"]["scale_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+            )
+
         return results
 
     # This should moved somewhere
@@ -475,7 +467,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
-            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+            deploy_cfg = OTXConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
@@ -521,23 +513,15 @@ class MMSegmentationTask(OTXSegmentationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
-                if isinstance(size, int):
-                    size = (size, size)
+                input_size_manager = InputSizeManager(cfg)
+                size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
                 # when converting to OpenVINO IR
                 deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+            patch_input_shape(deploy_cfg)
 
         return deploy_cfg
 
@@ -559,6 +543,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
 
@@ -569,32 +554,3 @@ class MMSegmentationTask(OTXSegmentationTask):
             label_schema_to_bytes(self._task_environment.label_schema),
         )
         output_model.precision = self._precision
-
-    # These need to be moved somewhere
-    def _update_caching_modules(self, data_cfg: Config) -> None:
-        def _find_max_num_workers(cfg: dict):
-            num_workers = [0]
-            for key, value in cfg.items():
-                if key == "workers_per_gpu" and isinstance(value, int):
-                    num_workers += [value]
-                elif isinstance(value, dict):
-                    num_workers += [_find_max_num_workers(value)]
-
-            return max(num_workers)
-
-        def _get_mem_cache_size():
-            if not hasattr(self._hyperparams.algo_backend, "mem_cache_size"):
-                return 0
-
-            return self._hyperparams.algo_backend.mem_cache_size
-
-        max_num_workers = _find_max_num_workers(data_cfg)
-        mem_cache_size = _get_mem_cache_size()
-
-        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
-        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
-
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
-        )

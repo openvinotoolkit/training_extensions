@@ -30,9 +30,11 @@ from otx.cli.utils.io import read_model
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import config_logger
 
 # pylint: disable=too-many-locals
 
@@ -47,8 +49,8 @@ def get_args():
     )
     parser.add_argument(
         "--load-weights",
-        help="Load model weights from previously saved checkpoint."
-        "It could be a trained/optimized model (POT only) or exported model.",
+        help="Load model weights from previously saved checkpoint. "
+        "It could be a trained/optimized model (with PTQ only) or exported model.",
     )
     parser.add_argument(
         "-o",
@@ -68,7 +70,7 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 
@@ -93,6 +95,7 @@ def main():
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode="eval")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -153,11 +156,11 @@ def main():
     print(resultset.performance)
 
     output_path = Path(args.output) if args.output else config_manager.output_path
+    performance = {resultset.performance.score.name: resultset.performance.score.value}
+    if hasattr(task, "avg_time_per_image"):
+        performance["avg_time_per_image"] = task.avg_time_per_image
     with open(output_path / "performance.json", "w", encoding="UTF-8") as write_file:
-        json.dump(
-            {resultset.performance.score.name: resultset.performance.score.value},
-            write_file,
-        )
+        json.dump(performance, write_file)
 
     return dict(retcode=0, template=template.name)
 

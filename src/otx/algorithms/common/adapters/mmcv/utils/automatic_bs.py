@@ -8,9 +8,10 @@ from math import sqrt
 from typing import Callable, Dict, List
 
 import numpy as np
+from torch.cuda import is_available as cuda_available
 
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -53,6 +54,10 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
+    if not cuda_available():
+        logger.warning("Skip Auto-adaptive batch size: CUDA should be available, but it isn't.")
+        return
+
     def train_func_single_iter(batch_size):
         copied_cfg = deepcopy(cfg)
         _set_batch_size(copied_cfg, batch_size)
@@ -85,7 +90,6 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         )
 
     default_bs = _get_batch_size(cfg)
-
     bs_search_algo = BsSearchAlgo(
         train_func=train_func_single_iter,
         default_bs=default_bs,
@@ -121,6 +125,9 @@ def _set_batch_size(cfg, batch_size: int):
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
+        for custom_hook in cfg.custom_hooks:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+                custom_hook["train_batch_size"] = batch_size
 
 
 def _set_max_epoch(cfg, max_epoch: int):
