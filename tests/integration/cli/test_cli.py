@@ -27,6 +27,13 @@ DATASET = {
         "data_dir": "tests/assets/car_tree_bug",
         "overrides": ["model.otx_model.config.bbox_head.num_classes=3"],
     },
+    "instance_segmentation": {
+        "data_dir": "tests/assets/car_tree_bug",
+        "overrides": [
+            "model.otx_model.config.roi_head.bbox_head.num_classes=3",
+            "model.otx_model.config.roi_head.mask_head.num_classes=3",
+        ],
+    },
     "segmentation": {
         "data_dir": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "overrides": ["model.otx_model.config.decode_head.num_classes=2"],

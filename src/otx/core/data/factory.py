@@ -15,7 +15,8 @@ from .dataset.base import OTXDataset, Transforms
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
-    from otx.core.config.data import DataModuleConfig, SubsetConfig
+    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
+
 
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
 
@@ -46,6 +47,11 @@ class TransformLibFactory:
 
             return MMDetTransformLib.generate(config)
 
+        if config.transform_lib_type == TransformLibType.MMDET_INST_SEG:
+            from .transform_libs.mmdet_inst_seg import MMDetInstSegTransformLib
+
+            return MMDetInstSegTransformLib.generate(config)
+
         if config.transform_lib_type == TransformLibType.MMSEG:
             from .transform_libs.mmseg import MMSegTransformLib
 
@@ -63,7 +69,7 @@ class OTXDatasetFactory:
         task: OTXTaskType,
         dm_subset: DatasetSubset,
         cfg_subset: SubsetConfig,
-        cfg_data_module: DataModuleConfig,
+        cfg_data_module: DataModuleConfig | InstSegDataModuleConfig,
     ) -> OTXDataset:
         """Create OTXDataset."""
         transforms = TransformLibFactory.generate(cfg_subset)
@@ -83,6 +89,17 @@ class OTXDatasetFactory:
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
+
+        if task == OTXTaskType.INSTANCE_SEGMENTATION:
+            from .dataset.instance_segmentation import OTXInstanceSegDataset
+            # NOTE: DataModuleConfig does not have include_polygons attribute
+            include_polygons = getattr(cfg_data_module, 'include_polygons', False)
+            return OTXInstanceSegDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+                include_polygons=include_polygons,
             )
 
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:

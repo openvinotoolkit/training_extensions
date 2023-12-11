@@ -19,9 +19,7 @@ from otx.core.data.mem_cache import (
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from otx.core.config.data import (
-        DataModuleConfig,
-    )
+    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
 
     from .dataset.base import OTXDataset
 
@@ -29,7 +27,7 @@ if TYPE_CHECKING:
 class OTXDataModule(LightningDataModule):
     """LightningDataModule extension for OTX pipeline."""
 
-    def __init__(self, task: OTXTaskType, config: DataModuleConfig) -> None:
+    def __init__(self, task: OTXTaskType, config: DataModuleConfig | InstSegDataModuleConfig) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
