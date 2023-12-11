@@ -27,26 +27,6 @@ class TestMMCVTransformLib:
     def test_get_builder(self) -> None:
         assert MMCVTransformLib.get_builder() == TRANSFORMS
 
-    def test_check_mandatory_transform(self) -> None:
-        class MockNormalTransform:
-            def __call__(self, entity: OTXDataEntity) -> OTXDataEntity:
-                return entity
-
-        class MockMandatoryTransform:
-            def __call__(self, entity: OTXDataEntity) -> OTXDataEntity:
-                return entity
-
-        MMCVTransformLib._check_mandatory_transforms(
-            transforms=[MockNormalTransform(), MockMandatoryTransform()],
-            mandatory_transforms={MockMandatoryTransform},
-        )
-
-        with pytest.raises(RuntimeError):
-            MMCVTransformLib._check_mandatory_transforms(
-                transforms=[MockNormalTransform()],
-                mandatory_transforms={MockMandatoryTransform},
-            )
-
     def test_generate(self, mocker) -> None:
         def mock_convert_func(cfg: dict) -> dict:
             return cfg
@@ -63,3 +43,7 @@ class TestMMCVTransformLib:
         transforms = MMCVTransformLib.generate(config)
         assert len(transforms) == 2
         assert np.all(transforms[1].mean == np.array([0., 0., 0.]))
+
+        config.transforms.pop(0)
+        with pytest.raises(RuntimeError):
+            transforms = MMCVTransformLib.generate(config)

@@ -8,9 +8,9 @@ from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorC
 
 
 class TestSSDAnchorGeneratorClustered:
-    @pytest.fixture(autouse=True)
-    def setup(self) -> None:
-        self.anchor_generator = SSDAnchorGeneratorClustered(
+    @pytest.fixture()
+    def anchor_generator(self) -> SSDAnchorGeneratorClustered:
+        return SSDAnchorGeneratorClustered(
             strides = (16, 32),
             widths = [
                 [38.641007923271076, 92.49516032784699, 271.4234764938237, 141.53469410876247],
@@ -22,6 +22,6 @@ class TestSSDAnchorGeneratorClustered:
             ],
         )
 
-    def test_gen_base_anchors(self) -> None:
-        assert self.anchor_generator.base_anchors[0].shape == torch.Size([4, 4])
-        assert self.anchor_generator.base_anchors[1].shape == torch.Size([5, 4])
+    def test_gen_base_anchors(self, anchor_generator) -> None:
+        assert anchor_generator.base_anchors[0].shape == torch.Size([4, 4])
+        assert anchor_generator.base_anchors[1].shape == torch.Size([5, 4])
