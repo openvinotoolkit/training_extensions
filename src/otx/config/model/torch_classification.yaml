@@ -4,7 +4,7 @@ defaults:
 _target_: otx.core.model.module.classification.OTXClassificationLitModule
 
 otx_model:
-  _target_: otx.core.model.entity.classification.MMPretrainCompatibleModel
+  _target_: otx.core.model.entity.classification.OTXClassificationModel
   config: ???
 
 # compile model for faster training with pytorch 2.0
