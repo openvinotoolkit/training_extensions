@@ -26,6 +26,14 @@ from tests.unit.algorithms.detection.test_helpers import (
     generate_det_dataset,
 )
 
+@pytest.fixture
+def device_availability_func(mocker):
+    return {
+        "cuda" : mocker.patch("torch.cuda.is_available"),
+        "xpu" : mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.is_xpu_available"),
+        "hpu" : mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.is_hpu_available"),
+    }
+
 
 class TestDetectionConfigurer:
     @pytest.fixture(autouse=True)
@@ -115,45 +123,40 @@ class TestDetectionConfigurer:
         self.configurer.configure_env(self.model_cfg)
 
     @e2e_pytest_unit
-    def test_configure_device(self, mocker):
+    @pytest.mark.parametrize("current_device", ["cpu", "cuda", "xpu", "hpu"])
+    def test_configure_device(self, mocker, device_availability_func, current_device):
+        for key, mock_func in device_availability_func.items():
+            if current_device == key:
+                mock_func.return_value = True
+            else:
+                mock_func.return_value = False
+
+        mocker.patch(
+            "torch.distributed.is_initialized",
+            return_value=False,
+        )
+
+        config = copy.deepcopy(self.model_cfg)
+        self.configurer.configure_device(config)
+        assert config.distributed is False
+        assert config.device == current_device
+
+    @e2e_pytest_unit
+    def test_configure_dist_device(self, mocker):
         mocker.patch(
             "torch.distributed.is_initialized",
             return_value=True,
         )
+
+        config = copy.deepcopy(self.model_cfg)
         mocker.patch("torch.distributed.get_world_size", return_value=2)
         world_size = 2
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
-        config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
+
         self.configurer.configure_device(config)
         assert config.distributed is True
         assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
-
-        mocker.patch(
-            "torch.distributed.is_initialized",
-            return_value=False,
-        )
-        mocker.patch(
-            "torch.cuda.is_available",
-            return_value=False,
-        )
-        config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config)
-        assert config.distributed is False
-        assert config.device == "cpu"
-
-        mocker.patch(
-            "torch.distributed.is_initialized",
-            return_value=False,
-        )
-        mocker.patch(
-            "torch.cuda.is_available",
-            return_value=True,
-        )
-        config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config)
-        assert config.distributed is False
-        assert config.device == "cuda"
 
     @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
@@ -220,21 +223,36 @@ class TestDetectionConfigurer:
         mock_input_manager_cls.assert_called_once_with(mock_cfg, base_input_size)
 
     @e2e_pytest_unit
-    def test_configure_fp16(self):
+    @pytest.mark.parametrize("optimizer_hook", ["OptimizerHook", "SAMOptimizerHook", "DummyOptimizerHook"])
+    def test_configure_fp16_cpu(self, device_availability_func, optimizer_hook):
+        for func in device_availability_func.values():
+            func.return_value = False
+
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
+        model_cfg.optimizer_config.type = optimizer_hook
         self.configurer.configure_fp16(model_cfg)
-        assert model_cfg.optimizer_config.type == "Fp16OptimizerHook"
+        assert model_cfg.optimizer_config.type == optimizer_hook
 
-        model_cfg.fp16 = {}
-        model_cfg.optimizer_config.type = "SAMOptimizerHook"
-        self.configurer.configure_fp16(model_cfg)
-        assert model_cfg.optimizer_config.type == "Fp16SAMOptimizerHook"
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("optimizer_hook", ["OptimizerHook", "SAMOptimizerHook", "DummyOptimizerHook"])
+    def test_configure_fp16_cuda(self, device_availability_func, optimizer_hook):
+        for key, func in device_availability_func.items():
+            if key == "cuda":
+                func.return_value = True
+            else:
+                func.return_value = False
 
+        if "Dummy" in optimizer_hook:
+            expected_optimizer_hook = optimizer_hook
+        else:
+            expected_optimizer_hook = f"Fp16{optimizer_hook}"
+
+        model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
-        model_cfg.optimizer_config.type = "DummyOptimizerHook"
+        model_cfg.optimizer_config.type = optimizer_hook
         self.configurer.configure_fp16(model_cfg)
-        assert model_cfg.optimizer_config.type == "DummyOptimizerHook"
+        assert model_cfg.optimizer_config.type == expected_optimizer_hook
 
     @e2e_pytest_unit
     def test_configure_model(self):
