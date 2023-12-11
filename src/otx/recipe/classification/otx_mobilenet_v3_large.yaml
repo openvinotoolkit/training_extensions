@@ -47,7 +47,7 @@ model:
         act_cfg:
           type: HSwish
         dropout_rate: 0.2
-        in_channels: 1280
+        in_channels: 960
         init_cfg:
           bias: 0.0
           layer: Linear
