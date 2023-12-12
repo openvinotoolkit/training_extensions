@@ -49,8 +49,8 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.8.1",    # For regression test
-    "py-cpuinfo=9.0.0", # For regression test
+    "mlflow==2.8.1",        # For regression test
+    "py-cpuinfo==9.0.0",    # For regression test
 ]
 docs = [
     "furo",
