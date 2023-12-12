@@ -14,29 +14,20 @@ from otx.core.data.entity.segmentation import SegDataEntity
 from otx.core.data.transform_libs.mmseg import LoadAnnotations, MMSegPackInputs, PackSegInputs
 
 
-@pytest.fixture()
-def data_entity() -> tuple[tuple, SegDataEntity]:
-    img_size = (224, 224)
-    data_entity = SegDataEntity(torch.rand(img_size),
-                                ImageInfo(0, img_size[0], img_size[0],
-                                          img_size[0], img_size[0]),
-                                torch.rand(img_size))
-    return img_size, data_entity
-
 class TestLoadAnnotations:
     @pytest.fixture()
     def annotations_loader(self) -> LoadAnnotations:
         return LoadAnnotations()
 
-    def test_transform(self, data_entity, annotations_loader) -> None:
+    def test_transform(self, fxt_seg_data_entity, annotations_loader) -> None:
         with pytest.raises(RuntimeError):
             new_results = annotations_loader.transform({})
-        results = {"__otx__": data_entity[1]}
+        results = {"__otx__": fxt_seg_data_entity[0]}
         new_results = annotations_loader.transform(results)
         assert isinstance(new_results, dict)
         assert "seg_fields" in new_results
         assert "gt_seg_map" in new_results["seg_fields"]
-        assert new_results["gt_seg_map"].shape == data_entity[0]
+        assert new_results["gt_seg_map"].size == fxt_seg_data_entity[0].img_info.img_shape**2
 
 
 class TestPackSegInputs:
@@ -44,9 +35,10 @@ class TestPackSegInputs:
     def pack_inputs(self) -> None:
         return PackSegInputs()
 
-    def test_transform(self, mocker, pack_inputs, data_entity) -> None:
-        results = {"__otx__": data_entity[1], "gt_seg_map": np.random.rand(*data_entity[0])} # noqa: NPY002
-        mocker.patch.object(MMSegPackInputs, "transform", return_value={"inputs": torch.rand(data_entity[0]),
+    def test_transform(self, mocker, pack_inputs, fxt_seg_data_entity) -> None:
+        img_size = fxt_seg_data_entity[0].img_info.img_shape
+        results = {"__otx__": fxt_seg_data_entity[0], "gt_seg_map": np.random.rand(img_size, img_size)} # noqa: NPY002
+        mocker.patch.object(MMSegPackInputs, "transform", return_value={"inputs": torch.rand((img_size, img_size)),
                                                                         "data_samples": MagicMock()})
         output = pack_inputs.transform(results)
         assert isinstance(output, SegDataEntity)

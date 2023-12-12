@@ -7,12 +7,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
+from torchmetrics.metric import Metric
 
 import pytest
 import torch
 from omegaconf import OmegaConf
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.data.entity.segmentation import SegBatchPredEntity
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
 from otx.core.model.module.segmentation import OTXSegmentationLitModule
 
@@ -34,47 +35,35 @@ class MockModel(torch.nn.Module):
 
 class TestOTXSegmentationModel:
     @pytest.fixture()
-    def config(self) -> DictConfig:
-        return OmegaConf.load("src/otx/recipe/segmentation/litehrnet_18.yaml")
-
-    @pytest.fixture()
-    def input_dict(self) -> dict:
-        img_size = (240,240)
-        return {"batch_size": 1,
-                "images": [torch.rand(img_size)],
-                "imgs_info": [ImageInfo(0, img_size, img_size, img_size, img_size)],
-                "masks": [torch.rand(img_size)],
-                     }
-
-    @pytest.fixture()
-    def data_inputs(self, input_dict) -> SegBatchDataEntity:
-        return SegBatchDataEntity(**input_dict)
-
-    @pytest.fixture()
-    def model(self, config, input_dict) -> OTXSegmentationLitModule:
-        otx_model = MMSegCompatibleModel(config.model.otx_model.config)
+    def model(self, mocker, fxt_seg_data_entity) -> OTXSegmentationLitModule:
+        # define otx model
+        otx_model = mocker.MagicMock(spec=MMSegCompatibleModel)
+        otx_model.model = mocker.MagicMock(spec=torch.nn.Module)
+        otx_model.model.decode_head = mocker.MagicMock(spec=torch.nn.Module)
+        otx_model.model.decode_head.num_classes = 2
+        # define lightning model
         model = OTXSegmentationLitModule(otx_model, MagicMock, MagicMock, False)
-        model.model = MockModel(input_dict)
-        model.val_metric = MockMetric()
-        model.test_metric = MockMetric()
+        model.model.return_value = fxt_seg_data_entity[1]
+        model.val_metric = mocker.MagicMock(spec=Metric)
+        model.test_metric = mocker.MagicMock(spec=Metric)
 
         return model
 
-    def test_validation_step(self, mocker, model, data_inputs) -> None:
+    def test_validation_step(self, mocker, model, fxt_seg_data_entity) -> None:
         mocker_update_loss = mocker.patch.object(model,
                                                  "_convert_pred_entity_to_compute_metric")
-        model.validation_step(data_inputs, 0)
+        model.validation_step(fxt_seg_data_entity[2], 0)
         mocker_update_loss.assert_called_once()
 
-    def test_test_metric(self, mocker, model, data_inputs) -> None:
+    def test_test_metric(self, mocker, model, fxt_seg_data_entity) -> None:
         mocker_update_loss = mocker.patch.object(model,
                                                  "_convert_pred_entity_to_compute_metric")
-        model.test_step(data_inputs, 0)
+        model.test_step(fxt_seg_data_entity[2], 0)
         mocker_update_loss.assert_called_once()
 
-    def test_convert_pred_entity_to_compute_metric(self, model, data_inputs, input_dict) -> None:
-        pred_entity = SegBatchPredEntity(**input_dict, scores=[])
-        out = model._convert_pred_entity_to_compute_metric(pred_entity, data_inputs)
+    def test_convert_pred_entity_to_compute_metric(self, model, fxt_seg_data_entity) -> None:
+        pred_entity = fxt_seg_data_entity[2]
+        out = model._convert_pred_entity_to_compute_metric(pred_entity, fxt_seg_data_entity[2])
         assert isinstance(out, dict)
         assert "preds" in out
         assert "target" in out

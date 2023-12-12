@@ -27,25 +27,18 @@ class TestOTXSegmentationModel:
     def model(self, config) -> MMSegCompatibleModel:
         return MMSegCompatibleModel(config.model.otx_model.config)
 
-    @pytest.fixture(autouse=True)
-    def data_entity(self) -> SegBatchDataEntity:
-        img_size = (240,240)
-        return SegBatchDataEntity(1, [torch.rand(img_size)],
-                                        [ImageInfo(0, img_size, img_size, img_size, img_size)],
-                                        [torch.rand(img_size)])
-
     def test_create_model(self, model) -> None:
         mmseg_model = model._create_model()
         assert mmseg_model is not None
         assert isinstance(mmseg_model, torch.nn.Module)
 
-    def test_customize_inputs(self, model, data_entity) -> None:
-        output_data = model._customize_inputs(data_entity)
+    def test_customize_inputs(self, model, fxt_seg_data_entity) -> None:
+        output_data = model._customize_inputs(fxt_seg_data_entity[2])
         assert output_data is not None
         assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["inputs"].shape[-2:]
         assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["data_samples"][-1].gt_sem_seg.data.shape[-2:]
 
-    def test_customize_outputs(self, model, data_entity) -> None:
+    def test_customize_outputs(self, model, fxt_seg_data_entity) -> None:
         from mmengine.structures import PixelData
         from mmseg.structures import SegDataSample
         from otx.core.data.entity.base import OTXBatchLossEntity
@@ -59,9 +52,9 @@ class TestOTXSegmentationModel:
         output_loss = {"loss_segm": torch.rand(1, requires_grad=True),
                        "acc": torch.rand(1),
                        "some": "some"}
-        out = model._customize_outputs(output_loss, data_entity)
+        out = model._customize_outputs(output_loss, fxt_seg_data_entity[2])
         assert isinstance(out, OTXBatchLossEntity)
 
         model.training = False
-        out = model._customize_outputs([data_sample], data_entity)
+        out = model._customize_outputs([data_sample], fxt_seg_data_entity[2])
         assert isinstance(out, SegBatchPredEntity)
