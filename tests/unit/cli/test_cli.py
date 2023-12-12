@@ -12,15 +12,11 @@ class TestOTXCLI:
     def test_init(self, mocker) -> None:
         # Test that main function runs with errors -> return 2
         argv = ["otx"]
-        with mocker.patch.object(sys, "argv", argv) and pytest.raises(
-            SystemExit, match="2",
-        ):
+        with mocker.patch.object(sys, "argv", argv) and pytest.raises(SystemExit, match="2"):
             OTXCLI()
 
         argv = ["otx", "-h"]
-        with mocker.patch.object(sys, "argv", argv) and pytest.raises(
-            SystemExit, match="0",
-        ):
+        with mocker.patch.object(sys, "argv", argv) and pytest.raises(SystemExit, match="0"):
             OTXCLI()
 
     @pytest.fixture()
