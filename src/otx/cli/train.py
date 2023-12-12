@@ -13,10 +13,10 @@ from jsonargparse import ArgumentParser
 
 from otx.cli.utils.hydra import configure_hydra_outputs
 
+
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
     from pytorch_lightning import Trainer
-
 
 
 def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
@@ -41,9 +41,11 @@ def otx_train(overrides: list[str]) -> tuple[Trainer, dict[str, Any]]:
     :param overrides: Override List values.
     :return: Optional[float] with optimized metric value.
     """
-    # apply extra utilities
-    # (e.g. ask for tags if none are provided in cfg, print cfg tree, etc.)
-    # utils.extras(cfg)
+    from otx.core.config import register_configs
+
+    # This should be in front of hydra.initialize()
+    register_configs()
+
     with initialize(config_path="../config", version_base="1.3", job_name="otx_train"):
         cfg = compose(
             config_name="train", overrides=overrides, return_hydra_config=True
