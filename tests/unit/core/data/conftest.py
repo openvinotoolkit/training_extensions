@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import numpy as np
-import torch
 import pytest
+import torch
 from datumaro.components.annotation import Bbox, Label, Mask
 from datumaro.components.dataset import DatasetSubset
 from datumaro.components.dataset_base import DatasetItem
@@ -24,10 +24,9 @@ from otx.core.data.dataset.segmentation import (
     OTXSegmentationDataset,
     SegDataEntity,
 )
-from otx.core.data.mem_cache import MemCacheHandlerSingleton
-from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.segmentation import SegDataEntity
+from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.data.mem_cache import MemCacheHandlerSingleton
 
 if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset, T_OTXDataEntity

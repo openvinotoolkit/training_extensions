@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING
 import pytest
 import torch
 from omegaconf import OmegaConf
-from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.segmentation import SegBatchDataEntity
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
 
 if TYPE_CHECKING:
