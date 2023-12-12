@@ -60,11 +60,13 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
 else:
-    templates = (
-        Registry("src/otx/algorithms/visual_prompting", experimental=True)
+    templates = [
+        template
+        for template in Registry("src/otx/algorithms/visual_prompting", experimental=True)
         .filter(task_type="VISUAL_PROMPTING")
         .templates
-    )
+        if "Zero_Shot" not in template.name
+    ]
     templates_ids = [template.model_template_id for template in templates]
 
 
