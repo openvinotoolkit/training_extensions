@@ -122,6 +122,7 @@ def train(
         log.info(f"Best ckpt path: {ckpt_path}")
 
     test_metrics = trainer.callback_metrics
+    log.info(test_metrics)
 
     # merge train and test metrics
     metric_dict = {**train_metrics, **test_metrics}
