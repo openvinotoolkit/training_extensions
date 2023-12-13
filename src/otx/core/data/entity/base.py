@@ -57,13 +57,13 @@ class OTXDataEntity(Mapping):
     which can be go through the input preprocessing tranforms.
 
     :param task: OTX task definition
-    :param image: Image tensor which can have different type according to `image_type`
+    :param image: Image tensor or list of Image tensor which can have different type according to `image_type`
         1) `image_type=ImageType.NUMPY`: H x W x C numpy image tensor
         2) `image_type=ImageType.TV_IMAGE`: C x H x W torchvision image tensor
     :param imgs_info: Meta information for images
     """
 
-    image: np.ndarray | tv_tensors.Image
+    image: np.ndarray | tv_tensors.Image | list[np.ndarray] | list[tv_tensors.Image]
     img_info: ImageInfo
 
     @property

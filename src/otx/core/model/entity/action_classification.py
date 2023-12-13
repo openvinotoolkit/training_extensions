@@ -21,7 +21,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
     """Base class for the action classification models used in OTX."""
 
 
-class MMActionCompitibleModel(OTXActionClsModel):
+class MMActionCompatibleModel(OTXActionClsModel):
     """Action classification model compitible for MMAction.
 
     It can consume MMAction model configuration translated into OTX configuration
@@ -36,7 +36,9 @@ class MMActionCompitibleModel(OTXActionClsModel):
 
     def _create_model(self) -> nn.Module:
         from mmaction.registry import MODELS
+        from mmaction.utils import register_all_modules
 
+        register_all_modules(init_default_scope=True)
         return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:

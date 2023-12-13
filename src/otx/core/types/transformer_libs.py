@@ -17,3 +17,4 @@ class TransformLibType(str, Enum):
     MMDET = "MMDET"
     MMDET_INST_SEG = "MMDET_INST_SEG"
     MMSEG = "MMSEG"
+    MMACTION = "MMACTION"

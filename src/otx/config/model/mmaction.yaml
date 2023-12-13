@@ -1,10 +1,10 @@
 defaults:
   - default
 
-_target_: otx.core.model.module.OTXActionLitModule
+_target_: otx.core.model.module.action_classification.OTXActionClsLitModule
 
 otx_model:
-  _target_: otx.core.model.entity.action.MMActionCompatibleModel
+  _target_: otx.core.model.entity.action_classification.MMActionCompatibleModel
   config: ???
 
 # compile model for faster training with pytorch 2.0
