@@ -7,6 +7,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
 
@@ -24,15 +25,25 @@ class SubsetConfig:
 
 
 @dataclass
+class TilerConfig:
+    """DTO for tiler configuration."""
+    enable_tiler: bool = False
+    tile_size: Tuple[int, int] = (512, 512)
+    tile_overlap: float = 0.0
+
+
+@dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
-
+    task: OTXTaskType
     data_format: str
     data_root: str
 
     train_subset: SubsetConfig
     val_subset: SubsetConfig
     test_subset: SubsetConfig
+
+    tile_config: TilerConfig
 
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: Optional[Tuple[int, int]] = None

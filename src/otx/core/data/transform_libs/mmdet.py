@@ -97,13 +97,17 @@ class PackDetInputs(MMDetPackDetInputs):
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
         img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
+        if (otx_data_entity := results.get("__otx__")) is None:
+            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
+            raise RuntimeError(msg)
+        attributes = otx_data_entity.img_info.attributes
 
         bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
         labels = data_samples.gt_instances.labels
 
         return DetDataEntity(
             image=tv_tensors.Image(transformed.get("inputs")),
-            img_info=self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor),
+            img_info=self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor, attributes),
             bboxes=bboxes,
             labels=labels,
         )
@@ -113,10 +117,14 @@ class PackDetInputs(MMDetPackDetInputs):
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
         img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
+        if (otx_data_entity := results.get("__otx__")) is None:
+            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
+            raise RuntimeError(msg)
+        attributes = otx_data_entity.img_info.attributes
 
         bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
         labels = data_samples.gt_instances.labels
-        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor)
+        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor, attributes)
 
         masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
 
@@ -147,7 +155,7 @@ class PackDetInputs(MMDetPackDetInputs):
         )
 
     def create_image_info(self, img_idx: int, img_shape: tuple[int, int], ori_shape: tuple[int, int],
-                          pad_shape: tuple[int, int], scale_factor: tuple[float, float]) -> ImageInfo:
+                          pad_shape: tuple[int, int], scale_factor: tuple[float, float], attributes: dict) -> ImageInfo:
         """Create ImageInfo instance."""
         return ImageInfo(
             img_idx=img_idx,
@@ -155,6 +163,7 @@ class PackDetInputs(MMDetPackDetInputs):
             ori_shape=ori_shape,
             pad_shape=pad_shape,
             scale_factor=scale_factor,
+            attributes=attributes,
         )
 
     def convert_masks_and_polygons(self, masks: BitmapMasks | PolygonMasks) -> tuple[tv_tensors.Mask, list[Polygon]]:

@@ -35,6 +35,8 @@ class OTXDataModule(LightningDataModule):
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
 
+    def prepare_data(self) -> None:
+        """Prepare data for each stage."""
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
 
         config_mapping = {
@@ -52,11 +54,11 @@ class OTXDataModule(LightningDataModule):
                 task=self.task,
                 dm_subset=dm_subset,
                 cfg_subset=config_mapping[name],
-                cfg_data_module=config,
+                cfg_data_module=self.config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
-        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+        mem_size = parse_mem_cache_size_to_int(self.config.mem_cache_size)
         mem_cache_mode = (
             "singleprocessing"
             if all(config.num_workers == 0 for config in config_mapping.values())

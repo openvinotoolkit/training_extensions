@@ -4,6 +4,9 @@ data_root: ${base.data_dir}
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 
+tile_config:
+  enable_tiler: false
+
 train_subset:
   subset_name: train
   num_workers: 2

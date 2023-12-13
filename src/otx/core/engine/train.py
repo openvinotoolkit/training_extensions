@@ -50,6 +50,7 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     from lightning import seed_everything
 
     from otx.core.data.module import OTXDataModule
+    from otx.core.data.tile import OTXTileDataModule
     from otx.core.engine.utils.instantiators import (
         instantiate_callbacks,
         instantiate_loggers,
@@ -61,7 +62,10 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
         seed_everything(cfg.seed, workers=True)
 
     log.info(f"Instantiating datamodule <{cfg.data}>")
-    datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+    if cfg.data.tile_config.enable_tiler:
+        datamodule = OTXTileDataModule(task=cfg.base.task, config=cfg.data)
+    else:
+        datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
 
     log.info(f"Instantiating model <{cfg.model}>")
     model: LightningModule = hydra.utils.instantiate(cfg.model)
