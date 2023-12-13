@@ -12,6 +12,10 @@ import torch.nn.functional as f
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from torch import nn
 from torch.nn import AdaptiveAvgPool2d, AdaptiveMaxPool2d
+import math
+import itertools
+from functools import partial
+from mmseg.apis import init_segmentor
 
 
 def channel_shuffle(x: torch.Tensor, groups: int) -> torch.Tensor:
@@ -453,3 +457,34 @@ class LocalAttentionModule(nn.Module):
         mask = self.sigmoid_spatial(y)
 
         return x + x * mask
+
+class CenterPadding(torch.nn.Module):
+    def __init__(self, multiple):
+        super().__init__()
+        self.multiple = multiple
+
+    def _get_pad(self, size):
+        new_size = math.ceil(size / self.multiple) * self.multiple
+        pad_size = new_size - size
+        pad_size_left = pad_size // 2
+        pad_size_right = pad_size - pad_size_left
+        return pad_size_left, pad_size_right
+
+    @torch.inference_mode()
+    def forward(self, x):
+        pads = list(itertools.chain.from_iterable(self._get_pad(m) for m in x.shape[:1:-1]))
+        output = f.pad(x, pads)
+        return output
+
+
+def create_segmenter(cfg, backbone_model):
+    model = init_segmentor(cfg)
+    model.backbone.forward = partial(
+        backbone_model.get_intermediate_layers,
+        n=cfg.model.backbone.out_indices,
+        reshape=True,
+    )
+    if hasattr(backbone_model, "patch_size"):
+        model.backbone.register_forward_pre_hook(lambda _, x: CenterPadding(backbone_model.patch_size)(x[0]))
+    model.init_weights()
+    return model

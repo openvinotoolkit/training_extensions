@@ -34,8 +34,13 @@ data:
       - type: LoadImageFromFile
       - keep_ratio: false
         scale:
+<<<<<<< HEAD
           - 560
           - 560
+=======
+          - 544
+          - 544
+>>>>>>> 5fc89a90f (added dino_v2_seg)
         type: Resize
       - reduce_zero_label: true
         type: LoadAnnotations
@@ -46,8 +51,13 @@ data:
       - type: LoadImageFromFile
       - keep_ratio: false
         scale:
+<<<<<<< HEAD
           - 560
           - 560
+=======
+          - 544
+          - 544
+>>>>>>> 5fc89a90f (added dino_v2_seg)
         type: Resize
       - reduce_zero_label: true
         type: LoadAnnotations
@@ -56,6 +66,7 @@ model:
   otx_model:
     config:
       backbone:
+<<<<<<< HEAD
         name: dinov2_vits14_reg
         freeze_backbone: true
         out_index:
@@ -128,3 +139,46 @@ model:
     total_iters: 100
     power: 0.9
     last_epoch: -1
+=======
+        out_indices:
+        - 8
+        - 9
+        - 10
+        - 11
+        type: DinoVisionTransformer
+        frozen: true
+      decode_head:
+        align_corners: false
+        channels: 1536
+        dropout_ratio: 0
+        in_channels:
+        - 384
+        - 384
+        - 384
+        - 384
+        in_index:
+        - 0
+        - 1
+        - 2
+        - 3
+        input_transform: resize_concat
+        loss_decode:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+          use_sigmoid: false
+        norm_cfg:
+          requires_grad: true
+          type: SyncBN
+        num_classes: 21
+        type: BNHead
+      pretrained: null
+      test_cfg:
+        crop_size:
+        - 640
+        - 640
+        mode: slide
+        stride:
+        - 320
+        - 320
+      type: EncoderDecoder
+>>>>>>> 5fc89a90f (added dino_v2_seg)
