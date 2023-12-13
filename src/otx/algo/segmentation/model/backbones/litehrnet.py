@@ -19,7 +19,7 @@ from mmseg.registry import MODELS
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.segmentation.model.utils import (
+from otx.algo.utils.segmentation import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
@@ -308,7 +308,7 @@ class SpatialWeightingV2(nn.Module):
             stride=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cf={"type": "Sigmoid"},
+            act_cfg={"type": "Sigmoid"},
         )
 
         # spatial-only branch
