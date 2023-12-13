@@ -13,16 +13,16 @@ learning_parameters:
     visible_in_ui: true
     max_epochs:
       affects_outcome_of: TRAINING
-      default_value: 100
+      default_value: 1
       description:
         Maximum number of epochs to train for. If not specified, the training will
         run until the early stopping criteria is met.
       editable: true
       header: Maximum number of epochs
-      max_value: 1000
+      max_value: 1
       min_value: 1
       type: INTEGER
-      value: 100
+      value: 1
   dataset:
     description: Dataset Parameters
     header: Dataset Parameters
@@ -60,31 +60,6 @@ learning_parameters:
       warning:
         Increasing this value may cause the system to use more memory than available,
         potentially causing out of memory errors, please update with caution.
-  optimizer:
-    description: Optimizer Parameters
-    header: Optimizer Parameters
-    type: PARAMETER_GROUP
-    visible_in_ui: true
-    lr:
-      affects_outcome_of: TRAINING
-      default_value: 0.0001
-      description:
-        Increasing this value will speed up training convergence but might
-        make it unstable.
-      editable: true
-      header: Learning rate
-      max_value: 10
-      min_value: 1.0e-07
-      type: FLOAT
-      ui_rules:
-        action: DISABLE_EDITING
-        operator: AND
-        rules: []
-        type: UI_RULES
-      value: 0.0001
-      visible_in_ui: true
-      warning: null
-      auto_hpo_state: NOT_POSSIBLE
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
