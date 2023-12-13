@@ -1,0 +1,99 @@
+# @package _global_
+defaults:
+  - override /base: segmentation
+  - override /callbacks: segmentation
+  - override /data: segmentation
+  - override /model: mmseg
+data:
+  train_subset:
+    batch_size: 8
+    transforms:
+      - type: LoadImageFromFile
+      - reduce_zero_label: true
+        type: LoadAnnotations
+      - keep_ratio: false
+        ratio_range:
+          - 0.5
+          - 2.0
+        scale:
+          - 544
+          - 544
+        type: RandomResize
+      - cat_max_ratio: 0.75
+        crop_size:
+          - 512
+          - 512
+        type: RandomCrop
+      - prob: 0.5
+        type: RandomFlip
+      - type: PhotoMetricDistortion
+      - type: PackSegInputs
+  val_subset:
+    batch_size: 1
+    transforms:
+      - type: LoadImageFromFile
+      - keep_ratio: false
+        scale:
+          - 544
+          - 544
+        type: Resize
+      - reduce_zero_label: true
+        type: LoadAnnotations
+      - type: PackSegInputs
+  test_subset:
+    batch_size: 1
+    transforms:
+      - type: LoadImageFromFile
+      - keep_ratio: false
+        scale:
+          - 544
+          - 544
+        type: Resize
+      - reduce_zero_label: true
+        type: LoadAnnotations
+      - type: PackSegInputs
+model:
+  otx_model:
+    config:
+      backbone:
+        out_indices:
+        - 8
+        - 9
+        - 10
+        - 11
+        type: DinoVisionTransformer
+        frozen: true
+      decode_head:
+        align_corners: false
+        channels: 1536
+        dropout_ratio: 0
+        in_channels:
+        - 384
+        - 384
+        - 384
+        - 384
+        in_index:
+        - 0
+        - 1
+        - 2
+        - 3
+        input_transform: resize_concat
+        loss_decode:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+          use_sigmoid: false
+        norm_cfg:
+          requires_grad: true
+          type: SyncBN
+        num_classes: 21
+        type: BNHead
+      pretrained: null
+      test_cfg:
+        crop_size:
+        - 640
+        - 640
+        mode: slide
+        stride:
+        - 320
+        - 320
+      type: EncoderDecoder

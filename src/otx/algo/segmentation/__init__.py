@@ -3,6 +3,6 @@
 #
 """Module for OTX segmentation models, hooks, utils, etc."""
 
-from . import model
+from . import backbones, decode_heads
 
-__all__ = ["model"]
+__all__ = ["backbones", "decode_heads"]

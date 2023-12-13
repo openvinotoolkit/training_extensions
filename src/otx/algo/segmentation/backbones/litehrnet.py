@@ -19,7 +19,11 @@ from mmseg.registry import MODELS
 from torch import nn
 from torch.nn import functional
 
+<<<<<<< HEAD:src/otx/algo/segmentation/model/backbones/litehrnet.py
 from otx.algo.utils.segmentation import (
+=======
+from otx.algo.utils import (
+>>>>>>> 7cf9600b7 (added dino_v2_seg):src/otx/algo/segmentation/backbones/litehrnet.py
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
