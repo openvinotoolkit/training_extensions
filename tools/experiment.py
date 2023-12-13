@@ -567,9 +567,9 @@ class ExpRecipeParser:
     ) -> List[Dict[str, str]]:
         if isinstance(target_str, str):
             target_str = [target_str]
-        found_keys = []
+        found_keys = set()
         for each_str in target_str:
-            found_keys.extend([x for x in set(self._replace_pat.findall(each_str)) if x in variable])
+            found_keys.update([x for x in set(self._replace_pat.findall(each_str)) if x in variable])
         if not found_keys:
             return []
 
