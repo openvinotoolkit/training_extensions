@@ -18,17 +18,6 @@ engine:
       init_args:
         refresh_rate: 1
         leave: false
-        theme:
-          description: white
-          progress_bar: "#6206E0"
-          progress_bar_finished: "#6206E0"
-          progress_bar_pulse: "#6206E0"
-          batch_progress: white
-          time: grey54
-          processing_speed: grey70
-          metrics: white
-          metrics_text_delimiter: " "
-          metrics_format: .3f
   accelerator: auto
   devices: auto
   strategy: auto
