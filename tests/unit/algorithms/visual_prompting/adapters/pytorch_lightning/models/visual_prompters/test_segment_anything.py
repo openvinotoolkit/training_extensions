@@ -16,44 +16,9 @@ from torch import Tensor
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import (
     SegmentAnything,
-    CKPT_PATHS,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-
-
-class MockImageEncoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.backbone = nn.Linear(1, 1)
-
-    def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]])
-
-
-class MockPromptEncoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.layer = nn.Linear(1, 1)
-        self.embed_dim = 4
-        self.pe_layer = None
-        self.mask_downscaling = None
-
-    def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]]), torch.Tensor([[1]])
-
-    def get_dense_pe(self):
-        return torch.Tensor([[1]])
-
-
-class MockMaskDecoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.layer = nn.Linear(1, 1)
-        self.num_mask_tokens = 4
-        self.predict_masks = None
-
-    def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]]), torch.Tensor([[1]])
+from tests.unit.algorithms.visual_prompting.test_helpers import MockImageEncoder, MockPromptEncoder, MockMaskDecoder
 
 
 class TestSegmentAnything:

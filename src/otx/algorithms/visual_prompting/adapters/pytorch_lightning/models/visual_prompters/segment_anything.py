@@ -552,8 +552,8 @@ class SegmentAnything(LightningModule):
 
         return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"], labels=batch["labels"])
 
+    @staticmethod
     def postprocess_masks(
-        self,
         masks: Tensor,
         input_size: Tuple[int, int],
         padding: Tuple[int, ...],

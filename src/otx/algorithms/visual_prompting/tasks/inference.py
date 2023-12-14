@@ -30,10 +30,13 @@ import torch
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
+from pytorch_lightning.loggers import CSVLogger
 
+from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
     InferenceCallback,
+    ZeroShotInferenceCallback,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import (
     get_visual_promtping_config,
@@ -55,6 +58,7 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -84,6 +88,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.task_type = task_environment.model_template.task_type
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
+        self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
+        self.train_type = self.hyper_parameters.algo_backend.train_type  # type: ignore[attr-defined]
 
         template_file_path = task_environment.model_template.model_template_path
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
@@ -128,8 +134,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             Union[DictConfig, ListConfig]: Visual Prompting config.
         """
-        self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
-
         # set checkpoints
         model_checkpoint: Optional[str] = None
         resume_from_checkpoint: Optional[str] = None
@@ -167,13 +171,18 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             LightningModule: Visual prompting model with/without weights.
         """
 
-        def get_model(config: DictConfig, state_dict: Optional[OrderedDict] = None):
+        def get_model(config: DictConfig, train_type: TrainType, state_dict: Optional[OrderedDict] = None):
             if config.model.name == "SAM":
-                from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
-                    SegmentAnything,
-                )
+                if train_type == TrainType.Incremental:
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
+                        SegmentAnything as VisualPrompter,
+                    )
+                elif train_type == TrainType.Zeroshot:
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
+                        ZeroShotSegmentAnything as VisualPrompter,
+                    )
 
-                model = SegmentAnything(config=config, state_dict=state_dict)
+                model = VisualPrompter(config=config, state_dict=state_dict)
             else:
                 raise NotImplementedError(
                     (f"Current selected model {config.model.name} is not implemented. " f"Use SAM instead.")
@@ -216,7 +225,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 state_dict = model_data
 
         try:
-            model = get_model(config=self.config, state_dict=state_dict)
+            model = get_model(config=self.config, train_type=self.train_type, state_dict=state_dict)
             logger.info("Complete to load model.")
         except BaseException as exception:
             raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
@@ -238,7 +247,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         logger.info("Performing inference on the validation set using the base torch model.")
         self.model = self.load_model(otx_model=self.task_environment.model)
-        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
 
         logger.info("Inference Configs '%s'", self.config)
 
@@ -464,3 +475,99 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """Remove model checkpoints and otx logs."""
         if os.path.exists(self.output_path):
             shutil.rmtree(self.output_path, ignore_errors=False)
+
+
+class ZeroShotTask(InferenceTask):
+    """Learn task for Zero-shot learning.
+
+    **There are two ways to be decided:
+    1. use it independently <-- temporarily current setting
+    2. use it depending on template
+
+    The objective of this task is to get reference features and export it with decoder modules.
+    """
+
+    def train(  # noqa: D102
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: TrainParameters,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
+    ) -> None:
+        logger.info("Training the model.")
+
+        self.seed = seed
+        self.deterministic = deterministic
+        self.set_seed()
+        self.config.trainer.deterministic = "warn" if deterministic else deterministic
+
+        logger.info(f"Training Configs {self.config}")
+
+        self.model = self.load_model(otx_model=self.task_environment.model)
+
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
+
+        self.trainer = Trainer(
+            logger=CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp), **self.config.trainer
+        )
+        self.trainer.fit(model=self.model, datamodule=datamodule)
+
+        # save resulting model
+        self.save_model(output_model)
+
+    def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
+        """Perform inference on a dataset.
+
+        Args:
+            dataset (DatasetEntity): Dataset to infer.
+            inference_parameters (InferenceParameters): Inference parameters.
+
+        Returns:
+            DatasetEntity: Output dataset with predictions.
+        """
+        logger.info("Performing inference on the validation set using the base torch model.")
+        self.model = self.load_model(otx_model=self.task_environment.model)
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
+
+        logger.info("Inference Configs '%s'", self.config)
+
+        # Callbacks
+        inference_callback = ZeroShotInferenceCallback(
+            otx_dataset=dataset, label_schema=self.task_environment.label_schema
+        )
+        callbacks = [TQDMProgressBar(), inference_callback]
+
+        self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
+        self.trainer.predict(model=self.model, datamodule=datamodule)
+
+        return inference_callback.otx_dataset
+
+    def save_model(self, output_model: ModelEntity) -> None:
+        """Save the model after training is completed.
+
+        Args:
+            output_model (ModelEntity): Output model onto which the weights are saved.
+        """
+        logger.info("Saving the model weights and reference features.")
+
+        model_info = self.model.state_dict()
+        # TODO (sungchul): is there more efficient way not to manually add properties?
+        model_info.update(
+            {
+                "prompt_getter.reference_feats": self.model.prompt_getter.reference_feats,
+                "prompt_getter.reference_prompts": self.model.prompt_getter.reference_prompts,
+            }
+        )
+
+        buffer = io.BytesIO()
+        torch.save(model_info, buffer)
+        output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods

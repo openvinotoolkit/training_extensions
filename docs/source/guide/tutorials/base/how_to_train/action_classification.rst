@@ -212,7 +212,7 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. Run the command line below to export the trained model
 and save the exported model to the ``openvino`` folder.
@@ -235,7 +235,7 @@ and save the exported model to the ``openvino`` folder.
   2023-02-21 22:54:35,424 - mmaction - INFO - Exporting completed
 
 
-3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+3. Check the accuracy of the IR optimimodel and the consistency between the exported model and the PyTorch model,
 using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
 
 .. code-block::
@@ -254,22 +254,24 @@ Optimization
 *************
 
 1. You can further optimize the model with ``otx optimize``.
-Currently, quantization jobs that include POT is supported for X3D template. MoViNet will be supported in near future.
+Currently, quantization jobs that include PTQ is supported for X3D template. MoViNet will be supported in near future.
+
+The optimized model will be quantized to ``INT8`` format.
 Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
 2. Example command for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino/openvino.xml \
-                          --output pot_model
+                          --output ptq_model
 
   ...
 
   Performance(score: 0.6252587703095486, dashboard: (3 metric groups))
 
-Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
+Keep in mind that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
 3. Now, you have fully trained, optimized and exported an
 efficient model representation ready-to-use action classification model.

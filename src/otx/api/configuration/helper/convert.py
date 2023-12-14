@@ -105,8 +105,8 @@ def convert(
         config (ConfigurableParameters): ConfigurableParameters object to convert
         target (Type[ConvertTypeVar]): target type to convert to. Options are [str, dict, DictConfig]
         enum_to_str (bool) : Boolean specifying whether to convert enums within the config
-                        to their string representation. For conversion to yaml, enums
-                        are automatically converted and this option is disregarded.
+            to their string representation. For conversion to yaml, enums are automatically converted and this option
+            is disregarded.
         id_to_str (bool): True to convert the id of the configurable parameters to a string
             representation, False to leave it as an ID object
         values_only (bool): True to keep only the parameter values, and remove all meta
