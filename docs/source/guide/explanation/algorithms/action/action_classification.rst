@@ -1,5 +1,5 @@
 Action Classification
-==================
+=====================
 
 Action classification is a problem of identifying the action that is being performed in a video. The input to the algorithm is a sequence of video frames, and the output is a label indicating the action that is being performed.
 

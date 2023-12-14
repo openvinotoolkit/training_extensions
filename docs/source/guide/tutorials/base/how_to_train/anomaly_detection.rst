@@ -156,7 +156,7 @@ Export
 ******
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
 and save the exported model to the ``openvino`` folder:
@@ -200,10 +200,11 @@ This gives the following results:
 Optimization
 ************
 
-Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section.
+Anomaly tasks can be optimized either in PTQ or NNCF format. The model will be quantized to ``INT8`` format.
+For more information refer to the :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section.
 
 
-1. Let's start with POT
+1. Let's start with PTQ
 optimization.
 
 .. code-block::
@@ -211,7 +212,7 @@ optimization.
     otx optimize ote_anomaly_detection_padim \
         --train-data-roots datasets/MVTec/bottle/train \
         --load-weights otx-workspace-ANOMALY_DETECTION/openvino/openvino.xml \
-        --output otx-workspace-ANOMALY_DETECTION/pot_model
+        --output otx-workspace-ANOMALY_DETECTION/ptq_model
 
 This command generates the following files that can be used to run :doc:`otx demo <../demo>`:
 
@@ -233,7 +234,7 @@ weights to the ``opitmize`` command:
         --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
         --output otx-workspace-ANOMALY_DETECTION/nncf_model
 
-Similar to POT optimization, it generates the following files:
+Similar to PTQ optimization, it generates the following files:
 
 - image_threshold
 - pixel_threshold

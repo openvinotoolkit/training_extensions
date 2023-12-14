@@ -77,18 +77,33 @@ class TestDetectionConfigurer:
         model_cfg.model_task = "detection"
         data_cfg = copy.deepcopy(self.data_cfg)
         returned_value = self.configurer.configure(
-            model_cfg, self.data_pipeline_path, None, "", data_cfg, train_dataset=self.det_dataset
+            model_cfg,
+            self.data_pipeline_path,
+            None,
+            "",
+            data_cfg,
+            train_dataset=self.det_dataset,
+            max_num_detections=100,
         )
 
         mock_cfg_merge.assert_called_once_with(
-            model_cfg, data_cfg, self.data_pipeline_path, None, train_dataset=self.det_dataset
+            model_cfg,
+            data_cfg,
+            self.data_pipeline_path,
+            None,
+            train_dataset=self.det_dataset,
+            max_num_detections=100,
         )
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_env.assert_called_once_with(model_cfg)
-        mock_cfg_data_pipeline.assert_called_once_with(model_cfg, None, "", train_dataset=self.det_dataset)
-        mock_cfg_recipe.assert_called_once_with(model_cfg, train_dataset=self.det_dataset)
+        mock_cfg_data_pipeline.assert_called_once_with(
+            model_cfg, None, "", train_dataset=self.det_dataset, max_num_detections=100
+        )
+        mock_cfg_recipe.assert_called_once_with(model_cfg, train_dataset=self.det_dataset, max_num_detections=100)
         mock_cfg_hook.assert_called_once_with(model_cfg)
-        mock_cfg_model.assert_called_once_with(model_cfg, None, None, None, train_dataset=self.det_dataset)
+        mock_cfg_model.assert_called_once_with(
+            model_cfg, None, None, None, train_dataset=self.det_dataset, max_num_detections=100
+        )
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         assert returned_value == model_cfg
 

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## \[unreleased\]
 
+### New features
+
+- Add zero-shot visual prompting (https://github.com/openvinotoolkit/training_extensions/pull/2616)
+
 ## \[v1.5.0\]
 
 ### New features
@@ -46,6 +50,7 @@ All notable changes to this project will be documented in this file.
 - Update ModelAPI configuration(<https://github.com/openvinotoolkit/training_extensions/pull/2564>)
 - Add Anomaly modelAPI changes (<https://github.com/openvinotoolkit/training_extensions/pull/2563>)
 - Update Image numpy access (<https://github.com/openvinotoolkit/training_extensions/pull/2586>)
+- Make max_num_detections configurable (<https://github.com/openvinotoolkit/training_extensions/pull/2647>)
 
 ### Bug fixes
 

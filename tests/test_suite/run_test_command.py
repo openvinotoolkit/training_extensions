@@ -8,13 +8,12 @@ import json
 import os
 import shutil
 import sys
-import torch
 from pathlib import Path
 from typing import Dict, Union
 import onnx
 import onnxruntime
-
 import pytest
+import torch
 import yaml
 
 from otx.api.entities.model_template import ModelCategory, ModelStatus
@@ -129,6 +128,8 @@ def otx_train_testing(template, root, otx_dir, args, deterministic=True):
     command_line.extend(["--output", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(["--workspace", f"{template_work_dir}"])
     if "--load-weights" in args:
+        if not os.path.exists(args["--load-weights"]):
+            pytest.skip(reason=f"required file is not exist - {args['--load-weights']}")
         command_line.extend(["--load-weights", args["--load-weights"]])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
@@ -163,6 +164,10 @@ def otx_resume_testing(template, root, otx_dir, args):
     ]:
         if option in args:
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+
+    if "--resume-from" in args:
+        if not os.path.exists(args["--resume-from"]):
+            pytest.skip(reason=f"required file is not exist - {args['--resume-from']}")
 
     command_line.extend(["--output", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
     command_line.extend(["--workspace", f"{template_work_dir}"])
@@ -209,13 +214,18 @@ def otx_hpo_testing(template, root, otx_dir, args):
 
 def otx_export_testing(template, root, dump_features=False, half_precision=False, check_ir_meta=False, is_onnx=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     save_path = f"{template_work_dir}/exported_{template.model_template_id}"
     command_line = [
         "otx",
         "export",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
+        weights_path,
         "--output",
         save_path,
     ]
@@ -295,6 +305,10 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
 def otx_eval_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
 
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "eval",
@@ -302,7 +316,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
+        weights_path,
         "--output",
         f"{template_work_dir}/trained_{template.model_template_id}",
     ]
@@ -330,6 +344,9 @@ def otx_eval_openvino_testing(
         output_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16"
         perf_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/performance.json"
 
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "eval",
@@ -354,12 +371,17 @@ def otx_eval_openvino_testing(
 
 def otx_demo_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
+        weights_path,
         "--input",
         os.path.join(otx_dir, args["--input"]),
         "--delay",
@@ -373,12 +395,17 @@ def otx_demo_testing(template, root, otx_dir, args):
 
 def otx_demo_openvino_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+        weights_path,
         "--input",
         os.path.join(otx_dir, args["--input"]),
         "--delay",
@@ -392,13 +419,18 @@ def otx_demo_openvino_testing(template, root, otx_dir, args):
 
 def otx_deploy_openvino_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
     command_line = [
         "otx",
         "deploy",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+        weights_path,
         "--output",
         deployment_dir,
     ]
@@ -471,6 +503,11 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
 
 def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/deployed_{template.model_template_id}/openvino.zip"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "eval",
@@ -478,7 +515,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/deployed_{template.model_template_id}/openvino.zip",
+        weights_path,
         "--output",
         f"{template_work_dir}/deployed_{template.model_template_id}",
     ]
@@ -496,12 +533,17 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
 def otx_demo_deployment_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
+
+    weights_path = f"{deployment_dir}/openvino.zip"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
-        f"{deployment_dir}/openvino.zip",
+        weights_path,
         "--input",
         os.path.join(otx_dir, args["--input"]),
         "--delay",
@@ -515,6 +557,13 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
 
 def ptq_optimize_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    if is_visual_prompting:
+        weights_path = f"{template_work_dir}/exported_{template.model_template_id}/visual_prompting_decoder.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "optimize",
@@ -525,21 +574,9 @@ def ptq_optimize_testing(template, root, otx_dir, args, is_visual_prompting=Fals
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--output",
         f"{template_work_dir}/ptq_{template.model_template_id}",
+        "--load-weights",
+        weights_path,
     ]
-    if is_visual_prompting:
-        command_line.extend(
-            [
-                "--load-weights",
-                f"{template_work_dir}/exported_{template.model_template_id}/visual_prompting_decoder.xml",
-            ]
-        )
-    else:
-        command_line.extend(
-            [
-                "--load-weights",
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            ]
-        )
 
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
@@ -575,11 +612,17 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
+    xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
     if task_type == "visual_prompting":
         xml_paths = [
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
         ]
+    for xml_path in xml_paths:
+        if not os.path.exists(xml_path):
+            pytest.skip(reason=f"required file is not exist - {xml_path}")
+
+    if task_type == "visual_prompting":
         paths_to_ref_data = [
             os.path.join(
                 otx_dir,
@@ -601,7 +644,6 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
             ),
         ]
     else:
-        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
         paths_to_ref_data = [
             os.path.join(
                 otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
@@ -614,6 +656,13 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
+    if is_visual_prompting:
+        weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "eval",
@@ -622,27 +671,12 @@ def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--output",
         f"{template_work_dir}/ptq_{template.model_template_id}",
+        "--load-weights",
+        weights_path,
     ]
-    if is_visual_prompting:
-        command_line.extend(
-            [
-                "--load-weights",
-                f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
-            ]
-        )
-    else:
-        command_line.extend(
-            [
-                "--load-weights",
-                f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
-            ]
-        )
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json")
-
-    with open(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json") as read_file:
-        ptq_performance = json.load(read_file)
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
@@ -650,6 +684,11 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
 
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "optimize",
@@ -659,7 +698,7 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
+        weights_path,
         "--output",
         f"{template_work_dir}/nncf_{template.model_template_id}",
     ]
@@ -674,12 +713,17 @@ def nncf_export_testing(template, root):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "export",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth",
+        weights_path,
         "--output",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}",
     ]
@@ -706,7 +750,11 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
+
     xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
+    if not os.path.exists(xml_path):
+        pytest.skip(reason=f"required file is not exist - {xml_path}")
+
     path_to_ref_data = os.path.join(
         otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
     )
@@ -718,6 +766,11 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "eval",
@@ -725,7 +778,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth",
+        weights_path,
         "--output",
         f"{template_work_dir}/nncf_{template.model_template_id}",
     ]
@@ -744,6 +797,11 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     command_line = [
         "otx",
         "eval",
@@ -751,7 +809,7 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml",
+        weights_path,
         "--output",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}",
     ]
@@ -779,6 +837,11 @@ def xfail_templates(templates, xfail_template_ids_reasons):
 
 def otx_explain_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
@@ -791,16 +854,16 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
 
     save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        weights_path,
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -809,11 +872,16 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_all_classes(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
@@ -826,16 +894,16 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
 
     save_dir = f"explain_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        weights_path,
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -850,11 +918,16 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:
         assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
-    assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+    assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
@@ -867,16 +940,16 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
 
     save_dir = f"explain_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        weights_path,
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -886,11 +959,16 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".png" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".png", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
@@ -903,16 +981,16 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
 
     save_dir = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        weights_path,
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -922,11 +1000,16 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
@@ -939,16 +1022,16 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
 
     save_dir = f"explain_ov_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        weights_path,
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -964,11 +1047,16 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:
         assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
-    assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+    assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
+
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml"
+    if not os.path.exists(weights_path):
+        pytest.skip(reason=f"required file is not exist - {weights_path}")
+
     test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
@@ -981,16 +1069,16 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
 
     save_dir = f"explain_ov_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
-    explain_data_root = os.path.join(otx_dir, args["--input"])
+    data_input = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
-        "--explain-data-root",
-        explain_data_root,
-        "--save-explanation-to",
+        weights_path,
+        "--input",
+        data_input,
+        "--output",
         output_dir,
         "--explain-algorithm",
         test_algorithm,
@@ -1001,7 +1089,7 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".png" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".png", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_find_testing():
