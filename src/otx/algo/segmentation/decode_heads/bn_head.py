@@ -3,28 +3,27 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for batch norm head"""
-import torch
-import torch.nn as nn
+"""Module for batch norm head."""
+from __future__ import annotations
 
+import torch
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 from mmseg.models.utils import resize
+from torch import nn
 
 
 @HEADS.register_module()
 class BNHead(BaseDecodeHead):
     """Just a batchnorm."""
 
-    def __init__(self, resize_factors=None, **kwargs):
+    def __init__(self, resize_factors: list[int] | None = None, **kwargs):
         super().__init__(**kwargs)
-        assert self.in_channels == self.channels
         self.bn = nn.SyncBatchNorm(self.in_channels)
         self.resize_factors = resize_factors
 
-    def _forward_feature(self, inputs):
-        """Forward function for feature maps before classifying each pixel with
-        ``self.cls_seg`` fc.
+    def _forward_feature(self, inputs: list[torch.Tensor]) -> torch.Tensor:
+        """Forward function for feature maps before classifying each pixel.
 
         Args:
             inputs (list[Tensor]): List of multi-level img features.
@@ -33,21 +32,18 @@ class BNHead(BaseDecodeHead):
             feats (Tensor): A tensor of shape (batch_size, self.channels,
                 H, W) which is feature map for last layer of decoder head.
         """
-        # print("inputs", [i.shape for i in inputs])
         x = self._transform_inputs(inputs)
-        # print("x", x.shape)
-        feats = self.bn(x)
-        # print("feats", feats.shape)
-        return feats
+        return self.bn(x)
 
-    def _transform_inputs(self, inputs):
+    def _transform_inputs(self, inputs: list[torch.Tensor]) -> torch.Tensor:
         """Transform inputs for decoder.
+
         Args:
             inputs (list[Tensor]): List of multi-level img features.
+
         Returns:
             Tensor: The transformed inputs
         """
-
         if self.input_transform == "resize_concat":
             # accept lists (for cls token)
             input_list = []
@@ -66,7 +62,6 @@ class BNHead(BaseDecodeHead):
             # Resizing shenanigans
             # print("before", *(x.shape for x in inputs))
             if self.resize_factors is not None:
-                assert len(self.resize_factors) == len(inputs), (len(self.resize_factors), len(inputs))
                 inputs = [
                     resize(input=x, scale_factor=f, mode="bilinear" if f >= 1 else "area")
                     for x, f in zip(inputs, self.resize_factors)
@@ -84,8 +79,7 @@ class BNHead(BaseDecodeHead):
 
         return inputs
 
-    def forward(self, inputs):
+    def forward(self, inputs: list[torch.Tensor]) -> torch.Tensor:
         """Forward function."""
         output = self._forward_feature(inputs)
-        output = self.cls_seg(output)
-        return output
+        return self.cls_seg(output)
