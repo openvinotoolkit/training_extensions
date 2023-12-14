@@ -188,13 +188,17 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 label = self.anomalous_label if image_result.pred_score >= 0.5 else self.normal_label
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 annotations = create_annotation_from_segmentation_map(
-                    pred_mask, image_result.anomaly_map.squeeze() / 255., {0: self.normal_label, 1: self.anomalous_label}
+                    pred_mask,
+                    image_result.anomaly_map.squeeze() / 255.0,
+                    {0: self.normal_label, 1: self.anomalous_label},
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             elif self.task_type == TaskType.ANOMALY_DETECTION:
                 annotations = create_detection_annotation_from_anomaly_heatmap(
-                    pred_mask, image_result.anomaly_map.squeeze() / 255., {0: self.normal_label, 1: self.anomalous_label}
+                    pred_mask,
+                    image_result.anomaly_map.squeeze() / 255.0,
+                    {0: self.normal_label, 1: self.anomalous_label},
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
