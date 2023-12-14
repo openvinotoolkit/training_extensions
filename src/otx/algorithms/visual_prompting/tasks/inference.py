@@ -24,6 +24,7 @@ import tempfile
 import time
 import warnings
 from collections import OrderedDict
+from functools import reduce
 from typing import Dict, List, Optional, Union
 
 import torch
@@ -620,8 +621,8 @@ class ZeroShotTask(InferenceTask):
                         "--scale_values",
                         str(self.config.dataset.normalize.std).replace(", ", ","),
                     ]
-                if precision == ModelPrecision.FP16:
-                    optimize_command.append("--compress_to_fp16")
+                if precision != ModelPrecision.FP16:
+                    optimize_command.append("--compress_to_fp16=False")
                 subprocess.run(optimize_command, check=True)
                 with open(path.replace(".onnx", ".bin"), "rb") as file:
                     output_model.set_data(f"{module}.bin", file.read())
@@ -651,33 +652,47 @@ class ZeroShotTask(InferenceTask):
                 model_to_export = self.model.image_encoder
 
             elif module == "visual_prompting_prompt_getter":
+                reference_feat = torch.randn(1, embed_dim, dtype=torch.float32)
+                reference_feat /= reference_feat.norm(dim=-1, keepdim=True)
+                target_feat = torch.randn(embed_dim, reduce(lambda x, y: x * y, embed_size), dtype=torch.float32)
+                target_feat /= target_feat.norm(dim=0, keepdim=True)
                 dummy_inputs = {
-                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
-                    "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int32),
-                    "original_size": torch.tensor([image_size, image_size], dtype=torch.int32),
-                    "threshold": torch.rand(1, dtype=torch.float32)
+                    "reference_feat": reference_feat,
+                    "target_feat": target_feat,
+                    "sim_shape": torch.tensor(embed_size, dtype=torch.int64),
+                    "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int64),
+                    "original_size": torch.tensor([image_size, image_size], dtype=torch.int64),
+                    "threshold": torch.tensor(0.1, dtype=torch.float32),
+                    "num_bg_points": torch.tensor(1, dtype=torch.int64),
                 }
                 output_names = ["points_scores", "bg_coords"]
-                dynamic_axes = None
+                dynamic_axes = {"points_scores": {0: "num_points"}, "bg_coords": {0: "num_points"}}
                 model_to_export = self.model.prompt_getter
 
             elif module == "visual_prompting_decoder":
                 # sam without backbone
-                dynamic_axes = None
+                mask_input_size = [4 * x for x in embed_size]
+                dynamic_axes = {
+                    "point_coords": {1: "num_points"},
+                    "point_labels": {1: "num_points"},
+                }
                 dummy_inputs = {
-                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float32),
                     "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float32),
                     "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
-                    "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int32),
-                    "original_size": torch.tensor([image_size, image_size], dtype=torch.int32),
+                    "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float32),
+                    "has_mask_input": torch.tensor([[1]], dtype=torch.float32),
                 }
-                output_names = ["predicted_masks"]
+                output_names = ["iou_predictions", "low_res_masks"]
                 model_to_export = self.model
-                
+
             else:
-                raise ValueError((
-                    f"{module} is undefined, use visual_prompting_image_encoder, visual_prompting_prompt_getter, or visual_prompting_decoder."
-                ))
+                raise ValueError(
+                    (
+                        f"{module} is undefined, use visual_prompting_image_encoder, visual_prompting_prompt_getter, "
+                        f"or visual_prompting_decoder."
+                    )
+                )
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
