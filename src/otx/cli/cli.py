@@ -10,12 +10,7 @@ from typing import TYPE_CHECKING, Any
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace
 
 from otx import __version__
-from otx.cli.utils.jsonargparse import get_short_docstring, update
-
-# [FIXME]: Overriding Namespce.update to match mmengine.Config (DictConfig | dict)
-# and prevent int, float types from being converted to str
-# https://github.com/omni-us/jsonargparse/issues/236
-Namespace.update = update
+from otx.cli.utils.jsonargparse import get_short_docstring
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -148,11 +143,10 @@ class OTXCLI:
             If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
             """
             if self.subcommand in self.engine_subcommands():
-                from otx.core.engine.engine import Engine
                 self.config_init = self.parser.instantiate_classes(self.config)
                 self.datamodule = self._get(self.config_init, "data")
                 self.model = self._get(self.config_init, "model")
-                self.engine = Engine()
+                self.engine = self._get(self.config_init, "engine")
 
     def _get(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Utility to get a config value which might be inside a subcommand."""

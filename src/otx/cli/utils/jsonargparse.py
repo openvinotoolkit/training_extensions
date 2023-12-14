@@ -25,7 +25,9 @@ def get_short_docstring(component: TypeVar) -> str | None:
     docstring = docstring_parser.parse(component.__doc__)
     return docstring.short_description
 
-
+# [FIXME]: Overriding Namespce.update to match mmengine.Config (DictConfig | dict)
+# and prevent int, float types from being converted to str
+# https://github.com/omni-us/jsonargparse/issues/236
 def update(self: Namespace, value: Any, key: str | None = None,  # noqa: ANN401
         only_unset: bool = False) -> Namespace:
     """Sets or replaces all items from the given nested namespace.
@@ -60,3 +62,5 @@ def update(self: Namespace, value: Any, key: str | None = None,  # noqa: ANN401
         # Dict or Namespace -> Dict
         self[key] = dict_to_namespace(self[key]).as_dict()
     return self
+
+Namespace.update = update

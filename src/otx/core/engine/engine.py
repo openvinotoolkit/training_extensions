@@ -4,8 +4,9 @@
 """Module for OTX engine components."""
 from __future__ import annotations
 
+from dataclasses import fields
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Union
+from typing import TYPE_CHECKING, Any, Iterable
 
 import yaml
 from lightning import LightningModule, Trainer, seed_everything
@@ -13,39 +14,15 @@ from lightning import LightningModule, Trainer, seed_everything
 from otx.core.config.engine import EngineConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.engine.utils.instantiators import (
-        instantiate_callbacks,
-        instantiate_loggers,
-    )
+    instantiate_callbacks,
+    instantiate_loggers,
+)
 
 if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.accelerators import Accelerator
     from lightning.pytorch.loggers import Logger
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
-
-PATHTYPE = Union[str, Path]
-
-
-def load_engine_config_from_yaml(file_path: str | Path) -> tuple[EngineConfig, dict]:
-    """Load engine configuration from a YAML file.
-
-    Args:
-        file_path (str | Path): The path to the YAML file.
-
-    Returns:
-        EngineConfig: The engine configuration object.
-    """
-    from dataclasses import fields
-    with Path(file_path).open() as f:
-        config_dict = yaml.safe_load(f)["engine"]
-    field_names = [f.name for f in fields(EngineConfig)]
-    engine_args, trainer_kwargs = {}, {}
-    for k in config_dict:
-        if k in field_names:
-            engine_args[k] = config_dict[k]
-        else:
-            trainer_kwargs[k] = config_dict[k]
-    return EngineConfig(**engine_args), trainer_kwargs
 
 
 class Engine:
@@ -54,7 +31,7 @@ class Engine:
     def __init__(
         self,
         *,
-        work_dir: PATHTYPE | None = None,
+        work_dir: str | Path | None = None,
         max_epochs: int | None = None,
         seed: int | None = None,
         deterministic: bool | None = False,
@@ -92,11 +69,11 @@ class Engine:
         return self._trainer
 
     @classmethod
-    def from_config(cls, cfg: EngineConfig | PATHTYPE) -> Engine:
+    def from_config(cls, config: EngineConfig | str | Path) -> Engine:
         """Create an instance of the Engine class from a configuration file or object.
 
         Args:
-            cfg (EngineConfig | str | Path): The path to the configuration file or the configuration object.
+            config (EngineConfig | str | Path): The path to the configuration file or the configuration object.
 
         Returns:
             Engine: An instance of the Engine class.
@@ -105,8 +82,20 @@ class Engine:
             FileNotFoundError: If the configuration file is not found.
             TypeError: If the configuration object is not of type EngineConfig.
         """
-        if isinstance(cfg, (str, Path)):
-            engine_cfg, kwargs = load_engine_config_from_yaml(cfg)
+        engine_args, kwargs = {}, {}
+        if isinstance(config, (str, Path)):
+            with Path(config).open() as f:
+                config_dict = yaml.safe_load(f)["engine"]
+            field_names = [f.name for f in fields(EngineConfig)]
+            for k in config_dict:
+                if k in field_names:
+                    engine_args[k] = config_dict[k]
+                else:
+                    kwargs[k] = config_dict[k]
+            engine_cfg = EngineConfig(**engine_args)
+        else:
+            engine_cfg = config
+
         callbacks = instantiate_callbacks(engine_cfg.callbacks)
         logger = instantiate_loggers(engine_cfg.logger)
         return cls(
@@ -127,14 +116,14 @@ class Engine:
         self,
         model: LightningModule,
         datamodule: OTXDataModule,
-        checkpoint: PATHTYPE | None = None,
+        checkpoint: str | Path | None = None,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
 
         Args:
             model (LightningModule): The LightningModule to be trained.
             datamodule (OTXDataModule): The OTXDataModule containing the training data.
-            checkpoint (PATHTYPE | None, optional): The path to a checkpoint file to resume training from.
+            checkpoint (str | Path | None, optional): The path to a checkpoint file to resume training from.
 
         Returns:
             dict[str, Any]: A dictionary containing the callback metrics from the trainer.
@@ -151,7 +140,7 @@ class Engine:
         self,
         model: LightningModule,
         datamodule: OTXDataModule,
-        checkpoint: PATHTYPE | None = None,
+        checkpoint: str | Path | None = None,
     ) -> dict:
         """Test the model using PyTorch Lightning Trainer."""
         self.trainer.test(

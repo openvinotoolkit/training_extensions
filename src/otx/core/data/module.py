@@ -5,12 +5,15 @@
 from __future__ import annotations
 
 import logging as log
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+import yaml
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
+from otx.core.config.data import DataModuleConfig, SubsetConfig
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
@@ -19,8 +22,6 @@ from otx.core.data.mem_cache import (
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from otx.core.config.data import DataModuleConfig
-
     from .dataset.base import OTXDataset
 
 
@@ -70,6 +71,34 @@ class OTXDataModule(LightningDataModule):
 
     def __del__(self) -> None:
         MemCacheHandlerSingleton.delete()
+
+    @classmethod
+    def from_config(cls, task: OTXTaskType, config: DataModuleConfig | str | Path) -> OTXDataModule:
+        """Create an instance of OTXDataModule from a configuration.
+
+        Args:
+            task (OTXTaskType): The task type.
+            config (DataModuleConfig | str | Path): The configuration object or the path to the configuration file.
+
+        Returns:
+            OTXDataModule: An instance of OTXDataModule.
+
+        """
+        if isinstance(config, (str, Path)):
+            with Path(config).open() as f:
+                config_dict = yaml.safe_load(f)["data"]
+            task = config_dict.pop("task", task)
+            datamodule_config = config_dict["config"]
+            train_subset = datamodule_config.pop("train_subset", {})
+            val_subset = datamodule_config.pop("val_subset", {})
+            test_subset = datamodule_config.pop("test_subset", {})
+            config = DataModuleConfig(
+                train_subset=SubsetConfig(**train_subset),
+                val_subset=SubsetConfig(**val_subset),
+                test_subset=SubsetConfig(**test_subset),
+                **datamodule_config,
+            )
+        return cls(task=task, config=config)
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:
