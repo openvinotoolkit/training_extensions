@@ -9,7 +9,7 @@ import torch.nn as nn
 
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
-from mmseg.ops import resize
+from mmseg.models.utils import resize
 
 
 @HEADS.register_module()

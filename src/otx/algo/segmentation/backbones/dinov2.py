@@ -16,7 +16,6 @@ from torch import nn
 @BACKBONES.register_module()
 class DinoVisionTransformer(BaseModule):
     """DINO-v2 Model."""
-<<<<<<< HEAD
 
     def __init__(
         self,
@@ -38,29 +37,11 @@ class DinoVisionTransformer(BaseModule):
             reshape=True,
         )
 
-=======
-    def __init__(
-        self,
-        backbone_name: str,
-        freeze_backbone: bool,
-        init_cfg: DictConfig | None = None,
-    ):
-        super().__init__(init_cfg)
-        self.backbone = torch.hub.load(
-            repo_or_dir="facebookresearch/dinov2",
-            model=backbone_name,
-        )
-
-        if freeze_backbone:
-            self._freeze_backbone(self.backbone)
-
->>>>>>> 5fc89a90f (added dino_v2_seg)
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""
         for _, v in backbone.named_parameters():
             v.requires_grad = False
 
-<<<<<<< HEAD
     def init_weights(self) -> None:
         """Initialize the weights."""
         # restrict rewriting backbone pretrained weights from torch.hub
@@ -69,8 +50,6 @@ class DinoVisionTransformer(BaseModule):
             return super().init_weights()
         return None
 
-=======
->>>>>>> 5fc89a90f (added dino_v2_seg)
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         return self.backbone(imgs)

@@ -5,5 +5,6 @@
 
 from .dinov2 import DinoVisionTransformer
 from .litehrnet import LiteHRNet
+from .dinov2 import DinoVisionTransformer
 
 __all__ = ["LiteHRNet", "DinoVisionTransformer"]
