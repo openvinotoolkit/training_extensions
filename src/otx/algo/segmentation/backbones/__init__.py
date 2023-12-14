@@ -4,5 +4,6 @@
 """Backbone modules for OTX segmentation model."""
 
 from .litehrnet import LiteHRNet
+from .dinov2 import DinoVisionTransformer
 
-__all__ = ["LiteHRNet"]
+__all__ = ["LiteHRNet", "DinoVisionTransformer"]

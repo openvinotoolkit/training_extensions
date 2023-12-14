@@ -5,20 +5,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, List
 
 import torch
 from torch import nn
+from functools import partial
 
-from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
-from otx.core.model.entity.classification import OTXClassificationModel
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
-from mmcv.runner import BaseModule
+from mmengine.model import BaseModule
 from mmseg.models.builder import BACKBONES
+from mmengine.runner import load_checkpoint
 
 
 @BACKBONES.register_module()
@@ -26,18 +21,21 @@ class DinoVisionTransformer(BaseModule):
     """DINO-v2 Model."""
     def __init__(
         self,
-        backbone_name: str,
+        name: str,
         freeze_backbone: bool,
-        init_cfg: DictConfig | None = None,
+        in_index: List[int]
     ):
-        super().__init__(init_cfg)
-        self.backbone = torch.hub.load(
-            repo_or_dir="facebookresearch/dinov2",
-            model=backbone_name,
-        )
-
+        super().__init__()
+        torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
+        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
+        # remove last layers to preserve spatial dimension
+        self.backbone.forward = partial(
+            self.backbone.get_intermediate_layers,
+            n=in_index,
+            reshape=True,
+     )
 
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""
