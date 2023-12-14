@@ -10,11 +10,11 @@ import cv2
 import mmcv
 import numpy as np
 import torch
-from torch import distributed as dist
 from mmdet.core import bbox2result, bbox2roi
 from mmdet.core.mask.structures import BitmapMasks
 from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
+from torch import distributed as dist
 
 from otx.utils.logger import get_logger
 
