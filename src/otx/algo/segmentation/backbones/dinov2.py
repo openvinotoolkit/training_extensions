@@ -5,15 +5,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
-
-import torch
-from torch import nn
 from functools import partial
 
+import torch
 from mmengine.model import BaseModule
 from mmseg.models.builder import BACKBONES
-from mmengine.runner import load_checkpoint
+from torch import nn
 
 
 @BACKBONES.register_module()
@@ -23,10 +20,10 @@ class DinoVisionTransformer(BaseModule):
         self,
         name: str,
         freeze_backbone: bool,
-        in_index: List[int]
+        in_index: list[int],
     ):
         super().__init__()
-        torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
+        torch.hub._validate_not_a_forked_repo=lambda a, b, c: True # noqa: SLF001, ARG005
         self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
