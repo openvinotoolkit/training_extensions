@@ -59,6 +59,8 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Run unit test
+        env:
+          NNCF_EXTENSION_LOAD_TIMEOUT: 300
         run: tox -vv -e unittest-all-${{ matrix.tox-env }}-pt1
       - name: Upload coverage artifact
         if: ${{ matrix.python-version == '3.8' }}
