@@ -26,7 +26,15 @@ if TYPE_CHECKING:
 
 
 class Engine:
-    """OTX Engine class."""
+    """OTX Engine.
+
+    This class defines the common interface for OTX, including methods for training and testing.
+
+    Example:
+    >>> runner = Engine(
+        work_dir="output/folder/path",
+    )
+    """
 
     def __init__(
         self,
@@ -43,6 +51,21 @@ class Engine:
         devices: list[int] | str | int = "auto",
         **kwargs,
     ):
+        """Initializes the Engine object.
+
+        Args:
+            work_dir (str | Path | None, optional): The working directory. Defaults to None.
+            max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
+            seed (int | None, optional): The random seed. Defaults to None.
+            deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
+            precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
+            val_check_interval (int | float | None, optional): The validation check interval. Defaults to 1.
+            callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
+            logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
+            accelerator (str | Accelerator, optional): The accelerator to be used. Defaults to "auto".
+            devices (list[int] | str | int, optional): The devices to be used. Defaults to "auto".
+            **kwargs: Additional keyword arguments for pl.Trainer.
+        """
         if seed is not None:
             seed_everything(seed, workers=True)
 
@@ -81,6 +104,11 @@ class Engine:
         Raises:
             FileNotFoundError: If the configuration file is not found.
             TypeError: If the configuration object is not of type EngineConfig.
+
+        Example:
+        >>> runner = Engine.from_config(
+            config="config.yaml",
+        )
         """
         engine_args, kwargs = {}, {}
         if isinstance(config, (str, Path)):
@@ -127,6 +155,29 @@ class Engine:
 
         Returns:
             dict[str, Any]: A dictionary containing the callback metrics from the trainer.
+
+        Example:
+        >>> engine.train(
+            model=LightningModule(),
+            datamodule=OTXDataModule(),
+            checkpoint="checkpoint.ckpt",
+        )
+
+        CLI Usage:
+            1. you can pick a model, and you can run through the dataset.
+                ```python
+                otx train --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH>
+                ```
+            2. Of course, you can override the various values with commands.
+                ```python
+                otx train
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
+                    --engine.max_epochs 3
+                ```
+            4. If you have a ready configuration file, run it like this.
+                ```python
+                otx train --config <config_file_path>
+                ```
         """
         self.trainer.fit(
             model=model,
@@ -138,11 +189,42 @@ class Engine:
 
     def test(
         self,
-        model: LightningModule,
-        datamodule: OTXDataModule,
+        model: LightningModule | None = None,
+        datamodule: OTXDataModule | None = None,
         checkpoint: str | Path | None = None,
     ) -> dict:
-        """Test the model using PyTorch Lightning Trainer."""
+        """Run the testing phase of the engine.
+
+        Args:
+            model (LightningModule | None, optional): The model to be tested.
+            datamodule (OTXDataModule | None, optional): The data module containing the test data.
+            checkpoint (str | Path | None, optional): Path to the checkpoint file to load the model from.
+                Defaults to None.
+
+        Returns:
+            dict: Dictionary containing the callback metrics from the trainer.
+
+        Example:
+        >>> engine.test(
+            model=LightningModule(),
+            datamodule=OTXDataModule(),
+            checkpoint="checkpoint.ckpt",
+        )
+
+        CLI Usage:
+            1. you can pick a model.
+                ```python
+                otx test --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH>
+                ```
+            2. Of course, you can override the various values with commands.
+                ```python
+                otx test --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
+                ```
+            4. If you have a ready configuration file, run it like this.
+                ```python
+                otx test --config <config_file_path>
+                ```
+        """
         self.trainer.test(
             model=model,
             datamodule=datamodule,

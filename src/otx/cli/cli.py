@@ -1,7 +1,8 @@
+"""CLI entrypoints."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""CLI entrypoints."""
 
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace
 
 from otx import __version__
+from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring
 
 if TYPE_CHECKING:
@@ -35,11 +37,8 @@ class OTXCLI:
         self.subcommand = self.config["subcommand"]
         self.run()
 
-    def init_parser(self, **kwargs) -> ArgumentParser:
+    def init_parser(self) -> ArgumentParser:
         """Initialize the argument parser for the OTX CLI.
-
-        Args:
-            **kwargs: Additional keyword arguments to pass to the ArgumentParser constructor.
 
         Returns:
             ArgumentParser: The initialized argument parser.
@@ -47,13 +46,32 @@ class OTXCLI:
         parser = ArgumentParser(
             description="OpenVINO Training-Extension command line tool",
             env_prefix="otx",
+            formatter_class=CustomHelpFormatter,
         )
         parser.add_argument(
-            "-V",
+            "-v",
             "--version",
             action="version",
             version=f"%(prog)s {__version__}",
             help="Display OTX version number.",
+        )
+        return parser
+
+    def subcommand_parser(self) -> ArgumentParser:
+        """Returns an ArgumentParser object for parsing command line arguments specific to a subcommand.
+
+        Returns:
+            ArgumentParser: An ArgumentParser object configured with the specified arguments.
+        """
+        parser = ArgumentParser(
+            formatter_class=CustomHelpFormatter,
+        )
+        parser.add_argument(
+            "-v",
+            "--verbose",
+            action="count",
+            help="Verbose mode. This shows a configuration argument that allows for more specific overrides. \
+                Multiple -v options increase the verbosity. The maximum is 2.",
         )
         parser.add_argument(
             "-c",
@@ -93,13 +111,7 @@ class OTXCLI:
         if not _ENGINE_AVAILABLE:
             return
         for subcommand in self.engine_subcommands():
-            sub_parser = ArgumentParser()
-            sub_parser.add_argument(
-                "-c",
-                "--config",
-                action=ActionConfigFile,
-                help="Path to a configuration file in json or yaml format.",
-            )
+            sub_parser = self.subcommand_parser()
             sub_parser.add_class_arguments(
                 Engine,
                 "engine",

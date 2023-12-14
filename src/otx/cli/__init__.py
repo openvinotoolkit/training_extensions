@@ -1,7 +1,7 @@
+"""CLI main function."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
-"""CLI main function."""
 
 from .cli import OTXCLI
 

@@ -14,6 +14,7 @@ from pkg_resources import Requirement
 from rich.console import Console
 from rich.logging import RichHandler
 
+from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.installation import (
     get_mmcv_install_args,
     get_requirements,
@@ -44,7 +45,7 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     Returns:
         None
     """
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
     parser.add_argument(
         "--option",
         help="Install the mmlab library or optional-dependencies.",

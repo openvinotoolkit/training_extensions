@@ -10,10 +10,12 @@ from typing import TYPE_CHECKING, Any
 import torch
 import yaml
 from lightning import LightningModule
+from lightning.pytorch.cli import instantiate_class
 from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
+from otx.core.model.module.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -51,27 +53,15 @@ class OTXLitModule(LightningModule):
             OTXLitModule: An instance of OTXLitModule.
 
         """
-        from functools import partial
-        def partial_instantiate_class(init: dict) -> partial:
-            kwargs = init.get("init_args", {})
-            class_module, class_name = init["class_path"].rsplit(".", 1)
-            module = __import__(class_module, fromlist=[class_name])
-            args_class = getattr(module, class_name)
-            return partial(args_class, **kwargs)
-
-        from lightning.pytorch.cli import instantiate_class
         with Path(config).open() as f:
             config_dict = yaml.safe_load(f)
+
         model_config = config_dict.get("model", config_dict)["init_args"]
-        otx_model = instantiate_class(args=(), init=model_config["otx_model"])
-        torch_compile = model_config["torch_compile"]
-        optimizer = partial_instantiate_class(init=model_config["optimizer"])
-        scheduler = partial_instantiate_class(init=model_config["scheduler"])
         return cls(
-            otx_model=otx_model,
-            torch_compile=torch_compile,
-            optimizer=optimizer,
-            scheduler=scheduler,
+            otx_model=instantiate_class(args=(), init=model_config["otx_model"]),
+            torch_compile=model_config["torch_compile"],
+            optimizer=partial_instantiate_class(init=model_config["optimizer"]),
+            scheduler=partial_instantiate_class(init=model_config["scheduler"]),
         )
 
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:

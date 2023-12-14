@@ -1,7 +1,8 @@
+"""Functions related to jsonargparse."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Functions related to jsonargparse."""
 from __future__ import annotations
 
 import ast

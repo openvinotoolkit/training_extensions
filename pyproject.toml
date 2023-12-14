@@ -36,6 +36,7 @@ dependencies = [
     "ftfy",
     "regex",
     "docstring_parser",
+    "rich_argparse",
 ]
 
 [project.optional-dependencies]
