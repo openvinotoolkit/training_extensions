@@ -35,7 +35,8 @@ dependencies = [
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks
     "ftfy",
-    "regex"
+    "regex",
+    "docstring_parser",
 ]
 
 [project.optional-dependencies]

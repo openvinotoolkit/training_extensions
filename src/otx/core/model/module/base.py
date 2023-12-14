@@ -4,7 +4,7 @@
 """Class definition for base lightning module used in OTX."""
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 from lightning import LightningModule
@@ -13,6 +13,9 @@ from torch import Tensor
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
 
 class OTXLitModule(LightningModule):
     """Base class for the lightning module used in OTX."""
@@ -20,16 +23,16 @@ class OTXLitModule(LightningModule):
     def __init__(
         self,
         otx_model: OTXModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable,
+        scheduler: LRSchedulerCallable,
     ):
         super().__init__()
 
         self.model = otx_model
+        self.torch_compile = torch_compile
         self.optimizer = optimizer
         self.scheduler = scheduler
-        self.torch_compile = torch_compile
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -91,21 +94,14 @@ class OTXLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
         """
-        optimizer = self.hparams.optimizer(params=self.parameters())
-        if self.hparams.scheduler is not None:
-            scheduler = self.hparams.scheduler(optimizer=optimizer)
+        optimizer = self.optimizer(self.parameters())
+        if self.scheduler is not None:
+            scheduler = self.scheduler(optimizer)
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
                     "scheduler": scheduler,
-                    "monitor": self.lr_scheduler_monitor_key,
-                    "interval": "epoch",
-                    "frequency": 1,
+                    "monitor": scheduler.monitor,
                 },
             }
         return {"optimizer": optimizer}
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/loss"

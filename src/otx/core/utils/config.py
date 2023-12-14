@@ -6,13 +6,10 @@
 from __future__ import annotations
 
 from numbers import Number
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from mmengine.config import Config as MMConfig
-from omegaconf import OmegaConf
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 
 def to_tuple(dict_: dict) -> dict:
@@ -44,10 +41,11 @@ def to_list(dict_: dict) -> dict:
 
 
 def convert_conf_to_mmconfig_dict(
-    cfg: DictConfig,
+    cfg: DictConfig | dict,
     to: Literal["tuple", "list"] = "tuple",
 ) -> MMConfig:
     """Convert OTX format config object to MMEngine config object."""
+    cfg = cfg if isinstance(cfg, DictConfig) else OmegaConf.create(cfg)
     dict_cfg = OmegaConf.to_container(cfg)
 
     if to == "tuple":

@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from omegaconf import DictConfig
+
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.model.entity.base import OTXModel
@@ -14,7 +16,6 @@ from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
-    from omegaconf import DictConfig
     from torch import nn
 
 
@@ -28,8 +29,8 @@ class MMPretrainCompatibleModel(OTXClassificationModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX classification model
     compatible for OTX pipelines.
     """
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
+    def __init__(self, config: DictConfig | dict) -> None:
+        self.config = config if isinstance(config, DictConfig) else DictConfig(config)
         self.load_from = config.pop("load_from", None)
         super().__init__()
 
