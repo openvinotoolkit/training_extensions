@@ -42,11 +42,59 @@ class MMActionCompatibleModel(OTXActionClsModel):
         return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:
-        raise NotImplementedError
+        """Convert ActionClsBatchDataEntity into mmaction model's input."""
+        from mmaction.structures import ActionDataSample
+
+        mmaction_inputs: dict[str, Any] = {}
+
+        mmaction_inputs["inputs"] = entity.images
+        mmaction_inputs["data_samples"] = [
+            ActionDataSample(
+                metainfo={
+                    "img_id": img_info.img_idx,
+                    "img_shape": img_info.img_shape,
+                    "ori_shape": img_info.ori_shape,
+                    "pad_shape": img_info.pad_shape,
+                    "scale_factor": img_info.scale_factor,
+                },
+                gt_label=labels,
+            )
+            for img_info, labels in zip(entity.imgs_info, entity.labels)
+        ]
+        self.model.data_preprocessor.to(next(self.model.parameters()).device)
+        mmaction_inputs = self.model.data_preprocessor(data=mmaction_inputs, training=self.training)
+        mmaction_inputs["mode"] = "loss" if self.training else "predict"
+        return mmaction_inputs
 
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: ActionClsBatchDataEntity,
     ) -> ActionClsBatchPredEntity | OTXBatchLossEntity:
-        raise NotImplementedError
+        from mmaction.structures import ActionDataSample
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                losses[k] = v
+            return losses
+
+        scores = []
+        labels = []
+
+        for output in outputs:
+            if not isinstance(output, ActionDataSample):
+                raise TypeError(output)
+
+            scores.append(output.pred_score)
+            labels.append(output.pred_label)
+
+        return ActionClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            labels=labels,
+        )

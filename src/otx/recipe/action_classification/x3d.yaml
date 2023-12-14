@@ -6,7 +6,7 @@ defaults:
   - override /model: mmaction
 data:
   train_subset:
-    batch_size: 10
+    batch_size: 8
     transforms:
       - type: LoadVideo
       - type: SampleFrames
@@ -18,8 +18,8 @@ data:
         scale:
           - -1
           - 256
-      - type: RandomFlip
-        prob: 0.5
+      - type: Flip
+        flip_ratio: 0.5
       - type: FormatShape
         input_format: NCTHW
       - type: PackActionInputs
@@ -29,7 +29,7 @@ data:
           - pad_shape
           - scale_factor
   val_subset:
-    batch_size: 10
+    batch_size: 8
     transforms:
       - type: LoadVideo
       - type: SampleFrames
@@ -50,7 +50,7 @@ data:
           - pad_shape
           - scale_factor
   test_subset:
-    batch_size: 10
+    batch_size: 8
     transforms:
       - type: LoadVideo
       - type: SampleFrames

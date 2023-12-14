@@ -34,6 +34,7 @@ class LoadVideo:
         results: dict[str, Any] = {}
         results["start_index"] = 0
         results["total_frames"] = len(video)
+        results["modality"] = "RGB"
         results["imgs"] = video
         results["img_shape"] = video[0].shape[:2]
         results["ori_shape"] = video[0].shape[:2]
