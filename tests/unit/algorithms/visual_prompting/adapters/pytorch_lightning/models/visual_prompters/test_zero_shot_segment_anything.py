@@ -68,10 +68,29 @@ class TestPromptGetter:
         )
         mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
 
-        image_embeddings = torch.rand(1, 2, self.prompt_getter.image_size, self.prompt_getter.image_size)
+        reference_feat = torch.randn(1, 4, dtype=torch.float32)
+        target_feat = torch.randn(4, 16, dtype=torch.float32)
+        sim_shape = (4, 4)
         self.prompt_getter.reference_feats = {1: torch.rand(1, 2)}
 
         prompts = self.prompt_getter(
+            reference_feat=reference_feat,
+            target_feat=target_feat,
+            sim_shape=sim_shape,
+            padding=(0, 0, 0, 0),
+            original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
+        )
+
+        assert prompts == ("points_scores", "bg_coords")
+
+    @e2e_pytest_unit
+    def test_get_prompt_candidates(self, mocker) -> None:
+        """Test get_prompt_candidates."""
+        mocker.patch.object(self.prompt_getter, "forward", return_value=("points_scores", "bg_coords"))
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        self.prompt_getter.reference_feats = {1: torch.rand(1, 4)}
+
+        prompts = self.prompt_getter.get_prompt_candidates(
             image_embeddings=image_embeddings,
             padding=(0, 0, 0, 0),
             original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
@@ -79,22 +98,6 @@ class TestPromptGetter:
 
         assert 1 in prompts
         assert prompts[1] == ("points_scores", "bg_coords")
-
-    @e2e_pytest_unit
-    def test_preprocess_target_feat(self) -> None:
-        """Test _preprocess_target_feat."""
-        old_target_feat = torch.arange(1, self.prompt_getter.image_size**2 + 1, dtype=torch.float).reshape(
-            1, 1, self.prompt_getter.image_size, self.prompt_getter.image_size
-        )
-        new_target_feat = self.prompt_getter._preprocess_target_feat(
-            target_feat=old_target_feat,
-            c_feat=1,
-            h_feat=self.prompt_getter.image_size,
-            w_feat=self.prompt_getter.image_size,
-        )
-
-        assert new_target_feat.sum() == 9
-        assert new_target_feat.shape == (1, self.prompt_getter.image_size**2)
 
     @e2e_pytest_unit
     def test_point_selection(self) -> None:
@@ -234,30 +237,6 @@ class TestZeroShotSegmentAnything:
             original_size=(8, 8),
         )
         assert mask.shape == (8, 8)
-        # mocker.patch.object(
-        #     SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
-        # )
-
-        # zero_shot_segment_anything = set_zero_shot_segment_anything()
-        # zero_shot_segment_anything.config.model.image_size = 6
-
-        # masks, scores, logits = zero_shot_segment_anything._predict_masks(
-        #     image_embeddings=torch.rand(1),
-        #     point_coords=torch.rand(1, 2, 2),
-        #     point_labels=torch.randint(low=0, high=2, size=(1, 2)),
-        #     mask_input=torch.zeros(1, 2, 4, 4),
-        #     has_mask_input=torch.tensor([[0.0]]),
-        #     padding=(0, 0, 0, 0),
-        #     original_size=(8, 8),
-        #     is_postprocess=is_postprocess,
-        # )
-
-        # if is_postprocess:
-        #     assert masks.dtype == torch.bool
-        # else:
-        #     assert masks is None
-        # assert scores.shape[1] == 4
-        # assert logits.shape[1] == 1
 
     @e2e_pytest_unit
     def test_preprocess_prompts(self, set_zero_shot_segment_anything) -> None:
