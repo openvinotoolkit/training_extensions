@@ -101,3 +101,7 @@ model:
       test_cfg: null
       train_cfg: null
       type: Recognizer3D
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.001
+    weight_decay: 0.0001
