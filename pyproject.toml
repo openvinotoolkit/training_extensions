@@ -30,7 +30,6 @@ classifiers = [
 dependencies = [
     "datumaro",
     "omegaconf",
-    "hydra-core",
     "rich",
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks

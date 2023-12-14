@@ -1,0 +1,26 @@
+max_epochs: 10
+callbacks:
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: val/accuracy
+      mode: max
+      patience: 100
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+deterministic: false
+precision: 32
+val_check_interval: 1
+accelerator: auto
+devices: auto
+strategy: auto
+num_nodes: 1
+fast_dev_run: false
+max_steps: -1
+overfit_batches: 0.0
+check_val_every_n_epoch: 1
+accumulate_grad_batches: 1
+inference_mode: true
+use_distributed_sampler: true
+detect_anomaly: false
+barebones: false
+sync_batchnorm: false
+reload_dataloaders_every_n_epochs: 0

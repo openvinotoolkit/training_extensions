@@ -25,6 +25,7 @@ def get_short_docstring(component: TypeVar) -> str | None:
     docstring = docstring_parser.parse(component.__doc__)
     return docstring.short_description
 
+
 # [FIXME]: Overriding Namespce.update to match mmengine.Config (DictConfig | dict)
 # and prevent int, float types from being converted to str
 # https://github.com/omni-us/jsonargparse/issues/236

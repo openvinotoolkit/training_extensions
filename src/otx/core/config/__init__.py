@@ -4,44 +4,11 @@
 """Config data type objects."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
-
-from .base import BaseConfig
-from .data import DataModuleConfig, InstSegDataModuleConfig
-from .model import ModelConfig
-from .trainer import TrainerConfig
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from torch import dtype
 
-
-@dataclass
-class TrainConfig:
-    """DTO for training.
-
-    Attributes:
-        seed: If set it with an integer value, e.g. `seed=1`,
-            Lightning derives unique seeds across all dataloader workers and processes
-            for torch, numpy and stdlib random number generators.
-        checkpoint: The path to the checkpoint file. e.g. `checkpoint=outputs/checkpoints/epoch_000.ckpt`
-            Path/URL of the checkpoint from which training is resumed.
-            If there is no checkpoint file at the path, an exception is raised.
-    """
-
-    base: BaseConfig
-    callbacks: dict
-    data: DataModuleConfig
-    trainer: TrainerConfig
-    model: ModelConfig
-    logger: dict
-    recipe: Optional[str]
-    debug: Optional[str]
-    train: bool
-    test: bool
-
-    seed: Optional[int] = None
-    checkpoint: Optional[str] = None
 
 
 def as_int_tuple(*args) -> tuple[int, ...]:
@@ -109,13 +76,8 @@ def as_torch_dtype(arg: str) -> dtype:
 
 
 def register_configs() -> None:
-    """Register DTO as default and custom resolvers to hydra."""
-    from hydra.core.config_store import ConfigStore
+    """Register custom resolvers."""
     from omegaconf import OmegaConf
-
-    cs = ConfigStore.instance()
-    cs.store(name="base_config", node=TrainConfig)
-    cs.store(group="data", name="base_inst_seg", node=InstSegDataModuleConfig)
 
     OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple, replace=True)
     OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype, replace=True)

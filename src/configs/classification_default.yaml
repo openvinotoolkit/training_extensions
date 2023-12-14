@@ -1,12 +1,3 @@
 model: ./model/classification/otx_mobilenet_v3_large.yaml
 data: ./data/mmpretrain.yaml
-
-engine:
-  max_epochs: 10
-  callbacks:
-    - class_path: lightning.pytorch.callbacks.EarlyStopping
-      init_args:
-        monitor: val/accuracy
-        mode: max
-        patience: 100
-    - class_path: lightning.pytorch.callbacks.RichProgressBar
+engine: ./engine/default.yaml

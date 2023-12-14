@@ -1,0 +1,165 @@
+engine:
+  max_epochs: 10
+  deterministic: false
+  precision: 32
+  val_check_interval: 1
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val/accuracy
+        min_delta: 0.0
+        patience: 100
+        verbose: false
+        mode: max
+        strict: true
+        check_finite: true
+        log_rank_zero_only: false
+    - class_path: lightning.pytorch.callbacks.RichProgressBar
+      init_args:
+        refresh_rate: 1
+        leave: false
+        theme:
+          description: white
+          progress_bar: "#6206E0"
+          progress_bar_finished: "#6206E0"
+          progress_bar_pulse: "#6206E0"
+          batch_progress: white
+          time: grey54
+          processing_speed: grey70
+          metrics: white
+          metrics_text_delimiter: " "
+          metrics_format: .3f
+  accelerator: auto
+  devices: auto
+  strategy: auto
+  num_nodes: 1
+  fast_dev_run: false
+  max_steps: -1
+  overfit_batches: 0.0
+  check_val_every_n_epoch: 1
+  accumulate_grad_batches: 1
+  inference_mode: true
+  use_distributed_sampler: true
+  detect_anomaly: false
+  barebones: false
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+data:
+  task: MULTI_CLASS_CLS
+  config:
+    data_format: imagenet_with_subset_dirs
+    data_root: /home/harimkan/workspace/repo/otx-fork/tests/assets/classification_dataset
+    train_subset:
+      batch_size: 64
+      subset_name: train
+      transform_lib_type: MMPRETRAIN
+      transforms:
+        - type: LoadImageFromFile
+        - backend: cv2
+          scale: 224
+          type: RandomResizedCrop
+        - direction: horizontal
+          prob: 0.5
+          type: RandomFlip
+        - type: PackInputs
+      num_workers: 2
+    val_subset:
+      batch_size: 64
+      subset_name: val
+      transform_lib_type: MMPRETRAIN
+      transforms:
+        - type: LoadImageFromFile
+        - backend: cv2
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+      num_workers: 2
+    test_subset:
+      batch_size: 64
+      subset_name: test
+      transform_lib_type: MMPRETRAIN
+      transforms:
+        - type: LoadImageFromFile
+        - backend: cv2
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+      num_workers: 2
+    mem_cache_size: 1GB
+    mem_cache_img_max_size:
+      - 500
+      - 500
+model:
+  class_path: otx.core.model.module.classification.OTXClassificationLitModule
+  init_args:
+    otx_model:
+      class_path: otx.core.model.entity.classification.MMPretrainCompatibleModel
+      init_args:
+        config:
+          backbone:
+            type: OTXMobileNetV3
+          head:
+            act_cfg:
+              type: HSwish
+            dropout_rate: 0.2
+            in_channels: 960
+            init_cfg:
+              bias: 0.0
+              layer: Linear
+              mean: 0.0
+              std: 0.01
+              type: Normal
+            loss:
+              loss_weight: 1.0
+              type: CrossEntropyLoss
+            mid_channels:
+              - 1280
+            num_classes: 2
+            topk:
+              - 1
+              - 5
+            type: StackedLinearClsHead
+          neck:
+            type: GlobalAveragePooling
+          data_preprocessor:
+            mean:
+              - 123.675
+              - 116.28
+              - 103.53
+            std:
+              - 58.395
+              - 57.12
+              - 57.375
+            to_rgb: true
+            type: ClsDataPreprocessor
+          type: ImageClassifier
+    torch_compile: false
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.0058
+        momentum: 0.9
+        dampening: 0.0
+        weight_decay: 0.0001
+        nesterov: false
+        maximize: false
+        differentiable: false
+    scheduler:
+      class_path: lightning.pytorch.cli.ReduceLROnPlateau
+      init_args:
+        monitor: train/loss
+        mode: min
+        factor: 0.5
+        patience: 1
+        threshold: 0.0001
+        threshold_mode: rel
+        cooldown: 0
+        min_lr: 0.0
+        eps: 1.0e-08
+        verbose: false
