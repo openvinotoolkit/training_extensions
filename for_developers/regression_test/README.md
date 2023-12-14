@@ -19,7 +19,8 @@
    You should set a proper value for the password environment variable, `POSTGRES_PASSWORD=<SET_MY_PASSWORD>`.
 
    ```console
-   for_developers/regression_test$ USER=$(id -u) POSTGRES_PASSWORD=<SET_MY_PASSWORD> docker compose up -d
+   for_developers/regression_test$ export POSTGRES_PASSWORD=<SET_MY_PASSWORD>
+   for_developers/regression_test$ USER=$(id -u) docker compose up -d
    ```
 
 ## How to execute regression test
