@@ -276,6 +276,14 @@ class TestZeroShotTask:
         self.zero_shot_task.infer(dataset, model)
 
         mocker_trainer.assert_called_once()
+        
+    @e2e_pytest_unit
+    def test_export(self, mocker):
+        """Test export."""
+
+    @e2e_pytest_unit
+    def test_export_to_onnx(self, mocker):
+        """Test _export_to_onnx."""
 
     @e2e_pytest_unit
     def test_save_model(self, mocker):
