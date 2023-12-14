@@ -256,7 +256,7 @@
     <span class="n">LineChartInfo</span><span class="p">,</span>
     <span class="n">LineMetricsGroup</span><span class="p">,</span>
     <span class="n">MetricsGroup</span><span class="p">,</span>
-    <span class="n">Performance</span><span class="p">,</span>
+    <span class="n">MultiScorePerformance</span><span class="p">,</span>
     <span class="n">ScoreMetric</span><span class="p">,</span>
     <span class="n">TextChartInfo</span><span class="p">,</span>
     <span class="n">TextMetricsGroup</span><span class="p">,</span>
@@ -442,6 +442,7 @@
 <span class="sd">        - all_classes_f_measure_curve</span>
 <span class="sd">        - best_f_measure</span>
 <span class="sd">        - best_threshold</span>
+<span class="sd">        - best_f_measure_metrics</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        classes (List[str]): List of classes.</span>
@@ -454,6 +455,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">all_classes_f_measure_curve</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">best_f_measure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">best_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_f_measure_metrics</span><span class="p">:</span> <span class="n">_Metrics</span> <span class="o">=</span> <span class="n">_Metrics</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">_OverallResults</span><span class="p">:</span>
@@ -601,6 +603,7 @@
             <span class="k">if</span> <span class="n">all_classes_f_measure</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">all_classes_f_measure</span> <span class="o">&gt;=</span> <span class="n">result</span><span class="o">.</span><span class="n">best_f_measure</span><span class="p">:</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">best_f_measure</span> <span class="o">=</span> <span class="n">all_classes_f_measure</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">best_threshold</span> <span class="o">=</span> <span class="n">confidence_threshold</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">best_f_measure_metrics</span> <span class="o">=</span> <span class="n">result_point</span><span class="p">[</span><span class="n">ALL_CLASSES_NAME</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="nf">get_results_per_nms</span><span class="p">(</span>
@@ -655,6 +658,7 @@
             <span class="k">if</span> <span class="n">all_classes_f_measure</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">all_classes_f_measure</span> <span class="o">&gt;=</span> <span class="n">result</span><span class="o">.</span><span class="n">best_f_measure</span><span class="p">:</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">best_f_measure</span> <span class="o">=</span> <span class="n">all_classes_f_measure</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">best_threshold</span> <span class="o">=</span> <span class="n">nms_threshold</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">best_f_measure_metrics</span> <span class="o">=</span> <span class="n">result_point</span><span class="p">[</span><span class="n">ALL_CLASSES_NAME</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="nf">evaluate_classes</span><span class="p">(</span>
@@ -930,6 +934,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">f_measure_per_label</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">best_f_measure_per_class</span><span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
             <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Precision&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">per_confidence</span><span class="o">.</span><span class="n">best_f_measure_metrics</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recall</span> <span class="o">=</span> <span class="n">ScoreMetric</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Recall&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">per_confidence</span><span class="o">.</span><span class="n">best_f_measure_metrics</span><span class="o">.</span><span class="n">recall</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_f_measure_per_confidence</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CurveMetric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_best_confidence_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ScoreMetric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -989,13 +995,12 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the best NMS threshold as ScoreMetric if exists.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_nms_threshold</span>
 
-<div class="viewcode-block" id="FMeasure.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.FMeasure.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Performance</span><span class="p">:</span>
+<div class="viewcode-block" id="FMeasure.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.FMeasure.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiScorePerformance</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the performance which consists of the F-Measure score and the dashboard metrics.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Performance: Performance object containing the F-Measure score and the dashboard metrics.</span>
+<span class="sd">            MultiScorePerformance: MultiScorePerformance object containing the F-Measure scores and the dashboard metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_measure</span>
         <span class="n">dashboard_metrics</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MetricsGroup</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">dashboard_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">BarMetricsGroup</span><span class="p">(</span>
@@ -1050,7 +1055,11 @@
                     <span class="p">),</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="o">=</span><span class="n">score</span><span class="p">,</span> <span class="n">dashboard_metrics</span><span class="o">=</span><span class="n">dashboard_metrics</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">MultiScorePerformance</span><span class="p">(</span>
+            <span class="n">primary_score</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f_measure</span><span class="p">,</span>
+            <span class="n">additional_scores</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recall</span><span class="p">],</span>
+            <span class="n">dashboard_metrics</span><span class="o">=</span><span class="n">dashboard_metrics</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__get_boxes_from_dataset_as_list</span><span class="p">(</span>

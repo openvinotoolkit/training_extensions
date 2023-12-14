@@ -276,6 +276,7 @@
 <span class="kn">from</span> <span class="nn">otx.api.entities.media</span> <span class="kn">import</span> <span class="n">IMediaEntity</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.model_template</span> <span class="kn">import</span> <span class="n">TaskType</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.scored_label</span> <span class="kn">import</span> <span class="n">ScoredLabel</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.ellipse</span> <span class="kn">import</span> <span class="n">Ellipse</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.shapes.polygon</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.shapes.rectangle</span> <span class="kn">import</span> <span class="n">Rectangle</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.subset</span> <span class="kn">import</span> <span class="n">Subset</span>
@@ -584,6 +585,21 @@
 
         <span class="k">return</span> <span class="n">Annotation</span><span class="p">(</span>
             <span class="n">Polygon</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
+            <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">label_entities</span><span class="p">[</span><span class="n">annotation</span><span class="o">.</span><span class="n">label</span><span class="p">])],</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_ellipse_entity</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">DatumAnnotation</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_polygons</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Annotation</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get ellipse entity.&quot;&quot;&quot;</span>
+        <span class="n">ellipse</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span>
+            <span class="n">annotation</span><span class="o">.</span><span class="n">x1</span> <span class="o">/</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">annotation</span><span class="o">.</span><span class="n">y1</span> <span class="o">/</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">annotation</span><span class="o">.</span><span class="n">x2</span> <span class="o">/</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">annotation</span><span class="o">.</span><span class="n">y2</span> <span class="o">/</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Annotation</span><span class="p">(</span>
+            <span class="n">ellipse</span><span class="p">,</span>
             <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">label_entities</span><span class="p">[</span><span class="n">annotation</span><span class="o">.</span><span class="n">label</span><span class="p">])],</span>
         <span class="p">)</span>
 
