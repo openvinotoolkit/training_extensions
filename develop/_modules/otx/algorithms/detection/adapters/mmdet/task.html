@@ -546,6 +546,8 @@
 
         <span class="n">dump_features</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">dump_saliency_map</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">inference_parameters</span><span class="o">.</span><span class="n">is_evaluation</span> <span class="k">if</span> <span class="n">inference_parameters</span> <span class="k">else</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NNCFBaseTask</span><span class="p">):</span>
+            <span class="n">dump_saliency_map</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_task</span><span class="p">()</span>
 
