@@ -29,7 +29,16 @@ def pytest_addoption(parser):
         "--num-repeat",
         action="store",
         default=0,
-        help="Overrides default per-data-size settings. Defaults to 0, which means no override."
+        help="Overrides default per-data-size number of repeat setting. "
+        "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
+        "Defaults to 0 (small=3, medium=3, large=1)."
+    )
+    parser.addoption(
+        "--num-epoch",
+        action="store",
+        default=0,
+        help="Overrides default per-model number of epoch setting. "
+        "Defaults to 0 (per-model epoch & early-stopping)."
     )
     parser.addoption(
         "--eval-upto",
@@ -49,6 +58,12 @@ def pytest_addoption(parser):
         default="exp/perf",
         help="Output directory to save outputs."
     )
+    parser.addoption(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Print OTX commands without execution."
+    )
 
 
 @pytest.fixture
@@ -63,20 +78,26 @@ def fxt_template(request: pytest.FixtureRequest):
 
 
 @pytest.fixture
-def fxt_data_setting(request: pytest.FixtureRequest):
-    """Skip by dataset size."""
+def fxt_benchmark_config(request: pytest.FixtureRequest):
+    """Override benchmark config."""
     data_size_option: str = request.config.getoption("--data-size")
     data_size: str = request.param[0]
     datasets: List[str] = request.param[1]["datasets"]
-    num_repeat: int = request.param[1]["num_repeat"]
+    if data_size_option != "all":
+        if data_size_option != data_size:
+            pytest.skip(f"{data_size} datasets")
+
+    num_epoch: int = request.param[1].get("num_epoch", 0)  # 0: per-model default
+    num_epoch_override: int = request.config.getoption("--num-epoch")
+    if num_epoch_override > 0:
+        num_epoch = num_epoch_override
+
+    num_repeat: int = request.param[1].get("num_repeat", 1)
     num_repeat_override: int = request.config.getoption("--num-repeat")
     if num_repeat_override > 0:
         num_repeat = num_repeat_override
 
-    if data_size_option != "all":
-        if data_size_option != data_size:
-            pytest.skip(f"{data_size} datasets")
-    return data_size, datasets, num_repeat
+    return data_size, datasets, num_epoch, num_repeat
 
 
 @pytest.fixture
@@ -93,12 +114,15 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
     data_root = os.path.abspath(data_root)
     output_dir = request.config.getoption("--output-dir")
     output_dir = os.path.abspath(output_dir + "-" + fxt_commit_hash)
+    dry_run = request.config.getoption("--dry-run")
 
     def build_config(
         tag: str,
         model_template: ModelTemplate,
         datasets: List[str],
+        num_epoch: int,
         num_repeat: int,
+        track_resources: bool = False,
         params: str = "",
     ) -> dict:
         cfg = {}
@@ -112,12 +136,17 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
         }
         cfg["repeat"] = num_repeat
         cfg["command"] = []
+        if num_epoch > 0:
+            params = params + f" --learning_pararmeters.num_iters {num_epoch}"
+        resource_param = ""
+        if track_resources:
+            resource_param = " --track-resource-usage all"
         cfg["command"].append(
             "otx train ${model}"
             " --train-data-roots ${dataroot}/${data}"
             " --val-data-roots ${dataroot}/${data}"
-            " --track-resource-usage all"
             " --deterministic"
+            f"{resource_param}"
             f" params {params}"
         )
         cfg["command"].append(
@@ -150,10 +179,12 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
         tag: str,
         model_template: ModelTemplate,
         datasets: List[str],
+        num_epoch: int,
         num_repeat: int,
+        track_resources: bool = False,
         params: str = "",
     ) -> List[str]:
-        cfg = build_config(tag, model_template, datasets, num_repeat, params)
+        cfg = build_config(tag, model_template, datasets, num_epoch, num_repeat, track_resources, params)
         cfg_path = tmp_path_factory.mktemp("exp")/"cfg.yaml"
         print(cfg_path)
         with open(cfg_path, "w") as cfg_file:
@@ -161,9 +192,9 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
         cmd = [
             "python",
             "tools/experiment.py",
-            "-d",
             "-f",
             cfg_path,
+            "-d" if dry_run else "",
         ]
         return cmd
 
