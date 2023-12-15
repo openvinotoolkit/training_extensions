@@ -7,6 +7,7 @@ import os
 import subprocess
 import yaml
 from typing import List
+from datetime import datetime
 
 from otx.api.entities.model_template import ModelTemplate, ModelCategory
 
@@ -88,12 +89,12 @@ def fxt_benchmark_config(request: pytest.FixtureRequest):
             pytest.skip(f"{data_size} datasets")
 
     num_epoch: int = request.param[1].get("num_epoch", 0)  # 0: per-model default
-    num_epoch_override: int = request.config.getoption("--num-epoch")
+    num_epoch_override: int = int(request.config.getoption("--num-epoch"))
     if num_epoch_override > 0:
         num_epoch = num_epoch_override
 
     num_repeat: int = request.param[1].get("num_repeat", 1)
-    num_repeat_override: int = request.config.getoption("--num-repeat")
+    num_repeat_override: int = int(request.config.getoption("--num-repeat"))
     if num_repeat_override > 0:
         num_repeat = num_repeat_override
 
@@ -114,6 +115,7 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
     data_root = os.path.abspath(data_root)
     output_dir = request.config.getoption("--output-dir")
     output_dir = os.path.abspath(output_dir + "-" + fxt_commit_hash)
+    output_dir = output_dir + "/" + datetime.now().strftime("%Y%m%d_%H%M%S")
     dry_run = request.config.getoption("--dry-run")
 
     def build_config(
@@ -137,7 +139,7 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
         cfg["repeat"] = num_repeat
         cfg["command"] = []
         if num_epoch > 0:
-            params = params + f" --learning_pararmeters.num_iters {num_epoch}"
+            params = params + f" --learning_parameters.num_iters {num_epoch}"
         resource_param = ""
         if track_resources:
             resource_param = " --track-resource-usage all"
@@ -194,8 +196,10 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
             "tools/experiment.py",
             "-f",
             cfg_path,
-            "-d" if dry_run else "",
         ]
+        if dry_run:
+            cmd.append("-d")
+
         return cmd
 
     return build_command
