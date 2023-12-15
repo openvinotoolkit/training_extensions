@@ -12,7 +12,7 @@ from torch import nn
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
-from otx.core.model.entity.classification import OTXClassificationModel
+from otx.core.model.entity.classification import OTXMulticlassClsModel
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -56,7 +56,7 @@ class DINOv2(nn.Module):
             return self.loss(logits, labels)
         return self.softmax(logits)
 
-class DINOv2RegisterClassifier(OTXClassificationModel):
+class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
     def __init__(self, config: DictConfig) -> None:
         self.config = config

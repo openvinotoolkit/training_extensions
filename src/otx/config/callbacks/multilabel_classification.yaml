@@ -1,0 +1,15 @@
+defaults:
+  - default
+
+model_checkpoint:
+  dirpath: ${base.output_dir}/checkpoints
+  filename: "epoch_{epoch:03d}"
+  monitor: "val/average_precision"
+  mode: "max"
+  save_last: True
+  auto_insert_metric_name: False
+
+early_stopping:
+  monitor: "val/average_precision"
+  patience: 100
+  mode: "max"

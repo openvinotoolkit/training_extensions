@@ -3,7 +3,7 @@ defaults:
   - override /base: classification
   - override /callbacks: classification
   - override /data: mmpretrain
-  - override /model: mmpretrain
+  - override /model: mmpretrain_multiclass
 data:
   train_subset:
     batch_size: 64

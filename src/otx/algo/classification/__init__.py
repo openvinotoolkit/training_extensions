@@ -4,6 +4,8 @@
 """Module for OTX classification models."""
 
 from . import backbones
+from . import heads
+from . import losses
 from .otx_dino_v2 import DINOv2, DINOv2RegisterClassifier
 
-__all__ = ["backbones", "DINOv2", "DINOv2RegisterClassifier"]
+__all__ = ["backbones", "heads", "losses", "DINOv2", "DINOv2RegisterClassifier"]
