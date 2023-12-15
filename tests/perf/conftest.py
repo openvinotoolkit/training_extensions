@@ -18,13 +18,15 @@ def pytest_addoption(parser):
         "--model-type",
         action="store",
         default="all",
-        help="Choose default|all. Defaults to all."
+        choices=("default", "all"),
+        help="Choose default|all. Defaults to all.",
     )
     parser.addoption(
         "--data-size",
         action="store",
         default="all",
-        help="Choose small|medium|large|all. Defaults to all."
+        choices=("small", "medium", "large", "all"),
+        help="Choose small|medium|large|all. Defaults to all.",
     )
     parser.addoption(
         "--num-repeat",
@@ -45,6 +47,7 @@ def pytest_addoption(parser):
         "--eval-upto",
         action="store",
         default="all",
+        choices=("train", "export", "optimize"),
         help="Choose train|export|optimize. Defaults to train."
     )
     parser.addoption(
@@ -54,10 +57,10 @@ def pytest_addoption(parser):
         help="Dataset root directory."
     )
     parser.addoption(
-        "--output-dir",
+        "--output-root",
         action="store",
         default="exp/perf",
-        help="Output directory to save outputs."
+        help="Output root directory."
     )
     parser.addoption(
         "--dry-run",
@@ -113,7 +116,7 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
     eval_upto = request.config.getoption("--eval-upto")
     data_root = request.config.getoption("--data-root")
     data_root = os.path.abspath(data_root)
-    output_dir = request.config.getoption("--output-dir")
+    output_dir = request.config.getoption("--output-root")
     output_dir = os.path.abspath(output_dir + "-" + fxt_commit_hash)
     output_dir = output_dir + "/" + datetime.now().strftime("%Y%m%d_%H%M%S")
     dry_run = request.config.getoption("--dry-run")
