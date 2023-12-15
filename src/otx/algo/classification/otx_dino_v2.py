@@ -17,6 +17,10 @@ from otx.core.model.entity.classification import OTXClassificationModel
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
+# TODO (sungmanc): torch.hub.load occassionally make an 403 HTTP error
+# Need to find more general solution.
+# https://github.com/pytorch/pytorch/issues/61755#issuecomment-885801511
+torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # noqa: ARG005, SLF001
 class DINOv2(nn.Module):
     """DINO-v2 Model."""
     def __init__(
