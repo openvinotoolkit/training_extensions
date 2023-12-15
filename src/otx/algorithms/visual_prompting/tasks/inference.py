@@ -655,7 +655,7 @@ class ZeroShotTask(InferenceTask):
                     "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
                     "label": torch.randperm(self.model.prompt_getter.reference_feats.shape[0])[0],
                     "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int64),
-                    "original_size": torch.tensor([image_size, image_size], dtype=torch.int64),
+                    "original_size": torch.randint(low=0, high=image_size * 2, size=(2,), dtype=torch.int64),
                     "threshold": torch.tensor(0.1, dtype=torch.float32),
                     "num_bg_points": torch.tensor(1, dtype=torch.int64),
                 }

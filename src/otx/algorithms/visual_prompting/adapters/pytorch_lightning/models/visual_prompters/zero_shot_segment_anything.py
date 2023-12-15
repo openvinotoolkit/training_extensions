@@ -71,7 +71,7 @@ class PromptGetter(nn.Module):
     def forward(
         self,
         image_embeddings: torch.Tensor,
-        label: int,
+        label: Union[int, torch.Tensor],
         padding: Union[Tuple[int, ...], torch.Tensor],
         original_size: Union[Tuple[int, int], torch.Tensor],
         threshold: Union[float, torch.Tensor] = 0.0,
@@ -151,7 +151,7 @@ class PromptGetter(nn.Module):
         matched_grid = fg_coords_scores.unsqueeze(1) * matched_matrix.unsqueeze(-1)
 
         # sample the highest score one of the samples that are in the same grid
-        points_scores = matched_grid[matched_grid[:, :, -1].argsort(dim=0, descending=True)[0]].diagonal().T
+        points_scores = matched_grid[matched_grid[..., -1].argsort(dim=0, descending=True)[0]].diagonal().T
 
         # sort by the highest score
         points_scores = points_scores[torch.argsort(points_scores[:, -1], descending=True)]
