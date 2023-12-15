@@ -790,7 +790,7 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     """
     exp_recipe = ExpRecipeParser(recipe_file)
     output_path = exp_recipe.output_path
-    output_path.mkdir(exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
     current_dir = os.getcwd()
     os.chdir(output_path)
 

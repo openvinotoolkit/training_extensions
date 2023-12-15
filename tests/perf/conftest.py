@@ -71,14 +71,14 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture
-def fxt_template(request: pytest.FixtureRequest):
-    """Skip by model template."""
+def fxt_model_id(request: pytest.FixtureRequest):
+    """Skip by model category."""
     model_type: str = request.config.getoption("--model-type")
-    template: ModelTemplate = request.param
+    model_template: ModelTemplate = request.param
     if model_type == "default":
-        if template.model_category == ModelCategory.OTHER:
-            pytest.skip(f"{template.model_category} model")
-    return template
+        if model_template.model_category == ModelCategory.OTHER:
+            pytest.skip(f"{model_template.model_category} category model")
+    return model_template.model_template_id
 
 
 @pytest.fixture
@@ -123,7 +123,7 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
 
     def build_config(
         tag: str,
-        model_template: ModelTemplate,
+        model_id: str,
         datasets: List[str],
         num_epoch: int,
         num_repeat: int,
@@ -136,7 +136,7 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
             "dataroot": data_root,
         }
         cfg["variables"] = {
-            "model": [model_template.model_template_id],
+            "model": [model_id],
             "data": datasets,
         }
         cfg["repeat"] = num_repeat
@@ -182,14 +182,14 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
 
     def build_command(
         tag: str,
-        model_template: ModelTemplate,
+        model_id: str,
         datasets: List[str],
         num_epoch: int,
         num_repeat: int,
         track_resources: bool = False,
         params: str = "",
     ) -> List[str]:
-        cfg = build_config(tag, model_template, datasets, num_epoch, num_repeat, track_resources, params)
+        cfg = build_config(tag, model_id, datasets, num_epoch, num_repeat, track_resources, params)
         cfg_path = tmp_path_factory.mktemp("exp")/"cfg.yaml"
         print(cfg_path)
         with open(cfg_path, "w") as cfg_file:

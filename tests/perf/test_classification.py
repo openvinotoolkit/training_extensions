@@ -10,8 +10,8 @@ from otx.cli.registry import Registry
 from tests.test_suite.run_test_command import check_run
 
 
-TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
-TEMPLATE_NAMES = [template.name for template in TEMPLATES]
+MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
+MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
 
 class TestPerfSingleLabelClassification:
@@ -38,27 +38,25 @@ class TestPerfSingleLabelClassification:
         },
     }
 
-    @pytest.mark.parametrize("fxt_template", TEMPLATES, ids=TEMPLATE_NAMES, indirect=True)
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark_config", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuarcy(self, fxt_template, fxt_benchmark_config, fxt_build_command):
+    def test_accuarcy(self, fxt_model_id, fxt_benchmark_config, fxt_build_command):
         """Benchmark accruacy metrics."""
-        model_template = fxt_template
         data_size, datasets, num_epoch, num_repeat = fxt_benchmark_config
         tag = f"singlelabel-classification-accuracy-{data_size}"
         command = fxt_build_command(
             tag,
-            model_template,
+            fxt_model_id,
             datasets,
             num_epoch,
             num_repeat,
         )
         check_run(command)
 
-    @pytest.mark.parametrize("fxt_template", TEMPLATES, ids=TEMPLATE_NAMES, indirect=True)
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark_config", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_template, fxt_benchmark_config, fxt_build_command):
+    def test_speed(self, fxt_model_id, fxt_benchmark_config, fxt_build_command):
         """Benchmark train time per iter / infer time per image."""
-        model_template = fxt_template
         data_size, datasets, num_epoch, num_repeat = fxt_benchmark_config
         # Override default iteration setting, in case there's no user input
         # "--data-size large -k speed" is recommended.
@@ -69,7 +67,7 @@ class TestPerfSingleLabelClassification:
         tag = f"singlelabel-classification-speed-{data_size}"
         command = fxt_build_command(
             tag,
-            model_template,
+            fxt_model_id,
             datasets,
             num_epoch,
             num_repeat,
