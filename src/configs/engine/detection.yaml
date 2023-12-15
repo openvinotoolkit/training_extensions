@@ -1,0 +1,46 @@
+max_epochs: 10
+callbacks:
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: val/map
+      mode: max
+      patience: 100
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      monitor: val/map
+      mode: max
+      save_top_k: 1
+      save_last: True
+      auto_insert_metric_name: False
+      filename: "{epoch}-{val/map:.4f}"
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: True
+      on_epoch: True
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+deterministic: false
+precision: 32
+val_check_interval: 1
+accelerator: auto
+devices: 1
+strategy: auto
+num_nodes: 1
+fast_dev_run: false
+max_steps: -1
+overfit_batches: 0.0
+check_val_every_n_epoch: 1
+accumulate_grad_batches: 1
+inference_mode: true
+use_distributed_sampler: true
+detect_anomaly: false
+barebones: false
+sync_batchnorm: false
+reload_dataloaders_every_n_epochs: 0

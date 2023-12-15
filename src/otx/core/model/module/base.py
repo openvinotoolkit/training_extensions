@@ -123,11 +123,12 @@ class OTXLitModule(LightningModule):
         optimizer = self.optimizer(self.parameters())
         if self.scheduler is not None:
             scheduler = self.scheduler(optimizer)
+            monitor = getattr(scheduler, "monitor", None)
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
                     "scheduler": scheduler,
-                    "monitor": scheduler.monitor,
+                    "monitor": monitor,
                 },
             }
         return {"optimizer": optimizer}

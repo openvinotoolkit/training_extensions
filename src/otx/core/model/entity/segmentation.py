@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from omegaconf import DictConfig
+
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
@@ -14,7 +16,6 @@ from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
-    from omegaconf import DictConfig
     from torch import nn
 
 
@@ -30,9 +31,9 @@ class MMSegCompatibleModel(OTXSegmentationModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
-        self.load_from = self.config.pop("load_from", None)
+    def __init__(self, config: DictConfig | dict) -> None:
+        self.load_from = config.pop("load_from", None)
+        self.config = DictConfig(config)
         super().__init__()
 
     def _create_model(self) -> nn.Module:

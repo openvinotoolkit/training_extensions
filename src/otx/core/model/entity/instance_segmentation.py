@@ -14,6 +14,7 @@ from mmdet.structures import DetDataSample
 from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from mmengine.registry import MODELS as MMENGINE_MODELS
 from mmengine.structures import InstanceData
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -23,7 +24,6 @@ from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from omegaconf import DictConfig
     from torch import nn
 
 
@@ -34,9 +34,9 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
-        self.load_from = self.config.pop("load_from", None)
+    def __init__(self, config: DictConfig | dict) -> None:
+        self.load_from = config.pop("load_from", None)
+        self.config = DictConfig(config)
         super().__init__()
 
     def _create_model(self) -> nn.Module:

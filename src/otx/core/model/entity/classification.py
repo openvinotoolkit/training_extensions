@@ -30,8 +30,8 @@ class MMPretrainCompatibleModel(OTXClassificationModel):
     compatible for OTX pipelines.
     """
     def __init__(self, config: DictConfig | dict) -> None:
-        self.config = config if isinstance(config, DictConfig) else DictConfig(config)
         self.load_from = config.pop("load_from", None)
+        self.config = DictConfig(config)
         super().__init__()
 
     def _create_model(self) -> nn.Module:

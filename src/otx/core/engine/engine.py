@@ -31,7 +31,7 @@ class Engine:
     This class defines the common interface for OTX, including methods for training and testing.
 
     Example:
-    >>> runner = Engine(
+    >>> engine = Engine(
         work_dir="output/folder/path",
     )
     """
@@ -48,7 +48,7 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         accelerator: str | Accelerator = "auto",
-        devices: list[int] | str | int = "auto",
+        devices: list[int] | str | int = 1,
         **kwargs,
     ):
         """Initializes the Engine object.

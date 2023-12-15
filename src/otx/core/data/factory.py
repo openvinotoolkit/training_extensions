@@ -15,7 +15,7 @@ from .dataset.base import OTXDataset, Transforms
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
-    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
+    from otx.core.config.data import DataModuleConfig, SubsetConfig
 
 
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
@@ -69,7 +69,7 @@ class OTXDatasetFactory:
         task: OTXTaskType,
         dm_subset: DatasetSubset,
         cfg_subset: SubsetConfig,
-        cfg_data_module: DataModuleConfig | InstSegDataModuleConfig,
+        cfg_data_module: DataModuleConfig,
     ) -> OTXDataset:
         """Create OTXDataset."""
         transforms = TransformLibFactory.generate(cfg_subset)

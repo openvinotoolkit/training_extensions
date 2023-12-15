@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -17,7 +18,6 @@ from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from omegaconf import DictConfig
     from torch import nn
 
 
@@ -31,9 +31,9 @@ class MMDetCompatibleModel(OTXDetectionModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX detection model
     compatible for OTX pipelines.
     """
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
+    def __init__(self, config: DictConfig | dict) -> None:
         self.load_from = config.pop("load_from", None)
+        self.config = DictConfig(config)
         super().__init__()
 
     def _create_model(self) -> nn.Module:

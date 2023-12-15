@@ -5,17 +5,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
+from omegaconf import DictConfig
 from torch import nn
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.model.entity.classification import OTXClassificationModel
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 class DINOv2(nn.Module):
     """DINO-v2 Model."""
@@ -58,8 +57,8 @@ class DINOv2(nn.Module):
 
 class DINOv2RegisterClassifier(OTXClassificationModel):
     """DINO-v2 Classification Model with register."""
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
+    def __init__(self, config: DictConfig | dict) -> None:
+        self.config = DictConfig(config)
         super().__init__() # create the model
 
     def _create_model(self) -> nn.Module:

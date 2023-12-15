@@ -1,3 +1,0 @@
-model: ./model/classification/otx_mobilenet_v3_large.yaml
-data: ./data/mmpretrain.yaml
-engine: ./engine/default.yaml
