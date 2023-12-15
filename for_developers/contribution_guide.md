@@ -25,7 +25,7 @@ This channel serves as the public space for suggesting and reviewing design chan
    These serve as a standard for reviewers evaluating the proposal in the next step.
    For instance, here are the design requirements for the tiling feature:
    ![design_req](images/contribution_guide/design_req.png)
-   **Ensure your proposal aligns with our product missions**.
+   **Ensure your proposal aligns with [our product missions](./product_design.md#our-product-mission)**.
 
    After that, you can write your proposal. In your document, address how your proposal meets the design requirements you've established, as shown in the following example:
    ![design_proposal](images/contribution_guide/design_proposal.png)
@@ -43,7 +43,7 @@ This channel serves as the public space for suggesting and reviewing design chan
 
 Follow these two steps in the reviewing process:
 
-1. **Review the design requirements**: Ensure alignment with our product missions.
+1. **Review the design requirements**: Ensure alignment with [our product missions](./product_design.md#our-product-mission).
 2. **Review the proposal content against the design requirements**: Thoroughly check that the proposed changes address the design requirements.
 
 ## Docstrings
