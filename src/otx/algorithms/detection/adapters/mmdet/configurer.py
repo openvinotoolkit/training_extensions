@@ -102,6 +102,15 @@ class DetectionConfigurer(BaseConfigurer):
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
 
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
+        """Configuration data pipeline settings."""
+        if cfg.device == "xpu":
+            if cfg.model.type == "CustomYOLOX":
+                cfg.model.size_multiplier=160
+                cfg.model.random_size_range=(3,5)
+
+        super().configure_data_pipeline(cfg, input_size, model_ckpt_path, **kwargs)
+
     def configure_classes(self, cfg):
         """Patch classes for model and dataset."""
         super().configure_classes(cfg)

@@ -5,7 +5,7 @@
 
 import json
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -234,6 +234,27 @@ class BaseConfigurer:
 
     def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
         """Configuration data pipeline settings."""
+        if cfg.device == "xpu":
+            # set keep_ratio to False
+            def _set_keep_ratio_false(date_pipeline: Union[Dict, List]):
+                if isinstance(date_pipeline, dict):
+                    for key, val in date_pipeline.items():
+                        if key == "keep_ratio":
+                            date_pipeline["keep_ratio"] = False
+                        if isinstance(val, (dict, list)):
+                            _set_keep_ratio_false(val)
+                elif isinstance(date_pipeline, list):
+                    for val in date_pipeline:
+                        if isinstance(val, (dict, list)):
+                            _set_keep_ratio_false(val)
+
+            for subset, data_config in cfg.data.items():
+                if subset in ("train", "val", "test", "unlabeled"):
+                    if "pipeline" in data_config:
+                        data_pipeline = data_config["pipeline"]
+                    elif "dataset" in data_config:
+                        data_pipeline = data_config["pipeline"]
+                    _set_keep_ratio_false(data_pipeline)
 
         patch_color_conversion(cfg)
         self.configure_input_size(cfg, input_size, model_ckpt_path, self.training)
