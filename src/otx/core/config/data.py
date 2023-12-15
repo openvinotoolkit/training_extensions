@@ -35,7 +35,7 @@ class TilerConfig:
 @dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
-    task: OTXTaskType
+
     data_format: str
     data_root: str
 
