@@ -24,20 +24,34 @@ This channel serves as the public space for suggesting and reviewing design chan
    While we don't enforce a strict document format, there is one essential requirement: establish design requirements.
    These serve as a standard for reviewers evaluating the proposal in the next step.
    For instance, here are the design requirements for the tiling feature:
-   ![design_req](images/contribution_guide/design_req.png)
-   **Ensure your proposal aligns with [our product missions](./product_design.md#our-product-mission)**.
+
+   |![design_req](images/contribution_guide/design_req.png)
+   |:-:|
+   | Example for the design requirement |
+
+   **Ensure your proposal aligns with [our product missions](./product_design.md#our-product-mission).**
 
    After that, you can write your proposal. In your document, address how your proposal meets the design requirements you've established, as shown in the following example:
-   ![design_proposal](images/contribution_guide/design_proposal.png)
+
+   | ![design_proposal](images/contribution_guide/design_proposal.png) |
+   | :---------------------------------------------------------------: |
+   |                  Example for the design proposal                  |
+
    We expect that this "set design requirement -> resolve design requirement" process can make our design change decision clear.
 
 2. **Request a review on the channel**
 
    Copy the document link from the Teams UI:
-   ![copy_link](images/contribution_guide/copy_link.png)
+
+   | ![copy_link](images/contribution_guide/copy_link.png) |
+   | :---------------------------------------------------: |
+   |                       Copy link                       |
 
    Post a review request on the channel to ask feedback from others:
-   ![ask_review](images/contribution_guide/ask_review.png)
+
+   | ![ask_review](images/contribution_guide/ask_review.png) |
+   | :-----------------------------------------------------: |
+   |              Submit a post to the channel               |
 
 ### Reviewing Other Members' Proposals
 
