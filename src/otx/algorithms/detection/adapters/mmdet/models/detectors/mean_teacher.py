@@ -187,7 +187,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         get_unlabeled_loss = pseudo_ratio >= self.min_pseudo_label_ratio and any(non_empty)
 
         if dist.is_initialized():
-            reduced_get_unlabeled_loss = torch.tensor(int(get_unlabeled_loss)).cuda()
+            reduced_get_unlabeled_loss = torch.tensor(int(get_unlabeled_loss)).to(current_device)
             dist.all_reduce(reduced_get_unlabeled_loss)
             if dont_have_to_train := not get_unlabeled_loss and reduced_get_unlabeled_loss > 0:
                 get_unlabeled_loss = True
