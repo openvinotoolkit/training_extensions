@@ -67,16 +67,12 @@ class TestPromptGetter:
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
         mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
-
-        reference_feat = torch.randn(1, 4, dtype=torch.float32)
-        target_feat = torch.randn(4, 16, dtype=torch.float32)
-        sim_shape = (4, 4)
-        self.prompt_getter.reference_feats = {1: torch.rand(1, 2)}
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
 
         prompts = self.prompt_getter(
-            reference_feat=reference_feat,
-            target_feat=target_feat,
-            sim_shape=sim_shape,
+            image_embeddings=image_embeddings,
+            label=0,
             padding=(0, 0, 0, 0),
             original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
         )
@@ -88,7 +84,7 @@ class TestPromptGetter:
         """Test get_prompt_candidates."""
         mocker.patch.object(self.prompt_getter, "forward", return_value=("points_scores", "bg_coords"))
         image_embeddings = torch.ones(1, 4, 4, 4)
-        self.prompt_getter.reference_feats = {1: torch.rand(1, 4)}
+        self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
 
         prompts = self.prompt_getter.get_prompt_candidates(
             image_embeddings=image_embeddings,
@@ -96,8 +92,8 @@ class TestPromptGetter:
             original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
         )
 
-        assert 1 in prompts
-        assert prompts[1] == ("points_scores", "bg_coords")
+        assert 0 in prompts
+        assert prompts[0] == ("points_scores", "bg_coords")
 
     @e2e_pytest_unit
     def test_point_selection(self) -> None:
@@ -191,8 +187,8 @@ class TestZeroShotSegmentAnything:
             original_size=(8, 8),
         )
 
-        assert zero_shot_segment_anything.prompt_getter.reference_feats.get(1).shape == (1, 2)
-        assert zero_shot_segment_anything.prompt_getter.reference_prompts.get(1).shape == (8, 8)
+        assert zero_shot_segment_anything.prompt_getter.reference_feats.shape == (2, 1, 2)
+        assert zero_shot_segment_anything.prompt_getter.reference_prompts.shape == (2, 8, 8)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("expected", [[torch.ones((8, 8)), torch.tensor([0.0, 0.0, 0.5])]])

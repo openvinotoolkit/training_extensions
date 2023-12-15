@@ -27,15 +27,22 @@ class PromptGetter(nn.Module):
     default_threshold_reference = 0.3
     default_threshold_target = 0.65
 
-    def __init__(self, image_size: int) -> None:
+    def __init__(
+        self,
+        image_size: int,
+        reference_feats: Optional[torch.Tensor] = None,
+        reference_prompts: Optional[torch.Tensor] = None,
+    ) -> None:
         super().__init__()
         self.image_size = image_size
-        self.initialize()
+        self.initialize(reference_feats, reference_prompts)
 
-    def initialize(self) -> None:
+    def initialize(
+        self, reference_feats: Optional[torch.Tensor] = None, reference_prompts: Optional[torch.Tensor] = None
+    ) -> None:
         """Initialize reference features and prompts."""
-        self.reference_feats: Dict[int, torch.Tensor] = {}
-        self.reference_prompts: Dict[int, torch.Tensor] = {}
+        self.reference_feats = reference_feats
+        self.reference_prompts = reference_prompts
 
     def set_default_thresholds(self, default_threshold_reference: float, default_threshold_target: float) -> None:
         """Set default thresholds."""
@@ -44,28 +51,44 @@ class PromptGetter(nn.Module):
 
     def set_reference(self, label: ScoredLabel, reference_feats: torch.Tensor, reference_prompts: torch.Tensor) -> None:
         """Set reference features and prompts."""
-        self.reference_feats[int(label.id_)] = reference_feats
-        self.reference_prompts[int(label.id_)] = reference_prompts
+        if self.reference_feats is None:
+            self.reference_feats = torch.zeros_like(reference_feats).unsqueeze(0)
+        if self.reference_prompts is None:
+            self.reference_prompts = torch.zeros_like(reference_prompts).unsqueeze(0)
+
+        for idx in range(int(label.id_) + 1):
+            if idx == int(label.id_):
+                while self.reference_feats.shape[0] - 1 < idx:
+                    self.reference_feats = torch.cat(
+                        (self.reference_feats, torch.zeros_like(reference_feats).unsqueeze(0)), dim=0
+                    )
+                    self.reference_prompts = torch.cat(
+                        (self.reference_prompts, torch.zeros_like(reference_prompts).unsqueeze(0)), dim=0
+                    )
+                self.reference_feats[idx] = reference_feats
+                self.reference_prompts[idx] = reference_prompts
 
     def forward(
         self,
-        reference_feat: torch.Tensor,
-        target_feat: torch.Tensor,
-        sim_shape: Union[Tuple[int, int], torch.Tensor],
+        image_embeddings: torch.Tensor,
+        label: int,
         padding: Union[Tuple[int, ...], torch.Tensor],
         original_size: Union[Tuple[int, int], torch.Tensor],
         threshold: Union[float, torch.Tensor] = 0.0,
         num_bg_points: Union[int, torch.Tensor] = 1,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get prompt candidates from given reference and target features."""
-        if isinstance(sim_shape, torch.Tensor):
-            sim_shape = tuple(sim_shape.tolist())
-
         if isinstance(original_size, torch.Tensor):
             original_size = tuple(original_size.tolist())
 
-        sim = reference_feat @ target_feat
-        sim = sim.reshape(1, 1, *sim_shape)
+        target_feat = image_embeddings.squeeze()
+        c_feat, h_feat, w_feat = target_feat.shape
+        target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
+        target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
+
+        sim = self.reference_feats[label].to(target_feat.device) @ target_feat
+        sim_shape = torch.sqrt(torch.tensor(sim.shape[1])).to(torch.int32)
+        sim = sim.reshape(1, 1, sim_shape, sim_shape)
         sim = ZeroShotSegmentAnything.postprocess_masks(
             sim, (self.image_size, self.image_size), padding, original_size
         ).squeeze()
@@ -82,17 +105,11 @@ class PromptGetter(nn.Module):
         original_size: Union[Tuple[int, int], torch.Tensor],
     ) -> Dict[int, Tuple[torch.Tensor, torch.Tensor]]:
         """Get prompt candidates."""
-        target_feat = image_embeddings.squeeze()
-        c_feat, h_feat, w_feat = target_feat.shape
-        target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
-        target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
-
         prompts: Dict[int, Tuple[torch.Tensor, torch.Tensor]] = {}
-        for label, reference_feat in self.reference_feats.items():
+        for label in range(len(self.reference_feats)):
             points_scores, bg_coords = self(
-                reference_feat=reference_feat.to(target_feat.device),
-                target_feat=target_feat,
-                sim_shape=(h_feat, w_feat),
+                image_embeddings=image_embeddings,
+                label=label,
                 padding=padding,
                 original_size=original_size,
             )
@@ -125,17 +142,22 @@ class PromptGetter(nn.Module):
         n_w = width // downsizing
 
         # get grid numbers
-        res = (fg_coords_scores[:, 1] * ratio // downsizing * n_w + fg_coords_scores[:, 0] * ratio // downsizing).to(
-            torch.int32
-        )
-        res_unique = torch.unique(res)
+        idx_grid = fg_coords_scores[:, 1] * ratio // downsizing * n_w + fg_coords_scores[:, 0] * ratio // downsizing
+        idx_grid_unique = torch.unique(
+            idx_grid.to(torch.int64)
+        )  # unique op only supports INT64, INT8, FLOAT, STRING in ORT
 
-        points_scores = [fg_coords_scores[res == r] for r in res_unique]
-        points_scores = [point_score[point_score.argmax(dim=0)[-1]] for point_score in points_scores]
-        points_scores = torch.stack(points_scores, dim=0)
-        points_scores = points_scores[
-            torch.argsort(points_scores[:, -1], descending=True)  # type: ignore[call-overload]
-        ]
+        # get matched indices
+        matched_matrix = idx_grid.unsqueeze(-1) == idx_grid_unique  # (totalN, uniqueN)
+
+        # sample fg_coords_scores matched by matched_matrix
+        matched_grid = fg_coords_scores.unsqueeze(1) * matched_matrix.unsqueeze(-1)
+
+        # sample the highest score one of the samples that are in the same grid
+        points_scores = matched_grid[matched_grid[:, :, -1].argsort(dim=0, descending=True)[0]].diagonal().T
+
+        # sort by the highest score
+        points_scores = points_scores[torch.argsort(points_scores[:, -1], descending=True)]
 
         return points_scores, bg_coords
 
@@ -169,16 +191,15 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         super().__init__(config, state_dict)
 
-        self.prompt_getter = PromptGetter(image_size=config.model.image_size)
-        self.prompt_getter.initialize()
-        self.prompt_getter.set_default_thresholds(
-            config.model.default_threshold_reference, config.model.default_threshold_target
+        self.prompt_getter = PromptGetter(
+            image_size=config.model.image_size,
+            reference_feats=prompt_getter_reference_feats,
+            reference_prompts=prompt_getter_reference_prompts,
         )
-
-        if prompt_getter_reference_feats:
-            self.prompt_getter.reference_feats = prompt_getter_reference_feats
-        if prompt_getter_reference_prompts:
-            self.prompt_getter.reference_prompts = prompt_getter_reference_prompts
+        self.prompt_getter.set_default_thresholds(
+            default_threshold_reference=config.model.default_threshold_reference,
+            default_threshold_target=config.model.default_threshold_target,
+        )
 
     def set_default_config(self) -> DictConfig:
         """Set default config when using independently."""
@@ -281,7 +302,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 )
                 default_threshold_reference -= 0.05
 
-            self.prompt_getter.set_reference(label, reference_feat.detach().cpu(), reference_prompt.detach().cpu())
+            self.prompt_getter.set_reference(label, reference_feat, reference_prompt)
 
     @torch.no_grad()
     def infer(
@@ -308,7 +329,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
         assert images.shape[0] == 1, "Only single batch is supported."
 
         total_results = []
-        # num_classes = len(self.reference_feats.keys())
         for image in images:
             if image.ndim == 3:
                 image = image.unsqueeze(0)

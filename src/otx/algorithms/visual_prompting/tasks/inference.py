@@ -24,7 +24,6 @@ import tempfile
 import time
 import warnings
 from collections import OrderedDict
-from functools import reduce
 from typing import Dict, List, Optional, Union
 
 import torch
@@ -652,21 +651,19 @@ class ZeroShotTask(InferenceTask):
                 model_to_export = self.model.image_encoder
 
             elif module == "visual_prompting_prompt_getter":
-                reference_feat = torch.randn(1, embed_dim, dtype=torch.float32)
-                reference_feat /= reference_feat.norm(dim=-1, keepdim=True)
-                target_feat = torch.randn(embed_dim, reduce(lambda x, y: x * y, embed_size), dtype=torch.float32)
-                target_feat /= target_feat.norm(dim=0, keepdim=True)
                 dummy_inputs = {
-                    "reference_feat": reference_feat,
-                    "target_feat": target_feat,
-                    "sim_shape": torch.tensor(embed_size, dtype=torch.int64),
+                    "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "label": torch.randperm(self.model.prompt_getter.reference_feats.shape[0])[0],
                     "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int64),
                     "original_size": torch.tensor([image_size, image_size], dtype=torch.int64),
                     "threshold": torch.tensor(0.1, dtype=torch.float32),
                     "num_bg_points": torch.tensor(1, dtype=torch.int64),
                 }
                 output_names = ["points_scores", "bg_coords"]
-                dynamic_axes = {"points_scores": {0: "num_points"}, "bg_coords": {0: "num_points"}}
+                dynamic_axes = {
+                    "points_scores": {0: "num_points"},
+                    "bg_coords": {0: "num_points"},
+                }
                 model_to_export = self.model.prompt_getter
 
             elif module == "visual_prompting_decoder":
