@@ -78,9 +78,6 @@ class PromptGetter(nn.Module):
         num_bg_points: Union[int, torch.Tensor] = 1,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get prompt candidates from given reference and target features."""
-        if isinstance(original_size, torch.Tensor):
-            original_size = tuple(original_size.tolist())
-
         target_feat = image_embeddings.squeeze()
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)

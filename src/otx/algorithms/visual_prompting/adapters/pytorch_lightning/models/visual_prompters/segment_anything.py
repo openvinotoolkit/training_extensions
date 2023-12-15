@@ -10,7 +10,7 @@ reference: https://github.com/facebookresearch/segment-anything
 
 import re
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from omegaconf import DictConfig
@@ -556,8 +556,8 @@ class SegmentAnything(LightningModule):
     def postprocess_masks(
         masks: Tensor,
         input_size: Tuple[int, int],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
+        padding: Union[Tuple[int, ...], Tensor],
+        original_size: Union[Tuple[int, int], Tensor],
     ) -> Tensor:
         """Remove padding and upscale masks to the original image size.
 
@@ -565,17 +565,17 @@ class SegmentAnything(LightningModule):
             masks (Tensor): Predicted masks from the mask_decoder with (N, 1, H/downsized_ratio, W/downsized_ratio).
             input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.
                 Used to remove padding.
-            padding (tuple(int, int, int, int), optional): The padding applied to the image before input to the model,
+            padding (tuple(int, int, int, int), Tensor): The padding applied to the image before input to the model,
                 in (left, top, right, bottom) format.
-            original_size (tuple(int, int)): The original size of the image before resizing for input to the model,
-                in (H, W) format.
+            original_size (tuple(int, int), Tensor): The original size of the image before resizing
+                for input to the model, in (H, W) format.
 
         Returns:
           (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         masks = masks[..., : input_size[0] - padding[3], : input_size[1] - padding[2]]
-        masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+        masks = F.interpolate(masks, [o for o in original_size], mode="bilinear", align_corners=False)
         return masks.squeeze(1)
 
     def configure_optimizers(self) -> optim:
