@@ -58,11 +58,11 @@ model:
       backbone:
         name: dinov2_vits14_reg
         freeze_backbone: true
-        in_index:
-          - 0
-          - 1
-          - 2
-          - 3
+        out_index:
+          - 8
+          - 9
+          - 10
+          - 11
         type: DinoVisionTransformer
       data_preprocessor:
         bgr_to_rgb: true

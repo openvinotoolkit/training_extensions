@@ -4,7 +4,7 @@
 """DINO-V2 model for the OTX classification."""
 
 from __future__ import annotations
-
+from typing import Dict
 from functools import partial
 
 import torch
@@ -20,17 +20,19 @@ class DinoVisionTransformer(BaseModule):
         self,
         name: str,
         freeze_backbone: bool,
-        in_index: list[int],
+        out_index: list[int],
+        init_cfg: Dict | None = None
     ):
-        super().__init__()
+        super().__init__(init_cfg)
         torch.hub._validate_not_a_forked_repo=lambda a, b, c: True # noqa: SLF001, ARG005
         self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
-        # remove last layers to preserve spatial dimension
+
+        # take intermediate layers to preserve spatial dimension
         self.backbone.forward = partial(
             self.backbone.get_intermediate_layers,
-            n=in_index,
+            n=out_index,
             reshape=True,
      )
 
@@ -38,6 +40,12 @@ class DinoVisionTransformer(BaseModule):
         """Freeze the backbone."""
         for _, v in backbone.named_parameters():
             v.requires_grad = False
+
+    def init_weights(self):
+        # restrict rewriting backbone pretrained weights from torch.hub
+        # unless weights passed explicitly in config
+        if self.init_cfg:
+            return super().init_weights()
 
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
         """Forward function."""
