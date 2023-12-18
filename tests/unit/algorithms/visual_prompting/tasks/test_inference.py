@@ -311,7 +311,6 @@ class TestZeroShotTask:
         image_size = self.zero_shot_task.config.model.image_size
         embed_dim = self.zero_shot_task.model.prompt_encoder.embed_dim
         embed_size = self.zero_shot_task.model.prompt_encoder.image_embedding_size
-        num_reference_feats = self.zero_shot_task.model.prompt_getter.reference_feats.shape[0]
         mask_input_size = [4 * x for x in embed_size]
         onnx_inputs = {
             "visual_prompting_image_encoder": {
@@ -319,7 +318,6 @@ class TestZeroShotTask:
             },
             "visual_prompting_prompt_getter": {
                 "image_embeddings": np.random.randn(1, embed_dim, *embed_size).astype(dtype=np.float32),
-                "label": np.random.randint(low=0, high=num_reference_feats, size=(1, 1), dtype=np.int64),
                 "original_size": np.random.randint(low=0, high=image_size * 2, size=(1, 2), dtype=np.int64),
                 "threshold": np.array([[0.1]], dtype=np.float32),
                 "num_bg_points": np.random.randint(low=1, high=image_size, size=(1, 1), dtype=np.int64),
@@ -334,7 +332,7 @@ class TestZeroShotTask:
         }
         onnx_outputs = {
             "visual_prompting_image_encoder": ["image_embeddings"],
-            "visual_prompting_prompt_getter": ["points_scores", "bg_coords"],
+            "visual_prompting_prompt_getter": ["total_points_scores", "total_bg_coords"],
             "visual_prompting_decoder": ["iou_predictions", "low_res_masks"],
         }
 

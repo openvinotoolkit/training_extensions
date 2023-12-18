@@ -73,6 +73,39 @@ class PromptGetter(nn.Module):
     def forward(
         self,
         image_embeddings: torch.Tensor,
+        original_size: torch.Tensor,
+        threshold: torch.Tensor = torch.tensor([[0.0]], dtype=torch.float32),
+        num_bg_points: torch.Tensor = torch.tensor([[1]], dtype=torch.int64),
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Get prompt candidates."""
+        total_points_scores: torch.Tensor
+        total_bg_coords: torch.Tensor
+        for label in range(len(self.reference_feats)):
+            points_scores, bg_coords = self.get_prompt_candidates(
+                image_embeddings=image_embeddings,
+                label=torch.tensor([[label]], dtype=torch.int64),
+                original_size=original_size,
+                threshold=threshold,
+                num_bg_points=num_bg_points,
+            )
+            if label == 0:
+                total_points_scores = points_scores.unsqueeze(0)
+                total_bg_coords = bg_coords.unsqueeze(0)
+            else:
+                pad_tot = max(0, points_scores.shape[0] - total_points_scores.shape[1])
+                pad_cur = max(0, total_points_scores.shape[1] - points_scores.shape[0])
+
+                total_points_scores = F.pad(total_points_scores, (0, 0, 0, pad_tot, 0, 0), value=-1)
+                points_scores = F.pad(points_scores, (0, 0, 0, pad_cur), value=-1)
+
+                total_points_scores = torch.cat((total_points_scores, points_scores.unsqueeze(0)), dim=0)
+                total_bg_coords = torch.cat((total_bg_coords, bg_coords.unsqueeze(0)), dim=0)
+
+        return total_points_scores, total_bg_coords
+
+    def get_prompt_candidates(
+        self,
+        image_embeddings: torch.Tensor,
         label: torch.Tensor,
         original_size: torch.Tensor,
         threshold: torch.Tensor = torch.tensor([[0.0]], dtype=torch.float32),
@@ -100,22 +133,6 @@ class PromptGetter(nn.Module):
         )
 
         return points_scores, bg_coords
-
-    def get_prompt_candidates(
-        self,
-        image_embeddings: torch.Tensor,
-        original_size: torch.Tensor,
-    ) -> Dict[int, Tuple[torch.Tensor, torch.Tensor]]:
-        """Get prompt candidates."""
-        prompts: Dict[int, Tuple[torch.Tensor, torch.Tensor]] = {}
-        for label in range(len(self.reference_feats)):
-            points_scores, bg_coords = self(
-                image_embeddings=image_embeddings,
-                label=torch.tensor([[label]], dtype=torch.int64),
-                original_size=original_size.unsqueeze(0),
-            )
-            prompts[label] = (points_scores, bg_coords)
-        return prompts
 
     def _point_selection(
         self,
@@ -332,13 +349,15 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             image_embeddings = self.image_encoder(images)
 
-            prompts = self.prompt_getter.get_prompt_candidates(
+            total_points_scores, total_bg_coords = self.prompt_getter(
                 image_embeddings=image_embeddings, original_size=original_size
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
-            for label, (points_scores, bg_coords) in prompts.items():
+            for label, (points_scores, bg_coords) in enumerate(zip(total_points_scores, total_bg_coords)):
                 for points_score in points_scores:
+                    if points_score[-1] == -1:
+                        continue
                     x, y = points_score[:2]
                     is_done = False
                     for pm in predicted_masks.get(label, []):

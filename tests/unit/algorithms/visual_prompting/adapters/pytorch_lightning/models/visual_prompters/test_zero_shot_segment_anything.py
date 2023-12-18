@@ -63,6 +63,25 @@ class TestPromptGetter:
     @e2e_pytest_unit
     def test_forward(self, mocker) -> None:
         """Test forward."""
+        mocker.patch.object(
+            self.prompt_getter,
+            "get_prompt_candidates",
+            return_value=(torch.tensor([[[0, 0, 0.5], [1, 1, 0.7]]]), torch.tensor([[[2, 2]]])),
+        )
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
+        original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
+
+        total_points_scores, total_bg_coords = self.prompt_getter(
+            image_embeddings=image_embeddings, original_size=original_size
+        )
+
+        assert total_points_scores.shape[0] == 1
+        assert total_bg_coords.shape[0] == 1
+
+    @e2e_pytest_unit
+    def test_get_prompt_candidates(self, mocker) -> None:
+        """Test get_prompt_candidates."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
@@ -74,24 +93,12 @@ class TestPromptGetter:
             [[self.prompt_getter.image_size, self.prompt_getter.image_size]], dtype=torch.int64
         )
 
-        prompts = self.prompt_getter(image_embeddings=image_embeddings, label=label, original_size=original_size)
-
-        assert prompts == ("points_scores", "bg_coords")
-
-    @e2e_pytest_unit
-    def test_get_prompt_candidates(self, mocker) -> None:
-        """Test get_prompt_candidates."""
-        mocker.patch.object(self.prompt_getter, "forward", return_value=("points_scores", "bg_coords"))
-        image_embeddings = torch.ones(1, 4, 4, 4)
-        self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
-        original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
-
-        prompts = self.prompt_getter.get_prompt_candidates(
-            image_embeddings=image_embeddings, original_size=original_size
+        points_scores, bg_coords = self.prompt_getter.get_prompt_candidates(
+            image_embeddings=image_embeddings, label=label, original_size=original_size
         )
 
-        assert 0 in prompts
-        assert prompts[0] == ("points_scores", "bg_coords")
+        assert points_scores == "points_scores"
+        assert bg_coords == "bg_coords"
 
     @e2e_pytest_unit
     def test_point_selection(self) -> None:
@@ -197,8 +204,8 @@ class TestZeroShotSegmentAnything:
         )
 
         zero_shot_segment_anything = set_zero_shot_segment_anything()
-        zero_shot_segment_anything.prompt_getter.reference_feats = {1: torch.rand((1, 2))}
-        zero_shot_segment_anything.prompt_getter.reference_prompts = {1: torch.zeros((8, 8))}
+        zero_shot_segment_anything.prompt_getter.reference_feats = torch.rand(1, 1, 4)
+        zero_shot_segment_anything.prompt_getter.reference_prompts = torch.zeros((8, 8))
         mocker.patch.object(
             SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
         )

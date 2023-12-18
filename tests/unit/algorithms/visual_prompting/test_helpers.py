@@ -205,6 +205,4 @@ class MockPromptGetter(nn.Module):
         return {1: (torch.Tensor([[0, 0, 0.5]]), torch.Tensor([[1, 1]]))}
 
     def forward(self, *args, **kwargs):
-        return {
-            MockScoredLabel(label=1, name="label"): (torch.tensor([[0, 0, 0.5], [1, 1, 0.7]]), torch.tensor([[2, 2]]))
-        }
+        return torch.tensor([[[0, 0, 0.5], [1, 1, 0.7]]]), torch.tensor([[[2, 2]]])
