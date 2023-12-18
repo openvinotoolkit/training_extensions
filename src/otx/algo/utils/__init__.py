@@ -3,7 +3,7 @@
 #
 """Utils used for mmseg model."""
 
-from .utils import AsymmetricPositionAttentionModule, IterativeAggregator, LocalAttentionModule, channel_shuffle
+from .segmentation import AsymmetricPositionAttentionModule, IterativeAggregator, LocalAttentionModule, channel_shuffle
 
 __all__ = [
     "IterativeAggregator",

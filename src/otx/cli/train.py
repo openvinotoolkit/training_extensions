@@ -35,11 +35,11 @@ def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
     )
 
 
-def otx_train(overrides: list[str]) -> tuple[Trainer, dict[str, Any]]:
+def otx_train(overrides: list[str]) -> dict[str, Any]:
     """Main entry point for training.
 
     :param overrides: Override List values.
-    :return: Optional[float] with optimized metric value.
+    :return: Metrics values obtained from the model trainer.
     """
     from otx.core.config import register_configs
 
@@ -53,6 +53,7 @@ def otx_train(overrides: list[str]) -> tuple[Trainer, dict[str, Any]]:
         configure_hydra_outputs(cfg)
 
         # train the model
-        from otx.core.engine.train import train
+        from otx.core.engine import Engine
 
-        return train(cfg)
+        engine = Engine()
+        return engine.train(cfg)
