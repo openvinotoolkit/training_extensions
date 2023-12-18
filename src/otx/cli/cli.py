@@ -10,8 +10,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace
+from rich.console import Console
 
-from otx import __version__
+from otx import OTX_LOGO, __version__
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring
 
@@ -30,6 +31,7 @@ class OTXCLI:
 
     def __init__(self) -> None:
         """Initialize OTX CLI."""
+        self.console = Console()
         self.parser = self.init_parser()
         self._subcommand_method_arguments: dict[str, list[str]] = {}
         self.add_subcommands()
@@ -205,6 +207,7 @@ class OTXCLI:
         Raises:
             ValueError: If the subcommand is not recognized.
         """
+        self.console.print(f"[blue]{OTX_LOGO}[/blue] ver.{__version__}", justify="center")
         if self.subcommand == "install":
             from otx.cli.install import otx_install
             otx_install(**self.config["install"])
@@ -212,7 +215,10 @@ class OTXCLI:
             self.instantiate_classes()
             fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
-            fn(**fn_kwargs)
+            try:
+                fn(**fn_kwargs)
+            except Exception:
+                self.console.print_exception(width=self.console.width)
             self.save_config()
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"

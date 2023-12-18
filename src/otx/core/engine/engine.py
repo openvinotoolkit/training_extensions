@@ -173,11 +173,11 @@ class Engine:
                 ```python
                 otx train
                     --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
-                    --engine.max_epochs 3
+                    --engine.max_epochs <EPOCHS, int> --checkpoint <CKPT_PATH, str>
                 ```
-            4. If you have a ready configuration file, run it like this.
+            3. If you have a ready configuration file, run it like this.
                 ```python
-                otx train --config <config_file_path>
+                otx train --config <CONFIG_PATH, str>
                 ```
         """
         self.trainer.fit(
@@ -215,15 +215,13 @@ class Engine:
         CLI Usage:
             1. you can pick a model.
                 ```python
-                otx test --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH>
+                otx test
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
                 ```
-            2. Of course, you can override the various values with commands.
+            2. If you have a ready configuration file, run it like this.
                 ```python
-                otx test --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
-                ```
-            4. If you have a ready configuration file, run it like this.
-                ```python
-                otx test --config <config_file_path>
+                otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
         self.trainer.test(
@@ -234,9 +232,50 @@ class Engine:
 
         return self.trainer.callback_metrics
 
-    def predict(self, *args, **kwargs) -> None:
-        """Predict with the trained model."""
-        raise NotImplementedError
+    def predict(
+        self,
+        model: LightningModule | None = None,
+        datamodule: OTXDataModule | None = None,
+        checkpoint: str | Path | None = None,
+        return_predictions: bool | None = None,
+    ) -> list | None:
+        """Run predictions using the specified model and data.
+
+        Args:
+            model (LightningModule | None): The model to use for predictions.
+            datamodule (OTXDataModule | None): The data module to use for predictions.
+            checkpoint (str | Path | None): The path to the checkpoint file to load the model from.
+            return_predictions (bool | None): Whether to return the predictions or not.
+
+        Returns:
+            list | None: The predictions if `return_predictions` is True, otherwise None.
+
+        Example:
+        >>> engine.predict(
+            model=LightningModule(),
+            datamodule=OTXDataModule(),
+            checkpoint="checkpoint.ckpt",
+            return_predictions=True,
+        )
+
+        CLI Usage:
+            1. you can pick a model.
+                ```python
+                otx predict
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
+            2. If you have a ready configuration file, run it like this.
+                ```python
+                otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
+                ```
+        """
+        return self.trainer.predict(
+            model=model,
+            datamodule=datamodule,
+            ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
+            return_predictions=return_predictions,
+        )
 
     def export(self, *args, **kwargs) -> None:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
