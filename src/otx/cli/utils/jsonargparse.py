@@ -50,7 +50,8 @@ def update(self: Namespace, value: Any, key: str | None = None,  # noqa: ANN401
             raise KeyError(msg)
         if not only_unset or key not in self:
             if key not in self or value is not None:
-                if isinstance(value, str) and value.isnumeric():
+                if isinstance(value, str) and \
+                    (value.isnumeric() or value in ("True", "False")):
                     value = ast.literal_eval(value)
                 self[key] = value
             elif value is None:

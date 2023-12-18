@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace
@@ -164,6 +165,12 @@ class OTXCLI:
         """Utility to get a config value which might be inside a subcommand."""
         return config.get(str(self.subcommand), config).get(key, default)
 
+    def _parser(self, subcommand: str | None) -> ArgumentParser:
+        if subcommand is None:
+            return self.parser
+        # return the subcommand parser for the subcommand passed
+        return self._subcommand_parsers[subcommand]
+
     def _prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
         fn_kwargs = {
@@ -173,6 +180,24 @@ class OTXCLI:
         if self.datamodule is not None:
             fn_kwargs["datamodule"] = self.datamodule
         return fn_kwargs
+
+    def save_config(self) -> None:
+        """Save the configuration for the specified subcommand.
+
+        The configuration is saved as a YAML file in the engine's working directory.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        self._parser(self.subcommand).save(
+            cfg=self.config.get(str(self.subcommand), self.config),
+            path=Path(self.engine.work_dir) / "configs.yaml",
+            overwrite=True,
+            multifile=False,
+        )
 
     def run(self) -> None:
         """Executes the specified subcommand.
@@ -188,6 +213,7 @@ class OTXCLI:
             fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
             fn(**fn_kwargs)
+            self.save_config()
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)

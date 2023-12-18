@@ -34,7 +34,7 @@ REQUIRED_ARGUMENTS = {
 }
 
 
-def pre_parse_arguments() -> dict:
+def get_verbosity_subcommand() -> dict:
     """Parse command line arguments and returns a dictionary of key-value pairs.
 
     Returns:
@@ -42,91 +42,42 @@ def pre_parse_arguments() -> dict:
 
     Examples:
         >>> import sys
-        >>> sys.argv = ['otx', 'train', '--arg1', 'value1', '-a', 'value2', '-h']
-        >>> pre_parse_arguments()
-        {'subcommand': 'train', 'arg1': 'value1', 'a': 'value2', 'h': None}
+        >>> sys.argv = ['otx', 'train', '-h', '-v']
+        >>> get_verbosity_subcommand()
+        {'subcommand': 'train', 'help': True, 'verbosity': 1}
     """
-    arguments: dict = {"subcommand": None}
-    i = 1
-    while i < len(sys.argv):
-        if sys.argv[i].startswith("--"):
-            key = sys.argv[i][2:]
-            value = None
-            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--"):
-                value = sys.argv[i + 1]
-                i += 1
-            arguments[key] = value
-        elif sys.argv[i].startswith("-"):
-            key = sys.argv[i][1:]
-            value = None
-            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-"):
-                value = sys.argv[i + 1]
-                i += 1
-            arguments[key] = value
-        elif i == 1:
-            arguments["subcommand"] = sys.argv[i]
-        i += 1
+    arguments: dict = {"subcommand": None, "help": False, "verbosity": 2}
+    if len(sys.argv) >= 2 and sys.argv[1] not in ("--help", "-h"):
+        arguments["subcommand"] = sys.argv[1]
+    if "--help" in sys.argv or "-h" in sys.argv:
+        arguments["help"] = True
+        if arguments["subcommand"] in REQUIRED_ARGUMENTS:
+            arguments["verbosity"] = 0
+            if "-v" in sys.argv or "--verbose" in sys.argv:
+                arguments["verbosity"] = 1
+            if "-vv" in sys.argv:
+                arguments["verbosity"] = 2
     return arguments
 
 
-def get_verbosity_subcommand() -> tuple:
-    """Return a tuple containing the verbosity level and the subcommand name.
+INTRO_MARKDOWN = (
+    "# OpenVINO™ Training Extensions CLI Guide\n\n"
+    "Github Repository: [https://github.com/openvinotoolkit/training_extensions](https://github.com/openvinotoolkit/training_extensions)."
+    "\n\n"
+    "A better guide is provided by the [documentation](https://openvinotoolkit.github.io/training_extensions/stable/)."
+)
 
-    The verbosity level is determined by the command line arguments passed to the script.
-    If the subcommand requires additional arguments, the verbosity level is only set if the
-    help option is specified. The verbosity level can be set to 0 (no output), 1 (normal output),
-    or 2 (verbose output).
+VERBOSE_USAGE = (
+    "To get more overridable argument information, run the command below.\n"
+    "```python\n"
+    "# Verbosity Level 1\n"
+    "otx {subcommand} [optional_arguments] -h -v\n"
+    "# Verbosity Level 2\n"
+    "otx {subcommand} [optional_arguments] -h -vv\n"
+    "```"
+)
 
-    Returns:
-        A tuple containing the verbosity level (int) and the subcommand name (str).
-    """
-    arguments = pre_parse_arguments()
-    verbosity = 2
-    if arguments["subcommand"] in REQUIRED_ARGUMENTS and ("h" in arguments or "help" in arguments):
-        if "v" in arguments:
-            verbosity = 1
-        elif "vv" in arguments:
-            verbosity = 2
-        else:
-            verbosity = 0
-    return verbosity, arguments["subcommand"]
-
-
-def get_intro() -> Markdown:
-    """Return a Markdown object containing the introduction text for OTX CLI Guide.
-
-    The introduction text includes a brief description of the guide and links to the Github repository and documentation
-
-    Returns:
-        A Markdown object containing the introduction text for OTX CLI Guide.
-    """
-    intro_markdown = (
-        "# OpenVINO™ Training Extensions CLI Guide\n\n"
-        "Github Repository: [https://github.com/openvinotoolkit/training_extensions](https://github.com/openvinotoolkit/training_extensions)."
-        "\n\n"
-        "A better guide is provided by the [documentation](https://openvinotoolkit.github.io/training_extensions/stable/)."
-    )
-    return Markdown(intro_markdown)
-
-
-def get_verbose_usage(subcommand: str = "train") -> str:
-    """Return a string containing verbose usage information for the specified subcommand.
-
-    Args:
-        subcommand (str): The name of the subcommand to get verbose usage information for. Defaults to "train".
-
-    Returns:
-        str: A string containing verbose usage information for the specified subcommand.
-    """
-    return (
-        "To get more overridable argument information, run the command below.\n"
-        "```python\n"
-        "# Verbosity Level 1\n"
-        f"otx {subcommand} [optional_arguments] -h -v\n"
-        "# Verbosity Level 2\n"
-        f"otx {subcommand} [optional_arguments] -h -vv\n"
-        "```"
-    )
+CLI_USAGE_PATTERN = r"CLI Usage:(.*?)(?=\n{2,}|\Z)"
 
 
 def get_cli_usage_docstring(component: object | None) -> str | None:
@@ -153,10 +104,7 @@ def get_cli_usage_docstring(component: object | None) -> str | None:
     """
     if component is None or component.__doc__ is None or "CLI Usage" not in component.__doc__:
         return None
-
-    pattern = r"CLI Usage:(.*?)(?=\n{2,}|\Z)"
-    match = re.search(pattern, component.__doc__, re.DOTALL)
-
+    match = re.search(CLI_USAGE_PATTERN, component.__doc__, re.DOTALL)
     if match:
         contents = match.group(1).strip().split("\n")
         return "\n".join([content.strip() for content in contents])
@@ -175,11 +123,11 @@ def render_guide(subcommand: str | None = None) -> list:
     if subcommand is None or subcommand in ("install"):
         return []
     from otx.core.engine import Engine
-    contents: list[Panel | Markdown] = [get_intro()]
+    contents: list[Panel | Markdown] = [Markdown(INTRO_MARKDOWN)]
     target_command = getattr(Engine, subcommand)
     cli_usage = get_cli_usage_docstring(target_command)
     if cli_usage is not None:
-        cli_usage += f"\n{get_verbose_usage(subcommand)}"
+        cli_usage += f"\n{VERBOSE_USAGE.format(subcommand=subcommand)}"
         quick_start = Panel(Markdown(cli_usage), border_style="dim", title="Quick-Start", title_align="left")
         contents.append(quick_start)
     return contents
@@ -206,7 +154,9 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
             Format the help output.
     """
 
-    verbose_level, subcommand = get_verbosity_subcommand()
+    verbosity_dict = get_verbosity_subcommand()
+    verbose_level = verbosity_dict["verbosity"]
+    subcommand = verbosity_dict["subcommand"]
 
     def add_usage(self, usage: str | None, actions: Iterable[argparse.Action], *args, **kwargs) -> None:
         """Add usage information to the formatter.

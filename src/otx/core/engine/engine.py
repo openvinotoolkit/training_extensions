@@ -66,6 +66,7 @@ class Engine:
             devices (list[int] | str | int, optional): The devices to be used. Defaults to "auto".
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
+        self.work_dir = work_dir
         if seed is not None:
             seed_everything(seed, workers=True)
 

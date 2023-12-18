@@ -16,7 +16,7 @@ callbacks:
       save_top_k: 1
       save_last: True
       auto_insert_metric_name: False
-      filename: "{epoch}-{val/mIoU:.4f}"
+      filename: "epoch_{epoch:03d}"
   - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
     init_args:
       prog_bar: true
