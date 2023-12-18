@@ -34,7 +34,7 @@ class DinoVisionTransformer(BaseModule):
             self.backbone.get_intermediate_layers,
             n=out_index,
             reshape=True,
-     )
+          )
 
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""
