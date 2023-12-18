@@ -653,11 +653,11 @@ class ZeroShotTask(InferenceTask):
             elif module == "visual_prompting_prompt_getter":
                 dummy_inputs = {
                     "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
-                    "label": torch.randperm(self.model.prompt_getter.reference_feats.shape[0])[0],
+                    "label": torch.randint(low=0, high=self.model.prompt_getter.reference_feats.shape[0], size=(1,), dtype=torch.int64),
                     "padding": torch.randint(low=0, high=image_size // 2, size=(4,), dtype=torch.int64),
                     "original_size": torch.randint(low=0, high=image_size * 2, size=(2,), dtype=torch.int64),
-                    "threshold": torch.tensor(0.1, dtype=torch.float32),
-                    "num_bg_points": torch.tensor(1, dtype=torch.int64),
+                    "threshold": torch.tensor([0.1], dtype=torch.float32),
+                    "num_bg_points": torch.randint(low=1, high=image_size, size=(1,), dtype=torch.int64),
                 }
                 output_names = ["points_scores", "bg_coords"]
                 dynamic_axes = {

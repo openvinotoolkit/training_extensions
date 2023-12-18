@@ -83,9 +83,8 @@ class PromptGetter(nn.Module):
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
 
-        sim = self.reference_feats[label].to(target_feat.device) @ target_feat
-        sim_shape = torch.sqrt(torch.tensor(sim.shape[1])).to(torch.int32)
-        sim = sim.reshape(1, 1, sim_shape, sim_shape)
+        sim = self.reference_feats[label].to(target_feat.device) @ target_feat.unsqueeze(0) # to match ranks for ov
+        sim = sim.reshape(1, 1, h_feat, w_feat)
         sim = ZeroShotSegmentAnything.postprocess_masks(
             sim, (self.image_size, self.image_size), padding, original_size
         ).squeeze()
@@ -118,14 +117,14 @@ class PromptGetter(nn.Module):
         mask_sim: torch.Tensor,
         original_size: Tuple[int, int],
         threshold: float,
-        num_bg_points: int = 1,
+        num_bg_points: Union[int, torch.Tensor] = 1,
         downsizing: int = 16,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Select point used as point prompts."""
         _, w_sim = mask_sim.shape
 
         # Top-last point selection
-        bg_indices = mask_sim.flatten().topk(num_bg_points, largest=False)[1]
+        bg_indices = mask_sim.flatten().topk(int(num_bg_points), largest=False)[1]
         bg_x = (bg_indices // w_sim).unsqueeze(0)
         bg_y = bg_indices - bg_x * w_sim
         bg_coords = torch.cat((bg_y, bg_x), dim=0).permute(1, 0)
