@@ -207,7 +207,7 @@ class OTXVisualPromptingDataset(Dataset):
 
         bboxes = np.array(bboxes)
         return dict(
-            original_size=(height, width),
+            original_size=np.array((height, width), dtype=np.int64),
             gt_masks=gt_masks,
             bboxes=bboxes,
             points=points,  # TODO (sungchul): update point information

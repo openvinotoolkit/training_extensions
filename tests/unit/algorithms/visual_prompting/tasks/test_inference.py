@@ -281,7 +281,7 @@ class TestZeroShotTask:
         self.zero_shot_task.infer(dataset, model)
 
         mocker_trainer.assert_called_once()
-        
+
     @e2e_pytest_unit
     @pytest.mark.parametrize("export_type", [ExportType.ONNX, ExportType.OPENVINO])
     def test_export(self, mocker, export_type: ExportType):
@@ -292,31 +292,37 @@ class TestZeroShotTask:
     def test_export_to_onnx(self):
         """Test _export_to_onnx."""
         onnx_path = {
-            "visual_prompting_image_encoder": os.path.join(self.zero_shot_task.output_path, "visual_prompting_image_encoder.onnx"),
-            "visual_prompting_prompt_getter": os.path.join(self.zero_shot_task.output_path, "visual_prompting_prompt_getter.onnx"),
+            "visual_prompting_image_encoder": os.path.join(
+                self.zero_shot_task.output_path, "visual_prompting_image_encoder.onnx"
+            ),
+            "visual_prompting_prompt_getter": os.path.join(
+                self.zero_shot_task.output_path, "visual_prompting_prompt_getter.onnx"
+            ),
             "visual_prompting_decoder": os.path.join(self.zero_shot_task.output_path, "visual_prompting_decoder.onnx"),
         }
         self.zero_shot_task.model = self.zero_shot_task.load_model(otx_model=self.zero_shot_task.task_environment.model)
         self.zero_shot_task.model.prompt_getter.reference_feats = torch.randn(1, 1, 256)
-        self.zero_shot_task.model.prompt_getter.reference_feats /= self.zero_shot_task.model.prompt_getter.reference_feats.norm(dim=-1, keepdim=True)
-        
+        self.zero_shot_task.model.prompt_getter.reference_feats /= (
+            self.zero_shot_task.model.prompt_getter.reference_feats.norm(dim=-1, keepdim=True)
+        )
+
         self.zero_shot_task._export_to_onnx(onnx_path)
-        
+
         image_size = self.zero_shot_task.config.model.image_size
         embed_dim = self.zero_shot_task.model.prompt_encoder.embed_dim
         embed_size = self.zero_shot_task.model.prompt_encoder.image_embedding_size
+        num_reference_feats = self.zero_shot_task.model.prompt_getter.reference_feats.shape[0]
         mask_input_size = [4 * x for x in embed_size]
         onnx_inputs = {
             "visual_prompting_image_encoder": {
                 "images": np.random.random((1, 3, image_size, image_size)).astype(np.float32)
             },
             "visual_prompting_prompt_getter": {
-                "image_embeddings": np.random.randn(1, embed_dim, *embed_size).astype(np.float32),
-                "label": np.array(0, dtype=np.int64),
-                "padding": np.random.randint(low=0, high=image_size // 2, size=(4,), dtype=np.int64),
-                "original_size": np.array([image_size, image_size], dtype=np.int64),
-                "threshold": np.array(0.1, dtype=np.float32),
-                "num_bg_points": np.array(1, dtype=np.int64),
+                "image_embeddings": np.random.randn(1, embed_dim, *embed_size).astype(dtype=np.float32),
+                "label": np.random.randint(low=0, high=num_reference_feats, size=(1, 1), dtype=np.int64),
+                "original_size": np.random.randint(low=0, high=image_size * 2, size=(1, 2), dtype=np.int64),
+                "threshold": np.array([[0.1]], dtype=np.float32),
+                "num_bg_points": np.random.randint(low=1, high=image_size, size=(1, 1), dtype=np.int64),
             },
             "visual_prompting_decoder": {
                 "image_embeddings": np.zeros((1, embed_dim, *embed_size), dtype=np.float32),
@@ -331,8 +337,10 @@ class TestZeroShotTask:
             "visual_prompting_prompt_getter": ["points_scores", "bg_coords"],
             "visual_prompting_decoder": ["iou_predictions", "low_res_masks"],
         }
-        
-        onnx_rt_models = {k: onnxruntime.InferenceSession(v, providers=['CPUExecutionProvider']) for k, v in onnx_path.items()}
+
+        onnx_rt_models = {
+            k: onnxruntime.InferenceSession(v, providers=["CPUExecutionProvider"]) for k, v in onnx_path.items()
+        }
         for name, onnx_model in onnx_rt_models.items():
             onnx_model.run(onnx_outputs.get(name), onnx_inputs.get(name))
 

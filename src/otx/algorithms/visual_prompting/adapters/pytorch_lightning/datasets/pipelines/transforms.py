@@ -41,7 +41,7 @@ def collate_fn(batch: List[Any]) -> Dict:
     bboxes = _convert_empty_to_none("bboxes")
     points = None  # TBD
     gt_masks = _convert_empty_to_none("gt_masks")
-    original_size = [item["original_size"] for item in batch]
+    original_size = _convert_empty_to_none("original_size")
     padding = [item["padding"] for item in batch]
     path = [item["path"] for item in batch]
     labels = [item["labels"] for item in batch]

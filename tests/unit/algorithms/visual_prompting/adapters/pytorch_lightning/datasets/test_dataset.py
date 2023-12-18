@@ -184,7 +184,7 @@ class TestOTXVIsualPromptingDataset:
         # Check specific values in the item
         assert item["index"] == 0
         assert (item["images"] == dataset[0].media.numpy).all()
-        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
+        assert np.all(item["original_size"] == dataset[0].media.numpy.shape[:2])
         assert item["path"] == dataset[0].media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
@@ -220,7 +220,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         # Check specific values in the item
         assert item["index"] == 0
         assert (item["images"] == dataset[0].media.numpy).all()
-        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
+        assert np.all(item["original_size"] == dataset[0].media.numpy.shape[:2])
         assert item["path"] == dataset[0].media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)

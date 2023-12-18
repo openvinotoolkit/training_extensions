@@ -334,46 +334,36 @@ class SegmentAnything(LightningModule):
 
         return masks, iou_preds
 
-    def mask_postprocessing(self, masks: Tensor, orig_size: Tensor) -> Tensor:
+    @staticmethod
+    def mask_postprocessing(masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
         """Postprocesses the predicted masks.
 
         Args:
             masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
+            input_size (int): The size of the image input to the model, in (H, W) format.
+                Used to remove padding.
             orig_size (Tensor): The original image size with shape Bx2.
 
         Returns:
             masks (Tensor): The postprocessed masks with shape Bx1xHxW.
         """
-        masks = F.interpolate(
-            masks,
-            size=(self.config.model.image_size, self.config.model.image_size),
-            mode="bilinear",
-            align_corners=False,
-        )
 
-        prepadded_size = self.resize_longest_image_size(orig_size, self.config.model.image_size).to(torch.int64)
+        def resize_longest_image_size(input_image_size: Tensor, longest_side: int) -> Tensor:
+            input_image_size = input_image_size.to(torch.float32)
+            scale = longest_side / torch.max(input_image_size)
+            transformed_size = scale * input_image_size
+            transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
+            return transformed_size
+
+        masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
+
+        prepadded_size = resize_longest_image_size(orig_size, input_size).to(torch.int64)
         masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
 
         orig_size = orig_size.to(torch.int64)
         h, w = orig_size[0], orig_size[1]
         masks = F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
         return masks
-
-    def resize_longest_image_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
-        """Resizes the longest side of the image to the given size.
-
-        Args:
-            input_image_size (Tensor): The original image size with shape Bx2.
-            longest_side (int): The size of the longest side.
-
-        Returns:
-            transformed_size (Tensor): The transformed image size with shape Bx2.
-        """
-        input_image_size = input_image_size.to(torch.float32)
-        scale = longest_side / torch.max(input_image_size)
-        transformed_size = scale * input_image_size
-        transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
-        return transformed_size
 
     ######################################################
     #     forward for training/validation/prediction     #

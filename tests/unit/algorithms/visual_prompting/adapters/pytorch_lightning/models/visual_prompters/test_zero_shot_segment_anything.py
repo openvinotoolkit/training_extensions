@@ -29,7 +29,7 @@ from tests.unit.algorithms.visual_prompting.test_helpers import (
 class TestPromptGetter:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.prompt_getter = PromptGetter(image_size=3)
+        self.prompt_getter = PromptGetter(image_size=3, downsizing=1)
 
     @e2e_pytest_unit
     def test_initialize(self) -> None:
@@ -69,13 +69,12 @@ class TestPromptGetter:
         mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
         image_embeddings = torch.ones(1, 4, 4, 4)
         self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
-
-        prompts = self.prompt_getter(
-            image_embeddings=image_embeddings,
-            label=0,
-            padding=(0, 0, 0, 0),
-            original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
+        label = torch.tensor([[0]], dtype=torch.int64)
+        original_size = torch.tensor(
+            [[self.prompt_getter.image_size, self.prompt_getter.image_size]], dtype=torch.int64
         )
+
+        prompts = self.prompt_getter(image_embeddings=image_embeddings, label=label, original_size=original_size)
 
         assert prompts == ("points_scores", "bg_coords")
 
@@ -85,11 +84,10 @@ class TestPromptGetter:
         mocker.patch.object(self.prompt_getter, "forward", return_value=("points_scores", "bg_coords"))
         image_embeddings = torch.ones(1, 4, 4, 4)
         self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
+        original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
 
         prompts = self.prompt_getter.get_prompt_candidates(
-            image_embeddings=image_embeddings,
-            padding=(0, 0, 0, 0),
-            original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
+            image_embeddings=image_embeddings, original_size=original_size
         )
 
         assert 0 in prompts
@@ -104,7 +102,6 @@ class TestPromptGetter:
             mask_sim=mask_sim,
             original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
             threshold=0.5,
-            downsizing=1,
         )
 
         assert torch.equal(points_scores, torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]))
@@ -207,7 +204,7 @@ class TestZeroShotSegmentAnything:
         )
 
         total_results = zero_shot_segment_anything.infer(
-            images=torch.ones((1, 3, 8, 8)), padding=(0, 0, 0, 0), original_size=(8, 8)
+            images=torch.ones((1, 3, 8, 8)), original_size=torch.tensor((8, 8), dtype=torch.int64)
         )
 
         for i, results in enumerate(total_results[0]):
@@ -229,8 +226,7 @@ class TestZeroShotSegmentAnything:
             image_embeddings=torch.rand(1),
             point_coords=torch.rand(1, 2, 2),
             point_labels=torch.randint(low=0, high=2, size=(1, 2)),
-            padding=(0, 0, 0, 0),
-            original_size=(8, 8),
+            original_size=torch.tensor((8, 8), dtype=torch.int64),
         )
         assert mask.shape == (8, 8)
 
@@ -294,8 +290,9 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.config.model.image_size = 4
         scores = torch.tensor([[0.0, 0.1, 0.2, 0.3]])
+        original_size = torch.tensor([4, 4], dtype=torch.int64)
 
-        _, result = zero_shot_segment_anything._postprocess_masks(logits, scores, (0, 0, 0, 0), (4, 4))
+        _, result = zero_shot_segment_anything._postprocess_masks(logits, scores, original_size)
 
         assert torch.equal(result, expected)
 
