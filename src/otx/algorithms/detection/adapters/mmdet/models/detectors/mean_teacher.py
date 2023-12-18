@@ -193,19 +193,19 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 get_unlabeled_loss = True
                 non_empty[0] = True
 
-        if self.filter_empty_annotations:
-            pseudo_bboxes = [pb for i, pb in enumerate(pseudo_bboxes) if non_empty[i]]
-            pseudo_labels = [pl for i, pl in enumerate(pseudo_labels) if non_empty[i]]
-            pseudo_masks = [pm for i, pm in enumerate(pseudo_masks) if non_empty[i]]
-            ul_img_metas = [im for i, im in enumerate(ul_img_metas) if non_empty[i]]
-            ul_img = ul_img[non_empty]
-        if self.visualize:
-            self._visual_online(ul_img, pseudo_bboxes, pseudo_labels)
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
         # Compute only if min_pseudo_label_ratio is reached
         if get_unlabeled_loss:
+            if self.filter_empty_annotations:
+                pseudo_bboxes = [pb for i, pb in enumerate(pseudo_bboxes) if non_empty[i]]
+                pseudo_labels = [pl for i, pl in enumerate(pseudo_labels) if non_empty[i]]
+                pseudo_masks = [pm for i, pm in enumerate(pseudo_masks) if non_empty[i]]
+                ul_img_metas = [im for i, im in enumerate(ul_img_metas) if non_empty[i]]
+                ul_img = ul_img[non_empty]
+                if self.visualize:
+                    self._visual_online(ul_img, pseudo_bboxes, pseudo_labels)
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
             if self.model_t.with_mask:
