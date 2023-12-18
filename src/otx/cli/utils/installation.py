@@ -34,7 +34,6 @@ MM_REQUIREMENTS = [
     "mmsegmentation",
     "mmpretrain",
     "mmdeploy",
-    "mmaction2",
 ]
 
 
