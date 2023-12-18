@@ -1,4 +1,6 @@
-engine: ../engine/instance_segmentation.yaml
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
 
 model:
   class_path: otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule
@@ -304,3 +306,37 @@ data:
             - ori_shape
             - img_shape
             - scale_factor
+
+# engine.train arguments
+max_epochs: 10
+callbacks:
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: val/map_50
+      mode: max
+      patience: 100
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      monitor: val/map_50
+      mode: max
+      save_top_k: 1
+      save_last: True
+      auto_insert_metric_name: False
+      filename: "epoch_{epoch:03d}"
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: True
+      on_epoch: True
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+deterministic: false
+seed: null
+precision: "32"
+val_check_interval: 1

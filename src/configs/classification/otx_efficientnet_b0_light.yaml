@@ -11,28 +11,19 @@ model:
       init_args:
         config:
           backbone:
-            type: OTXMobileNetV3
+            version: b0
+            pretrained: true
+            type: OTXEfficientNet
           head:
-            act_cfg:
-              type: HSwish
-            dropout_rate: 0.2
-            in_channels: 960
-            init_cfg:
-              bias: 0.0
-              layer: Linear
-              mean: 0.0
-              std: 0.01
-              type: Normal
+            in_channels: 1280
             loss:
               loss_weight: 1.0
               type: CrossEntropyLoss
-            mid_channels:
-              - 1280
             num_classes: 1000
             topk:
               - 1
               - 5
-            type: StackedLinearClsHead
+            type: LinearClsHead
           neck:
             type: GlobalAveragePooling
           data_preprocessor:
@@ -50,13 +41,12 @@ model:
     optimizer:
       class_path: torch.optim.SGD
       init_args:
-        lr: 0.0058
+        lr: 0.0049
         momentum: 0.9
         weight_decay: 0.0001
     scheduler:
       class_path: lightning.pytorch.cli.ReduceLROnPlateau
       init_args:
-        mode: min
         factor: 0.5
         patience: 1
         monitor: train/loss
@@ -79,9 +69,6 @@ data:
         - backend: cv2
           scale: 224
           type: RandomResizedCrop
-        - direction: horizontal
-          prob: 0.5
-          type: RandomFlip
         - type: PackInputs
     val_subset:
       subset_name: val
@@ -120,10 +107,10 @@ callbacks:
       monitor: val/accuracy
       mode: max
       patience: 100
-  # - class_path: lightning.pytorch.callbacks.RichProgressBar
-  #   init_args:
-  #     refresh_rate: 1
-  #     leave: false
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
   - class_path: lightning.pytorch.callbacks.ModelCheckpoint
     init_args:
       monitor: val/accuracy

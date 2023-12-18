@@ -4,23 +4,25 @@
 """Module for OTX engine components."""
 from __future__ import annotations
 
-from dataclasses import fields
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import yaml
 from lightning import LightningModule, Trainer, seed_everything
 
+from otx.core.config.device import DeviceConfig
 from otx.core.config.engine import EngineConfig
 from otx.core.data.module import OTXDataModule
+from otx.core.engine.utils.cache import TrainerArgumentsCache
 from otx.core.engine.utils.instantiators import (
     instantiate_callbacks,
     instantiate_loggers,
 )
+from otx.core.types.device import OTXDeviceType
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from lightning import Callback
-    from lightning.pytorch.accelerators import Accelerator
     from lightning.pytorch.loggers import Logger
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
@@ -39,58 +41,50 @@ class Engine:
     def __init__(
         self,
         *,
+        task: OTXTaskType | None = None,
         work_dir: str | Path | None = None,
-        max_epochs: int | None = None,
-        seed: int | None = None,
-        deterministic: bool | None = False,
-        precision: _PRECISION_INPUT | None = 32,
-        val_check_interval: int | float | None = 1,
-        callbacks: list[Callback] | Callback | None = None,
-        logger: Logger | Iterable[Logger] | bool | None = None,
-        accelerator: str | Accelerator = "auto",
-        devices: list[int] | str | int = 1,
+        device: OTXDeviceType = OTXDeviceType.auto,
         **kwargs,
     ):
         """Initializes the Engine object.
 
         Args:
             work_dir (str | Path | None, optional): The working directory. Defaults to None.
-            max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
-            seed (int | None, optional): The random seed. Defaults to None.
-            deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
-            precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
-            val_check_interval (int | float | None, optional): The validation check interval. Defaults to 1.
-            callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
-            logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
-            accelerator (str | Accelerator, optional): The accelerator to be used. Defaults to "auto".
-            devices (list[int] | str | int, optional): The devices to be used. Defaults to "auto".
-            **kwargs: Additional keyword arguments for pl.Trainer.
+            device (OTXDeviceType, optional):  The devices to be used. Defaults to "auto"
         """
+        self.task = task
         self.work_dir = work_dir
-        if seed is not None:
-            seed_everything(seed, workers=True)
-
-        self._trainer = Trainer(
-            accelerator=accelerator,
-            devices=devices,
-            precision=precision,
-            logger=logger,
-            callbacks=callbacks,
-            max_epochs=max_epochs,
-            deterministic=deterministic,
-            val_check_interval=val_check_interval,
-            default_root_dir=work_dir,
+        self.device = DeviceConfig(accelerator=device)
+        self._cache = TrainerArgumentsCache(
+            default_root_dir=self.work_dir,
+            accelerator=self.device.accelerator,
+            devices=self.device.devices,
             **kwargs,
         )
+
+        self._trainer: Trainer | None = None
+
 
     @property
     def trainer(self) -> Trainer:
         """Returns the trainer object associated with the engine.
 
+        To get this property, you should execute `Engine.train()` function first.
+
         Returns:
             Trainer: The trainer object.
         """
+        if self._trainer is None:
+            msg = "Please run train() first"
+            raise RuntimeError(msg)
         return self._trainer
+
+    def _build_trainer(self, **kwargs) -> None:
+        """Instantiate the trainer based on the model parameters."""
+        if self._cache.requires_update(**kwargs) or self._trainer is None:
+            self._cache.update(**kwargs)
+            self._trainer = Trainer(**self._cache.args)
+            self.work_dir = self._trainer.default_root_dir
 
     @classmethod
     def from_config(cls, config: EngineConfig | str | Path) -> Engine:
@@ -111,34 +105,24 @@ class Engine:
             config="config.yaml",
         )
         """
-        engine_args, kwargs = {}, {}
         if isinstance(config, (str, Path)):
             with Path(config).open() as f:
-                config_dict = yaml.safe_load(f)["engine"]
-            field_names = [f.name for f in fields(EngineConfig)]
-            for k in config_dict:
-                if k in field_names:
-                    engine_args[k] = config_dict[k]
-                else:
-                    kwargs[k] = config_dict[k]
+                config_dict = yaml.safe_load(f)
+            config_dict.pop("data", None)
+            config_dict.pop("model", None)
+            engine_args = config_dict.get("engine", config_dict)
             engine_cfg = EngineConfig(**engine_args)
         else:
             engine_cfg = config
 
-        callbacks = instantiate_callbacks(engine_cfg.callbacks)
-        logger = instantiate_loggers(engine_cfg.logger)
+        callbacks = instantiate_callbacks(config_dict.pop("callbacks", []))
+        logger = instantiate_loggers(config_dict.pop("logger", None))
         return cls(
+            task=engine_cfg.task,
             work_dir=engine_cfg.work_dir,
-            max_epochs=engine_cfg.max_epochs,
-            seed=engine_cfg.seed,
-            deterministic=engine_cfg.deterministic,
-            precision=engine_cfg.precision,
-            val_check_interval=engine_cfg.val_check_interval,
             callbacks=callbacks,
             logger=logger,
-            accelerator=engine_cfg.accelerator,
-            devices=engine_cfg.devices,
-            **kwargs,
+            **config_dict,
         )
 
     def train(
@@ -146,6 +130,14 @@ class Engine:
         model: LightningModule,
         datamodule: OTXDataModule,
         checkpoint: str | Path | None = None,
+        max_epochs: int = 10,
+        seed: int | None = None,
+        deterministic: bool = False,
+        precision: _PRECISION_INPUT | None = "32",
+        val_check_interval: int | float | None = 1,
+        callbacks: list[Callback] | Callback | None = None,
+        logger: Logger | Iterable[Logger] | bool | None = None,
+        **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
 
@@ -153,6 +145,14 @@ class Engine:
             model (LightningModule): The LightningModule to be trained.
             datamodule (OTXDataModule): The OTXDataModule containing the training data.
             checkpoint (str | Path | None, optional): The path to a checkpoint file to resume training from.
+            max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
+            seed (int | None, optional): The random seed. Defaults to None.
+            deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
+            precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
+            val_check_interval (int | float | None, optional): The validation check interval. Defaults to 1.
+            callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
+            logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
+            **kwargs: Additional keyword arguments for pl.Trainer.
 
         Returns:
             dict[str, Any]: A dictionary containing the callback metrics from the trainer.
@@ -180,6 +180,19 @@ class Engine:
                 otx train --config <CONFIG_PATH, str>
                 ```
         """
+        if seed is not None:
+            seed_everything(seed, workers=True)
+
+        self._build_trainer(
+            logger=logger,
+            callbacks=callbacks,
+            precision=precision,
+            max_epochs=max_epochs,
+            deterministic=deterministic,
+            val_check_interval=val_check_interval,
+            **kwargs,
+        )
+
         self.trainer.fit(
             model=model,
             datamodule=datamodule,
@@ -193,6 +206,7 @@ class Engine:
         model: LightningModule | None = None,
         datamodule: OTXDataModule | None = None,
         checkpoint: str | Path | None = None,
+        **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
 
@@ -224,6 +238,8 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        self._build_trainer(**kwargs)
+
         self.trainer.test(
             model=model,
             datamodule=datamodule,
@@ -238,6 +254,8 @@ class Engine:
         datamodule: OTXDataModule | None = None,
         checkpoint: str | Path | None = None,
         return_predictions: bool | None = None,
+        callbacks: list[Callback] | Callback | None = None,
+        **kwargs,
     ) -> list | None:
         """Run predictions using the specified model and data.
 
@@ -270,6 +288,8 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        self._build_trainer(**kwargs)
+
         return self.trainer.predict(
             model=model,
             datamodule=datamodule,

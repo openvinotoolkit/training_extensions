@@ -7,18 +7,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from otx.core.types.task import OTXTaskType
+
 
 @dataclass
 class EngineConfig:
     """Configuration class for the engine."""
-    max_epochs: int
-    precision: int
-    val_check_interval: int
+    task: OTXTaskType
+    device: str
     callbacks: list
-    accelerator: str
-    devices: int
+    logger: dict | None
 
     work_dir: str | None = None
-    seed: int | None = None
-    deterministic: bool | None = None
-    logger: dict | None = None

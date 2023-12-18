@@ -35,7 +35,7 @@ class OTXCLI:
         self.parser = self.init_parser()
         self._subcommand_method_arguments: dict[str, list[str]] = {}
         self.add_subcommands()
-        self.config = self.parser.parse_args()
+        self.config = self.parser.parse_args(_skip_check=True)
 
         self.subcommand = self.config["subcommand"]
         self.run()
@@ -199,6 +199,7 @@ class OTXCLI:
             path=Path(self.engine.work_dir) / "configs.yaml",
             overwrite=True,
             multifile=False,
+            skip_check=True,
         )
 
     def run(self) -> None:
