@@ -565,14 +565,14 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
         return OpenVINOZeroShotVisualPromptingInferencer(
             self.hparams,
             self.task_environment.label_schema,
-            {
+            model_files={
                 "image_encoder": self.model.get_data("visual_prompting_image_encoder.xml"),
                 "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.xml"),
                 "decoder": self.model.get_data("visual_prompting_decoder.xml"),
             },
-            {
+            weight_files={
                 "image_encoder": self.model.get_data("visual_prompting_image_encoder.bin"),
-                "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.xml"),
+                "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.bin"),
                 "decoder": self.model.get_data("visual_prompting_decoder.bin"),
             },
             num_requests=get_default_async_reqs_num(),
