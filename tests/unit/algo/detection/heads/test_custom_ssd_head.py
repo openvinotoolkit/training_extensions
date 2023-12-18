@@ -9,10 +9,10 @@ from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
 class TestCustomSSDHead:
     def test_init(self, mocker) -> None:
         self.head = CustomSSDHead(
-            num_classes = 80,
-            in_channels = (96, 320),
-            use_depthwise = True,
-            anchor_generator = {
+            num_classes=80,
+            in_channels=(96, 320),
+            use_depthwise=True,
+            anchor_generator={
                 "type": "SSDAnchorGeneratorClustered",
                 "strides": (16, 32),
                 "widths": [[38, 92, 271, 141], [206, 386, 716, 453, 788]],

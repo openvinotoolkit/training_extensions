@@ -22,14 +22,16 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     """OTXDataset class for segmentation task."""
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
-
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         # create 2D class mask. We use np.sum() since Datumaro returns 3D masks (one for each class)
-        mask_anns = np.sum([ann.as_class_mask() for ann in item.annotations
-                            if isinstance(ann, Mask)], axis=0, dtype=np.uint8)
+        mask_anns = np.sum(
+            [ann.as_class_mask() for ann in item.annotations if isinstance(ann, Mask)],
+            axis=0,
+            dtype=np.uint8,
+        )
 
         entity = SegDataEntity(
             image=img_data,

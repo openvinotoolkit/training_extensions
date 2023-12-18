@@ -42,15 +42,16 @@ class SSDAnchorGeneratorClustered(AnchorGenerator):
         multi_level_base_anchors = []
         for widths, heights, centers in zip(self.widths, self.heights, self.centers):
             base_anchors = self.gen_single_level_base_anchors(
-                widths=torch.Tensor(widths), heights=torch.Tensor(heights), center=torch.Tensor(centers),
+                widths=torch.Tensor(widths),
+                heights=torch.Tensor(heights),
+                center=torch.Tensor(centers),
             )
             multi_level_base_anchors.append(base_anchors)
         return multi_level_base_anchors
 
     def gen_single_level_base_anchors(
         self,
-        widths:
-        torch.Tensor,
+        widths: torch.Tensor,
         heights: torch.Tensor,
         center: torch.Tensor,
     ) -> torch.Tensor:
@@ -66,7 +67,10 @@ class SSDAnchorGeneratorClustered(AnchorGenerator):
         # use float anchor and the anchor's center is aligned with the
         # pixel center
         base_anchors = [
-            x_center - 0.5 * widths, y_center - 0.5 * heights, x_center + 0.5 * widths, y_center + 0.5 * heights,
+            x_center - 0.5 * widths,
+            y_center - 0.5 * heights,
+            x_center + 0.5 * widths,
+            y_center + 0.5 * heights,
         ]
         return torch.stack(base_anchors, dim=-1)
 

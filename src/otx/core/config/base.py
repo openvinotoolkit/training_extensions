@@ -12,6 +12,7 @@ from otx.core.types.task import OTXTaskType
 @dataclass
 class BaseConfig:
     """DTO for base configuration."""
+
     task: OTXTaskType
 
     work_dir: Path
