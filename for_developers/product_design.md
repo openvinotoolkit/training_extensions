@@ -18,7 +18,7 @@ TBD @wonjuleee @vinnamkim
 
 ### Entrypoint
 
-TBD @samet-akcay
+TBD @samet-akcay @harimkang
 
 ### Intel Device Support
 
