@@ -12,7 +12,7 @@ model:
         config:
           backbone:
             name: dinov2_vits14_reg
-            frozen: true
+            frozen: false
           head:
             in_channels: 384
             num_classes: 1000
@@ -63,6 +63,16 @@ data:
       transforms:
         - type: LoadImageFromFile
           to_float32: true
+        - mean:
+            - 123.675
+            - 116.28
+            - 103.53
+          std:
+            - 58.395
+            - 57.12
+            - 57.375
+          to_rgb: true
+          type: Normalize
         - backend: cv2
           edge: short
           scale: 256
@@ -78,6 +88,16 @@ data:
       transforms:
         - type: LoadImageFromFile
           to_float32: true
+        - mean:
+            - 123.675
+            - 116.28
+            - 103.53
+          std:
+            - 58.395
+            - 57.12
+            - 57.375
+          to_rgb: true
+          type: Normalize
         - backend: cv2
           edge: short
           scale: 256
