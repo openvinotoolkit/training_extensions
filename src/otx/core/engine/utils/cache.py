@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 
-from typing import Any
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +44,7 @@ class TrainerArgumentsCache:
         self._cached_args = {**kwargs}
 
     def update(self, **kwargs) -> None:
-        """Replace cached arguments with arguments retrieved from the model.
-        """
+        """Replace cached arguments with arguments retrieved from the model."""
         for key, value in kwargs.items():
             if key in self._cached_args and self._cached_args[key] != value:
                 logger.info(
@@ -54,11 +53,21 @@ class TrainerArgumentsCache:
             self._cached_args[key] = value
 
     def requires_update(self, **kwargs) -> bool:
-        for key, value in kwargs.items():
-            if key in self._cached_args and self._cached_args[key] != value:
-                return True
-        return False
+        """Checks if the cached arguments need to be updated based on the provided keyword arguments.
+
+        Args:
+            **kwargs: The keyword arguments to compare with the cached arguments.
+
+        Returns:
+            bool: True if any of the cached arguments need to be updated, False otherwise.
+        """
+        return any(key in self._cached_args and self._cached_args[key] != value for key, value in kwargs.items())
 
     @property
     def args(self) -> dict[str, Any]:
+        """Returns the cached arguments.
+
+        Returns:
+            dict[str, Any]: The cached arguments.
+        """
         return self._cached_args

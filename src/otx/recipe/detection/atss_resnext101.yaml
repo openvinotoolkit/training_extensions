@@ -1,188 +1,247 @@
-# @package _global_
-defaults:
-  - override /base: detection
-  - override /callbacks: detection
-  - override /data: mmdet
-  - override /model: mmdet
-data:
-  train_subset:
-    batch_size: 4
-    transforms:
-      - type: LoadImageFromFile
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: MinIoURandomCrop
-        min_ious:
-          - 0.1
-          - 0.3
-          - 0.5
-          - 0.7
-          - 0.9
-        min_crop_size: 0.3
-      - type: Resize
-        scale:
-          - 992
-          - 736
-        keep_ratio: false
-      - type: RandomFlip
-        prob: 0.5
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - flip_direction
-          - scale_factor
-          - gt_ann_ids
-          - flip
-          - ignored_labels
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
-  val_subset:
-    batch_size: 1
-    transforms:
-      - type: LoadImageFromFile
-      - type: Resize
-        scale:
-          - 992
-          - 736
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - scale_factor
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
-  test_subset:
-    batch_size: 1
-    transforms:
-      - type: LoadImageFromFile
-      - type: Resize
-        scale:
-          - 992
-          - 736
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - scale_factor
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
+engine:
+  task: DETECTION
+  device: auto
+
 model:
-  otx_model:
-    config:
-      load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth
-      train_cfg:
-        assigner:
-          type: ATSSAssigner
-          topk: 9
-        allowed_border: -1
-        pos_weight: -1
-        debug: false
-      test_cfg:
-        nms_pre: 1000
-        min_bbox_size: 0
-        score_thr: 0.05
-        nms:
-          type: nms
-          iou_threshold: 0.6
-        max_per_img: 100
-      type: ATSS
-      data_preprocessor:
-        type: DetDataPreprocessor
-        mean:
-          - 0
-          - 0
-          - 0
-        std:
-          - 255
-          - 255
-          - 255
-        bgr_to_rgb: true
-        pad_size_divisor: 32
-      backbone:
-        type: ResNeXt
-        depth: 101
-        groups: 64
-        base_width: 4
-        num_stages: 4
-        out_indices:
-          - 0
-          - 1
-          - 2
-          - 3
-        frozen_stages: 1
-        norm_cfg:
-          type: BN
-          requires_grad: true
-        style: pytorch
-        init_cfg:
-          type: Pretrained
-          checkpoint: open-mmlab://resnext101_64x4d
-      neck:
-        type: FPN
-        in_channels:
-          - 256
-          - 512
-          - 1024
-          - 2048
-        out_channels: 256
-        start_level: 1
-        add_extra_convs: on_output
-        num_outs: 5
-        relu_before_extra_convs: true
-      bbox_head:
-        type: ATSSHead
-        num_classes: 2
-        in_channels: 256
-        stacked_convs: 4
-        feat_channels: 256
-        anchor_generator:
-          type: AnchorGenerator
-          ratios:
-            - 1.0
-          octave_base_scale: 8
-          scales_per_octave: 1
-          strides:
-            - 8
-            - 16
-            - 32
-            - 64
-            - 128
-        bbox_coder:
-          type: DeltaXYWHBBoxCoder
-          target_means:
-            - 0.0
-            - 0.0
-            - 0.0
-            - 0.0
-          target_stds:
+  class_path: otx.core.model.module.detection.OTXDetectionLitModule
+  init_args:
+    torch_compile: false
+    otx_model:
+      class_path: otx.core.model.entity.detection.MMDetCompatibleModel
+      init_args:
+        config:
+          load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth
+          train_cfg:
+            assigner:
+              type: ATSSAssigner
+              topk: 9
+            allowed_border: -1
+            pos_weight: -1
+            debug: false
+          test_cfg:
+            nms_pre: 1000
+            min_bbox_size: 0
+            score_thr: 0.05
+            nms:
+              type: nms
+              iou_threshold: 0.6
+            max_per_img: 100
+          type: ATSS
+          data_preprocessor:
+            type: DetDataPreprocessor
+            mean:
+              - 0
+              - 0
+              - 0
+            std:
+              - 255
+              - 255
+              - 255
+            bgr_to_rgb: true
+            pad_size_divisor: 32
+          backbone:
+            type: ResNeXt
+            depth: 101
+            groups: 64
+            base_width: 4
+            num_stages: 4
+            out_indices:
+              - 0
+              - 1
+              - 2
+              - 3
+            frozen_stages: 1
+            norm_cfg:
+              type: BN
+              requires_grad: true
+            style: pytorch
+            init_cfg:
+              type: Pretrained
+              checkpoint: open-mmlab://resnext101_64x4d
+          neck:
+            type: FPN
+            in_channels:
+              - 256
+              - 512
+              - 1024
+              - 2048
+            out_channels: 256
+            start_level: 1
+            add_extra_convs: on_output
+            num_outs: 5
+            relu_before_extra_convs: true
+          bbox_head:
+            type: ATSSHead
+            num_classes: 2
+            in_channels: 256
+            stacked_convs: 4
+            feat_channels: 256
+            anchor_generator:
+              type: AnchorGenerator
+              ratios:
+                - 1.0
+              octave_base_scale: 8
+              scales_per_octave: 1
+              strides:
+                - 8
+                - 16
+                - 32
+                - 64
+                - 128
+            bbox_coder:
+              type: DeltaXYWHBBoxCoder
+              target_means:
+                - 0.0
+                - 0.0
+                - 0.0
+                - 0.0
+              target_stds:
+                - 0.1
+                - 0.1
+                - 0.2
+                - 0.2
+            loss_cls:
+              type: FocalLoss
+              use_sigmoid: true
+              gamma: 2.0
+              alpha: 0.25
+              loss_weight: 1.0
+            loss_bbox:
+              type: GIoULoss
+              loss_weight: 2.0
+            loss_centerness:
+              type: CrossEntropyLoss
+              use_sigmoid: true
+              loss_weight: 1.0
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.001
+        weight_decay: 0.001
+        momentum: 0.9
+    scheduler:
+      class_path: lightning.pytorch.cli.ReduceLROnPlateau
+      init_args:
+        mode: min
+        factor: 0.5
+        patience: 1
+        monitor: train/loss
+
+data:
+  task: DETECTION
+  config:
+    mem_cache_size: 1GB
+    mem_cache_img_max_size: null
+    data_format: coco_instances
+    train_subset:
+      subset_name: train
+      batch_size: 4
+      num_workers: 2
+      transform_lib_type: MMDET
+      transforms:
+        - type: LoadImageFromFile
+        - type: LoadAnnotations
+          with_bbox: true
+        - type: MinIoURandomCrop
+          min_ious:
             - 0.1
-            - 0.1
-            - 0.2
-            - 0.2
-        loss_cls:
-          type: FocalLoss
-          use_sigmoid: true
-          gamma: 2.0
-          alpha: 0.25
-          loss_weight: 1.0
-        loss_bbox:
-          type: GIoULoss
-          loss_weight: 2.0
-        loss_centerness:
-          type: CrossEntropyLoss
-          use_sigmoid: true
-          loss_weight: 1.0
-  optimizer:
-    _target_: torch.optim.SGD
-    _partial_: true
-    lr: 0.001
-    weight_decay: 0.001
-    momentum: 0.9
+            - 0.3
+            - 0.5
+            - 0.7
+            - 0.9
+          min_crop_size: 0.3
+        - type: Resize
+          scale:
+            - 992
+            - 736
+          keep_ratio: false
+        - type: RandomFlip
+          prob: 0.5
+        - type: PackDetInputs
+          meta_keys:
+            - ori_filename
+            - flip_direction
+            - scale_factor
+            - gt_ann_ids
+            - flip
+            - ignored_labels
+            - ori_shape
+            - filename
+            - img_shape
+            - pad_shape
+    val_subset:
+      subset_name: val
+      num_workers: 2
+      batch_size: 1
+      transform_lib_type: MMDET
+      transforms:
+        - type: LoadImageFromFile
+        - type: Resize
+          scale:
+            - 992
+            - 736
+        - type: LoadAnnotations
+          with_bbox: true
+        - type: PackDetInputs
+          meta_keys:
+            - ori_filename
+            - scale_factor
+            - ori_shape
+            - filename
+            - img_shape
+            - pad_shape
+    test_subset:
+      subset_name: test
+      num_workers: 2
+      batch_size: 1
+      transform_lib_type: MMDET
+      transforms:
+        - type: LoadImageFromFile
+        - type: Resize
+          scale:
+            - 992
+            - 736
+        - type: LoadAnnotations
+          with_bbox: true
+        - type: PackDetInputs
+          meta_keys:
+            - ori_filename
+            - scale_factor
+            - ori_shape
+            - filename
+            - img_shape
+            - pad_shape
+
+# engine.train arguments
+max_epochs: 10
+callbacks:
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: val/map
+      mode: max
+      patience: 100
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      monitor: val/map
+      mode: max
+      save_top_k: 1
+      save_last: True
+      auto_insert_metric_name: False
+      filename: "epoch_{epoch:03d}"
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: True
+      on_epoch: True
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+deterministic: false
+seed: null
+precision: "32"
+val_check_interval: 1

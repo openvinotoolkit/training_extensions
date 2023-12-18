@@ -5,11 +5,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from lightning.pytorch.cli import instantiate_class
-from lightning import Callback
-from lightning.pytorch.loggers import Logger
 
 from . import pylogger
+
+if TYPE_CHECKING:
+    from lightning import Callback
+    from lightning.pytorch.loggers import Logger
 
 log = pylogger.get_pylogger(__name__)
 
