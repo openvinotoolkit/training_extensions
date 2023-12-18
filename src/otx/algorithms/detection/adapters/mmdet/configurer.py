@@ -64,13 +64,14 @@ class DetectionConfigurer:
         ir_options=None,
         data_classes=None,
         model_classes=None,
+        max_num_detections=0,
     ):
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
         self.configure_device(cfg, training)
-        self.configure_model(cfg, ir_options)
+        self.configure_model(cfg, ir_options, max_num_detections)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, training, data_cfg)
         self.configure_regularization(cfg, training)
@@ -113,7 +114,7 @@ class DetectionConfigurer:
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-    def configure_model(self, cfg, ir_options):  # noqa: C901
+    def configure_model(self, cfg, ir_options, max_num_detections=0):  # noqa: C901
         """Patch config's model.
 
         Change model type to super type
@@ -148,6 +149,23 @@ class DetectionConfigurer:
                 is_mmov_model,
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
+
+        # Test config
+        if max_num_detections > 0:
+            logger.info(f"Model max_num_detections: {max_num_detections}")
+            test_cfg = cfg.model.test_cfg
+            test_cfg.max_per_img = max_num_detections
+            test_cfg.nms_pre = max_num_detections * 10
+            # Special cases for 2-stage detectors (e.g. MaskRCNN)
+            if hasattr(test_cfg, "rpn"):
+                test_cfg.rpn.nms_pre = max_num_detections * 20
+                test_cfg.rpn.max_per_img = max_num_detections * 10
+            if hasattr(test_cfg, "rcnn"):
+                test_cfg.rcnn.max_per_img = max_num_detections
+            train_cfg = cfg.model.train_cfg
+            if hasattr(train_cfg, "rpn_proposal"):
+                train_cfg.rpn_proposal.nms_pre = max_num_detections * 20
+                train_cfg.rpn_proposal.max_per_img = max_num_detections * 10
 
     def configure_data(self, cfg, training, data_cfg):  # noqa: C901
         """Patch cfg.data.

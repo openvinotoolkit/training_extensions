@@ -190,6 +190,7 @@ class MMClassificationTask(OTXClassificationTask):
         elif self._hierarchical:
             options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
+            options_for_patch_datasets["label_schema"] = self._task_environment.label_schema
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:
             options_for_patch_datasets["type"] = "SelfSLDataset"

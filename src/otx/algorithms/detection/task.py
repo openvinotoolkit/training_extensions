@@ -1,18 +1,7 @@
 """Task of OTX Detection."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 import os
@@ -83,11 +72,13 @@ class OTXDetectionTask(OTXTask, ABC):
         )
         self._anchors: Dict[str, int] = {}
 
+        self.confidence_threshold = 0.0
+        self.max_num_detections = 0
         if hasattr(self._hyperparams, "postprocessing"):
             if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
                 self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        else:
-            self.confidence_threshold = 0.0
+            if hasattr(self._hyperparams.postprocessing, "max_num_detections"):
+                self.max_num_detections = self._hyperparams.postprocessing.max_num_detections
 
         if task_environment.model is not None:
             self._load_model()
@@ -112,6 +103,11 @@ class OTXDetectionTask(OTXTask, ABC):
             hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
         else:
             hparams.use_ellipse_shapes = False
+        if "max_num_detections" in loaded_postprocessing:
+            trained_max_num_detections = loaded_postprocessing["max_num_detections"]["value"]
+            # Prefer new hparam value set by user (>0) intentionally than trained value
+            if self.max_num_detections == 0:
+                self.max_num_detections = trained_max_num_detections
 
     def _load_tiling_parameters(self, model_data):
         """Load tiling parameters from PyTorch model.

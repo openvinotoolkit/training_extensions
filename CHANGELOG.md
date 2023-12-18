@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Update ModelAPI configuration(<https://github.com/openvinotoolkit/training_extensions/pull/2564>)
 - Add Anomaly modelAPI changes (<https://github.com/openvinotoolkit/training_extensions/pull/2563>)
 - Update Image numpy access (<https://github.com/openvinotoolkit/training_extensions/pull/2586>)
+- Make max_num_detections configurable (<https://github.com/openvinotoolkit/training_extensions/pull/2647>)
 
 ### Bug fixes
 
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Fix h-label loss normalization issue w/ exclusive label group of singe label (<https://github.com/openvinotoolkit/training_extensions/pull/2604>)
 - Fix division by zero in class incremental learning for classification (<https://github.com/openvinotoolkit/training_extensions/pull/2606>)
 - Fix saliency maps calculation issue for detection models (<https://github.com/openvinotoolkit/training_extensions/pull/2609>)
+- Fix h-label bug of missing parent labels in output (<https://github.com/openvinotoolkit/training_extensions/pull/2626>)
 
 ## \[v1.4.3\]
 

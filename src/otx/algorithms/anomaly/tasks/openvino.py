@@ -188,13 +188,17 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 label = self.anomalous_label if image_result.pred_score >= 0.5 else self.normal_label
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 annotations = create_annotation_from_segmentation_map(
-                    pred_mask, image_result.anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                    pred_mask,
+                    image_result.anomaly_map.squeeze() / 255.0,
+                    {0: self.normal_label, 1: self.anomalous_label},
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             elif self.task_type == TaskType.ANOMALY_DETECTION:
                 annotations = create_detection_annotation_from_anomaly_heatmap(
-                    pred_mask, image_result.anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                    pred_mask,
+                    image_result.anomaly_map.squeeze() / 255.0,
+                    {0: self.normal_label, 1: self.anomalous_label},
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
@@ -202,13 +206,12 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
-            anomaly_map = (image_result.anomaly_map * 255).astype(np.uint8)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
                 type="anomaly_map",
                 label=label,
                 annotation_scene=dataset_item.annotation_scene,
-                numpy=anomaly_map,
+                numpy=image_result.anomaly_map,
             )
             dataset_item.append_metadata_item(heatmap_media)
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
@@ -361,6 +364,8 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
         output_model.precision = [ModelPrecision.INT8]
+        metadata = self.get_metadata()
+        output_model.set_data("metadata", json.dumps(metadata).encode())
 
         self.task_environment.model = output_model
         self.inference_model = self.get_openvino_model()
