@@ -41,6 +41,8 @@ class ImageType(IntEnum):
 
     NUMPY = auto()
     TV_IMAGE = auto()
+    NUMPY_LIST = auto()
+    TV_IMAGE_LIST = auto()
 
 
 T_OTXDataEntity = TypeVar(
@@ -79,7 +81,11 @@ class OTXDataEntity(Mapping):
             return ImageType.NUMPY
         if isinstance(self.image, tv_tensors.Image):
             return ImageType.TV_IMAGE
-
+        if isinstance(self.image, list):
+            if isinstance(self.image[0], np.ndarray):
+                return ImageType.NUMPY_LIST
+            if isinstance(self.image[0], tv_tensors.Image):
+                return ImageType.TV_IMAGE_LIST
         raise TypeError(self.image)
 
     def to_tv_image(self: T_OTXDataEntity) -> T_OTXDataEntity:
