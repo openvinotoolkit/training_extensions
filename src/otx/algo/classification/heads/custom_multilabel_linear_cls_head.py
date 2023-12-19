@@ -1,7 +1,8 @@
-"""Module for defining multi-label linear classification head."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Module for defining multi-label linear classification head."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
