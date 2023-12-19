@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor
-import torch.nn.functional as F
+from torch.nn import functional
+from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy
-from torchmetrics.classification import AveragePrecision
 
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -116,8 +116,9 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
         self.num_labels = otx_model.config.get("head",{}).get("num_classes", None)
-        self.val_metric = AveragePrecision(task="multilabel", num_labels=self.num_labels)
-        self.test_metric = AveragePrecision(task="multilabel", num_labels=self.num_labels)
+
+        self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
+        self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -137,7 +138,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
-        self.log(f"{key}/average_precision", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -163,8 +164,8 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         return {
             "preds": torch.stack(preds.scores),
             "target": torch.stack([
-                F.one_hot(label, self.num_labels).sum(0) for label in inputs.labels
-            ])
+                functional.one_hot(label, self.num_labels).sum(0) for label in inputs.labels
+            ]),
         }
 
     def test_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:

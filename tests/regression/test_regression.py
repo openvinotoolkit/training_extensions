@@ -87,11 +87,11 @@ class BaseTest:
 class TestMultiClassCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="classification", name="otx_deit_tiny"),
-        ModelTestCase(task="classification", name="otx_dino_v2"),
-        ModelTestCase(task="classification", name="otx_efficientnet_b0"),
-        ModelTestCase(task="classification", name="otx_efficientnet_v2"),
-        ModelTestCase(task="classification", name="otx_mobilenet_v3_large"),
+        ModelTestCase(task="multi_class_classification", name="otx_deit_tiny"),
+        ModelTestCase(task="multi_class_classification", name="otx_dino_v2"),
+        ModelTestCase(task="multi_class_classification", name="otx_efficientnet_b0"),
+        ModelTestCase(task="multi_class_classification", name="otx_efficientnet_v2"),
+        ModelTestCase(task="multi_class_classification", name="otx_mobilenet_v3_large"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -100,6 +100,54 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_CUB_small") / f"{idx}",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
+            extra_overrides={"trainer.max_epochs": "20"},
+        )
+        for idx in range(1, 4)
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            tmpdir=tmpdir,
+        )
+
+class TestMultilabelCls(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="multi_label_classification", name="efficientnet_b0_light"),
+        ModelTestCase(task="multi_label_classification", name="efficientnet_v2_light"),
+        ModelTestCase(task="multi_label_classification", name="mobilenet_v3_large_light"),
+        ModelTestCase(task="multi_label_classification", name="otx_deit_tiny"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [  # noqa: RUF012
+        DatasetTestCase(
+            name=f"multilabel_CUB_small_{idx}",
+            data_root=Path("multilabel_CUB_small") / f"{idx}",
+            data_format="datumaro",
+            num_classes=3,
             extra_overrides={"trainer.max_epochs": "20"},
         )
         for idx in range(1, 4)

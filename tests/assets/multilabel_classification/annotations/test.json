@@ -1,0 +1,121 @@
+{
+  "dm_format_version": "1.0",
+  "media_type": 2,
+  "infos": {
+    "ScExtractorVersion": "1.0",
+    "GetiProjectTask": "classification",
+    "GetiAnomalyLabels": [],
+    "GetiTaskTypeLabels": [["classification", ["Panda", "Lion"]]]
+  },
+  "categories": {
+    "label": {
+      "labels": [
+        {
+          "name": "Panda",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "Lion",
+          "parent": "",
+          "attributes": []
+        }
+      ],
+      "label_groups": [
+        {
+          "name": "Classification labels___Panda",
+          "group_type": "exclusive",
+          "labels": ["Panda"]
+        },
+        {
+          "name": "Classification labels___Lion",
+          "group_type": "exclusive",
+          "labels": ["Lion"]
+        }
+      ],
+      "attributes": []
+    },
+    "mask": {
+      "colormap": [
+        {
+          "label_id": 0,
+          "r": 241,
+          "g": 91,
+          "b": 133
+        },
+        {
+          "label_id": 1,
+          "r": 201,
+          "g": 230,
+          "b": 73
+        }
+      ]
+    }
+  },
+  "items": [
+    {
+      "id": "Slide6",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 1
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "Slide6.jpg",
+        "size": [720, 1280]
+      }
+    },
+    {
+      "id": "Slide8",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 1
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "Slide8.jpg",
+        "size": [720, 1280]
+      }
+    },
+    {
+      "id": "Slide12",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "Slide12.jpg",
+        "size": [720, 1280]
+      }
+    }
+  ]
+}

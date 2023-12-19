@@ -2,8 +2,8 @@
 defaults:
   - override /base: multilabel_classification
   - override /callbacks: multilabel_classification
-  - override /data: mmpretrain_multilabel
-  - override /model: mmpretrain_multilabel
+  - override /data: multilabel_mmpretrain
+  - override /model: multilabel_mmpretrain
 data:
   train_subset:
     batch_size: 64

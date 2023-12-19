@@ -2,7 +2,7 @@
 defaults:
   - override /base: classification
   - override /callbacks: classification
-  - override /data: mmpretrain
+  - override /data: multiclass_mmpretrain
   - override /model: torch_classification
 data:
   train_subset:

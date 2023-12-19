@@ -23,6 +23,12 @@ DATASET = {
             "model.otx_model.config.head.num_classes=2",
         ],
     },
+    "multilabel_classification": {
+        "data_dir": "tests/assets/multilabel_classification",
+        "overrides": [
+            "model.otx_model.config.head.num_classes=2",
+        ],
+    },
     "detection": {
         "data_dir": "tests/assets/car_tree_bug",
         "overrides": ["model.otx_model.config.bbox_head.num_classes=3"],

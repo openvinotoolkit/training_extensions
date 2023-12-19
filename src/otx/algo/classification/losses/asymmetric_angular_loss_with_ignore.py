@@ -2,25 +2,26 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Module for defining AsymmetricAngularLossWithIgnore."""
+from __future__ import annotations
 
 import torch
-from mmpretrain.registry import MODELS
 from mmpretrain.models.losses.utils import weight_reduce_loss
+from mmpretrain.registry import MODELS
 from torch import nn
 
 
 def asymmetric_angular_loss_with_ignore(
-    pred,
-    target,
-    valid_label_mask=None,
-    weight=None,
-    gamma_pos=0.0,
-    gamma_neg=1.0,
-    clip=0.05,
-    k=0.8,
-    reduction="mean",
-    avg_factor=None,
-): 
+    pred: torch.tensor,
+    target: torch.tensor,
+    valid_label_mask: torch.tensor | None = None,
+    weight: torch.tensor | None = None,
+    gamma_pos: float = 0.0,
+    gamma_neg: float = 1.0,
+    clip: float = 0.05,
+    k: float = 0.8,
+    reduction: str = "mean",
+    avg_factor: int | None = None,
+) -> nn.Module:
     """Asymmetric angular loss.
 
     Args:
@@ -45,7 +46,9 @@ def asymmetric_angular_loss_with_ignore(
     Returns:
         torch.Tensor: Loss.
     """
-    assert pred.shape == target.shape, "pred and target should be in the same shape."
+    if pred.shape != target.shape:
+        msg = "pred and target should be in the same shape."
+        raise ValueError(msg)
 
     eps = 1e-8
     target = target.type_as(pred)
@@ -74,14 +77,14 @@ def asymmetric_angular_loss_with_ignore(
         loss = loss * valid_label_mask
 
     if weight is not None:
-        assert weight.dim() == 1
+        if weight.dim() != 1:
+            raise ValueError
         weight = weight.float()
         if pred.dim() > 1:
             weight = weight.reshape(-1, 1)
     if reduction != "mean":
         avg_factor = None
-    loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
-    return loss
+    return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
 
 @MODELS.register_module()
@@ -100,7 +103,15 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         loss_weight (float): Weight of loss. Defaults to 1.0.
     """
 
-    def __init__(self, gamma_pos=0.0, gamma_neg=1.0, k=0.8, clip=0.05, reduction="mean", loss_weight=1.0):
+    def __init__(
+            self,
+            gamma_pos: float = 0.0,
+            gamma_neg: float = 1.0,
+            k: float = 0.8,
+            clip: float = 0.05,
+            reduction: str = "mean",
+            loss_weight: float = 1.0,
+        ):
         """Init fuction of AsymmetricAngularLossWithIgnore class."""
         super().__init__()
         self.gamma_pos = gamma_pos
@@ -110,11 +121,22 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self, pred, target, valid_label_mask=None, weight=None, avg_factor=None, reduction_override=None):
+    def forward(
+        self,
+        pred: torch.tensor,
+        target: torch.tensor,
+        valid_label_mask: torch.tensor | None = None,
+        weight: torch.tensor | None = None,
+        avg_factor: int | None = None,
+        reduction_override: str | None = None,
+    ) -> torch.tensor:
         """Asymmetric angular loss."""
-        assert reduction_override in (None, "none", "mean", "sum")
+        if reduction_override not in (None, "none", "mean", "sum"):
+            msg = f"reduction_override should be none / mean / sum / None, {reduction_override}"
+            raise ValueError(msg)
         reduction = reduction_override if reduction_override else self.reduction
-        loss_cls = self.loss_weight * asymmetric_angular_loss_with_ignore(
+
+        return self.loss_weight * asymmetric_angular_loss_with_ignore(
             pred,
             target,
             valid_label_mask,
@@ -126,4 +148,3 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
             reduction=reduction,
             avg_factor=avg_factor,
         )
-        return loss_cls

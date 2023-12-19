@@ -3,17 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import torch
-import torch.nn.functional as F
-from mmpretrain.registry import MODELS
-from mmpretrain.models.heads import MultiLabelLinearClsHead
 from mmengine.model import normal_init
+from mmpretrain.models.heads import MultiLabelLinearClsHead
+from mmpretrain.registry import MODELS
 from torch import nn
+from torch.nn import functional
 
 if TYPE_CHECKING:
-    from mmpretrain.structures import DataSample 
+    from mmpretrain.structures import DataSample
 
 @MODELS.register_module()
 class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
@@ -29,31 +30,36 @@ class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
 
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        normalized=False,
-        scale=1.0,
-        loss=None,
+        num_classes: int,
+        in_channels: int,
+        normalized: bool = False,
+        scale: float = 1.0,
+        loss: dict | None = None,
     ):
-        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
+        loss = loss if loss else {
+            "type":"CrossEntropyLoss",
+            "use_sigmoid": True,
+            "reduction": "mean",
+            "loss_weight": 1.0,
+        }
         super().__init__(
             loss=loss,
             num_classes=num_classes,
-            in_channels=in_channels
+            in_channels=in_channels,
         )
         self.num_classes = num_classes
         self.normalized = normalized
         self.scale = scale
         self._init_layers()
 
-    def _init_layers(self):
+    def _init_layers(self) -> None:
         if self.normalized:
             self.fc = AnglularLinear(self.in_channels, self.num_classes)
         else:
             self.fc = nn.Linear(self.in_channels, self.num_classes)
         self._init_weights()
 
-    def _init_weights(self):
+    def _init_weights(self) -> None:
         """Initialize weights of head."""
         if isinstance(self.fc, nn.Linear):
             normal_init(self.fc, mean=0, std=0.01, bias=0)
@@ -74,11 +80,11 @@ class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        losses = super().loss(feats, data_samples, **kwargs)
+        cls_score = self(feats) * self.scale
+        losses = super()._get_loss(cls_score, data_samples, **kwargs)
         losses["loss"] =  losses["loss"]/ self.scale
-        print(losses) 
         return losses
-    
+
 class AnglularLinear(nn.Module):
     """Computes cos of angles between input vectors and weights vectors.
 
@@ -87,7 +93,7 @@ class AnglularLinear(nn.Module):
         out_features (int): Number of output cosine logits.
     """
 
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features: int, out_features: int) -> None:
         """Init fuction of AngularLinear class."""
         super().__init__()
         self.in_features = in_features
@@ -95,7 +101,9 @@ class AnglularLinear(nn.Module):
         self.weight = nn.Parameter(torch.Tensor(self.out_features, self.in_features))
         self.weight.data.normal_().renorm_(2, 0, 1e-5).mul_(1e5)
 
-    def forward(self, x):
+    def forward(self, x: torch.tensor) -> torch.tensor:
         """Forward fuction of AngularLinear class."""
-        cos_theta = F.normalize(x.view(x.shape[0], -1), dim=1).mm(F.normalize(self.weight.t(), p=2, dim=0))
+        cos_theta = functional.normalize(
+            x.view(x.shape[0], -1), dim=1).mm(functional.normalize(self.weight.t(), p=2, dim=0),
+        )
         return cos_theta.clamp(-1, 1)

@@ -2,8 +2,8 @@
 defaults:
   - override /base: multilabel_classification
   - override /callbacks: multilabel_classification
-  - override /data: mmpretrain_multilabel
-  - override /model: mmpretrain_multilabel
+  - override /data: multilabel_mmpretrain
+  - override /model: multilabel_mmpretrain
 data:
   train_subset:
     batch_size: 64
@@ -44,20 +44,19 @@ model:
       backbone:
         type: OTXMobileNetV3
       head:
-        in_channels: 960
         num_classes: 1000
+        in_channels: 960
+        hid_channels: 1280
         loss:
           reduction: sum
           gamma_neg: 1.0
           gamma_pos: 0.0
           type: AsymmetricAngularLossWithIgnore
-        in_channels: 960
-        hid_channels: 1280
         normalized: true
         scale: 7.0
         act_cfg:
           type: PReLU
-        type: CustomMultiLabelLinearClsHead
+        type: CustomMultiLabelNonLinearClsHead
       neck:
         type: GlobalAveragePooling
       data_preprocessor:

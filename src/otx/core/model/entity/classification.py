@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING, Any
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
-    MulticlassClsBatchDataEntity, 
+    MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchDataEntity,
-    MultilabelClsBatchPredEntity
+    MultilabelClsBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.build import build_mm_model
@@ -115,8 +115,8 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
 class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
     """Multi-label classification models used in OTX."""
-   
-    
+
+
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     """Multi-label Classification model compatible for MMPretrain.
 
