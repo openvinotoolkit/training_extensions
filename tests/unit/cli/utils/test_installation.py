@@ -32,6 +32,7 @@ def requirements_file() -> Path:
         f.write("\n".join(requirements))
         return Path(f.name)
 
+
 def test_get_requirements(mocker: MockerFixture) -> None:
     """Test that get_requirements returns the expected dictionary of requirements."""
     requirements = get_requirements("otx")
@@ -76,6 +77,7 @@ def test_parse_requirements() -> None:
     with pytest.raises(ValueError, match="Could not find torch requirement."):
         parse_requirements(requirements)
 
+
 def test_get_cuda_version_with_version_file(mocker: MockerFixture, tmp_path: Path) -> None:
     """Test that get_cuda_version returns the expected CUDA version when version file exists."""
     tmp_path = tmp_path / "cuda"
@@ -84,6 +86,7 @@ def test_get_cuda_version_with_version_file(mocker: MockerFixture, tmp_path: Pat
     version_file = tmp_path / "version.json"
     version_file.write_text('{"cuda": {"version": "11.2.0"}}')
     assert get_cuda_version() == "11.2"
+
 
 def test_get_cuda_version_with_nvcc(mocker: MockerFixture) -> None:
     """Test that get_cuda_version returns the expected CUDA version when nvcc is available."""
@@ -96,6 +99,7 @@ def test_get_cuda_version_with_nvcc(mocker: MockerFixture) -> None:
     mock_run.side_effect = FileNotFoundError
     assert get_cuda_version() is None
 
+
 def test_update_cuda_version_with_available_torch_cuda_build() -> None:
     """Test that update_cuda_version_with_available_torch_cuda_build returns the expected CUDA version."""
     assert update_cuda_version_with_available_torch_cuda_build("11.1", "1.13.0") == "11.6"
@@ -103,9 +107,11 @@ def test_update_cuda_version_with_available_torch_cuda_build() -> None:
     assert update_cuda_version_with_available_torch_cuda_build("11.8", "1.13.0") == "11.7"
     assert update_cuda_version_with_available_torch_cuda_build("12.1", "2.0.1") == "11.8"
 
+
 def test_get_cuda_suffix() -> None:
     assert get_cuda_suffix(cuda_version="11.2") == "cu112"
     assert get_cuda_suffix(cuda_version="11.8") == "cu118"
+
 
 def test_get_hardware_suffix(mocker: MockerFixture) -> None:
     mocker.patch("otx.cli.utils.installation.get_cuda_version", return_value="11.2")
@@ -119,6 +125,7 @@ def test_get_hardware_suffix(mocker: MockerFixture) -> None:
 
     mocker.patch("otx.cli.utils.installation.get_cuda_version", return_value=None)
     assert get_hardware_suffix() == "cpu"
+
 
 def test_add_hardware_suffix_to_torch(mocker: MockerFixture) -> None:
     """Test that add_hardware_suffix_to_torch returns the expected updated requirement."""
@@ -191,22 +198,32 @@ def test_get_torch_install_args(mocker: MockerFixture) -> None:
     with pytest.raises(RuntimeError, match="Unsupported OS: Unknown"):
         get_torch_install_args(requirement)
 
+
 def test_get_mmcv_install_args(mocker: MockerFixture) -> None:
     """Test that get_mmcv_install_args returns the expected install arguments."""
     torch_requirement = Requirement.parse("torch>=1.13.0")
     mocker.patch("otx.cli.utils.installation.platform.system", return_value="Linux")
     mocker.patch("otx.cli.utils.installation.get_hardware_suffix", return_value="cpu")
     install_args = get_mmcv_install_args(torch_requirement=torch_requirement, mmcv_requirements=["mmengine==2.0.0"])
-    expected_args = ['--find-links', 'https://download.openmmlab.com/mmcv/dist/cpu/torch1.13.0/index.html', 'mmengine==2.0.0']
+    expected_args = [
+        "--find-links",
+        "https://download.openmmlab.com/mmcv/dist/cpu/torch1.13.0/index.html",
+        "mmengine==2.0.0",
+    ]
     assert install_args == expected_args
 
     install_args = get_mmcv_install_args(torch_requirement="torch==2.0.1", mmcv_requirements=["mmengine==2.0.0"])
-    expected_args = ['--find-links', 'https://download.openmmlab.com/mmcv/dist/cpu/torch2.0.0/index.html', 'mmengine==2.0.0']
+    expected_args = [
+        "--find-links",
+        "https://download.openmmlab.com/mmcv/dist/cpu/torch2.0.0/index.html",
+        "mmengine==2.0.0",
+    ]
     assert install_args == expected_args
 
     mocker.patch("otx.cli.utils.installation.platform.system", return_value="Unknown")
     with pytest.raises(RuntimeError, match="Unsupported OS: Unknown"):
         get_mmcv_install_args(torch_requirement=torch_requirement, mmcv_requirements=["mmengine==2.0.0"])
+
 
 def test_mim_installation(mocker: MockerFixture) -> None:
     mocker.patch("otx.cli.utils.installation.find_spec", return_value=True)
@@ -219,6 +236,7 @@ def test_mim_installation(mocker: MockerFixture) -> None:
     mocker.patch("otx.cli.utils.installation.find_spec", return_value=False)
     with pytest.raises(ModuleNotFoundError, match="The mmX library installation requires mim."):
         mim_installation(["mmengine==2.0.0"])
+
 
 def test_get_module_version(mocker: MockerFixture) -> None:
     mock_get_distribution = mocker.patch("otx.cli.utils.installation.pkg_resources.get_distribution")

@@ -26,7 +26,7 @@ class TestLoadAnnotations:
         data_entity = LoadImageFromFile().transform(data_entity)
         transform = LoadAnnotations()
         results = transform.transform(data_entity)
-        assert np.all(results["gt_bboxes"] == np.array([[0., 0., 50., 50.]]))
+        assert np.all(results["gt_bboxes"] == np.array([[0.0, 0.0, 50.0, 50.0]]))
         assert results["gt_bboxes_labels"] == np.array([1])
         assert results["gt_ignore_flags"] == np.array([False])
 
@@ -49,6 +49,7 @@ class TestMMDetTransformLib:
     def test_generate(self, mocker) -> None:
         def mock_convert_func(cfg: dict) -> dict:
             return cfg
+
         mocker.patch("otx.core.data.transform_libs.mmcv.convert_conf_to_mmconfig_dict", side_effect=mock_convert_func)
         config = SubsetConfig(
             batch_size=64,

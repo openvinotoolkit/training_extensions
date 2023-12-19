@@ -66,10 +66,7 @@ class MMCVTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> list[Callable]:
         """Generate MMCV transforms from the configuration."""
-        transforms = [
-            cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg))
-            for cfg in config.transforms
-        ]
+        transforms = [cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg)) for cfg in config.transforms]
 
         cls._check_mandatory_transforms(
             transforms,

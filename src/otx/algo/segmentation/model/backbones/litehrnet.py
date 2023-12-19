@@ -1260,6 +1260,7 @@ class LiteHRModule(nn.Module):
 
         return out
 
+
 @MODELS.register_module()
 class LiteHRNet(BaseModule):
     """Lite-HRNet backbone.

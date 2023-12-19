@@ -51,13 +51,17 @@ class LoadAnnotations(MMDetLoadAnnotations):
             results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
         if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
-            height, width = results['ori_shape']
+            height, width = results["ori_shape"]
             gt_masks = self._generate_gt_masks(otx_data_entity, height, width)
             results["gt_masks"] = gt_masks
         return results
 
     def _generate_gt_masks(
-            self, otx_data_entity: InstanceSegDataEntity, height: int, width: int) -> BitmapMasks | PolygonMasks:
+        self,
+        otx_data_entity: InstanceSegDataEntity,
+        height: int,
+        width: int,
+    ) -> BitmapMasks | PolygonMasks:
         """Generate ground truth masks based on the given otx_data_entity.
 
         Args:
@@ -72,7 +76,9 @@ class LoadAnnotations(MMDetLoadAnnotations):
             gt_masks = BitmapMasks(otx_data_entity.masks.numpy(), height, width)
         else:
             gt_masks = PolygonMasks(
-                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons], height, width,
+                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons],
+                height,
+                width,
             )
         return gt_masks
 
@@ -129,8 +135,10 @@ class PackDetInputs(MMDetPackDetInputs):
             polygons=polygons,
         )
 
-    def extract_metadata(self, data_samples: DetDataSample) -> tuple[
-            tuple[int, int], tuple[int, int], tuple[int, int], tuple[float, float]]:
+    def extract_metadata(
+        self,
+        data_samples: DetDataSample,
+    ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[float, float]]:
         """Extract metadata from data_samples."""
         img_shape = data_samples.img_shape
         ori_shape = data_samples.ori_shape
@@ -146,8 +154,14 @@ class PackDetInputs(MMDetPackDetInputs):
             canvas_size=img_shape,
         )
 
-    def create_image_info(self, img_idx: int, img_shape: tuple[int, int], ori_shape: tuple[int, int],
-                          pad_shape: tuple[int, int], scale_factor: tuple[float, float]) -> ImageInfo:
+    def create_image_info(
+        self,
+        img_idx: int,
+        img_shape: tuple[int, int],
+        ori_shape: tuple[int, int],
+        pad_shape: tuple[int, int],
+        scale_factor: tuple[float, float],
+    ) -> ImageInfo:
         """Create ImageInfo instance."""
         return ImageInfo(
             img_idx=img_idx,

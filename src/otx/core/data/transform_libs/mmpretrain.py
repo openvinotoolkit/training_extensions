@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
     from otx.core.config.data import SubsetConfig
 
+
 @TRANSFORMS.register_module(force=True)
 class PackInputs(MMPretrainPackInputs):
     """Class to override PackInputs."""
