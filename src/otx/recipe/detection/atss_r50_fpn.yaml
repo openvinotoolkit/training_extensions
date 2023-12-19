@@ -221,6 +221,19 @@ callbacks:
     init_args:
       max_depth: 1
   - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+logger:
+  - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger
+    init_args:
+      save_dir: ""
+      name: "csv/"
+      prefix: ""
+  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: "tensorboard/"
+      log_graph: False
+      default_hp_metric: True
+      prefix: ""
 deterministic: false
 seed: null
 precision: "32"

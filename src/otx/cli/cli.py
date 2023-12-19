@@ -60,7 +60,7 @@ class OTXCLI:
         )
         return parser
 
-    def subcommand_parser(self) -> ArgumentParser:
+    def subcommand_parser(self, **kwargs) -> ArgumentParser:
         """Returns an ArgumentParser object for parsing command line arguments specific to a subcommand.
 
         Returns:
@@ -68,6 +68,7 @@ class OTXCLI:
         """
         parser = ArgumentParser(
             formatter_class=CustomHelpFormatter,
+            **kwargs,
         )
         parser.add_argument(
             "-v",
@@ -148,6 +149,9 @@ class OTXCLI:
                 skip=skip,
                 fail_untyped=False,
             )
+            if "logger" in added:
+                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
+
             self._subcommand_method_arguments[subcommand] = added
             self._subcommand_parsers[subcommand] = sub_parser
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)

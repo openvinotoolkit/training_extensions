@@ -283,6 +283,11 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        if model is None:
+            model = self.model
+        if datamodule is None:
+            datamodule = self.datamodule
+
         self._build_trainer(**kwargs)
 
         self.trainer.test(
@@ -333,6 +338,11 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        if model is None:
+            model = self.model
+        if datamodule is None:
+            datamodule = self.datamodule
+
         self._build_trainer(**kwargs)
 
         return self.trainer.predict(
