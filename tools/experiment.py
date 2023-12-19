@@ -236,7 +236,7 @@ class BaseExpParser(ABC):
         with file_path.open("r") as f:
             lines = f.readlines()
 
-        val_score_pattern = re.compile(r"score: Performance\(score: ([-+]?\d+(\.\d*)?|\.\d+)")
+        val_score_pattern = re.compile(r"score:.*Performance\(score: ([-+]?\d+(\.\d*)?|\.\d+)")
         e2e_time_pattern = re.compile(r"time elapsed: '(\d+:\d+:\d+(\.\d*)?)'")
         for line in lines:
             if save_val_score:
