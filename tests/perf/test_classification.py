@@ -17,6 +17,9 @@ MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 class TestPerfSingleLabelClassification:
     BENCHMARK_CONFIGS = {
         "small": {
+            "tags": {
+                "task": "single-label-classification",
+            },
             "datasets": [
                 "classification/single_label/multiclass_CUB_small/1",
                 "classification/single_label/multiclass_CUB_small/2",
@@ -25,12 +28,18 @@ class TestPerfSingleLabelClassification:
             "num_repeat": 3,
         },
         "medium": {
+            "tags": {
+                "task": "single-label-classification",
+            },
             "datasets": [
                 "classification/single_label/multiclass_CUB_medium",
             ],
             "num_repeat": 3,
         },
         "large": {
+            "tags": {
+                "task": "single-label-classification",
+            },
             "datasets": [
                 "classification/single_label/multiclass_food101_large",
             ],
@@ -39,38 +48,28 @@ class TestPerfSingleLabelClassification:
     }
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark_config", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuarcy(self, fxt_model_id, fxt_benchmark_config, fxt_build_command):
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_accuarcy(self, fxt_model_id, fxt_benchmark):
         """Benchmark accruacy metrics."""
-        data_size, datasets, num_epoch, num_repeat = fxt_benchmark_config
-        tag = f"singlelabel-classification-accuracy-{data_size}"
-        command = fxt_build_command(
-            tag,
-            fxt_model_id,
-            datasets,
-            num_epoch,
-            num_repeat,
+        command = fxt_benchmark.build_command(
+            model_id=fxt_model_id,
+            tags={"benchmark": "accuracy"},
         )
         check_run(command)
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark_config", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_model_id, fxt_benchmark_config, fxt_build_command):
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_speed(self, fxt_model_id, fxt_benchmark):
         """Benchmark train time per iter / infer time per image."""
-        data_size, datasets, num_epoch, num_repeat = fxt_benchmark_config
         # Override default iteration setting, in case there's no user input
         # "--data-size large -k speed" is recommended.
-        if num_epoch == 0:
-            num_epoch = 2
-        if num_repeat == 0:
-            num_repeat = 1
-        tag = f"singlelabel-classification-speed-{data_size}"
-        command = fxt_build_command(
-            tag,
-            fxt_model_id,
-            datasets,
-            num_epoch,
-            num_repeat,
-            track_resources=True,  # Measure CPU/GPU usages
+        if fxt_benchmark.num_epoch == 0:
+            fxt_benchmark.num_epoch = 2
+        if fxt_benchmark.num_repeat == 0:
+            fxt_benchmark.num_repeat = 1
+        fxt_benchmark.track_resources = True
+        command = fxt_benchmark.build_command(
+            model_id=fxt_model_id,
+            tags={"benchmark": "speed"},
         )
         check_run(command)

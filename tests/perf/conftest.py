@@ -6,6 +6,7 @@ import pytest
 import os
 import subprocess
 import yaml
+from pathlib import Path
 from typing import List
 from datetime import datetime
 
@@ -71,6 +72,12 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture
+def fxt_commit_hash():
+    """Short commit hash."""
+    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+
+
+@pytest.fixture
 def fxt_model_id(request: pytest.FixtureRequest):
     """Skip by model category."""
     model_type: str = request.config.getoption("--model-type")
@@ -82,83 +89,136 @@ def fxt_model_id(request: pytest.FixtureRequest):
 
 
 @pytest.fixture
-def fxt_benchmark_config(request: pytest.FixtureRequest):
-    """Override benchmark config."""
+def fxt_benchmark(request: pytest.FixtureRequest, fxt_commit_hash: str):
+    """Configure benchmark."""
+    # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
     data_size: str = request.param[0]
-    datasets: List[str] = request.param[1]["datasets"]
     if data_size_option != "all":
         if data_size_option != data_size:
             pytest.skip(f"{data_size} datasets")
 
-    num_epoch: int = request.param[1].get("num_epoch", 0)  # 0: per-model default
+    # Options
+    cfg: dict = request.param[1].copy()
+
     num_epoch_override: int = int(request.config.getoption("--num-epoch"))
-    if num_epoch_override > 0:
-        num_epoch = num_epoch_override
+    if num_epoch_override > 0:  # 0: use default
+        cfg["num_epoch"] = num_epoch_override
 
-    num_repeat: int = request.param[1].get("num_repeat", 1)
     num_repeat_override: int = int(request.config.getoption("--num-repeat"))
-    if num_repeat_override > 0:
-        num_repeat = num_repeat_override
+    if num_repeat_override > 0:  # 0: use default
+        cfg["num_repeat"] = num_repeat_override
 
-    return data_size, datasets, num_epoch, num_repeat
+    cfg["eval_upto"] = request.config.getoption("--eval-upto")
+    cfg["data_root"] = request.config.getoption("--data-root")
+    output_root = request.config.getoption("--output-root")
+    output_dir = fxt_commit_hash + "-" + datetime.now().strftime("%Y%m%d_%H%M%S")
+    cfg["output_root"] = str(Path(output_root) / output_dir)
+    cfg["dry_run"] = request.config.getoption("--dry-run")
+
+    tags = cfg.get("tags", {})
+    tags["data_size"] = data_size
+    cfg["tags"] = tags
+
+    # Create benchmark
+    benchmark = OTXBenchmark(
+        **cfg,
+    )
+
+    return benchmark
 
 
-@pytest.fixture
-def fxt_commit_hash():
-    """Short commit hash in short form."""
-    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
-
-
-@pytest.fixture
-def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_path_factory):
-    """Research framework command builder."""
-    eval_upto = request.config.getoption("--eval-upto")
-    data_root = request.config.getoption("--data-root")
-    data_root = os.path.abspath(data_root)
-    output_dir = request.config.getoption("--output-root")
-    output_dir = os.path.abspath(output_dir + "-" + fxt_commit_hash)
-    output_dir = output_dir + "/" + datetime.now().strftime("%Y%m%d_%H%M%S")
-    dry_run = request.config.getoption("--dry-run")
-
-    def build_config(
-        tag: str,
-        model_id: str,
+class OTXBenchmark:
+    def __init__(
+        self,
         datasets: List[str],
-        num_epoch: int,
-        num_repeat: int,
+        data_root: str = "data",
+        num_epoch: int = 0,
+        num_repeat: int = 0,
+        train_params: dict = {},
         track_resources: bool = False,
-        params: str = "",
+        eval_upto: str = "train",
+        output_root: str = "otx-benchmark",
+        dry_run: bool = False,
+        tags: dict = {},
+    ):
+        self.datasets = datasets
+        self.data_root = data_root
+        self.num_epoch = num_epoch
+        self.num_repeat = num_repeat
+        self.train_params = train_params
+        self.track_resources = track_resources
+        self.eval_upto = eval_upto
+        self.output_root = output_root
+        self.dry_run = dry_run
+        self.tags = tags
+
+    def build_command(
+        self,
+        model_id: str,
+        train_params: dict = {},
+        tags: dict = {},
+    ) -> List[str]:
+        cfg = self._build_config(model_id, tags, train_params)
+        cfg_dir = Path(self.output_root)
+        cfg_dir.mkdir(parents=True, exist_ok=True)
+        cfg_path = cfg_dir / "cfg.yaml"
+        print(cfg_path)
+        with open(cfg_path, "w") as cfg_file:
+            yaml.dump(cfg, cfg_file, indent=2,)
+        cmd = [
+            "python",
+            "tools/experiment.py",
+            "-f",
+            cfg_path,
+        ]
+        if self.dry_run:
+            cmd.append("-d")
+        return cmd
+
+    def _build_config(
+        self,
+        model_id: str,
+        train_params: dict = {},
+        tags: dict = {},
     ) -> dict:
+        all_train_params = self.train_params.copy()
+        all_train_params.update(train_params)
+        all_tags = self.tags.copy()
+        all_tags.update(tags)
+
         cfg = {}
-        cfg["output_path"] = output_dir
+        cfg["tags"] = all_tags  # metadata
+        cfg["output_path"] = os.path.abspath(self.output_root)
         cfg["constants"] = {
-            "dataroot": data_root,
+            "dataroot": os.path.abspath(self.data_root),
         }
         cfg["variables"] = {
             "model": [model_id],
-            "data": datasets,
+            "data": self.datasets,
+            **{k: [v] for k, v in all_tags.items()},  # To be shown in result file
         }
-        cfg["repeat"] = num_repeat
+        cfg["repeat"] = self.num_repeat
         cfg["command"] = []
-        if num_epoch > 0:
-            params = params + f" --learning_parameters.num_iters {num_epoch}"
         resource_param = ""
-        if track_resources:
-            resource_param = " --track-resource-usage all"
+        if self.track_resources:
+            resource_param = "--track-resource-usage all"
+        if self.num_epoch > 0:
+            all_train_params["learning_parameters.num_iters"] = self.num_epoch
+        params_str = " ".join([f"--{k} {v}" for k, v in all_train_params.items()])
         cfg["command"].append(
             "otx train ${model}"
             " --train-data-roots ${dataroot}/${data}"
             " --val-data-roots ${dataroot}/${data}"
             " --deterministic"
-            f"{resource_param}"
-            f" params {params}"
+            f" {resource_param}"
+            f" params {params_str}"
         )
         cfg["command"].append(
             "otx eval"
             " --test-data-roots ${dataroot}/${data}"
         )
-        if eval_upto == "train":
+        if self.eval_upto == "train":
             return cfg
 
         cfg["command"].append(
@@ -168,7 +228,7 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
             "otx eval"
             " --test-data-roots ${dataroot}/${data}"
         )
-        if eval_upto == "export":
+        if self.eval_upto == "export":
             return cfg
 
         cfg["command"].append(
@@ -179,35 +239,3 @@ def fxt_build_command(request: pytest.FixtureRequest, fxt_commit_hash: str, tmp_
             " --test-data-roots ${dataroot}/${data}"
         )
         return cfg
-
-    def build_command(
-        tag: str,
-        model_id: str,
-        datasets: List[str],
-        num_epoch: int,
-        num_repeat: int,
-        track_resources: bool = False,
-        params: str = "",
-    ) -> List[str]:
-        cfg = build_config(tag, model_id, datasets, num_epoch, num_repeat, track_resources, params)
-        cfg_path = tmp_path_factory.mktemp("exp")/"cfg.yaml"
-        print(cfg_path)
-        with open(cfg_path, "w") as cfg_file:
-            yaml.dump(cfg, cfg_file, indent=2,)
-        cmd = [
-            "python",
-            "tools/experiment.py",
-            "-f",
-            cfg_path,
-        ]
-        if dry_run:
-            cmd.append("-d")
-
-        return cmd
-
-    return build_command
-
-
-class OTXBenchmark:
-    def __init__(self):
-        pass
