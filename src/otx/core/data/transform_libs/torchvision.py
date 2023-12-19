@@ -26,9 +26,7 @@ class TorchVisionTransformLib:
         return [
             obj
             for name in dir(tvt_v2)
-            if (obj := getattr(tvt_v2, name))
-            and isclass(obj)
-            and issubclass(obj, tvt_v2.Transform)
+            if (obj := getattr(tvt_v2, name)) and isclass(obj) and issubclass(obj, tvt_v2.Transform)
         ]
 
     @classmethod

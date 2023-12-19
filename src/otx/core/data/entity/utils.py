@@ -23,9 +23,9 @@ def register_pytree_node(cls: type[T_OTXDataEntity]) -> type[T_OTXDataEntity]:
             class MulticlassClsDataEntity(OTXDataEntity):
                 ...
     """
-    flatten_fn = lambda obj: (list(obj.values()), list(obj.keys())) # noqa: E731
-    unflatten_fn = lambda values, context: cls(**dict(zip(context, values))) # noqa: E731
-    pytree._register_pytree_node( #noqa: SLF001
+    flatten_fn = lambda obj: (list(obj.values()), list(obj.keys()))  # noqa: E731
+    unflatten_fn = lambda values, context: cls(**dict(zip(context, values)))  # noqa: E731
+    pytree._register_pytree_node(  # noqa: SLF001
         typ=cls,
         flatten_fn=flatten_fn,
         unflatten_fn=unflatten_fn,

@@ -52,11 +52,7 @@ class TestModule:
         fxt_config.test_subset.subset_name = "test_1"
 
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
-        mock_dm_subsets = {
-            f"{name}_{idx}": MagicMock()
-            for name in ["train", "val", "test"]
-            for idx in range(2)
-        }
+        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
 
         OTXDataModule(task=task, config=fxt_config)

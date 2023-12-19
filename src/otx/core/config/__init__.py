@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from torch import dtype
 
 
-
 def as_int_tuple(*args) -> tuple[int, ...]:
     """Resolve YAML list into Python integer tuple.
 

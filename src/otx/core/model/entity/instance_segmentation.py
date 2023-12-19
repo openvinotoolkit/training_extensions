@@ -63,11 +63,9 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             # NOTE: ground-truth masks are resized in training, but not in inference
             height, width = img_info.img_shape if self.training else img_info.ori_shape
             if len(masks):
-                mmdet_masks = BitmapMasks(
-                    masks.data.cpu().numpy(), height, width)
+                mmdet_masks = BitmapMasks(masks.data.cpu().numpy(), height, width)
             else:
-                mmdet_masks = PolygonMasks(
-                    [[np.array(polygon.points)] for polygon in polygons], height, width)
+                mmdet_masks = PolygonMasks([[np.array(polygon.points)] for polygon in polygons], height, width)
 
             data_sample = DetDataSample(
                 metainfo={
@@ -89,9 +87,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         # Don't know why but data_preprocessor.device is not automatically
         # converted by the pl.Trainer's instruction unless the model parameters.
         # Therefore, we change it here in that case.
-        if preprocessor.device != (
-            model_device := next(self.model.parameters()).device
-        ):
+        if preprocessor.device != (model_device := next(self.model.parameters()).device):
             preprocessor = preprocessor.to(device=model_device)
             self.model.data_preprocessor = preprocessor
 
@@ -106,7 +102,6 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         outputs: Any,  # noqa: ANN401
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
-
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)

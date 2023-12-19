@@ -36,6 +36,7 @@ handler = RichHandler(
 )
 logger.addHandler(handler)
 
+
 def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for install command.
 
@@ -49,7 +50,8 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     parser.add_argument(
         "--option",
         help="Install the mmlab library or optional-dependencies.",
-        default="full", type=str,
+        default="full",
+        type=str,
     )
     parser.add_argument(
         "-v",
@@ -74,6 +76,7 @@ def otx_install(option: str | None = None, verbose: bool = False) -> int:
         int: Status code of the pip install command.
     """
     from pip._internal.commands import create_command
+
     requirements_dict = get_requirements("otx")
     # Add base and openvino requirements.
     requirements = requirements_dict["base"]

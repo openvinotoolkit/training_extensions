@@ -38,9 +38,11 @@ class OTXSegmentationLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        metric_params = {"task": "multiclass",
-                         "num_classes": otx_model.model.decode_head.num_classes,
-                         "ignore_index": 255}
+        metric_params = {
+            "task": "multiclass",
+            "num_classes": otx_model.model.decode_head.num_classes,
+            "ignore_index": 255,
+        }
 
         self.val_metric = JaccardIndex(**metric_params)
         self.test_metric = JaccardIndex(**metric_params)
@@ -77,7 +79,6 @@ class OTXSegmentationLitModule(OTXLitModule):
         else:
             log.debug("Cannot log item which is not Tensor")
 
-
     def validation_step(self, inputs: SegBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
@@ -99,7 +100,6 @@ class OTXSegmentationLitModule(OTXLitModule):
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-
         return {
             "preds": torch.cat(preds.masks, dim=0),
             "target": torch.cat(inputs.masks, dim=0),

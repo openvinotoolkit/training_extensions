@@ -38,9 +38,7 @@ class TestIterationTimer:
             )
 
             if batch_idx == 0:
-                assert (
-                    not mock_pl_module.log.called
-                ), "Cannot log data and iter time at the first batch step"
+                assert not mock_pl_module.log.called, "Cannot log data and iter time at the first batch step"
             else:
                 mock_pl_module.log.assert_called_with(
                     name=f"{phase}/data_time",
@@ -63,9 +61,7 @@ class TestIterationTimer:
             assert timer.end_time[phase] == 2 * batch_idx + 1
 
             if batch_idx == 0:
-                assert (
-                    not mock_pl_module.log.called
-                ), "Cannot log data and iter time at the first batch step"
+                assert not mock_pl_module.log.called, "Cannot log data and iter time at the first batch step"
             else:
                 mock_pl_module.log.assert_called_with(
                     name=f"{phase}/iter_time",

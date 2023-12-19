@@ -30,8 +30,12 @@ def get_short_docstring(component: TypeVar) -> str | None:
 # [FIXME]: Overriding Namespce.update to match mmengine.Config (DictConfig | dict)
 # and prevent int, float types from being converted to str
 # https://github.com/omni-us/jsonargparse/issues/236
-def update(self: Namespace, value: Any, key: str | None = None,  # noqa: ANN401
-        only_unset: bool = False) -> Namespace:
+def update(
+    self: Namespace,
+    value: Any,  # noqa: ANN401
+    key: str | None = None,
+    only_unset: bool = False,
+) -> Namespace:
     """Sets or replaces all items from the given nested namespace.
 
     Args:
@@ -46,18 +50,17 @@ def update(self: Namespace, value: Any, key: str | None = None,  # noqa: ANN401
         value = dict_to_namespace(value)
     if not isinstance(value, (Namespace, dict)):
         if not key:
-            msg = 'Key is required if value not a Namespace.'
+            msg = "Key is required if value not a Namespace."
             raise KeyError(msg)
         if not only_unset or key not in self:
             if key not in self or value is not None:
-                if isinstance(value, str) and \
-                    (value.isnumeric() or value in ("True", "False")):
+                if isinstance(value, str) and (value.isnumeric() or value in ("True", "False")):
                     value = ast.literal_eval(value)
                 self[key] = value
             elif value is None:
                 del self[key]
     else:
-        prefix = key + '.' if key else ''
+        prefix = key + "." if key else ""
         for _key, val in value.items():
             if not only_unset or prefix + _key not in self:
                 self.update(val, prefix + _key)
@@ -65,5 +68,6 @@ def update(self: Namespace, value: Any, key: str | None = None,  # noqa: ANN401
         # Dict or Namespace -> Dict
         self[key] = dict_to_namespace(self[key]).as_dict()
     return self
+
 
 Namespace.update = update

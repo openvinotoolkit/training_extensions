@@ -14,9 +14,8 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from torch import nn
 
-def build_mm_model(config: DictConfig,
-                   model_registry: Registry,
-                   load_from: str) -> nn.Module:
+
+def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str) -> nn.Module:
     """Build a model by using the registry."""
     from mmengine.runner import load_checkpoint
 

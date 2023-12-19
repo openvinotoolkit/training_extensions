@@ -17,19 +17,23 @@ def fxt_multiclass_cls_batch_data_entity() -> MulticlassClsBatchDataEntity:
     batch_size = 2
     random_tensor = torch.randn((batch_size, 3, 224, 224))
     tv_tensor = tv_tensors.Image(data=random_tensor)
-    img_infos = [ImageInfo(
-        img_idx=i,
-        img_shape=(224, 224),
-        ori_shape=(224, 224),
-        pad_shape=(0, 0),
-        scale_factor=(1.0, 1.0),
-    ) for i in range(batch_size)]
+    img_infos = [
+        ImageInfo(
+            img_idx=i,
+            img_shape=(224, 224),
+            ori_shape=(224, 224),
+            pad_shape=(0, 0),
+            scale_factor=(1.0, 1.0),
+        )
+        for i in range(batch_size)
+    ]
     return MulticlassClsBatchDataEntity(
         batch_size=2,
         images=tv_tensor,
         imgs_info=img_infos,
         labels=[torch.tensor([0]), torch.tensor([1])],
     )
+
 
 @pytest.fixture()
 def fxt_config_mock() -> DictConfig:
@@ -38,11 +42,11 @@ def fxt_config_mock() -> DictConfig:
             "name": "dinov2_vits14_reg",
             "frozen": False,
         },
-        "head":{
+        "head": {
             "in_channels": 384,
             "num_classes": 2,
         },
-        "data_preprocess":{
+        "data_preprocess": {
             "mean": [1, 1, 1],
             "std": [1, 1, 1],
             "to_rgb": True,

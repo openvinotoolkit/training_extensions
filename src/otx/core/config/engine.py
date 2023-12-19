@@ -13,6 +13,7 @@ from otx.core.types.task import OTXTaskType
 @dataclass
 class EngineConfig:
     """Configuration class for the engine."""
+
     task: OTXTaskType
     device: str
     work_dir: str | None = None

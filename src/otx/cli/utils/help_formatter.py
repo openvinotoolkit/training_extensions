@@ -26,10 +26,16 @@ BASE_ARGUMENTS = {"config", "print_config", "help", "engine", "model", "model.he
 ENGINE_ARGUMENTS = {f"engine.{field.name}" for field in EngineConfig.__dataclass_fields__.values()}
 REQUIRED_ARGUMENTS = {
     "train": {
-        "data", "data.task", "data.config.data_root", "checkpoint",
+        "data",
+        "data.task",
+        "data.config.data_root",
+        "checkpoint",
     }.union(BASE_ARGUMENTS).union(ENGINE_ARGUMENTS),
     "test": {
-        "data", "data.task", "data.config.data_root", "checkpoint",
+        "data",
+        "data.task",
+        "data.config.data_root",
+        "checkpoint",
     }.union(BASE_ARGUMENTS).union(ENGINE_ARGUMENTS),
 }
 
@@ -123,6 +129,7 @@ def render_guide(subcommand: str | None = None) -> list:
     if subcommand is None or subcommand in ("install"):
         return []
     from otx.core.engine import Engine
+
     contents: list[Panel | Markdown] = [Markdown(INTRO_MARKDOWN)]
     target_command = getattr(Engine, subcommand)
     cli_usage = get_cli_usage_docstring(target_command)

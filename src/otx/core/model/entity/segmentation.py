@@ -73,9 +73,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         # Don't know why but data_preprocessor.device is not automatically
         # converted by the pl.Trainer's instruction unless the model parameters.
         # Therefore, we change it here in that case.
-        if preprocessor.device != (
-            model_device := next(self.model.parameters()).device
-        ):
+        if preprocessor.device != (model_device := next(self.model.parameters()).device):
             preprocessor = preprocessor.to(device=model_device)
             self.model.data_preprocessor = preprocessor
 
@@ -90,6 +88,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         inputs: SegBatchDataEntity,
     ) -> SegBatchPredEntity | OTXBatchLossEntity:
         from mmseg.structures import SegDataSample
+
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)

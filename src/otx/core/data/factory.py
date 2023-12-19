@@ -93,8 +93,9 @@ class OTXDatasetFactory:
 
         if task == OTXTaskType.INSTANCE_SEGMENTATION:
             from .dataset.instance_segmentation import OTXInstanceSegDataset
+
             # NOTE: DataModuleConfig does not have include_polygons attribute
-            include_polygons = getattr(cfg_data_module, 'include_polygons', False)
+            include_polygons = getattr(cfg_data_module, "include_polygons", False)
             return OTXInstanceSegDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,

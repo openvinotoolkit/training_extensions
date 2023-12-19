@@ -13,5 +13,6 @@ from otx.core.types.device import OTXDeviceType
 @dataclass
 class DeviceConfig:
     """Configuration class for the engine."""
+
     accelerator: OTXDeviceType
     devices: int = 1

@@ -15,6 +15,7 @@ from otx.core.types.task import OTXTaskType
 if TYPE_CHECKING:
     from torchvision import tv_tensors
 
+
 @register_pytree_node
 @dataclass
 class SegDataEntity(OTXDataEntity):
@@ -30,9 +31,11 @@ class SegDataEntity(OTXDataEntity):
 
     gt_seg_map: tv_tensors.Mask
 
+
 @dataclass
 class SegPredEntity(SegDataEntity, OTXPredEntity):
     """Data entity to represent the segmentation model output prediction."""
+
 
 @dataclass
 class SegBatchDataEntity(OTXBatchDataEntity[SegDataEntity]):
@@ -58,6 +61,7 @@ class SegBatchDataEntity(OTXBatchDataEntity[SegDataEntity]):
             imgs_info=batch_data.imgs_info,
             masks=[entity.gt_seg_map for entity in entities],
         )
+
 
 @dataclass
 class SegBatchPredEntity(SegBatchDataEntity, OTXBatchPredEntity):

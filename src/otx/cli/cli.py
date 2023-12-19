@@ -123,6 +123,7 @@ class OTXCLI:
             )
             if "model" in self.engine_subcommands()[subcommand]:
                 from otx.core.model.module.base import OTXLitModule
+
                 sub_parser.add_subclass_arguments(
                     OTXLitModule,
                     "model",
@@ -131,6 +132,7 @@ class OTXCLI:
                 )
             if "datamodule" in self.engine_subcommands()[subcommand]:
                 from otx.core.data.module import OTXDataModule
+
                 sub_parser.add_class_arguments(
                     OTXDataModule,
                     "data",
@@ -141,7 +143,10 @@ class OTXCLI:
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
             added = sub_parser.add_method_arguments(
-                Engine, subcommand, skip=skip, fail_untyped=False,
+                Engine,
+                subcommand,
+                skip=skip,
+                fail_untyped=False,
             )
             self._subcommand_method_arguments[subcommand] = added
             self._subcommand_parsers[subcommand] = sub_parser
@@ -149,19 +154,20 @@ class OTXCLI:
 
     def _set_extension_subcommands_parser(self, parser_subcommands: _ActionSubCommands) -> None:
         from otx.cli.install import add_install_parser
+
         add_install_parser(parser_subcommands)
 
     def instantiate_classes(self) -> None:
-            """Instantiate the necessary classes based on the subcommand.
+        """Instantiate the necessary classes based on the subcommand.
 
-            This method checks if the subcommand is one of the engine subcommands.
-            If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
-            """
-            if self.subcommand in self.engine_subcommands():
-                self.config_init = self.parser.instantiate_classes(self.config)
-                self.datamodule = self._get(self.config_init, "data")
-                self.model = self._get(self.config_init, "model")
-                self.engine = self._get(self.config_init, "engine")
+        This method checks if the subcommand is one of the engine subcommands.
+        If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
+        """
+        if self.subcommand in self.engine_subcommands():
+            self.config_init = self.parser.instantiate_classes(self.config)
+            self.datamodule = self._get(self.config_init, "data")
+            self.model = self._get(self.config_init, "model")
+            self.engine = self._get(self.config_init, "engine")
 
     def _get(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Utility to get a config value which might be inside a subcommand."""
@@ -211,6 +217,7 @@ class OTXCLI:
         self.console.print(f"[blue]{OTX_LOGO}[/blue] ver.{__version__}", justify="center")
         if self.subcommand == "install":
             from otx.cli.install import otx_install
+
             otx_install(**self.config["install"])
         elif self.subcommand in self.engine_subcommands():
             self.instantiate_classes()

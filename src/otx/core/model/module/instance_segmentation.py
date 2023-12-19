@@ -111,14 +111,19 @@ class OTXInstanceSegLitModule(OTXLitModule):
         target_info = []
 
         for bboxes, masks, scores, labels in zip(
-            preds.bboxes, preds.masks, preds.scores, preds.labels,
+            preds.bboxes,
+            preds.masks,
+            preds.scores,
+            preds.labels,
         ):
-            pred_info.append({
-                "boxes": bboxes.data,
-                "masks": masks.data,
-                "scores": scores,
-                "labels": labels,
-            })
+            pred_info.append(
+                {
+                    "boxes": bboxes.data,
+                    "masks": masks.data,
+                    "scores": scores,
+                    "labels": labels,
+                },
+            )
 
         for imgs_info, bboxes, masks, polygons, labels in zip(
             inputs.imgs_info,
@@ -128,11 +133,13 @@ class OTXInstanceSegLitModule(OTXLitModule):
             inputs.labels,
         ):
             bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
-            target_info.append({
-                "boxes": bboxes.data,
-                "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
-                "labels": labels,
-            })
+            target_info.append(
+                {
+                    "boxes": bboxes.data,
+                    "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
+                    "labels": labels,
+                },
+            )
 
         return {"preds": pred_info, "target": target_info}
 

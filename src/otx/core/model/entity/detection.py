@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
+
 class MMDetCompatibleModel(OTXDetectionModel):
     """Detection model compatible for MMDet.
 
@@ -31,6 +32,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX detection model
     compatible for OTX pipelines.
     """
+
     def __init__(self, config: DictConfig | dict) -> None:
         self.load_from = config.pop("load_from", None)
         self.config = DictConfig(config)
@@ -79,9 +81,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         # Don't know why but data_preprocessor.device is not automatically
         # converted by the pl.Trainer's instruction unless the model parameters.
         # Therefore, we change it here in that case.
-        if preprocessor.device != (
-            model_device := next(self.model.parameters()).device
-        ):
+        if preprocessor.device != (model_device := next(self.model.parameters()).device):
             preprocessor = preprocessor.to(device=model_device)
             self.model.data_preprocessor = preprocessor
 

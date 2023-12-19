@@ -71,12 +71,17 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
-        "otx", "train",
-        "--config", str(recipe),
-        "--engine.work_dir", str(tmp_path_train),
-        "--data.config.data_root", DATASET[task]["data_dir"],
-        "--max_epochs", "2",
-        *DATASET[task]['overrides'],
+        "otx",
+        "train",
+        "--config",
+        str(recipe),
+        "--engine.work_dir",
+        str(tmp_path_train),
+        "--data.config.data_root",
+        DATASET[task]["data_dir"],
+        "--max_epochs",
+        "2",
+        *DATASET[task]["overrides"],
     ]
 
     with patch("sys.argv", command_cfg):
@@ -94,11 +99,15 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     # 2) otx test
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
-        "otx", "test",
-        "--config", str(recipe),
-        "--engine.work_dir", str(tmp_path_test),
-        "--data.config.data_root", DATASET[task]["data_dir"],
-        *DATASET[task]['overrides'],
+        "otx",
+        "test",
+        "--config",
+        str(recipe),
+        "--engine.work_dir",
+        str(tmp_path_test),
+        "--data.config.data_root",
+        DATASET[task]["data_dir"],
+        *DATASET[task]["overrides"],
         f"--checkpoint={ckpt_files[-1]}",
     ]
 
