@@ -10,12 +10,11 @@ from typing import TYPE_CHECKING, Any
 import torch
 import yaml
 from lightning import LightningModule
-from lightning.pytorch.cli import instantiate_class
 from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
+from otx.core.engine.utils.instantiators import instantiate_model
 from otx.core.model.entity.base import OTXModel
-from otx.core.model.module.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -28,8 +27,8 @@ class OTXLitModule(LightningModule):
         self,
         otx_model: OTXModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__()
 
@@ -43,7 +42,7 @@ class OTXLitModule(LightningModule):
         self.save_hyperparameters(logger=False, ignore=["otx_model"])
 
     @classmethod
-    def from_config(cls, config: str | Path) -> OTXLitModule:
+    def from_config(cls, config: dict | str | Path) -> OTXLitModule:
         """Create an instance of OTXLitModule from a configuration file.
 
         Args:
@@ -53,16 +52,17 @@ class OTXLitModule(LightningModule):
             OTXLitModule: An instance of OTXLitModule.
 
         """
-        with Path(config).open() as f:
-            config_dict = yaml.safe_load(f)
-
-        model_config = config_dict.get("model", config_dict)["init_args"]
-        return cls(
-            otx_model=instantiate_class(args=(), init=model_config["otx_model"]),
-            torch_compile=model_config["torch_compile"],
-            optimizer=partial_instantiate_class(init=model_config["optimizer"]),
-            scheduler=partial_instantiate_class(init=model_config["scheduler"]),
-        )
+        if isinstance(config, (str, Path)):
+            with Path(config).open() as f:
+                config = yaml.safe_load(f)
+        if not isinstance(config, dict):
+            msg = "Please double-check model config."
+            raise TypeError(msg)
+        model = instantiate_model(model_cfg=config.get("model", config))
+        if model is None:
+            msg = "Please double-check model config."
+            raise TypeError(msg)
+        return model
 
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""

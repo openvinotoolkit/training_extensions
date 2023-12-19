@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 from lightning.pytorch.cli import instantiate_class
@@ -14,6 +15,8 @@ from . import pylogger
 if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.loggers import Logger
+
+    from otx.core.model.module.base import OTXLitModule
 
 log = pylogger.get_pylogger(__name__)
 
@@ -61,3 +64,50 @@ def instantiate_loggers(logger_cfg: dict | None) -> list[Logger]:
         logger.append(instantiate_class(args=(), init=logger_cfg))
 
     return logger
+
+
+def partial_instantiate_class(init: dict) -> partial:
+    """Partially instantiates a class with the given initialization arguments.
+
+    Copy from lightning.pytorch.cli.instantiate_class and modify it to use partial.
+
+    Args:
+        init (dict): A dictionary containing the initialization arguments.
+            It should have the following keys:
+            - "init_args" (dict): A dictionary of keyword arguments to be passed to the class constructor.
+            - "class_path" (str): The fully qualified path of the class to be instantiated.
+
+    Returns:
+        partial: A partial object representing the partially instantiated class.
+    """
+    kwargs = init.get("init_args", {})
+    class_module, class_name = init["class_path"].rsplit(".", 1)
+    module = __import__(class_module, fromlist=[class_name])
+    args_class = getattr(module, class_name)
+    return partial(args_class, **kwargs)
+
+
+def instantiate_model(model_cfg: dict | None) -> OTXLitModule | None:
+    """Instantiate a module based on the provided module configuration.
+
+    Args:
+        module_cfg (dict | None): The module configuration.
+
+    Returns:
+        LightningModule | OTXDataModule | None: The instantiated module.
+    """
+    if not model_cfg:
+        log.warning("No model configs found! Skipping...")
+        return None
+
+    model_args = model_cfg.get("init_args", {})
+    model_args["otx_model"] = instantiate_class(args=(), init=model_args["otx_model"])
+    model_args["optimizer"] = partial_instantiate_class(init=model_args["optimizer"])
+    model_args["scheduler"] = partial_instantiate_class(init=model_args["scheduler"])
+    model_cfg["init_args"] = model_args
+
+    if isinstance(model_cfg, dict) and "class_path" in model_cfg:
+        log.info(f"Instantiating module <{model_cfg['class_path']}>")
+        return instantiate_class(args=(), init=model_cfg)
+
+    return None

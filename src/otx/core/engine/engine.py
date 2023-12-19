@@ -17,6 +17,7 @@ from otx.core.engine.utils.cache import TrainerArgumentsCache
 from otx.core.engine.utils.instantiators import (
     instantiate_callbacks,
     instantiate_loggers,
+    instantiate_model,
 )
 from otx.core.types.device import OTXDeviceType
 from otx.core.types.task import OTXTaskType
@@ -49,8 +50,9 @@ class Engine:
         """Initializes the Engine object.
 
         Args:
+            task (OTXTaskType | None, optional): The Task type want to use in Engine.
             work_dir (str | Path | None, optional): The working directory. Defaults to None.
-            device (OTXDeviceType, optional):  The devices to be used. Defaults to "auto"
+            device (OTXDeviceType, optional):  The devices to be used. Defaults to "auto".
         """
         self.task = task
         self.work_dir = work_dir
@@ -63,7 +65,8 @@ class Engine:
         )
 
         self._trainer: Trainer | None = None
-
+        self._model: LightningModule | None = None
+        self._datamodule: OTXDataModule | None = None
 
     @property
     def trainer(self) -> Trainer:
@@ -78,6 +81,34 @@ class Engine:
             msg = "Please run train() first"
             raise RuntimeError(msg)
         return self._trainer
+
+    @property
+    def model(self) -> LightningModule:
+        """Returns the trainer object associated with the engine.
+
+        To get this property, you should execute `Engine.train()` function first.
+
+        Returns:
+            Trainer: The trainer object.
+        """
+        if self._model is None:
+            msg = "There are no ready model"
+            raise RuntimeError(msg)
+        return self._model
+
+    @property
+    def datamodule(self) -> OTXDataModule:
+        """Returns the trainer object associated with the engine.
+
+        To get this property, you should execute `Engine.train()` function first.
+
+        Returns:
+            Trainer: The trainer object.
+        """
+        if self._datamodule is None:
+            msg = "There are no ready datamodule"
+            raise RuntimeError(msg)
+        return self._datamodule
 
     def _build_trainer(self, **kwargs) -> None:
         """Instantiate the trainer based on the model parameters."""
@@ -105,30 +136,35 @@ class Engine:
             config="config.yaml",
         )
         """
+        model = None
+        datamodule = None
         if isinstance(config, (str, Path)):
             with Path(config).open() as f:
                 config_dict = yaml.safe_load(f)
-            config_dict.pop("data", None)
-            config_dict.pop("model", None)
-            engine_args = config_dict.get("engine", config_dict)
+            datamodule = OTXDataModule.from_config(config=config_dict.pop("data", None))
+            model = instantiate_model(config_dict.pop("model", None))
+            engine_args = config_dict.pop("engine", config_dict)
             engine_cfg = EngineConfig(**engine_args)
         else:
             engine_cfg = config
 
         callbacks = instantiate_callbacks(config_dict.pop("callbacks", []))
         logger = instantiate_loggers(config_dict.pop("logger", None))
-        return cls(
+        engine = cls(
             task=engine_cfg.task,
             work_dir=engine_cfg.work_dir,
             callbacks=callbacks,
             logger=logger,
             **config_dict,
         )
+        engine._model = model  # noqa: SLF001
+        engine._datamodule = datamodule  # noqa: SLF001
+        return engine
 
     def train(
         self,
-        model: LightningModule,
-        datamodule: OTXDataModule,
+        model: LightningModule | None = None,
+        datamodule: OTXDataModule | None = None,
         checkpoint: str | Path | None = None,
         max_epochs: int = 10,
         seed: int | None = None,
@@ -180,6 +216,11 @@ class Engine:
                 otx train --config <CONFIG_PATH, str>
                 ```
         """
+        if model is None:
+            model = self.model
+        if datamodule is None:
+            datamodule = self.datamodule
+
         if seed is not None:
             seed_everything(seed, workers=True)
 

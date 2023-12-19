@@ -15,7 +15,4 @@ class EngineConfig:
     """Configuration class for the engine."""
     task: OTXTaskType
     device: str
-    callbacks: list
-    logger: dict | None
-
     work_dir: str | None = None

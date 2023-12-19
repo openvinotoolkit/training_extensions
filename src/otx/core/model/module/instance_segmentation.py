@@ -31,8 +31,8 @@ class OTXInstanceSegLitModule(OTXLitModule):
         self,
         otx_model: OTXInstanceSegModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__(
             otx_model=otx_model,
