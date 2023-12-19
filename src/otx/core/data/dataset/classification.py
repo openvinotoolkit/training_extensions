@@ -53,6 +53,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
         return MulticlassClsBatchDataEntity.collate_fn
 
+
 class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     """OTXDataset class for multi-label classification task."""
 

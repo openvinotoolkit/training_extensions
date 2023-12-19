@@ -113,7 +113,8 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
 
     @classmethod
     def collate_fn(
-        cls, entities: list[MultilabelClsDataEntity],
+        cls,
+        entities: list[MultilabelClsDataEntity],
     ) -> MultilabelClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch_data = super().collate_fn(entities)
@@ -128,4 +129,3 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
 @dataclass
 class MultilabelClsBatchPredEntity(MultilabelClsBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for multi-label classification task."""
-

@@ -104,14 +104,14 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
     """
 
     def __init__(
-            self,
-            gamma_pos: float = 0.0,
-            gamma_neg: float = 1.0,
-            k: float = 0.8,
-            clip: float = 0.05,
-            reduction: str = "mean",
-            loss_weight: float = 1.0,
-        ):
+        self,
+        gamma_pos: float = 0.0,
+        gamma_neg: float = 1.0,
+        k: float = 0.8,
+        clip: float = 0.05,
+        reduction: str = "mean",
+        loss_weight: float = 1.0,
+    ):
         """Init fuction of AsymmetricAngularLossWithIgnore class."""
         super().__init__()
         self.gamma_pos = gamma_pos

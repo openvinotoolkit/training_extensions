@@ -104,6 +104,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
 
+
 class OTXMultilabelClsLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX multi-label classification task."""
 
@@ -115,7 +116,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        self.num_labels = otx_model.config.get("head",{}).get("num_classes", None)
+        self.num_labels = otx_model.config.get("head", {}).get("num_classes", None)
 
         self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
         self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
@@ -163,9 +164,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     ) -> dict[str, list[dict[str, Tensor]]]:
         return {
             "preds": torch.stack(preds.scores),
-            "target": torch.stack([
-                functional.one_hot(label, self.num_labels).sum(0) for label in inputs.labels
-            ]),
+            "target": torch.stack([functional.one_hot(label, self.num_labels).sum(0) for label in inputs.labels]),
         }
 
     def test_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:

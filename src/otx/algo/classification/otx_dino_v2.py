@@ -58,6 +58,7 @@ class DINOv2(nn.Module):
             return self.loss(logits, labels)
         return self.softmax(logits)
 
+
 class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
 

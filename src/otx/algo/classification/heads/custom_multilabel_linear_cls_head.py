@@ -16,6 +16,7 @@ from torch.nn import functional
 if TYPE_CHECKING:
     from mmpretrain.structures import DataSample
 
+
 @MODELS.register_module()
 class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
     """Custom Linear classification head for multilabel task.
@@ -36,12 +37,16 @@ class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
         scale: float = 1.0,
         loss: dict | None = None,
     ):
-        loss = loss if loss else {
-            "type":"CrossEntropyLoss",
-            "use_sigmoid": True,
-            "reduction": "mean",
-            "loss_weight": 1.0,
-        }
+        loss = (
+            loss
+            if loss
+            else {
+                "type": "CrossEntropyLoss",
+                "use_sigmoid": True,
+                "reduction": "mean",
+                "loss_weight": 1.0,
+            }
+        )
         super().__init__(
             loss=loss,
             num_classes=num_classes,
@@ -64,8 +69,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
         if isinstance(self.fc, nn.Linear):
             normal_init(self.fc, mean=0, std=0.01, bias=0)
 
-    def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample],
-             **kwargs) -> dict:
+    def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample], **kwargs) -> dict:
         """Calculate losses from the classification score.
 
         Args:
@@ -82,8 +86,9 @@ class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
         """
         cls_score = self(feats) * self.scale
         losses = super()._get_loss(cls_score, data_samples, **kwargs)
-        losses["loss"] =  losses["loss"]/ self.scale
+        losses["loss"] = losses["loss"] / self.scale
         return losses
+
 
 class AnglularLinear(nn.Module):
     """Computes cos of angles between input vectors and weights vectors.
@@ -103,7 +108,7 @@ class AnglularLinear(nn.Module):
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         """Forward fuction of AngularLinear class."""
-        cos_theta = functional.normalize(
-            x.view(x.shape[0], -1), dim=1).mm(functional.normalize(self.weight.t(), p=2, dim=0),
+        cos_theta = functional.normalize(x.view(x.shape[0], -1), dim=1).mm(
+            functional.normalize(self.weight.t(), p=2, dim=0),
         )
         return cos_theta.clamp(-1, 1)

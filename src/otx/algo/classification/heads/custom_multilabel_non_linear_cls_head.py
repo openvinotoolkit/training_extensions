@@ -47,12 +47,16 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         normalized: bool = False,
     ):
         act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
-        loss = loss if loss else {
-            "type": "CrossEntropyLoss",
-            "use_sigmoid": True,
-            "reduction": "mean",
-            "loss_weight": 1.0,
-        }
+        loss = (
+            loss
+            if loss
+            else {
+                "type": "CrossEntropyLoss",
+                "use_sigmoid": True,
+                "reduction": "mean",
+                "loss_weight": 1.0,
+            }
+        )
         super().__init__(loss=loss)
 
         self.in_channels = in_channels
@@ -98,8 +102,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)
 
-    def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample],
-             **kwargs) -> dict:
+    def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample], **kwargs) -> dict:
         """Calculate losses from the classification score.
 
         Args:
@@ -117,5 +120,5 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         cls_score = self(feats) * self.scale
 
         losses = super()._get_loss(cls_score, data_samples, **kwargs)
-        losses["loss"] =  losses["loss"]/ self.scale
+        losses["loss"] = losses["loss"] / self.scale
         return losses
