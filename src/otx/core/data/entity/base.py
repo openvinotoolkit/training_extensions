@@ -150,9 +150,7 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             raise RuntimeError(msg)
 
         if not all(entity.image_type == ImageType.TV_IMAGE for entity in entities):
-            msg = (
-                "All entities should be torchvision's Image tensor before collate_fn()"
-            )
+            msg = "All entities should be torchvision's Image tensor before collate_fn()"
             raise RuntimeError(msg)
 
         return OTXBatchDataEntity(

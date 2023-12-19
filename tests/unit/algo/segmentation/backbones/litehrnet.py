@@ -22,7 +22,11 @@ class TestStemV2:
 
     def test_init(self) -> None:
         stemv2_extra_stride = StemV2(
-            in_channels=32, stem_channels=32, out_channels=32, expand_ratio=1, extra_stride=True,
+            in_channels=32,
+            stem_channels=32,
+            out_channels=32,
+            expand_ratio=1,
+            extra_stride=True,
         )
         assert stemv2_extra_stride is not None
 
@@ -70,14 +74,14 @@ class TestLiteHRNet:
                     (40, 80, 160),
                     (40, 80, 160, 320),
                 ],
-        },
+            },
         }
 
     @pytest.fixture()
     def backbone(self, extra_cfg) -> LiteHRNet:
         return LiteHRNet(extra=extra_cfg)
 
-    def test_init(self, extra_cfg)-> None:
+    def test_init(self, extra_cfg) -> None:
         extra = deepcopy(extra_cfg)
 
         extra["add_stem_features"] = True
@@ -89,13 +93,13 @@ class TestLiteHRNet:
         model = LiteHRNet(extra=extra)
         assert model is not None
 
-    def test_init_weights(self, backbone)-> None:
+    def test_init_weights(self, backbone) -> None:
         backbone.init_weights()
 
         with pytest.raises(TypeError):
             backbone.init_weights(0)
 
-    def test_forward(self, extra_cfg, backbone)-> None:
+    def test_forward(self, extra_cfg, backbone) -> None:
         backbone.train()
         inputs = torch.randn((1, 3, 224, 224))
         outputs = backbone(inputs)

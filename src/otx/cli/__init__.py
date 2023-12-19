@@ -44,10 +44,13 @@ class OTXCLI:
         """Setup subcommands for the OTX CLI."""
         parser_subcommands = self.parser.add_subcommands()
         from otx.cli.install import add_install_parser
+
         add_install_parser(parser_subcommands)
         from otx.cli.train import add_train_parser
+
         add_train_parser(parser_subcommands)
         from otx.cli.test import add_test_parser
+
         add_test_parser(parser_subcommands)
 
     def run(self) -> None:
@@ -55,12 +58,15 @@ class OTXCLI:
         subcommand = self.config["subcommand"]
         if subcommand == "install":
             from otx.cli.install import otx_install
+
             otx_install(**self.config["install"])
         elif subcommand == "train":
             from otx.cli.train import otx_train
+
             otx_train(**self.config["train"])
         elif subcommand == "test":
             from otx.cli.test import otx_test
+
             otx_test(**self.config["test"])
 
 
