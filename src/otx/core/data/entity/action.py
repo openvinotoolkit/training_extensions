@@ -18,6 +18,7 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from datumaro.components.media import Video
     from torch import LongTensor
 
 
@@ -27,9 +28,11 @@ class ActionClsDataEntity(OTXDataEntity):
     """Data entity for action classification task.
 
     Args:
+        video: Video object.
         labels: Video's action labels.
     """
 
+    video: Video
     labels: LongTensor
 
     @property
