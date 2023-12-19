@@ -36,9 +36,9 @@ class MMActionCompatibleModel(OTXActionClsModel):
 
     def _create_model(self) -> nn.Module:
         from mmaction.registry import MODELS
-        from mmaction.utils import register_all_modules
+        from mmengine.registry import MODELS as MMENGINE_MODELS
 
-        register_all_modules(init_default_scope=True)
+        MMENGINE_MODELS.register_module(module=MODELS.get("ActionDataPreprocessor"), force=True)
         return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:
