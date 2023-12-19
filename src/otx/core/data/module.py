@@ -39,6 +39,7 @@ class OTXDataModule(LightningDataModule):
         # These lines should be removed after next datumaro release.
         # https://github.com/openvinotoolkit/datumaro/pull/1223/files
         from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
+
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)

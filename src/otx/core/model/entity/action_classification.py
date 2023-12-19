@@ -72,6 +72,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
         inputs: ActionClsBatchDataEntity,
     ) -> ActionClsBatchPredEntity | OTXBatchLossEntity:
         from mmaction.structures import ActionDataSample
+
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)
