@@ -36,10 +36,14 @@ class DinoVisionTransformer(BaseModule):
             n=out_index,
             reshape=True,
 <<<<<<< HEAD
+<<<<<<< HEAD
         )
 =======
           )
 >>>>>>> 3fe39b00c (Update src/otx/algo/segmentation/backbones/dinov2.py)
+=======
+        )
+>>>>>>> cf0b8e0cb (fixed pre-commit. Fixed segnext templates)
 
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""
