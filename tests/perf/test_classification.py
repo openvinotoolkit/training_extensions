@@ -61,12 +61,6 @@ class TestPerfSingleLabelClassification:
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
     def test_speed(self, fxt_model_id, fxt_benchmark):
         """Benchmark train time per iter / infer time per image."""
-        # Override default iteration setting, in case there's no user input
-        # "--data-size large -k speed" is recommended.
-        if fxt_benchmark.num_epoch == 0:
-            fxt_benchmark.num_epoch = 2
-        if fxt_benchmark.num_repeat == 0:
-            fxt_benchmark.num_repeat = 1
         fxt_benchmark.track_resources = True
         command = fxt_benchmark.build_command(
             model_id=fxt_model_id,

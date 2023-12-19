@@ -104,6 +104,9 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_commit_hash: str):
     num_epoch_override: int = int(request.config.getoption("--num-epoch"))
     if num_epoch_override > 0:  # 0: use default
         cfg["num_epoch"] = num_epoch_override
+    if "test_speed" in request.node.name:
+        if cfg.get("num_epoch", 0) == 0:  # No user options
+            cfg["num_epoch"] = 2
 
     num_repeat_override: int = int(request.config.getoption("--num-repeat"))
     if num_repeat_override > 0:  # 0: use default
@@ -159,7 +162,7 @@ class OTXBenchmark:
         train_params: dict = {},
         tags: dict = {},
     ) -> List[str]:
-        cfg = self._build_config(model_id, tags, train_params)
+        cfg = self._build_config(model_id, train_params, tags)
         cfg_dir = Path(self.output_root)
         cfg_dir.mkdir(parents=True, exist_ok=True)
         cfg_path = cfg_dir / "cfg.yaml"
