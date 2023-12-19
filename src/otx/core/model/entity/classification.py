@@ -114,8 +114,10 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             labels=labels,
         )
 
+
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
-### It'll be integrated after H-label classification integration with more advanced design. 
+### It'll be integrated after H-label classification integration with more advanced design.
+
 
 class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
     """Multi-label classification models used in OTX."""
