@@ -237,7 +237,6 @@ exclude = [
     "tests/assets",
 
     # it will be cleaned up later
-    "src/otx/core/engine/utils/*",
     "src/otx/algo/classification/backbones/*",
     "for_developers/helpers.py",
 
