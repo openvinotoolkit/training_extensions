@@ -21,10 +21,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture()
 def fxt_mmcv_det_transform_config(fxt_rtmdet_tiny_config: MMConfig) -> list[DictConfig]:
-    return [
-        DictConfig(cfg)
-        for cfg in mmconfig_dict_to_dict(fxt_rtmdet_tiny_config.train_pipeline)
-    ]
+    return [DictConfig(cfg) for cfg in mmconfig_dict_to_dict(fxt_rtmdet_tiny_config.train_pipeline)]
 
 
 @pytest.fixture()

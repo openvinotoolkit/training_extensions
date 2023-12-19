@@ -34,7 +34,10 @@ class TestOTXSegmentationModel:
         output_data = model._customize_inputs(fxt_seg_data_entity[2])
         assert output_data is not None
         assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["inputs"].shape[-2:]
-        assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["data_samples"][-1].gt_sem_seg.data.shape[-2:]
+        assert (
+            output_data["data_samples"][-1].metainfo["pad_shape"]
+            == output_data["data_samples"][-1].gt_sem_seg.data.shape[-2:]
+        )
 
     def test_customize_outputs(self, model, fxt_seg_data_entity) -> None:
         from mmengine.structures import PixelData
@@ -47,9 +50,7 @@ class TestOTXSegmentationModel:
         pred_segm_map.data = torch.randint(0, 2, (1, 4, 4))
         data_sample.pred_sem_seg = pred_segm_map
 
-        output_loss = {"loss_segm": torch.rand(1, requires_grad=True),
-                       "acc": torch.rand(1),
-                       "some": "some"}
+        output_loss = {"loss_segm": torch.rand(1, requires_grad=True), "acc": torch.rand(1), "some": "some"}
         out = model._customize_outputs(output_loss, fxt_seg_data_entity[2])
         assert isinstance(out, OTXBatchLossEntity)
 

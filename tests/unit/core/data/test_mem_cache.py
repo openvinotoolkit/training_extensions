@@ -54,9 +54,7 @@ class TestMemCacheHandler:
     def test_cpu_limits(self, mode) -> None:
         memory_info = psutil.virtual_memory()
         total_mem_size_in_giga_bytes = int(memory_info.total / (1024**3))
-        mem_size = total_mem_size_in_giga_bytes - (
-            MemCacheHandlerSingleton.CPU_MEM_LIMITS_GIB - 5
-        )
+        mem_size = total_mem_size_in_giga_bytes - (MemCacheHandlerSingleton.CPU_MEM_LIMITS_GIB - 5)
         MemCacheHandlerSingleton.create(mode, mem_size * (1024**3))
         assert MemCacheHandlerSingleton.instance.mem_size == 0
 

@@ -30,9 +30,7 @@ def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
     """
     parser = ArgumentParser()
     parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
-    subcommands_action.add_subcommand(
-        "train", parser, help="Training subcommand for OTX"
-    )
+    subcommands_action.add_subcommand("train", parser, help="Training subcommand for OTX")
 
 
 def otx_train(overrides: list[str]) -> dict[str, Any]:
@@ -47,9 +45,7 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
     register_configs()
 
     with initialize(config_path="../config", version_base="1.3", job_name="otx_train"):
-        cfg = compose(
-            config_name="train", overrides=overrides, return_hydra_config=True
-        )
+        cfg = compose(config_name="train", overrides=overrides, return_hydra_config=True)
         configure_hydra_outputs(cfg)
 
         # train the model

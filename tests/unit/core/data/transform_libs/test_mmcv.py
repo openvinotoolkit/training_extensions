@@ -42,7 +42,7 @@ class TestMMCVTransformLib:
         mocker.patch("otx.core.data.transform_libs.mmcv.convert_conf_to_mmconfig_dict", side_effect=mock_convert_func)
         transforms = MMCVTransformLib.generate(config)
         assert len(transforms) == 2
-        assert np.all(transforms[1].mean == np.array([0., 0., 0.]))
+        assert np.all(transforms[1].mean == np.array([0.0, 0.0, 0.0]))
 
         config.transforms.pop(0)
         with pytest.raises(RuntimeError):

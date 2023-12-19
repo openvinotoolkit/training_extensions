@@ -73,7 +73,7 @@ base = [
 mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
-    "mmsegmentation==1.2.1"
+    "mmsegmentation==1.2.1",
 ]
 
 [project.scripts]

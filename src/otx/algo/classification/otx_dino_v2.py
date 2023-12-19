@@ -17,8 +17,10 @@ from otx.core.model.entity.classification import OTXMulticlassClsModel
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
+
 class DINOv2(nn.Module):
     """DINO-v2 Model."""
+
     def __init__(
         self,
         backbone_name: str,
@@ -58,9 +60,10 @@ class DINOv2(nn.Module):
 
 class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
+
     def __init__(self, config: DictConfig) -> None:
         self.config = config
-        super().__init__() # create the model
+        super().__init__()  # create the model
 
     def _create_model(self) -> nn.Module:
         """Create the model."""
@@ -80,7 +83,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
 
     def _customize_outputs(
         self,
-        outputs: Any, # noqa: ANN401
+        outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
         """Customize the outputs for the model."""

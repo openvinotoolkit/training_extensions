@@ -58,7 +58,8 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
 
     @classmethod
     def collate_fn(
-        cls, entities: list[MulticlassClsDataEntity],
+        cls,
+        entities: list[MulticlassClsDataEntity],
     ) -> MulticlassClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch_data = super().collate_fn(entities)

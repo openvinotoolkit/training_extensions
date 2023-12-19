@@ -33,6 +33,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX classification model
     compatible for OTX pipelines.
     """
+
     def __init__(self, config: DictConfig) -> None:
         self.config = config
         self.load_from = config.pop("load_from", None)
@@ -69,9 +70,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         # Don't know why but data_preprocessor.device is not automatically
         # converted by the pl.Trainer's instruction unless the model parameters.
         # Therefore, we change it here in that case.
-        if preprocessor.device != (
-            model_device := next(self.model.parameters()).device
-        ):
+        if preprocessor.device != (model_device := next(self.model.parameters()).device):
             preprocessor = preprocessor.to(device=model_device)
             self.model.data_preprocessor = preprocessor
 
@@ -86,6 +85,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample
+
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)

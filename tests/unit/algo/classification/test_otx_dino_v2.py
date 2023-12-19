@@ -16,7 +16,7 @@ class TestDINOv2:
         mock_backbone = MagicMock()
         mock_backbone.return_value = torch.randn(1, 12)
 
-        with patch('torch.hub.load', autospec=True) as mock_load:
+        with patch("torch.hub.load", autospec=True) as mock_load:
             mock_load.return_value = mock_backbone
 
             return DINOv2(
@@ -25,7 +25,6 @@ class TestDINOv2:
                 head_in_channels=12,
                 num_classes=2,
             )
-
 
     def test_freeze_backbone(self, model) -> None:
         for _, v in model.backbone.named_parameters():

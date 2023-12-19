@@ -19,6 +19,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 # ruff: noqa: SLF001
 
+
 def replace_activation(model: nn.Module, activation_cfg: dict) -> nn.Module:
     """Replace activate funtion."""
     for name, module in model._modules.items():

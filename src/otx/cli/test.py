@@ -16,6 +16,7 @@ from otx.cli.utils.hydra import configure_hydra_outputs
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
+
 def add_test_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for test command.
 
@@ -42,4 +43,5 @@ def otx_test(overrides: list[str]) -> None:
 
         # test the model
         from otx.core.engine.test import test
+
         metric_dict, _ = test(cfg)

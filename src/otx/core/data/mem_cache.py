@@ -159,9 +159,7 @@ class MemCacheHandlerBase:
 
     def __repr__(self) -> str:
         """Representation for the current handler status."""
-        perc = (
-            100.0 * self._cur_page.value / self.mem_size if self.mem_size > 0 else 0.0
-        )
+        perc = 100.0 * self._cur_page.value / self.mem_size if self.mem_size > 0 else 0.0
         return (
             f"{self.__class__.__name__} "
             f"uses {self._cur_page.value} / {self.mem_size} ({perc:.1f}%) memory pool and "
@@ -244,11 +242,7 @@ class MemCacheHandlerSingleton:
         # COPY FROM mmcv.runner.get_dist_info
         from torch import distributed
 
-        world_size = (
-            distributed.get_world_size()
-            if distributed.is_available() and distributed.is_initialized()
-            else 1
-        )
+        world_size = distributed.get_world_size() if distributed.is_available() and distributed.is_initialized() else 1
 
         # Prevent CPU OOM issue
         memory_info = psutil.virtual_memory()

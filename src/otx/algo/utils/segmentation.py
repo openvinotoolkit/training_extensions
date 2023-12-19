@@ -35,13 +35,17 @@ def channel_shuffle(x: torch.Tensor, groups: int) -> torch.Tensor:
 
     return x.view(batch_size, -1, height, width)
 
+
 class PSPModule(nn.Module):
     """PSP module.
 
     Reference: https://github.com/MendelXu/ANN.
     """
-    methods: ClassVar[dict[str, AdaptiveMaxPool2d | AdaptiveAvgPool2d]] = {"max": AdaptiveMaxPool2d,
-                                                                           "avg": AdaptiveAvgPool2d}
+
+    methods: ClassVar[dict[str, AdaptiveMaxPool2d | AdaptiveAvgPool2d]] = {
+        "max": AdaptiveMaxPool2d,
+        "avg": AdaptiveAvgPool2d,
+    }
 
     def __init__(self, sizes: tuple = (1, 3, 6, 8), method: str = "max"):
         super().__init__()
@@ -57,6 +61,7 @@ class PSPModule(nn.Module):
         priors = [stage(feats).view(batch_size, c, -1) for stage in self.stages]
 
         return torch.cat(priors, -1)
+
 
 class AsymmetricPositionAttentionModule(nn.Module):
     """AsymmetricPositionAttentionModule.
@@ -169,11 +174,13 @@ class OnnxLpNormalization(torch.autograd.Function):
         del eps  # These args are not used.
         return g.op("LpNormalization", x, axis_i=int(axis), p_i=int(p))
 
+
 def normalize(x: torch.Tensor, dim: int, p: int = 2, eps: float = 1e-12) -> torch.Tensor:
     """Normalize method."""
     if torch.onnx.is_in_onnx_export():
         return OnnxLpNormalization.apply(x, dim, p, eps)
     return torch.nn.functional.normalize(x, dim=dim, p=p, eps=eps)
+
 
 class IterativeAggregator(nn.Module):
     """IterativeAggregator.

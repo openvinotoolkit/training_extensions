@@ -18,7 +18,9 @@ class TestOTXModel:
         return MMDetCompatibleModel(config=fxt_rtmdet_tiny_model_config)
 
     def test_forward_train(
-        self, fxt_model: MMDetCompatibleModel, fxt_datamodule: OTXDataModule,
+        self,
+        fxt_model: MMDetCompatibleModel,
+        fxt_datamodule: OTXDataModule,
     ) -> None:
         dataloader = fxt_datamodule.train_dataloader()
         for inputs in dataloader:

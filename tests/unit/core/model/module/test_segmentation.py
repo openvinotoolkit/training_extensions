@@ -19,6 +19,7 @@ class MockMetric(torch.nn.Module):
     def update(*args, **kwargs) -> None:
         pass
 
+
 class MockModel(torch.nn.Module):
     def __init__(self, input_dict):
         self.input_dict = input_dict
@@ -44,14 +45,12 @@ class TestOTXSegmentationModel:
         return model
 
     def test_validation_step(self, mocker, model, fxt_seg_data_entity) -> None:
-        mocker_update_loss = mocker.patch.object(model,
-                                                 "_convert_pred_entity_to_compute_metric")
+        mocker_update_loss = mocker.patch.object(model, "_convert_pred_entity_to_compute_metric")
         model.validation_step(fxt_seg_data_entity[2], 0)
         mocker_update_loss.assert_called_once()
 
     def test_test_metric(self, mocker, model, fxt_seg_data_entity) -> None:
-        mocker_update_loss = mocker.patch.object(model,
-                                                 "_convert_pred_entity_to_compute_metric")
+        mocker_update_loss = mocker.patch.object(model, "_convert_pred_entity_to_compute_metric")
         model.test_step(fxt_seg_data_entity[2], 0)
         mocker_update_loss.assert_called_once()
 

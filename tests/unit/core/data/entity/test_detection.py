@@ -28,7 +28,9 @@ class TestDetBatchDataEntity:
                 tv_tensors.Image(torch.randn(3, 224, 224)),
                 ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
                 tv_tensors.BoundingBoxes(
-                    data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224),
+                    data=torch.Tensor([0, 0, 50, 50]),
+                    format="xywh",
+                    canvas_size=(224, 224),
                 ),
                 LongTensor([1]),
             ),
@@ -36,7 +38,9 @@ class TestDetBatchDataEntity:
                 tv_tensors.Image(torch.randn(3, 224, 224)),
                 ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
                 tv_tensors.BoundingBoxes(
-                    data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224),
+                    data=torch.Tensor([0, 0, 50, 50]),
+                    format="xywh",
+                    canvas_size=(224, 224),
                 ),
                 LongTensor([1]),
             ),
@@ -44,7 +48,9 @@ class TestDetBatchDataEntity:
                 tv_tensors.Image(torch.randn(3, 224, 224)),
                 ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
                 tv_tensors.BoundingBoxes(
-                    data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224),
+                    data=torch.Tensor([0, 0, 50, 50]),
+                    format="xywh",
+                    canvas_size=(224, 224),
                 ),
                 LongTensor([1]),
             ),
