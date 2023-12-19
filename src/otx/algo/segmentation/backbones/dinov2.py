@@ -16,6 +16,7 @@ from torch import nn
 @BACKBONES.register_module()
 class DinoVisionTransformer(BaseModule):
     """DINO-v2 Model."""
+
     def __init__(
         self,
         name: str,
@@ -24,7 +25,7 @@ class DinoVisionTransformer(BaseModule):
         init_cfg: dict | None = None,
     ):
         super().__init__(init_cfg)
-        torch.hub._validate_not_a_forked_repo=lambda a, b, c: True # noqa: SLF001, ARG005
+        torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # noqa: SLF001, ARG005
         self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
@@ -34,7 +35,7 @@ class DinoVisionTransformer(BaseModule):
             self.backbone.get_intermediate_layers,
             n=out_index,
             reshape=True,
-          )
+        )
 
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""

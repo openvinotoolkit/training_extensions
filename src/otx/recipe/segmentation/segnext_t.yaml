@@ -16,8 +16,8 @@ data:
           - 0.5
           - 2.0
         scale:
-          - 2048
-          - 512
+          - 544
+          - 544
         type: RandomResize
       - cat_max_ratio: 0.75
         crop_size:
@@ -34,8 +34,8 @@ data:
       - type: LoadImageFromFile
       - keep_ratio: true
         scale:
-          - 2048
-          - 512
+          - 544
+          - 544
         type: Resize
       - reduce_zero_label: true
         type: LoadAnnotations
@@ -46,8 +46,8 @@ data:
       - type: LoadImageFromFile
       - keep_ratio: true
         scale:
-          - 2048
-          - 512
+          - 544
+          - 544
         type: Resize
       - reduce_zero_label: true
         type: LoadAnnotations
