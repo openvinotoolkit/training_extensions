@@ -62,6 +62,8 @@ class OTXDataEntity(Mapping):
     :param image: Image tensor or list of Image tensor which can have different type according to `image_type`
         1) `image_type=ImageType.NUMPY`: H x W x C numpy image tensor
         2) `image_type=ImageType.TV_IMAGE`: C x H x W torchvision image tensor
+        3) `image_type=ImageType.NUMPY_LIST`: List of H x W x C numpy image tensors
+        3) `image_type=ImageType.TV_IMAGE_LIST`: List of C x H x W torchvision image tensors
     :param imgs_info: Meta information for images
     """
 
