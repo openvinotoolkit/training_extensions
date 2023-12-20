@@ -35,6 +35,7 @@ from .utils import (
     load_template,
     read_py_config,
     set_random_seed,
+    get_cfg_based_on_device,
 )
 
 __all__ = [
@@ -57,6 +58,7 @@ __all__ = [
     "is_xpu_available",
     "is_hpu_available",
     "cast_bf16_to_fp32",
+    "get_cfg_based_on_device",
 ]
 
 

@@ -10,13 +10,15 @@ import random
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import numpy as np
 import onnx
 import torch
 import yaml
 from addict import Dict as adict
+
+from otx.utils.utils import add_suffix_to_filename
 
 HPU_AVAILABLE = None
 try:
@@ -200,3 +202,13 @@ def cast_bf16_to_fp32(tensor: torch.Tensor) -> torch.Tensor:
     if tensor.dtype == torch.bfloat16:
         tensor = tensor.to(torch.float32)
     return tensor
+
+
+def get_cfg_based_on_device(cfg_file_path : Union[str, Path]) -> str:
+    """Find a config file according to device."""
+    if is_xpu_available():
+        cfg_for_device = add_suffix_to_filename(cfg_file_path, "_xpu")
+        if cfg_for_device.exists():
+            cfg_file_path = cfg_for_device
+
+    return str(cfg_file_path)

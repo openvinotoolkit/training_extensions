@@ -40,6 +40,7 @@ from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.common.utils.utils import get_cfg_based_on_device
 from otx.algorithms.detection.adapters.mmdet.apis.train import train_detector
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
@@ -94,7 +95,7 @@ class MMDetectionTask(OTXDetectionTask):
 
     def _init_task(self):  # noqa
         """Initialize task."""
-        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(get_cfg_based_on_device(os.path.join(self._model_dir, "model.py")))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
