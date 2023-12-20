@@ -20,7 +20,7 @@ from otx.algorithms.common.utils.callback import (
     TrainingProgressCallback,
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
-from otx.algorithms.common.utils.utils import embed_onnx_model_data
+from otx.algorithms.common.utils.utils import embed_onnx_model_data, get_cfg_based_on_device
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
@@ -91,7 +91,7 @@ class OTXDetectionTask(OTXTask, ABC):
         if self._hyperparams.tiling_parameters.enable_tiling:
             self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
         else:
-            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
+            self.data_pipeline_path = get_cfg_based_on_device(os.path.join(self._model_dir, "data_pipeline.py"))
 
         if hasattr(self._hyperparams.learning_parameters, "input_size"):
             input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
