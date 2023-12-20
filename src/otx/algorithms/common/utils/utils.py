@@ -19,6 +19,10 @@ import yaml
 from addict import Dict as adict
 
 from otx.utils.utils import add_suffix_to_filename
+from otx.utils.logger import get_logger
+
+logger = get_logger()
+
 
 HPU_AVAILABLE = None
 try:
@@ -209,6 +213,9 @@ def get_cfg_based_on_device(cfg_file_path : Union[str, Path]) -> str:
     if is_xpu_available():
         cfg_for_device = add_suffix_to_filename(cfg_file_path, "_xpu")
         if cfg_for_device.exists():
+            logger.info(
+                f"XPU is detected. XPU config file will be used : {Path(cfg_file_path).name} -> {cfg_for_device.name}"
+            )
             cfg_file_path = cfg_for_device
 
     return str(cfg_file_path)
