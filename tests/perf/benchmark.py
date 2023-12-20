@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import yaml
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from tests.test_suite.run_test_command import check_run
 
@@ -67,7 +67,7 @@ class OTXBenchmark:
         model_id: str,
         train_params: dict = {},
         tags: dict = {},
-    ) -> pd.DataFrame
+    ) -> pd.DataFrame:
         """Run benchmark and return the result.
 
         Args:
@@ -100,7 +100,7 @@ class OTXBenchmark:
         result = self.load_result()
         return result
 
-    def load_result(self, result_path: str = None) -> pd.DataFrame:
+    def load_result(self, result_path: Optional[str] = None) -> pd.DataFrame:
         """Load result as pd.DataFrame format.
 
         Args:
@@ -110,7 +110,11 @@ class OTXBenchmark:
         Retruns:
             pd.DataFrame: Table with benchmark metrics
         """
-        return None
+        if result_path is None:
+            csv_file_path = Path(self.output_root) / "exp_summary.csv"
+        elif os.path.isdir(result_path):
+            csv_file_path = Path(result_path) / "exp_summary.csv"
+        return pd.read_csv(csv_file_path)
 
     def _build_config(
         self,
