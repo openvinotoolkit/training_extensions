@@ -81,7 +81,7 @@ class MulticlassClsBatchPredEntity(MulticlassClsBatchDataEntity, OTXBatchPredEnt
 class MultilabelClsDataEntity(OTXDataEntity):
     """Data entity for multi-label classification task.
 
-    :param labels: labels as integer indices
+    :param labels: Multi labels represented as an one-hot vector.
     """
 
     @property
