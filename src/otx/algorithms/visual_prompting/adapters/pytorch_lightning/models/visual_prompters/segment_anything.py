@@ -349,7 +349,6 @@ class SegmentAnything(LightningModule):
         """
 
         def resize_longest_image_size(input_image_size: Tensor, longest_side: int) -> Tensor:
-            input_image_size = input_image_size.to(torch.float32)
             scale = longest_side / torch.max(input_image_size)
             transformed_size = scale * input_image_size
             transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
@@ -357,7 +356,7 @@ class SegmentAnything(LightningModule):
 
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
-        prepadded_size = resize_longest_image_size(orig_size, input_size).to(torch.int64)
+        prepadded_size = resize_longest_image_size(orig_size, input_size)
         masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
 
         orig_size = orig_size.to(torch.int64)
