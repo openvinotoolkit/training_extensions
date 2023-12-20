@@ -98,6 +98,18 @@ class Engine:
             raise RuntimeError(msg)
         return self._model
 
+    @model.setter
+    def model(self, model: LightningModule) -> None:
+        """Sets the model for the engine.
+
+        Args:
+            model (LightningModule): The model to be set.
+
+        Returns:
+            None
+        """
+        self._model = model
+
     @property
     def datamodule(self) -> OTXDataModule:
         """Returns the trainer object associated with the engine.
@@ -111,6 +123,18 @@ class Engine:
             msg = "There are no ready datamodule"
             raise RuntimeError(msg)
         return self._datamodule
+
+    @datamodule.setter
+    def datamodule(self, datamodule: OTXDataModule) -> None:
+        """Sets the datamodule for the engine.
+
+        Args:
+            datamodule (OTXDataModule): The datamodule to be set.
+
+        Returns:
+            None
+        """
+        self._datamodule = datamodule
 
     def _build_trainer(self, **kwargs) -> None:
         """Instantiate the trainer based on the model parameters."""
@@ -242,6 +266,8 @@ class Engine:
             datamodule=datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
         )
+        self.model = model
+        self.datamodule = datamodule
 
         return self.trainer.callback_metrics
 
@@ -296,6 +322,9 @@ class Engine:
             ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
         )
 
+        self.model = model
+        self.datamodule = datamodule
+
         return self.trainer.callback_metrics
 
     def predict(
@@ -344,6 +373,9 @@ class Engine:
             datamodule = self.datamodule
 
         self._build_trainer(**kwargs)
+
+        self.model = model
+        self.datamodule = datamodule
 
         return self.trainer.predict(
             model=model,

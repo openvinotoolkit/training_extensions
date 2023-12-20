@@ -90,10 +90,10 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     # Currently, a simple output check
     assert tmp_path_train.exists()
     assert (tmp_path_train / "configs.yaml").exists()
-    assert (tmp_path_train / "lightning_logs").exists()
-    assert (tmp_path_train / "lightning_logs" / "version_0").exists()
-    assert (tmp_path_train / "lightning_logs" / "version_0" / "checkpoints").exists()
-    ckpt_files = list((tmp_path_train / "lightning_logs" / "version_0" / "checkpoints").glob(pattern="epoch_*.ckpt"))
+    assert (tmp_path_train / "csv").exists()
+    assert (tmp_path_train / "csv" / "version_0").exists()
+    assert (tmp_path_train / "csv" / "version_0" / "checkpoints").exists()
+    ckpt_files = list((tmp_path_train / "csv" / "version_0" / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
 
     # 2) otx test
@@ -116,4 +116,3 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
 
     assert tmp_path_test.exists()
     assert (tmp_path_test / "configs.yaml").exists()
-    assert (tmp_path_test / "lightning_logs").exists()
