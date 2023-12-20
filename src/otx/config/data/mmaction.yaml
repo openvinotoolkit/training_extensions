@@ -1,0 +1,16 @@
+defaults:
+  - default
+
+data_format: kinetics
+
+mem_cache_img_max_size: ${as_int_tuple:500,500}
+
+train_subset:
+  batch_size: 64
+  transform_lib_type: MMACTION
+val_subset:
+  batch_size: 64
+  transform_lib_type: MMACTION
+test_subset:
+  batch_size: 64
+  transform_lib_type: MMACTION
