@@ -102,6 +102,36 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        mask_threshold = configurable_float(
+            default_value=0.0,
+            header="Mask threshold",
+            description=(
+                "The threshold to apply to the raw logit output of the model, for each pixel. "
+                "A higher value means a stricter segmentation prediction."
+            ),
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+        
+        sim_threshold = configurable_float(
+            default_value=0.65,
+            header="Similarity threshold",
+            description="The threshold to filter point candidates based on similarity scores.",
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        num_bg_points = configurable_integer(
+            default_value=1,
+            header="The number of background points",
+            description="The number of background points to be used as negative prompts.",
+            min_value=1,
+            max_value=1024,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
     @attrs
     class __POTParameter(BaseConfig.BasePOTParameter):
         header = string_attribute("POT Parameters")

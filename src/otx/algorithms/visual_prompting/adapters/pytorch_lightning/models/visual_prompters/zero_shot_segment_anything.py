@@ -80,7 +80,7 @@ class PromptGetter(nn.Module):
         """Get prompt candidates."""
         total_points_scores: torch.Tensor
         total_bg_coords: torch.Tensor
-        for label in range(len(self.reference_feats)):
+        for label in range(self.reference_feats.shape[0]):
             points_scores, bg_coords = self.get_prompt_candidates(
                 image_embeddings=image_embeddings,
                 label=torch.tensor([[label]], dtype=torch.int64),
@@ -92,8 +92,8 @@ class PromptGetter(nn.Module):
                 total_points_scores = points_scores.unsqueeze(0)
                 total_bg_coords = bg_coords.unsqueeze(0)
             else:
-                pad_tot = max(0, points_scores.shape[0] - total_points_scores.shape[1])
-                pad_cur = max(0, total_points_scores.shape[1] - points_scores.shape[0])
+                pad_tot = torch.max(torch.tensor(0), torch.tensor(points_scores.shape[0]) - torch.tensor(total_points_scores.shape[1]))
+                pad_cur = torch.max(torch.tensor(0), torch.tensor(total_points_scores.shape[1]) - torch.tensor(points_scores.shape[0]))
 
                 total_points_scores = F.pad(total_points_scores, (0, 0, 0, pad_tot, 0, 0), value=-1)
                 points_scores = F.pad(points_scores, (0, 0, 0, pad_cur), value=-1)
@@ -154,8 +154,8 @@ class PromptGetter(nn.Module):
         point_coords = torch.where(mask_sim > threshold)
         fg_coords_scores = torch.stack(point_coords[::-1] + (mask_sim[point_coords],), dim=0).T
 
-        ratio = self.image_size / max(original_size)
-        _, width = map(lambda x: int(x * ratio), original_size)
+        ratio = self.image_size / original_size.max()
+        width = (original_size[1] * ratio).to(torch.int64)
         n_w = width // self.downsizing
 
         # get grid numbers
@@ -370,7 +370,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                     point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
                     point_coords = ResizeLongestSide.apply_coords(
-                        point_coords, original_size, self.config.model.image_size
+                        point_coords, original_size[0], self.config.model.image_size
                     )
                     point_labels = torch.tensor(
                         [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
@@ -379,7 +379,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
-                        original_size=original_size,
+                        original_size=original_size[0],
                     )
                     predicted_masks[label].append(mask.detach().cpu())
                     used_points[label].append(points_score.detach().cpu())
@@ -466,7 +466,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def predict_step(self, batch, batch_idx):
         """Predict step for `infer`."""
-        results = self.infer(images=batch["images"], original_size=batch.get("original_size")[0])
+        results = self.infer(images=batch["images"], original_size=batch.get("original_size")[0].unsqueeze(0))
         return [result[0] for result in results]  # tmp: only mask
 
     def _preprocess_prompts(
