@@ -7,7 +7,7 @@
 import pytest
 
 from otx.cli.registry import Registry
-from tests.test_suite.run_test_command import check_run
+from .benchmark import OTXBenchmark
 
 
 MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
@@ -49,21 +49,19 @@ class TestPerfSingleLabelClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuarcy(self, fxt_model_id, fxt_benchmark):
+    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
         """Benchmark accruacy metrics."""
-        command = fxt_benchmark.build_command(
+        result = fxt_benchmark.run(
             model_id=fxt_model_id,
             tags={"benchmark": "accuracy"},
         )
-        check_run(command)
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_model_id, fxt_benchmark):
+    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
         """Benchmark train time per iter / infer time per image."""
         fxt_benchmark.track_resources = True
-        command = fxt_benchmark.build_command(
+        result = fxt_benchmark.run(
             model_id=fxt_model_id,
             tags={"benchmark": "speed"},
         )
-        check_run(command)
