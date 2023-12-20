@@ -110,11 +110,22 @@ class OTXBenchmark:
         Retruns:
             pd.DataFrame: Table with benchmark metrics
         """
+        # Load csv data
         if result_path is None:
             csv_file_path = Path(self.output_root) / "exp_summary.csv"
         elif os.path.isdir(result_path):
             csv_file_path = Path(result_path) / "exp_summary.csv"
-        return pd.read_csv(csv_file_path)
+        result = pd.read_csv(csv_file_path)
+
+        # Append metadata if any
+        cfg_file_path: Path = csv_file_path.parent / "cfg.yaml"
+        if cfg_file_path.exists():
+            with cfg_file_path.open("r") as cfg_file:
+                tags = yaml.safe_load(cfg_file).get("tags", {})
+                for k, v in tags.items():
+                    result[k] = v
+
+        return result
 
     def _build_config(
         self,
