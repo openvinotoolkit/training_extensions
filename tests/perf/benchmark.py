@@ -3,6 +3,7 @@
 
 
 import os
+import glob
 import pandas as pd
 import yaml
 from pathlib import Path
@@ -34,7 +35,7 @@ class OTXBenchmark:
             Operations include the preceeding ones.
             e.x) Eval up to 'optimize': train -> eval -> export -> eval -> optimize -> eval
             Default to 'train'.
-        output_root (str): Output path for logs and results. Defaults to './otx-benchmark'.
+        output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
         dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
         tags (dict): Key-values pair metadata for the experiment. Defaults to {}.
     """
@@ -81,7 +82,7 @@ class OTXBenchmark:
 
         # Build config file
         cfg = self._build_config(model_id, train_params, tags)
-        cfg_dir = Path(self.output_root)
+        cfg_dir = Path(cfg["output_path"])
         cfg_dir.mkdir(parents=True, exist_ok=True)
         cfg_path = cfg_dir / "cfg.yaml"
         with open(cfg_path, "w") as cfg_file:
@@ -97,35 +98,39 @@ class OTXBenchmark:
         # Run benchmark
         check_run(cmd)
         # Load result
-        result = self.load_result()
+        result = self.load_result(cfg_dir)
         return result
 
-    def load_result(self, result_path: Optional[str] = None) -> pd.DataFrame:
-        """Load result as pd.DataFrame format.
+    @staticmethod
+    def load_result(result_path: str) -> pd.DataFrame:
+        """Load benchmark results recursively and merge as pd.DataFrame.
 
         Args:
             result_path (str): Result directory or speicific file.
-                Defaults to None to search the benchmark output root.
 
         Retruns:
-            pd.DataFrame: Table with benchmark metrics
+            pd.DataFrame: Table with benchmark metrics & options
         """
+        # Search csv files
+        if os.path.isdir(result_path):
+            csv_file_paths = glob.glob(f"{result_path}/**/exp_summary.csv", recursive=True)
+        else:
+            csv_file_paths = [result_path]
+        results = []
         # Load csv data
-        if result_path is None:
-            csv_file_path = Path(self.output_root) / "exp_summary.csv"
-        elif os.path.isdir(result_path):
-            csv_file_path = Path(result_path) / "exp_summary.csv"
-        result = pd.read_csv(csv_file_path)
-
-        # Append metadata if any
-        cfg_file_path: Path = csv_file_path.parent / "cfg.yaml"
-        if cfg_file_path.exists():
-            with cfg_file_path.open("r") as cfg_file:
-                tags = yaml.safe_load(cfg_file).get("tags", {})
-                for k, v in tags.items():
-                    result[k] = v
-
-        return result
+        for csv_file_path in csv_file_paths:
+            result = pd.read_csv(csv_file_path)
+            # Append metadata if any
+            cfg_file_path = Path(csv_file_path).parent / "cfg.yaml"
+            if cfg_file_path.exists():
+                with cfg_file_path.open("r") as cfg_file:
+                    tags = yaml.safe_load(cfg_file).get("tags", {})
+                    for k, v in tags.items():
+                        result[k] = v
+            results.append(result)
+        if len(results) > 0:
+            results = pd.concat(results, ignore_index=True)
+        return results
 
     def _build_config(
         self,
@@ -140,7 +145,9 @@ class OTXBenchmark:
 
         cfg = {}
         cfg["tags"] = all_tags  # metadata
-        cfg["output_path"] = os.path.abspath(self.output_root)
+        cfg["output_path"] = os.path.abspath(
+            Path(self.output_root) / "-".join(list(all_tags.values()) + [model_id])
+        )
         cfg["constants"] = {
             "dataroot": os.path.abspath(self.data_root),
         }

@@ -72,10 +72,13 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture
-def fxt_commit_hash() -> str:
-    """Short commit hash."""
-    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+@pytest.fixture(scope="session")
+def fxt_output_root(request: pytest.FixtureRequest) -> Path:
+    """Output root + date + short commit hash."""
+    output_root = request.config.getoption("--output-root")
+    data_str = datetime.now().strftime("%Y%m%d-%H%M%S")
+    commit_str = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    return Path(output_root) / (data_str + "-" + commit_str)
 
 
 @pytest.fixture
@@ -90,7 +93,7 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture
-def fxt_benchmark(request: pytest.FixtureRequest, fxt_commit_hash: str) -> OTXBenchmark:
+def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXBenchmark:
     """Configure benchmark."""
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
@@ -101,6 +104,10 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_commit_hash: str) -> OTXBe
 
     # Options
     cfg: dict = request.param[1].copy()
+
+    tags = cfg.get("tags", {})
+    tags["data_size"] = data_size
+    cfg["tags"] = tags
 
     num_epoch_override: int = int(request.config.getoption("--num-epoch"))
     if num_epoch_override > 0:  # 0: use default
@@ -115,14 +122,8 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_commit_hash: str) -> OTXBe
 
     cfg["eval_upto"] = request.config.getoption("--eval-upto")
     cfg["data_root"] = request.config.getoption("--data-root")
-    output_root = request.config.getoption("--output-root")
-    output_dir = fxt_commit_hash + "-" + datetime.now().strftime("%Y%m%d_%H%M%S")
-    cfg["output_root"] = str(Path(output_root) / output_dir)
+    cfg["output_root"] = str(fxt_output_root)
     cfg["dry_run"] = request.config.getoption("--dry-run")
-
-    tags = cfg.get("tags", {})
-    tags["data_size"] = data_size
-    cfg["tags"] = tags
 
     # Create benchmark
     benchmark = OTXBenchmark(
@@ -130,3 +131,15 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_commit_hash: str) -> OTXBe
     )
 
     return benchmark
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_benchmark_summary(fxt_output_root: Path):
+    """Summarize all results at the end of test session."""
+    yield
+    all_results = OTXBenchmark.load_result(fxt_output_root)
+    print("="*20, "[Benchmark summary]")
+    print(all_results)
+    output_path = fxt_output_root / "benchmark-summary.csv"
+    all_results.to_csv(output_path, index=False)
+    print(f"  -> Saved to {output_path}.")
