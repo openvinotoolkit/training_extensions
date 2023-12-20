@@ -28,7 +28,7 @@ model = dict(
     # 0.01, and the threshold of the test phase is 0.001.
     test_cfg=dict(score_thr=0.01, nms=dict(type="nms", iou_threshold=0.65), max_per_img=100),
     size_multiplier=160,
-    random_size_range=(3,5),
+    random_size_range=(3, 5),
 )
 load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
 /models/object_detection/v2/yolox_tiny_8x8.pth"

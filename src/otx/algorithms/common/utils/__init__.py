@@ -28,6 +28,7 @@ from .utils import (
     UncopiableDefaultDict,
     cast_bf16_to_fp32,
     get_arg_spec,
+    get_cfg_based_on_device,
     get_default_async_reqs_num,
     get_task_class,
     is_hpu_available,
@@ -35,7 +36,6 @@ from .utils import (
     load_template,
     read_py_config,
     set_random_seed,
-    get_cfg_based_on_device,
 )
 
 __all__ = [

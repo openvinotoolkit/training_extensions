@@ -18,8 +18,8 @@ import torch
 import yaml
 from addict import Dict as adict
 
-from otx.utils.utils import add_suffix_to_filename
 from otx.utils.logger import get_logger
+from otx.utils.utils import add_suffix_to_filename
 
 logger = get_logger()
 
@@ -208,7 +208,7 @@ def cast_bf16_to_fp32(tensor: torch.Tensor) -> torch.Tensor:
     return tensor
 
 
-def get_cfg_based_on_device(cfg_file_path : Union[str, Path]) -> str:
+def get_cfg_based_on_device(cfg_file_path: Union[str, Path]) -> str:
     """Find a config file according to device."""
     if is_xpu_available():
         cfg_for_device = add_suffix_to_filename(cfg_file_path, "_xpu")

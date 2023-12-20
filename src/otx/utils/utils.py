@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Union
 from pathlib import Path
+from typing import Union
 
 
 def add_suffix_to_filename(file_path: Union[str, Path], suffix: str) -> Path:
