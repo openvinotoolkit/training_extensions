@@ -36,7 +36,6 @@ class OTXDataModule(LightningDataModule):
         self.save_hyperparameters()
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
-
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
             self.config.val_subset.subset_name: self.config.val_subset,
@@ -55,7 +54,6 @@ class OTXDataModule(LightningDataModule):
                 cfg_data_module=config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
-
         mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
         mem_cache_mode = (
             "singleprocessing"

@@ -47,3 +47,5 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     def collate_fn(self) -> Callable:
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
         return MulticlassClsBatchDataEntity.collate_fn
+
+class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity])
