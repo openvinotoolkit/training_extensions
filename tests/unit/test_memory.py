@@ -5,8 +5,10 @@ import time
 def test_memory_bound():
     print(psutil.virtual_memory())
     alloc = []
-    alloc_unit = bytearray(1024 * 1024 * 100)
-    while True:
-        alloc.append(alloc_unit)
+    alloc_unit = "0123456789" * 1024 * 1024 * 10  # 100m
+    idx = 0
+    while idx < 1024:
+        alloc.append(f"{idx}{alloc_unit}")
         print(psutil.virtual_memory())
-        time.sleep(5)
+        time.sleep(1)
+        idx += 1
