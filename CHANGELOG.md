@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Add zero-shot visual prompting (https://github.com/openvinotoolkit/training_extensions/pull/2616)
 
+### Enhancements
+
+- Upgrade NNCF to 2.7 and OpenVINO to 2023.2 (<https://github.com/openvinotoolkit/training_extensions/pull/2656>)
+
 ## \[v1.5.0\]
 
 ### New features
@@ -15,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Enable configurable confidence threshold for otx eval and export (<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
 - Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
 - Enable FeatureVectorHook to support action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
-- Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
+- Add ONNX metadata to detection, instance segmentation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
 - Add a new feature to configure input size (<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
 - Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
 - Add a new object detector Lite-DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
