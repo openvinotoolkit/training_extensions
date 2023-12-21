@@ -91,8 +91,9 @@ To realize our product missions, we establish the following design principles an
    This simplicity allows users to enjoy a convenient model training workflow without worrying about the input data pipeline.
 
    Another advantage highlighted in Figure 3 is the support for multiple data augmentation pipelines.
-   The default recommendation is TorchVision[^8].
-   However, as shown, there are other pipelines such as MMPretrain, MMDetection, etc.
+   As shown, we demonstrate how to incorporate a data augmentation pipeline from an external framework.
+   We provide the necessary online conversions before and after the data augmentation pipeline from the external framework.
+   As a result, by adjusting or using the configuration from the template we provide, users can utilize not only the default pipeline from TorchVision[^8], but also other pipelines such as MMPretrain, MMDetection, etc.
    This flexibility enables developers to freely compose the model and the data augmentation pipeline from various frameworks, accelerating the creation of custom model training templates for specific problem domains.
 
 Authors: @wonjuleee @vinnamkim
