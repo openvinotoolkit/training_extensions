@@ -20,6 +20,11 @@
           "algorithm": "quantization",
           "initializer": {
             "range": {
+              "type": "percentile",
+              "params": {
+                "min_percentile": 0,
+                "max_percentile": 100
+              },
               "num_init_samples": 1000
             },
             "batchnorm_adaptation": {
