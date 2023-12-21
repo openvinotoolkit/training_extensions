@@ -65,3 +65,109 @@ class TestPerfSingleLabelClassification:
             model_id=fxt_model_id,
             tags={"benchmark": "speed"},
         )
+
+
+class TestPerfMultiLabelClassification:
+    BENCHMARK_CONFIGS = {
+        "small": {
+            "tags": {
+                "task": "multi-label-classification",
+            },
+            "datasets": [
+                "classification/multi_label/multilabel_CUB_small/1",
+                "classification/multi_label/multilabel_CUB_small/2",
+                "classification/multi_label/multilabel_CUB_small/3",
+            ],
+            "num_repeat": 3,
+        },
+        "medium": {
+            "tags": {
+                "task": "multi-label-classification",
+            },
+            "datasets": [
+                "classification/multi_label/multilabel_CUB_medium",
+            ],
+            "num_repeat": 3,
+        },
+        "large": {
+            "tags": {
+                "task": "multi-label-classification",
+            },
+            "datasets": [
+                "classification/multi_label/multilabel_food101_large",
+            ],
+            "num_repeat": 1,
+        },
+    }
+
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+        """Benchmark accruacy metrics."""
+        result = fxt_benchmark.run(
+            model_id=fxt_model_id,
+            tags={"benchmark": "accuracy"},
+        )
+
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+        """Benchmark train time per iter / infer time per image."""
+        fxt_benchmark.track_resources = True
+        result = fxt_benchmark.run(
+            model_id=fxt_model_id,
+            tags={"benchmark": "speed"},
+        )
+
+
+class TestPerfHierarchicalLabelClassification:
+    BENCHMARK_CONFIGS = {
+        "small": {
+            "tags": {
+                "task": "h-label-classification",
+            },
+            "datasets": [
+                "classification/h_label/h_label_CUB_small/1",
+                "classification/h_label/h_label_CUB_small/2",
+                "classification/h_label/h_label_CUB_small/3",
+            ],
+            "num_repeat": 3,
+        },
+        "medium": {
+            "tags": {
+                "task": "h-label-classification",
+            },
+            "datasets": [
+                "classification/h_label/h_label_CUB_medium",
+            ],
+            "num_repeat": 3,
+        },
+        # TODO: Add large dataset
+        # "large": {
+        #     "tags": {
+        #         "task": "h-label-classification",
+        #     },
+        #     "datasets": [
+        #     ],
+        #     "num_repeat": 1,
+        # },
+    }
+
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+        """Benchmark accruacy metrics."""
+        result = fxt_benchmark.run(
+            model_id=fxt_model_id,
+            tags={"benchmark": "accuracy"},
+        )
+
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+        """Benchmark train time per iter / infer time per image."""
+        fxt_benchmark.track_resources = True
+        result = fxt_benchmark.run(
+            model_id=fxt_model_id,
+            tags={"benchmark": "speed"},
+        )

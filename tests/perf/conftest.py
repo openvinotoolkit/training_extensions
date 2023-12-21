@@ -138,8 +138,9 @@ def fxt_benchmark_summary(fxt_output_root: Path):
     """Summarize all results at the end of test session."""
     yield
     all_results = OTXBenchmark.load_result(fxt_output_root)
-    print("="*20, "[Benchmark summary]")
-    print(all_results)
-    output_path = fxt_output_root / "benchmark-summary.csv"
-    all_results.to_csv(output_path, index=False)
-    print(f"  -> Saved to {output_path}.")
+    if all_results:
+        print("="*20, "[Benchmark summary]")
+        print(all_results)
+        output_path = fxt_output_root / "benchmark-summary.csv"
+        all_results.to_csv(output_path, index=False)
+        print(f"  -> Saved to {output_path}.")

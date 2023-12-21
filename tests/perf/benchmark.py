@@ -1,3 +1,5 @@
+"""OTX Benchmark based on tools/experiment.py."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -102,7 +104,7 @@ class OTXBenchmark:
         return result
 
     @staticmethod
-    def load_result(result_path: str) -> pd.DataFrame:
+    def load_result(result_path: str) -> pd.DataFrame | None:
         """Load benchmark results recursively and merge as pd.DataFrame.
 
         Args:
@@ -129,8 +131,9 @@ class OTXBenchmark:
                         result[k] = v
             results.append(result)
         if len(results) > 0:
-            results = pd.concat(results, ignore_index=True)
-        return results
+            return pd.concat(results, ignore_index=True)
+        else:
+            return None
 
     def _build_config(
         self,
@@ -138,6 +141,7 @@ class OTXBenchmark:
         train_params: dict = {},
         tags: dict = {},
     ) -> dict:
+        """Build config for tools/expeirment.py."""
         all_train_params = self.train_params.copy()
         all_train_params.update(train_params)
         all_tags = self.tags.copy()
