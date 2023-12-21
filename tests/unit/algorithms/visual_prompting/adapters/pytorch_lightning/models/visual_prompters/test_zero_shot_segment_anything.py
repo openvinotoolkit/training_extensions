@@ -107,8 +107,8 @@ class TestPromptGetter:
 
         points_scores, bg_coords = self.prompt_getter._point_selection(
             mask_sim=mask_sim,
-            original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
-            threshold=0.5,
+            original_size=torch.tensor([self.prompt_getter.image_size, self.prompt_getter.image_size]),
+            threshold=torch.tensor([[0.5]]),
         )
 
         assert torch.equal(points_scores, torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]))
@@ -211,7 +211,7 @@ class TestZeroShotSegmentAnything:
         )
 
         total_results = zero_shot_segment_anything.infer(
-            images=torch.ones((1, 3, 8, 8)), original_size=torch.tensor((8, 8), dtype=torch.int64)
+            images=torch.ones((1, 3, 8, 8)), original_size=torch.tensor([[8, 8]], dtype=torch.int64)
         )
 
         for i, results in enumerate(total_results[0]):
