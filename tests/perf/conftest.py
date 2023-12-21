@@ -36,39 +36,39 @@ def pytest_addoption(parser):
         default=0,
         help="Overrides default per-data-size number of repeat setting. "
         "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
-        "Defaults to 0 (small=3, medium=3, large=1)."
+        "Defaults to 0 (small=3, medium=3, large=1).",
     )
     parser.addoption(
         "--num-epoch",
         action="store",
         default=0,
         help="Overrides default per-model number of epoch setting. "
-        "Defaults to 0 (per-model epoch & early-stopping)."
+        "Defaults to 0 (per-model epoch & early-stopping).",
     )
     parser.addoption(
         "--eval-upto",
         action="store",
         default="all",
         choices=("train", "export", "optimize"),
-        help="Choose train|export|optimize. Defaults to train."
+        help="Choose train|export|optimize. Defaults to train.",
     )
     parser.addoption(
         "--data-root",
         action="store",
         default="data",
-        help="Dataset root directory."
+        help="Dataset root directory.",
     )
     parser.addoption(
         "--output-root",
         action="store",
         default="exp/perf",
-        help="Output root directory."
+        help="Output root directory.",
     )
     parser.addoption(
         "--dry-run",
         action="store_true",
         default=False,
-        help="Print OTX commands without execution."
+        help="Print OTX commands without execution.",
     )
 
 
@@ -77,7 +77,7 @@ def fxt_output_root(request: pytest.FixtureRequest) -> Path:
     """Output root + date + short commit hash."""
     output_root = request.config.getoption("--output-root")
     data_str = datetime.now().strftime("%Y%m%d-%H%M%S")
-    commit_str = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    commit_str = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("ascii").strip()
     return Path(output_root) / (data_str + "-" + commit_str)
 
 
@@ -139,7 +139,7 @@ def fxt_benchmark_summary(fxt_output_root: Path):
     yield
     all_results = OTXBenchmark.load_result(fxt_output_root)
     if all_results:
-        print("="*20, "[Benchmark summary]")
+        print("=" * 20, "[Benchmark summary]")
         print(all_results)
         output_path = fxt_output_root / "benchmark-summary.csv"
         all_results.to_csv(output_path, index=False)

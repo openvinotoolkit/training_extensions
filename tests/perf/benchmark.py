@@ -41,6 +41,7 @@ class OTXBenchmark:
         dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
         tags (dict): Key-values pair metadata for the experiment. Defaults to {}.
     """
+
     def __init__(
         self,
         datasets: List[str],
@@ -88,7 +89,7 @@ class OTXBenchmark:
         cfg_dir.mkdir(parents=True, exist_ok=True)
         cfg_path = cfg_dir / "cfg.yaml"
         with open(cfg_path, "w") as cfg_file:
-            yaml.dump(cfg, cfg_file, indent=2,)
+            yaml.dump(cfg, cfg_file, indent=2)
         cmd = [
             "python",
             "tools/experiment.py",
@@ -149,9 +150,7 @@ class OTXBenchmark:
 
         cfg = {}
         cfg["tags"] = all_tags  # metadata
-        cfg["output_path"] = os.path.abspath(
-            Path(self.output_root) / "-".join(list(all_tags.values()) + [model_id])
-        )
+        cfg["output_path"] = os.path.abspath(Path(self.output_root) / "-".join(list(all_tags.values()) + [model_id]))
         cfg["constants"] = {
             "dataroot": os.path.abspath(self.data_root),
         }
@@ -176,28 +175,15 @@ class OTXBenchmark:
             f" {resource_param}"
             f" params {params_str}"
         )
-        cfg["command"].append(
-            "otx eval"
-            " --test-data-roots ${dataroot}/${data}"
-        )
+        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
         if self.eval_upto == "train":
             return cfg
 
-        cfg["command"].append(
-            "otx export"
-        )
-        cfg["command"].append(
-            "otx eval"
-            " --test-data-roots ${dataroot}/${data}"
-        )
+        cfg["command"].append("otx export")
+        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
         if self.eval_upto == "export":
             return cfg
 
-        cfg["command"].append(
-            "otx optimize"
-        )
-        cfg["command"].append(
-            "otx eval"
-            " --test-data-roots ${dataroot}/${data}"
-        )
+        cfg["command"].append("otx optimize")
+        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
         return cfg
