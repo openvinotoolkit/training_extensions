@@ -164,7 +164,7 @@ class OTXBenchmark:
         if self.track_resources:
             resource_param = "--track-resource-usage all"
         if self.num_epoch > 0:
-            all_train_params["learning_parameters.num_iters"] = self.num_epoch
+            self._set_num_epoch(model_id, all_train_params, self.num_epoch)
         params_str = " ".join([f"--{k} {v}" for k, v in all_train_params.items()])
         cfg["command"].append(
             "otx train ${model}"
@@ -186,3 +186,13 @@ class OTXBenchmark:
         cfg["command"].append("otx optimize")
         cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
         return cfg
+
+    @staticmethod
+    def _set_num_epoch(model_id:str, train_params: dict, num_epoch: int):
+        """Set model specific num_epoch parameter."""
+        if "padim" in model_id:
+            return  # No configurable parameter for num_epoch
+        elif "stfpm" in model_id:
+            train_params["learning_parameters.max_epochs"] = num_epoch
+        else:
+            train_params["learning_parameters.num_iters"] = num_epoch
