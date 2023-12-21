@@ -8,7 +8,9 @@ from __future__ import annotations
 from typing import Callable
 
 import torch
+from torch.nn import functional
 from datumaro import Image, Label
+from datumaro.components.annotation import AnnotationType
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
@@ -56,14 +58,18 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
 
 class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     """OTXDataset class for multi-label classification task."""
-
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.num_classes = len(self.dm_subset.categories()[AnnotationType.label])
+    
     def _get_item_impl(self, index: int) -> MultilabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
-
+        labels = torch.as_tensor([ann.label for ann in label_anns])
+        
         entity = MultilabelClsDataEntity(
             image=img_data,
             img_info=ImageInfo(
@@ -73,10 +79,14 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
                 pad_shape=img_shape,
                 scale_factor=(1.0, 1.0),
             ),
-            labels=torch.as_tensor([ann.label for ann in label_anns]),
+            labels=self._convert_to_onehot(labels)
         )
 
         return self._apply_transforms(entity)
+
+    def _convert_to_onehot(self, labels: torch.tensor):
+        """Convert label to one-hot vector format."""
+        return functional.one_hot(labels, self.num_classes).sum(0)
 
     @property
     def collate_fn(self) -> Callable:

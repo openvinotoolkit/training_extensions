@@ -164,7 +164,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     ) -> dict[str, list[dict[str, Tensor]]]:
         return {
             "preds": torch.stack(preds.scores),
-            "target": torch.stack([functional.one_hot(label, self.num_labels).sum(0) for label in inputs.labels]),
+            "target": torch.stack(inputs.labels),
         }
 
     def test_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:

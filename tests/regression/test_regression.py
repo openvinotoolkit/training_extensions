@@ -78,7 +78,7 @@ class BaseTest:
                     f"{key}={value}"
                     for key, value in test_case.dataset.extra_overrides.items()
                 ]
-                _, metrics = otx_train(overrides)
+                metrics = otx_train(overrides)
 
                 # Submit metrics to MLFlow Tracker server
                 mlflow.log_metrics(metrics)
@@ -87,11 +87,11 @@ class BaseTest:
 class TestMultiClassCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="multi_class_classification", name="otx_deit_tiny"),
-        ModelTestCase(task="multi_class_classification", name="otx_dino_v2"),
-        ModelTestCase(task="multi_class_classification", name="otx_efficientnet_b0"),
-        ModelTestCase(task="multi_class_classification", name="otx_efficientnet_v2"),
-        ModelTestCase(task="multi_class_classification", name="otx_mobilenet_v3_large"),
+        ModelTestCase(task="multiclass_classification", name="otx_deit_tiny"),
+        ModelTestCase(task="multiclass_classification", name="otx_dino_v2"),
+        ModelTestCase(task="multiclass_classification", name="otx_efficientnet_b0"),
+        ModelTestCase(task="multiclass_classification", name="otx_efficientnet_v2"),
+        ModelTestCase(task="multiclass_classification", name="otx_mobilenet_v3_large"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -136,10 +136,10 @@ class TestMultiClassCls(BaseTest):
 class TestMultilabelCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="multi_label_classification", name="efficientnet_b0_light"),
-        ModelTestCase(task="multi_label_classification", name="efficientnet_v2_light"),
-        ModelTestCase(task="multi_label_classification", name="mobilenet_v3_large_light"),
-        ModelTestCase(task="multi_label_classification", name="otx_deit_tiny"),
+        ModelTestCase(task="multilabel_classification", name="efficientnet_b0_light"),
+        ModelTestCase(task="multilabel_classification", name="efficientnet_v2_light"),
+        ModelTestCase(task="multilabel_classification", name="mobilenet_v3_large_light"),
+        ModelTestCase(task="multilabel_classification", name="otx_deit_tiny"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012

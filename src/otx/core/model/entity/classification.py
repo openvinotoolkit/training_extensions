@@ -156,7 +156,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
                 },
-                gt_label=labels,
+                gt_score=labels,
             )
             for img_info, labels in zip(
                 entity.imgs_info,
