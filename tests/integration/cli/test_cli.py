@@ -38,6 +38,10 @@ DATASET = {
         "data_dir": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "overrides": ["model.otx_model.config.decode_head.num_classes=2"],
     },
+    "action_classification": {
+        "data_dir": "tests/assets/action_classification_dataset/",
+        "overrides": ["model.otx_model.config.cls_head.num_classes=2"],
+    },
 }
 
 
