@@ -72,7 +72,7 @@ class OTXBenchmark:
         train_params: dict = {},
         tags: dict = {},
     ) -> pd.DataFrame:
-        """Run benchmark and return the result.
+        """Run configured benchmark with given model and return the result.
 
         Args:
             model_id (str): Target model identifier
@@ -157,7 +157,6 @@ class OTXBenchmark:
         cfg["variables"] = {
             "model": [model_id],
             "data": self.datasets,
-            **{k: [v] for k, v in all_tags.items()},  # To be shown in result file
         }
         cfg["repeat"] = self.num_repeat
         cfg["command"] = []
