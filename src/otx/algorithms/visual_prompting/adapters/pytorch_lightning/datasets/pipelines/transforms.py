@@ -28,6 +28,7 @@ def collate_fn(batch: List[Any]) -> Dict:
 
         Args:
             x (str): Key of batch data.
+            dtype (torch.dtype): Dtype to be applied to tensors.
 
         Returns:
             List: List of batch data.

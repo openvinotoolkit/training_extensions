@@ -43,7 +43,9 @@ otx_dir = os.getcwd()
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("src/otx/algorithms/visual_prompting/configs", "zero_shot_sam_tiny_vit", "template_experimental.yaml")
+        os.path.join(
+            "src/otx/algorithms/visual_prompting/configs", "zero_shot_sam_tiny_vit", "template_experimental.yaml"
+        )
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
@@ -93,7 +95,15 @@ class TestToolsZeroShotVisualPrompting:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "zero_shot_visual_prompting"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision, is_visual_prompting=True)
+        otx_eval_openvino_testing(
+            template,
+            tmp_dir_path,
+            otx_dir,
+            args,
+            threshold=0.2,
+            half_precision=half_precision,
+            is_visual_prompting=True,
+        )
 
     @e2e_pytest_component
     @pytest.mark.skip(reason="optimize for zsl is not supported yet.")
