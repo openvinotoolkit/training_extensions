@@ -339,14 +339,16 @@ def otx_eval_openvino_testing(
     args,
     threshold=0.0,
     half_precision=False,
+    is_visual_prompting=False,
 ):
     template_work_dir = get_template_dir(template, root)
-    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    weights_file = "visual_prompting_decoder" if is_visual_prompting else "openvino"
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/{weights_file}.xml"
     output_path = f"{template_work_dir}/exported_{template.model_template_id}"
     perf_path = f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
 
     if half_precision:
-        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/openvino.xml"
+        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/{weights_file}.xml"
         output_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16"
         perf_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/performance.json"
 

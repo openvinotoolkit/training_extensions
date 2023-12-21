@@ -41,7 +41,7 @@ templates = [
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestVisualPromptingCLI:
+class TestZeroShotVisualPromptingCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -77,4 +77,4 @@ class TestVisualPromptingCLI:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "zero_shot_visual_prompting"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0, half_precision=half_precision, is_visual_prompting=True)
