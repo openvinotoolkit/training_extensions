@@ -21,7 +21,7 @@ To realize our product missions, we establish the following design principles an
    Our framework should support various deep learning tasks simultaneously.
    To achieve this mission, it is essential to make it developer-friendly for expanding our product in both task and model dimensions.
    We believe that nice abstractions with static typing can help developers in this regard.
-   We introduced the **Task-Data-Model** abstraction with static typing.
+   Therefore, we here introduce the **Task-Data-Model** abstraction with static typing.
 
    | ![Task-Data-Model](./images/product_design/task_data_model.png) |
    | :-------------------------------------------------------------: |
@@ -46,11 +46,11 @@ To realize our product missions, we establish the following design principles an
 
    Conversely, in the event of a new task requirement, we can incorporate it by implementing embodiments from the base, such as `OTXTaskType`, `OTXDataEntity`, `OTXBatchDataEntity`, and `OTXModel`.
 
-2. **Single Engine but Capable of Incorporating Multiple Popular Model Training Frameworks**
+2. **Single Engine but Capable of Incorporating Other Public Model Training Frameworks**
 
    _"Don't Reinvent the Wheel"_[^2]
 
-   We chose PyTorch Lightning[^3] as the primary engine for our training framework.
+   We choose PyTorch Lightning[^3] as the primary engine for our training framework.
    However, as you are aware, there are numerous open-source model training frameworks worldwide.
    Often, these frameworks are tightly coupled with their own engines, hindering the reuse of valuable data pipelines or model implementations.
    This goes against the well-known software engineering principle, _"Don't Reinvent the Wheel."_
