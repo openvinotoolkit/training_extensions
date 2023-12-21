@@ -19,15 +19,16 @@ import io
 import json
 import os
 import shutil
-import subprocess
 import tempfile
 import time
 import warnings
 from collections import OrderedDict
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
+import openvino as ov
 import torch
 from omegaconf import DictConfig, ListConfig
+from openvino.tools import mo
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
 from pytorch_lightning.loggers import CSVLogger
@@ -381,25 +382,19 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     output_model.set_data(f"{module}.onnx", file.read())
         else:
             for module, path in onnx_path.items():
-                optimize_command = [
-                    "mo",
-                    "--input_model",
-                    path,
-                    "--output_dir",
-                    self.output_path,
-                    "--model_name",
-                    module,
-                ]
+                mo_args: Dict[str, Any] = {"input_model": path}
                 if module == "visual_prompting_image_encoder":
-                    optimize_command += [
-                        "--mean_values",
-                        str(self.config.dataset.normalize.mean).replace(", ", ","),
-                        "--scale_values",
-                        str(self.config.dataset.normalize.std).replace(", ", ","),
-                    ]
+                    mo_args.update(
+                        {
+                            "mean_values": list(self.config.dataset.normalize.mean),
+                            "scale_values": list(self.config.dataset.normalize.std),
+                        }
+                    )
                 if precision == ModelPrecision.FP16:
-                    optimize_command.append("--compress_to_fp16")
-                subprocess.run(optimize_command, check=True)
+                    mo_args.update({"compress_to_fp16": True})
+
+                ov_model = mo.convert_model(**mo_args)
+                ov.save_model(ov_model, os.path.join(self.output_path, f"{module}.xml"))
                 with open(path.replace(".onnx", ".bin"), "rb") as file:
                     output_model.set_data(f"{module}.bin", file.read())
                 with open(path.replace(".onnx", ".xml"), "rb") as file:
@@ -604,25 +599,19 @@ class ZeroShotTask(InferenceTask):
                     output_model.set_data(f"{module}.onnx", file.read())
         else:
             for module, path in onnx_path.items():
-                optimize_command = [
-                    "mo",
-                    "--input_model",
-                    path,
-                    "--output_dir",
-                    self.output_path,
-                    "--model_name",
-                    module,
-                ]
+                mo_args: Dict[str, Any] = {"input_model": path}
                 if module == "visual_prompting_image_encoder":
-                    optimize_command += [
-                        "--mean_values",
-                        str(self.config.dataset.normalize.mean).replace(", ", ","),
-                        "--scale_values",
-                        str(self.config.dataset.normalize.std).replace(", ", ","),
-                    ]
+                    mo_args.update(
+                        {
+                            "mean_values": list(self.config.dataset.normalize.mean),
+                            "scale_values": list(self.config.dataset.normalize.std),
+                        }
+                    )
                 if precision == ModelPrecision.FP16:
-                    optimize_command.append("--compress_to_fp16")
-                subprocess.run(optimize_command, check=True)
+                    mo_args.update({"compress_to_fp16": True})
+
+                ov_model = mo.convert_model(**mo_args)
+                ov.save_model(ov_model, os.path.join(self.output_path, f"{module}.xml"))
                 with open(path.replace(".onnx", ".bin"), "rb") as file:
                     output_model.set_data(f"{module}.bin", file.read())
                 with open(path.replace(".onnx", ".xml"), "rb") as file:
