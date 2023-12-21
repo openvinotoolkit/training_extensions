@@ -73,7 +73,7 @@ To realize our product missions, we establish the following design principles an
 
 3. **Support Various Data Formats without Worrying about Customizing the Input Data Pipeline**
 
-   _Much of the time for an AI project is likely to be spent on data-related tasks ..._[^6]
+   _"Much of the time for an AI project is likely to be spent on data-related tasks ..."_[^6]
 
    When developing a new deep learning model, one of the most tedious tasks is often creating a data pipeline for the given dataset.
    Developers must study the data schema of the provided dataset and parse it into a data entity consumable by both the data augmentation pipeline and the model.
