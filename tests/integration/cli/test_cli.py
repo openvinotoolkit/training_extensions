@@ -17,7 +17,7 @@ RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.y
 
 # [TODO]: This is a temporary approach.
 DATASET = {
-    "classification": {
+    "multiclass_classification": {
         "data_dir": "tests/assets/classification_dataset",
         "overrides": [
             "model.otx_model.config.head.num_classes=2",
