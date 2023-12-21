@@ -290,12 +290,12 @@ class TestZeroShotTask:
         model.prompt_getter.reference_feats = torch.rand(3, 1, 256)
         model.prompt_getter.reference_prompts = torch.rand(3, 720, 1280)
         mocker.patch.object(self.zero_shot_task, "load_model", return_value=model)
-        
+
         dataset = generate_visual_prompting_dataset()
         output_model = ModelEntity(dataset, self.zero_shot_task.task_environment.get_model_configuration())
 
         self.zero_shot_task.export(export_type, output_model, dump_features=False)
-        
+
         if export_type == ExportType.ONNX:
             assert output_model.model_format == ModelFormat.ONNX
             assert "visual_prompting_image_encoder.onnx" in output_model.model_adapters

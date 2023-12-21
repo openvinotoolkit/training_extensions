@@ -113,7 +113,7 @@ class VisualPromptingBaseConfig(BaseConfig):
             max_value=1.0,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
-        
+
         sim_threshold = configurable_float(
             default_value=0.65,
             header="Similarity threshold",

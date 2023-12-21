@@ -92,8 +92,12 @@ class PromptGetter(nn.Module):
                 total_points_scores = points_scores.unsqueeze(0)
                 total_bg_coords = bg_coords.unsqueeze(0)
             else:
-                pad_tot = torch.max(torch.tensor(0), torch.tensor(points_scores.shape[0]) - torch.tensor(total_points_scores.shape[1]))
-                pad_cur = torch.max(torch.tensor(0), torch.tensor(total_points_scores.shape[1]) - torch.tensor(points_scores.shape[0]))
+                pad_tot = torch.max(
+                    torch.tensor(0), torch.tensor(points_scores.shape[0]) - torch.tensor(total_points_scores.shape[1])
+                )
+                pad_cur = torch.max(
+                    torch.tensor(0), torch.tensor(total_points_scores.shape[1]) - torch.tensor(points_scores.shape[0])
+                )
 
                 total_points_scores = F.pad(total_points_scores, (0, 0, 0, pad_tot, 0, 0), value=-1)
                 points_scores = F.pad(points_scores, (0, 0, 0, pad_cur), value=-1)

@@ -236,18 +236,27 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             "prompt_getter": {
                 **attr.asdict(
                     hparams.postprocessing,
-                    filter=lambda attr, value: attr.name in ["image_size", "sim_threshold", "num_bg_points", "embedded_processing"],
+                    filter=lambda attr, value: attr.name
+                    in ["image_size", "sim_threshold", "num_bg_points", "embedded_processing"],
                 )
             },
             "decoder": {
                 **attr.asdict(
                     hparams.postprocessing,
                     filter=lambda attr, value: attr.name
-                    not in ["header", "description", "type", "visible_in_ui", "class_name", "sim_threshold", "num_bg_points"],
+                    not in [
+                        "header",
+                        "description",
+                        "type",
+                        "visible_in_ui",
+                        "class_name",
+                        "sim_threshold",
+                        "num_bg_points",
+                    ],
                 )
             },
         }
-        
+
         core = create_core()
         for name in ["image_encoder", "prompt_getter", "decoder"]:
             model_adapter = OpenvinoAdapter(
@@ -269,8 +278,11 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """Pre-process function of OpenVINO Zero-shot Visual Prompting Inferencer for image encoder."""
         return self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
-    
-    def pre_process_prompt_getter(self, image_embeddings: Dict[str, np.ndarray], original_size: np.ndarray) -> Dict[str, np.ndarray]:
+
+    def pre_process_prompt_getter(
+        self, image_embeddings: Dict[str, np.ndarray], original_size: np.ndarray
+    ) -> Dict[str, np.ndarray]:
+        """Pre-process function of OpenVINO Zero-shot VIsual Prompting Inferencer for prompt getter."""
         inputs_prompt_getter = {
             "original_size": original_size[None],
             "threshold": np.array([[self.model["prompt_getter"].sim_threshold]], dtype=np.float32),
@@ -347,7 +359,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             elif i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks, iou_predictions = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks, iou_predictions = self._postprocess_masks(
+                    logits, scores, original_size  # noqa: F821
+                )
                 if masks.sum() == 0:
                     return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
 
@@ -355,7 +369,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             elif i == 2:
                 # Cascaded Post-refinement-2
-                mask_input, masks, iou_predictions = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks, iou_predictions = self._postprocess_masks(
+                    logits, scores, original_size  # noqa: F821
+                )
                 if masks.sum() == 0:
                     return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
 
@@ -375,7 +391,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
         return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
 
-    def _postprocess_masks(self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray) -> Tuple[np.ndarray, ...]:
+    def _postprocess_masks(
+        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray
+    ) -> Tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
         high_res_masks = self.model["decoder"].resize_and_crop(logits[0].transpose(1, 2, 0), original_size)
         masks = high_res_masks > self.model["decoder"].mask_threshold
@@ -392,7 +410,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
         if len(scores[0]) == 0:
             # all predicted masks were zero masks, ignore them.
-            return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.
+            return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
 
         best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]

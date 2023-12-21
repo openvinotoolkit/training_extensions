@@ -56,8 +56,8 @@ class TestPromptGetter:
 
         assert params.get("sim_threshold").default_value == 0.5
         assert params.get("num_bg_points").default_value == 1
-    
-    
+
+
 class TestDecoder:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):

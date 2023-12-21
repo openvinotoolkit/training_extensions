@@ -189,7 +189,7 @@ class Decoder(SegmentationModel):
         )
 
         prepadded_size = self.get_padded_size(original_size, self.image_size).astype(np.int64)
-        resized_cropped_soft_prediction = resized_soft_prediction[:prepadded_size[0], :prepadded_size[1], ...]
+        resized_cropped_soft_prediction = resized_soft_prediction[: prepadded_size[0], : prepadded_size[1], ...]
 
         original_size = original_size.astype(np.int64)
         h, w = original_size
