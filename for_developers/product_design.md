@@ -19,7 +19,8 @@ To realize our product missions, we establish the following design principles an
    _"Advocates of static typing argue that ... a better design time developer experience..."_[^1]
 
    Our framework should support various deep learning tasks simultaneously.
-   To achieve this mission, it is essential to make it developer-friendly for expanding our product in both task and model dimensions.
+   To achieve this mission, it is essential to make it developer-friendly for expanding our product across three dimensions: task, data, and model.
+   The key insight here is that, while these dimensions may seem independent, they can be interconnected into a single dimension, specifically the task, where both the data and model depend on.
    We believe that nice abstractions with static typing can help developers in this regard.
    Therefore, we here introduce the **Task-Data-Model** abstraction with static typing.
 
