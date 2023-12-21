@@ -78,7 +78,7 @@ class TestPerfTilingInstanceSegmentation:
     BENCHMARK_CONFIGS = {
         "small": {
             "tags": {
-                "task": "instance_segmentation",
+                "task": "tiling_instance_segmentation",
             },
             "datasets": [
                 "tiling_instance_seg/vitens_aeromonas_small/1",
@@ -90,7 +90,7 @@ class TestPerfTilingInstanceSegmentation:
         },
         "medium": {
             "tags": {
-                "task": "instance_segmentation",
+                "task": "tiling_instance_segmentation",
             },
             "datasets": [
                 "tiling_instance_seg/vitens_aeromonas_medium",
@@ -100,7 +100,7 @@ class TestPerfTilingInstanceSegmentation:
         },
         "large": {
             "tags": {
-                "task": "instance_segmentation",
+                "task": "tiling_instance_segmentation",
             },
             "datasets": [
                 "tiling_instance_seg/bdd_large",

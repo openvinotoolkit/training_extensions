@@ -18,7 +18,7 @@ class OTXBenchmark:
     """Benchmark runner based on tools/experiment.py in OTX1.x.
 
     Example:
-        >>> bm = OTXBenchmark(['random_sample1', 'random_sample'], data_root='./data/coco')
+        >>> bm = OTXBenchmark(['random_sample1', 'random_sample2'], data_root='./data/coco')
         >>> atss_result = bm.run('MobileNetV2-ATSS')
         >>> yolox_result = bm.run('YOLOX-TINY')
 
