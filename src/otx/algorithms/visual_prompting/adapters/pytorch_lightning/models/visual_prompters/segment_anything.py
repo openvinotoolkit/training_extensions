@@ -564,7 +564,7 @@ class SegmentAnything(LightningModule):
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         masks = masks[..., : input_size[0] - padding[3], : input_size[1] - padding[2]]
-        masks = F.interpolate(masks, [o for o in original_size], mode="bilinear", align_corners=False)
+        masks = F.interpolate(masks, [int(o) for o in original_size], mode="bilinear", align_corners=False)
         return masks.squeeze(1)
 
     def configure_optimizers(self) -> optim:
