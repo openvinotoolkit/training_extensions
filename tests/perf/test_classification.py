@@ -15,10 +15,12 @@ MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
 
 class TestPerfSingleLabelClassification:
+    """Benchmark single-label classification."""
+
     BENCHMARK_CONFIGS = {
         "small": {
             "tags": {
-                "task": "single-label-classification",
+                "task": "single_label_classification",
             },
             "datasets": [
                 "classification/single_label/multiclass_CUB_small/1",
@@ -29,7 +31,7 @@ class TestPerfSingleLabelClassification:
         },
         "medium": {
             "tags": {
-                "task": "single-label-classification",
+                "task": "single_label_classification",
             },
             "datasets": [
                 "classification/single_label/multiclass_CUB_medium",
@@ -38,7 +40,7 @@ class TestPerfSingleLabelClassification:
         },
         "large": {
             "tags": {
-                "task": "single-label-classification",
+                "task": "single_label_classification",
             },
             "datasets": [
                 "classification/single_label/multiclass_food101_large",
@@ -68,10 +70,12 @@ class TestPerfSingleLabelClassification:
 
 
 class TestPerfMultiLabelClassification:
+    """Benchmark multi-label classification."""
+
     BENCHMARK_CONFIGS = {
         "small": {
             "tags": {
-                "task": "multi-label-classification",
+                "task": "multi_label_classification",
             },
             "datasets": [
                 "classification/multi_label/multilabel_CUB_small/1",
@@ -82,7 +86,7 @@ class TestPerfMultiLabelClassification:
         },
         "medium": {
             "tags": {
-                "task": "multi-label-classification",
+                "task": "multi_label_classification",
             },
             "datasets": [
                 "classification/multi_label/multilabel_CUB_medium",
@@ -91,7 +95,7 @@ class TestPerfMultiLabelClassification:
         },
         "large": {
             "tags": {
-                "task": "multi-label-classification",
+                "task": "multi_label_classification",
             },
             "datasets": [
                 "classification/multi_label/multilabel_food101_large",
@@ -121,10 +125,12 @@ class TestPerfMultiLabelClassification:
 
 
 class TestPerfHierarchicalLabelClassification:
+    """Benchmark hierarchcial-label classification."""
+
     BENCHMARK_CONFIGS = {
         "small": {
             "tags": {
-                "task": "h-label-classification",
+                "task": "hierarchical_label_classification",
             },
             "datasets": [
                 "classification/h_label/h_label_CUB_small/1",
@@ -135,7 +141,7 @@ class TestPerfHierarchicalLabelClassification:
         },
         "medium": {
             "tags": {
-                "task": "h-label-classification",
+                "task": "hierarchical_label_classification",
             },
             "datasets": [
                 "classification/h_label/h_label_CUB_medium",
@@ -145,7 +151,7 @@ class TestPerfHierarchicalLabelClassification:
         # TODO: Add large dataset
         # "large": {
         #     "tags": {
-        #         "task": "h-label-classification",
+        #         "task": "hierarchical_label_classification",
         #     },
         #     "datasets": [
         #     ],

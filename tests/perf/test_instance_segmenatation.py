@@ -1,4 +1,4 @@
-"""OTX Detection perfomance tests."""
+"""OTX Instance Segmentation perfomance tests."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -10,40 +10,40 @@ from otx.cli.registry import Registry
 from .benchmark import OTXBenchmark
 
 
-MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="DETECTION").templates
+MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="INSTANCE_SEGMENTATION").templates
 MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
 
-class TestPerfDetection:
-    """Benchmark basic object detection."""
+class TestPerfInstanceSegmentation:
+    """Benchmark basic instance segmentation."""
 
     BENCHMARK_CONFIGS = {
         "small": {
             "tags": {
-                "task": "detection",
+                "task": "instance_segmentation",
             },
             "datasets": [
-                "detection/pothole_small/1",
-                "detection/pothole_small/2",
-                "detection/pothole_small/3",
+                "instance_seg/wgisd_small/1",
+                "instance_seg/wgisd_small/2",
+                "instance_seg/wgisd_small/3",
             ],
             "num_repeat": 3,
         },
         "medium": {
             "tags": {
-                "task": "detection",
+                "task": "instance_segmentation",
             },
             "datasets": [
-                "detection/pothole_medium",
+                "instance_seg/coco_car_person_medium",
             ],
             "num_repeat": 3,
         },
         "large": {
             "tags": {
-                "task": "detection",
+                "task": "instance_segmentation",
             },
             "datasets": [
-                "detection/vitens_large",
+                "instance_seg/bdd_large",
             ],
             "num_repeat": 1,
         },
