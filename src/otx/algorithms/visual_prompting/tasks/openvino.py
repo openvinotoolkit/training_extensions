@@ -331,7 +331,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         return self.model["prompt_getter"].infer_sync(inputs)
 
     def forward_decoder(  # type: ignore
-        self, inputs: Dict[str, np.ndarray], original_size: Tuple[int, int]
+        self, inputs: Dict[str, np.ndarray], original_size: np.ndarray
     ) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Visual Prompting Inferencer."""
         logits: np.ndarray
@@ -347,17 +347,17 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             elif i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks, iou_predictions = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
                 if masks.sum() == 0:
-                    return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
+                    return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
 
                 has_mask_input = np.array([[1.0]], dtype=np.float32)
 
             elif i == 2:
                 # Cascaded Post-refinement-2
-                mask_input, masks = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks, iou_predictions = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
                 if masks.sum() == 0:
-                    return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
+                    return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
 
                 has_mask_input = np.array([[1.0]], dtype=np.float32)
                 y, x = np.nonzero(masks)
@@ -375,7 +375,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
         return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
 
-    def _postprocess_masks(self, logits: np.ndarray, scores: np.ndarray, original_size: Tuple[int, int]):
+    def _postprocess_masks(self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray) -> Tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
         high_res_masks = self.model["decoder"].resize_and_crop(logits[0].transpose(1, 2, 0), original_size)
         masks = high_res_masks > self.model["decoder"].mask_threshold
@@ -392,10 +392,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
         if len(scores[0]) == 0:
             # all predicted masks were zero masks, ignore them.
-            return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size))
+            return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.
 
         best_idx = np.argmax(scores[0])
-        return logits[:, [best_idx]], masks[0, best_idx]
+        return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
 
 
 class OTXOpenVinoDataLoader:
