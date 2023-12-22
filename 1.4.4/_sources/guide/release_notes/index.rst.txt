@@ -4,6 +4,13 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.4.4 (4Q23)
+-------------
+
+- Update ModelAPI configuration
+- Add Anomaly modelAPI changes
+- Update Image numpy access
+
 v1.4.3 (4Q23)
 -------------
 
