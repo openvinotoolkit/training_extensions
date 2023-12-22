@@ -703,7 +703,7 @@
         <span class="n">annotations</span> <span class="o">=</span> <span class="n">create_annotation_from_segmentation_map</span><span class="p">(</span>
             <span class="n">hard_prediction</span><span class="o">=</span><span class="n">hard_prediction</span><span class="p">,</span>
             <span class="n">soft_prediction</span><span class="o">=</span><span class="n">soft_prediction</span><span class="p">,</span>
-            <span class="n">label_map</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">label</span><span class="p">},</span>
+            <span class="n">label_map</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">label</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">ScoredLabel</span><span class="p">)</span> <span class="k">else</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]},</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">annotations</span></div></div>

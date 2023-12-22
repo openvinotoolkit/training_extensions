@@ -560,6 +560,28 @@ If other visual prompting model is added, loading model process must be changed.
 2. use it depending on template</p>
 <p>The objective of this task is to get reference features and export it with decoder modules.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.export">
+<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.usecases.tasks.interfaces.export_interface.html#otx.api.usecases.tasks.interfaces.export_interface.ExportType" title="otx.api.usecases.tasks.interfaces.export_interface.ExportType"><span class="pre">ExportType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.model.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.model.html#otx.api.entities.model.ModelPrecision" title="otx.api.entities.model.ModelPrecision"><span class="pre">ModelPrecision</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelPrecision.FP32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/inference.html#ZeroShotTask.export"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.export" title="Permalink to this definition">#</a></dt>
+<dd><p>Export model to OpenVINO IR.</p>
+<p>When SAM gets an image for inference, image encoder runs just once to get image embedding.
+After that, prompt encoder + mask decoder runs repeatedly to get mask prediction.
+For this case, SAM should be divided into two parts, image encoder and prompt encoder + mask decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>export_type</strong> (<a class="reference internal" href="otx.api.usecases.tasks.interfaces.export_interface.html#otx.api.usecases.tasks.interfaces.export_interface.ExportType" title="otx.api.usecases.tasks.interfaces.export_interface.ExportType"><em>ExportType</em></a>) – Export type should be ExportType.OPENVINO</p></li>
+<li><p><strong>output_model</strong> (<a class="reference internal" href="otx.api.entities.model.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – The model entity in which to write the OpenVINO IR data</p></li>
+<li><p><strong>precision</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Output model weights and inference precision</p></li>
+<li><p><strong>dump_features</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Flag to return “feature_vector” and “saliency_map”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><strong>Exception</strong></a> – If export_type is not ExportType.OPENVINO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer">
 <span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.inference_parameters.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.entities.datasets.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/inference.html#ZeroShotTask.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform inference on a dataset.</p>
@@ -742,6 +764,15 @@ If other visual prompting model is added, loading model process must be changed.
    </code>
   </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.export">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ZeroShotTask.export()
+      </span>
+     </code>
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.inference.ZeroShotTask.infer">
      <code class="docutils literal notranslate">

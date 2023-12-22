@@ -247,7 +247,7 @@
 
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
@@ -571,46 +571,35 @@
 
         <span class="k">return</span> <span class="n">masks</span><span class="p">,</span> <span class="n">iou_preds</span></div>
 
-<div class="viewcode-block" id="SegmentAnything.mask_postprocessing"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.mask_postprocessing">[docs]</a>    <span class="k">def</span> <span class="nf">mask_postprocessing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">orig_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="SegmentAnything.mask_postprocessing"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.mask_postprocessing">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mask_postprocessing</span><span class="p">(</span><span class="n">masks</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">orig_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Postprocesses the predicted masks.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            masks (Tensor): A batch of predicted masks with shape Bx1xHxW.</span>
+<span class="sd">            input_size (int): The size of the image input to the model, in (H, W) format.</span>
+<span class="sd">                Used to remove padding.</span>
 <span class="sd">            orig_size (Tensor): The original image size with shape Bx2.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            masks (Tensor): The postprocessed masks with shape Bx1xHxW.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
-            <span class="n">masks</span><span class="p">,</span>
-            <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">),</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
-            <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
 
-        <span class="n">prepadded_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resize_longest_image_size</span><span class="p">(</span><span class="n">orig_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">resize_longest_image_size</span><span class="p">(</span><span class="n">input_image_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">longest_side</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">longest_side</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">input_image_size</span><span class="p">)</span>
+            <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">input_image_size</span>
+            <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">transformed_size</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">transformed_size</span>
+
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">prepadded_size</span> <span class="o">=</span> <span class="n">resize_longest_image_size</span><span class="p">(</span><span class="n">orig_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">)</span>
         <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="n">prepadded_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span> <span class="n">prepadded_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">orig_size</span> <span class="o">=</span> <span class="n">orig_size</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">masks</span></div>
-
-<div class="viewcode-block" id="SegmentAnything.resize_longest_image_size"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.resize_longest_image_size">[docs]</a>    <span class="k">def</span> <span class="nf">resize_longest_image_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_image_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">longest_side</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resizes the longest side of the image to the given size.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            input_image_size (Tensor): The original image size with shape Bx2.</span>
-<span class="sd">            longest_side (int): The size of the longest side.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            transformed_size (Tensor): The transformed image size with shape Bx2.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">input_image_size</span> <span class="o">=</span> <span class="n">input_image_size</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">scale</span> <span class="o">=</span> <span class="n">longest_side</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">input_image_size</span><span class="p">)</span>
-        <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">input_image_size</span>
-        <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">transformed_size</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">transformed_size</span></div>
 
     <span class="c1">######################################################</span>
     <span class="c1">#     forward for training/validation/prediction     #</span>
@@ -793,8 +782,8 @@
     <span class="k">def</span> <span class="nf">postprocess_masks</span><span class="p">(</span>
         <span class="n">masks</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">padding</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-        <span class="n">original_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove padding and upscale masks to the original image size.</span>
 
@@ -802,17 +791,17 @@
 <span class="sd">            masks (Tensor): Predicted masks from the mask_decoder with (N, 1, H/downsized_ratio, W/downsized_ratio).</span>
 <span class="sd">            input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.</span>
 <span class="sd">                Used to remove padding.</span>
-<span class="sd">            padding (tuple(int, int, int, int), optional): The padding applied to the image before input to the model,</span>
+<span class="sd">            padding (tuple(int, int, int, int), Tensor): The padding applied to the image before input to the model,</span>
 <span class="sd">                in (left, top, right, bottom) format.</span>
-<span class="sd">            original_size (tuple(int, int)): The original size of the image before resizing for input to the model,</span>
-<span class="sd">                in (H, W) format.</span>
+<span class="sd">            original_size (tuple(int, int), Tensor): The original size of the image before resizing</span>
+<span class="sd">                for input to the model, in (H, W) format.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="p">:</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">original_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">original_size</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">masks</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SegmentAnything.configure_optimizers"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.configure_optimizers">[docs]</a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">optim</span><span class="p">:</span>

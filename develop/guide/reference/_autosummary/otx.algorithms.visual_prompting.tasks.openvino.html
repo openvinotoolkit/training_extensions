@@ -402,6 +402,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingTask" title="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenVINOVisualPromptingTask</span></code></a>(task_environment)</p></td>
 <td><p>Task implementation for Visual Prompting using OpenVINO backend.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer" title="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenVINOZeroShotVisualPromptingInferencer</span></code></a>(...)</p></td>
+<td><p>Inferencer implementation for Zero-shot Visual Prompting using OpenVINO backend.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask" title="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenVINOZeroShotVisualPromptingTask</span></code></a>(...)</p></td>
+<td><p>Task implementation for Zero-shot Visual Prompting using OpenVINO backend.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -439,14 +445,14 @@ Good value is the number of available cores. Defaults to 1.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOVisualPromptingInferencer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_decoder">
+<span class="sig-name descname"><span class="pre">forward_decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOVisualPromptingInferencer.forward_decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_decoder" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function of OpenVINO Visual Prompting Inferencer.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_decoder">
-<span class="sig-name descname"><span class="pre">forward_decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOVisualPromptingInferencer.forward_decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_decoder" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_image_encoder">
+<span class="sig-name descname"><span class="pre">forward_image_encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOVisualPromptingInferencer.forward_image_encoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_image_encoder" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function of OpenVINO Visual Prompting Inferencer.</p>
 </dd></dl>
 
@@ -520,6 +526,72 @@ Good value is the number of available cores. Defaults to 1.</p></li>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.tasks.openvino.</span></span><span class="sig-name descname"><span class="pre">OpenVINOZeroShotVisualPromptingInferencer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hparams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.algorithms.visual_prompting.configs.base.configuration.html#otx.algorithms.visual_prompting.configs.base.configuration.VisualPromptingBaseConfig" title="otx.algorithms.visual_prompting.configs.base.configuration.VisualPromptingBaseConfig"><span class="pre">VisualPromptingBaseConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.label_schema.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">LabelSchemaEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><span class="pre">bytes</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><span class="pre">bytes</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'CPU'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingInferencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer" title="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpenVINOVisualPromptingInferencer</span></code></a></p>
+<p>Inferencer implementation for Zero-shot Visual Prompting using OpenVINO backend.</p>
+<p>This inferencer has two models, image encoder and decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hparams</strong> (<a class="reference internal" href="otx.algorithms.visual_prompting.configs.base.configuration.html#otx.algorithms.visual_prompting.configs.base.configuration.VisualPromptingBaseConfig" title="otx.algorithms.visual_prompting.configs.base.configuration.VisualPromptingBaseConfig"><em>VisualPromptingBaseConfig</em></a>) – Hyper parameters that the model should use.</p></li>
+<li><p><strong>label_schema</strong> (<a class="reference internal" href="otx.api.entities.label_schema.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – LabelSchemaEntity that was used during model training.</p></li>
+<li><p><strong>model_files</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Path</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a><em>]</em><em>]</em>) – Path or bytes to model to load,
+<cite>.xml</cite>, <cite>.bin</cite> or <cite>.onnx</cite> file.</p></li>
+<li><p><strong>weight_files</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Path</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.12)"><em>bytes</em></a><em>, </em><em>None</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Path or bytes to weights to load,
+<cite>.xml</cite>, <cite>.bin</cite> or <cite>.onnx</cite> file. Defaults to None.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to “CPU”.</p></li>
+<li><p><strong>num_requests</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Maximum number of requests that the inferencer can make.
+Good value is the number of available cores. Defaults to 1.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.forward_decoder">
+<span class="sig-name descname"><span class="pre">forward_decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingInferencer.forward_decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.forward_decoder" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward function of OpenVINO Visual Prompting Inferencer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.forward_prompt_getter">
+<span class="sig-name descname"><span class="pre">forward_prompt_getter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingInferencer.forward_prompt_getter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.forward_prompt_getter" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward function of OpenVINO Visual Prompting Inferencer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.pre_process">
+<span class="sig-name descname"><span class="pre">pre_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.dataset_item.html#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_processing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingInferencer.pre_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.pre_process" title="Permalink to this definition">#</a></dt>
+<dd><p>Pre-process function of OpenVINO Zero-shot Visual Prompting Inferencer for image encoder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.pre_process_prompt_getter">
+<span class="sig-name descname"><span class="pre">pre_process_prompt_getter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_embeddings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingInferencer.pre_process_prompt_getter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.pre_process_prompt_getter" title="Permalink to this definition">#</a></dt>
+<dd><p>Pre-process function of OpenVINO Zero-shot VIsual Prompting Inferencer for prompt getter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.dataset_item.html#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="otx.api.entities.annotation.html#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">Annotation</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingInferencer.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform a prediction for a given input image.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.tasks.openvino.</span></span><span class="sig-name descname"><span class="pre">OpenVINOZeroShotVisualPromptingTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.task_environment.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingTask" title="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpenVINOVisualPromptingTask</span></code></a></p>
+<p>Task implementation for Zero-shot Visual Prompting using OpenVINO backend.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask.load_inferencer">
+<span class="sig-name descname"><span class="pre">load_inferencer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer" title="otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer"><span class="pre">OpenVINOZeroShotVisualPromptingInferencer</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/tasks/openvino.html#OpenVINOZeroShotVisualPromptingTask.load_inferencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask.load_inferencer" title="Permalink to this definition">#</a></dt>
+<dd><p>Load OpenVINO Zero-shot Visual Prompting Inferencer.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -588,19 +660,19 @@ Good value is the number of available cores. Defaults to 1.</p></li>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_decoder">
      <code class="docutils literal notranslate">
       <span class="pre">
-       OpenVINOVisualPromptingInferencer.forward()
+       OpenVINOVisualPromptingInferencer.forward_decoder()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_decoder">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingInferencer.forward_image_encoder">
      <code class="docutils literal notranslate">
       <span class="pre">
-       OpenVINOVisualPromptingInferencer.forward_decoder()
+       OpenVINOVisualPromptingInferencer.forward_image_encoder()
       </span>
      </code>
     </a>
@@ -702,6 +774,82 @@ Good value is the number of available cores. Defaults to 1.</p></li>
      <code class="docutils literal notranslate">
       <span class="pre">
        OpenVINOVisualPromptingTask.hparams
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OpenVINOZeroShotVisualPromptingInferencer
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.forward_decoder">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOZeroShotVisualPromptingInferencer.forward_decoder()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.forward_prompt_getter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOZeroShotVisualPromptingInferencer.forward_prompt_getter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.pre_process">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOZeroShotVisualPromptingInferencer.pre_process()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.pre_process_prompt_getter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOZeroShotVisualPromptingInferencer.pre_process_prompt_getter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingInferencer.predict">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOZeroShotVisualPromptingInferencer.predict()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OpenVINOZeroShotVisualPromptingTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask.load_inferencer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOZeroShotVisualPromptingTask.load_inferencer()
       </span>
      </code>
     </a>

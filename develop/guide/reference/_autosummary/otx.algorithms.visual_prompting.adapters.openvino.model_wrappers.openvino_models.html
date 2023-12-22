@@ -399,6 +399,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.ImageEncoder" title="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.ImageEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageEncoder</span></code></a>(inference_adapter[, ...])</p></td>
 <td><p>Image encoder class for visual prompting of openvino model wrapper.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter" title="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptGetter</span></code></a>(inference_adapter[, ...])</p></td>
+<td><p>PromptGetter class for zero-shot visual prompting of openvino model wrapper.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -570,6 +573,54 @@ the type, default value and description must be provided.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.</span></span><span class="sig-name descname"><span class="pre">PromptGetter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inference_adapter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#PromptGetter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ImageModel</span></code></p>
+<p>PromptGetter class for zero-shot visual prompting of openvino model wrapper.</p>
+<p>Image model constructor</p>
+<p>It extends the <cite>Model</cite> constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inference_adapter</strong> (<em>InferenceAdapter</em>) – allows working with the specified executor</p></li>
+<li><p><strong>configuration</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>, </em><em>optional</em>) – it contains values for parameters accepted by specific
+wrapper (<cite>confidence_threshold</cite>, <cite>labels</cite> etc.) which are set as data attributes</p></li>
+<li><p><strong>preload</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – a flag whether the model is loaded to device while
+initialization. If <cite>preload=False</cite>, the model must be loaded via <cite>load</cite> method before inference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>WrapperError</strong> – if the wrapper failed to define appropriate inputs for images</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter.parameters">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#PromptGetter.parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter.parameters" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the description and type of configurable data parameters for the wrapper.</p>
+<p>See <cite>types.py</cite> to find available types of the data parameter. For each parameter
+the type, default value and description must be provided.</p>
+<dl>
+<dt>The example of possible data parameter:</dt><dd><dl class="simple">
+<dt>‘confidence_threshold’: NumericalValue(</dt><dd><p>default_value=0.5, description=”Threshold value for detection box confidence”</p>
+</dd>
+</dl>
+<p>)</p>
+</dd>
+</dl>
+<p>The method must be implemented in each specific inherited wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>the dictionary with defined wrapper data parameters</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -689,6 +740,26 @@ the type, default value and description must be provided.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        ImageEncoder.preprocess()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PromptGetter
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter.parameters">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PromptGetter.parameters()
       </span>
      </code>
     </a>
