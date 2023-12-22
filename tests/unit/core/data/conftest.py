@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
+import cv2
 import numpy as np
 import pytest
 from datumaro.components.annotation import Bbox, Label, Mask
@@ -39,10 +40,12 @@ def fxt_mem_cache() -> None:
 
 @pytest.fixture()
 def fxt_dm_item() -> DatasetItem:
+    _, np_bytes = cv2.imencode(".png", np.zeros(shape=(10, 10, 3), dtype=np.uint8))
+
     return DatasetItem(
         id="item",
         subset="train",
-        media=Image.from_numpy(np.zeros(shape=(10, 10, 3), dtype=np.uint8)),
+        media=Image.from_bytes(np_bytes.tobytes()),
         annotations=[
             Label(label=0),
             Bbox(x=0, y=0, w=1, h=1, label=0),

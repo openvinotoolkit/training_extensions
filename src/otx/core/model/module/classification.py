@@ -52,7 +52,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
-        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results.item(), sync_dist=False, prog_bar=True)
 
     def validation_step(self, inputs: MulticlassClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -138,7 +138,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
-        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results.item(), sync_dist=False, prog_bar=True)
 
     def validation_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.

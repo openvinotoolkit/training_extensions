@@ -84,7 +84,7 @@ class MemCacheHandlerBase:
     def _init_data_structs(self, mem_size: int) -> None:
         self._arr = (ct.c_uint8 * mem_size)()
         self._cur_page = ct.c_size_t(0)
-        self._cache_addr: dict | DictProxy = {}
+        self._cache_addr: dict[Any, tuple[Any, ...]] | DictProxy[Any, tuple[Any, ...]] = {}
         self._lock: Lock | _DummyLock = _DummyLock()
         self._freeze = ct.c_bool(False)
 
@@ -106,10 +106,8 @@ class MemCacheHandlerBase:
         Returns:
             If succeed return (np.ndarray, Dict), otherwise return (None, None)
         """
-        if self.mem_size == 0 or key not in self._cache_addr:
+        if self.mem_size == 0 or (addr := self._cache_addr.get(key, None)) is None:
             return None, None
-
-        addr = self._cache_addr[key]
 
         offset, count, dtype, shape, strides, meta = addr
 
@@ -135,12 +133,18 @@ class MemCacheHandlerBase:
         if self._freeze.value:
             return None
 
+        if (addr := self._cache_addr.get(key, None)) is not None:
+            return addr[0]
+
         data_bytes = data.size * data.itemsize
 
         with self._lock:
             new_page = self._cur_page.value + data_bytes
 
-            if key in self._cache_addr or new_page > self.mem_size:
+            if new_page > self.mem_size:
+                self.freeze()
+                msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
+                logger.warning(msg)
                 return None
 
             offset = ct.byref(self._arr, self._cur_page.value)
@@ -165,6 +169,10 @@ class MemCacheHandlerBase:
             f"uses {self._cur_page.value} / {self.mem_size} ({perc:.1f}%) memory pool and "
             f"store {len(self)} items."
         )
+
+    @property
+    def frozen(self) -> bool:
+        return self._freeze.value
 
     def freeze(self) -> None:
         """If frozen, it is impossible to store a new item anymore."""

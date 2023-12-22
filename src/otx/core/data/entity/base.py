@@ -167,6 +167,13 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             imgs_info=[entity.img_info for entity in entities],
         )
 
+    def pin_memory(self: T_OTXBatchDataEntity) -> T_OTXBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        # TODO(vinnamki): Keep track this issue
+        # https://github.com/pytorch/pytorch/issues/116403
+        self.images = [tv_tensors.wrap(image.pin_memory(), like=image) for image in self.images]
+        return self
+
 
 T_OTXBatchPredEntity = TypeVar(
     "T_OTXBatchPredEntity",

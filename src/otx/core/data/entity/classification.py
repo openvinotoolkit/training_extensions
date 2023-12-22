@@ -70,6 +70,12 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
             labels=[entity.labels for entity in entities],
         )
 
+    def pin_memory(self) -> MulticlassClsBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
+
 
 @dataclass
 class MulticlassClsBatchPredEntity(MulticlassClsBatchDataEntity, OTXBatchPredEntity):
@@ -124,6 +130,12 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
+
+    def pin_memory(self) -> MultilabelClsBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
 
 
 @dataclass

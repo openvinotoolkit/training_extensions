@@ -72,6 +72,12 @@ class ActionClsBatchDataEntity(OTXBatchDataEntity[ActionClsDataEntity]):
             labels=[entity.labels for entity in entities],
         )
 
+    def pin_memory(self) -> ActionClsBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
+
 
 @dataclass
 class ActionClsBatchPredEntity(ActionClsBatchDataEntity, OTXBatchPredEntity):
