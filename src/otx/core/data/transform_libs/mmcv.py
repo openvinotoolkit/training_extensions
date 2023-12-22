@@ -26,7 +26,7 @@ class LoadImageFromFile(MMCVLoadImageFromFile):
 
     def transform(self, entity: OTXDataEntity) -> dict | None:
         """Transform OTXDataEntity to MMCV data entity format."""
-        img = entity.image
+        img: np.ndarray = entity.image
 
         if self.to_float32:
             img = img.astype(np.float32)
