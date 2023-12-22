@@ -2,8 +2,8 @@
 defaults:
   - override /base: classification
   - override /callbacks: classification
-  - override /data: mmpretrain
-  - override /model: mmpretrain
+  - override /data: multiclass_mmpretrain
+  - override /model: multiclass_mmpretrain
 data:
   train_subset:
     batch_size: 64
@@ -12,9 +12,6 @@ data:
       - backend: cv2
         scale: 224
         type: RandomResizedCrop
-      - direction: horizontal
-        prob: 0.5
-        type: RandomFlip
       - type: PackInputs
   val_subset:
     batch_size: 64
@@ -42,9 +39,11 @@ model:
   otx_model:
     config:
       backbone:
-        type: OTXMobileNetV3
+        version: b0
+        pretrained: true
+        type: OTXEfficientNet
       head:
-        in_channels: 960
+        in_channels: 1280
         loss:
           loss_weight: 1.0
           type: CrossEntropyLoss
@@ -70,7 +69,7 @@ model:
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
-    lr: 0.0058
+    lr: 0.0049
     momentum: 0.9
     weight_decay: 0.0001
   scheduler:

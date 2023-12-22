@@ -2,7 +2,7 @@
 defaults:
   - override /base: classification
   - override /callbacks: classification
-  - override /data: mmpretrain
+  - override /data: multiclass_mmpretrain
   - override /model: torch_classification
 data:
   train_subset:
@@ -74,10 +74,16 @@ model:
     config:
       backbone:
         name: dinov2_vits14_reg
-        frozen: false
+        frozen: true
       head:
         in_channels: 384
         num_classes: 1000
   optimizer:
-    _target_: torch.optim.AdamW
-    lr: 1e-5
+    _target_: torch.optim.SGD
+    _partial_: true
+    lr: 0.007
+    momentum: 0.9
+    weight_decay: 0.0001
+  scheduler:
+    factor: 0.5
+    patience: 1

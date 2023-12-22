@@ -2,24 +2,13 @@
 defaults:
   - override /base: classification
   - override /callbacks: classification
-  - override /data: mmpretrain
-  - override /model: torch_classification
+  - override /data: multiclass_mmpretrain
+  - override /model: multiclass_mmpretrain
 data:
   train_subset:
     batch_size: 64
     transforms:
       - type: LoadImageFromFile
-        to_float32: true
-      - mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: true
-        type: Normalize
       - backend: cv2
         scale: 224
         type: RandomResizedCrop
@@ -28,17 +17,6 @@ data:
     batch_size: 64
     transforms:
       - type: LoadImageFromFile
-        to_float32: true
-      - mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: true
-        type: Normalize
       - backend: cv2
         edge: short
         scale: 256
@@ -50,17 +28,6 @@ data:
     batch_size: 64
     transforms:
       - type: LoadImageFromFile
-        to_float32: true
-      - mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: true
-        type: Normalize
       - backend: cv2
         edge: short
         scale: 256
@@ -70,18 +37,50 @@ data:
       - type: PackInputs
 model:
   otx_model:
-    _target_: otx.algo.classification.otx_dino_v2.DINOv2RegisterClassifier
     config:
       backbone:
-        name: dinov2_vits14_reg
-        frozen: true
+        version: b0
+        pretrained: true
+        type: OTXEfficientNet
       head:
-        in_channels: 384
+        act_cfg:
+          type: HSwish
+        dropout_rate: 0.2
+        in_channels: 1280
+        init_cfg:
+          bias: 0.0
+          layer: Linear
+          mean: 0.0
+          std: 0.01
+          type: Normal
+        loss:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+        mid_channels:
+          - 1280
         num_classes: 1000
+        topk:
+          - 1
+          - 5
+        type: StackedLinearClsHead
+      neck:
+        type: GlobalAveragePooling
+      data_preprocessor:
+        mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: True
+        type: ClsDataPreprocessor
+      type: ImageClassifier
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
-    lr: 0.007
+    lr: 0.0049
     momentum: 0.9
     weight_decay: 0.0001
   scheduler:
