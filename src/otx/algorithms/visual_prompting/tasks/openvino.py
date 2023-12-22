@@ -282,7 +282,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         self.transform = get_transform()  # TODO (sungchul): insert args
 
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
-        self.has_mask_inputs = [np.array([[0.0]]), np.tensor([[1.0]])]
+        self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
 
     def pre_process(  # type: ignore
         self, dataset_item: DatasetItemEntity, extra_processing: bool = False
