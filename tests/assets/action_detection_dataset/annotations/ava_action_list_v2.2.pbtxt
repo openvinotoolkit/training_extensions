@@ -1,0 +1,20 @@
+label {
+  name: "Right"
+  label_id: 1
+  label_type: PERSON_MOVEMENT
+}
+label {
+  name: "Left"
+  label_id: 2
+  label_type: PERSON_MOVEMENT
+}
+label {
+  name: "Down"
+  label_id: 3
+  label_type: PERSON_MOVEMENT
+}
+label {
+  name: "Up"
+  label_id: 4
+  label_type: PERSON_MOVEMENT
+}

@@ -119,6 +119,8 @@ class MMActionCompatibleModel(OTXActionDetModel):
                 raise TypeError(output)
 
             output_scores, output_labels = output.pred_instances.scores.max(-1)
+            output.pred_instances.bboxes[:, 0::2] *= output.img_shape[1]
+            output.pred_instances.bboxes[:, 1::2] *= output.img_shape[0]
             scores.append(output_scores)
             bboxes.append(
                 tv_tensors.BoundingBoxes(

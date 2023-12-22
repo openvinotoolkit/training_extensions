@@ -126,8 +126,8 @@ class LoadAnnotations:
         if proposal_file_path.exists():
             with Path.open(proposal_file_path, "rb") as f:
                 info = pickle.load(f)  # noqa: S301
-                if Path(frame_path).stem.replace("_", ",") in info:
-                    proposals = info[Path(frame_path).stem.replace("_", ",")][:, :4]
+                if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info:
+                    proposals = info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
                 else:
                     proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
         else:
