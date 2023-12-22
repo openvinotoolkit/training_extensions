@@ -19,7 +19,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     generate_bbox,
     generate_bbox_from_mask,
     get_transform,
-    # generate_point_from_mask,
+    generate_point_from_mask,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
     MultipleInputsCompose,
@@ -184,7 +184,7 @@ class TestOTXVIsualPromptingDataset:
         # Check specific values in the item
         assert item["index"] == 0
         assert (item["images"] == dataset[0].media.numpy).all()
-        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
+        assert np.all(item["original_size"] == dataset[0].media.numpy.shape[:2])
         assert item["path"] == dataset[0].media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
@@ -220,7 +220,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         # Check specific values in the item
         assert item["index"] == 0
         assert (item["images"] == dataset[0].media.numpy).all()
-        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
+        assert np.all(item["original_size"] == dataset[0].media.numpy.shape[:2])
         assert item["path"] == dataset[0].media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
@@ -248,8 +248,8 @@ class TestOTXVisualPromptingDataModule:
         datamodule = set_datamodule(train_type=TrainType.Zeroshot)
 
         assert datamodule.config.get("train_batch_size") == 1
-        # assert "generate_point" in datamodule.kwargs
-        # assert "generate_bbox" in datamodule.kwargs
+        assert "generate_point" in datamodule.kwargs
+        assert "generate_bbox" in datamodule.kwargs
 
     @e2e_pytest_unit
     def test_setup(self, mocker, set_datamodule) -> None:
