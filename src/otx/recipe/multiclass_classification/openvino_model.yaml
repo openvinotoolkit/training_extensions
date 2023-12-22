@@ -1,0 +1,30 @@
+# @package _global_
+defaults:
+  - override /base: classification
+  - override /callbacks: classification
+  - override /data: torchvision_cls
+  - override /model: torch_classification
+data:
+  train_subset:
+    transform_lib_type: TORCHVISION
+    transforms:
+      - _target_: otx.core.data.transform_libs.torchvision.Identity
+    batch_size: 1
+  val_subset:
+    transform_lib_type: TORCHVISION
+    transforms:
+      - _target_: otx.core.data.transform_libs.torchvision.Identity
+    batch_size: 1
+  test_subset:
+    transform_lib_type: TORCHVISION
+    transforms:
+      - _target_: otx.core.data.transform_libs.torchvision.Identity
+    batch_size: 1
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.classification.OVClassificationCompatibleModel
+    config:
+      model_name: efficientnet-b0-pytorch
+      head:
+        num_classes: 1000

@@ -217,3 +217,51 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             scores=scores,
             labels=labels,
         )
+
+
+class OVClassificationCompatibleModel(OTXMulticlassClsModel):
+    """Classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def __init__(self, config: DictConfig) -> None:
+        self.model_name = config.pop("model_name")
+        self.config = config
+        super().__init__()
+
+    def _create_model(self) -> nn.Module:
+        from openvino.model_api.models import ClassificationModel
+
+        return ClassificationModel.create_model(self.model_name, model_type="Classification")
+
+    def _customize_outputs(
+            self,
+            outputs: Any,  # noqa: ANN401
+            inputs: MulticlassClsBatchDataEntity,
+        ) -> MulticlassClsBatchPredEntity:
+        # add label index
+        labels = [outputs.top_labels[0][0]]
+        # add probability
+        scores = [outputs.top_labels[0][2]]
+
+        return MulticlassClsBatchPredEntity(
+            batch_size=1,
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            labels=labels,
+        )
+
+    def forward(
+        self,
+        inputs: MulticlassClsBatchDataEntity,
+    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        # If customize_inputs is overrided
+        if self.training:
+            msg = "OV model cannot be used for training"
+            raise RuntimeError(msg)
+        model_out = self.model(inputs.images)
+        return self._customize_outputs(model_out, inputs)

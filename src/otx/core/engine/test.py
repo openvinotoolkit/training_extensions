@@ -8,6 +8,7 @@ import logging as log
 from typing import TYPE_CHECKING, Any
 
 import hydra
+from openvino.model_api.models import Model
 
 from otx.core.config import TrainConfig
 
@@ -33,7 +34,7 @@ def test(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     trainer: Trainer = hydra.utils.instantiate(cfg.trainer)
 
     log.info("Starting testing!")
-    if cfg.checkpoint is None:
+    if not isinstance(model.model.model, Model) and cfg.checkpoint is None:
         msg = "Checkpoint was not found! Could you please specify 'checkpoint'?"
         raise ValueError(msg)
     trainer.test(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
