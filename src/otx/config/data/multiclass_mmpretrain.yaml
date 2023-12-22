@@ -1,8 +1,7 @@
 defaults:
   - default
 
-# data_format: imagenet_with_subset_dirs
-data_format: datumaro
+data_format: imagenet_with_subset_dirs
 
 mem_cache_img_max_size: ${as_int_tuple:500,500}
 

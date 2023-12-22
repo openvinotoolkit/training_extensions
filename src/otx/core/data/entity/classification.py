@@ -75,7 +75,7 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
 class MulticlassClsBatchPredEntity(MulticlassClsBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for multi-class classification task."""
 
-    
+
 @register_pytree_node
 @dataclass
 class MultilabelClsDataEntity(OTXDataEntity):
@@ -83,6 +83,12 @@ class MultilabelClsDataEntity(OTXDataEntity):
 
     :param labels: Multi labels represented as an one-hot vector.
     """
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.MULTI_LABEL_CLS
+
     labels: LongTensor
 
 
@@ -126,14 +132,67 @@ class MultilabelClsBatchPredEntity(MultilabelClsBatchDataEntity, OTXBatchPredEnt
 
 
 @dataclass
-class LabelGroup:
-    """The label group represents the hierarchy.
+class HLabelInfo:
+    """The label information represents the hierarchy.
+    All params should be kept since they're also used at the Model API side.
+
+    :param num_multiclass_heads: the number of the multiclass heads
+    :param num_multilabel_classes: the number of multilabel classes
+    :param head_to_logits_range: the logit range of each heads
+    :param num_single_label_classes: the number of single label classes
+    :param class_to_group_idx: represents the head index and label index
+    :param all_groups: represents information of all groups
+    :param label_to_idx: index of each label
+    :param empty_multiclass_head_indices: the index of head that doesn't include any label
+                                          due to the label removing
     
-    :param group_name: the name of the label group
-    :param labels: labels included in the group
+    i.e.
+    Single-selection group information (Multiclass, Exclusive)
+    {
+        "Shape": ["Rigid", "Non-Rigid"], 
+        "Rigid": ["Rectangle", "Triangle"], 
+        "Non-Rigid": ["Circle"]
+    }
+    
+    Multi-selection group information (Multilabel)
+    {
+        "Animal": ["Lion", "Panda"]
+    }
+    
+    In the case above, HlabelInfo will be generated as below.
+    NOTE, If there was only one label in the multiclass group, it will be handeled as multilabel(Circle).
+    
+        num_multiclass_heads: 2  (Shape, Rigid)
+        num_multilabel_classes: 2 (Lion, Panda)
+        head_to_logits_range: {'0': (0, 2), '1': (2, 4)} (Each multiclass head have 2 labels)
+        num_single_label_classes: 4 (Rigid, Non-Rigid, Rectangle, Triangle)
+        class_to_group_idx: {
+            'Non-Rigid': (0, 0), 'Rigid': (0, 1),
+            'Rectangle': (1, 0), 'Triangle': (1, 1),
+            'Circle': (2, 0), 'Lion': (2,1), 'Panda': (2,2)
+        } (head index, label index for each head)
+        all_groups: [['Non-Rigid', 'Rigid'], ['Rectangle', 'Triangle'], ['Circle'], ['Lion'], ['Panda']]
+        label_to_idx: {
+            'Rigid': 0, 'Rectangle': 1, 
+            'Triangle': 2, 'Non-Rigid': 3, 'Circle': 4
+            'Lion': 5, 'Panda': 6
+        }
+        empty_multiclass_head_indices: []
+    
+    TODO(sungmanc) it should be considered for the Model API, 
+    although we don't need this information right now.
+    So I made this object for the further use.
+    https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/utils/cls_utils.py#L97
     """
-    group_name: str
-    labels: list[int]
+
+    num_multiclass_heads: int
+    num_multilabel_classes: int
+    head_to_logits_range: dict[str, tuple[int, int]]
+    num_single_label_classes: int
+    class_to_group_idx: dict[str, tuple[int, int]]
+    all_groups: list[list[str]]
+    label_to_idx: dict[str, int]
+    empty_multiclass_head_indices: list[int]
 
 
 @register_pytree_node
@@ -142,17 +201,55 @@ class HlabelClsDataEntity(OTXDataEntity):
     """Data entity for H-label classification task.
 
     :param labels: labels as integer indices
-    :param label_groups: the list of label group
+    :param label_group: the group of the label
     """
-    
+
     @property
     def task(self) -> OTXTaskType:
         """OTX Task type definition."""
         return OTXTaskType.H_LABEL_CLS
 
     labels: LongTensor
-    label_groups: list[LabelGroup]
+    label_groups: LongTensor
+
 
 @dataclass
 class HlabelClsPredEntity(HlabelClsDataEntity, OTXPredEntity):
-    """Data entity to represent the h-label classification model output prediction."""
+    """Data entity to represent the H-label classification model output prediction."""
+
+
+@dataclass
+class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
+    """Data entity for H-label classification task.
+
+    :param labels: A list of labels as integer indices
+    :param label_groups: A list of label group
+    """
+
+    labels: list[LongTensor]
+    label_groups: list[LongTensor]
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.H_LABEL_CLS
+
+    @classmethod
+    def collate_fn(
+        cls,
+        entities: list[HlabelClsDataEntity],
+    ) -> HlabelClsBatchDataEntity:
+        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
+        batch_data = super().collate_fn(entities)
+        return HlabelClsBatchDataEntity(
+            batch_size=batch_data.batch_size,
+            images=batch_data.images,
+            imgs_info=batch_data.imgs_info,
+            labels=[entity.labels for entity in entities],
+            label_groups=[entity.label_groups for entity in entities]
+        )
+
+
+@dataclass
+class HlabelClsBatchPredEntity(HlabelClsBatchDataEntity, OTXBatchPredEntity):
+    """Data entity to represent model output predictions for H-label classification task."""
