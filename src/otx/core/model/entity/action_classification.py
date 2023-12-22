@@ -80,6 +80,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
             for img_info, labels in zip(entity.imgs_info, entity.labels)
         ]
 
+        mmaction_inputs = self.model.data_preprocessor(data=mmaction_inputs, training=self.training)
         mmaction_inputs["mode"] = "loss" if self.training else "predict"
         return mmaction_inputs
 
