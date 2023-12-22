@@ -6,11 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
-- Add zero-shot visual prompting (https://github.com/openvinotoolkit/training_extensions/pull/2616)
+- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>)
 
 ### Enhancements
 
 - Upgrade NNCF to 2.7 and OpenVINO to 2023.2 (<https://github.com/openvinotoolkit/training_extensions/pull/2656>)
+- Automate performance benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/2742>)
 
 ## \[v1.5.0\]
 
