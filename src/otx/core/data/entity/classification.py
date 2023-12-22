@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class MulticlassClsDataEntity(OTXDataEntity):
     """Data entity for multi-class classification task.
 
-    :param labels: Bbox labels as integer indices
+    :param labels: labels as integer indices
     """
 
     @property
@@ -39,7 +39,7 @@ class MulticlassClsDataEntity(OTXDataEntity):
 
 @dataclass
 class MulticlassClsPredEntity(MulticlassClsDataEntity, OTXPredEntity):
-    """Data entity to represent the detection model output prediction."""
+    """Data entity to represent the multi-class classification model output prediction."""
 
 
 @dataclass
@@ -74,3 +74,58 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
 @dataclass
 class MulticlassClsBatchPredEntity(MulticlassClsBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for multi-class classification task."""
+
+
+@register_pytree_node
+@dataclass
+class MultilabelClsDataEntity(OTXDataEntity):
+    """Data entity for multi-label classification task.
+
+    :param labels: Multi labels represented as an one-hot vector.
+    """
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.MULTI_LABEL_CLS
+
+    labels: LongTensor
+
+
+@dataclass
+class MultilabelClsPredEntity(MultilabelClsDataEntity, OTXPredEntity):
+    """Data entity to represent the multi-label classification model output prediction."""
+
+
+@dataclass
+class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
+    """Data entity for multi-label classification task.
+
+    :param labels: A list of labels as integer indices
+    """
+
+    labels: list[LongTensor]
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.MULTI_LABEL_CLS
+
+    @classmethod
+    def collate_fn(
+        cls,
+        entities: list[MultilabelClsDataEntity],
+    ) -> MultilabelClsBatchDataEntity:
+        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
+        batch_data = super().collate_fn(entities)
+        return MultilabelClsBatchDataEntity(
+            batch_size=batch_data.batch_size,
+            images=batch_data.images,
+            imgs_info=batch_data.imgs_info,
+            labels=[entity.labels for entity in entities],
+        )
+
+
+@dataclass
+class MultilabelClsBatchPredEntity(MultilabelClsBatchDataEntity, OTXBatchPredEntity):
+    """Data entity to represent model output predictions for multi-label classification task."""
