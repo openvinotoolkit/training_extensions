@@ -188,7 +188,7 @@ class OTXBenchmark:
         return cfg
 
     @staticmethod
-    def _set_num_epoch(model_id:str, train_params: dict, num_epoch: int):
+    def _set_num_epoch(model_id: str, train_params: dict, num_epoch: int):
         """Set model specific num_epoch parameter."""
         if "padim" in model_id:
             return  # No configurable parameter for num_epoch
