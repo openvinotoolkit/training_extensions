@@ -34,7 +34,7 @@ class TestOTXCLI:
         argv = [
             "otx",
             "train",
-            "+recipe=classification/otx_mobilenet_v3_large",
+            "+recipe=multiclass_classification/otx_mobilenet_v3_large",
             "checkpoint=my_checkpoint",
             f"base.output_dir={tmpdir}",
         ]
