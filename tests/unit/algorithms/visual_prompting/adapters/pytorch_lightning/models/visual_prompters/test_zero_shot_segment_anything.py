@@ -54,11 +54,24 @@ class TestPromptGetter:
         self.prompt_getter.set_reference(
             label=MockScoredLabel(label=1),
             reference_feats=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
-            reference_prompts=torch.zeros((self.prompt_getter.image_size, self.prompt_getter.image_size)),
+            reference_prompts=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
         )
 
+        assert self.prompt_getter.reference_feats[0].sum() == 0
+        assert self.prompt_getter.reference_prompts[0].sum() == 0
         assert self.prompt_getter.reference_feats[1].sum() == 9
-        assert self.prompt_getter.reference_prompts[1].sum() == 0
+        assert self.prompt_getter.reference_prompts[1].sum() == 9
+
+        self.prompt_getter.set_reference(
+            label=MockScoredLabel(label=3),
+            reference_feats=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
+            reference_prompts=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
+        )
+
+        assert self.prompt_getter.reference_feats[2].sum() == 0
+        assert self.prompt_getter.reference_prompts[2].sum() == 0
+        assert self.prompt_getter.reference_feats[3].sum() == 9
+        assert self.prompt_getter.reference_prompts[3].sum() == 9
 
     @e2e_pytest_unit
     def test_forward(self, mocker) -> None:

@@ -120,7 +120,15 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
                 **attr.asdict(
                     hparams.postprocessing,
                     filter=lambda attr, value: attr.name
-                    not in ["header", "description", "type", "visible_in_ui", "class_name"],
+                    not in [
+                        "header",
+                        "description",
+                        "type",
+                        "visible_in_ui",
+                        "class_name",
+                        "sim_threshold",
+                        "num_bg_points",
+                    ],
                 )
             },
         }
@@ -273,6 +281,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
+        self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
+        self.has_mask_inputs = [np.array([[0.0]]), np.tensor([[1.0]])]
+
     def pre_process(  # type: ignore
         self, dataset_item: DatasetItemEntity, extra_processing: bool = False
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -355,7 +366,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 mask_input = np.zeros(
                     (1, 1, *map(lambda x: x * 4, inputs["image_embeddings"].shape[2:])), dtype=np.float32
                 )
-                has_mask_input = np.array([[0.0]], dtype=np.float32)
+                has_mask_input = self.has_mask_inputs[0]
 
             elif i == 1:
                 # Cascaded Post-refinement-1
@@ -365,7 +376,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 if masks.sum() == 0:
                     return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
 
-                has_mask_input = np.array([[1.0]], dtype=np.float32)
+                has_mask_input = self.has_mask_inputs[1]
 
             elif i == 2:
                 # Cascaded Post-refinement-2
@@ -375,15 +386,13 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 if masks.sum() == 0:
                     return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
 
-                has_mask_input = np.array([[1.0]], dtype=np.float32)
+                has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 inputs["point_coords"] = np.concatenate(
                     (inputs["point_coords"], np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32)),
                     axis=1,
                 )
-                inputs["point_labels"] = np.concatenate(
-                    (inputs["point_labels"], np.array([[2, 3]], dtype=np.float32)), axis=1
-                )
+                inputs["point_labels"] = np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1)
 
             inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})
             prediction = self.model["decoder"].infer_sync(inputs)

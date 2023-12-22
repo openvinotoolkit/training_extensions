@@ -39,6 +39,8 @@ class PromptGetter(nn.Module):
         self.downsizing = downsizing
         self.initialize(reference_feats, reference_prompts)
 
+        self.zero_tensor = torch.tensor(0)
+
     def initialize(
         self, reference_feats: Optional[torch.Tensor] = None, reference_prompts: Optional[torch.Tensor] = None
     ) -> None:
@@ -80,24 +82,25 @@ class PromptGetter(nn.Module):
         """Get prompt candidates."""
         total_points_scores: torch.Tensor
         total_bg_coords: torch.Tensor
-        for label in range(self.reference_feats.shape[0]):
+
+        device = image_embeddings.device
+        threshold = threshold.to(device)
+        for label in torch.arange(self.reference_feats.shape[0]):
             points_scores, bg_coords = self.get_prompt_candidates(
                 image_embeddings=image_embeddings,
-                label=torch.tensor([[label]], dtype=torch.int64),
+                label=label,
                 original_size=original_size,
                 threshold=threshold,
                 num_bg_points=num_bg_points,
+                device=device,
             )
             if label == 0:
                 total_points_scores = points_scores.unsqueeze(0)
                 total_bg_coords = bg_coords.unsqueeze(0)
             else:
-                pad_tot = torch.max(
-                    torch.tensor(0), torch.tensor(points_scores.shape[0]) - torch.tensor(total_points_scores.shape[1])
-                )
-                pad_cur = torch.max(
-                    torch.tensor(0), torch.tensor(total_points_scores.shape[1]) - torch.tensor(points_scores.shape[0])
-                )
+                pad_size = torch.tensor(points_scores.shape[0] - total_points_scores.shape[1])
+                pad_tot = torch.max(self.zero_tensor, pad_size)
+                pad_cur = torch.max(self.zero_tensor, -pad_size)
 
                 total_points_scores = F.pad(total_points_scores, (0, 0, 0, pad_tot, 0, 0), value=-1)
                 points_scores = F.pad(points_scores, (0, 0, 0, pad_cur), value=-1)
@@ -114,17 +117,17 @@ class PromptGetter(nn.Module):
         original_size: torch.Tensor,
         threshold: torch.Tensor = torch.tensor([[0.0]], dtype=torch.float32),
         num_bg_points: torch.Tensor = torch.tensor([[1]], dtype=torch.int64),
+        device: torch.device = torch.device("cpu"),
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get prompt candidates from given reference and target features."""
-        assert label.dim() == 2 and original_size.dim() == 2 and threshold.dim() == 2 and num_bg_points.dim() == 2
-        device = image_embeddings.device
+        assert original_size.dim() == 2 and threshold.dim() == 2 and num_bg_points.dim() == 2
 
         target_feat = image_embeddings.squeeze()
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
 
-        sim = self.reference_feats[label[0]].to(device) @ target_feat.unsqueeze(0)  # to match ranks for ov
+        sim = self.reference_feats[label].to(device) @ target_feat
         sim = sim.reshape(1, 1, h_feat, w_feat)
         sim = ZeroShotSegmentAnything.mask_postprocessing(sim, self.image_size, original_size[0])
 
@@ -132,7 +135,7 @@ class PromptGetter(nn.Module):
         points_scores, bg_coords = self._point_selection(
             mask_sim=sim[0, 0],
             original_size=original_size[0],
-            threshold=threshold.to(device),
+            threshold=threshold,
             num_bg_points=num_bg_points,
         )
 
@@ -224,6 +227,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
             default_threshold_target=config.model.default_threshold_target,
         )
 
+        self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
+        self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
+
     def set_default_config(self) -> DictConfig:
         """Set default config when using independently."""
         return DictConfig(
@@ -314,7 +320,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     reference_prompt[masks] += 1
             reference_prompt = torch.clip(reference_prompt, 0, 1)
 
-            ref_mask = torch.tensor(reference_prompt, dtype=torch.float32)
+            ref_mask = reference_prompt.to(torch.float32)
             reference_feat = None
             default_threshold_reference = deepcopy(self.prompt_getter.default_threshold_reference)
             while reference_feat is None:
@@ -406,7 +412,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             if i == 0:
                 # First-step prediction
                 mask_input = torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device)
-                has_mask_input = torch.tensor([[0.0]], device=self.device)
+                has_mask_input = self.has_mask_inputs[0].to(self.device)
 
             elif is_cascade and i == 1:
                 # Cascaded Post-refinement-1
@@ -414,7 +420,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 if masks.sum() == 0:
                     return masks
 
-                has_mask_input = torch.tensor([[1.0]], device=self.device)
+                has_mask_input = self.has_mask_inputs[1].to(self.device)
 
             elif is_cascade and i == 2:
                 # Cascaded Post-refinement-2
@@ -422,7 +428,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 if masks.sum() == 0:
                     return masks
 
-                has_mask_input = torch.tensor([[1.0]], device=self.device)
+                has_mask_input = self.has_mask_inputs[1].to(self.device)
                 coords = torch.nonzero(masks)
                 y, x = coords[:, 0], coords[:, 1]
                 point_coords = torch.cat(
@@ -434,9 +440,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     ),
                     dim=1,
                 )
-                point_labels = torch.cat(
-                    (point_labels, torch.tensor([[2, 3]], dtype=torch.float32, device=self.device)), dim=1
-                )
+                point_labels = torch.cat((point_labels, self.point_labels_box.to(self.device)), dim=1)
 
             scores, logits = self(
                 image_embeddings=image_embeddings,
