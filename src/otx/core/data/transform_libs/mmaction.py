@@ -15,7 +15,6 @@ import mmcv
 import numpy as np
 from mmaction.datasets.transforms import PackActionInputs as MMPackActionInputs
 from mmaction.datasets.transforms import RawFrameDecode as MMRawFrameDecode
-from mmaction.datasets.transforms import SampleFrames as MMSampleFrames
 from mmaction.registry import TRANSFORMS
 from mmengine.fileio import FileClient
 from torchvision import tv_tensors
@@ -31,25 +30,23 @@ if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
 
 
-# @TRANSFORMS.register_module(force=True)
-# class LoadVideo:
-#     """Class to convert OTXDataEntity to dict for MMAction framework."""
+@TRANSFORMS.register_module(force=True)
+class LoadVideoForClassification:
+    """Class to convert OTXDataEntity to dict for MMAction framework."""
 
-#     def __call__(self, entity: ActionClsDataEntity) -> dict:
-#         """Transform ActionClsDataEntity to MMAction data dictionary format."""
-#         video: list[np.ndarray] = entity.image
+    def __call__(self, entity: ActionClsDataEntity) -> dict:
+        """Transform ActionClsDataEntity to MMAction data dictionary format."""
+        results: dict[str, Any] = {}
+        results["filename"] = entity.video.path
+        results["start_index"] = 0
+        results["modality"] = "RGB"
+        results["__otx__"] = entity
 
-#         results: dict[str, Any] = {}
-#         results["filename"] = entity.video.path
-#         results["start_index"] = 0
-#         results["modality"] = "RGB"
-#         results["__otx__"] = entity
-
-#         return results
+        return results
 
 
 @TRANSFORMS.register_module(force=True)
-class LoadVideo:
+class LoadVideoForDetection:
     """Class to convert OTXDataEntity to dict for MMAction framework."""
 
     fps: int = 30
@@ -134,24 +131,6 @@ class LoadAnnotations:
             proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
 
         return proposals
-
-
-@TRANSFORMS.register_module(force=True)
-class SampleFrames(MMSampleFrames):
-    """Class to override SampleFrames.
-
-    MMAction's SampleFrames just sample frame indices for training.
-    Actual frame sampling is done by decode pipeline.
-    However, OTX already has decoded data, so here, actual sampling frame will be conducted.
-    """
-
-    def transform(self, results: dict) -> dict:
-        """Transform function."""
-        super().transform(results)
-        imgs: list[np.ndarray] = [results["imgs"][idx] for idx in results["frame_inds"]]
-        results["imgs"] = imgs
-
-        return results
 
 
 @TRANSFORMS.register_module(force=True)
@@ -325,11 +304,4 @@ class MMActionTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> list[Callable]:
         """Generate MMCV transforms from the configuration."""
-        transforms = [cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg)) for cfg in config.transforms]
-
-        cls._check_mandatory_transforms(
-            transforms,
-            mandatory_transforms={LoadVideo},
-        )
-
-        return transforms
+        return [cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg)) for cfg in config.transforms]

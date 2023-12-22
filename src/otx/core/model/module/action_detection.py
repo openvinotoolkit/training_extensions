@@ -117,6 +117,7 @@ class OTXActionDetLitModule(OTXLitModule):
         :param batch_idx: The index of the current batch.
         """
         preds = self.model(inputs)
+        inputs.labels = [label.argmax(-1) for label in inputs.labels]
 
         if not isinstance(preds, ActionDetBatchPredEntity):
             raise TypeError(preds)

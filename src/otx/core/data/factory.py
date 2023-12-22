@@ -127,7 +127,7 @@ class OTXDatasetFactory:
             )
 
         if task == OTXTaskType.ACTION_CLASSIFICATION:
-            from .dataset.action import OTXActionClsDataset
+            from .dataset.action_classification import OTXActionClsDataset
 
             return OTXActionClsDataset(
                 dm_subset=dm_subset,

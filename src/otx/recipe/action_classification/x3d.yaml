@@ -2,13 +2,13 @@
 defaults:
   - override /base: action_classification
   - override /callbacks: action_classification
-  - override /data: mmaction
-  - override /model: mmaction
+  - override /data: mmaction_classification
+  - override /model: mmaction_classification
 data:
   train_subset:
     batch_size: 8
     transforms:
-      - type: LoadVideo
+      - type: LoadVideoForClassification
       - type: DecordInit
       - type: SampleFrames
         clip_len: 8
@@ -24,7 +24,7 @@ data:
         flip_ratio: 0.5
       - type: FormatShape
         input_format: NCTHW
-      - type: PackActionInputs
+      - type: PackActionClsInputs
         meta_keys:
           - img_shape
           - ori_shape
@@ -33,7 +33,7 @@ data:
   val_subset:
     batch_size: 8
     transforms:
-      - type: LoadVideo
+      - type: LoadVideoForClassification
       - type: DecordInit
       - type: SampleFrames
         clip_len: 8
@@ -47,7 +47,7 @@ data:
           - 256
       - type: FormatShape
         input_format: NCTHW
-      - type: PackActionInputs
+      - type: PackActionClsInputs
         meta_keys:
           - img_shape
           - ori_shape
@@ -56,7 +56,7 @@ data:
   test_subset:
     batch_size: 8
     transforms:
-      - type: LoadVideo
+      - type: LoadVideoForClassification
       - type: DecordInit
       - type: SampleFrames
         clip_len: 8
@@ -70,7 +70,7 @@ data:
           - 256
       - type: FormatShape
         input_format: NCTHW
-      - type: PackActionInputs
+      - type: PackActionClsInputs
         meta_keys:
           - img_shape
           - ori_shape
