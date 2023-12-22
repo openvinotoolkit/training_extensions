@@ -64,7 +64,7 @@ val_pipeline = [
         transforms=[
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
-            dict(type="Pad", siz=__img_size),
+            dict(type="Pad", size=__img_size),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
         ],
