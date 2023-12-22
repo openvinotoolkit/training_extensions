@@ -1,0 +1,166 @@
+# @package _global_
+defaults:
+  - override /base: action_detection
+  - override /callbacks: action_detection
+  - override /data: mmaction_detection
+  - override /model: mmaction_detection
+data:
+  train_subset:
+    batch_size: 6
+    transforms:
+      - type: LoadVideo
+      - type: LoadAnnotations
+      - type: SampleAVAFrames
+        clip_len: 32
+        frame_interval: 2
+      - type: RawFrameDecode
+        io_backend: disk
+      - type: RandomRescale
+        scale_range:
+          - 256
+          - 320
+      - type: RandomCrop
+        size: 256
+      - type: Flip
+        flip_ratio: 0.5
+      - type: FormatShape
+        input_format: NCTHW
+        collapse: true
+      - type: PackActionDetInputs
+  val_subset:
+    batch_size: 1
+    transforms:
+      - type: LoadVideo
+      - type: LoadAnnotations
+      - type: SampleAVAFrames
+        clip_len: 32
+        frame_interval: 2
+        test_mode: true
+      - type: RawFrameDecode
+        io_backend: disk
+      - type: Resize
+        scale:
+          - -1
+          - 256
+      - type: FormatShape
+        input_format: NCTHW
+        collapse: true
+      - type: PackActionDetInputs
+  test_subset:
+    batch_size: 1
+    transforms:
+      - type: LoadVideo
+      - type: LoadAnnotations
+      - type: SampleAVAFrames
+        clip_len: 32
+        frame_interval: 2
+        test_mode: true
+      - type: RawFrameDecode
+        io_backend: disk
+      - type: Resize
+        scale:
+          - -1
+          - 256
+      - type: FormatShape
+        input_format: NCTHW
+        collapse: true
+      - type: PackActionDetInputs
+model:
+  otx_model:
+    config:
+      type: FastRCNN
+      _scope_: mmdet
+      init_cfg:
+        type: Pretrained
+        checkpoint: https://download.openmmlab.com/mmaction/recognition/slowfast/slowfast_r50_8x8x1_256e_kinetics400_rgb/slowfast_r50_8x8x1_256e_kinetics400_rgb_20200716-73547d2b.pth
+      backbone:
+        type: mmaction.ResNet3dSlowFast
+        resample_rate: 4
+        speed_ratio: 4
+        channel_ratio: 8
+        pretrained: null
+        slow_pathway:
+          type: resnet3d
+          depth: 50
+          pretrained: null
+          lateral: true
+          conv1_kernel:
+            - 1
+            - 7
+            - 7
+          dilations:
+            - 1
+            - 1
+            - 1
+            - 1
+          conv1_stride_t: 1
+          pool1_stride_t: 1
+          inflate:
+            - 0
+            - 0
+            - 1
+            - 1
+          spatial_strides:
+            - 1
+            - 2
+            - 2
+            - 1
+          fusion_kernel: 7
+        fast_pathway:
+          type: resnet3d
+          depth: 50
+          pretrained: null
+          lateral: false
+          base_channels: 8
+          conv1_kernel:
+            - 5
+            - 7
+            - 7
+          conv1_stride_t: 1
+          pool1_stride_t: 1
+          spatial_strides:
+            - 1
+            - 2
+            - 2
+            - 1
+      roi_head:
+        type: AVARoIHead
+        bbox_roi_extractor:
+          type: SingleRoIExtractor3D
+          roi_layer_type: RoIAlign
+          output_size: 8
+          with_temporal_pool: true
+        bbox_head:
+          type: BBoxHeadAVA
+          background_class: true
+          in_channels: 2304
+          num_classes: 81
+          multilabel: true
+          dropout_ratio: 0.5
+      data_preprocessor:
+        type: mmaction.ActionDataPreprocessor
+        mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        format_shape: NCTHW
+      train_cfg:
+        rcnn:
+          assigner:
+            type: MaxIoUAssignerAVA
+            pos_iou_thr: 0.9
+            neg_iou_thr: 0.9
+            min_pos_iou: 0.9
+          sampler:
+            type: RandomSampler
+            num: 32
+            pos_fraction: 1
+            neg_pos_ub: -1
+            add_gt_as_proposals: true
+          pos_weight: 1.0
+      test_cfg:
+        rcnn: null

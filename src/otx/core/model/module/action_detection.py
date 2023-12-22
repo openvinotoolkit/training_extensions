@@ -1,35 +1,36 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for action classification lightning module used in OTX."""
+"""Class definition for action detection lightning module used in OTX."""
 from __future__ import annotations
+
+import logging as log
 
 import torch
 from torch import Tensor
-from torchmetrics.classification.accuracy import Accuracy
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
-from otx.core.data.entity.action_classification import (
-    ActionClsBatchDataEntity,
-    ActionClsBatchPredEntity,
+from otx.core.data.entity.action_detection import (
+    ActionDetBatchDataEntity,
+    ActionDetBatchPredEntity,
 )
-from otx.core.model.entity.action_classification import OTXActionClsModel
+from otx.core.model.entity.action_detection import OTXActionDetModel
 from otx.core.model.module.base import OTXLitModule
 
 
-class OTXActionClsLitModule(OTXLitModule):
+class OTXActionDetLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX detection task."""
 
     def __init__(
         self,
-        otx_model: OTXActionClsModel,
+        otx_model: OTXActionDetModel,
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        num_classes = otx_model.config.get("cls_head", {}).get("num_classes", None)
-        self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
+        self.val_metric = MeanAveragePrecision()
+        self.test_metric = MeanAveragePrecision()
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -47,11 +48,24 @@ class OTXActionClsLitModule(OTXLitModule):
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.test_metric, "test")
 
-    def _log_metrics(self, meter: Accuracy, key: str) -> None:
+    def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
         results = meter.compute()
-        self.log("accuracy", results.item(), sync_dist=True, prog_bar=True)
+        for k, v in results.items():
+            if not isinstance(v, Tensor):
+                log.debug("Cannot log item which is not Tensor")
+                continue
+            if v.numel() != 1:
+                log.debug("Cannot log Tensor which is not scalar")
+                continue
 
-    def validation_step(self, inputs: ActionClsBatchDataEntity, batch_idx: int) -> None:
+            self.log(
+                f"{key}/{k}",
+                v,
+                sync_dist=True,
+                prog_bar=True,
+            )
+
+    def validation_step(self, inputs: ActionDetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
@@ -59,8 +73,9 @@ class OTXActionClsLitModule(OTXLitModule):
         :param batch_idx: The index of the current batch.
         """
         preds = self.model(inputs)
+        inputs.labels = [label.argmax(-1) for label in inputs.labels]
 
-        if not isinstance(preds, ActionClsBatchPredEntity):
+        if not isinstance(preds, ActionDetBatchPredEntity):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -69,17 +84,32 @@ class OTXActionClsLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ActionClsBatchPredEntity,
-        inputs: ActionClsBatchDataEntity,
+        preds: ActionDetBatchPredEntity,
+        inputs: ActionDetBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-        pred = torch.tensor(preds.labels)
-        target = torch.tensor(inputs.labels)
         return {
-            "preds": pred,
-            "target": target,
+            "preds": [
+                {
+                    "boxes": bboxes.data,
+                    "scores": scores,
+                    "labels": labels,
+                }
+                for bboxes, scores, labels in zip(
+                    preds.bboxes,
+                    preds.scores,
+                    preds.labels,
+                )
+            ],
+            "target": [
+                {
+                    "boxes": bboxes.data,
+                    "labels": labels,
+                }
+                for bboxes, labels in zip(inputs.bboxes, inputs.labels)
+            ],
         }
 
-    def test_step(self, inputs: ActionClsBatchDataEntity, batch_idx: int) -> None:
+    def test_step(self, inputs: ActionDetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
@@ -88,7 +118,7 @@ class OTXActionClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, ActionClsBatchPredEntity):
+        if not isinstance(preds, ActionDetBatchPredEntity):
             raise TypeError(preds)
 
         self.test_metric.update(
