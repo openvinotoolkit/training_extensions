@@ -20,11 +20,33 @@ from otx.core.utils.build import build_mm_model
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
-    from torch import nn
+    from torch import device, nn
 
 
-class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):
+class OTXMulticlassClsModel(
+    OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+):
     """Base class for the classification models used in OTX."""
+
+
+def _create_mmpretrain_model(config: DictConfig, load_from: str) -> nn.Module:
+    from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
+    from mmpretrain.registry import MODELS
+
+    # NOTE: For the history of this monkey patching, please see
+    # https://github.com/openvinotoolkit/training_extensions/issues/2743
+    @MODELS.register_module(force=True)
+    class ClsDataPreprocessor(_ClsDataPreprocessor):
+        @property
+        def device(self) -> device:
+            try:
+                buf = next(self.buffers())
+            except StopIteration:
+                return super().device
+            else:
+                return buf.device
+
+    return build_mm_model(config, MODELS, load_from)
 
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
@@ -41,9 +63,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        from mmpretrain.registry import MODELS
-
-        return build_mm_model(self.config, MODELS, self.load_from)
+        return _create_mmpretrain_model(self.config, self.load_from)
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -68,12 +88,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             )
         ]
         preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
-        # Don't know why but data_preprocessor.device is not automatically
-        # converted by the pl.Trainer's instruction unless the model parameters.
-        # Therefore, we change it here in that case.
-        if preprocessor.device != (model_device := next(self.model.parameters()).device):
-            preprocessor = preprocessor.to(device=model_device)
-            self.model.data_preprocessor = preprocessor
 
         mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
 
@@ -119,7 +133,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 ### It'll be integrated after H-label classification integration with more advanced design.
 
 
-class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
+class OTXMultilabelClsModel(
+    OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+):
     """Multi-label classification models used in OTX."""
 
 
@@ -137,9 +153,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        from mmpretrain.registry import MODELS
-
-        return build_mm_model(self.config, MODELS, self.load_from)
+        return _create_mmpretrain_model(self.config, self.load_from)
 
     def _customize_inputs(self, entity: MultilabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -164,12 +178,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             )
         ]
         preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
-        # Don't know why but data_preprocessor.device is not automatically
-        # converted by the pl.Trainer's instruction unless the model parameters.
-        # Therefore, we change it here in that case.
-        if preprocessor.device != (model_device := next(self.model.parameters()).device):
-            preprocessor = preprocessor.to(device=model_device)
-            self.model.data_preprocessor = preprocessor
 
         mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
 
