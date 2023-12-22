@@ -2,24 +2,10 @@
 defaults:
   - override /base: classification
   - override /callbacks: classification
-  - override /data: torchvision_cls
+  - override /data: openvino
   - override /model: torch_classification
-data:
-  train_subset:
-    transform_lib_type: TORCHVISION
-    transforms:
-      - _target_: otx.core.data.transform_libs.torchvision.Identity
-    batch_size: 1
-  val_subset:
-    transform_lib_type: TORCHVISION
-    transforms:
-      - _target_: otx.core.data.transform_libs.torchvision.Identity
-    batch_size: 1
-  test_subset:
-    transform_lib_type: TORCHVISION
-    transforms:
-      - _target_: otx.core.data.transform_libs.torchvision.Identity
-    batch_size: 1
+
+data_format: imagenet_with_subset_dirs
 
 model:
   otx_model:

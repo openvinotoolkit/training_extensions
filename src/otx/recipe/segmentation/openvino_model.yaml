@@ -1,0 +1,16 @@
+# @package _global_
+defaults:
+  - override /base: segmentation
+  - override /callbacks: segmentation
+  - override /data: openvino
+  - override /model: mmseg
+
+data_format: common_semantic_segmentation_with_subset_dirs
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.segmentation.OVSegmentationCompatibleModel
+    config:
+      model_name: drn-d-38
+      decode_head:
+        num_classes: 19

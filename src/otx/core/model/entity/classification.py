@@ -263,5 +263,9 @@ class OVClassificationCompatibleModel(OTXMulticlassClsModel):
         if self.training:
             msg = "OV model cannot be used for training"
             raise RuntimeError(msg)
-        model_out = self.model(inputs.images)
+        if len(inputs.images) > 1:
+            msg = "Only sync inference with batch = 1 is supported for now"
+            raise RuntimeError(msg)
+
+        model_out = self.model(inputs.images[-1])
         return self._customize_outputs(model_out, inputs)

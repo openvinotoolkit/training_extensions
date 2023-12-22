@@ -31,7 +31,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
         metric_params = {
             "task": "multiclass",
-            "num_classes": otx_model.model.decode_head.num_classes,
+            "num_classes": otx_model.config.get("decode_head", {}).get("num_classes", None),
             "ignore_index": 255,
         }
 

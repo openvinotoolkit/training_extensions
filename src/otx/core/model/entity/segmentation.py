@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import torch
+
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
@@ -117,3 +119,52 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             scores=[],
             masks=masks,
         )
+
+
+class OVSegmentationCompatibleModel(OTXSegmentationModel):
+    """Semantic segmentation model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX segmentation model compatible for OTX testing pipeline.
+    """
+
+    def __init__(self, config: DictConfig) -> None:
+        self.model_name = config.pop("model_name")
+        self.config = config
+        super().__init__()
+
+    def _create_model(self) -> nn.Module:
+        from openvino.model_api.models import SegmentationModel
+
+        return SegmentationModel.create_model(self.model_name, model_type="Segmentation")
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: SegBatchDataEntity,
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+        # add label index
+
+        return SegBatchPredEntity(
+            batch_size=1,
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=[],
+            masks=[torch.tensor(outputs.resultImage)],
+        )
+
+    def forward(
+        self,
+        inputs: SegBatchDataEntity,
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        # If customize_inputs is overrided
+        if self.training:
+            msg = "OV model cannot be used for training"
+            raise RuntimeError(msg)
+        if len(inputs.images) > 1:
+            msg = "Only sync inference with batch = 1 is supported for now"
+            raise RuntimeError(msg)
+
+        model_out = self.model(inputs.images[-1])
+        return self._customize_outputs(model_out, inputs)

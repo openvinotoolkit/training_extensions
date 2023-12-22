@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - override /base: detection
+  - override /callbacks: detection
+  - override /data: openvino
+  - override /model: mmdet
+
+data_format: coco_instances
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.detection.OVDetectionCompatibleModel
+    config:
+      model_name: ssd300
