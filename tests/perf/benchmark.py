@@ -54,6 +54,7 @@ class OTXBenchmark:
         output_root: str = "otx-benchmark",
         dry_run: bool = False,
         tags: dict = {},
+        **kwargs,
     ):
         self.datasets = datasets
         self.data_root = data_root
@@ -65,6 +66,7 @@ class OTXBenchmark:
         self.output_root = output_root
         self.dry_run = dry_run
         self.tags = tags
+        self.subset_dir_names = kwargs.get("subset_dir_names", {"train": "", "val": "", "test": ""})
 
     def run(
         self,
@@ -168,23 +170,23 @@ class OTXBenchmark:
         params_str = " ".join([f"--{k} {v}" for k, v in all_train_params.items()])
         cfg["command"].append(
             "otx train ${model}"
-            " --train-data-roots ${dataroot}/${data}"
-            " --val-data-roots ${dataroot}/${data}"
+            " --train-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['train']}"
+            " --val-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['val']}"
             " --deterministic"
             f" {resource_param}"
             f" params {params_str}"
         )
-        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
+        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['test']}")
         if self.eval_upto == "train":
             return cfg
 
         cfg["command"].append("otx export")
-        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
+        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['test']}")
         if self.eval_upto == "export":
             return cfg
 
         cfg["command"].append("otx optimize")
-        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}")
+        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['test']}")
         return cfg
 
     @staticmethod

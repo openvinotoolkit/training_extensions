@@ -27,6 +27,7 @@ class TestPerfSemanticSegmentation:
                 "semantic_seg/kvasir_small/2",
                 "semantic_seg/kvasir_small/3",
             ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
             "num_repeat": 3,
         },
         "medium": {
@@ -36,6 +37,7 @@ class TestPerfSemanticSegmentation:
             "datasets": [
                 "semantic_seg/kvasir_medium",
             ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
             "num_repeat": 3,
         },
         "large": {
@@ -45,6 +47,7 @@ class TestPerfSemanticSegmentation:
             "datasets": [
                 "semantic_seg/kvasir_large",
             ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
             "num_repeat": 1,
         },
     }
