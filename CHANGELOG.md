@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
-- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>)
+- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>)
 
 ### Enhancements
 

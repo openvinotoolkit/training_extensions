@@ -5,7 +5,7 @@
 #
 
 from copy import deepcopy
-from typing import Optional
+from typing import Optional, Dict, Tuple
 
 import os
 import numpy as np
@@ -21,6 +21,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.algorithms.visual_prompting.tasks.openvino import (
     OpenVINOVisualPromptingInferencer,
+    OpenVINOZeroShotVisualPromptingInferencer,
     OpenVINOVisualPromptingTask,
     OTXOpenVinoDataLoader,
 )
@@ -130,7 +131,9 @@ class TestOpenVINOVisualPromptingInferencer:
             ),
         )
         mocker_forward = mocker.patch.object(
-            OpenVINOVisualPromptingInferencer, "forward", return_value={"image_embeddings": np.empty((4, 2, 2))}
+            OpenVINOVisualPromptingInferencer,
+            "forward_image_encoder",
+            return_value={"image_embeddings": np.empty((4, 2, 2))},
         )
         mocker_forward_decoder = mocker.patch.object(
             OpenVINOVisualPromptingInferencer, "forward_decoder", return_value=None
@@ -149,12 +152,12 @@ class TestOpenVINOVisualPromptingInferencer:
         assert returned_value == self.fake_annotation
 
     @e2e_pytest_unit
-    def test_forward(self):
-        """Test forward."""
+    def test_forward_image_encoder(self):
+        """Test forward_image_encoder."""
         fake_input = {"images": np.ones((1, 3, 2, 2))}
         fake_output = {"image_embeddings": np.ones((1, 1, 2, 2))}
         self.visual_prompting_ov_inferencer.model["image_encoder"].infer_sync.return_value = fake_output
-        returned_value = self.visual_prompting_ov_inferencer.forward(fake_input)
+        returned_value = self.visual_prompting_ov_inferencer.forward_image_encoder(fake_input)
 
         assert returned_value == fake_output
 
@@ -167,6 +170,149 @@ class TestOpenVINOVisualPromptingInferencer:
         returned_value = self.visual_prompting_ov_inferencer.forward_decoder(fake_input)
 
         assert returned_value == fake_output
+
+
+class TestOpenVINOZeroShotVisualPromptingInferencer:
+    @pytest.fixture(autouse=True)
+    def setup(self, mocker):
+        self.fake_annotation = [
+            Annotation(
+                Polygon(points=[Point(0, 0)]),
+                id=0,
+                labels=[ScoredLabel(LabelEntity(name="fake", domain="VISUALPROMPTING"), probability=1.0)],
+            )
+        ]
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
+        mocker.patch.object(Model, "create_model")
+        mocker.patch.object(
+            VisualPromptingToAnnotationConverter, "convert_to_annotation", return_value=self.fake_annotation
+        )
+        self.task_environment = init_environment()
+        visual_prompting_hparams = self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
+        label_schema = self.task_environment.label_schema
+
+        self.visual_prompting_ov_inferencer = OpenVINOZeroShotVisualPromptingInferencer(
+            visual_prompting_hparams,
+            label_schema,
+            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
+            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
+        )
+        self.visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
+            "otx.algorithms.visual_prompting.tasks.openvino.model_wrappers.Decoder", autospec=True
+        )
+        self.visual_prompting_ov_inferencer.model["decoder"]._apply_coords.return_value = np.array([[1, 1]])
+
+    @e2e_pytest_unit
+    def test_predict(self, mocker):
+        """Test predict."""
+        mocker_pre_process = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer,
+            "pre_process",
+            return_value=(torch.zeros((1, 3, 2, 2)), {"original_shape": (4, 4, 1)}),
+        )
+        mocker_forward = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer,
+            "forward_image_encoder",
+            return_value={"image_embeddings": np.empty((4, 2, 2))},
+        )
+        mocker_forward_decoder = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer,
+            "forward_prompt_getter",
+            return_value={"total_points_scores": np.array([[[1, 1, 1]]]), "total_bg_coords": np.array([[[2, 2]]])},
+        )
+        mocker_forward_decoder = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer, "forward_decoder", return_value=None
+        )
+        mocker_post_process = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer, "post_process", return_value=(self.fake_annotation, None, None)
+        )
+        fake_input = mocker.Mock(spec=DatasetItemEntity)
+
+        returned_value = self.visual_prompting_ov_inferencer.predict(fake_input)
+
+        mocker_pre_process.assert_called_once()
+        mocker_forward.assert_called_once()
+        mocker_forward_decoder.assert_called_once()
+        mocker_post_process.assert_called_once()
+        assert returned_value == self.fake_annotation
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "postprocess_output,infer_sync_output,expected",
+        [
+            (
+                (np.ones((1, 1)), np.ones((3, 3)), 0.9),
+                {"iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
+                {"iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
+            ),
+            (
+                (np.zeros((2, 2)), np.zeros((3, 3)), 0.0),
+                {"iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
+                {"iou_predictions": 0.0, "low_res_masks": np.zeros((2, 2))},
+            ),
+        ],
+    )
+    def test_forward_decoder(
+        self,
+        mocker,
+        postprocess_output: Tuple[torch.Tensor, torch.Tensor],
+        infer_sync_output: Dict[str, np.ndarray],
+        expected: Dict[str, torch.Tensor],
+    ):
+        """Test forward_decoder."""
+        mocker.patch.object(
+            self.visual_prompting_ov_inferencer.model["decoder"], "infer_sync", return_value=infer_sync_output
+        )
+        mocker.patch.object(self.visual_prompting_ov_inferencer, "_postprocess_masks", return_value=postprocess_output)
+
+        result = self.visual_prompting_ov_inferencer.forward_decoder(
+            inputs={
+                "image_embeddings": np.empty((1, 4, 2, 2)),
+                "point_coords": np.array([[[1, 1]]], dtype=np.float32),
+                "point_labels": np.array([[1]], dtype=np.float32),
+            },
+            original_size=np.array([3, 3]),
+        )
+
+        assert np.all(result["iou_predictions"] == expected["iou_predictions"])
+        assert np.all(result["low_res_masks"] == expected["low_res_masks"])
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "high_res_masks,expected_masks,expected_scores",
+        [
+            (
+                np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[..., None], 4, axis=-1),
+                np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_),
+                0.9,
+            ),
+            (
+                np.concatenate(
+                    (
+                        np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[..., None], 3, axis=-1),
+                        np.zeros((3, 3, 1)),
+                    ),
+                    axis=-1,
+                ),
+                np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_),
+                0.8,
+            ),
+            (np.zeros((3, 3, 4)), np.zeros((3, 3)), 0.0),
+        ],
+    )
+    def test_postprocess_masks(self, high_res_masks: np.ndarray, expected_masks: np.ndarray, expected_scores: float):
+        """Test _postprocess_masks."""
+        self.visual_prompting_ov_inferencer.model["decoder"].resize_and_crop.return_value = high_res_masks
+        self.visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.0
+        self.visual_prompting_ov_inferencer.model["decoder"].image_size = 3
+
+        _, result_masks, result_scores = self.visual_prompting_ov_inferencer._postprocess_masks(
+            logits=np.empty((1, 4, 2, 2)), scores=np.array([[0.5, 0.7, 0.8, 0.9]]), original_size=np.array([3, 3])
+        )
+
+        assert result_masks.shape == (3, 3)
+        assert np.all(result_masks == expected_masks)
+        assert result_scores == expected_scores
 
 
 class TestOTXOpenVinoDataLoader:
