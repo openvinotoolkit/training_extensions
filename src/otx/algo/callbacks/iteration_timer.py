@@ -9,10 +9,9 @@ from collections import defaultdict
 from time import time
 from typing import TYPE_CHECKING, Any
 
-from lightning import Callback
+from lightning import Callback, LightningModule, Trainer
 
 if TYPE_CHECKING:
-    from lightning import LightningModule, Trainer
     from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 
@@ -32,6 +31,21 @@ class IterationTimer(Callback):
 
         self.start_time: dict[str, float] = defaultdict(float)
         self.end_time: dict[str, float] = defaultdict(float)
+
+    def on_train_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Reset timer before every train epoch starts."""
+        self.start_time.clear()
+        self.end_time.clear()
+
+    def on_validation_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Reset timer before every validation epoch starts."""
+        self.start_time.clear()
+        self.end_time.clear()
+
+    def on_test_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Reset timer before every test epoch starts."""
+        self.start_time.clear()
+        self.end_time.clear()
 
     def _on_batch_start(
         self,
