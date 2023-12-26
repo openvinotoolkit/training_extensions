@@ -84,7 +84,13 @@ class MemCacheHandlerBase:
     def _init_data_structs(self, mem_size: int) -> None:
         self._arr = (ct.c_uint8 * mem_size)()
         self._cur_page = ct.c_size_t(0)
-        self._cache_addr: dict[Any, tuple[Any, ...]] | DictProxy[Any, tuple[Any, ...]] = {}
+        self._cache_addr: (
+            dict[Any, tuple[Any, ...]]
+            | DictProxy[
+                Any,
+                tuple[Any, ...],
+            ]
+        ) = {}
         self._lock: Lock | _DummyLock = _DummyLock()
         self._freeze = ct.c_bool(False)
 
@@ -106,13 +112,20 @@ class MemCacheHandlerBase:
         Returns:
             If succeed return (np.ndarray, Dict), otherwise return (None, None)
         """
-        if self.mem_size == 0 or (addr := self._cache_addr.get(key, None)) is None:
+        try:
+            if self.mem_size == 0 or (addr := self._cache_addr.get(key, None)) is None:
+                return None, None
+
+            offset, count, dtype, shape, strides, meta = addr
+
+            data = np.frombuffer(self._arr, dtype=dtype, count=count, offset=offset)
+            return np.lib.stride_tricks.as_strided(data, shape, strides), meta
+
+        except BrokenPipeError:
+            # It is possible that the manager is dead but
+            # the multi-processing worker in DataLoader is alive.
+            # In this case, we need to handle this error.
             return None, None
-
-        offset, count, dtype, shape, strides, meta = addr
-
-        data = np.frombuffer(self._arr, dtype=dtype, count=count, offset=offset)
-        return np.lib.stride_tricks.as_strided(data, shape, strides), meta
 
     def put(
         self,
@@ -133,33 +146,39 @@ class MemCacheHandlerBase:
         if self._freeze.value:
             return None
 
-        if (addr := self._cache_addr.get(key, None)) is not None:
-            return addr[0]
+        try:
+            if (addr := self._cache_addr.get(key, None)) is not None:
+                return addr[0]
 
-        data_bytes = data.size * data.itemsize
+            data_bytes = data.size * data.itemsize
 
-        with self._lock:
-            new_page = self._cur_page.value + data_bytes
+            with self._lock:
+                new_page = self._cur_page.value + data_bytes
 
-            if new_page > self.mem_size:
-                self.freeze()
-                msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
-                logger.warning(msg)
-                return None
+                if new_page > self.mem_size:
+                    self.freeze()
+                    msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
+                    logger.warning(msg)
+                    return None
 
-            offset = ct.byref(self._arr, self._cur_page.value)
-            ct.memmove(offset, data.ctypes.data, data_bytes)
+                offset = ct.byref(self._arr, self._cur_page.value)
+                ct.memmove(offset, data.ctypes.data, data_bytes)
 
-            self._cache_addr[key] = (
-                self._cur_page.value,
-                data.size,
-                data.dtype,
-                data.shape,
-                data.strides,
-                meta,
-            )
-            self._cur_page.value = new_page
-            return new_page
+                self._cache_addr[key] = (
+                    self._cur_page.value,
+                    data.size,
+                    data.dtype,
+                    data.shape,
+                    data.strides,
+                    meta,
+                )
+                self._cur_page.value = new_page
+                return new_page
+        except BrokenPipeError:
+            # It is possible that the manager is dead but
+            # the multi-processing worker in DataLoader is alive.
+            # In this case, we need to handle this error.
+            return None
 
     def __repr__(self) -> str:
         """Representation for the current handler status."""
@@ -181,6 +200,12 @@ class MemCacheHandlerBase:
     def unfreeze(self) -> None:
         """If unfrozen, it is possible to store a new item."""
         self._freeze.value = False
+
+    def shutdown(self) -> None:
+        """Shutdown mem caching handler.
+
+        It is effective only for the multiprocessing handler.
+        """
 
 
 class MemCacheHandlerForSP(MemCacheHandlerBase):
@@ -205,8 +230,11 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
         self._lock = mp.Lock()
         self._freeze = mp.Value(ct.c_bool, False, lock=False)
 
-    def __del__(self) -> None:
-        """When deleting, manager should also be shutdowned."""
+    def shutdown(self) -> None:
+        """Shutdown mem caching handler.
+
+        It is effective only for the multiprocessing handler.
+        """
         self._manager.shutdown()
 
 
@@ -268,6 +296,9 @@ class MemCacheHandlerSingleton:
             logger.warning("No available CPU memory left, mem_size will be set to 0.")
             mem_size = 0
 
+        # Delete the existing one first before creation
+        cls.delete()
+
         if mode == "null" or mem_size == 0:
             cls.instance = MemCacheHandlerBase(mem_size=0)
             cls.instance.freeze()
@@ -294,6 +325,7 @@ class MemCacheHandlerSingleton:
     def delete(cls) -> None:
         """Delete the existing MemCacheHandlerBase instance."""
         if hasattr(cls, "instance"):
+            cls.instance.shutdown()
             del cls.instance
 
     @classmethod
