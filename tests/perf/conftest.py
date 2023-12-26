@@ -48,7 +48,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--eval-upto",
         action="store",
-        default="all",
+        default="train",
         choices=("train", "export", "optimize"),
         help="Choose train|export|optimize. Defaults to train.",
     )

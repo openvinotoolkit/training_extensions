@@ -33,7 +33,7 @@ class OTXBenchmark:
         train_params (dict): Additional training parameters.
             e.x) {'learning_parameters.num_iters': 2}. Defaults to {}.
         track_resources (bool): Whether to track CPU & GPU usage metrics. Defaults to False.
-        eval_upto (str): The last serial operation to evaluate. Choose on of ('train', 'export', 'optimize').
+        eval_upto (str): The last serial operation to evaluate. Choose one of ('train', 'export', 'optimize').
             Operations include the preceeding ones.
             e.x) Eval up to 'optimize': train -> eval -> export -> eval -> optimize -> eval
             Default to 'train'.
@@ -48,32 +48,32 @@ class OTXBenchmark:
         data_root: str = "data",
         num_epoch: int = 0,
         num_repeat: int = 1,
-        train_params: dict = {},
+        train_params: dict | None = None,
         track_resources: bool = False,
         eval_upto: str = "train",
         output_root: str = "otx-benchmark",
         dry_run: bool = False,
-        tags: dict = {},
-        **kwargs,
+        tags: dict | None = None,
+        subset_dir_names: dict | None = None,
     ):
         self.datasets = datasets
         self.data_root = data_root
         self.num_epoch = num_epoch
         self.num_repeat = num_repeat
-        self.train_params = train_params
+        self.train_params = train_params or {}
         self.track_resources = track_resources
         self.eval_upto = eval_upto
         self.output_root = output_root
         self.dry_run = dry_run
-        self.tags = tags
-        self.subset_dir_names = kwargs.get("subset_dir_names", {"train": "", "val": "", "test": ""})
+        self.tags = tags or {}
+        self.subset_dir_names = subset_dir_names or {"train": "", "val": "", "test": ""}
 
     def run(
         self,
         model_id: str,
         train_params: dict = {},
         tags: dict = {},
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame | None:
         """Run configured benchmark with given model and return the result.
 
         Args:
@@ -82,7 +82,7 @@ class OTXBenchmark:
             tags (dict): Overrides global benchmark tags
 
         Retruns:
-            pd.DataFrame: Table with benchmark metrics
+            pd.DataFrame | None: Table with benchmark metrics
         """
 
         # Build config file
