@@ -97,8 +97,20 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         # TODO(vinnamkim): This is a temporal approach
         # There is an upcoming Datumaro patch here for this
         # https://github.com/openvinotoolkit/datumaro/pull/1194
-        img_data = PILImage.open(BytesIO(img.bytes))
-        img_data = np.asarray(img_data.convert("RGB"))
+        img_data = (
+            np.asarray(PILImage.open(BytesIO(img_bytes)).convert("RGB"))
+            if (img_bytes := img.bytes) is not None
+            else img.data
+        )
+
+        if img_data is None:
+            msg = "Cannot get image data"
+            raise RuntimeError(msg)
+
+        if img_data.shape[-1] == 4:
+            img_data = cv2.cvtColor(img_data, cv2.COLOR_BGRA2BGR)
+        if len(img_data.shape) == 2:
+            img_data = cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR)
 
         if handler is not None:
             img_data = self._cache_img(

@@ -38,14 +38,22 @@ def fxt_mem_cache() -> None:
     MemCacheHandlerSingleton.delete()
 
 
-@pytest.fixture()
-def fxt_dm_item() -> DatasetItem:
-    _, np_bytes = cv2.imencode(".png", np.zeros(shape=(10, 10, 3), dtype=np.uint8))
+@pytest.fixture(params=["bytes", "numpy"])
+def fxt_dm_item(request) -> DatasetItem:
+    np_img = np.zeros(shape=(10, 10, 3), dtype=np.uint8)
+
+    if request.param == "bytes":
+        _, np_bytes = cv2.imencode(".png", np_img)
+        media = Image.from_bytes(np_bytes.tobytes())
+    elif request.param == "numpy":
+        media = Image.from_numpy(np_img)
+    else:
+        raise ValueError(request.param)
 
     return DatasetItem(
         id="item",
         subset="train",
-        media=Image.from_bytes(np_bytes.tobytes()),
+        media=media,
         annotations=[
             Label(label=0),
             Bbox(x=0, y=0, w=1, h=1, label=0),
