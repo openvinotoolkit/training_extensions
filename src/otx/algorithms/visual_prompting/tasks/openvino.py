@@ -388,10 +388,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
-                inputs["point_coords"] = np.concatenate(
-                    (inputs["point_coords"], np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32)),
-                    axis=1,
+                box_coords = self.model["decoder"]._apply_coords(
+                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size
                 )
+                inputs["point_coords"] = np.concatenate((inputs["point_coords"], box_coords), axis=1)
                 inputs["point_labels"] = np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1)
 
             inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})

@@ -263,6 +263,11 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         mocker.patch.object(
             self.visual_prompting_ov_inferencer.model["decoder"], "infer_sync", return_value=infer_sync_output
         )
+        mocker.patch.object(
+            self.visual_prompting_ov_inferencer.model["decoder"],
+            "_apply_coords",
+            return_value=np.array([[[1, 1]]], dtype=np.float32),
+        )
         mocker.patch.object(self.visual_prompting_ov_inferencer, "_postprocess_masks", return_value=postprocess_output)
 
         result = self.visual_prompting_ov_inferencer.forward_decoder(

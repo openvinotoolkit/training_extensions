@@ -431,15 +431,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 has_mask_input = self.has_mask_inputs[1].to(self.device)
                 coords = torch.nonzero(masks)
                 y, x = coords[:, 0], coords[:, 1]
-                point_coords = torch.cat(
-                    (
-                        point_coords,
-                        torch.tensor(
-                            [[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device
-                        ),
-                    ),
-                    dim=1,
+                box_coords = ResizeLongestSide.apply_coords(
+                    torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
+                    original_size,
+                    self.config.model.image_size,
                 )
+                point_coords = torch.cat((point_coords, box_coords), dim=1)
                 point_labels = torch.cat((point_labels, self.point_labels_box.to(self.device)), dim=1)
 
             scores, logits = self(
