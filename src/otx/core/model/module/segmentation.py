@@ -64,7 +64,7 @@ class OTXSegmentationLitModule(OTXLitModule):
             self.log(
                 f"{key}/mIoU",
                 results,
-                sync_dist=False,
+                sync_dist=True,
                 prog_bar=True,
             )
         else:

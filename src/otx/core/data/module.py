@@ -70,16 +70,20 @@ class OTXDataModule(LightningDataModule):
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
-        self.mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
-        self.mem_cache_mode = (
+        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+        mem_cache_mode = (
             "singleprocessing"
             if all(config.num_workers == 0 for config in config_mapping.values())
             else "multiprocessing"
         )
+
         MemCacheHandlerSingleton.create(
-            mode=self.mem_cache_mode,
-            mem_size=self.mem_size,
+            mode=mem_cache_mode,
+            mem_size=mem_size,
         )
+
+    def __del__(self) -> None:
+        MemCacheHandlerSingleton.delete()
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:

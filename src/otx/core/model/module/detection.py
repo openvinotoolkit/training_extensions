@@ -62,7 +62,7 @@ class OTXDetectionLitModule(OTXLitModule):
             self.log(
                 f"{key}/{k}",
                 v,
-                sync_dist=False,
+                sync_dist=True,
                 prog_bar=True,
             )
 

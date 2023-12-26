@@ -66,7 +66,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             self.log(
                 f"{subset_name}/{metric}",
                 value,
-                sync_dist=False,
+                sync_dist=True,
                 prog_bar=True,
             )
 

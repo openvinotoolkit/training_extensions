@@ -49,7 +49,7 @@ class OTXActionClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
-        self.log("accuracy", results.item(), sync_dist=False, prog_bar=True)
+        self.log("accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: ActionClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
