@@ -5,7 +5,8 @@ defaults:
   - override /data: openvino
   - override /model: torch_classification
 
-data_format: imagenet_with_subset_dirs
+data:
+  data_format: imagenet_with_subset_dirs
 
 model:
   otx_model:

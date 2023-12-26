@@ -5,7 +5,8 @@ defaults:
   - override /data: openvino
   - override /model: mmdet
 
-data_format: coco_instances
+data:
+  data_format: coco_instances
 
 model:
   otx_model:

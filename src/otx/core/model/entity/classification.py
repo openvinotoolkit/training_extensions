@@ -237,10 +237,10 @@ class OVClassificationCompatibleModel(OTXMulticlassClsModel):
         return ClassificationModel.create_model(self.model_name, model_type="Classification")
 
     def _customize_outputs(
-            self,
-            outputs: Any,  # noqa: ANN401
-            inputs: MulticlassClsBatchDataEntity,
-        ) -> MulticlassClsBatchPredEntity:
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: MulticlassClsBatchDataEntity,
+    ) -> MulticlassClsBatchPredEntity:
         # add label index
         labels = [outputs.top_labels[0][0]]
         # add probability
