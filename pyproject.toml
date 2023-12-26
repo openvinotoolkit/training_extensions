@@ -35,7 +35,7 @@ dependencies = [
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks
     "ftfy",
-    "regex"
+    "regex",
 ]
 
 [project.optional-dependencies]
@@ -69,6 +69,9 @@ base = [
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
+    "openvino==2023.0.0",
+    "openvino-dev==2023.0.0",
+    "openvino-model-api==0.1.7"
 ]
 mmlab = [
     "mmdet==3.2.0",
