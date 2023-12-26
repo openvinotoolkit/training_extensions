@@ -391,7 +391,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         point_labels=point_labels,
                         original_size=original_size[0],
                     )
-                    predicted_masks[label].append(mask.detach().cpu())
+                    predicted_masks[label].append((mask * points_score[2]).detach().cpu())
                     used_points[label].append(points_score.detach().cpu())
 
             total_results.append([predicted_masks, used_points])
