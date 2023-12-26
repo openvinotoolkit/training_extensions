@@ -30,7 +30,7 @@ class OTXBenchmark:
             Defaults to 0, which means no overriding.
         num_repeat (int): Number for trials with different random seed, which would be set
             as range(0, num_repeat). Defaults to 1.
-        train_params (dict): Additional training parameters.
+        train_params (dict, optional): Additional training parameters.
             e.x) {'learning_parameters.num_iters': 2}. Defaults to {}.
         track_resources (bool): Whether to track CPU & GPU usage metrics. Defaults to False.
         eval_upto (str): The last serial operation to evaluate. Choose one of ('train', 'export', 'optimize').
@@ -39,7 +39,9 @@ class OTXBenchmark:
             Default to 'train'.
         output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
         dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
-        tags (dict): Key-values pair metadata for the experiment. Defaults to {}.
+        tags (dict, optional): Key-values pair metadata for the experiment.
+        subset_dir_names (dict, optional): Specify dataset subset directory names, if any.
+            e.x) {"train": "train_10percent", "val": "val_all", "test": "test"}
     """
 
     def __init__(
