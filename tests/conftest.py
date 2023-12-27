@@ -12,7 +12,7 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEn
 def fxt_seg_data_entity() -> tuple[tuple, SegDataEntity, SegBatchDataEntity]:
     img_size = (224, 224)
     fake_image = torch.rand(img_size)
-    fake_image_info = ImageInfo(0, img_size[0], img_size[0], img_size[0], img_size[0])
+    fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
     fake_masks = torch.rand(img_size)
     # define data entity
     single_data_entity = SegDataEntity(fake_image, fake_image_info, fake_masks)

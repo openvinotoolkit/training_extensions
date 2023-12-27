@@ -56,9 +56,6 @@ class TestTorchVisionTransformLib:
         item = dataset[0]
         assert isinstance(item, data_entity_cls)
 
-    @pytest.mark.xfail(
-        reason="Our `ImageInfo` entity is registered to TorchVision V2 transforms yet",
-    )
     def test_image_info(
         self,
         fxt_config,

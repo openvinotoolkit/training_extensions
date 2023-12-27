@@ -37,24 +37,26 @@ class PackInputs(MMPretrainPackInputs):
         image = tv_tensors.Image(transformed.get("inputs"))
         data_samples = transformed["data_samples"]
 
-        img_shape = data_samples.img_shape
+        # Some MM* transforms return (H, W, C), not (H, W)
+        img_shape = data_samples.img_shape if len(data_samples.img_shape) == 2 else data_samples.img_shape[:2]
         ori_shape = data_samples.ori_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
 
         labels = results["__otx__"].labels
 
-        return MulticlassClsDataEntity(
+        data_entity = MulticlassClsDataEntity(
             image=image,
             img_info=ImageInfo(
                 img_idx=0,
                 img_shape=img_shape,
                 ori_shape=ori_shape,
-                pad_shape=pad_shape,
                 scale_factor=scale_factor,
             ),
             labels=labels,
         )
+        data_entity.img_info.pad_shape = pad_shape
+        return data_entity
 
 
 class MMPretrainTransformLib(MMCVTransformLib):

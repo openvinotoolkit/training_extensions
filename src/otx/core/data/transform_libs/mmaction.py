@@ -56,18 +56,20 @@ class PackActionInputs(MMPackActionInputs):
 
         labels = results["__otx__"].labels
 
-        return ActionClsDataEntity(
+        data_entity = ActionClsDataEntity(
             video=results["__otx__"].video,
             image=image,
             img_info=ImageInfo(
                 img_idx=0,
                 img_shape=img_shape,
                 ori_shape=ori_shape,
-                pad_shape=pad_shape,
                 scale_factor=scale_factor,
             ),
             labels=labels,
         )
+        data_entity.img_info.pad_shape = pad_shape
+
+        return data_entity
 
 
 class MMActionTransformLib:
