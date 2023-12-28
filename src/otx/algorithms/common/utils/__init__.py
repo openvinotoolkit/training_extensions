@@ -28,6 +28,7 @@ from .utils import (
     UncopiableDefaultDict,
     cast_bf16_to_fp32,
     get_arg_spec,
+    get_cfg_based_on_device,
     get_default_async_reqs_num,
     get_task_class,
     is_hpu_available,
@@ -57,6 +58,7 @@ __all__ = [
     "is_xpu_available",
     "is_hpu_available",
     "cast_bf16_to_fp32",
+    "get_cfg_based_on_device",
 ]
 
 
