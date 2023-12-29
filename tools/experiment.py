@@ -574,6 +574,7 @@ class ExpRecipeParser:
         if not found_keys:
             return []
 
+        found_keys = sorted(found_keys)
         values_of_found_key = []
         for key in found_keys:
             if isinstance(variable[key], list):
