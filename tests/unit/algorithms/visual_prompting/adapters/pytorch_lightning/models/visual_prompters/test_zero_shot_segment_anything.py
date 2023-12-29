@@ -208,7 +208,7 @@ class TestZeroShotSegmentAnything:
         assert zero_shot_segment_anything.prompt_getter.reference_prompts.shape == (2, 8, 8)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("expected", [[torch.ones((8, 8)), torch.tensor([0.0, 0.0, 0.5])]])
+    @pytest.mark.parametrize("expected", [[torch.ones((8, 8)) / 2, torch.tensor([0.0, 0.0, 0.5])]])
     def test_infer(self, monkeypatch, mocker, set_zero_shot_segment_anything, expected: torch.Tensor) -> None:
         """Test infer."""
         monkeypatch.setattr(

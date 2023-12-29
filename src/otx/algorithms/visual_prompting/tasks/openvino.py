@@ -371,7 +371,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             elif i == 1:
                 # Cascaded Post-refinement-1
                 mask_input, masks, iou_predictions = self._postprocess_masks(
-                    logits, scores, original_size  # noqa: F821
+                    logits, scores, original_size, is_single=True  # noqa: F821
                 )
                 if masks.sum() == 0:
                     return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
@@ -401,27 +401,30 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
 
     def _postprocess_masks(
-        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray
+        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray, is_single: bool = False
     ) -> Tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
         high_res_masks = self.model["decoder"].resize_and_crop(logits[0].transpose(1, 2, 0), original_size)
         masks = high_res_masks > self.model["decoder"].mask_threshold
         masks = masks.transpose(2, 0, 1)[None]
 
-        # skip the first index components
-        scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+        if is_single:
+            best_idx = 0
+        else:
+            # skip the first index components
+            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
 
-        # filter zero masks
-        while len(scores[0]) > 0 and masks[0, (best_idx := np.argmax(scores[0]))].sum() == 0:
-            scores, masks, logits = map(
-                lambda x: np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1), (scores, masks, logits)
-            )
+            # filter zero masks
+            while len(scores[0]) > 0 and masks[0, (best_idx := np.argmax(scores[0]))].sum() == 0:
+                scores, masks, logits = map(
+                    lambda x: np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1), (scores, masks, logits)
+                )
 
-        if len(scores[0]) == 0:
-            # all predicted masks were zero masks, ignore them.
-            return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
+            if len(scores[0]) == 0:
+                # all predicted masks were zero masks, ignore them.
+                return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
 
-        best_idx = np.argmax(scores[0])
+            best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
 
 

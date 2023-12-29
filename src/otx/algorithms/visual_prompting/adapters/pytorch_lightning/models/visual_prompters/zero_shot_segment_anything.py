@@ -416,7 +416,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif is_cascade and i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks = self._postprocess_masks(logits, scores, original_size, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
                     return masks
 
@@ -575,25 +575,29 @@ class ZeroShotSegmentAnything(SegmentAnything):
         logits: torch.Tensor,
         scores: torch.Tensor,
         original_size: torch.Tensor,
+        is_single: bool = False,
     ):
         """Post-process masks for cascaded post-refinements."""
         high_res_masks = self.mask_postprocessing(logits, self.config.model.image_size, original_size)
         masks = high_res_masks > self.config.model.mask_threshold
 
-        # skip the first index components
-        scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+        if is_single:
+            best_idx = 0
+        else:
+            # skip the first index components
+            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
 
-        # filter zero masks
-        while len(scores[0]) > 0 and masks[0, (best_idx := torch.argmax(scores[0]))].sum() == 0:
-            scores, masks, logits = map(
-                lambda x: torch.cat((x[:, :best_idx], x[:, best_idx + 1 :]), dim=1), (scores, masks, logits)
-            )
+            # filter zero masks
+            while len(scores[0]) > 0 and masks[0, (best_idx := torch.argmax(scores[0]))].sum() == 0:
+                scores, masks, logits = map(
+                    lambda x: torch.cat((x[:, :best_idx], x[:, best_idx + 1 :]), dim=1), (scores, masks, logits)
+                )
 
-        if len(scores[0]) == 0:
-            # all predicted masks were zero masks, ignore them.
-            return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
+            if len(scores[0]) == 0:
+                # all predicted masks were zero masks, ignore them.
+                return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
 
-        best_idx = torch.argmax(scores[0])
+            best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]
 
     def _update_value(self, target: Dict[str, Any], key: str, value: torch.Tensor) -> None:
