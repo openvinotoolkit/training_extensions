@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import os
-import pickle
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
@@ -59,7 +58,6 @@ class LoadVideoForDetection:
         results["fps"] = self.fps
         results["timestamp_start"] = self.timestamp_start
         results["filename_tmpl"] = "{video}_{idx:04d}.{ext}"
-        results["proposal_file"] = entity.proposal_file
         results["ori_shape"] = entity.img_info.ori_shape
 
         if entity.frame_path is not None:
@@ -95,42 +93,9 @@ class LoadAnnotations:
 
         results["gt_bboxes"] = otx_data_entity.bboxes.numpy()
         results["gt_labels"] = otx_data_entity.labels.numpy()
-        results["proposals"] = self._get_proposals(otx_data_entity.frame_path, results["proposal_file"])
+        results["proposals"] = otx_data_entity.proposals
 
         return results
-
-    @staticmethod
-    def _get_proposals(frame_path: str, proposal_file: str | None) -> np.ndarray:
-        """Get proposal from frame path and proposal file name.
-
-        Datumaro AVA dataset expect data structure as
-        - data_root/
-            - frames/
-                - video0
-                    - video0_0001.jpg
-                    - vdieo0_0002.jpg
-            - annotations/
-                - train.csv
-                - val.csv
-                - train.pkl
-                - val.pkl
-        """
-        if proposal_file is None:
-            return np.array([[0, 0, 1, 1]], dtype=np.float64)
-
-        annotation_dir = Path(frame_path).parent.parent.parent
-        proposal_file_path = annotation_dir / "annotations" / proposal_file
-        if proposal_file_path.exists():
-            with Path.open(proposal_file_path, "rb") as f:
-                info = pickle.load(f)  # noqa: S301
-                if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info:
-                    proposals = info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
-                else:
-                    proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
-        else:
-            proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
-
-        return proposals
 
 
 @TRANSFORMS.register_module(force=True)
@@ -244,6 +209,7 @@ class PackActionInputs(MMPackActionInputs):
                 bboxes=bboxes,
                 labels=labels,
                 proposals=proposals,
+                frame_path=results["__otx__"].frame_path,
             )
 
         return ActionClsDataEntity(

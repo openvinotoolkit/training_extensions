@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import pickle
+from pathlib import Path
 from typing import Callable
 
 import numpy as np
@@ -56,10 +58,46 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
                 self.num_classes,
             ).to(torch.float),
             frame_path=item.media.path,
-            proposal_file=self.dm_subset.infos().get(f"{self.dm_subset.name}_proposals", None),
+            proposals=self._get_proposals(
+                item.media.path,
+                self.dm_subset.infos().get(f"{self.dm_subset.name}_proposals", None),
+            ),
         )
 
         return self._apply_transforms(entity)
+
+    @staticmethod
+    def _get_proposals(frame_path: str, proposal_file: str | None) -> np.ndarray:
+        """Get proposal from frame path and proposal file name.
+
+        Datumaro AVA dataset expect data structure as
+        - data_root/
+            - frames/
+                - video0
+                    - video0_0001.jpg
+                    - vdieo0_0002.jpg
+            - annotations/
+                - train.csv
+                - val.csv
+                - train.pkl
+                - val.pkl
+        """
+        if proposal_file is None:
+            return np.array([[0, 0, 1, 1]], dtype=np.float64)
+
+        annotation_dir = Path(frame_path).parent.parent.parent
+        proposal_file_path = annotation_dir / "annotations" / proposal_file
+        if proposal_file_path.exists():
+            with Path.open(proposal_file_path, "rb") as f:
+                info = pickle.load(f)  # noqa: S301
+                if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info:
+                    proposals = info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
+                else:
+                    proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
+        else:
+            proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
+
+        return proposals
 
     @property
     def collate_fn(self) -> Callable:

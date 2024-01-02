@@ -29,14 +29,13 @@ class ActionDetDataEntity(OTXDataEntity):
 
     Args:
         bboxes: 2D bounding boxes for actors.
-        labels: Video's action labels.
+        labels: One-hot vector of video's action labels.
     """
 
     bboxes: tv_tensors.BoundingBoxes
     labels: LongTensor
-    frame_path: str | None = None
-    proposal_file: str | None = None
-    proposals: tv_tensors.BoundingBoxes | None = None
+    frame_path: str
+    proposals: tv_tensors.BoundingBoxes
 
     @property
     def task(self) -> OTXTaskType:
