@@ -122,7 +122,7 @@ class OTXDatasetFactory:
             )
 
         if task == OTXTaskType.ACTION_CLASSIFICATION:
-            from .dataset.action import OTXActionClsDataset
+            from .dataset.action_classification import OTXActionClsDataset
 
             return OTXActionClsDataset(
                 dm_subset=dm_subset,
@@ -130,4 +130,12 @@ class OTXDatasetFactory:
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
+        if task == OTXTaskType.ACTION_DETECTION:
+            from .dataset.action_detection import OTXActionDetDataset
+
+            return OTXActionDetDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
         raise NotImplementedError(task)
