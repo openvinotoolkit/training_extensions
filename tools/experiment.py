@@ -74,6 +74,7 @@ class EvalResult:
     Each metric can be set or gotten by both dict-like(ins["metric"]) or class-like(ins.metric) way.
     "add" (only with a class having same metrics) and "true devide" are supported.
     """
+
     def __getitem__(self, key):
         """Support dict-like way to get attribute."""
         return getattr(self, key)
