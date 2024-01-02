@@ -125,7 +125,7 @@ class TestZeroShotInferenceCallback:
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "expected",
-        [[Point(0.5, 0.0), Point(0.0, 0.5), Point(0.5, 1.0), Point(1.0, 0.5)]],
+        [[Point(0.0, 0.0), Point(0.0, 0.5), Point(0.0, 1.0), Point(0.5, 1.0), Point(1.0, 1.0), Point(1.0, 0.5), Point(1.0, 0.0), Point(0.5, 0.0)]],
     )
     def test_on_predict_epoch_end(self, expected: Any):
         """Test on_predict_epoch_end."""
@@ -159,4 +159,4 @@ class TestZeroShotInferenceCallback:
         assert isinstance(annotation.shape, Polygon)
         assert annotation.shape.points == expected
         assert annotation.get_labels()[0].name == "rectangle"
-        assert annotation.get_labels()[0].probability == 1.0
+        assert annotation.get_labels()[0].probability == 0.5

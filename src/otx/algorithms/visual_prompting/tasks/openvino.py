@@ -20,6 +20,7 @@ import os
 import random
 import tempfile
 import time
+from itertools import product
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
@@ -313,8 +314,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         inputs_prompt_getter = self.pre_process_prompt_getter(image_embeddings, original_size)
         total_prompts = self.forward_prompt_getter(inputs_prompt_getter)
 
-        annotations: List[Annotation] = []
+        annotations: DefaultDict = defaultdict(list)
         predicted_masks: DefaultDict = defaultdict(list)
+        used_points: DefaultDict = defaultdict(list)
         for label, (points_scores, bg_coords) in enumerate(
             zip(total_prompts["total_points_scores"], total_prompts["total_bg_coords"])
         ):
@@ -344,10 +346,12 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 }
 
                 # set annotation for eval
-                annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
-                annotations.extend(annotation)
+                annotation, hard_prediction, _ = self.post_process(prediction, metadata)
+                annotations[label].extend(annotation)
                 predicted_masks[label].append(hard_prediction)
-        return annotations
+                used_points[label].append(points_score)
+        self.__inspect_overlapping_areas(predicted_masks, used_points, annotations)
+        return sum(annotations.values(), [])
 
     def forward_prompt_getter(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Visual Prompting Inferencer."""
@@ -426,6 +430,41 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
+    
+    def __inspect_overlapping_areas(self, predicted_masks: Dict[int, List[np.ndarray]], used_points: Dict[int, List[np.ndarray]], annotations: Dict[int, List[np.ndarray]], threshold_iou: float = 0.8):
+        def __calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
+            assert mask1.ndim == 2 and mask2.ndim == 2
+            intersection = np.logical_and(mask1, mask2).sum().item()
+            union = np.logical_or(mask1, mask2).sum().item()
+
+            # Avoid division by zero
+            if union == 0:
+                return 0.0
+            iou = intersection / union
+            return iou
+
+        for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
+            if other_label <= label:
+                continue
+
+            overlapped_label = []
+            overlapped_other_label = []
+            for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
+                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        overlapped_other_label.append(jm)
+                    else:
+                        overlapped_label.append(im)
+
+            for im in overlapped_label[::-1]:
+                masks.pop(im)
+                used_points[label].pop(im)
+                annotations[label].pop(im)
+
+            for jm in overlapped_other_label[::-1]:
+                other_masks.pop(jm)
+                used_points[other_label].pop(jm)
+                annotations[other_label].pop(jm)
 
 
 class OTXOpenVinoDataLoader:

@@ -5,6 +5,7 @@
 
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
+from itertools import product
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -12,7 +13,9 @@ from omegaconf import DictConfig
 from torch import nn
 from torch.nn import functional as F
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
+    ResizeLongestSide,
+)
 from otx.api.entities.scored_label import ScoredLabel
 from otx.utils.logger import get_logger
 
@@ -394,8 +397,43 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     predicted_masks[label].append((mask * points_score[2]).detach().cpu())
                     used_points[label].append(points_score.detach().cpu())
 
+            # check overlapping area between different label masks
+            self.__inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
+    
+    def __inspect_overlapping_areas(self, predicted_masks: Dict[int, List[torch.Tensor]], used_points: Dict[int, List[torch.Tensor]], threshold_iou: float = 0.8):
+        def __calculate_mask_iou(mask1: torch.Tensor, mask2: torch.Tensor):
+            assert mask1.ndim == 2 and mask2.ndim == 2
+            intersection = torch.logical_and(mask1, mask2).sum().item()
+            union = torch.logical_or(mask1, mask2).sum().item()
+
+            # Avoid division by zero
+            if union == 0:
+                return 0.0
+            iou = intersection / union
+            return iou
+
+        for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
+            if other_label <= label:
+                continue
+
+            overlapped_label = []
+            overlapped_other_label = []
+            for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
+                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        overlapped_other_label.append(jm)
+                    else:
+                        overlapped_label.append(im)
+
+            for im in overlapped_label[::-1]:
+                masks.pop(im)
+                used_points[label].pop(im)
+
+            for jm in overlapped_other_label[::-1]:
+                other_masks.pop(jm)
+                used_points[other_label].pop(jm)
 
     def _predict_masks(
         self,
