@@ -1,0 +1,89 @@
+# @package _global_
+defaults:
+  - override /base: classification
+  - override /callbacks: classification
+  - override /data: multiclass_mmpretrain
+  - override /model: torch_classification
+data:
+  train_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+        to_float32: true
+      - mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: true
+        type: Normalize
+      - backend: cv2
+        scale: 224
+        type: RandomResizedCrop
+      - type: PackInputs
+  val_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+        to_float32: true
+      - mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: true
+        type: Normalize
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+  test_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+        to_float32: true
+      - mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: true
+        type: Normalize
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+model:
+  otx_model:
+    _target_: otx.algo.classification.otx_dino_v2.DINOv2RegisterClassifier
+    config:
+      backbone:
+        name: dinov2_vits14_reg
+        frozen: true
+      head:
+        in_channels: 384
+        num_classes: 1000
+  optimizer:
+    _target_: torch.optim.SGD
+    _partial_: true
+    lr: 0.007
+    momentum: 0.9
+    weight_decay: 0.0001
+  scheduler:
+    factor: 0.5
+    patience: 1

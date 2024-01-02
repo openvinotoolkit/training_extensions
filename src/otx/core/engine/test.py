@@ -29,7 +29,6 @@ def test(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     log.info(f"Instantiating model <{cfg.model}>")
     model: LightningModule = hydra.utils.instantiate(cfg.model)
 
-
     log.info(f"Instantiating trainer <{cfg.trainer}>")
     trainer: Trainer = hydra.utils.instantiate(cfg.trainer)
 

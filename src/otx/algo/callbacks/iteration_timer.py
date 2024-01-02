@@ -9,10 +9,9 @@ from collections import defaultdict
 from time import time
 from typing import TYPE_CHECKING, Any
 
-from lightning import Callback
+from lightning import Callback, LightningModule, Trainer
 
 if TYPE_CHECKING:
-    from lightning import LightningModule, Trainer
     from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 
@@ -33,8 +32,26 @@ class IterationTimer(Callback):
         self.start_time: dict[str, float] = defaultdict(float)
         self.end_time: dict[str, float] = defaultdict(float)
 
+    def on_train_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Reset timer before every train epoch starts."""
+        self.start_time.clear()
+        self.end_time.clear()
+
+    def on_validation_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Reset timer before every validation epoch starts."""
+        self.start_time.clear()
+        self.end_time.clear()
+
+    def on_test_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Reset timer before every test epoch starts."""
+        self.start_time.clear()
+        self.end_time.clear()
+
     def _on_batch_start(
-        self, pl_module: LightningModule, phase: str, batch_size: int,
+        self,
+        pl_module: LightningModule,
+        phase: str,
+        batch_size: int,
     ) -> None:
         self.start_time[phase] = time()
 
@@ -55,7 +72,10 @@ class IterationTimer(Callback):
         )
 
     def _on_batch_end(
-        self, pl_module: LightningModule, phase: str, batch_size: int,
+        self,
+        pl_module: LightningModule,
+        phase: str,
+        batch_size: int,
     ) -> None:
         if not self.end_time[phase]:
             self.end_time[phase] = time()
@@ -84,7 +104,9 @@ class IterationTimer(Callback):
     ) -> None:
         """Log iteration data time on the training batch start."""
         self._on_batch_start(
-            pl_module=pl_module, phase="train", batch_size=batch.batch_size,
+            pl_module=pl_module,
+            phase="train",
+            batch_size=batch.batch_size,
         )
 
     def on_train_batch_end(
@@ -97,7 +119,9 @@ class IterationTimer(Callback):
     ) -> None:
         """Log iteration time on the training batch end."""
         self._on_batch_end(
-            pl_module=pl_module, phase="train", batch_size=batch.batch_size,
+            pl_module=pl_module,
+            phase="train",
+            batch_size=batch.batch_size,
         )
 
     def on_validation_batch_start(
@@ -110,7 +134,9 @@ class IterationTimer(Callback):
     ) -> None:
         """Log iteration data time on the validation batch start."""
         self._on_batch_start(
-            pl_module=pl_module, phase="validation", batch_size=batch.batch_size,
+            pl_module=pl_module,
+            phase="validation",
+            batch_size=batch.batch_size,
         )
 
     def on_validation_batch_end(
@@ -124,7 +150,9 @@ class IterationTimer(Callback):
     ) -> None:
         """Log iteration time on the validation batch end."""
         self._on_batch_end(
-            pl_module=pl_module, phase="validation", batch_size=batch.batch_size,
+            pl_module=pl_module,
+            phase="validation",
+            batch_size=batch.batch_size,
         )
 
     def on_test_batch_start(
@@ -137,7 +165,9 @@ class IterationTimer(Callback):
     ) -> None:
         """Log iteration data time on the test batch start."""
         self._on_batch_start(
-            pl_module=pl_module, phase="test", batch_size=batch.batch_size,
+            pl_module=pl_module,
+            phase="test",
+            batch_size=batch.batch_size,
         )
 
     def on_test_batch_end(
@@ -151,5 +181,7 @@ class IterationTimer(Callback):
     ) -> None:
         """Log iteration time on the test batch end."""
         self._on_batch_end(
-            pl_module=pl_module, phase="test", batch_size=batch.batch_size,
+            pl_module=pl_module,
+            phase="test",
+            batch_size=batch.batch_size,
         )

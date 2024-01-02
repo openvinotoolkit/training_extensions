@@ -17,8 +17,14 @@ RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.y
 
 # [TODO]: This is a temporary approach.
 DATASET = {
-    "classification": {
+    "multiclass_classification": {
         "data_dir": "tests/assets/classification_dataset",
+        "overrides": [
+            "model.otx_model.config.head.num_classes=2",
+        ],
+    },
+    "multilabel_classification": {
+        "data_dir": "tests/assets/multilabel_classification",
         "overrides": [
             "model.otx_model.config.head.num_classes=2",
         ],
@@ -37,6 +43,17 @@ DATASET = {
     "segmentation": {
         "data_dir": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "overrides": ["model.otx_model.config.decode_head.num_classes=2"],
+    },
+    "action_classification": {
+        "data_dir": "tests/assets/action_classification_dataset/",
+        "overrides": ["model.otx_model.config.cls_head.num_classes=2"],
+    },
+    "action_detection": {
+        "data_dir": "tests/assets/action_detection_dataset/",
+        "overrides": [
+            "model.otx_model.config.roi_head.bbox_head.num_classes=5",
+            "+model.otx_model.config.roi_head.bbox_head.topk=3",
+        ],
     },
 }
 
@@ -62,13 +79,14 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
-        "otx", "train",
+        "otx",
+        "train",
         f"+recipe={recipe}",
         f"base.data_dir={DATASET[task]['data_dir']}",
         f"base.work_dir={tmp_path_train}",
         f"base.output_dir={tmp_path_train / 'outputs'}",
         "+debug=intg_test",
-        *DATASET[task]['overrides'],
+        *DATASET[task]["overrides"],
     ]
 
     with patch("sys.argv", command_cfg):
@@ -86,12 +104,13 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     # 2) otx test
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
-        "otx", "test",
+        "otx",
+        "test",
         f"+recipe={recipe}",
         f"base.data_dir={DATASET[task]['data_dir']}",
         f"base.work_dir={tmp_path_test}",
         f"base.output_dir={tmp_path_test / 'outputs'}",
-        *DATASET[task]['overrides'],
+        *DATASET[task]["overrides"],
         f"checkpoint={ckpt_files[-1]}",
     ]
 

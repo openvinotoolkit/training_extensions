@@ -32,20 +32,27 @@ from typing import TYPE_CHECKING, Any
 import hydra
 
 from otx.core.config import TrainConfig
+from otx.core.model.entity.base import OTXModel
 
 if TYPE_CHECKING:
-    from lightning import Callback, LightningModule, Trainer
+    from lightning import Callback, Trainer
     from lightning.pytorch.loggers import Logger
 
+    from otx.core.model.module.base import OTXLitModule
 
-def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
+
+def train(
+    cfg: TrainConfig,
+    otx_model: OTXModel | None = None,
+) -> tuple[Trainer, dict[str, Any]]:
     """Trains the model. Can additionally evaluate on a testset, using best weights obtained during training.
 
-    This method is wrapped in optional @task_wrapper decorator, that controls the behavior during
-    failure. Useful for multiruns, saving info about the crash, etc.
+    Args:
+        cfg: A DictConfig configuration composed by Hydra.
+        otx_model: If it is not `None`, the given OTX model will be overrided.
 
-    :param cfg: A DictConfig configuration composed by Hydra.
-    :return: A tuple with Pytorch Lightning Trainer and Python dict of metrics
+    Returns:
+        A tuple with Pytorch Lightning Trainer and Python dict of metrics
     """
     from lightning import seed_everything
 
@@ -68,7 +75,14 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
         datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
 
     log.info(f"Instantiating model <{cfg.model}>")
-    model: LightningModule = hydra.utils.instantiate(cfg.model)
+    model: OTXLitModule = hydra.utils.instantiate(cfg.model)
+
+    if otx_model is not None:
+        if not isinstance(otx_model, OTXModel):
+            raise TypeError(otx_model)
+        model.model = otx_model
+        msg = f"Overriding to this OTX model <{otx_model.__class__.__name__}>"
+        log.info(msg)
 
     log.info("Instantiating callbacks...")
     callbacks: list[Callback] = instantiate_callbacks(cfg.callbacks)
@@ -112,6 +126,7 @@ def train(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
         log.info(f"Best ckpt path: {ckpt_path}")
 
     test_metrics = trainer.callback_metrics
+    log.info(test_metrics)
 
     # merge train and test metrics
     metric_dict = {**train_metrics, **test_metrics}

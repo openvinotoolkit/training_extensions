@@ -1,10 +1,10 @@
 defaults:
   - default
 
-_target_: otx.core.model.module.classification.OTXClassificationLitModule
+_target_: otx.core.model.module.classification.OTXMulticlassClsLitModule
 
 otx_model:
-  _target_: otx.core.model.entity.classification.OTXClassificationModel
+  _target_: otx.core.model.entity.classification.OTXMulticlassClsModel
   config: ???
 
 # compile model for faster training with pytorch 2.0

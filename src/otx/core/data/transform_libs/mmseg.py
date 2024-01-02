@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 @TRANSFORMS.register_module(force=True)
 class LoadAnnotations(MMSegLoadAnnotations):
     """Class to override MMSeg LoadAnnotations."""
+
     def transform(self, results: dict) -> dict:
         """Transform OTXDataEntity to MMSeg annotation data entity format."""
         if (otx_data_entity := results.get("__otx__")) is None:

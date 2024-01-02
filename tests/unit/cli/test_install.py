@@ -13,11 +13,11 @@ class TestInstall:
     @pytest.fixture(autouse=True)
     def setup(self, mocker: MockerFixture) -> None:
         requirements_dict = {
-            "base": [Requirement.parse('torch==2.0.0'), Requirement.parse('pytorchcv')],
-            "openvino": [Requirement.parse('openvino')],
-            "mmlab": [Requirement.parse('mmpretrain')],
-            "anomaly": [Requirement.parse('anomalib')],
-            "api": [Requirement.parse('test1')],
+            "base": [Requirement.parse("torch==2.0.0"), Requirement.parse("pytorchcv")],
+            "openvino": [Requirement.parse("openvino")],
+            "mmlab": [Requirement.parse("mmpretrain")],
+            "anomaly": [Requirement.parse("anomalib")],
+            "api": [Requirement.parse("test1")],
         }
         mocker.patch("otx.cli.install.get_requirements", return_value=requirements_dict)
 

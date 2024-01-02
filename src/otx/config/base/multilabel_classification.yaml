@@ -1,0 +1,4 @@
+defaults:
+  - default
+
+task: MULTI_LABEL_CLS

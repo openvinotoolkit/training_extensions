@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from mmengine.logging import MMLogger
+
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
@@ -14,9 +16,8 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from torch import nn
 
-def build_mm_model(config: DictConfig,
-                   model_registry: Registry,
-                   load_from: str) -> nn.Module:
+
+def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str) -> nn.Module:
     """Build a model by using the registry."""
     from mmengine.runner import load_checkpoint
 
@@ -27,7 +28,11 @@ def build_mm_model(config: DictConfig,
     except AssertionError:
         model = model_registry.build(convert_conf_to_mmconfig_dict(config, to="list"))
 
+    mm_logger = MMLogger.get_current_instance()
+    mm_logger_level = mm_logger.level
+    mm_logger.setLevel("WARNING")
     model.init_weights()
+    mm_logger.setLevel(mm_logger_level)
     if load_from is not None:
         load_checkpoint(model, load_from)
 

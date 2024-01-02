@@ -18,11 +18,12 @@ from otx.core.utils.build import build_mm_model
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
-    from torch import nn
+    from torch import device, nn
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
+
 
 class MMDetCompatibleModel(OTXDetectionModel):
     """Detection model compatible for MMDet.
@@ -31,20 +32,31 @@ class MMDetCompatibleModel(OTXDetectionModel):
     (please see otx.tools.translate_mmrecipe) and create the OTX detection model
     compatible for OTX pipelines.
     """
+
     def __init__(self, config: DictConfig) -> None:
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        # import mmdet.models as _
+        from mmdet.models.data_preprocessors import (
+            DetDataPreprocessor as _DetDataPreprocessor,
+        )
         from mmdet.registry import MODELS
         from mmengine.registry import MODELS as MMENGINE_MODELS
 
-        # RTMDet-Tiny has bug if we pass dictionary data_preprocessor to MODELS.build
-        # We should inject DetDataPreprocessor to MMENGINE MODELS explicitly.
-        det = MODELS.get("DetDataPreprocessor")
-        MMENGINE_MODELS.register_module(module=det, force=True)
+        # NOTE: For the history of this monkey patching, please see
+        # https://github.com/openvinotoolkit/training_extensions/issues/2743
+        @MMENGINE_MODELS.register_module(force=True)
+        class DetDataPreprocessor(_DetDataPreprocessor):
+            @property
+            def device(self) -> device:
+                try:
+                    buf = next(self.buffers())
+                except StopIteration:
+                    return super().device
+                else:
+                    return buf.device
 
         return build_mm_model(self.config, MODELS, self.load_from)
 
@@ -76,14 +88,6 @@ class MMDetCompatibleModel(OTXDetectionModel):
             )
         ]
         preprocessor: DetDataPreprocessor = self.model.data_preprocessor
-        # Don't know why but data_preprocessor.device is not automatically
-        # converted by the pl.Trainer's instruction unless the model parameters.
-        # Therefore, we change it here in that case.
-        if preprocessor.device != (
-            model_device := next(self.model.parameters()).device
-        ):
-            preprocessor = preprocessor.to(device=model_device)
-            self.model.data_preprocessor = preprocessor
 
         mmdet_inputs = preprocessor(data=mmdet_inputs, training=self.training)
 

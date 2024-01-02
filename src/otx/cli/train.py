@@ -6,18 +6,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from hydra import compose, initialize
 from jsonargparse import ArgumentParser
 
 from otx.cli.utils.hydra import configure_hydra_outputs
-from otx.core.config import register_configs
+
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
+    from pytorch_lightning import Trainer
 
-register_configs()
 
 def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for train command.
@@ -33,27 +33,23 @@ def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
     subcommands_action.add_subcommand("train", parser, help="Training subcommand for OTX")
 
 
-def otx_train(overrides: list[str]) -> None:
+def otx_train(overrides: list[str]) -> dict[str, Any]:
     """Main entry point for training.
 
     :param overrides: Override List values.
-    :return: Optional[float] with optimized metric value.
+    :return: Metrics values obtained from the model trainer.
     """
-    # apply extra utilities
-    # (e.g. ask for tags if none are provided in cfg, print cfg tree, etc.)
-    # utils.extras(cfg)
+    from otx.core.config import register_configs
+
+    # This should be in front of hydra.initialize()
+    register_configs()
+
     with initialize(config_path="../config", version_base="1.3", job_name="otx_train"):
         cfg = compose(config_name="train", overrides=overrides, return_hydra_config=True)
         configure_hydra_outputs(cfg)
 
         # train the model
-        from otx.core.engine.train import train
-        metric_dict, _ = train(cfg)
+        from otx.core.engine import Engine
 
-    # # safely retrieve metric value for hydra-based hyperparameter optimization
-    # metric_value = utils.get_metric_value(
-    #     metric_dict=metric_dict, metric_name=cfg.get("optimized_metric")
-    # )
-
-    # # return optimized metric
-    # return metric_value
+        engine = Engine()
+        return engine.train(cfg)

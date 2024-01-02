@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class Engine:
     """OTX Engine class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._trainer = None
 
     @property

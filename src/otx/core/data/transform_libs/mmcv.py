@@ -26,7 +26,7 @@ class LoadImageFromFile(MMCVLoadImageFromFile):
 
     def transform(self, entity: OTXDataEntity) -> dict | None:
         """Transform OTXDataEntity to MMCV data entity format."""
-        img = entity.image
+        img: np.ndarray = entity.image
 
         if self.to_float32:
             img = img.astype(np.float32)
@@ -66,10 +66,7 @@ class MMCVTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> list[Callable]:
         """Generate MMCV transforms from the configuration."""
-        transforms = [
-            cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg))
-            for cfg in config.transforms
-        ]
+        transforms = [cls.get_builder().build(convert_conf_to_mmconfig_dict(cfg)) for cfg in config.transforms]
 
         cls._check_mandatory_transforms(
             transforms,

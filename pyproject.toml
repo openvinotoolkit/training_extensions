@@ -49,6 +49,8 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
+    "mlflow==2.8.1",        # For regression test
+    "py-cpuinfo==9.0.0",    # For regression test
 ]
 docs = [
     "furo",
@@ -71,7 +73,8 @@ base = [
 mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
-    "mmsegmentation==1.2.1"
+    "mmsegmentation==1.2.1",
+    "mmaction2@git+https://github.com/jaegukhyun/mmaction2.git"  # Workaround for bugs in official mmaction2
 ]
 
 [project.scripts]
@@ -237,6 +240,10 @@ exclude = [
     "src/otx/core/engine/utils/*",
     "src/otx/algo/classification/backbones/*",
     "for_developers/helpers.py",
+
+    # Ruff complains it but don't know how to fix since it literally showed no useful logs.
+    # https://github.com/openvinotoolkit/training_extensions/actions/runs/7176557723/job/19541622452?pr=2718#step:5:170
+    "tests/regression/*.py",
 ]
 
 # Same as Black.

@@ -1,0 +1,80 @@
+# @package _global_
+defaults:
+  - override /base: multilabel_classification
+  - override /callbacks: multilabel_classification
+  - override /data: multilabel_mmpretrain
+  - override /model: multilabel_mmpretrain
+data:
+  train_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        scale: 224
+        type: RandomResizedCrop
+      - direction: horizontal
+        prob: 0.5
+        type: RandomFlip
+      - type: PackInputs
+  val_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+  test_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+model:
+  otx_model:
+    config:
+      backbone:
+        pretrained: true
+        type: OTXEfficientNetV2
+      head:
+        in_channels: 1280
+        num_classes: 1000
+        loss:
+          reduction: sum
+          gamma_neg: 1.0
+          gamma_pos: 0.0
+          type: AsymmetricAngularLossWithIgnore
+        normalized: true
+        scale: 7.0
+        type: CustomMultiLabelLinearClsHead
+      neck:
+        type: GlobalAveragePooling
+      data_preprocessor:
+        mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: True
+        type: ClsDataPreprocessor
+      type: ImageClassifier
+  optimizer:
+    _target_: torch.optim.SGD
+    _partial_: true
+    lr: 0.0071
+    momentum: 0.9
+    weight_decay: 0.0001
+  scheduler:
+    factor: 0.5
+    patience: 1

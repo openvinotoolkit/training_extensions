@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  postgres-db:
+    image: postgres
+    restart: always
+    user: $USER
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  mlflow:
+    image: mlflow-tracker:v2.8.1
+    restart: always
+    ports:
+      - 5000:5000
+    command: "mlflow server --host 0.0.0.0 --backend-store-uri postgresql+psycopg2://admin:$POSTGRES_PASSWORD@postgres-db:5432"
