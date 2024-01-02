@@ -1,7 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for OTXActionDataset."""
+"""Module for OTXActionClsDataset."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import torch
 from datumaro import Label
 
 from otx.core.data.dataset.base import OTXDataset
-from otx.core.data.entity.action import ActionClsBatchDataEntity, ActionClsDataEntity
+from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsDataEntity
 from otx.core.data.entity.base import ImageInfo
 
 
