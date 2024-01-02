@@ -480,28 +480,31 @@ class OTXOpenVinoDataLoader:
         self,
         dataset: Any,
         inferencer: OpenVINOVisualPromptingInferencer,
+        module_name: str,
         shuffle: bool = True,
-        is_encoder: bool = True,
         output_model: Optional[ModelEntity] = None,
     ):
         self.dataset = dataset
         self.inferencer = inferencer
+        self.module_name = module_name
         self.shuffler = None
         if shuffle:
             self.shuffler = list(range(len(dataset)))
             random.shuffle(self.shuffler)
 
-        self.is_encoder = is_encoder
         self.target_length = self.inferencer.model["image_encoder"].orig_width
-        if not self.is_encoder:
-            core = ov.Core()
-            compressed_model = core.read_model(
-                output_model.get_data("visual_prompting_image_encoder.xml"),
-                output_model.get_data("visual_prompting_image_encoder.bin"),
-            )
-            self.compressed_model = core.compile_model(
-                model=compressed_model, device_name=inferencer.model["image_encoder"].inference_adapter.device
-            )
+        if self.module_name not in ["image_encoder"]:
+            self.image_encoder = self._load_module("image_encoder", output_model)
+            
+    def _load_module(self, module_name: str, output_model: ModelEntity, core=ov.Core()):
+        """Load specific module."""
+        compressed_model = core.read_model(
+            output_model.get_data(f"visual_prompting_{module_name}.xml"),
+            output_model.get_data(f"visual_prompting_{module_name}.bin"),
+        )
+        return core.compile_model(
+            model=compressed_model, device_name=self.inferencer.model[module_name].inference_adapter.device
+        )
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
@@ -513,10 +516,10 @@ class OTXOpenVinoDataLoader:
         _, _, h, w = images["images"].shape
         pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
         images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
-        if self.is_encoder:
+        if self.module_name == "image_encoder":
             return images
         else:
-            image_embeddings = self.compressed_model(images["images"])
+            image_embeddings = self.image_encoder(images["images"])
             prompt = prompts[0]  # only use the first prompt
             prompt.pop("label")
             prompt.pop("orig_size")
@@ -526,6 +529,62 @@ class OTXOpenVinoDataLoader:
 
     def __len__(self):
         """Get length of dataset."""
+        return len(self.dataset)
+    
+    
+class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
+    """DataLoader implementation for ZeroShotVisualPromptingOpenVINOTask."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.module_name == "decoder":
+            self.prompt_getter = self._load_module("prompt_getter", kwargs["output_model"])
+
+    def __getitem__(self, index: int):
+        """Get item from dataset."""
+        if self.shuffler is not None:
+            index = self.shuffler[index]
+
+        items = self.dataset[index]
+        images, meta = self.inferencer.pre_process(items, extra_processing=True)
+        original_size = np.array(meta["original_shape"][:2])
+        _, _, h, w = images["images"].shape
+        pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
+        images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
+        if self.module_name == "image_encoder":
+            return images
+        else:
+            image_embeddings = self.image_encoder(images["images"])
+            inputs_prompt_getter = self.inferencer.pre_process_prompt_getter(image_embeddings, original_size)
+            if self.module_name == "prompt_getter":
+                return inputs_prompt_getter
+            
+            total_prompts = self.prompt_getter(inputs_prompt_getter)
+            # only use the first prompt
+            point_score = total_prompts["total_points_scores"][0][0]
+            bg_coords = total_prompts["total_bg_coords"][0]
+            
+            x, y = point_score[:2]
+            point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
+            point_coords = self.inferencer.model["decoder"]._apply_coords(point_coords, original_size)
+            point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
+            inputs_decoder = {"point_coords": point_coords[None], "point_labels": point_labels[None]}
+            inputs_decoder.update(image_embeddings)
+            inputs_decoder.update({
+                "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                "has_mask_input": np.zeros((1, 1), dtype=np.float32)})
+            if index % 2 == 0:
+                prediction = self.inferencer.model["decoder"].infer_sync(inputs_decoder)
+                scores, low_res_masks = prediction["iou_predictions"], prediction["low_res_masks"]
+                best_idx = scores.argmax()
+                inputs_decoder.update({
+                    "mask_input": low_res_masks[:, [best_idx]],
+                    "has_mask_input": np.ones((1, 1), dtype=np.float32)})
+            return inputs_decoder
+
+    def __len__(self):
+        """Get length of dataset."""
+        if self.module_name == "decoder":
+            return len(self.dataset) * 2
         return len(self.dataset)
 
 
@@ -691,6 +750,8 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset: DatasetEntity,
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
+        module_names: List[str] = ["image_encoder", "decoder"],
+        ov_dataloader: OTXOpenVinoDataLoader = OTXOpenVinoDataLoader
     ):
         """Optimize function of OpenVINOVisualPromptingTask."""
         logger.info("Start PTQ optimization")
@@ -702,26 +763,23 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
         dataset = dataset.get_subset(Subset.TRAINING)
 
-        for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
-            data_loader = OTXOpenVinoDataLoader(
-                dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
+        for i, module_name in enumerate(module_names, 1):
+            data_loader = ov_dataloader(
+                dataset, self.inferencer, module_name=module_name, output_model=output_model
             )
             quantization_dataset = nncf.Dataset(data_loader, lambda data: data)
 
             with tempfile.TemporaryDirectory() as tempdir:
-                xml_path = os.path.join(tempdir, f"visual_prompting_{name}.xml")
-                bin_path = os.path.join(tempdir, f"visual_prompting_{name}.bin")
+                xml_path = os.path.join(tempdir, f"visual_prompting_{module_name}.xml")
+                bin_path = os.path.join(tempdir, f"visual_prompting_{module_name}.bin")
                 with open(xml_path, "wb") as f:
-                    f.write(self.model.get_data(f"visual_prompting_{name}.xml"))
+                    f.write(self.model.get_data(f"visual_prompting_{module_name}.xml"))
                 with open(bin_path, "wb") as f:
-                    f.write(self.model.get_data(f"visual_prompting_{name}.bin"))
+                    f.write(self.model.get_data(f"visual_prompting_{module_name}.bin"))
 
                 ov_model = ov.Core().read_model(xml_path, bin_path)
                 if check_if_quantized(ov_model):
                     raise RuntimeError("Model is already optimized by PTQ")
-
-            if optimization_parameters is not None:
-                optimization_parameters.update_progress(10 * i + 35 * (i - 1), None)
 
             optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
             ptq_config = ADDict()
@@ -735,16 +793,16 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             compressed_model = nncf.quantize(ov_model, quantization_dataset, **ptq_config)
 
             if optimization_parameters is not None:
-                optimization_parameters.update_progress(45 * i, None)
+                optimization_parameters.update_progress(90 // len(module_names) * i, None)
 
             with tempfile.TemporaryDirectory() as tempdir:
-                xml_path = os.path.join(tempdir, f"visual_prompting_{name}.xml")
-                bin_path = os.path.join(tempdir, f"visual_prompting_{name}.bin")
+                xml_path = os.path.join(tempdir, f"visual_prompting_{module_name}.xml")
+                bin_path = os.path.join(tempdir, f"visual_prompting_{module_name}.bin")
                 ov.serialize(compressed_model, xml_path)
                 with open(xml_path, "rb") as f:
-                    output_model.set_data(f"visual_prompting_{name}.xml", f.read())
+                    output_model.set_data(f"visual_prompting_{module_name}.xml", f.read())
                 with open(bin_path, "rb") as f:
-                    output_model.set_data(f"visual_prompting_{name}.bin", f.read())
+                    output_model.set_data(f"visual_prompting_{module_name}.bin", f.read())
 
         output_model.set_data(
             "label_schema.json",
@@ -786,4 +844,22 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
                 "decoder": self.model.get_data("visual_prompting_decoder.bin"),
             },
             num_requests=get_default_async_reqs_num(),
+        )
+        
+    def optimize(
+        self,
+        optimization_type: OptimizationType,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        optimization_parameters: Optional[OptimizationParameters] = None,
+        module_names: List[str] = ["image_encoder", "prompt_getter", "decoder"],
+        ov_dataloader: OTXOpenVinoDataLoader = OTXZeroShotOpenVinoDataLoader
+    ):
+        return super().optimize(
+            optimization_type=optimization_type,
+            dataset=dataset,
+            output_model=output_model,
+            optimization_parameters=optimization_parameters,
+            module_names=module_names,
+            ov_dataloader=ov_dataloader,
         )
