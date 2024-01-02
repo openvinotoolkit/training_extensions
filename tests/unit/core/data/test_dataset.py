@@ -46,6 +46,7 @@ class TestDataset:
     def test_mem_cache_resize(
         self,
         mem_cache_img_max_size,
+        fxt_mem_cache_handler,
         fxt_dataset_and_data_entity_cls,
         fxt_mock_dm_subset: MagicMock,
         fxt_dm_item,
@@ -55,6 +56,7 @@ class TestDataset:
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
+            mem_cache_handler=fxt_mem_cache_handler,
             mem_cache_img_max_size=mem_cache_img_max_size,
         )
 

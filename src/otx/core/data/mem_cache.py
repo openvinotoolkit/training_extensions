@@ -9,8 +9,7 @@ import logging
 import multiprocessing as mp
 import re
 import signal
-import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 import psutil
@@ -25,6 +24,8 @@ GIB = 1024**3
 
 __all__ = [
     "MemCacheHandlerSingleton",
+    "MemCacheHandlerBase",
+    "NULL_MEM_CACHE_HANDLER",
     "MemCacheHandlerError",
     "parse_mem_cache_size_to_int",
 ]
@@ -191,6 +192,7 @@ class MemCacheHandlerBase:
 
     @property
     def frozen(self) -> bool:
+        """True if this handler is frozen, otherwise return False."""
         return self._freeze.value
 
     def freeze(self) -> None:
@@ -242,30 +244,15 @@ class MemCacheHandlerError(Exception):
     """Exception class for MemCacheHandler."""
 
 
+NULL_MEM_CACHE_HANDLER = MemCacheHandlerBase(mem_size=0)
+NULL_MEM_CACHE_HANDLER.freeze()
+
+
 class MemCacheHandlerSingleton:
-    """A singleton class to create, delete and get MemCacheHandlerBase."""
+    """A helper class to create MemCacheHandler."""
 
-    instance: MemCacheHandlerBase
-    is_shutdown: bool = False
+    instances: ClassVar[list[MemCacheHandlerBase]] = []
     CPU_MEM_LIMITS_GIB: int = 30
-
-    @classmethod
-    def get(cls) -> MemCacheHandlerBase | None:
-        """Get the created MemCacheHandlerBase.
-
-        If no one is created before, raise RuntimeError.
-        """
-        if cls.is_shutdown:
-            # Gracefully return None
-            return None
-
-        if not hasattr(cls, "instance"):
-            cls_name = cls.__name__
-            msg = f"Before calling {cls_name}.get(), you should call {cls_name}.create() first."
-            warnings.warn(message=msg, stacklevel=1)
-            return None
-
-        return cls.instance
 
     @classmethod
     def create(cls, mode: str, mem_size: int) -> MemCacheHandlerBase:
@@ -296,16 +283,12 @@ class MemCacheHandlerSingleton:
             logger.warning("No available CPU memory left, mem_size will be set to 0.")
             mem_size = 0
 
-        # Delete the existing one first before creation
-        cls.delete()
-
         if mode == "null" or mem_size == 0:
-            cls.instance = MemCacheHandlerBase(mem_size=0)
-            cls.instance.freeze()
+            instance = NULL_MEM_CACHE_HANDLER
         elif mode == "multiprocessing":
-            cls.instance = MemCacheHandlerForMP(mem_size)
+            instance = MemCacheHandlerForMP(mem_size)
         elif mode == "singleprocessing":
-            cls.instance = MemCacheHandlerForSP(mem_size)
+            instance = MemCacheHandlerForSP(mem_size)
         else:
             msg = f"{mode} is unknown mode."
             raise MemCacheHandlerError(msg)
@@ -315,21 +298,18 @@ class MemCacheHandlerSingleton:
 
         def _new_handler(signum, frame) -> None:  # noqa: ANN001
             original_handler(signum, frame)  # type: ignore[operator, misc]
-            cls.shutdown()
+            instance.shutdown()
 
         signal.signal(signal.SIGINT, _new_handler)
 
-        return cls.instance
+        cls.instances.append(instance)
+
+        return instance
 
     @classmethod
     def delete(cls) -> None:
-        """Delete the existing MemCacheHandlerBase instance."""
-        if hasattr(cls, "instance"):
-            cls.instance.shutdown()
-            del cls.instance
+        """Shutdown and delete the created instance meantime."""
+        for instance in cls.instances:
+            instance.shutdown()
 
-    @classmethod
-    def shutdown(cls) -> None:
-        """This method will be called if the process terminates by the interrupt signal."""
-        cls.is_shutdown = True
-        cls.delete()
+        cls.instances = []

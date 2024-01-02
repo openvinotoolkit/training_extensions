@@ -28,13 +28,14 @@ from otx.core.data.mem_cache import MemCacheHandlerSingleton
 
 if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset, T_OTXDataEntity
+    from otx.core.data.mem_cache import MemCacheHandlerBase
     from pytest_mock import MockerFixture
 
 
-@pytest.fixture(autouse=True)
-def fxt_mem_cache() -> None:
-    MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=1024 * 1024)
-    yield
+@pytest.fixture()
+def fxt_mem_cache_handler() -> MemCacheHandlerBase:
+    handler = MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=1024 * 1024)
+    yield handler
     MemCacheHandlerSingleton.delete()
 
 

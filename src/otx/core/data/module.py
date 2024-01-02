@@ -57,6 +57,17 @@ class OTXDataModule(LightningDataModule):
             self.config.test_subset.subset_name: self.config.test_subset,
         }
 
+        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+        mem_cache_mode = (
+            "singleprocessing"
+            if all(config.num_workers == 0 for config in config_mapping.values())
+            else "multiprocessing"
+        )
+        mem_cache_handler = MemCacheHandlerSingleton.create(
+            mode=mem_cache_mode,
+            mem_size=mem_size,
+        )
+
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -65,25 +76,11 @@ class OTXDataModule(LightningDataModule):
             self.subsets[name] = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset,
+                mem_cache_handler=mem_cache_handler,
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
-
-        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
-        mem_cache_mode = (
-            "singleprocessing"
-            if all(config.num_workers == 0 for config in config_mapping.values())
-            else "multiprocessing"
-        )
-
-        MemCacheHandlerSingleton.create(
-            mode=mem_cache_mode,
-            mem_size=mem_size,
-        )
-
-    def __del__(self) -> None:
-        MemCacheHandlerSingleton.delete()
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:

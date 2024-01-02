@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
+    from otx.core.data.mem_cache import MemCacheHandlerBase
 
 
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
@@ -68,6 +69,7 @@ class OTXDatasetFactory:
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DatasetSubset,
+        mem_cache_handler: MemCacheHandlerBase,
         cfg_subset: SubsetConfig,
         cfg_data_module: DataModuleConfig | InstSegDataModuleConfig,
     ) -> OTXDataset:
@@ -79,6 +81,7 @@ class OTXDatasetFactory:
             return OTXMulticlassClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -88,6 +91,7 @@ class OTXDatasetFactory:
             return OTXMultilabelClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -97,6 +101,7 @@ class OTXDatasetFactory:
             return OTXDetectionDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -108,6 +113,7 @@ class OTXDatasetFactory:
             return OTXInstanceSegDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
                 include_polygons=include_polygons,
             )
@@ -118,6 +124,7 @@ class OTXDatasetFactory:
             return OTXSegmentationDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -127,6 +134,7 @@ class OTXDatasetFactory:
             return OTXActionClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -136,6 +144,7 @@ class OTXDatasetFactory:
             return OTXActionDetDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
         raise NotImplementedError(task)
