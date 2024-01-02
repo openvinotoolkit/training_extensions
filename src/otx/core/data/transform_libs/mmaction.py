@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
 
 
-@TRANSFORMS.register_module(force=True)
+@TRANSFORMS.register_module()
 class LoadVideoForClassification:
     """Class to convert OTXDataEntity to dict for MMAction framework."""
 
@@ -45,7 +45,7 @@ class LoadVideoForClassification:
         return results
 
 
-@TRANSFORMS.register_module(force=True)
+@TRANSFORMS.register_module()
 class LoadVideoForDetection:
     """Class to convert OTXDataEntity to dict for MMAction framework."""
 
@@ -83,7 +83,7 @@ class LoadVideoForDetection:
         return frame_dir, extension, shot_info, timestamp
 
 
-@TRANSFORMS.register_module(force=True)
+@TRANSFORMS.register_module()
 class LoadAnnotations:
     """Load annotation infomation such as ground truth bounding boxes and proposals."""
 
@@ -201,13 +201,13 @@ class RawFrameDecode(MMRawFrameDecode):
 
 
 @TRANSFORMS.register_module(force=True)
-class PackActionClsInputs(MMPackActionInputs):
+class PackActionInputs(MMPackActionInputs):
     """Class to override PackActionInputs.
 
-    Transfrom output dictionary from MMAction to ActionClsDataEntity.
+    Transfrom output dictionary from MMAction to ActionClsDataEntity or ActionDetDataEntity.
     """
 
-    def transform(self, results: dict) -> ActionClsDataEntity:
+    def transform(self, results: dict) -> ActionClsDataEntity | ActionDetDataEntity:
         """Transform function."""
         transformed = super().transform(results)
         image = tv_tensors.Image(transformed.get("inputs"))
@@ -219,6 +219,32 @@ class PackActionClsInputs(MMPackActionInputs):
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
 
         labels = results["__otx__"].labels
+
+        if "gt_bboxes" in results:
+            proposals = tv_tensors.BoundingBoxes(
+                data_samples.proposals.bboxes.float(),
+                format=tv_tensors.BoundingBoxFormat.XYXY,
+                canvas_size=img_shape,
+            )
+            bboxes = tv_tensors.BoundingBoxes(
+                data_samples.gt_instances.bboxes.float(),
+                format=tv_tensors.BoundingBoxFormat.XYXY,
+                canvas_size=img_shape,
+            )
+
+            return ActionDetDataEntity(
+                image=image,
+                img_info=ImageInfo(
+                    img_idx=0,
+                    img_shape=img_shape,
+                    ori_shape=ori_shape,
+                    pad_shape=pad_shape,
+                    scale_factor=scale_factor,
+                ),
+                bboxes=bboxes,
+                labels=labels,
+                proposals=proposals,
+            )
 
         return ActionClsDataEntity(
             video=results["__otx__"].video,
@@ -231,51 +257,6 @@ class PackActionClsInputs(MMPackActionInputs):
                 scale_factor=scale_factor,
             ),
             labels=labels,
-        )
-
-
-@TRANSFORMS.register_module(force=True)
-class PackActionDetInputs(MMPackActionInputs):
-    """Class to override PackActionInputs.
-
-    Transfrom output dictionary from MMAction to ActionDetDataEntity.
-    """
-
-    def transform(self, results: dict) -> ActionDetDataEntity:
-        """Transform function."""
-        transformed = super().transform(results)
-        image = tv_tensors.Image(transformed.get("inputs"))
-        data_samples = transformed["data_samples"]
-
-        ori_shape = results["original_shape"]
-        img_shape = data_samples.img_shape
-        pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
-        scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
-
-        proposals = tv_tensors.BoundingBoxes(
-            data_samples.proposals.bboxes.float(),
-            format=tv_tensors.BoundingBoxFormat.XYXY,
-            canvas_size=img_shape,
-        )
-        bboxes = tv_tensors.BoundingBoxes(
-            data_samples.gt_instances.bboxes.float(),
-            format=tv_tensors.BoundingBoxFormat.XYXY,
-            canvas_size=img_shape,
-        )
-        labels = results["__otx__"].labels
-
-        return ActionDetDataEntity(
-            image=image,
-            img_info=ImageInfo(
-                img_idx=0,
-                img_shape=img_shape,
-                ori_shape=ori_shape,
-                pad_shape=pad_shape,
-                scale_factor=scale_factor,
-            ),
-            bboxes=bboxes,
-            labels=labels,
-            proposals=proposals,
         )
 
 

@@ -26,7 +26,7 @@ data:
       - type: FormatShape
         input_format: NCTHW
         collapse: true
-      - type: PackActionDetInputs
+      - type: PackActionInputs
   val_subset:
     batch_size: 1
     transforms:
@@ -45,7 +45,7 @@ data:
       - type: FormatShape
         input_format: NCTHW
         collapse: true
-      - type: PackActionDetInputs
+      - type: PackActionInputs
   test_subset:
     batch_size: 1
     transforms:
@@ -64,7 +64,7 @@ data:
       - type: FormatShape
         input_format: NCTHW
         collapse: true
-      - type: PackActionDetInputs
+      - type: PackActionInputs
 model:
   otx_model:
     config:
