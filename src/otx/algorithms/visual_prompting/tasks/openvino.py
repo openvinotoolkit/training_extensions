@@ -20,8 +20,8 @@ import os
 import random
 import tempfile
 import time
-from itertools import product
 from collections import defaultdict
+from itertools import product
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -430,8 +430,14 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
-    
-    def __inspect_overlapping_areas(self, predicted_masks: Dict[int, List[np.ndarray]], used_points: Dict[int, List[np.ndarray]], annotations: Dict[int, List[np.ndarray]], threshold_iou: float = 0.8):
+
+    def __inspect_overlapping_areas(
+        self,
+        predicted_masks: Dict[int, List[np.ndarray]],
+        used_points: Dict[int, List[np.ndarray]],
+        annotations: Dict[int, List[np.ndarray]],
+        threshold_iou: float = 0.8,
+    ):
         def __calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
             assert mask1.ndim == 2 and mask2.ndim == 2
             intersection = np.logical_and(mask1, mask2).sum().item()

@@ -125,7 +125,18 @@ class TestZeroShotInferenceCallback:
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "expected",
-        [[Point(0.0, 0.0), Point(0.0, 0.5), Point(0.0, 1.0), Point(0.5, 1.0), Point(1.0, 1.0), Point(1.0, 0.5), Point(1.0, 0.0), Point(0.5, 0.0)]],
+        [
+            [
+                Point(0.0, 0.0),
+                Point(0.0, 0.5),
+                Point(0.0, 1.0),
+                Point(0.5, 1.0),
+                Point(1.0, 1.0),
+                Point(1.0, 0.5),
+                Point(1.0, 0.0),
+                Point(0.5, 0.0),
+            ]
+        ],
     )
     def test_on_predict_epoch_end(self, expected: Any):
         """Test on_predict_epoch_end."""

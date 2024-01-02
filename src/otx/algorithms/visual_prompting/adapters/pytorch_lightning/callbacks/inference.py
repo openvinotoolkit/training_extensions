@@ -17,7 +17,6 @@
 from typing import Any, List
 
 import numpy as np
-import torch
 from bson import ObjectId
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import Callback

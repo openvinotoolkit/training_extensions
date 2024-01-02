@@ -401,8 +401,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
             self.__inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
-    
-    def __inspect_overlapping_areas(self, predicted_masks: Dict[int, List[torch.Tensor]], used_points: Dict[int, List[torch.Tensor]], threshold_iou: float = 0.8):
+
+    def __inspect_overlapping_areas(
+        self,
+        predicted_masks: Dict[int, List[torch.Tensor]],
+        used_points: Dict[int, List[torch.Tensor]],
+        threshold_iou: float = 0.8,
+    ):
         def __calculate_mask_iou(mask1: torch.Tensor, mask2: torch.Tensor):
             assert mask1.ndim == 2 and mask2.ndim == 2
             intersection = torch.logical_and(mask1, mask2).sum().item()

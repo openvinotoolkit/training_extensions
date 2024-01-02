@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -97,6 +97,7 @@ class ResizeLongestSide:
         Args:
             boxes (Union[np.ndarray, Tensor]): Boxes array/tensor.
             original_size (Union[List[int], Tuple[int, int], Tensor]): Original size of image.
+            target_length (int): The length of the longest side of the image.
 
         Returns:
             Union[np.ndarray, Tensor]: Resized boxes.
