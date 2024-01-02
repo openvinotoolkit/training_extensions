@@ -30,6 +30,8 @@ class ActionDetDataEntity(OTXDataEntity):
     Args:
         bboxes: 2D bounding boxes for actors.
         labels: One-hot vector of video's action labels.
+        frame_path: Data media's file path for getting proper meta information.
+        proposals: Pre-calculated actor proposals.
     """
 
     bboxes: tv_tensors.BoundingBoxes
@@ -59,7 +61,7 @@ class ActionDetBatchDataEntity(OTXBatchDataEntity[ActionDetDataEntity]):
 
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
-    proposals: list[tv_tensors.BoundingBoxes | None] | None = None
+    proposals: list[tv_tensors.BoundingBoxes]
 
     @property
     def task(self) -> OTXTaskType:

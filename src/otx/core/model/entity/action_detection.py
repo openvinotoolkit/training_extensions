@@ -113,6 +113,7 @@ class MMActionCompatibleModel(OTXActionDetModel):
         scores = []
         labels = []
         bboxes = []
+        proposals = []
 
         for output in outputs:
             if not isinstance(output, ActionDataSample):
@@ -130,6 +131,7 @@ class MMActionCompatibleModel(OTXActionDetModel):
                 ),
             )
             labels.append(output_labels)
+            proposals.append(output.proposals.bboxes)
 
         return ActionDetBatchPredEntity(
             batch_size=len(outputs),
@@ -138,4 +140,5 @@ class MMActionCompatibleModel(OTXActionDetModel):
             scores=scores,
             bboxes=bboxes,
             labels=labels,
+            proposals=proposals,
         )

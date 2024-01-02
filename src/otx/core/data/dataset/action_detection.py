@@ -87,17 +87,15 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
 
         annotation_dir = Path(frame_path).parent.parent.parent
         proposal_file_path = annotation_dir / "annotations" / proposal_file
-        if proposal_file_path.exists():
-            with Path.open(proposal_file_path, "rb") as f:
-                info = pickle.load(f)  # noqa: S301
-                if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info:
-                    proposals = info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
-                else:
-                    proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
-        else:
-            proposals = np.array([[0, 0, 1, 1]], dtype=np.float64)
-
-        return proposals
+        if not proposal_file_path.exists():
+            return np.array([[0, 0, 1, 1]], dtype=np.float64)
+        with Path.open(proposal_file_path, "rb") as f:
+            info = pickle.load(f)  # noqa: S301
+            return (
+                info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
+                if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info
+                else np.array([[0, 0, 1, 1]], dtype=np.float32)
+            )
 
     @property
     def collate_fn(self) -> Callable:
