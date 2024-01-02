@@ -66,6 +66,47 @@ def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, 
     return train_record_files[0]
 
 
+class EvalResult:
+    """Class to save otx eval output.
+
+    Current OTX eval output has different metrics depending on a task.
+    To deal with it, this class can save dynamic metric name.
+    Each metric can be set or gotten by both dict-like(ins["metric"]) or class-like(ins.metric) way.
+    "add" (only with a class having same metrics) and "true devide" are supported.
+    """
+    def __getitem__(self, key):
+        """Support dict-like way to get attribute."""
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        """Support dict-like way to set attribute."""
+        setattr(self, key, value)
+
+    def __add__(self, obj: "EvalResult"):
+        """Add with a class having same metrics."""
+        new_obj = deepcopy(self)
+        new_obj_metrics = vars(new_obj).keys()
+
+        if new_obj_metrics != vars(obj).keys():
+            raise KeyError(
+                "Two objects have different metrics. "
+                f"Left operand : {','.join(new_obj_metrics)} / Right operand : {','.join(vars(obj).keys())}"
+            )
+
+        for attr in new_obj_metrics:
+            new_obj[attr] += obj[attr]
+        return new_obj
+
+    def __truediv__(self, divisor: Union[int, float]):
+        """Divide each metric in the class."""
+        new_obj = deepcopy(self)
+
+        for attr in vars(new_obj).keys():
+            new_obj[attr] /= divisor
+
+        return new_obj
+
+
 @dataclass
 class ExperimentResult:
     """Dataclass to manage experiment result.
@@ -76,44 +117,42 @@ class ExperimentResult:
     """
 
     val_score: Union[float, None] = None
-    test_score: Union[float, None] = None
+    train_eval_result: Union[EvalResult, None] = None
     train_e2e_time: Union[timedelta, None] = None
     avg_iter_time: Union[float, None] = None
     std_iter_time: Union[float, None] = None
     avg_data_time: Union[float, None] = None
     std_data_time: Union[float, None] = None
-    export_model_score: Union[float, None] = None
-    avg_ov_infer_time: Union[float, None] = None
+    export_eval_result: Union[EvalResult, None] = None
     max_cpu_mem: Union[float, None] = None
     avg_cpu_util: Union[float, None] = None
     max_gpu_mem: Union[float, None] = None
     avg_gpu_util: Union[float, None] = None
-    optimize_model_score: Union[float, None] = None
+    optimize_eval_result: Union[EvalResult, None] = None
     epoch: Union[int, None] = None
 
     def get_formatted_result(self) -> Dict:
         """Return dictionary format result."""
         result = dataclasses.asdict(self)
+        formatted_result = {}
 
-        for attr_name in ["max_cpu_mem", "max_gpu_mem"]:
-            max_mem = result.pop(attr_name)
-            result[f"{attr_name}(GiB)"] = max_mem
+        for key, val in result.items():
+            if val is None:
+                continue
+            elif key in ["max_cpu_mem", "max_gpu_mem"]:
+                formatted_result[f"{key}(GiB)"] = round(val, 2)
+            elif key in ["avg_cpu_util", "avg_gpu_util"]:
+                formatted_result[f"{key}(%)"] = round(val, 2)
+            elif key == "train_e2e_time":
+                formatted_result[key] = str(self.train_e2e_time).split(".")[0]
+            elif isinstance(val, EvalResult):
+                task = key.split('_')[0]
+                for metric, score in vars(val).items():
+                    formatted_result[f"{metric}({task})"] = round(score, 4)
+            elif isinstance(val, float):
+                formatted_result[key] = round(val, 4)
 
-        for attr_name in ["avg_cpu_util", "avg_gpu_util"]:
-            res_util = result.pop(attr_name)
-            result[f"{attr_name}(%)"] = res_util
-
-        if self.train_e2e_time is not None:
-            result["train_e2e_time"] = str(self.train_e2e_time).split(".")[0]
-
-        # delete None value
-        for key in list(result.keys()):
-            if result[key] is None:
-                del result[key]
-            elif isinstance(result[key], float):
-                result[key] = round(result[key], 4)
-
-        return result
+        return formatted_result
 
     def __add__(self, obj: "ExperimentResult"):
         """Add with same class. If None exists, it's skipped."""
@@ -152,15 +191,29 @@ class ExperimentResult:
         """Parse a dictionary with same format."""
         max_mem_pat = re.compile(r"max_.*_mem")
         cpu_util_pat = re.compile(r"avg.*_util")
+        eval_result_pat = re.compile(r"(.*)\((.*)\)")
+
         for key, val in formatted_dict.items():
             max_mem_name = max_mem_pat.search(key)
             cpu_util_name = cpu_util_pat.search(key)
+            eval_result_name = eval_result_pat.search(key)
+
             if max_mem_name is not None:
                 max_mem_name = max_mem_name.group(0)
                 setattr(self, max_mem_name, val)
             elif cpu_util_name is not None:
                 cpu_util_name = cpu_util_name.group(0)
                 setattr(self, cpu_util_name, val)
+            elif eval_result_name is not None:
+                metric = eval_result_name.group(1)
+                task = eval_result_name.group(2)
+                eval_result = getattr(self, f"{task}_eval_result")
+                if  eval_result is None:
+                    eval_result = EvalResult()
+                    eval_result[metric] = val
+                    setattr(self, f"{task}_eval_result", eval_result)
+                else:
+                    eval_result[metric] = val
             elif key == "train_e2e_time":
                 setattr(self, key, parse_time_delta_fmt(val, "%H:%M:%S"))
             else:
@@ -205,20 +258,21 @@ class BaseExpParser(ABC):
             )
 
     def _parse_eval_output(self, file_path: Path):
-        # NOTE: It is assumed that performance.json has key named either score or avg_time_per_image
+        for task in ["train", "export", "optimize"]:
+            if task in str(file_path.parent.name):
+                break
+        else:
+            print(f"Can not parse eval output in {file_path.parent.name}")
+            return
+
         with file_path.open("r") as f:
             eval_output: Dict = json.load(f)
 
-        if "train" in str(file_path.parent.name):
-            self._exp_result.test_score = list(eval_output.values())[0]
-        elif "export" in str(file_path.parent.name):
-            for key, val in eval_output.items():
-                if key == "avg_time_per_image":
-                    self._exp_result.avg_ov_infer_time = val
-                else:
-                    self._exp_result.export_model_score = val
-        elif "optimize" in str(file_path.parent.name):
-            self._exp_result.optimize_model_score = list(eval_output.values())[0]
+        eval_result = EvalResult()
+        for metric, score in eval_output.items():
+            eval_result[metric] = score
+
+        setattr(self._exp_result, f"{task}_eval_result", eval_result)
 
     def _parse_resource_usage(self, file_path: Path):
         with file_path.open("r") as f:
@@ -255,7 +309,7 @@ class MMCVExpParser(BaseExpParser):
     def parse_exp_log(self):
         """Parse experiment log."""
         for task_dir in (self._workspace / "outputs").iterdir():
-            if task_dir.is_symlink():
+            if task_dir.is_symlink():  # prevent duplicated parse
                 continue
 
             if "train" in str(task_dir.name):
