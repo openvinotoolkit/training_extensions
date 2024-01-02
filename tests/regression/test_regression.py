@@ -44,7 +44,7 @@ class BaseTest:
         fxt_tags: dict,
         fxt_num_repeat: int,
         tmpdir: pytest.TempdirFactory,
-        head_name: str = "head",
+        head_name: str,
     ) -> None:
         for seed in range(fxt_num_repeat):
             test_case = RegressionTestCase(
@@ -133,6 +133,7 @@ class TestMultiClassCls(BaseTest):
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
             tmpdir=tmpdir,
+            head_name="head",
         )
 
 
@@ -182,6 +183,7 @@ class TestMultilabelCls(BaseTest):
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
             tmpdir=tmpdir,
+            head_name="head",
         )
 
 
