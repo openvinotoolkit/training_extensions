@@ -328,9 +328,7 @@ class TestOTXOpenVinoDataLoader:
         def _load_dataloader(module_name: str, output_model: Optional[ModelEntity] = None):
             dataset = generate_visual_prompting_dataset()
             dataset = dataset.get_subset(Subset.TRAINING)
-            return OTXOpenVinoDataLoader(
-                dataset, self.mocker_inferencer, module_name, output_model=output_model
-            )
+            return OTXOpenVinoDataLoader(dataset, self.mocker_inferencer, module_name, output_model=output_model)
 
         return _load_dataloader
 
@@ -369,8 +367,8 @@ class TestOTXOpenVinoDataLoader:
             assert "label" not in results
             assert "orig_size" not in results
             assert "image_embeddings" in results
-            
-            
+
+
 class TestOTXZeroShotOpenVinoDataLoader:
     @pytest.fixture
     def load_dataloader(self, mocker):
@@ -408,10 +406,14 @@ class TestOTXZeroShotOpenVinoDataLoader:
             return_value=({"images": np.zeros((1, 3, 4, 4), dtype=np.uint8)}, {"original_shape": (4, 4)}),
         )
         if module_name == "decoder":
-            mocker.patch.object(dataloader, "prompt_getter", return_value={
-                "total_points_scores": [np.array([[0, 0, 0.5]])],
-                "total_bg_coords": [np.array([[1, 1]])]
-            })
+            mocker.patch.object(
+                dataloader,
+                "prompt_getter",
+                return_value={
+                    "total_points_scores": [np.array([[0, 0, 0.5]])],
+                    "total_bg_coords": [np.array([[1, 1]])],
+                },
+            )
 
         results = dataloader.__getitem__(0)
 
@@ -420,7 +422,7 @@ class TestOTXZeroShotOpenVinoDataLoader:
         elif module_name == "prompt_getter":
             self.mocker_read_model.assert_called_once()
             self.mocker_compile_model.assert_called_once()
-        else: # decoder
+        else:  # decoder
             self.mocker_read_model.call_count == 2
             self.mocker_compile_model.call_count == 2
 
@@ -581,7 +583,9 @@ class TestOpenVINOZeroShotVisualPromptingTask:
 
         # self.task_environment.model = mocker.patch("otx.api.entities.model.ModelEntity")
         self.task_environment.model = otx_model
-        mocker.patch.object(OpenVINOZeroShotVisualPromptingTask, "load_inferencer", return_value=visual_prompting_ov_inferencer)
+        mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingTask, "load_inferencer", return_value=visual_prompting_ov_inferencer
+        )
         self.visual_prompting_ov_task = OpenVINOZeroShotVisualPromptingTask(task_environment=self.task_environment)
 
     @e2e_pytest_unit
