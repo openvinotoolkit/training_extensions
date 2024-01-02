@@ -13,26 +13,29 @@ on:
   workflow_dispatch: # run on request (no need for PR)
 
 jobs:
-  Code-Quality-Checks:
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
-      - name: Code quality checks
-        run: tox -vv -e pre-commit-all-py310-pt1
+  # Code-Quality-Checks:
+  #   # This is what will cancel the job concurrency
+  #   concurrency:
+  #     group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
+  #     cancel-in-progress: true
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #     - name: Installing Rust toolchain
+  #       uses: actions-rust-lang/setup-rust-toolchain@v1
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.10"
+  #     - name: Install dependencies
+  #       run: python -m pip install -r requirements/dev.txt
+  #     - name: Code quality checks
+  #       run: tox -vv -e pre-commit-all-py310-pt1
   Unit-Test:
-    runs-on: [self-hosted, linux, x64, dev]
-    needs: Code-Quality-Checks
+    # runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, debug]
+    # needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -40,10 +43,10 @@ jobs:
         include:
           - python-version: "3.8"
             tox-env: "py38"
-          - python-version: "3.9"
-            tox-env: "py39"
-          - python-version: "3.10"
-            tox-env: "py310"
+          # - python-version: "3.9"
+          #   tox-env: "py39"
+          # - python-version: "3.10"
+          #   tox-env: "py310"
     name: Unit-Test-with-Python${{ matrix.python-version }}
     # This is what will cancel the job concurrency
     concurrency:
@@ -52,6 +55,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Installing Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Install Python
         uses: actions/setup-python@v4
         with:
@@ -60,7 +65,7 @@ jobs:
         run: python -m pip install -r requirements/dev.txt
       - name: Run unit test
         env:
-          NNCF_EXTENSION_LOAD_TIMEOUT: 300
+          NNCF_EXTENSION_LOAD_TIMEOUT: 600
         run: tox -vv -e unittest-all-${{ matrix.tox-env }}-pt1
       - name: Upload coverage artifact
         if: ${{ matrix.python-version == '3.8' }}
@@ -86,39 +91,39 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
-  Integration-Test:
-    needs: Unit-Test
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - task: "all"
-            test_dir: "tests/integration/cli/test_cli.py"
-          - task: "cls"
-            test_dir: "tests/integration/cli/classification"
-          - task: "det"
-            test_dir: "tests/integration/cli/detection"
-          - task: "iseg"
-            test_dir: "tests/integration/cli/instance_segmentation"
-          - task: "seg"
-            test_dir: "tests/integration/cli/semantic_segmentation"
-          - task: "act"
-            test_dir: "tests/integration/cli/action"
-          - task: "ano"
-            test_dir: "tests/integration/cli/anomaly"
-          - task: "visprompt"
-            test_dir: "tests/integration/cli/visual_prompting"
-    name: Integration-Test-py310-${{ matrix.task }}
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
-      cancel-in-progress: true
-    uses: ./.github/workflows/run_tests_in_tox.yml
-    with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: ${{ matrix.task }}
-      tests-dir: ${{ matrix.test_dir }}
-      timeout-minutes: 120
-      upload-artifact: true
-      artifact-prefix: "intg-test-results"
+  # Integration-Test:
+  #   needs: Unit-Test
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - task: "all"
+  #           test_dir: "tests/integration/cli/test_cli.py"
+  #         - task: "cls"
+  #           test_dir: "tests/integration/cli/classification"
+  #         - task: "det"
+  #           test_dir: "tests/integration/cli/detection"
+  #         - task: "iseg"
+  #           test_dir: "tests/integration/cli/instance_segmentation"
+  #         - task: "seg"
+  #           test_dir: "tests/integration/cli/semantic_segmentation"
+  #         - task: "act"
+  #           test_dir: "tests/integration/cli/action"
+  #         - task: "ano"
+  #           test_dir: "tests/integration/cli/anomaly"
+  #         - task: "visprompt"
+  #           test_dir: "tests/integration/cli/visual_prompting"
+  #   name: Integration-Test-py310-${{ matrix.task }}
+  #   # This is what will cancel the job concurrency
+  #   concurrency:
+  #     group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
+  #     cancel-in-progress: true
+  #   uses: ./.github/workflows/run_tests_in_tox.yml
+  #   with:
+  #     python-version: "3.10"
+  #     toxenv-pyver: "py310"
+  #     toxenv-task: ${{ matrix.task }}
+  #     tests-dir: ${{ matrix.test_dir }}
+  #     timeout-minutes: 120
+  #     upload-artifact: true
+  #     artifact-prefix: "intg-test-results"

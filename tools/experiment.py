@@ -6,6 +6,7 @@
 import argparse
 import csv
 import dataclasses
+import gc
 import json
 import os
 import re
@@ -235,7 +236,7 @@ class BaseExpParser(ABC):
         with file_path.open("r") as f:
             lines = f.readlines()
 
-        val_score_pattern = re.compile(r"score: Performance\(score: ([-+]?\d+(\.\d*)?|\.\d+)")
+        val_score_pattern = re.compile(r"score:.*Performance\(score: ([-+]?\d+(\.\d*)?|\.\d+)")
         e2e_time_pattern = re.compile(r"time elapsed: '(\d+:\d+:\d+(\.\d*)?)'")
         for line in lines:
             if save_val_score:
@@ -567,9 +568,9 @@ class ExpRecipeParser:
     ) -> List[Dict[str, str]]:
         if isinstance(target_str, str):
             target_str = [target_str]
-        found_keys = []
+        found_keys = set()
         for each_str in target_str:
-            found_keys.extend([x for x in set(self._replace_pat.findall(each_str)) if x in variable])
+            found_keys.update([x for x in set(self._replace_pat.findall(each_str)) if x in variable])
         if not found_keys:
             return []
 
@@ -701,6 +702,8 @@ class OtxCommandRunner:
 
             self._previous_cmd_entry.append(command[1])
 
+            gc.collect()
+
         if not dryrun:
             organize_exp_result(self._workspace, self._command_var)
 
@@ -787,7 +790,7 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     """
     exp_recipe = ExpRecipeParser(recipe_file)
     output_path = exp_recipe.output_path
-    output_path.mkdir(exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
     current_dir = os.getcwd()
     os.chdir(output_path)
 
