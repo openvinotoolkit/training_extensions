@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 import pytest
@@ -110,11 +110,11 @@ class TestNormalize:
     @pytest.mark.parametrize(
         "mean,std,to_rgb,expected",
         [
-            (1.0, 1.0, True, np.array([[[1.0, 0.0, 0.0]]], dtype=np.float32)),
-            (1.0, 1.0, False, np.array([[[-1.0, 0.0, 0.0]]], dtype=np.float32)),
+            ([1.0 for _ in range(3)], [1.0 for _ in range(3)], True, np.array([[[1.0, 0.0, -1.0]]], dtype=np.float32)),
+            ([1.0 for _ in range(3)], [1.0 for _ in range(3)], False, np.array([[[-1.0, 0.0, 1.0]]], dtype=np.float32)),
         ],
     )
-    def test_call(self, mean: float, std: float, to_rgb: bool, expected: np.array) -> None:
+    def test_call(self, mean: List[float], std: List[float], to_rgb: bool, expected: np.array) -> None:
         """Test __call__."""
         normalize = Normalize(mean=mean, std=std, to_rgb=to_rgb)
         inputs = dict(img=np.arange(3).reshape(1, 1, 3))
