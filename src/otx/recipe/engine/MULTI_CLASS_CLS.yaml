@@ -1,0 +1,50 @@
+engine:
+  task: MULTI_CLASS_CLS
+  device: auto
+
+# engine.train arguments
+max_epochs: 10
+callbacks:
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: val/accuracy
+      mode: max
+      patience: 100
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      monitor: val/accuracy
+      mode: max
+      save_top_k: 1
+      save_last: True
+      auto_insert_metric_name: False
+      filename: "epoch_{epoch:03d}"
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: True
+      on_epoch: True
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+logger:
+  - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger
+    init_args:
+      save_dir: ""
+      name: "csv/"
+      prefix: ""
+  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: "tensorboard/"
+      log_graph: False
+      default_hp_metric: True
+      prefix: ""
+deterministic: false
+seed: null
+precision: "32"
+val_check_interval: 1

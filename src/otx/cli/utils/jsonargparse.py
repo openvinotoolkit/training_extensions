@@ -27,6 +27,28 @@ def get_short_docstring(component: TypeVar) -> str | None:
     return docstring.short_description
 
 
+def flatten_dict(d: dict, parent_key: str = '', sep: str = '.') -> dict:
+    """Flatten a nested dictionary into a single-level dictionary.
+
+    Args:
+        d (dict): The dictionary to be flattened.
+        parent_key (str): The parent key to be used for nested keys.
+        sep (str): The separator to be used between parent and child keys.
+
+    Returns:
+        dict: The flattened dictionary.
+
+    """
+    items: list = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 # [FIXME]: Overriding Namespce.update to match mmengine.Config (DictConfig | dict)
 # and prevent int, float types from being converted to str
 # https://github.com/omni-us/jsonargparse/issues/236

@@ -1,0 +1,71 @@
+task: INSTANCE_SEGMENTATION
+config:
+  mem_cache_size: 1GB
+  mem_cache_img_max_size: null
+  data_format: coco_instances
+  include_polygons: true
+  train_subset:
+    subset_name: train
+    batch_size: 4
+    num_workers: 2
+    transform_lib_type: MMDET
+    transforms:
+      - type: LoadImageFromFile
+        backend_args: null
+      - type: LoadAnnotations
+        with_bbox: true
+        with_mask: true
+      - type: Resize
+        keep_ratio: true
+        scale:
+          - 1344
+          - 1344
+      - type: RandomFlip
+        prob: 0.5
+      - type: PackDetInputs
+  val_subset:
+    subset_name: val
+    num_workers: 2
+    batch_size: 1
+    transform_lib_type: MMDET
+    transforms:
+      - type: LoadImageFromFile
+        backend_args: null
+      - type: Resize
+        keep_ratio: true
+        scale:
+          - 1344
+          - 1344
+      - type: LoadAnnotations
+        with_bbox: true
+        with_mask: true
+      - type: PackDetInputs
+        meta_keys:
+          - img_id
+          - img_path
+          - ori_shape
+          - img_shape
+          - scale_factor
+  test_subset:
+    subset_name: test
+    num_workers: 2
+    batch_size: 1
+    transform_lib_type: MMDET
+    transforms:
+      - type: LoadImageFromFile
+        backend_args: null
+      - type: Resize
+        keep_ratio: true
+        scale:
+          - 1344
+          - 1344
+      - type: LoadAnnotations
+        with_bbox: true
+        with_mask: true
+      - type: PackDetInputs
+        meta_keys:
+          - img_id
+          - img_path
+          - ori_shape
+          - img_shape
+          - scale_factor

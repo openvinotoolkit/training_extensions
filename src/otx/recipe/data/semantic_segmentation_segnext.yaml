@@ -1,0 +1,62 @@
+task: SEMANTIC_SEGMENTATION
+config:
+  mem_cache_size: 1GB
+  mem_cache_img_max_size: null
+  data_format: common_semantic_segmentation_with_subset_dirs
+  include_polygons: true
+  train_subset:
+    subset_name: train
+    batch_size: 8
+    num_workers: 4
+    transform_lib_type: MMSEG
+    transforms:
+      - type: LoadImageFromFile
+      - reduce_zero_label: true
+        type: LoadAnnotations
+      - keep_ratio: true
+        ratio_range:
+          - 0.5
+          - 2.0
+        scale:
+          - 2048
+          - 512
+        type: RandomResize
+      - cat_max_ratio: 0.75
+        crop_size:
+          - 512
+          - 512
+        type: RandomCrop
+      - prob: 0.5
+        type: RandomFlip
+      - type: PhotoMetricDistortion
+      - type: PackSegInputs
+  val_subset:
+    subset_name: val
+    num_workers: 4
+    batch_size: 1
+    transform_lib_type: MMSEG
+    transforms:
+      - type: LoadImageFromFile
+      - keep_ratio: true
+        scale:
+          - 2048
+          - 512
+        type: Resize
+      - reduce_zero_label: true
+        type: LoadAnnotations
+      - type: PackSegInputs
+  test_subset:
+    subset_name: test
+    num_workers: 4
+    batch_size: 1
+    transform_lib_type: MMSEG
+    transforms:
+      - type: LoadImageFromFile
+      - keep_ratio: true
+        scale:
+          - 2048
+          - 512
+        type: Resize
+      - reduce_zero_label: true
+        type: LoadAnnotations
+      - type: PackSegInputs

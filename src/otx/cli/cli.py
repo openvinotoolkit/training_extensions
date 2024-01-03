@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -14,14 +15,15 @@ from rich.console import Console
 
 from otx import OTX_LOGO, __version__
 from otx.cli.utils.help_formatter import CustomHelpFormatter
-from otx.cli.utils.jsonargparse import get_short_docstring
+from otx.cli.utils.jsonargparse import flatten_dict, get_short_docstring
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
 _ENGINE_AVAILABLE = True
 try:
-    from otx.core.engine.engine import Engine
+    from otx.engine import Engine
+    from otx.core.utils.auto_configuration import AutoConfigurator
 except ImportError:
     _ENGINE_AVAILABLE = False
 
@@ -83,6 +85,11 @@ class OTXCLI:
             action=ActionConfigFile,
             help="Path to a configuration file in json or yaml format.",
         )
+        parser.add_argument(
+            "--data_root",
+            type=str,
+            help="Path to dataset root.",
+        )
         return parser
 
     @staticmethod
@@ -115,6 +122,12 @@ class OTXCLI:
         if not _ENGINE_AVAILABLE:
             return
         for subcommand in self.engine_subcommands():
+            # Auto-Configuration
+            data_root = None
+            if "--data_root" in sys.argv:
+                data_root = sys.argv[sys.argv.index("--data_root") + 1]
+            auto_configurator = AutoConfigurator(data_root=data_root)
+
             sub_parser = self.subcommand_parser()
             sub_parser.add_class_arguments(
                 Engine,
@@ -122,14 +135,20 @@ class OTXCLI:
                 fail_untyped=False,
                 sub_configs=True,
             )
+            sub_parser.link_arguments("data_root", "engine.data_root")
+
             if "model" in self.engine_subcommands()[subcommand]:
                 from otx.core.model.module.base import OTXLitModule
+                model_kwargs: dict[str, Any] = {"fail_untyped": False}
+                if data_root is not None:
+                    # Add Default values from Auto-Configurator
+                    model_kwargs["default"] = auto_configurator.load_default_model_config()
 
                 sub_parser.add_subclass_arguments(
                     OTXLitModule,
                     "model",
-                    fail_untyped=False,
-                    required=True,
+                    required=False,
+                    **model_kwargs,
                 )
             if "datamodule" in self.engine_subcommands()[subcommand]:
                 from otx.core.data.module import OTXDataModule
@@ -140,6 +159,14 @@ class OTXCLI:
                     fail_untyped=False,
                     sub_configs=True,
                 )
+
+                if data_root is not None:
+                    # Add Default values from Auto-Configurator
+                    default_data_config = auto_configurator.load_default_data_config()
+                    default_data_config = flatten_dict({"data": default_data_config})
+                    default_data_config["data.config.data_root"] = data_root
+                    sub_parser.set_defaults(default_data_config)
+
             skip: set[str | int] = set(self.engine_subcommands()[subcommand])
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
@@ -149,7 +176,14 @@ class OTXCLI:
                 skip=skip,
                 fail_untyped=False,
             )
-            if "logger" in added:
+            if data_root is not None and subcommand == "train":
+                # Add Default values from Auto-Configurator
+                default_engine_config = auto_configurator.load_default_engine_config()
+                default_engine_config = flatten_dict(default_engine_config)
+                default_engine_config["engine.data_root"] = data_root
+                sub_parser.set_defaults(default_engine_config)
+
+            if "logger" in added and "engine.work_dir" in added:
                 sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
 
             self._subcommand_method_arguments[subcommand] = added

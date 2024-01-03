@@ -128,7 +128,7 @@ def render_guide(subcommand: str | None = None) -> list:
     """
     if subcommand is None or subcommand in ("install"):
         return []
-    from otx.core.engine import Engine
+    from otx.engine import Engine
 
     contents: list[Panel | Markdown] = [Markdown(INTRO_MARKDOWN)]
     target_command = getattr(Engine, subcommand)

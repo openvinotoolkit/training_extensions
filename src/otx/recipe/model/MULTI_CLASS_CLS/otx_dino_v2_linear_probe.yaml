@@ -1,0 +1,25 @@
+class_path: otx.core.model.module.classification.OTXClassificationLitModule
+init_args:
+  torch_compile: false
+  otx_model:
+    class_path: otx.algo.classification.otx_dino_v2.DINOv2RegisterClassifier
+    init_args:
+      config:
+        backbone:
+          name: dinov2_vits14_reg
+          frozen: true
+        head:
+          in_channels: 384
+          num_classes: 1000
+  optimizer:
+    class_path: torch.optim.SGD
+    init_args:
+      lr: 0.007
+      momentum: 0.9
+      weight_decay: 0.0001
+  scheduler:
+    class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      monitor: train/loss
+      factor: 0.5
+      patience: 1

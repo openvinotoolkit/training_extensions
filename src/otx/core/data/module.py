@@ -86,12 +86,13 @@ class OTXDataModule(LightningDataModule):
         """
         if isinstance(config, (str, Path)):
             with Path(config).open() as f:
-                config = yaml.safe_load(f)["data"]
+                config = yaml.safe_load(f)
         if not isinstance(config, dict):
             msg = "Please double-check data config."
             raise TypeError(msg)
-        task = config.pop("task")
-        datamodule_config = config["config"]
+        data_config = config.get("data", config)
+        task = data_config.pop("task")
+        datamodule_config = data_config["config"]
         train_subset = datamodule_config.pop("train_subset", {})
         val_subset = datamodule_config.pop("val_subset", {})
         test_subset = datamodule_config.pop("test_subset", {})
