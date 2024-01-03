@@ -34,7 +34,7 @@ model_checkpoint:
 iteration_timer:
   _target_: otx.algo.callbacks.iteration_timer.IterationTimer
   prog_bar: True
-  on_step: True
+  on_step: False
   on_epoch: True
 
 # https://lightning.ai/docs/pytorch/stable/api/lightning.pytorch.callbacks.RichModelSummary.html

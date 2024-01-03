@@ -6,16 +6,18 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
+from io import BytesIO
 from typing import TYPE_CHECKING, Callable, Generic, List, Union
 
 import cv2
 import numpy as np
 from datumaro.components.media import ImageFromFile
+from PIL import Image as PILImage
 from torch.utils.data import Dataset
 from torchvision.transforms.v2 import Compose
 
 from otx.core.data.entity.base import T_OTXDataEntity
-from otx.core.data.mem_cache import MemCacheHandlerSingleton
+from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
 
 if TYPE_CHECKING:
     from datumaro import DatasetSubset, Image
@@ -32,12 +34,14 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self,
         dm_subset: DatasetSubset,
         transforms: Transforms,
+        mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,
         max_refetch: int = 1000,
     ) -> None:
         self.dm_subset = dm_subset
         self.ids = [item.id for item in dm_subset]
         self.transforms = transforms
+        self.mem_cache_handler = mem_cache_handler
         self.mem_cache_img_max_size = mem_cache_img_max_size
         self.max_refetch = max_refetch
 
@@ -85,66 +89,87 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         raise RuntimeError(msg)
 
     def _get_img_data_and_shape(self, img: Image) -> tuple[np.ndarray, tuple[int, int]]:
-        handler = MemCacheHandlerSingleton.get()
-
         key = img.path if isinstance(img, ImageFromFile) else id(img)
 
-        if handler is not None and (img_data := handler.get(key=key)[0]) is not None:
+        if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
             return img_data, img_data.shape[:2]
-
-        img_data = img.data
 
         # TODO(vinnamkim): This is a temporal approach
         # There is an upcoming Datumaro patch here for this
         # https://github.com/openvinotoolkit/datumaro/pull/1194
-        if img_data.shape[-1] == 4:
-            img_data = cv2.cvtColor(img_data, cv2.COLOR_BGRA2BGR)
-        if len(img_data.shape) == 2:
-            img_data = cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR)
+        img_data = (
+            np.asarray(PILImage.open(BytesIO(img_bytes)).convert("RGB"))
+            if (img_bytes := img.bytes) is not None
+            else self._convert_to_rgb(img.data)
+        )
 
-        if handler is not None:
-            self._cache_img(
-                handler=handler,
-                key=key,
-                img_data=img_data,
-                img_size=img.size,
-            )
+        if img_data is None:
+            msg = "Cannot get image data"
+            raise RuntimeError(msg)
+
+        img_data = self._cache_img(key=key, img_data=img_data)
 
         return img_data, img_data.shape[:2]
 
-    def _cache_img(
-        self,
-        handler: MemCacheHandlerBase,
-        key: str | int,
-        img_data: np.ndarray,
-        img_size: tuple[int, int],
-    ) -> None:
-        if self.mem_cache_img_max_size is None:
-            handler.put(key=key, data=img_data, meta=None)
-            return
+    @staticmethod
+    def _convert_to_rgb(img_data: np.ndarray | None) -> np.ndarray | None:
+        """This function is required for `img.data` (not read by PIL)."""
+        if img_data is None:
+            return None
+        if img_data.shape[-1] == 4:
+            return cv2.cvtColor(img_data, cv2.COLOR_BGRA2RGB)
+        if len(img_data.shape) == 2:
+            return cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR)
 
-        height, width = img_size
+        return cv2.cvtColor(img_data, cv2.COLOR_BGR2RGB)
+
+    def _cache_img(self, key: str | int, img_data: np.ndarray) -> np.ndarray:
+        """Cache an image after resizing.
+
+        If there is available space in the memory pool, the input image is cached.
+        Before caching, the input image is resized if it is larger than the maximum image size
+        specified by the memory caching handler.
+        Otherwise, the input image is directly cached.
+        After caching, the processed image data is returned.
+
+        Args:
+            key: The key associated with the image.
+            img_data: The image data to be cached.
+
+        Returns:
+            The resized image if it was resized. Otherwise, the original image.
+        """
+        if self.mem_cache_handler.frozen:
+            return img_data
+
+        if self.mem_cache_img_max_size is None:
+            self.mem_cache_handler.put(key=key, data=img_data, meta=None)
+            return img_data
+
+        height, width = img_data.shape[:2]
         max_height, max_width = self.mem_cache_img_max_size
 
         if height <= max_height and width <= max_width:
-            handler.put(key=key, data=img_data, meta=None)
-            return
+            self.mem_cache_handler.put(key=key, data=img_data, meta=None)
+            return img_data
 
         # Preserve the image size ratio and fit to max_height or max_width
         # e.g. (1000 / 2000 = 0.5, 1000 / 1000 = 1.0) => 0.5
         # h, w = 2000 * 0.5 => 1000, 1000 * 0.5 => 500, bounded by max_height
         min_scale = min(max_height / height, max_width / width)
         new_height, new_width = int(min_scale * height), int(min_scale * width)
+        resized_img = cv2.resize(
+            src=img_data,
+            dsize=(new_width, new_height),
+            interpolation=cv2.INTER_LINEAR,
+        )
 
-        handler.put(
+        self.mem_cache_handler.put(
             key=key,
-            data=cv2.resize(
-                src=img_data,
-                dsize=(new_width, new_height),
-                interpolation=cv2.INTER_LINEAR,
-            ),
+            data=resized_img,
             meta=None,
         )
+        return resized_img
 
     @abstractmethod
     def _get_item_impl(self, idx: int) -> T_OTXDataEntity | None:

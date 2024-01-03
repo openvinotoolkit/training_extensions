@@ -4,7 +4,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from datumaro.components.media import Image
 
 
 class TestDataset:
@@ -30,7 +29,11 @@ class TestDataset:
         with pytest.raises(RuntimeError):
             dataset[0]
 
-    def test_sample_another_idx(self, fxt_dataset_and_data_entity_cls, fxt_mock_dm_subset) -> None:
+    def test_sample_another_idx(
+        self,
+        fxt_dataset_and_data_entity_cls,
+        fxt_mock_dm_subset,
+    ) -> None:
         dataset_cls, dataset_entity_cls = fxt_dataset_and_data_entity_cls
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
@@ -43,6 +46,7 @@ class TestDataset:
     def test_mem_cache_resize(
         self,
         mem_cache_img_max_size,
+        fxt_mem_cache_handler,
         fxt_dataset_and_data_entity_cls,
         fxt_mock_dm_subset: MagicMock,
         fxt_dm_item,
@@ -52,17 +56,18 @@ class TestDataset:
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
+            mem_cache_handler=fxt_mem_cache_handler,
             mem_cache_img_max_size=mem_cache_img_max_size,
         )
 
         item = dataset[0]  # Put in the cache
 
-        assert item.image.shape[:2] == fxt_dm_item.media_as(Image).size
-        assert item.img_info.img_shape == fxt_dm_item.media_as(Image).size
+        # The returned image should be resized because it was resized before caching
+        h_expected = w_expected = min(mem_cache_img_max_size)
+        assert item.image.shape[:2] == (h_expected, w_expected)
+        assert item.img_info.img_shape == (h_expected, w_expected)
 
         item = dataset[0]  # Take from the cache
 
-        min_size = min(mem_cache_img_max_size)
-
-        assert item.image.shape[:2] == (min_size, min_size)
-        assert item.img_info.img_shape == (min_size, min_size)
+        assert item.image.shape[:2] == (h_expected, w_expected)
+        assert item.img_info.img_shape == (h_expected, w_expected)
