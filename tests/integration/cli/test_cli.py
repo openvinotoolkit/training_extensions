@@ -13,7 +13,9 @@ from otx.cli import main
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
 RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
-RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.yaml")]
+ALL_RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.yaml")]
+RECIPE_OV_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/openvino_model.yaml")]
+RECIPE_LIST = set(ALL_RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 # [TODO]: This is a temporary approach.
 DATASET = {
@@ -105,6 +107,42 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         f"base.output_dir={tmp_path_test / 'outputs'}",
         *DATASET[task]["overrides"],
         f"checkpoint={ckpt_files[-1]}",
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+    assert (tmp_path_test / "outputs" / "otx_test.log").exists()
+    assert (tmp_path_test / "outputs" / "lightning_logs").exists()
+
+
+@pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
+def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
+    """
+    Test OTX CLI e2e commands.
+
+    - 'otx test' with OV model
+
+    Args:
+        recipe (str): The OV recipe to use for testing. (eg. 'classification/openvino_model.yaml')
+        tmp_path (Path): The temporary path for storing the testing outputs.
+
+    Returns:
+        None
+    """
+    task = recipe.split("/")[0]
+    model_name = recipe.split("/")[1].split(".")[0]
+
+    # otx test
+    tmp_path_test = tmp_path / f"otx_test_{model_name}"
+    command_cfg = [
+        "otx",
+        "test",
+        f"+recipe={recipe}",
+        f"base.data_dir={DATASET[task]['data_dir']}",
+        f"base.work_dir={tmp_path_test}",
+        f"base.output_dir={tmp_path_test / 'outputs'}",
     ]
 
     with patch("sys.argv", command_cfg):
