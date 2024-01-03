@@ -238,13 +238,10 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        from mmpretrain.registry import MODELS
-
-        return build_mm_model(self.config, MODELS, self.load_from)
+        return _create_mmpretrain_model(self.config, self.load_from)
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
-
         mmpretrain_inputs: dict[str, Any] = {}
 
         mmpretrain_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
@@ -256,21 +253,17 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "hlabel_info": hlabel_info 
                 },
-                gt_score=labels,
+                gt_label=labels,
             )
-            for img_info, labels in zip(
+            for img_info, labels, hlabel_info in zip(
                 entity.imgs_info,
                 entity.labels,
+                entity.hlabel_info
             )
         ]
         preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
-        # Don't know why but data_preprocessor.device is not automatically
-        # converted by the pl.Trainer's instruction unless the model parameters.
-        # Therefore, we change it here in that case.
-        if preprocessor.device != (model_device := next(self.model.parameters()).device):
-            preprocessor = preprocessor.to(device=model_device)
-            self.model.data_preprocessor = preprocessor
 
         mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
 
@@ -309,4 +302,5 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             imgs_info=inputs.imgs_info,
             scores=scores,
             labels=labels,
+            hlabel_info=inputs.hlabel_info
         )

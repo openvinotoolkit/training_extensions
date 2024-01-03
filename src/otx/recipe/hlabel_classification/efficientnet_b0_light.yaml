@@ -43,16 +43,19 @@ model:
         pretrained: true
         type: OTXEfficientNet
       head:
-        num_classes: 1000
+        num_multiclass_heads: 0
+        num_multilabel_classes: 0
         in_channels: 1280
-        loss:
+        num_classes: 1000
+        multiclass_loss_cfg:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+        multilabel_loss_cfg:
           reduction: sum
           gamma_neg: 1.0
           gamma_pos: 0.0
           type: AsymmetricAngularLossWithIgnore
-        normalized: true
-        scale: 7.0
-        type: CustomMultiLabelLinearClsHead
+        type: CustomHierarchicalClsHead
       neck:
         type: GlobalAveragePooling
       data_preprocessor:

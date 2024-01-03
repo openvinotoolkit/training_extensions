@@ -9,6 +9,8 @@ from torch import Tensor
 from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy
 
+from otx.algo.classification.metrics import HLabelAccuracy
+
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
@@ -205,10 +207,20 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        self.num_labels = otx_model.config.get("head", {}).get("num_classes", None)
+        head_cfg = otx_model.config.get("head")
+        self.num_labels = head_cfg.get("num_classes")
+        self.num_multiclass_heads = head_cfg.get("num_multiclass_heads")
+        self.num_multilabel_classes = head_cfg.get("num_multilabel_classes")
+        self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
-        self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
-        self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
+        self.val_metric = HLabelAccuracy(
+            num_classes_multiclass=self.num_multiclass_heads,
+            num_classes_multilabel=self.num_multilabel_classes
+        )
+        self.test_metric = HLabelAccuracy(
+            num_classes_multiclass=self.num_multiclass_heads,
+            num_classes_multilabel=self.num_multilabel_classes
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -252,7 +264,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         inputs: HlabelClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         return {
-            "preds": torch.stack(preds.scores),
+            "preds": torch.stack(preds.labels),
             "target": torch.stack(inputs.labels),
         }
 

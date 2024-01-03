@@ -163,7 +163,7 @@ class HLabelInfo:
     NOTE, If there was only one label in the multiclass group, it will be handeled as multilabel(Circle).
     
         num_multiclass_heads: 2  (Shape, Rigid)
-        num_multilabel_classes: 2 (Lion, Panda)
+        num_multilabel_classes: 3 (Circle, Lion, Panda)
         head_to_logits_range: {'0': (0, 2), '1': (2, 4)} (Each multiclass head have 2 labels)
         num_single_label_classes: 4 (Rigid, Non-Rigid, Rectangle, Triangle)
         class_to_group_idx: {
@@ -179,21 +179,18 @@ class HLabelInfo:
         }
         empty_multiclass_head_indices: []
     
-    TODO(sungmanc) it should be considered for the Model API, 
-    although we don't need this information right now.
-    So I made this object for the further use.
+    All of the member variables should be considered for the Model API.
     https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/utils/cls_utils.py#L97
     """
 
     num_multiclass_heads: int
     num_multilabel_classes: int
-    head_to_logits_range: dict[str, tuple[int, int]]
+    head_idx_to_logits_range: dict[str, tuple[int, int]]
     num_single_label_classes: int
     class_to_group_idx: dict[str, tuple[int, int]]
     all_groups: list[list[str]]
     label_to_idx: dict[str, int]
     empty_multiclass_head_indices: list[int]
-
 
 @register_pytree_node
 @dataclass
@@ -210,7 +207,7 @@ class HlabelClsDataEntity(OTXDataEntity):
         return OTXTaskType.H_LABEL_CLS
 
     labels: LongTensor
-    label_groups: LongTensor
+    hlabel_info: HLabelInfo
 
 
 @dataclass
@@ -227,7 +224,7 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
     """
 
     labels: list[LongTensor]
-    label_groups: list[LongTensor]
+    hlabel_info: list[HLabelInfo]
 
     @property
     def task(self) -> OTXTaskType:
@@ -246,7 +243,7 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
-            label_groups=[entity.label_groups for entity in entities]
+            hlabel_info=[entity.hlabel_info for entity in entities]
         )
 
 
