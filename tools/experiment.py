@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import product
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 
 import yaml
 from otx.cli.tools.cli import main as otx_cli
@@ -64,6 +64,17 @@ def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, 
     if not train_record_files:
         return None
     return train_record_files[0]
+
+
+def cvt_number_to_str(target: Dict):
+    """Convert int or float in dict to string."""
+    for key, val in target.items():
+        if isinstance(val, (int, float)):
+            target[key] = str(val)
+        elif isinstance(val, list):
+            for i in range(len(val)):
+                if isinstance(val[i], (int, float)):
+                    val[i] = str(val[i])
 
 
 class EvalResult:
@@ -554,28 +565,30 @@ class Command:
     variable: Dict[str, str] = field(default_factory=dict)
 
 
-class ExpRecipeParser:
+class ExpInfo:
     """Class to parse an experiment recipe.
 
     Args:
         recipe_file (Union[str, Path]): Recipe file to parse.
     """
 
-    def __init__(self, recipe_file: Union[str, Path]):
-        if not os.path.exists(recipe_file):
-            raise RuntimeError(f"{recipe_file} doesn't exist.")
-
-        with open(recipe_file, "r") as f:
-            self._exp_recipe: Dict = yaml.safe_load(f)
-        constants = self._exp_recipe.get("constants", {})
-        self._cvt_number_to_str(constants)
-        self._constants: Dict[str, str] = constants
-        self._variables: Optional[Dict[str, str]] = None
+    def __init__(
+            self,
+            command: Union[str, List[str]],
+            output_path: Path,
+            constants: Optional[Dict[str, str]] = None,
+            variables: Optional[Dict[str, str]] = None,
+            repeat: int = 1,
+        ):
+        self._raw_command = command
         self._commands: Optional[List[Command]] = None
-        self.output_path: Path = Path(
-            self._exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
-        )
-        self.repeat: int = self._exp_recipe.get("repeat", 1)
+        self.output_path = output_path
+        self._constants = constants if constants is not None else {}
+        if variables is None:
+            variables = {}
+        self._raw_variables = cvt_number_to_str(variables)
+        self._variables: Optional[Dict[str, str]] = None
+        self.repeat = repeat
         self._replace_pat = re.compile(r"\$\{(\w+)\}")
 
     @property
@@ -587,9 +600,7 @@ class ExpRecipeParser:
     def variables(self) -> Dict[str, Union[str, List[str]]]:
         """Variables in recipe file. If it contains constants, they're replaced by real value."""
         if self._variables is None:
-            variables = self._exp_recipe.get("variables", {})
-            self._cvt_number_to_str(variables)
-            self._variables = self._replace_var_in_target(self.constants, variables)
+            self._variables = self._replace_var_in_target(self.constants, self._raw_variables)
         return self._variables
 
     @property
@@ -602,7 +613,7 @@ class ExpRecipeParser:
             List[Command]: List of Command instances.
         """
         if self._commands is None:
-            command = self._exp_recipe.get("command", [])
+            command = self._raw_command
             if isinstance(command, str):
                 command = [command]
             command = self._replace_var_in_target(self.constants, command)
@@ -664,16 +675,33 @@ class ExpRecipeParser:
 
         return target
 
-    @staticmethod
-    def _cvt_number_to_str(target: Dict):
-        """Convert int or float in dict to string."""
-        for key, val in target.items():
-            if isinstance(val, (int, float)):
-                target[key] = str(val)
-            elif isinstance(val, list):
-                for i in range(len(val)):
-                    if isinstance(val[i], (int, float)):
-                        val[i] = str(val[i])
+
+def parse_exp_recipe(recipe_file: Union[str, Path]) -> Tuple[List[ExpInfo], Path]:
+    if not os.path.exists(recipe_file):
+        raise RuntimeError(f"{recipe_file} doesn't exist.")
+
+    with open(recipe_file, "r") as f:
+        exp_recipe: Dict = yaml.safe_load(f)
+
+    ori_constants: Dict[str, str] = cvt_number_to_str(exp_recipe.get("constants", {}))
+    output_path = Path(exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"))
+    exp_info_list = []
+
+    if "experiments" not in exp_recipe:
+        exp_recipe["experiments"] = [exp_recipe]
+        exp_recipe["experiments"][0]["name"] = ""
+        exp_recipe["experiments"][0].pop("constants")
+
+    for exp in exp_recipe["experiments"]:
+        constants = copy(ori_constants)
+        if "constants" in exp:
+            constants.update(exp["constants"])
+
+        exp_info_list.append(
+            ExpInfo(exp["command"], output_path / exp["name"], constants, exp["variables"], exp["repeat"])
+        )
+
+    return exp_info_list, output_path
 
 
 @dataclass
@@ -729,14 +757,14 @@ class OtxCommandRunner:
         "optimize": ["weights.pth", "openvino.bin"]
     }
 
-    def __init__(self, command_ins: Command, repeat_idx: int):
+    def __init__(self, command_ins: Command, workspace: Path, repeat_idx: int):
         self._command_ins = command_ins
         self._repeat_idx = repeat_idx
         self._command_var = copy(command_ins.variable)
-        self._workspace = Path("_".join(self._command_var.values()).replace("/", "_") + f"_repeat_{repeat_idx}")
+        self._workspace = workspace
         self._command_var["repeat"] = str(repeat_idx)
         self._fail_logs: List[CommandFailInfo] = []
-        self._previous_cmd_entry: Optional[List[str]] = []
+        self._previous_cmd_entry: List[str] = []
 
     @property
     def fail_logs(self) -> List[CommandFailInfo]:
@@ -837,6 +865,25 @@ class OtxCommandRunner:
         command.insert(index, key)
 
 
+def run_experiment(exp_info: ExpInfo, dryrun: bool = False) -> List[CommandFailInfo]:
+    failed_cases: List[CommandFailInfo] = []
+
+    for command_ins in exp_info.commands:
+        for repeat_idx in range(exp_info.repeat):
+            otx_cmd_runner = OtxCommandRunner(
+                command_ins,
+                exp_info.output_path / Path("_".join(command_ins.variable.values()).replace("/", "_") + f"_repeat_{repeat_idx}"),
+                repeat_idx
+            )
+            otx_cmd_runner.run_command_list(dryrun)
+            failed_cases.extend(otx_cmd_runner.fail_logs)
+
+    if not dryrun:
+        aggregate_all_exp_result(exp_info.output_path)
+
+    return failed_cases
+
+
 def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     """Run experiments based on the recipe.
 
@@ -844,26 +891,14 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
         recipe_file (Union[str, Path]): Recipe file to run.
         dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
     """
-    exp_recipe = ExpRecipeParser(recipe_file)
-    output_path = exp_recipe.output_path
-    output_path.mkdir(parents=True, exist_ok=True)
-    current_dir = os.getcwd()
-    os.chdir(output_path)
+    total_failed_cases: List[CommandFailInfo] = []
+    exp_info_list, output_path = parse_exp_recipe(recipe_file)
+    for exp_info in exp_info_list:
+        failed_cases = run_experiment(exp_info, dryrun)
+        total_failed_cases.extend(failed_cases)
 
-    fail_cases: List[CommandFailInfo] = []
-    for command_ins in exp_recipe.commands:
-        for repeat_idx in range(exp_recipe.repeat):
-            otx_cmd_runner = OtxCommandRunner(command_ins, repeat_idx)
-            otx_cmd_runner.run_command_list(dryrun)
-            fail_cases.extend(otx_cmd_runner.fail_logs)
-
-    os.chdir(current_dir)
-
-    if fail_cases:
-        log_fail_cases(fail_cases, output_path)
-
-    if not dryrun:
-        aggregate_all_exp_result(output_path)
+    if total_failed_cases:
+        log_fail_cases(total_failed_cases, output_path)
 
 
 def main():
