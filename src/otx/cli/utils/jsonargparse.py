@@ -27,7 +27,7 @@ def get_short_docstring(component: TypeVar) -> str | None:
     return docstring.short_description
 
 
-def flatten_dict(d: dict, parent_key: str = '', sep: str = '.') -> dict:
+def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
     """Flatten a nested dictionary into a single-level dictionary.
 
     Args:

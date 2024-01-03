@@ -20,7 +20,11 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
     OTXTaskType.MULTI_CLASS_CLS: ["imagenet", "datumaro", "imagenet_with_subset_dirs"],
     OTXTaskType.DETECTION: ["coco", "voc", "yolo"],
     OTXTaskType.SEMANTIC_SEGMENTATION: [
-        "cityscapes", "common_semantic_segmentation", "voc", "ade20k2017", "ade20k2020",
+        "cityscapes",
+        "common_semantic_segmentation",
+        "voc",
+        "ade20k2017",
+        "ade20k2020",
     ],
     OTXTaskType.INSTANCE_SEGMENTATION: ["coco", "voc"],
 }
@@ -41,6 +45,7 @@ DEFAULT_DATA = {
 
 
 RECIPE_PATH = Path(get_otx_root_path()) / "recipe"
+
 
 def is_cvat_format(path: Path) -> bool:
     """Detect whether data path is CVAT format or not.
@@ -70,6 +75,7 @@ def is_cvat_format(path: Path) -> bool:
             if files != cvat_format:
                 return False
     return True
+
 
 def is_mvtec_format(path: Path) -> bool:
     """Detect whether data path is MVTec format or not.
@@ -151,6 +157,7 @@ class AutoConfigurator:
         RuntimeError: If the data root is not set.
         ValueError: If the task is not supported.
     """
+
     def __init__(
         self,
         data_root: str | Path | None = None,

@@ -29,23 +29,23 @@ model:
               loss_weight: 1.0
               type: CrossEntropyLoss
             mid_channels:
-            - 1280
+              - 1280
             num_classes: 1000
             topk:
-            - 1
-            - 5
+              - 1
+              - 5
             type: StackedLinearClsHead
           neck:
             type: GlobalAveragePooling
           data_preprocessor:
             mean:
-            - 123.675
-            - 116.28
-            - 103.53
+              - 123.675
+              - 116.28
+              - 103.53
             std:
-            - 58.395
-            - 57.12
-            - 57.375
+              - 58.395
+              - 57.12
+              - 57.375
             to_rgb: true
             type: ClsDataPreprocessor
           type: ImageClassifier
@@ -83,131 +83,131 @@ data:
       subset_name: train
       transform_lib_type: MMPRETRAIN
       transforms:
-      - type: LoadImageFromFile
-      - backend: cv2
-        scale: 224
-        type: RandomResizedCrop
-      - type: PackInputs
+        - type: LoadImageFromFile
+        - backend: cv2
+          scale: 224
+          type: RandomResizedCrop
+        - type: PackInputs
       num_workers: 2
     val_subset:
       batch_size: 64
       subset_name: val
       transform_lib_type: MMPRETRAIN
       transforms:
-      - type: LoadImageFromFile
-      - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
-      - type: PackInputs
+        - type: LoadImageFromFile
+        - backend: cv2
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
       num_workers: 2
     test_subset:
       batch_size: 64
       subset_name: test
       transform_lib_type: MMPRETRAIN
       transforms:
-      - type: LoadImageFromFile
-      - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
-      - type: PackInputs
+        - type: LoadImageFromFile
+        - backend: cv2
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
       num_workers: 2
     mem_cache_size: 1GB
     mem_cache_img_max_size:
-    - 500
-    - 500
+      - 500
+      - 500
     include_polygons: false
 max_epochs: 3
 deterministic: false
 precision: 32
 val_check_interval: 1
 callbacks:
-- class_path: lightning.pytorch.callbacks.EarlyStopping
-  init_args:
-    monitor: val/accuracy
-    min_delta: 0.0
-    patience: 100
-    verbose: false
-    mode: max
-    strict: true
-    check_finite: true
-    stopping_threshold: null
-    divergence_threshold: null
-    check_on_train_epoch_end: null
-    log_rank_zero_only: false
-- class_path: lightning.pytorch.callbacks.RichProgressBar
-  init_args:
-    refresh_rate: 1
-    leave: false
-    theme:
-      description: white
-      progress_bar: '#6206E0'
-      progress_bar_finished: '#6206E0'
-      progress_bar_pulse: '#6206E0'
-      batch_progress: white
-      time: grey54
-      processing_speed: grey70
-      metrics: white
-      metrics_text_delimiter: ' '
-      metrics_format: .3f
-    console_kwargs: null
-- class_path: lightning.pytorch.callbacks.ModelCheckpoint
-  init_args:
-    dirpath: null
-    filename: epoch_{epoch:03d}
-    monitor: val/accuracy
-    verbose: false
-    save_last: true
-    save_top_k: 1
-    save_weights_only: false
-    mode: max
-    auto_insert_metric_name: false
-    every_n_train_steps: null
-    train_time_interval: null
-    every_n_epochs: null
-    save_on_train_epoch_end: null
-    enable_version_counter: true
-- class_path: otx.algo.callbacks.iteration_timer.IterationTimer
-  init_args:
-    prog_bar: true
-    on_step: true
-    on_epoch: true
-- class_path: lightning.pytorch.callbacks.RichModelSummary
-  init_args:
-    max_depth: 1
-- class_path: lightning.pytorch.callbacks.LearningRateMonitor
-  init_args:
-    logging_interval: null
-    log_momentum: false
-    log_weight_decay: false
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: val/accuracy
+      min_delta: 0.0
+      patience: 100
+      verbose: false
+      mode: max
+      strict: true
+      check_finite: true
+      stopping_threshold: null
+      divergence_threshold: null
+      check_on_train_epoch_end: null
+      log_rank_zero_only: false
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+      theme:
+        description: white
+        progress_bar: "#6206E0"
+        progress_bar_finished: "#6206E0"
+        progress_bar_pulse: "#6206E0"
+        batch_progress: white
+        time: grey54
+        processing_speed: grey70
+        metrics: white
+        metrics_text_delimiter: " "
+        metrics_format: .3f
+      console_kwargs: null
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      dirpath: null
+      filename: epoch_{epoch:03d}
+      monitor: val/accuracy
+      verbose: false
+      save_last: true
+      save_top_k: 1
+      save_weights_only: false
+      mode: max
+      auto_insert_metric_name: false
+      every_n_train_steps: null
+      train_time_interval: null
+      every_n_epochs: null
+      save_on_train_epoch_end: null
+      enable_version_counter: true
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: true
+      on_epoch: true
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+    init_args:
+      logging_interval: null
+      log_momentum: false
+      log_weight_decay: false
 logger:
-- class_path: lightning.pytorch.loggers.CSVLogger
-  init_args:
-    save_dir: ''
-    name: csv/
-    version: null
-    prefix: ''
-    flush_logs_every_n_steps: 100
-- class_path: lightning.pytorch.loggers.TensorBoardLogger
-  init_args:
-    save_dir: ''
-    name: tensorboard/
-    version: null
-    log_graph: false
-    default_hp_metric: true
-    prefix: ''
-    sub_dir: null
-    logdir: null
-    comment: ''
-    purge_step: null
-    max_queue: 10
-    flush_secs: 120
-    filename_suffix: ''
-    write_to_disk: true
-    comet_config:
-      disabled: true
+  - class_path: lightning.pytorch.loggers.CSVLogger
+    init_args:
+      save_dir: ""
+      name: csv/
+      version: null
+      prefix: ""
+      flush_logs_every_n_steps: 100
+  - class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: tensorboard/
+      version: null
+      log_graph: false
+      default_hp_metric: true
+      prefix: ""
+      sub_dir: null
+      logdir: null
+      comment: ""
+      purge_step: null
+      max_queue: 10
+      flush_secs: 120
+      filename_suffix: ""
+      write_to_disk: true
+      comet_config:
+        disabled: true

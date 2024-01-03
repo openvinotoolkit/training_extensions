@@ -16,4 +16,4 @@ class EngineConfig:
 
     task: OTXTaskType
     device: str
-    work_dir: str | None = None
+    work_dir: str = "./otx-workspace"

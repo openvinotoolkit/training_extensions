@@ -49,7 +49,7 @@ class Engine:
         self,
         *,
         task: OTXTaskType | None = None,
-        work_dir: str | Path | None = None,
+        work_dir: str | Path = "./otx-workspace",
         data_root: str | Path | None = None,
         device: OTXDeviceType = OTXDeviceType.auto,
         **kwargs,
@@ -480,12 +480,10 @@ class Engine:
     def set_datamodule(
         self,
         data_root: str | Path | None = None,
-
         data_format: str | None = None,
         mem_cache_size: str | None = None,
         mem_cache_img_max_size: tuple[int, int] | None = None,
         include_polygons: bool | None = None,
-
         batch_size: int | dict[str, int] | None = None,
         num_workers: int | dict[str, int] | None = None,
         transforms: list | dict[str, list] | None = None,

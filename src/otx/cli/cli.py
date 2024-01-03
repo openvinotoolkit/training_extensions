@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
 _ENGINE_AVAILABLE = True
 try:
-    from otx.engine import Engine
     from otx.core.utils.auto_configuration import AutoConfigurator
+    from otx.engine import Engine
 except ImportError:
     _ENGINE_AVAILABLE = False
 
@@ -139,6 +139,7 @@ class OTXCLI:
 
             if "model" in self.engine_subcommands()[subcommand]:
                 from otx.core.model.module.base import OTXLitModule
+
                 model_kwargs: dict[str, Any] = {"fail_untyped": False}
                 if data_root is not None:
                     # Add Default values from Auto-Configurator
