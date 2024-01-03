@@ -5,8 +5,10 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
 import torch
 from torchvision import tv_tensors
 
@@ -159,7 +161,20 @@ class OVDetectionCompatibleModel(OTXDetectionModel):
     def _create_model(self) -> nn.Module:
         from openvino.model_api.models import DetectionModel
 
-        return DetectionModel.create_model(self.model_name)
+        model = DetectionModel.create_model(self.model_name)
+        if model.get_label_name(0) == "background":
+            logging.warning(
+                "Background class detected. Labels shift will be applied during inference to match target labeles",
+            )
+        return model
+
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if entity.batch_size > 1:
+            msg = "Only sync inference with batch = 1 is supported for now"
+            raise RuntimeError(msg)
+        # restore original numpy image
+        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
+        return {"inputs": img}
 
     def _customize_outputs(
         self,
@@ -169,15 +184,16 @@ class OVDetectionCompatibleModel(OTXDetectionModel):
         # add label index
         outputs_objects = outputs.objects
         bboxes = [
-            torch.tensor(
+            tv_tensors.BoundingBoxes(
                 [[output.xmin, output.ymin, output.xmax, output.ymax] for output in outputs_objects],
-                dtype=torch.float32,
+                format="XYXY",
+                canvas_size=inputs.imgs_info[-1].img_shape,
             ),
         ]
         scores = [torch.tensor([output.score for output in outputs_objects])]
 
         if self.model.get_label_name(0) == "background":
-            # some OMZ models require labels shift to match target labels
+            # some OMZ model requires to shift labeles
             labels = [torch.tensor([output.id - 1 for output in outputs_objects])]
         else:
             labels = [torch.tensor([output.id for output in outputs_objects])]
@@ -190,19 +206,3 @@ class OVDetectionCompatibleModel(OTXDetectionModel):
             bboxes=bboxes,
             labels=labels,
         )
-
-    def forward(
-        self,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        """Model forward function."""
-        # If customize_inputs is overrided
-        if self.training:
-            msg = "OV model cannot be used for training"
-            raise RuntimeError(msg)
-        if len(inputs.images) > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-
-        model_out = self.model(inputs.images[-1])
-        return self._customize_outputs(model_out, inputs)

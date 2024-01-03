@@ -7,6 +7,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
+import torch
+
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -236,15 +239,23 @@ class OVClassificationCompatibleModel(OTXMulticlassClsModel):
 
         return ClassificationModel.create_model(self.model_name, model_type="Classification")
 
+    def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+        if entity.batch_size > 1:
+            msg = "Only sync inference with batch = 1 is supported for now"
+            raise RuntimeError(msg)
+        # restore original numpy image
+        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
+        return {"inputs": img}
+
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity:
         # add label index
-        labels = [outputs.top_labels[0][0]]
+        labels = [torch.tensor(outputs.top_labels[0][0], dtype=torch.long)]
         # add probability
-        scores = [outputs.top_labels[0][2]]
+        scores = [torch.tensor(outputs.top_labels[0][2])]
 
         return MulticlassClsBatchPredEntity(
             batch_size=1,
@@ -253,19 +264,3 @@ class OVClassificationCompatibleModel(OTXMulticlassClsModel):
             scores=scores,
             labels=labels,
         )
-
-    def forward(
-        self,
-        inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
-        """Model forward function."""
-        # If customize_inputs is overrided
-        if self.training:
-            msg = "OV model cannot be used for training"
-            raise RuntimeError(msg)
-        if len(inputs.images) > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-
-        model_out = self.model(inputs.images[-1])
-        return self._customize_outputs(model_out, inputs)

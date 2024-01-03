@@ -7,7 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import torch
+import numpy as np
+from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
@@ -138,6 +139,14 @@ class OVSegmentationCompatibleModel(OTXSegmentationModel):
 
         return SegmentationModel.create_model(self.model_name, model_type="Segmentation")
 
+    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
+        if entity.batch_size > 1:
+            msg = "Only sync inference with batch = 1 is supported for now"
+            raise RuntimeError(msg)
+        # restore original numpy image
+        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
+        return {"inputs": img}
+
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
@@ -150,21 +159,5 @@ class OVSegmentationCompatibleModel(OTXSegmentationModel):
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],
-            masks=[torch.tensor(outputs.resultImage)],
+            masks=[tv_tensors.Mask(outputs.resultImage)],
         )
-
-    def forward(
-        self,
-        inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | OTXBatchLossEntity:
-        """Model forward function."""
-        # If customize_inputs is overrided
-        if self.training:
-            msg = "OV model cannot be used for training"
-            raise RuntimeError(msg)
-        if len(inputs.images) > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-
-        model_out = self.model(inputs.images[-1])
-        return self._customize_outputs(model_out, inputs)
