@@ -74,7 +74,7 @@ mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
     "mmsegmentation==1.2.1",
-    "mmaction2@git+https://github.com/jaegukhyun/mmaction2.git"  # Workaround for bugs in official mmaction2
+    "otxmmaction2==1.2.0",  # Workaround for bugs in official mmaction2
 ]
 
 [project.scripts]
