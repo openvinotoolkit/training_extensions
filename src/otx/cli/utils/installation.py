@@ -515,6 +515,8 @@ def patch_mmaction2() -> None:
     """Patch MMAction2==1.2.0 with the custom code.
 
     The patch is at `src/otx/cli/patches/mmaction2.patch`.
+    The reason why we need is that `__init__.py` is missing in
+    https://github.com/open-mmlab/mmaction2/tree/v1.2.0/mmaction/models/localizers/drn
     """
     dir_patches: Path = files("otx") / "cli" / "patches"
     file_mmaction2_patch = dir_patches / "mmaction2.patch"
