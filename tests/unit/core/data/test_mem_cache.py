@@ -55,14 +55,13 @@ class TestMemCacheHandler:
         memory_info = psutil.virtual_memory()
         total_mem_size_in_giga_bytes = int(memory_info.total / (1024**3))
         mem_size = total_mem_size_in_giga_bytes - (MemCacheHandlerSingleton.CPU_MEM_LIMITS_GIB - 5)
-        MemCacheHandlerSingleton.create(mode, mem_size * (1024**3))
-        assert MemCacheHandlerSingleton.instance.mem_size == 0
+        handler = MemCacheHandlerSingleton.create(mode, mem_size * (1024**3))
+        assert handler.mem_size == 0
 
     @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
     def test_fully_caching(self, mode, fxt_data_list) -> None:
         mem_size = get_data_list_size(fxt_data_list)
-        MemCacheHandlerSingleton.create(mode, mem_size)
-        handler = MemCacheHandlerSingleton.get()
+        handler = MemCacheHandlerSingleton.create(mode, mem_size)
 
         for key, data, meta in fxt_data_list:
             assert handler.put(key, data, meta) > 0
@@ -79,8 +78,7 @@ class TestMemCacheHandler:
     @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
     def test_unfully_caching(self, mode, fxt_data_list) -> None:
         mem_size = get_data_list_size(fxt_data_list) // 2
-        MemCacheHandlerSingleton.create(mode, mem_size)
-        handler = MemCacheHandlerSingleton.get()
+        handler = MemCacheHandlerSingleton.create(mode, mem_size)
 
         for idx, (key, data, meta) in enumerate(fxt_data_list):
             if idx < len(fxt_data_list) // 2:

@@ -8,6 +8,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import torch
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
@@ -65,10 +68,16 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
         batch_data = super().collate_fn(entities)
         return MulticlassClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_data.images,
+            images=tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)),
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
+
+    def pin_memory(self) -> MulticlassClsBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
 
 
 @dataclass
@@ -120,10 +129,16 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
         batch_data = super().collate_fn(entities)
         return MultilabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_data.images,
+            images=tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)),
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
+
+    def pin_memory(self) -> MultilabelClsBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
 
 
 @dataclass
