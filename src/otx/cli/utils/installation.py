@@ -11,12 +11,12 @@ import platform
 import re
 import subprocess
 from importlib.metadata import requires
-from importlib.resources._common import files
 from importlib.util import find_spec
 from pathlib import Path
 from warnings import warn
 
 import pkg_resources
+from importlib_resources import files
 from pkg_resources import Requirement
 
 AVAILABLE_TORCH_VERSIONS = {
