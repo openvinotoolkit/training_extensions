@@ -287,3 +287,8 @@ max-returns = 10
 
 [tool.ruff.pydocstyle]
 convention = "google"
+
+[tool.pytest.ini_options]
+markers = [
+    "gpu: mark tests which require NVIDIA GPU device"
+]

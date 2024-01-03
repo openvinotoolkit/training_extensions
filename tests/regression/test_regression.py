@@ -43,6 +43,7 @@ class BaseTest:
         fxt_dataset_root_dir: Path,
         fxt_tags: dict,
         fxt_num_repeat: int,
+        fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
     ) -> None:
         for seed in range(fxt_num_repeat):
@@ -73,6 +74,7 @@ class BaseTest:
                     f"data.data_format={test_case.dataset.data_format}",
                     f"base.output_dir={test_case.output_dir}",
                     f"seed={seed}",
+                    f"trainer={fxt_accelerator}",
                     "test=true",
                 ] + [
                     f"{key}={value}"
@@ -122,6 +124,7 @@ class TestMultiClassCls(BaseTest):
         fxt_dataset_root_dir: Path,
         fxt_tags: dict,
         fxt_num_repeat: int,
+        fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
     ) -> None:
         self._test_regression(
@@ -130,6 +133,7 @@ class TestMultiClassCls(BaseTest):
             fxt_dataset_root_dir=fxt_dataset_root_dir,
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
 
@@ -170,6 +174,7 @@ class TestMultilabelCls(BaseTest):
         fxt_dataset_root_dir: Path,
         fxt_tags: dict,
         fxt_num_repeat: int,
+        fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
     ) -> None:
         self._test_regression(
@@ -178,5 +183,6 @@ class TestMultilabelCls(BaseTest):
             fxt_dataset_root_dir=fxt_dataset_root_dir,
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
