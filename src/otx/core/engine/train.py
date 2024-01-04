@@ -54,6 +54,7 @@ def train(
     Returns:
         A tuple with Pytorch Lightning Trainer and Python dict of metrics
     """
+    import torch
     from lightning import seed_everything
 
     from otx.core.data.module import OTXDataModule
@@ -108,7 +109,19 @@ def train(
 
     if cfg.train:
         log.info("Starting training!")
-        trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
+        if cfg.resume:
+            trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
+        else:
+            # load weight
+            if cfg.checkpoint is not None:
+                loaded_checkpoint = torch.load(cfg.checkpoint)
+                model.register_load_state_dict_pre_hook(
+                    datamodule.classes,
+                    loaded_checkpoint["OTXDataModule"]["classes"],
+                )
+                model.load_state_dict(loaded_checkpoint["state_dict"])
+            # train
+            trainer.fit(model=model, datamodule=datamodule)
 
     train_metrics = trainer.callback_metrics
 

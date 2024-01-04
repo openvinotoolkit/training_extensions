@@ -105,6 +105,15 @@ class OTXLitModule(LightningModule):
             }
         return {"optimizer": optimizer}
 
+    def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
+        """Register self.model's load_state_dict_pre_hook.
+
+        Args:
+            model_classes (list[str]): Class names from training data.
+            ckpt_classes (list[str]): Class names from checkpoint state dictionary.
+        """
+        self.model.register_load_state_dict_pre_hook(model_classes, ckpt_classes)
+
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""

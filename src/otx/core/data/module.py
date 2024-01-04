@@ -5,9 +5,10 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from datumaro import Dataset as DmDataset
+from datumaro.components.annotation import AnnotationType
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
@@ -46,10 +47,8 @@ class OTXDataModule(LightningDataModule):
 
         VIDEO_EXTENSIONS.append(".mp4")
 
-        dataset = DmDataset.import_from(
-            self.config.data_root,
-            format=self.config.data_format,
-        )
+        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        self.classes = [category.name for category in dataset.categories()[AnnotationType.label]]
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -140,3 +139,12 @@ class OTXDataModule(LightningDataModule):
         """Teardown for each stage."""
         # clean up after fit or test
         # called on every process in DDP
+
+    def state_dict(self) -> dict[str, Any]:
+        """Called when saving a checkpoint, implement to generate and save datamodule state.
+
+        Returns:
+            A dictionary containing datamodule state.
+
+        """
+        return {"classes": self.classes}
