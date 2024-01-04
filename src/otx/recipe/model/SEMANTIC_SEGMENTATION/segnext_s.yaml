@@ -1,233 +1,117 @@
-engine:
-  task: SEMANTIC_SEGMENTATION
-  device: auto
-
-model:
-  class_path: otx.core.model.module.segmentation.OTXSegmentationLitModule
-  init_args:
-    torch_compile: false
-    otx_model:
-      class_path: otx.core.model.entity.segmentation.MMSegCompatibleModel
-      init_args:
-        config:
-          backbone:
-            init_cfg:
-              checkpoint: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth
-              type: Pretrained
-            act_cfg:
-              type: GELU
-            attention_kernel_paddings:
-              - 2
-              - - 0
-                - 3
-              - - 0
-                - 5
-              - - 0
-                - 10
-            attention_kernel_sizes:
-              - 5
-              - - 1
-                - 7
-              - - 1
-                - 11
-              - - 1
-                - 21
-            depths:
-              - 2
-              - 2
-              - 4
-              - 2
-            drop_path_rate: 0.1
-            drop_rate: 0.0
-            embed_dims:
-              - 64
-              - 128
-              - 320
-              - 512
-            mlp_ratios:
-              - 8
-              - 8
-              - 4
-              - 4
-            norm_cfg:
-              requires_grad: true
-              type: BN
-            type: MSCAN
-          data_preprocessor:
-            bgr_to_rgb: true
-            mean:
-              - 123.675
-              - 116.28
-              - 103.53
-            pad_val: 0
-            seg_pad_val: 255
-            size:
-              - 512
-              - 512
-            std:
-              - 58.395
-              - 57.12
-              - 57.375
-            test_cfg:
-              size_divisor: 32
-            type: SegDataPreProcessor
-          decode_head:
-            align_corners: false
-            channels: 256
-            dropout_ratio: 0.1
-            ham_channels: 256
-            ham_kwargs:
-              MD_R: 16
-              MD_S: 1
-              eval_steps: 7
-              inv_t: 100
-              rand_init: true
-              train_steps: 6
-            in_channels:
-              - 128
-              - 320
-              - 512
-            in_index:
-              - 1
-              - 2
+class_path: otx.core.model.module.segmentation.OTXSegmentationLitModule
+init_args:
+  torch_compile: false
+  otx_model:
+    class_path: otx.core.model.entity.segmentation.MMSegCompatibleModel
+    init_args:
+      config:
+        backbone:
+          init_cfg:
+            checkpoint: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth
+            type: Pretrained
+          act_cfg:
+            type: GELU
+          attention_kernel_paddings:
+            - 2
+            - - 0
               - 3
-            loss_decode:
-              loss_weight: 1.0
-              type: CrossEntropyLoss
-              use_sigmoid: false
-            norm_cfg:
-              num_groups: 32
-              requires_grad: true
-              type: GN
-            num_classes: 4
-            type: LightHamHead
-          pretrained: null
+            - - 0
+              - 5
+            - - 0
+              - 10
+          attention_kernel_sizes:
+            - 5
+            - - 1
+              - 7
+            - - 1
+              - 11
+            - - 1
+              - 21
+          depths:
+            - 2
+            - 2
+            - 4
+            - 2
+          drop_path_rate: 0.1
+          drop_rate: 0.0
+          embed_dims:
+            - 64
+            - 128
+            - 320
+            - 512
+          mlp_ratios:
+            - 8
+            - 8
+            - 4
+            - 4
+          norm_cfg:
+            requires_grad: true
+            type: BN
+          type: MSCAN
+        data_preprocessor:
+          bgr_to_rgb: true
+          mean:
+            - 123.675
+            - 116.28
+            - 103.53
+          pad_val: 0
+          seg_pad_val: 255
+          size:
+            - 512
+            - 512
+          std:
+            - 58.395
+            - 57.12
+            - 57.375
           test_cfg:
-            mode: whole
-          train_cfg: {}
-          type: EncoderDecoder
-    optimizer:
-      class_path: torch.optim.AdamW
-      init_args:
-        lr: 0.00006
-        betas:
-          - 0.9
-          - 0.999
-        weight_decay: 0.01
-    scheduler:
-      class_path: torch.optim.lr_scheduler.PolynomialLR
-      init_args:
-        total_iters: 5
-        power: 1.0
-        last_epoch: -1
-
-data:
-  task: SEMANTIC_SEGMENTATION
-  config:
-    mem_cache_size: 1GB
-    mem_cache_img_max_size: null
-    data_format: common_semantic_segmentation_with_subset_dirs
-    include_polygons: true
-    train_subset:
-      subset_name: train
-      batch_size: 8
-      num_workers: 4
-      transform_lib_type: MMSEG
-      transforms:
-        - type: LoadImageFromFile
-        - reduce_zero_label: true
-          type: LoadAnnotations
-        - keep_ratio: true
-          ratio_range:
-            - 0.5
-            - 2.0
-          scale:
-            - 2048
+            size_divisor: 32
+          type: SegDataPreProcessor
+        decode_head:
+          align_corners: false
+          channels: 256
+          dropout_ratio: 0.1
+          ham_channels: 256
+          ham_kwargs:
+            MD_R: 16
+            MD_S: 1
+            eval_steps: 7
+            inv_t: 100
+            rand_init: true
+            train_steps: 6
+          in_channels:
+            - 128
+            - 320
             - 512
-          type: RandomResize
-        - cat_max_ratio: 0.75
-          crop_size:
-            - 512
-            - 512
-          type: RandomCrop
-        - prob: 0.5
-          type: RandomFlip
-        - type: PhotoMetricDistortion
-        - type: PackSegInputs
-    val_subset:
-      subset_name: val
-      num_workers: 4
-      batch_size: 1
-      transform_lib_type: MMSEG
-      transforms:
-        - type: LoadImageFromFile
-        - keep_ratio: true
-          scale:
-            - 2048
-            - 512
-          type: Resize
-        - reduce_zero_label: true
-          type: LoadAnnotations
-        - type: PackSegInputs
-    test_subset:
-      subset_name: test
-      num_workers: 4
-      batch_size: 1
-      transform_lib_type: MMSEG
-      transforms:
-        - type: LoadImageFromFile
-        - keep_ratio: true
-          scale:
-            - 2048
-            - 512
-          type: Resize
-        - reduce_zero_label: true
-          type: LoadAnnotations
-        - type: PackSegInputs
-
-# engine.train arguments
-max_epochs: 10
-callbacks:
-  - class_path: lightning.pytorch.callbacks.EarlyStopping
+          in_index:
+            - 1
+            - 2
+            - 3
+          loss_decode:
+            loss_weight: 1.0
+            type: CrossEntropyLoss
+            use_sigmoid: false
+          norm_cfg:
+            num_groups: 32
+            requires_grad: true
+            type: GN
+          num_classes: 4
+          type: LightHamHead
+        pretrained: null
+        test_cfg:
+          mode: whole
+        train_cfg: {}
+        type: EncoderDecoder
+  optimizer:
+    class_path: torch.optim.AdamW
     init_args:
-      monitor: val/mIoU
-      mode: max
-      patience: 100
-  - class_path: lightning.pytorch.callbacks.RichProgressBar
+      lr: 0.00006
+      betas:
+        - 0.9
+        - 0.999
+      weight_decay: 0.01
+  scheduler:
+    class_path: torch.optim.lr_scheduler.PolynomialLR
     init_args:
-      refresh_rate: 1
-      leave: false
-  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-    init_args:
-      monitor: val/mIoU
-      mode: max
-      save_top_k: 1
-      save_last: True
-      auto_insert_metric_name: False
-      filename: "epoch_{epoch:03d}"
-  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
-    init_args:
-      prog_bar: true
-      on_step: True
-      on_epoch: True
-  - class_path: lightning.pytorch.callbacks.RichModelSummary
-    init_args:
-      max_depth: 1
-  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
-logger:
-  - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger
-    init_args:
-      save_dir: ""
-      name: "csv/"
-      prefix: ""
-  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
-    init_args:
-      save_dir: ""
-      name: "tensorboard/"
-      log_graph: False
-      default_hp_metric: True
-      prefix: ""
-deterministic: false
-seed: null
-precision: "32"
-val_check_interval: 1
+      total_iters: 5
+      power: 1.0
+      last_epoch: -1

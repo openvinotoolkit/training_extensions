@@ -141,7 +141,7 @@ class OTXCLI:
                 from otx.core.model.module.base import OTXLitModule
 
                 model_kwargs: dict[str, Any] = {"fail_untyped": False}
-                if data_root is not None:
+                if data_root is not None and "--model" not in sys.argv:
                     # Add Default values from Auto-Configurator
                     model_kwargs["default"] = auto_configurator.load_default_model_config()
 
