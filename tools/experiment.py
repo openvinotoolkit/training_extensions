@@ -26,6 +26,8 @@ from otx.cli.tools.cli import main as otx_cli
 from rich.console import Console
 from rich.table import Table
 
+rich_console = Console()
+
 
 def get_parser() -> argparse.ArgumentParser:
     """Parses command line arguments."""
@@ -68,13 +70,17 @@ def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, 
 
 def cvt_number_to_str(target: Dict):
     """Convert int or float in dict to string."""
-    for key, val in target.items():
+    result = copy(target)
+
+    for key, val in result.items():
         if isinstance(val, (int, float)):
-            target[key] = str(val)
+            result[key] = str(val)
         elif isinstance(val, list):
             for i in range(len(val)):
                 if isinstance(val[i], (int, float)):
                     val[i] = str(val[i])
+
+    return result
 
 
 class EvalResult:
@@ -397,7 +403,7 @@ class AnomalibExpParser(BaseExpParser):
                     self._parse_eval_output(eval_files[0])
 
 
-def get_exp_parser(workspace: Path) -> BaseExpParser:
+def get_exp_parser(workspace: Path) -> Union[BaseExpParser, None]:
     """Get experiment parser depending on framework.
 
     Args:
@@ -406,7 +412,11 @@ def get_exp_parser(workspace: Path) -> BaseExpParser:
     Returns:
         BaseExpParser: Experiment parser.
     """
-    with (workspace / "template.yaml").open("r") as f:
+    template_file = workspace / "template.yaml"
+    if not template_file.exists():
+        return None
+
+    with template_file.open("r") as f:
         template = yaml.safe_load(f)
 
     if "anomaly" in template["task_type"].lower():
@@ -426,6 +436,9 @@ def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str
         workspace = Path(workspace)
 
     exp_parser = get_exp_parser(workspace)
+    if exp_parser is None:
+        print(f"Unable to find which task \"{workspace}\" is. Parsing experiment result is skipped.")
+        return 
     exp_parser.parse_exp_log()
 
     exp_result = exp_parser.get_exp_result()
@@ -462,20 +475,18 @@ def print_table(headers: List[str], rows: List[Dict[str, Any]], table_title: str
         rows (List[Dict[str, Any]]): Rows of table.
         table_title (str, optional): Table title. Defaults to "Table".
     """
-    # print experiment summary to console
     table = Table(title=table_title)
     for header in headers:
         table.add_column(header, justify="center", no_wrap=True)
-    for each_exp_result_summary in rows:
+    for row in rows:
         table_row = []
         for header in headers:
-            val = each_exp_result_summary.get(header)
+            val = row.get(header)
             table_row.append(str(val))
 
         table.add_row(*table_row)
 
-    console = Console()
-    console.print(table)
+    rich_console.print(table, justify="center", crop=False)
 
 
 def aggregate_all_exp_result(exp_dir: Union[str, Path]):
@@ -554,8 +565,6 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
         rows.append(each_exp_result)
     write_csv(exp_dir / "exp_summary.csv", headers, rows)
 
-    print_table(headers, rows, "Experiment Summary")
-
 
 @dataclass
 class Command:
@@ -576,6 +585,7 @@ class ExpInfo:
             self,
             command: Union[str, List[str]],
             output_path: Path,
+            name: str = "",
             constants: Optional[Dict[str, str]] = None,
             variables: Optional[Dict[str, str]] = None,
             repeat: int = 1,
@@ -583,6 +593,7 @@ class ExpInfo:
         self._raw_command = command
         self._commands: Optional[List[Command]] = None
         self.output_path = output_path
+        self.name = name
         self._constants = constants if constants is not None else {}
         if variables is None:
             variables = {}
@@ -698,7 +709,7 @@ def parse_exp_recipe(recipe_file: Union[str, Path]) -> Tuple[List[ExpInfo], Path
             constants.update(exp["constants"])
 
         exp_info_list.append(
-            ExpInfo(exp["command"], output_path / exp["name"], constants, exp["variables"], exp["repeat"])
+            ExpInfo(exp["command"], output_path / exp["name"], exp["name"], constants, exp["variables"], exp["repeat"])
         )
 
     return exp_info_list, output_path
@@ -719,24 +730,24 @@ class CommandFailInfo:
         return result
 
 
-def log_fail_cases(fail_cases: List[CommandFailInfo], output_path: Path):
-    """Print fail cases and save it as a file.
+def log_exp_failed_cases(
+    failed_cases: Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]],
+    output_path: Path,
+):
+    if isinstance(failed_cases, list):
+        failed_cases = {"" : failed_cases}
+        
+    for exp_name, failed_cases in failed_cases.items():
+        rich_console.rule(f"[bold red]{exp_name} failed cases ")
 
-    Args:
-        fail_cases (List[CommandFailInfo]): False cases.
-        output_path (Path): Where fale cases are saved.
-    """
-    console = Console()
-    console.rule("[bold red]List of failed cases")
-    for each_fail_case in fail_cases:
-        console.print(f"Case : {each_fail_case.variable}", crop=False)
-        console.print(f"command : {each_fail_case.command}", crop=False)
-        console.print("Error log:", str(each_fail_case.exception), crop=False)
-        console.print()
-    console.rule()
+        for each_fail_case in failed_cases:
+            rich_console.print(f"Case : {each_fail_case.variable}", crop=False)
+            rich_console.print(f"command : {each_fail_case.command}", crop=False)
+            rich_console.print("Error log:", str(each_fail_case.exception), crop=False)
+            rich_console.print()
 
-    with (output_path / "failed_cases.yaml").open("w") as f:
-        yaml.safe_dump([fail_case.get_formatted_result() for fail_case in fail_cases], f)
+        with (output_path / exp_name / "failed_cases.yaml").open("w") as f:
+            yaml.safe_dump([fail_case.get_formatted_result() for fail_case in failed_cases], f)
 
 
 class OtxCommandRunner:
@@ -884,6 +895,25 @@ def run_experiment(exp_info: ExpInfo, dryrun: bool = False) -> List[CommandFailI
     return failed_cases
 
 
+def print_experiments_summary(output_path: Path):
+    rich_console.rule("[bold green]Experiment summary")
+    for exp in output_path.iterdir():
+        summary_file = exp / "exp_summary.csv"
+        if not summary_file.exists():
+            print(f"{exp.name} doesn't have exp_summary.csv file. Skipped.")
+            continue
+
+        with summary_file.open() as f:
+            exp_summary_csv = csv.reader(f)
+
+            headers = next(exp_summary_csv)
+            rows = []
+            for row in exp_summary_csv:
+                rows.append(dict((header, val) for header, val in zip(headers, row)))
+
+        print_table(headers, rows, f"{exp.name}")
+
+
 def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     """Run experiments based on the recipe.
 
@@ -891,14 +921,16 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
         recipe_file (Union[str, Path]): Recipe file to run.
         dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
     """
-    total_failed_cases: List[CommandFailInfo] = []
+    total_failed_cases: Dict[str, List[CommandFailInfo]] = {}
     exp_info_list, output_path = parse_exp_recipe(recipe_file)
     for exp_info in exp_info_list:
         failed_cases = run_experiment(exp_info, dryrun)
-        total_failed_cases.extend(failed_cases)
+        total_failed_cases[exp_info.name] = failed_cases
 
     if total_failed_cases:
-        log_fail_cases(total_failed_cases, output_path)
+        log_exp_failed_cases(total_failed_cases, output_path)
+
+    print_experiments_summary(output_path)
 
 
 def main():
