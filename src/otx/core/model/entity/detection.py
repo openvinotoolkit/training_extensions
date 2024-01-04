@@ -162,7 +162,7 @@ class OVDetectionCompatibleModel(OTXDetectionModel):
         from openvino.model_api.models import DetectionModel
 
         model = DetectionModel.create_model(self.model_name)
-        if model.get_label_name(0) == "background":
+        if model.get_label_name(0).lower() == "background":
             logging.warning(
                 "Background class detected. Labels shift will be applied during inference to match target labeles",
             )
