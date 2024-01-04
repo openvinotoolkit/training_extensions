@@ -51,8 +51,8 @@ class CustomHierarchicalClsHead(BaseModule):
         self.num_classes = num_classes
         self.thr = thr
         
-        if self.num_multiclass_heads == 0 and self.num_multilabel_classes == 0:
-            msg = "Either num_multiclass_head or num_multilabel_classes should be larger than 0"
+        if self.num_multiclass_heads == 0 :
+            msg = "num_multiclass_head should be larger than 0"
             raise ValueError(msg)
           
         self.multiclass_loss = MODELS.build(multiclass_loss_cfg)
@@ -178,42 +178,34 @@ class CustomHierarchicalClsHead(BaseModule):
         # Multiclass 
         multiclass_pred_scores = []
         multiclass_pred_labels = []
-        if self.num_multiclass_heads > 0:
-            for i in range(self.num_multiclass_heads):
-                logit_range = self._get_head_idx_to_logits_range(hlabel_info, i)
-                multiclass_logit = cls_scores[ :, logit_range[0] : logit_range[1]]
-                multiclass_pred = torch.softmax(multiclass_logit, dim=1)
-                multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
-                multiclass_pred_scores.append(multiclass_pred_score.view(-1, 1))
-                multiclass_pred_labels.append(multiclass_pred_label.view(-1, 1))
-            multiclass_pred_scores = torch.cat(multiclass_pred_scores, dim=1)
-            multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
+        for i in range(self.num_multiclass_heads):
+            logit_range = self._get_head_idx_to_logits_range(hlabel_info, i)
+            multiclass_logit = cls_scores[ :, logit_range[0] : logit_range[1]]
+            multiclass_pred = torch.softmax(multiclass_logit, dim=1)
+            multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
+            
+            multiclass_pred_scores.append(multiclass_pred_score.view(-1, 1))
+            multiclass_pred_labels.append(multiclass_pred_label.view(-1, 1))
+            
+        multiclass_pred_scores = torch.cat(multiclass_pred_scores, dim=1)
+        multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
         
-        # Multilabel
         if self.num_multilabel_classes > 0:
             multilabel_logits = cls_scores[:, hlabel_info.num_single_label_classes :]
+            
             multilabel_pred_scores = torch.sigmoid(multilabel_logits)
             multilabel_pred_labels = (multilabel_pred_scores >= self.thr).int()
         
-        # Multiclass + Multilabel
-        if self.num_multiclass_heads > 0 and self.num_multilabel_classes > 0:
             pred_scores = torch.cat([multiclass_pred_scores, multilabel_pred_scores], axis=1)
             pred_labels = torch.cat([multiclass_pred_labels, multilabel_pred_labels], axis=1)
-        # Multiclass
-        elif self.num_multiclass_heads > 0 and self.num_multilabel_classes == 0:
+        else: 
             pred_scores = multiclass_pred_scores
             pred_labels = multiclass_pred_labels
-        # Multilabel
-        elif self.num_multiclass_heads == 0 and self.num_multilabel_classes > 0:
-            pred_scores = multilabel_pred_scores
-            pred_labels = multilabel_pred_labels    
-        else:
-            msg = "Either num_multiclass_head or num_multilabel_classes should be larger than 0"
-            raise ValueError(msg)
 
         if data_samples is None:
             data_samples = [DataSample() for _ in range(cls_scores.size(0))]
 
         for data_sample, score, label in zip(data_samples, pred_scores, pred_labels):
             data_sample.set_pred_score(score).set_pred_label(label)
+            
         return data_samples

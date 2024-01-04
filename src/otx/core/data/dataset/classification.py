@@ -108,6 +108,10 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         super().__init__(**kwargs)
         self.dm_categories = self.dm_subset.categories()[AnnotationType.label]
         self.hlabel_info = self._get_hlabel_info()
+        
+        if self.hlabel_info.num_multiclass_heads == 0:
+            msg = "The number of multiclass heads should be larger than 0."
+            raise ValueError(msg)
 
     def _get_item_impl(self, index: int) -> HlabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)

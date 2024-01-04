@@ -214,12 +214,12 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
         self.val_metric = HLabelAccuracy(
-            num_classes_multiclass=self.num_multiclass_heads,
-            num_classes_multilabel=self.num_multilabel_classes
+            num_multiclass_heads=self.num_multiclass_heads,
+            num_multilabel_classes=self.num_multilabel_classes
         )
         self.test_metric = HLabelAccuracy(
-            num_classes_multiclass=self.num_multiclass_heads,
-            num_classes_multilabel=self.num_multilabel_classes
+            num_multiclass_heads=self.num_multiclass_heads,
+            num_multilabel_classes=self.num_multilabel_classes
         )
 
     def on_validation_epoch_start(self) -> None:
@@ -249,6 +249,9 @@ class OTXHlabelClsLitModule(OTXLitModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
+        if not self.val_metric.head_idx_to_logits_range:
+            self.val_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
+            
         preds = self.model(inputs)
 
         if not isinstance(preds, HlabelClsBatchPredEntity):
@@ -275,11 +278,17 @@ class OTXHlabelClsLitModule(OTXLitModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
+        if not self.test_metric.head_idx_to_logits_range:
+            self.test_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
+        
         preds = self.model(inputs)
 
         if not isinstance(preds, HlabelClsBatchPredEntity):
             raise TypeError(preds)
 
+        if not self.test_metric.head_idx_to_logits_range:
+            self.test_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
+            
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
