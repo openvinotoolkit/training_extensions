@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import product
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from otx.cli.tools.cli import main as otx_cli
@@ -69,7 +69,11 @@ def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, 
 
 
 def cvt_number_to_str(target: Dict):
-    """Convert int or float in dict to string."""
+    """Convert int or float in dict to string.
+
+    Args:
+        target (Dict): Dictionary object to change int or float to string in.
+    """
     result = copy(target)
 
     for key, val in result.items():
@@ -410,7 +414,7 @@ def get_exp_parser(workspace: Path) -> Union[BaseExpParser, None]:
         workspace (Path): Workspace to parse.
 
     Returns:
-        BaseExpParser: Experiment parser.
+        Union[BaseExpParser, None]: Experiment parser. If template file doesn't exist in the workspace, return None.
     """
     template_file = workspace / "template.yaml"
     if not template_file.exists():
@@ -438,7 +442,7 @@ def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str
     exp_parser = get_exp_parser(workspace)
     if exp_parser is None:
         print(f"Unable to find which task \"{workspace}\" is. Parsing experiment result is skipped.")
-        return 
+        return
     exp_parser.parse_exp_log()
 
     exp_result = exp_parser.get_exp_result()
@@ -490,7 +494,7 @@ def print_table(headers: List[str], rows: List[Dict[str, Any]], table_title: str
 
 
 def aggregate_all_exp_result(exp_dir: Union[str, Path]):
-    """Aggregate all experiment results.
+    """Aggregate all experiment results and save it and it's summary as a file.
 
     Args:
         exp_dir (Union[str, Path]): Experiment directory.
@@ -575,21 +579,33 @@ class Command:
 
 
 class ExpInfo:
-    """Class to parse an experiment recipe.
+    """Class to store experiment information.
+
+    It does additional things to provide complete experiment information.
+    For example, it replaces constants or varilabes if necessary,
+    and then it makes all possibles commands based on variables.
 
     Args:
-        recipe_file (Union[str, Path]): Recipe file to parse.
+        command (Union[str, List[str]]): All commands to exeucte.
+        output_path (Path): Output path to save experiment result.
+        name (str, optional): Experiment name. Defaults to "".
+        constants (Dict[str, str], optional):
+            Constants. If there are constants in variables or commands,
+            they are replaced based on this value. Defaults to None.
+        variables (Dict[str, str], optional):
+            Variables. If there are variables in command, they're replaced based on this value. Defaults to None.
+        repeat (int, optional): How many times to repeat experiments. Defaults to 1.
     """
 
     def __init__(
-            self,
-            command: Union[str, List[str]],
-            output_path: Path,
-            name: str = "",
-            constants: Optional[Dict[str, str]] = None,
-            variables: Optional[Dict[str, str]] = None,
-            repeat: int = 1,
-        ):
+        self,
+        command: Union[str, List[str]],
+        output_path: Path,
+        name: str = "",
+        constants: Optional[Dict[str, str]] = None,
+        variables: Optional[Dict[str, str]] = None,
+        repeat: int = 1,
+    ):
         self._raw_command = command
         self._commands: Optional[List[Command]] = None
         self.output_path = output_path
@@ -687,7 +703,19 @@ class ExpInfo:
         return target
 
 
+
 def parse_exp_recipe(recipe_file: Union[str, Path]) -> Tuple[List[ExpInfo], Path]:
+    """Parse an experiment recipe and return list of expeirment information and output path.
+
+    Args:
+        recipe_file (Union[str, Path]): Recipe file to parse.
+
+    Raises:
+        RuntimeError: _description_
+
+    Returns:
+        Tuple[List[ExpInfo], Path]: _description_
+    """
     if not os.path.exists(recipe_file):
         raise RuntimeError(f"{recipe_file} doesn't exist.")
 
@@ -734,9 +762,15 @@ def log_exp_failed_cases(
     failed_cases: Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]],
     output_path: Path,
 ):
+    """Print experiments failed cases to console and save them in each experiment directory as a file.
+
+    Args:
+        failed_cases (Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]]): _description_
+        output_path (Path): Directory where experiment direcory exists.
+    """
     if isinstance(failed_cases, list):
         failed_cases = {"" : failed_cases}
-        
+
     for exp_name, failed_cases in failed_cases.items():
         rich_console.rule(f"[bold red]{exp_name} failed cases ")
 
@@ -877,13 +911,23 @@ class OtxCommandRunner:
 
 
 def run_experiment(exp_info: ExpInfo, dryrun: bool = False) -> List[CommandFailInfo]:
+    """Run single expeirment.
+
+    Args:
+        exp_info (ExpInfo): ExpInfo having expreiment information to conduct.
+        dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
+
+    Returns:
+        List[CommandFailInfo]: List of failed command information.
+    """
     failed_cases: List[CommandFailInfo] = []
 
     for command_ins in exp_info.commands:
         for repeat_idx in range(exp_info.repeat):
             otx_cmd_runner = OtxCommandRunner(
                 command_ins,
-                exp_info.output_path / Path("_".join(command_ins.variable.values()).replace("/", "_") + f"_repeat_{repeat_idx}"),
+                exp_info.output_path
+                / Path("_".join(command_ins.variable.values()).replace("/", "_") + f"_repeat_{repeat_idx}"),
                 repeat_idx
             )
             otx_cmd_runner.run_command_list(dryrun)
@@ -896,6 +940,11 @@ def run_experiment(exp_info: ExpInfo, dryrun: bool = False) -> List[CommandFailI
 
 
 def print_experiments_summary(output_path: Path):
+    """Print experiment summary to console and save it as a file.
+
+    Args:
+        output_path (Path): Output path where experiment summary file is saved.
+    """
     rich_console.rule("[bold green]Experiment summary")
     for exp in output_path.iterdir():
         summary_file = exp / "exp_summary.csv"
@@ -926,6 +975,9 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     for exp_info in exp_info_list:
         failed_cases = run_experiment(exp_info, dryrun)
         total_failed_cases[exp_info.name] = failed_cases
+
+    if dryrun:
+        return
 
     if total_failed_cases:
         log_exp_failed_cases(total_failed_cases, output_path)
