@@ -16,7 +16,7 @@ from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
-    from torch import nn
+    from torch import device, nn
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
@@ -38,10 +38,21 @@ class MMSegCompatibleModel(OTXSegmentationModel):
 
     def _create_model(self) -> nn.Module:
         from mmengine.registry import MODELS as MMENGINE_MODELS
+        from mmseg.models.data_preprocessor import SegDataPreProcessor as _SegDataPreProcessor
         from mmseg.registry import MODELS
 
-        seg = MODELS.get("SegDataPreProcessor")
-        MMENGINE_MODELS.register_module(module=seg, force=True)
+        # NOTE: For the history of this monkey patching, please see
+        # https://github.com/openvinotoolkit/training_extensions/issues/2743
+        @MMENGINE_MODELS.register_module(force=True)
+        class SegDataPreProcessor(_SegDataPreProcessor):
+            @property
+            def device(self) -> device:
+                try:
+                    buf = next(self.buffers())
+                except StopIteration:
+                    return super().device
+                else:
+                    return buf.device
 
         return build_mm_model(self.config, MODELS, self.load_from)
 
@@ -70,12 +81,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             )
         ]
         preprocessor: SegDataPreProcessor = self.model.data_preprocessor
-        # Don't know why but data_preprocessor.device is not automatically
-        # converted by the pl.Trainer's instruction unless the model parameters.
-        # Therefore, we change it here in that case.
-        if preprocessor.device != (model_device := next(self.model.parameters()).device):
-            preprocessor = preprocessor.to(device=model_device)
-            self.model.data_preprocessor = preprocessor
 
         mmseg_inputs = preprocessor(data=mmseg_inputs, training=self.training)
         mmseg_inputs["mode"] = "loss" if self.training else "predict"

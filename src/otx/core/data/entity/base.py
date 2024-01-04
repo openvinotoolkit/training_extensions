@@ -11,7 +11,7 @@ from enum import IntEnum, auto
 from typing import Any, Dict, Generic, Iterator, TypeVar
 
 import numpy as np
-from torch import Tensor
+from torch import Tensor, stack
 from torchvision import tv_tensors
 from torchvision.transforms.v2.functional import to_image
 
@@ -41,6 +41,26 @@ class ImageType(IntEnum):
 
     NUMPY = auto()
     TV_IMAGE = auto()
+    NUMPY_LIST = auto()
+    TV_IMAGE_LIST = auto()
+
+    @classmethod
+    def get_image_type(
+        cls,
+        image: np.ndarray | tv_tensors.Image | list[np.ndarray] | list[tv_tensors.Image],
+    ) -> ImageType:
+        """Infer the image type from the given image object."""
+        if isinstance(image, np.ndarray):
+            return ImageType.NUMPY
+        if isinstance(image, tv_tensors.Image):
+            return ImageType.TV_IMAGE
+        if isinstance(image, list):
+            image = next(iter(image))
+            if isinstance(image, np.ndarray):
+                return ImageType.NUMPY_LIST
+            if isinstance(image, tv_tensors.Image):
+                return ImageType.TV_IMAGE_LIST
+        raise TypeError(image)
 
 
 T_OTXDataEntity = TypeVar(
@@ -57,13 +77,15 @@ class OTXDataEntity(Mapping):
     which can be go through the input preprocessing tranforms.
 
     :param task: OTX task definition
-    :param image: Image tensor which can have different type according to `image_type`
+    :param image: Image tensor or list of Image tensor which can have different type according to `image_type`
         1) `image_type=ImageType.NUMPY`: H x W x C numpy image tensor
         2) `image_type=ImageType.TV_IMAGE`: C x H x W torchvision image tensor
+        3) `image_type=ImageType.NUMPY_LIST`: List of H x W x C numpy image tensors
+        3) `image_type=ImageType.TV_IMAGE_LIST`: List of C x H x W torchvision image tensors
     :param imgs_info: Meta information for images
     """
 
-    image: np.ndarray | tv_tensors.Image
+    image: np.ndarray | tv_tensors.Image | list[np.ndarray] | list[tv_tensors.Image]
     img_info: ImageInfo
 
     @property
@@ -75,12 +97,7 @@ class OTXDataEntity(Mapping):
     @property
     def image_type(self) -> ImageType:
         """Image type definition."""
-        if isinstance(self.image, np.ndarray):
-            return ImageType.NUMPY
-        if isinstance(self.image, tv_tensors.Image):
-            return ImageType.TV_IMAGE
-
-        raise TypeError(self.image)
+        return ImageType.get_image_type(self.image)
 
     def to_tv_image(self: T_OTXDataEntity) -> T_OTXDataEntity:
         """Convert `self.image` to TorchVision Image if it is a Numpy array (inplace operation)."""
@@ -122,12 +139,13 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
     This entity is the output of PyTorch DataLoader,
     which is the direct input of OTXModel.
 
-    :param images: List of B numpy image tensors (C x H x W)
+    :param images: List of B numpy RGB image tensors (C x H x W) or
+        An image tensor stacked with B RGB image tensors (B x C x H x W)
     :param imgs_info: Meta information for images
     """
 
     batch_size: int
-    images: list[tv_tensors.Image]
+    images: list[tv_tensors.Image] | tv_tensors.Image
     imgs_info: list[ImageInfo]
 
     @property
@@ -135,6 +153,11 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
         """OTX task type definition."""
         msg = "OTXTaskType is not defined."
         raise RuntimeError(msg)
+
+    @property
+    def images_type(self) -> ImageType:
+        """Images type definition."""
+        return ImageType.get_image_type(self.images)
 
     @classmethod
     def collate_fn(cls, entities: list[T_OTXDataEntity]) -> OTXBatchDataEntity:
@@ -158,6 +181,31 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             images=[entity.image for entity in entities],
             imgs_info=[entity.img_info for entity in entities],
         )
+
+    @property
+    def stacked_images(self) -> tv_tensors.Image:
+        """A stacked image tensor (B x C x H x W).
+
+        if its `images` field is a list of image tensors,
+        convert it to a 4D image tensor and return it.
+        Otherwise, return it as is.
+        """
+        if isinstance(self.images, tv_tensors.Image):
+            return self.images
+
+        like = next(iter(self.images))
+        return tv_tensors.wrap(stack(self.images, dim=0), like=like)
+
+    def pin_memory(self: T_OTXBatchDataEntity) -> T_OTXBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        # TODO(vinnamki): Keep track this issue
+        # https://github.com/pytorch/pytorch/issues/116403
+        self.images = (
+            [tv_tensors.wrap(image.pin_memory(), like=image) for image in self.images]
+            if isinstance(self.images, list)
+            else tv_tensors.wrap(self.images.pin_memory(), like=self.images)
+        )
+        return self
 
 
 T_OTXBatchPredEntity = TypeVar(

@@ -17,11 +17,17 @@ RECIPE_LIST = [str(_) for _ in RECIPE_PATH.glob("**/*.yaml")]
 
 # [TODO]: This is a temporary approach.
 DATASET = {
-    "classification": {
+    "multiclass_classification": {
         "data_dir": "tests/assets/classification_dataset",
         "overrides": [
             "--model.otx_model.config.head.num_classes",
             "2",
+        ],
+    },
+    "multilabel_classification": {
+        "data_dir": "tests/assets/multilabel_classification",
+        "overrides": [
+            "model.otx_model.config.head.num_classes=2",
         ],
     },
     "detection": {
@@ -45,6 +51,17 @@ DATASET = {
         "overrides": [
             "--model.otx_model.config.decode_head.num_classes",
             "2",
+        ],
+    },
+    "action_classification": {
+        "data_dir": "tests/assets/action_classification_dataset/",
+        "overrides": ["model.otx_model.config.cls_head.num_classes=2"],
+    },
+    "action_detection": {
+        "data_dir": "tests/assets/action_detection_dataset/",
+        "overrides": [
+            "model.otx_model.config.roi_head.bbox_head.num_classes=5",
+            "+model.otx_model.config.roi_head.bbox_head.topk=3",
         ],
     },
 }

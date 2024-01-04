@@ -1,4 +1,4 @@
-recursive-include requirements *
+recursive-include src/otx *.patch
 recursive-include src/otx *.pyx
 recursive-include src/otx *.yaml
 recursive-include src/otx *.json

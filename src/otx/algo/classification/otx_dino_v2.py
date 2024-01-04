@@ -12,8 +12,11 @@ from omegaconf import DictConfig
 from torch import nn
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
-from otx.core.model.entity.classification import OTXClassificationModel
+from otx.core.data.entity.classification import (
+    MulticlassClsBatchDataEntity,
+    MulticlassClsBatchPredEntity,
+)
+from otx.core.model.entity.classification import OTXMulticlassClsModel
 
 
 class DINOv2(nn.Module):
@@ -57,7 +60,7 @@ class DINOv2(nn.Module):
         return self.softmax(logits)
 
 
-class DINOv2RegisterClassifier(OTXClassificationModel):
+class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
 
     def __init__(self, config: DictConfig | dict) -> None:
@@ -75,10 +78,10 @@ class DINOv2RegisterClassifier(OTXClassificationModel):
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         """Customize the inputs for the model."""
-        inputs: dict[str, Any] = {}
-        inputs["imgs"] = torch.stack(entity.images)
-        inputs["labels"] = torch.cat(entity.labels)
-        return inputs
+        return {
+            "imgs": entity.stacked_images,
+            "labels": torch.cat(entity.labels),
+        }
 
     def _customize_outputs(
         self,

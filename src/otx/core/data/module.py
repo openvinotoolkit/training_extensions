@@ -36,13 +36,34 @@ class OTXDataModule(LightningDataModule):
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
 
-        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        # TODO (Jaeguk): This is workaround for a bug in Datumaro.
+        # These lines should be removed after next datumaro release.
+        # https://github.com/openvinotoolkit/datumaro/pull/1223/files
+        from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
+
+        VIDEO_EXTENSIONS.append(".mp4")
+
+        dataset = DmDataset.import_from(
+            self.config.data_root,
+            format=self.config.data_format,
+        )
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
             self.config.val_subset.subset_name: self.config.val_subset,
             self.config.test_subset.subset_name: self.config.test_subset,
         }
+
+        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+        mem_cache_mode = (
+            "singleprocessing"
+            if all(config.num_workers == 0 for config in config_mapping.values())
+            else "multiprocessing"
+        )
+        mem_cache_handler = MemCacheHandlerSingleton.create(
+            mode=mem_cache_mode,
+            mem_size=mem_size,
+        )
 
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
@@ -52,25 +73,11 @@ class OTXDataModule(LightningDataModule):
             self.subsets[name] = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset,
+                mem_cache_handler=mem_cache_handler,
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
-
-        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
-        mem_cache_mode = (
-            "singleprocessing"
-            if all(config.num_workers == 0 for config in config_mapping.values())
-            else "multiprocessing"
-        )
-
-        self.mem_cache_handler = MemCacheHandlerSingleton.create(
-            mode=mem_cache_mode,
-            mem_size=mem_size,
-        )
-
-    def __del__(self) -> None:
-        MemCacheHandlerSingleton.delete()
 
     @classmethod
     def from_config(cls, config: dict | str | Path) -> OTXDataModule:
@@ -122,6 +129,7 @@ class OTXDataModule(LightningDataModule):
             batch_size=config.batch_size,
             shuffle=True,
             num_workers=config.num_workers,
+            pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
         )
@@ -136,6 +144,7 @@ class OTXDataModule(LightningDataModule):
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
+            pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
         )
@@ -150,6 +159,7 @@ class OTXDataModule(LightningDataModule):
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
+            pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
         )

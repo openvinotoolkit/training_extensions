@@ -1,0 +1,11 @@
+defaults:
+  - default
+
+_target_: otx.core.model.module.action_detection.OTXActionDetLitModule
+
+otx_model:
+  _target_: otx.core.model.entity.action_detection.MMActionCompatibleModel
+  config: ???
+
+# compile model for faster training with pytorch 2.0
+torch_compile: false
