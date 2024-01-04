@@ -90,6 +90,11 @@ class OTXCLI:
             type=str,
             help="Path to dataset root.",
         )
+        parser.add_argument(
+            "--task",
+            type=str,
+            help="Task Type.",
+        )
         return parser
 
     @staticmethod
@@ -123,10 +128,12 @@ class OTXCLI:
             return
         for subcommand in self.engine_subcommands():
             # Auto-Configuration
-            data_root = None
+            data_root, task = None, None
             if "--data_root" in sys.argv:
                 data_root = sys.argv[sys.argv.index("--data_root") + 1]
-            auto_configurator = AutoConfigurator(data_root=data_root)
+            if "--task" in sys.argv:
+                task = sys.argv[sys.argv.index("--task") + 1]
+            auto_configurator = AutoConfigurator(data_root=data_root, task=task)
 
             sub_parser = self.subcommand_parser()
             sub_parser.add_class_arguments(
@@ -166,6 +173,7 @@ class OTXCLI:
                     default_data_config = auto_configurator.load_default_data_config()
                     default_data_config = flatten_dict({"data": default_data_config})
                     default_data_config["data.config.data_root"] = data_root
+                    default_data_config["data.task"] = task if task is not None else auto_configurator.task
                     sub_parser.set_defaults(default_data_config)
 
             skip: set[str | int] = set(self.engine_subcommands()[subcommand])
@@ -182,6 +190,7 @@ class OTXCLI:
                 default_engine_config = auto_configurator.load_default_engine_config()
                 default_engine_config = flatten_dict(default_engine_config)
                 default_engine_config["engine.data_root"] = data_root
+                default_engine_config["engine.task"] = task if task is not None else auto_configurator.task
                 sub_parser.set_defaults(default_engine_config)
 
             if "logger" in added:
