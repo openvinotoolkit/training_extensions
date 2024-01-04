@@ -32,8 +32,8 @@ class OTXInstanceSegLitModule(OTXLitModule):
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")
+        self.val_metric = MeanAveragePrecision(iou_type="segm", class_metrics=True)
+        self.test_metric = MeanAveragePrecision(iou_type="segm", class_metrics=True)
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -60,7 +60,13 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 log.debug("Cannot log item which is not Tensor")
                 continue
             if value.numel() != 1:
-                log.debug("Cannot log Tensor which is not scalar")
+                for idx, v in enumerate(value):
+                    self.log(
+                        f"{subset_name}/{metric}{idx}",
+                        v,
+                        sync_dist=True,
+                        prog_bar=True,
+                    )
                 continue
 
             self.log(
