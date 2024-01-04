@@ -711,10 +711,10 @@ def parse_exp_recipe(recipe_file: Union[str, Path]) -> Tuple[List[ExpInfo], Path
         recipe_file (Union[str, Path]): Recipe file to parse.
 
     Raises:
-        RuntimeError: _description_
+        RuntimeError: If recipe file doesn't exist, error is raised.
 
     Returns:
-        Tuple[List[ExpInfo], Path]: _description_
+        Tuple[List[ExpInfo], Path]: List of expeirment information and output path.
     """
     if not os.path.exists(recipe_file):
         raise RuntimeError(f"{recipe_file} doesn't exist.")
@@ -765,7 +765,8 @@ def log_exp_failed_cases(
     """Print experiments failed cases to console and save them in each experiment directory as a file.
 
     Args:
-        failed_cases (Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]]): _description_
+        failed_cases (Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]]):
+            List of CommandFailInfo or Dictionary having experiment name as key and CommandFailInfo object as value.
         output_path (Path): Directory where experiment direcory exists.
     """
     if isinstance(failed_cases, list):
