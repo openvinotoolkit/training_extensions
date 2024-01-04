@@ -184,7 +184,7 @@ class OTXCLI:
                 default_engine_config["engine.data_root"] = data_root
                 sub_parser.set_defaults(default_engine_config)
 
-            if "logger" in added and "engine.work_dir" in added:
+            if "logger" in added:
                 sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
 
             self._subcommand_method_arguments[subcommand] = added

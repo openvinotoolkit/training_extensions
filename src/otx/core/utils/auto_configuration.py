@@ -21,7 +21,7 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
     OTXTaskType.DETECTION: ["coco", "voc", "yolo"],
     OTXTaskType.SEMANTIC_SEGMENTATION: [
         "cityscapes",
-        "common_semantic_segmentation",
+        "common_semantic_segmentation_with_subset_dirs",
         "voc",
         "ade20k2017",
         "ade20k2020",
