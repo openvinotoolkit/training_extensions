@@ -20,6 +20,7 @@ from otx.cli.utils.installation import (
     get_torch_install_args,
     mim_installation,
     parse_requirements,
+    patch_mmaction2,
 )
 
 if TYPE_CHECKING:
@@ -123,6 +124,10 @@ def otx_install(option: str | None = None, verbose: bool = False) -> int:
             status_code = mim_installation(mmcv_install_args)
             if status_code == 0:
                 console.log(f"MMLab Installation Complete: {mmcv_install_args}")
+
+    # Patch MMAction2 with src/otx/cli/patches/mmaction2.patch
+    patch_mmaction2()
+
     if status_code == 0:
         console.print("OTX Installation [bold green]Complete.[/bold green]")
 

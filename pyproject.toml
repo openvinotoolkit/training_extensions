@@ -35,7 +35,8 @@ dependencies = [
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks
     "ftfy",
-    "regex"
+    "regex",
+    "importlib_resources"
 ]
 
 [project.optional-dependencies]
@@ -74,7 +75,7 @@ mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
     "mmsegmentation==1.2.1",
-    "mmaction2@git+https://github.com/jaegukhyun/mmaction2.git"  # Workaround for bugs in official mmaction2
+    "mmaction2==1.2.0",
 ]
 
 [project.scripts]
@@ -86,6 +87,9 @@ Repository = "https://github.com/openvinotoolkit/training_extensions/"
 
 [tool.setuptools.dynamic]
 version = {attr = "otx.__version__"}
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
