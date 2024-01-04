@@ -9,8 +9,7 @@ import logging
 import multiprocessing as mp
 import re
 import signal
-import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 import psutil
@@ -25,6 +24,8 @@ GIB = 1024**3
 
 __all__ = [
     "MemCacheHandlerSingleton",
+    "MemCacheHandlerBase",
+    "NULL_MEM_CACHE_HANDLER",
     "MemCacheHandlerError",
     "parse_mem_cache_size_to_int",
 ]
@@ -84,7 +85,13 @@ class MemCacheHandlerBase:
     def _init_data_structs(self, mem_size: int) -> None:
         self._arr = (ct.c_uint8 * mem_size)()
         self._cur_page = ct.c_size_t(0)
-        self._cache_addr: dict | DictProxy = {}
+        self._cache_addr: (
+            dict[Any, tuple[Any, ...]]
+            | DictProxy[
+                Any,
+                tuple[Any, ...],
+            ]
+        ) = {}
         self._lock: Lock | _DummyLock = _DummyLock()
         self._freeze = ct.c_bool(False)
 
@@ -106,15 +113,20 @@ class MemCacheHandlerBase:
         Returns:
             If succeed return (np.ndarray, Dict), otherwise return (None, None)
         """
-        if self.mem_size == 0 or key not in self._cache_addr:
+        try:
+            if self.mem_size == 0 or (addr := self._cache_addr.get(key, None)) is None:
+                return None, None
+
+            offset, count, dtype, shape, strides, meta = addr
+
+            data = np.frombuffer(self._arr, dtype=dtype, count=count, offset=offset)
+            return np.lib.stride_tricks.as_strided(data, shape, strides), meta
+
+        except BrokenPipeError:
+            # It is possible that the manager is dead but
+            # the multi-processing worker in DataLoader is alive.
+            # In this case, we need to handle this error.
             return None, None
-
-        addr = self._cache_addr[key]
-
-        offset, count, dtype, shape, strides, meta = addr
-
-        data = np.frombuffer(self._arr, dtype=dtype, count=count, offset=offset)
-        return np.lib.stride_tricks.as_strided(data, shape, strides), meta
 
     def put(
         self,
@@ -135,27 +147,39 @@ class MemCacheHandlerBase:
         if self._freeze.value:
             return None
 
-        data_bytes = data.size * data.itemsize
+        try:
+            if (addr := self._cache_addr.get(key, None)) is not None:
+                return addr[0]
 
-        with self._lock:
-            new_page = self._cur_page.value + data_bytes
+            data_bytes = data.size * data.itemsize
 
-            if key in self._cache_addr or new_page > self.mem_size:
-                return None
+            with self._lock:
+                new_page = self._cur_page.value + data_bytes
 
-            offset = ct.byref(self._arr, self._cur_page.value)
-            ct.memmove(offset, data.ctypes.data, data_bytes)
+                if new_page > self.mem_size:
+                    self.freeze()
+                    msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
+                    logger.warning(msg)
+                    return None
 
-            self._cache_addr[key] = (
-                self._cur_page.value,
-                data.size,
-                data.dtype,
-                data.shape,
-                data.strides,
-                meta,
-            )
-            self._cur_page.value = new_page
-            return new_page
+                offset = ct.byref(self._arr, self._cur_page.value)
+                ct.memmove(offset, data.ctypes.data, data_bytes)
+
+                self._cache_addr[key] = (
+                    self._cur_page.value,
+                    data.size,
+                    data.dtype,
+                    data.shape,
+                    data.strides,
+                    meta,
+                )
+                self._cur_page.value = new_page
+                return new_page
+        except BrokenPipeError:
+            # It is possible that the manager is dead but
+            # the multi-processing worker in DataLoader is alive.
+            # In this case, we need to handle this error.
+            return None
 
     def __repr__(self) -> str:
         """Representation for the current handler status."""
@@ -166,6 +190,11 @@ class MemCacheHandlerBase:
             f"store {len(self)} items."
         )
 
+    @property
+    def frozen(self) -> bool:
+        """True if this handler is frozen, otherwise return False."""
+        return self._freeze.value
+
     def freeze(self) -> None:
         """If frozen, it is impossible to store a new item anymore."""
         self._freeze.value = True
@@ -173,6 +202,12 @@ class MemCacheHandlerBase:
     def unfreeze(self) -> None:
         """If unfrozen, it is possible to store a new item."""
         self._freeze.value = False
+
+    def shutdown(self) -> None:
+        """Shutdown mem caching handler.
+
+        It is effective only for the multiprocessing handler.
+        """
 
 
 class MemCacheHandlerForSP(MemCacheHandlerBase):
@@ -197,8 +232,11 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
         self._lock = mp.Lock()
         self._freeze = mp.Value(ct.c_bool, False, lock=False)
 
-    def __del__(self) -> None:
-        """When deleting, manager should also be shutdowned."""
+    def shutdown(self) -> None:
+        """Shutdown mem caching handler.
+
+        It is effective only for the multiprocessing handler.
+        """
         self._manager.shutdown()
 
 
@@ -206,30 +244,15 @@ class MemCacheHandlerError(Exception):
     """Exception class for MemCacheHandler."""
 
 
+NULL_MEM_CACHE_HANDLER = MemCacheHandlerBase(mem_size=0)
+NULL_MEM_CACHE_HANDLER.freeze()
+
+
 class MemCacheHandlerSingleton:
-    """A singleton class to create, delete and get MemCacheHandlerBase."""
+    """A helper class to create MemCacheHandler."""
 
-    instance: MemCacheHandlerBase
-    is_shutdown: bool = False
+    instances: ClassVar[list[MemCacheHandlerBase]] = []
     CPU_MEM_LIMITS_GIB: int = 30
-
-    @classmethod
-    def get(cls) -> MemCacheHandlerBase | None:
-        """Get the created MemCacheHandlerBase.
-
-        If no one is created before, raise RuntimeError.
-        """
-        if cls.is_shutdown:
-            # Gracefully return None
-            return None
-
-        if not hasattr(cls, "instance"):
-            cls_name = cls.__name__
-            msg = f"Before calling {cls_name}.get(), you should call {cls_name}.create() first."
-            warnings.warn(message=msg, stacklevel=1)
-            return None
-
-        return cls.instance
 
     @classmethod
     def create(cls, mode: str, mem_size: int) -> MemCacheHandlerBase:
@@ -261,12 +284,11 @@ class MemCacheHandlerSingleton:
             mem_size = 0
 
         if mode == "null" or mem_size == 0:
-            cls.instance = MemCacheHandlerBase(mem_size=0)
-            cls.instance.freeze()
+            instance = NULL_MEM_CACHE_HANDLER
         elif mode == "multiprocessing":
-            cls.instance = MemCacheHandlerForMP(mem_size)
+            instance = MemCacheHandlerForMP(mem_size)
         elif mode == "singleprocessing":
-            cls.instance = MemCacheHandlerForSP(mem_size)
+            instance = MemCacheHandlerForSP(mem_size)
         else:
             msg = f"{mode} is unknown mode."
             raise MemCacheHandlerError(msg)
@@ -276,20 +298,18 @@ class MemCacheHandlerSingleton:
 
         def _new_handler(signum, frame) -> None:  # noqa: ANN001
             original_handler(signum, frame)  # type: ignore[operator, misc]
-            cls.shutdown()
+            instance.shutdown()
 
         signal.signal(signal.SIGINT, _new_handler)
 
-        return cls.instance
+        cls.instances.append(instance)
+
+        return instance
 
     @classmethod
     def delete(cls) -> None:
-        """Delete the existing MemCacheHandlerBase instance."""
-        if hasattr(cls, "instance"):
-            del cls.instance
+        """Shutdown and delete the created instance meantime."""
+        for instance in cls.instances:
+            instance.shutdown()
 
-    @classmethod
-    def shutdown(cls) -> None:
-        """This method will be called if the process terminates by the interrupt signal."""
-        cls.is_shutdown = True
-        cls.delete()
+        cls.instances = []

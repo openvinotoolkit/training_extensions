@@ -1,14 +1,14 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for classification lightning module used in OTX."""
+"""Class definition for action classification lightning module used in OTX."""
 from __future__ import annotations
 
 import torch
 from torch import Tensor
 from torchmetrics.classification.accuracy import Accuracy
 
-from otx.core.data.entity.action import (
+from otx.core.data.entity.action_classification import (
     ActionClsBatchDataEntity,
     ActionClsBatchPredEntity,
 )

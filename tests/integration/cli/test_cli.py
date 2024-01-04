@@ -50,6 +50,13 @@ DATASET = {
         "data_dir": "tests/assets/action_classification_dataset/",
         "overrides": ["model.otx_model.config.cls_head.num_classes=2"],
     },
+    "action_detection": {
+        "data_dir": "tests/assets/action_detection_dataset/",
+        "overrides": [
+            "model.otx_model.config.roi_head.bbox_head.num_classes=5",
+            "+model.otx_model.config.roi_head.bbox_head.topk=3",
+        ],
+    },
 }
 
 

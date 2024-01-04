@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from otx.core.data.entity.action import (
+from otx.core.data.entity.action_classification import (
     ActionClsBatchDataEntity,
     ActionClsBatchPredEntity,
 )

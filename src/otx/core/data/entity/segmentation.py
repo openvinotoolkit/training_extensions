@@ -6,14 +6,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+
+from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
-
-if TYPE_CHECKING:
-    from torchvision import tv_tensors
 
 
 @register_pytree_node
@@ -61,6 +59,12 @@ class SegBatchDataEntity(OTXBatchDataEntity[SegDataEntity]):
             imgs_info=batch_data.imgs_info,
             masks=[entity.gt_seg_map for entity in entities],
         )
+
+    def pin_memory(self) -> SegBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
+        return self
 
 
 @dataclass

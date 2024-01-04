@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
@@ -19,7 +21,6 @@ from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from torch import LongTensor
-    from torchvision import tv_tensors
 
 
 @register_pytree_node
@@ -74,6 +75,13 @@ class DetBatchDataEntity(OTXBatchDataEntity[DetDataEntity]):
             bboxes=[entity.bboxes for entity in entities],
             labels=[entity.labels for entity in entities],
         )
+
+    def pin_memory(self) -> DetBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
 
 
 @dataclass
