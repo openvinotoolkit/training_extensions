@@ -125,17 +125,23 @@ class Engine:
         )
 
         CLI Usage:
-            1. you can pick a model, and you can run through the dataset.
+            1. you can train with data_root only. then OTX will provide default model.
                 ```python
-                otx train --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH>
+                otx train --data_root <DATASET_PATH>
                 ```
-            2. Of course, you can override the various values with commands.
+            2. you can pick a model or datamodule as Config file or Class.
                 ```python
                 otx train
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
-                    --engine.max_epochs <EPOCHS, int> --checkpoint <CKPT_PATH, str>
+                --data_root <DATASET_PATH>
+                --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
                 ```
-            3. If you have a ready configuration file, run it like this.
+            3. Of course, you can override the various values with commands.
+                ```python
+                otx train
+                    --data_root <DATASET_PATH>
+                    --max_epochs <EPOCHS, int> --checkpoint <CKPT_PATH, str>
+                ```
+            4. If you have a complete configuration file, run it like this.
                 ```python
                 otx train --config <CONFIG_PATH, str>
                 ```
@@ -198,7 +204,7 @@ class Engine:
             1. you can pick a model.
                 ```python
                 otx test
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH, str>
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
             2. If you have a ready configuration file, run it like this.
@@ -256,7 +262,7 @@ class Engine:
             1. you can pick a model.
                 ```python
                 otx predict
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data.config.data_root <DATASET_PATH, str>
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
             2. If you have a ready configuration file, run it like this.
