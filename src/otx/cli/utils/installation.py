@@ -16,6 +16,7 @@ from pathlib import Path
 from warnings import warn
 
 import pkg_resources
+from importlib_resources import files
 from pkg_resources import Requirement
 
 AVAILABLE_TORCH_VERSIONS = {
@@ -508,3 +509,43 @@ def get_module_version(module_name: str) -> str | None:
         module_version = None
 
     return module_version
+
+
+def patch_mmaction2() -> None:
+    """Patch MMAction2==1.2.0 with the custom code.
+
+    The patch is at `src/otx/cli/patches/mmaction2.patch`.
+    The reason why we need is that `__init__.py` is missing in
+    https://github.com/open-mmlab/mmaction2/tree/v1.2.0/mmaction/models/localizers/drn
+    """
+    dir_patches: Path = files("otx") / "cli" / "patches"
+    file_mmaction2_patch = dir_patches / "mmaction2.patch"
+
+    if not file_mmaction2_patch.exists():
+        msg = f"Cannot find `mmaction2.patch` file from {dir_patches}"
+        raise RuntimeError(msg)
+
+    if (spec := find_spec("mmaction")) is None:
+        msg = "Cannot find mmaction spec"
+        raise RuntimeError(msg)
+
+    if (spec_origin := spec.origin) is None:
+        msg = "Cannot find mmaction spec origin"
+        raise RuntimeError(msg)
+
+    dir_mmaction_parent = Path(spec_origin).parent.parent
+
+    proc = subprocess.Popen(
+        args=["patch", "-p0", "--forward"],
+        cwd=dir_mmaction_parent,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    stdout, stderr = proc.communicate(input=file_mmaction2_patch.read_bytes(), timeout=1)
+
+    if proc.returncode > 1:
+        msg = f"Cannot patch. Error code: {proc.returncode}, stdout: {stdout.decode()} and stderr: {stderr.decode()}"
+        raise RuntimeError(msg)
+    if proc.returncode == 1:
+        warn("MMAction2 is already patched. Skip patching it.", stacklevel=1)
