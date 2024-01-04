@@ -128,7 +128,8 @@ class OTXCLI:
             return
         for subcommand in self.engine_subcommands():
             # Auto-Configuration
-            data_root, task = None, None
+            data_root = None
+            task = None
             if "--data_root" in sys.argv:
                 data_root = sys.argv[sys.argv.index("--data_root") + 1]
             if "--task" in sys.argv:

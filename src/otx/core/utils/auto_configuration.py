@@ -161,7 +161,7 @@ class AutoConfigurator:
     def __init__(
         self,
         data_root: str | Path | None = None,
-        task: OTXTaskType | None = None,
+        task: str | None = None,
     ) -> None:
         self._data_root = data_root
         self._task = self._configure_task_type(data_root, task)
@@ -209,7 +209,7 @@ class AutoConfigurator:
     def _configure_task_type(
         self,
         data_root: str | Path | None,
-        task: OTXTaskType | None = None,
+        task: str | None = None,
     ) -> OTXTaskType | None:
         if task is not None:
             return OTXTaskType(task)
