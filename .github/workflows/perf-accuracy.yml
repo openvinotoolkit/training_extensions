@@ -1,22 +1,15 @@
-name: Performance Benchmark Test
+name: Performance-Accuracy Benchmark Test
 
 on:
   workflow_dispatch: # run on request (no need for PR)
     inputs:
-      benchmark-type:
-        type: choice
-        description: Benchmark type
-        options:
-        - accuracy
-        - speed
-        required: true
       model-type:
         type: choice
         description: Model type to run benchmark
         options:
         - default  # speed, balance, accuracy models only
         - all      # default + other models
-        default: all
+        default: default
       data-size:
         type: choice
         description: Dataset size to run benchmark
@@ -39,10 +32,10 @@ on:
         - train
         - export
         - optimize
-        default: train
+        default: optimize
 
 jobs:
-  Regression-Tests:
+  Perf-Accuracy-Benchmark-Tests:
     strategy:
       fail-fast: false
       matrix:
@@ -57,7 +50,7 @@ jobs:
             task: "anomaly"
           - toxenv_task: "cls"
             task: "classification"
-    name: Perf-Test-py310-${{ matrix.toxenv_task }}
+    name: Perf-Accuracy-Benchmark-Test-py310-${{ matrix.toxenv_task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
@@ -65,15 +58,15 @@ jobs:
       toxenv-task: ${{ matrix.toxenv_task }}
       tests-dir: >
         tests/perf/test_${{ matrix.task }}.py
-        -k ${{ inputs.benchmark-type }}
+        -k accuracy
         --model-type ${{ inputs.model-type }}
         --data-root /home/validation/data/new/
         --data-size ${{ inputs.data-size }}
         --num-repeat ${{ inputs.num-repeat }}
         --num-epoch ${{ inputs.num-epoch }}
-        --summary-csv .tox/perf-${{ inputs.benchmark-type }}-benchmark-${{ matrix.toxenv_task }}.csv
+        --summary-csv .tox/perf-accuracy-benchmark-${{ matrix.toxenv_task }}.csv
       runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
       task: ${{ matrix.task }}
       timeout-minutes: 8640
       upload-artifact: true
-      artifact-prefix: perf-${{ inputs.benchmark-type }}-benchmark
+      artifact-prefix: perf-accuracy-benchmark
