@@ -140,9 +140,12 @@ class PackDetInputs(MMDetPackDetInputs):
         data_samples: DetDataSample,
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[float, float]]:
         """Extract metadata from data_samples."""
-        img_shape = data_samples.img_shape
-        ori_shape = data_samples.ori_shape
+        # Some MM* transforms return (H, W, C), not (H, W)
+        img_shape = data_samples.img_shape if len(data_samples.img_shape) == 2 else data_samples.img_shape[:2]
+        ori_shape = data_samples.ori_shape if len(data_samples.ori_shape) == 2 else data_samples.ori_shape[:2]
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
+        if len(pad_shape) == 3:
+            pad_shape = pad_shape[:2]
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
         return img_shape, ori_shape, pad_shape, scale_factor
 
@@ -163,13 +166,14 @@ class PackDetInputs(MMDetPackDetInputs):
         scale_factor: tuple[float, float],
     ) -> ImageInfo:
         """Create ImageInfo instance."""
-        return ImageInfo(
+        image_info = ImageInfo(
             img_idx=img_idx,
             img_shape=img_shape,
             ori_shape=ori_shape,
-            pad_shape=pad_shape,
             scale_factor=scale_factor,
         )
+        image_info.pad_shape = pad_shape
+        return image_info
 
     def convert_masks_and_polygons(self, masks: BitmapMasks | PolygonMasks) -> tuple[tv_tensors.Mask, list[Polygon]]:
         """Convert masks and polygons to the desired format."""

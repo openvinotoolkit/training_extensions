@@ -14,7 +14,7 @@ class TestDetDataEntity:
     def test_task(self) -> None:
         data_entity = DetDataEntity(
             tv_tensors.Image(torch.randn(3, 224, 224)),
-            ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
+            ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
             tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
             LongTensor([1]),
         )
@@ -26,7 +26,7 @@ class TestDetBatchDataEntity:
         data_entities = [
             DetDataEntity(
                 tv_tensors.Image(torch.randn(3, 224, 224)),
-                ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
+                ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
                 tv_tensors.BoundingBoxes(
                     data=torch.Tensor([0, 0, 50, 50]),
                     format="xywh",
@@ -36,7 +36,7 @@ class TestDetBatchDataEntity:
             ),
             DetDataEntity(
                 tv_tensors.Image(torch.randn(3, 224, 224)),
-                ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
+                ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
                 tv_tensors.BoundingBoxes(
                     data=torch.Tensor([0, 0, 50, 50]),
                     format="xywh",
@@ -46,7 +46,7 @@ class TestDetBatchDataEntity:
             ),
             DetDataEntity(
                 tv_tensors.Image(torch.randn(3, 224, 224)),
-                ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
+                ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
                 tv_tensors.BoundingBoxes(
                     data=torch.Tensor([0, 0, 50, 50]),
                     format="xywh",
