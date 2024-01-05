@@ -23,7 +23,7 @@ on:
         default: false
       runs-on:
         type: string
-        default: "['self-hosted', 'Linux', 'X64', 'debug']"
+        default: "['self-hosted', 'Linux', 'X64', 'debug2']"
       task:
         type: string
         default: "undefined"
