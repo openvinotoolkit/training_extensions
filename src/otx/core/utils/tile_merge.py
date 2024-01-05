@@ -19,10 +19,10 @@ def merge(tile_preds: list[DetBatchPredEntity]) -> DetPredEntity:
     """Merge tile predictions into full image prediction.
 
     Args:
-        tile_preds (list[DetBatchPredEntity]): List of tile predictions
+        tile_preds (list[OTXBatchPredEntity]): List of tile predictions
 
     Returns:
-        DetBatchPredEntity: Full image prediction
+        OTXPredEntity: Full image prediction
     """
     dataset_items = []
     anno_id = 0

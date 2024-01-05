@@ -8,8 +8,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from torchvision import tv_tensors
-
 from otx.core.types.task import OTXTaskType
 
 from .base import ImageInfo
@@ -17,6 +15,7 @@ from .detection import DetDataEntity
 
 if TYPE_CHECKING:
     from torch import LongTensor
+    from torchvision import tv_tensors
 
 
 @dataclass
@@ -64,7 +63,7 @@ class TileBatchDetDataEntity:
 
                 if not isinstance(entity, DetDataEntity):
                     msg = "All entities should be DetDataEntity before collate_fn()"
-                    raise RuntimeError(msg)
+                    raise TypeError(msg)
 
         return TileBatchDetDataEntity(
             batch_size=batch_size,

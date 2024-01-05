@@ -1,6 +1,11 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""OTX tile dataset."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
@@ -46,7 +51,7 @@ class OTXTileTestDataset(OTXDataset):
         super().__init__(dataset.dm_subset, transforms=dataset.transforms)
 
     @property
-    def collate_fn(self):
+    def collate_fn(self) -> Callable:
         return TileBatchDetDataEntity.collate_fn
 
     def _get_item_impl(self, index: int) -> TileDetDataEntity | None:

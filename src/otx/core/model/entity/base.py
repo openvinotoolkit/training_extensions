@@ -43,7 +43,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Customize OTX output batch data entity if needed for you model."""
         raise NotImplementedError
 
-    def unpack_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
+    def unpack_tiles(self, inputs: TileBatchDetDataEntity) -> T_OTXBatchDataEntity:
         """Unpack tiles into batch data entity."""
         pred_entities = []
         for tiles, tile_infos, bboxes, labels in zip(
