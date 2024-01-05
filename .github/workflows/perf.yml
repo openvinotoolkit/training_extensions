@@ -67,6 +67,7 @@ jobs:
         tests/perf/test_${{ matrix.task }}.py
         -k ${{ inputs.benchmark-type }}
         --model-type ${{ inputs.model-type }}
+        --data-root /home/validation/data/new/
         --data-size ${{ inputs.data-size }}
         --num-repeat ${{ inputs.num-repeat }}
         --num-epoch ${{ inputs.num-epoch }}
