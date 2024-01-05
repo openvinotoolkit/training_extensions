@@ -1,6 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""OTX tile merge module."""
 
 from __future__ import annotations
 
@@ -74,10 +75,6 @@ def merge(tile_preds: list[DetBatchPredEntity]) -> DetPredEntity:
         image=tv_tensors.Image(full_img),
         img_info=tile_info,
         score=torch.tensor(pred_scores, device="cuda"),
-        bboxes=tv_tensors.BoundingBoxes(
-                pred_bboxes,
-                format="XYXY",
-                canvas_size=full_img.shape[:2],
-                device="cuda"),
+        bboxes=tv_tensors.BoundingBoxes(pred_bboxes, format="XYXY", canvas_size=full_img.shape[:2], device="cuda"),
         labels=torch.tensor(pred_labels, device="cuda"),
     )

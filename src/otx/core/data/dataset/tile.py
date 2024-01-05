@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
@@ -11,8 +11,7 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
-from otx.core.data.entity.tile import TileDetDataEntity, TileBatchDetDataEntity
-
+from otx.core.data.entity.tile import TileBatchDetDataEntity, TileDetDataEntity
 
 from .base import OTXDataset
 

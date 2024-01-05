@@ -1,13 +1,19 @@
-"""Module for OTX base data entities."""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Module for OTX tile data entities."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 from torchvision import tv_tensors
-from .base import ImageInfo
-from .detection import DetDataEntity
+
 from otx.core.types.task import OTXTaskType
 
+from .base import ImageInfo
+from .detection import DetDataEntity
 
 if TYPE_CHECKING:
     from torch import LongTensor
@@ -33,10 +39,8 @@ class TileDetDataEntity:
 
 @dataclass
 class TileBatchDetDataEntity:
-    """Data entity for tile task.
+    """Batch data entity for tile task."""
 
-    :param entity: A list of OTXDataEntity
-    """
     batch_size: int
     batch_tiles: list[list[tv_tensors.Image]]
     batch_tile_infos: list[list[ImageInfo]]
@@ -65,7 +69,9 @@ class TileBatchDetDataEntity:
         return TileBatchDetDataEntity(
             batch_size=batch_size,
             batch_tiles=[[entity.image for entity in tile_entity.entity_list] for tile_entity in batch_entities],
-            batch_tile_infos=[[entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities],
+            batch_tile_infos=[
+                [entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities
+            ],
             bboxes=[tile_entity.ori_bboxes for tile_entity in batch_entities],
             labels=[tile_entity.ori_labels for tile_entity in batch_entities],
         )

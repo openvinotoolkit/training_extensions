@@ -15,10 +15,9 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
-
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.utils.tile_merge import merge
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
