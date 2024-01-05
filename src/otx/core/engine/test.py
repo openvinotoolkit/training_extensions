@@ -33,9 +33,6 @@ def test(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
     trainer: Trainer = hydra.utils.instantiate(cfg.trainer)
 
     log.info("Starting testing!")
-    if cfg.checkpoint is None:
-        msg = "Checkpoint was not found! Could you please specify 'checkpoint'?"
-        raise ValueError(msg)
     trainer.test(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
 
     test_metrics = trainer.callback_metrics
