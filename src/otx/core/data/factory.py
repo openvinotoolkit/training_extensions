@@ -147,7 +147,7 @@ class OTXDatasetFactory:
 
         if cfg_data_module.tile_config.enable_tiler:
             if cfg_subset.subset_name == "train":
-                return OTXTileTrainDataset(dataset, cfg_subset, cfg_data_module.tile_config)
-            return OTXTileTestDataset(dataset, cfg_subset, cfg_data_module.tile_config)
+                return OTXTileTrainDataset(dataset, cfg_data_module.tile_config)
+            return OTXTileTestDataset(dataset, cfg_data_module.tile_config)
 
         return dataset
