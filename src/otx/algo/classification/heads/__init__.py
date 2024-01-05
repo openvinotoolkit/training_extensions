@@ -3,9 +3,8 @@
 #
 """Head modules for OTX custom model."""
 
+from .custom_hlabel_cls_head import CustomHierarchicalClsHead
 from .custom_multilabel_linear_cls_head import CustomMultiLabelLinearClsHead
 from .custom_multilabel_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
-from .custom_hlabel_cls_head import CustomHierarchicalClsHead
 
-__all__ = ["CustomMultiLabelLinearClsHead", "CustomMultiLabelNonLinearClsHead",
-           "CustomHierarchicalClsHead"]
+__all__ = ["CustomMultiLabelLinearClsHead", "CustomMultiLabelNonLinearClsHead", "CustomHierarchicalClsHead"]

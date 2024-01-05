@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING, Any
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
+    HlabelClsBatchDataEntity,
+    HlabelClsBatchPredEntity,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
-    HlabelClsBatchDataEntity,
-    HlabelClsBatchPredEntity
 )
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.build import build_mm_model
@@ -220,6 +220,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             labels=labels,
         )
 
+
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
     """H-label classification models used in OTX."""
 
@@ -242,6 +243,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
+
         mmpretrain_inputs: dict[str, Any] = {}
 
         mmpretrain_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
@@ -253,14 +255,14 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
-                    "hlabel_info": hlabel_info 
+                    "hlabel_info": hlabel_info,
                 },
                 gt_label=labels,
             )
             for img_info, labels, hlabel_info in zip(
                 entity.imgs_info,
                 entity.labels,
-                entity.hlabel_info
+                entity.hlabel_info,
             )
         ]
         preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
@@ -302,5 +304,5 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             imgs_info=inputs.imgs_info,
             scores=scores,
             labels=labels,
-            hlabel_info=inputs.hlabel_info
+            hlabel_info=inputs.hlabel_info,
         )

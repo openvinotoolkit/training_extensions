@@ -149,6 +149,7 @@ class MultilabelClsBatchPredEntity(MultilabelClsBatchDataEntity, OTXBatchPredEnt
 @dataclass
 class HLabelInfo:
     """The label information represents the hierarchy.
+
     All params should be kept since they're also used at the Model API side.
 
     :param num_multiclass_heads: the number of the multiclass heads
@@ -160,23 +161,23 @@ class HLabelInfo:
     :param label_to_idx: index of each label
     :param empty_multiclass_head_indices: the index of head that doesn't include any label
                                           due to the label removing
-    
+
     i.e.
     Single-selection group information (Multiclass, Exclusive)
     {
-        "Shape": ["Rigid", "Non-Rigid"], 
-        "Rigid": ["Rectangle", "Triangle"], 
+        "Shape": ["Rigid", "Non-Rigid"],
+        "Rigid": ["Rectangle", "Triangle"],
         "Non-Rigid": ["Circle"]
     }
-    
+
     Multi-selection group information (Multilabel)
     {
         "Animal": ["Lion", "Panda"]
     }
-    
+
     In the case above, HlabelInfo will be generated as below.
     NOTE, If there was only one label in the multiclass group, it will be handeled as multilabel(Circle).
-    
+
         num_multiclass_heads: 2  (Shape, Rigid)
         num_multilabel_classes: 3 (Circle, Lion, Panda)
         head_to_logits_range: {'0': (0, 2), '1': (2, 4)} (Each multiclass head have 2 labels)
@@ -188,12 +189,12 @@ class HLabelInfo:
         } (head index, label index for each head)
         all_groups: [['Non-Rigid', 'Rigid'], ['Rectangle', 'Triangle'], ['Circle'], ['Lion'], ['Panda']]
         label_to_idx: {
-            'Rigid': 0, 'Rectangle': 1, 
+            'Rigid': 0, 'Rectangle': 1,
             'Triangle': 2, 'Non-Rigid': 3, 'Circle': 4
             'Lion': 5, 'Panda': 6
         }
         empty_multiclass_head_indices: []
-    
+
     All of the member variables should be considered for the Model API.
     https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/utils/cls_utils.py#L97
     """
@@ -206,6 +207,7 @@ class HLabelInfo:
     all_groups: list[list[str]]
     label_to_idx: dict[str, int]
     empty_multiclass_head_indices: list[int]
+
 
 @register_pytree_node
 @dataclass
@@ -258,7 +260,7 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
-            hlabel_info=[entity.hlabel_info for entity in entities]
+            hlabel_info=[entity.hlabel_info for entity in entities],
         )
 
 

@@ -193,6 +193,57 @@ class TestMultilabelCls(BaseTest):
         )
 
 
+class TestHlabelCls(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="hlabel_classification", name="efficientnet_b0_light"),
+        ModelTestCase(task="hlabel_classification", name="efficientnet_v2_light"),
+        ModelTestCase(task="hlabel_classification", name="mobilenet_v3_large_light"),
+        ModelTestCase(task="hlabel_classification", name="otx_deit_tiny"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [  # noqa: RUF012
+        DatasetTestCase(
+            name=f"hlabel_CUB_small_{idx}",
+            data_root=Path("hlabel_CUB_small") / f"{idx}",
+            data_format="datumaro",
+            num_classes=3,
+            extra_overrides={"trainer.max_epochs": "20"},
+        )
+        for idx in range(1, 4)
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+            head_name="head",
+        )
+
 class TestObjectDetection(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012

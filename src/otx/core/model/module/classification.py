@@ -10,20 +10,15 @@ from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy
 
 from otx.algo.classification.metrics import HLabelAccuracy
-
 from otx.core.data.entity.classification import (
+    HlabelClsBatchDataEntity,
+    HlabelClsBatchPredEntity,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
-    HlabelClsBatchDataEntity,
-    HlabelClsBatchPredEntity
 )
-from otx.core.model.entity.classification import (
-    OTXMulticlassClsModel, 
-    OTXMultilabelClsModel,
-    OTXHlabelClsModel
-)
+from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
 
@@ -215,11 +210,11 @@ class OTXHlabelClsLitModule(OTXLitModule):
 
         self.val_metric = HLabelAccuracy(
             num_multiclass_heads=self.num_multiclass_heads,
-            num_multilabel_classes=self.num_multilabel_classes
+            num_multilabel_classes=self.num_multilabel_classes,
         )
         self.test_metric = HLabelAccuracy(
             num_multiclass_heads=self.num_multiclass_heads,
-            num_multilabel_classes=self.num_multilabel_classes
+            num_multilabel_classes=self.num_multilabel_classes,
         )
 
     def on_validation_epoch_start(self) -> None:
@@ -251,7 +246,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         """
         if not self.val_metric.head_idx_to_logits_range:
             self.val_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
-            
+
         preds = self.model(inputs)
 
         if not isinstance(preds, HlabelClsBatchPredEntity):
@@ -280,7 +275,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         """
         if not self.test_metric.head_idx_to_logits_range:
             self.test_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
-        
+
         preds = self.model(inputs)
 
         if not isinstance(preds, HlabelClsBatchPredEntity):
@@ -288,7 +283,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
 
         if not self.test_metric.head_idx_to_logits_range:
             self.test_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
-            
+
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )

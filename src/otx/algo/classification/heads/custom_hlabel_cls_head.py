@@ -8,20 +8,19 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model import normal_init
-from mmengine.model import BaseModule
+from mmengine.model import BaseModule, normal_init
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
 from torch import nn
 
-
 if TYPE_CHECKING:
-    from mmpretrain.structures import DataSample
     from otx.core.data.entity.classification import HLabelInfo
-    
+
+
 @MODELS.register_module()
 class CustomHierarchicalClsHead(BaseModule):
     """Custom classification head for hierarchical classification task.
-    
+
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
         num_multilabel_classes (int): Number of multi-label classes.
@@ -32,7 +31,7 @@ class CustomHierarchicalClsHead(BaseModule):
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
     """
-    
+
     def __init__(
         self,
         num_multiclass_heads: int,
@@ -50,22 +49,22 @@ class CustomHierarchicalClsHead(BaseModule):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.thr = thr
-        
-        if self.num_multiclass_heads == 0 :
+
+        if self.num_multiclass_heads == 0:
             msg = "num_multiclass_head should be larger than 0"
             raise ValueError(msg)
-          
+
         self.multiclass_loss = MODELS.build(multiclass_loss_cfg)
         if num_multilabel_classes > 0:
             self.multilabel_loss = MODELS.build(multilabel_loss_cfg)
-        
+
         self.fc = nn.Linear(self.in_channels, self.num_classes)
         self._init_layers()
-    
-    def _init_layers(self):
+
+    def _init_layers(self) -> None:
         """Initialize weights of the layers."""
         normal_init(self.fc, mean=0, std=0.01, bias=0)
-    
+
     def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head."""
         return feats[-1]
@@ -73,26 +72,24 @@ class CustomHierarchicalClsHead(BaseModule):
     def forward(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
-        cls_score = self.fc(pre_logits)
-        return cls_score
+        return self.fc(pre_logits)
 
-    def _get_hlabel_info(self, data_samples: list[DataSample]):
+    def _get_hlabel_info(self, data_samples: list[DataSample]) -> HLabelInfo:
         """Get hlabel information."""
         return data_samples[0].hlabel_info
-    
-    def _get_gt_label(self, data_samples: list[DataSample]):
+
+    def _get_gt_label(self, data_samples: list[DataSample]) -> torch.Tensor:
         """Get gt labels from data samples."""
         return torch.stack([data_sample.gt_label for data_sample in data_samples])
-    
-    def _get_head_idx_to_logits_range(self, hlabel_info: HLabelInfo, idx: int):
+
+    def _get_head_idx_to_logits_range(self, hlabel_info: HLabelInfo, idx: int) -> tuple[int, int]:
         """Get head_idx_to_logits_range information from hlabel information."""
         return (
             hlabel_info.head_idx_to_logits_range[str(idx)][0],
             hlabel_info.head_idx_to_logits_range[str(idx)][1],
         )
-    
-    def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample],
-             **kwargs) -> dict:
+
+    def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample], **kwargs) -> dict:
         """Calculate losses from the classification score.
 
         Args:
@@ -111,43 +108,44 @@ class CustomHierarchicalClsHead(BaseModule):
         cls_scores = self(feats)
         hlabel_info = self._get_hlabel_info(data_samples)
         gt_labels = self._get_gt_label(data_samples)
-        
-        losses = dict(loss=0.0)
-        
+
+        losses = {"loss": 0.0}
+
         # Multiclass loss
-        num_effective_heads_in_batch = 0 # consider the label removal case
+        num_effective_heads_in_batch = 0  # consider the label removal case
         for i in range(self.num_multiclass_heads):
             if i not in hlabel_info.empty_multiclass_head_indices:
                 head_gt = gt_labels[:, i]
                 logit_range = self._get_head_idx_to_logits_range(hlabel_info, i)
-                head_logits = cls_scores[ :, logit_range[0] : logit_range[1]]
+                head_logits = cls_scores[:, logit_range[0] : logit_range[1]]
                 valid_mask = head_gt >= 0
-                
+
                 head_gt = head_gt[valid_mask]
                 if len(head_gt) > 0:
                     head_logits = head_logits[valid_mask, :]
                     losses["loss"] += self.multiclass_loss(head_logits, head_gt)
                     num_effective_heads_in_batch += 1
-            
+
         if num_effective_heads_in_batch > 0:
             losses["loss"] /= num_effective_heads_in_batch
-        
-        # Multilabel loss 
+
+        # Multilabel loss
         if self.num_multilabel_classes > 0:
-            head_gt = gt_labels[:, hlabel_info.num_multiclass_heads : ]
+            head_gt = gt_labels[:, hlabel_info.num_multiclass_heads :]
             head_logits = cls_scores[:, hlabel_info.num_single_label_classes :]
             valid_mask = head_gt > 0
             head_gt = head_gt[valid_mask]
             if len(head_gt) > 0:
                 head_logits = head_logits[valid_mask]
                 losses["loss"] += self.multilabel_loss(head_logits, head_gt)
-         
+
         return losses
 
-
-    def predict(self,
-                feats: tuple[torch.Tensor],
-                data_samples: list[DataSample] = None) -> list[DataSample]:
+    def predict(
+        self,
+        feats: tuple[torch.Tensor],
+        data_samples: list[DataSample] | None = None,
+    ) -> list[DataSample]:
         """Inference without augmentation.
 
         Args:
@@ -164,48 +162,50 @@ class CustomHierarchicalClsHead(BaseModule):
             predicted results.
         """
         cls_scores = self(feats)
-        predictions = self._get_predictions(cls_scores, data_samples)
-        return predictions
+        return self._get_predictions(cls_scores, data_samples)
 
-    
-    def _get_predictions(self, cls_scores: dict, data_samples: list[DataSample]):
+    def _get_predictions(
+        self,
+        cls_scores: torch.Tensor,
+        data_samples: list[DataSample] | None = None,
+    ) -> list[DataSample]:
         """Post-process the output of head.
 
         Including softmax and set ``pred_label`` of data samples.
         """
+        if data_samples is None:
+            data_samples = [DataSample() for _ in range(cls_scores.size(0))]
+
         hlabel_info = self._get_hlabel_info(data_samples)
-        
-        # Multiclass 
+
+        # Multiclass
         multiclass_pred_scores = []
         multiclass_pred_labels = []
         for i in range(self.num_multiclass_heads):
             logit_range = self._get_head_idx_to_logits_range(hlabel_info, i)
-            multiclass_logit = cls_scores[ :, logit_range[0] : logit_range[1]]
+            multiclass_logit = cls_scores[:, logit_range[0] : logit_range[1]]
             multiclass_pred = torch.softmax(multiclass_logit, dim=1)
             multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
-            
+
             multiclass_pred_scores.append(multiclass_pred_score.view(-1, 1))
             multiclass_pred_labels.append(multiclass_pred_label.view(-1, 1))
-            
+
         multiclass_pred_scores = torch.cat(multiclass_pred_scores, dim=1)
         multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
-        
+
         if self.num_multilabel_classes > 0:
             multilabel_logits = cls_scores[:, hlabel_info.num_single_label_classes :]
-            
+
             multilabel_pred_scores = torch.sigmoid(multilabel_logits)
             multilabel_pred_labels = (multilabel_pred_scores >= self.thr).int()
-        
+
             pred_scores = torch.cat([multiclass_pred_scores, multilabel_pred_scores], axis=1)
             pred_labels = torch.cat([multiclass_pred_labels, multilabel_pred_labels], axis=1)
-        else: 
+        else:
             pred_scores = multiclass_pred_scores
             pred_labels = multiclass_pred_labels
 
-        if data_samples is None:
-            data_samples = [DataSample() for _ in range(cls_scores.size(0))]
-
         for data_sample, score, label in zip(data_samples, pred_scores, pred_labels):
             data_sample.set_pred_score(score).set_pred_label(label)
-            
+
         return data_samples

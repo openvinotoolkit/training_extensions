@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from mmpretrain.datasets.transforms import (
     PackInputs as MMPretrainPackInputs,
@@ -14,11 +14,7 @@ from mmpretrain.registry import TRANSFORMS
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.classification import (
-    MulticlassClsDataEntity,
-    MultilabelClsDataEntity,
-    HlabelClsDataEntity
-)
+from otx.core.data.entity.classification import HlabelClsDataEntity, MulticlassClsDataEntity, MultilabelClsDataEntity
 
 from .mmcv import LoadImageFromFile, MMCVTransformLib
 
@@ -37,23 +33,23 @@ class PackInputs(MMPretrainPackInputs):
     def transform(self, results: dict) -> MulticlassClsDataEntity | MultilabelClsDataEntity | HlabelClsDataEntity:
         """Pack MMPretrain data entity into MulticlassClsDataEntity."""
         otx_data_entity = results["__otx__"]
-        
+
         if isinstance(otx_data_entity, MulticlassClsDataEntity):
             return self._pack_multiclass_inputs(results)
         if isinstance(otx_data_entity, MultilabelClsDataEntity):
             return self._pack_multilabel_inputs(results)
         if isinstance(otx_data_entity, HlabelClsDataEntity):
             return self._pack_hlabel_inputs(results)
-        
+
         msg = "Unsupported data entity type"
         raise TypeError(msg)
-    
+
     def _pack_common_inputs(self, results: dict) -> dict[str, Any]:
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
         img_shape = data_samples.img_shape
-        
-        return{
+
+        return {
             "image": tv_tensors.Image(transformed.get("inputs")),
             "img_shape": img_shape,
             "ori_shape": data_samples.ori_shape,
@@ -61,7 +57,7 @@ class PackInputs(MMPretrainPackInputs):
             "scale_factor": data_samples.metainfo.get("scale_factor", (1.0, 1.0)),
             "labels": results["__otx__"].labels,
         }
-        
+
     def _pack_multiclass_inputs(self, results: dict) -> MulticlassClsDataEntity:
         """Pack multiclass classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)
@@ -80,7 +76,7 @@ class PackInputs(MMPretrainPackInputs):
 
     def _pack_multilabel_inputs(self, results: dict) -> MultilabelClsDataEntity:
         """Pack multilabel classification inputs.
-        
+
         NOTE,
         Currently, this function is the same with multiclass case.
         However, it should have different functionality if we consider the ignore_label.
@@ -115,10 +111,10 @@ class PackInputs(MMPretrainPackInputs):
                 scale_factor=packed_common_inputs["scale_factor"],
             ),
             labels=packed_common_inputs["labels"],
-            hlabel_info=otx_data_entity.hlabel_info
+            hlabel_info=otx_data_entity.hlabel_info,
         )
-        
-        
+
+
 class MMPretrainTransformLib(MMCVTransformLib):
     """Helper to support MMPretrain transforms in OTX."""
 

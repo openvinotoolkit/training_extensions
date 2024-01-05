@@ -29,6 +29,14 @@ DATASET = {
             "model.otx_model.config.head.num_classes=2",
         ],
     },
+    "hlabel_classification": {
+        "data_dir": "tests/assets/hlabel_classification",
+        "overrides": [
+            "model.otx_model.config.head.num_classes=7",
+            "model.otx_model.config.head.num_multiclass_heads=2",
+            "model.otx_model.config.head.num_multilabel_classes=3",
+        ],
+    },
     "detection": {
         "data_dir": "tests/assets/car_tree_bug",
         "overrides": ["model.otx_model.config.bbox_head.num_classes=3"],
