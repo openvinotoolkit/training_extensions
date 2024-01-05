@@ -1,15 +1,13 @@
 from __future__ import annotations
-import torch
 
-from datumaro import DatasetItem, Bbox
-from datumaro import Dataset as DmDataset
-from datumaro import Image
 import cv2
-
+import torch
+from datumaro import Bbox, DatasetItem, Image
+from datumaro import Dataset as DmDataset
 from datumaro.plugins.tiling.merge_tile import MergeTile
+from torchvision import tv_tensors
 
 from otx.core.data.entity.detection import DetBatchPredEntity
-from torchvision import tv_tensors
 
 
 def merge(tile_annotations: list[DetBatchPredEntity]):
@@ -29,13 +27,13 @@ def merge(tile_annotations: list[DetBatchPredEntity]):
                 x1, y1, x2, y2 = bbox
                 w, h = x2 - x1, y2 - y1
                 annotations.append(
-                    Bbox(x1, y1, w, h, label=label, id=anno_id, attributes={'score': score}),
+                    Bbox(x1, y1, w, h, label=label, id=anno_id, attributes={"score": score}),
                 )
                 anno_id += 1
 
         dataset_item = DatasetItem(
             media=Image.from_numpy(tile_img),
-            id=tile_info.attributes['tile_idx'],
+            id=tile_info.attributes["tile_idx"],
             annotations=annotations,
             attributes=tile_info.attributes,
         )
@@ -55,25 +53,25 @@ def merge(tile_annotations: list[DetBatchPredEntity]):
         if isinstance(anno, Bbox):
             pred_bboxes.append(anno.points)
             pred_labels.append(anno.label)
-            pred_scores.append(anno.attributes['score'])
+            pred_scores.append(anno.attributes["score"])
 
     if len(pred_bboxes) == 0:
         pred_bboxes = torch.empty((0, 4))
 
     pred_entity = DetBatchPredEntity(
-            batch_size=1,
-            images=[tv_tensors.Image(full_img)],
-            imgs_info=[tile_info],
-            scores=[torch.tensor(pred_scores, device='cuda')],
-            bboxes=[
-                tv_tensors.BoundingBoxes(
-                    pred_bboxes,
-                    format="XYXY",
-                    canvas_size=full_img.shape[:2],
-                    device='cuda',
-                ),
-            ],
-            labels=[torch.tensor(pred_labels, device='cuda')],
-        )
+        batch_size=1,
+        images=[tv_tensors.Image(full_img)],
+        imgs_info=[tile_info],
+        scores=[torch.tensor(pred_scores, device="cuda")],
+        bboxes=[
+            tv_tensors.BoundingBoxes(
+                pred_bboxes,
+                format="XYXY",
+                canvas_size=full_img.shape[:2],
+                device="cuda",
+            ),
+        ],
+        labels=[torch.tensor(pred_labels, device="cuda")],
+    )
 
     return pred_entity

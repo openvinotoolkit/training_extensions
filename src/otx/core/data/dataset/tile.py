@@ -1,20 +1,22 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
-from datumaro import Bbox, Image, DatasetSubset
+from datumaro import Bbox, DatasetSubset, Image
 from datumaro import Dataset as DmDataset
-from torchvision import tv_tensors
 from datumaro.plugins.tiling import Tile
+from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
-from .base import OTXDataset
 
+from .base import OTXDataset
 
 if TYPE_CHECKING:
     from datumaro import DatasetItem
+
     from otx.core.config.data import TilerConfig
     from otx.core.data.entity.base import OTXDataEntity
 
@@ -29,7 +31,7 @@ class OTXTileTrainDataset(OTXDataset):
             overlap=(tile_config.overlap, tile_config.overlap),
             threshold_drop_ann=0.5,
         )
-        dm_dataset = dm_dataset.filter('/item/annotation', filter_annotations=True, remove_empty=True)
+        dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
         dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
         super().__init__(dm_subset, transforms=dataset.transforms)
         OTXTileTrainDataset.collate_fn = dataset.__class__.collate_fn
@@ -110,7 +112,7 @@ class OTXTileTestDataset(OTXDataset):
         return DetDataEntity(
             image=tile_img,
             img_info=ImageInfo(
-                img_idx=tile_item.attributes['id'],
+                img_idx=tile_item.attributes["id"],
                 img_shape=tile_shape,
                 ori_shape=tile_shape,
                 pad_shape=tile_shape,
