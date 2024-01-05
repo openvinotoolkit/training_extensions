@@ -1,3 +1,7 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from __future__ import annotations
 
 import cv2
@@ -10,19 +14,27 @@ from torchvision import tv_tensors
 from otx.core.data.entity.detection import DetBatchPredEntity
 
 
-def merge(tile_annotations: list[DetBatchPredEntity]):
+def merge(tile_preds: list[DetBatchPredEntity]) -> DetBatchPredEntity:
+    """Merge tile predictions into full image prediction.
+
+    Args:
+        tile_preds (list[DetBatchPredEntity]): List of tile predictions
+
+    Returns:
+        DetBatchPredEntity: Full image prediction
+    """
     dataset_items = []
     anno_id = 0
-    for tile_anno in tile_annotations:
+    for tile_pred in tile_preds:
         annotations = []
-        tile_info = tile_anno.imgs_info[0]
-        tile_img = tile_anno.images[0].detach().cpu().numpy().transpose(1, 2, 0)
+        tile_info = tile_pred.imgs_info[0]
+        tile_img = tile_pred.images[0].detach().cpu().numpy().transpose(1, 2, 0)
         tile_img = cv2.resize(tile_img, tile_info.ori_shape)
-        if len(tile_anno.bboxes) and len(tile_anno.bboxes[0]):
+        if len(tile_pred.bboxes) and len(tile_pred.bboxes[0]):
             # how to filter duplicated bbox using NMS?
-            bboxes = tile_anno.bboxes[0].detach().cpu().numpy()
-            labels = tile_anno.labels[0].detach().cpu().numpy()
-            scores = tile_anno.scores[0].detach().cpu().numpy()
+            bboxes = tile_pred.bboxes[0].detach().cpu().numpy()
+            labels = tile_pred.labels[0].detach().cpu().numpy()
+            scores = tile_pred.scores[0].detach().cpu().numpy()
             for bbox, label, score in zip(bboxes, labels, scores):
                 x1, y1, x2, y2 = bbox
                 w, h = x2 - x1, y2 - y1
@@ -45,7 +57,7 @@ def merge(tile_annotations: list[DetBatchPredEntity]):
 
     dataset = DmDataset.from_iterable(dataset_items)
     dataset = dataset.transform(MergeTile)
-    ds_id = [ds_item.id for ds_item in dataset][0]
+    ds_id = next(ds_item.id for ds_item in dataset)
     ds_item = dataset.get(ds_id)
     full_img = ds_item.media_as(Image).data
 
@@ -58,7 +70,7 @@ def merge(tile_annotations: list[DetBatchPredEntity]):
     if len(pred_bboxes) == 0:
         pred_bboxes = torch.empty((0, 4))
 
-    pred_entity = DetBatchPredEntity(
+    return DetBatchPredEntity(
         batch_size=1,
         images=[tv_tensors.Image(full_img)],
         imgs_info=[tile_info],
@@ -73,5 +85,3 @@ def merge(tile_annotations: list[DetBatchPredEntity]):
         ],
         labels=[torch.tensor(pred_labels, device="cuda")],
     )
-
-    return pred_entity

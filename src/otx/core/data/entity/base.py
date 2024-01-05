@@ -35,7 +35,7 @@ class ImageInfo:
     ori_shape: tuple[int, int]
     pad_shape: tuple[int, int]
     scale_factor: tuple[float, float]
-    attributes: dict
+    attributes: dict | None = None
 
 
 class ImageType(IntEnum):

@@ -45,7 +45,7 @@ class OTXTileTestDataset(OTXDataset):
         OTXTileTestDataset.collate_fn = dataset.__class__.collate_fn
         super().__init__(dataset.dm_subset, transforms=dataset.transforms)
 
-    def __getitem__(self, index) -> DetDataEntity:
+    def __getitem__(self, index: int) -> DetDataEntity | None:
         return self._get_item_impl(index)
 
     def _get_item_impl(self, index: int) -> DetDataEntity | None:
@@ -85,7 +85,7 @@ class OTXTileTestDataset(OTXDataset):
         tile_tensor = tv_tensors.Image(torch.stack(tiles))  # num_tiles x C x H x W
 
         # TODO: add new TileDataEntity
-        entity = DetDataEntity(
+        return DetDataEntity(
             image=tile_tensor,
             img_info=tile_infos,
             bboxes=tv_tensors.BoundingBoxes(
@@ -95,7 +95,6 @@ class OTXTileTestDataset(OTXDataset):
             ),
             labels=torch.as_tensor([ann.label for ann in bbox_anns]),
         )
-        return entity
 
     def convert_tile(self, tile_item: DatasetItem) -> OTXDataEntity:
         """Convert a tile dataset item to OTXDataEntity.
