@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic
 
@@ -76,11 +75,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def load_state_dict_pre_hook(self, state_dict: dict[str, torch.Tensor], prefix: str, *args, **kwargs) -> None:
         """Modify input state_dict according to class name matching before weight loading."""
         model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
-        logger = logging.getLogger()
-        logger.info(
-            f"Data classes from checkpoint: {self.ckpt_classes} -> "
-            f"Data classes from training data: {self.model_classes}",
-        )
 
         for param_name in self.state_dict():
             model_param = self.state_dict()[param_name].clone()
