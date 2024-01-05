@@ -43,7 +43,6 @@ class OTXDetectionLitModule(OTXLitModule):
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        # TODO: Before computing metric, we need to merge tile-level predictions to full-size predictions
         self._log_metrics(self.val_metric, "val")
 
     def on_test_epoch_end(self) -> None:
@@ -88,8 +87,6 @@ class OTXDetectionLitModule(OTXLitModule):
         preds: DetBatchPredEntity,
         inputs: DetBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-        # TODO: Tile prediction information is stored in preds.img_info.attributes
-        # TODO: Tile ground-truth information is stored in inputs.img_info.attributes
         return {
             "preds": [
                 {

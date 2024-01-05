@@ -59,11 +59,11 @@ class OTXDataModule(LightningDataModule):
                 task=self.task,
                 dm_subset=dm_subset,
                 cfg_subset=config_mapping[name],
-                cfg_data_module=self.config,
+                cfg_data_module=config,
             )
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
-        mem_size = parse_mem_cache_size_to_int(self.config.mem_cache_size)
+        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
         mem_cache_mode = (
             "singleprocessing"
             if all(config.num_workers == 0 for config in config_mapping.values())
