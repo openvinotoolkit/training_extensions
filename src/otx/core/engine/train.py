@@ -70,11 +70,9 @@ def train(
 
     log.info(f"Instantiating datamodule <{cfg.data}>")
     datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
-    data_meta_info = datamodule.meta_info
-
     log.info(f"Instantiating model <{cfg.model}>")
     model: OTXLitModule = hydra.utils.instantiate(cfg.model)
-    model.meta_info = data_meta_info
+    model.meta_info = datamodule.meta_info
 
     if otx_model is not None:
         if not isinstance(otx_model, OTXModel):
@@ -114,7 +112,7 @@ def train(
         if cfg.resume:
             trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
         else:
-            # load weight
+            # load weight to finetune the model
             if cfg.checkpoint is not None:
                 loaded_checkpoint = torch.load(cfg.checkpoint)
                 model.load_state_dict(loaded_checkpoint["state_dict"])
