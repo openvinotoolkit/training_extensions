@@ -25,11 +25,10 @@ def test(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
 
     log.info(f"Instantiating datamodule <{cfg.data}>")
     datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
-    data_meta_info = datamodule.meta_info
 
     log.info(f"Instantiating model <{cfg.model}>")
     model: LightningModule = hydra.utils.instantiate(cfg.model)
-    model.meta_info = data_meta_info
+    model.meta_info = datamodule.meta_info
 
     log.info(f"Instantiating trainer <{cfg.trainer}>")
     trainer: Trainer = hydra.utils.instantiate(cfg.trainer)
