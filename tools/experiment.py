@@ -737,7 +737,14 @@ def parse_exp_recipe(recipe_file: Union[str, Path]) -> Tuple[List[ExpInfo], Path
             constants.update(exp["constants"])
 
         exp_info_list.append(
-            ExpInfo(exp["command"], output_path / exp["name"], exp["name"], constants, exp["variables"], exp["repeat"])
+            ExpInfo(
+                exp["command"],
+                output_path / exp["name"],
+                exp["name"],
+                constants,
+                exp.get("variables"),
+                exp.get("repeat", 1)
+            )
         )
 
     return exp_info_list, output_path
