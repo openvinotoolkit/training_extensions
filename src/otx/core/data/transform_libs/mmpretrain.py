@@ -103,7 +103,7 @@ class PackInputs(MMPretrainPackInputs):
         )
         data_entity.img_info.pad_shape = packed_common_inputs["pad_shape"]
         return data_entity
-    
+
     def _pack_hlabel_inputs(self, results: dict) -> HlabelClsDataEntity:
         """Pack hlabel classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)

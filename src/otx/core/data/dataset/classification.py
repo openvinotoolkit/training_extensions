@@ -121,8 +121,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
-                pad_shape=img_shape,
-                scale_factor=(1.0, 1.0),
             ),
             labels=torch.as_tensor(hlabel_labels),
             hlabel_info=self.hlabel_info,
