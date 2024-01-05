@@ -27,6 +27,7 @@ class ImageInfo:
     :param ori_shape: Image shape right after loading it
     :param pad_shape: Image shape before padding
     :param scale_factor: Scale factor if the image is rescaled during preprocessing
+    :param attributes: Image attributes
     """
 
     img_idx: int

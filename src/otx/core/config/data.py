@@ -7,7 +7,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
 
@@ -27,9 +26,10 @@ class SubsetConfig:
 @dataclass
 class TilerConfig:
     """DTO for tiler configuration."""
+
     enable_tiler: bool = False
-    tile_size: Tuple[int, int] = (512, 512)
-    tile_overlap: float = 0.0
+    grid_size: Tuple[int, int] = (2, 2)
+    overlap: float = 0.0
 
 
 @dataclass

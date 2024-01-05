@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from otx.core.data.dataset.tile import OTXTileTestDataset, OTXTileTrainDataset
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -81,7 +82,7 @@ class OTXDatasetFactory:
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
 
-            return OTXMulticlassClsDataset(
+            dataset = OTXMulticlassClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -90,7 +91,7 @@ class OTXDatasetFactory:
         if task == OTXTaskType.MULTI_LABEL_CLS:
             from .dataset.classification import OTXMultilabelClsDataset
 
-            return OTXMultilabelClsDataset(
+            dataset = OTXMultilabelClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -99,7 +100,7 @@ class OTXDatasetFactory:
         if task == OTXTaskType.DETECTION:
             from .dataset.detection import OTXDetectionDataset
 
-            return OTXDetectionDataset(
+            dataset = OTXDetectionDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -110,7 +111,7 @@ class OTXDatasetFactory:
 
             # NOTE: DataModuleConfig does not have include_polygons attribute
             include_polygons = getattr(cfg_data_module, "include_polygons", False)
-            return OTXInstanceSegDataset(
+            dataset = OTXInstanceSegDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -120,7 +121,7 @@ class OTXDatasetFactory:
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:
             from .dataset.segmentation import OTXSegmentationDataset
 
-            return OTXSegmentationDataset(
+            dataset = OTXSegmentationDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -129,7 +130,7 @@ class OTXDatasetFactory:
         if task == OTXTaskType.ACTION_CLASSIFICATION:
             from .dataset.action_classification import OTXActionClsDataset
 
-            return OTXActionClsDataset(
+            dataset = OTXActionClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -138,9 +139,15 @@ class OTXDatasetFactory:
         if task == OTXTaskType.ACTION_DETECTION:
             from .dataset.action_detection import OTXActionDetDataset
 
-            return OTXActionDetDataset(
+            dataset = OTXActionDetDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
-        raise NotImplementedError(task)
+
+        if cfg_data_module.tile_config.enable_tiler:
+            if cfg_subset.subset_name == "train":
+                return OTXTileTrainDataset(dataset, cfg_subset, cfg_data_module.tile_config)
+            return OTXTileTestDataset(dataset, cfg_subset, cfg_data_module.tile_config)
+
+        return dataset
