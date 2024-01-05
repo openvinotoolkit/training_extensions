@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import Any
 
 import torch
@@ -128,13 +129,19 @@ class OTXLitModule(LightningModule):
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
-    def load_state_dict(self, state_dict: dict[str, Any]) -> None:
+    def load_state_dict(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
 
         If checkpoint's meta_info and OTXLitModule's meta_info are different,
         load_state_pre_hook for smart weight loading will be registered.
         """
         ckpt_meta_info = state_dict.pop("meta_info", None)
+        if ckpt_meta_info and self.meta_info is None:
+            msg = (
+                "`state_dict` to load has `meta_info`, but the current model has no `meta_info`. "
+                "It is recommended to set proper `meta_info` for the incremental learning case."
+            )
+            warnings.warn(msg, stacklevel=2)
         if ckpt_meta_info and self.meta_info and ckpt_meta_info != self.meta_info:
             logger = logging.getLogger()
             logger.info(
@@ -145,7 +152,7 @@ class OTXLitModule(LightningModule):
                 self.meta_info.class_names,
                 ckpt_meta_info.class_names,
             )
-        super().load_state_dict(state_dict)
+        return super().load_state_dict(state_dict, *args, **kwargs)
 
     @property
     def lr_scheduler_monitor_key(self) -> str:
