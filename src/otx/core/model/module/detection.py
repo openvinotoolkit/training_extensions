@@ -17,8 +17,6 @@ from otx.core.data.entity.detection import (
 from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.model.module.base import OTXLitModule
 
-from .merger import merge
-
 
 class OTXDetectionLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX detection task."""
@@ -75,25 +73,10 @@ class OTXDetectionLitModule(OTXLitModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        if isinstance(inputs.imgs_info[0], list):
-            tiles = inputs.images[0]
-            tile_infos = inputs.imgs_info[0]
-            tile_preds = []
-            for tile, tile_info in zip(tiles, tile_infos):
-                tile_input = DetBatchDataEntity(
-                    batch_size=1,
-                    images=[tile],
-                    imgs_info=[tile_info],
-                    bboxes=[[]],
-                    labels=[[]],
-                )
-                tile_preds.append(self.model(tile_input))
-            preds = merge(tile_preds)
-        else:
-            preds = self.model(inputs)
+        preds = self.model(inputs)
 
-            if not isinstance(preds, DetBatchPredEntity):
-                raise TypeError(preds)
+        if not isinstance(preds, DetBatchPredEntity):
+            raise TypeError(preds)
 
         self.val_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
@@ -133,27 +116,12 @@ class OTXDetectionLitModule(OTXLitModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        if isinstance(inputs.imgs_info[0], list):
-            tiles = inputs.images[0]
-            tile_infos = inputs.imgs_info[0]
-            tile_preds = []
-            for tile, tile_info in zip(tiles, tile_infos):
-                tile_input = DetBatchDataEntity(
-                    batch_size=1,
-                    images=[tile],
-                    imgs_info=[tile_info],
-                    bboxes=[[]],
-                    labels=[[]],
-                )
-                tile_preds.append(self.model(tile_input))
-            preds = merge(tile_preds)
-        else:
-            preds = self.model(inputs)
+        preds = self.model(inputs)
 
-            if not isinstance(preds, DetBatchPredEntity):
-                raise TypeError(preds)
+        if not isinstance(preds, DetBatchPredEntity):
+            raise TypeError(preds)
 
-        self.val_metric.update(
+        self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 

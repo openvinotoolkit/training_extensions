@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
@@ -11,6 +11,8 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
+from otx.core.data.entity.tile import TileDetDataEntity, TileBatchDetDataEntity
+
 
 from .base import OTXDataset
 
@@ -34,21 +36,21 @@ class OTXTileTrainDataset(OTXDataset):
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
         dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
         super().__init__(dm_subset, transforms=dataset.transforms)
-        OTXTileTrainDataset.collate_fn = dataset.__class__.collate_fn
         OTXTileTrainDataset._get_item_impl = dataset.__class__._get_item_impl
+        OTXTileTrainDataset.collate_fn = dataset.__class__.collate_fn
 
 
 class OTXTileTestDataset(OTXDataset):
     def __init__(self, dataset: OTXDataset, tile_config: TilerConfig) -> None:
         # Initialize the test dataset with tiling configuration
         self.tile_config = tile_config
-        OTXTileTestDataset.collate_fn = dataset.__class__.collate_fn
         super().__init__(dataset.dm_subset, transforms=dataset.transforms)
 
-    def __getitem__(self, index: int) -> DetDataEntity | None:
-        return self._get_item_impl(index)
+    @property
+    def collate_fn(self):
+        return TileBatchDetDataEntity.collate_fn
 
-    def _get_item_impl(self, index: int) -> DetDataEntity | None:
+    def _get_item_impl(self, index: int) -> TileDetDataEntity | None:
         # Retrieve a dataset item from the subset
         dataset_item = self.dm_subset.get(
             self.ids[index],
@@ -74,26 +76,22 @@ class OTXTileTestDataset(OTXDataset):
             overlap=(self.tile_config.overlap, self.tile_config.overlap),
             threshold_drop_ann=0.5,
         )
-        tiles = []
-        tile_infos = []
+        tile_entities = []
         for tile in tile_ds:
             tile_entity = self.convert_tile(tile)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
-            tiles.append(transformed_tile.image)
-            tile_infos.append(transformed_tile.img_info)
-        tile_tensor = tv_tensors.Image(torch.stack(tiles))  # num_tiles x C x H x W
+            tile_entities.append(transformed_tile)
 
-        # TODO: add new TileDataEntity
-        return DetDataEntity(
-            image=tile_tensor,
-            img_info=tile_infos,
-            bboxes=tv_tensors.BoundingBoxes(
+        return TileDetDataEntity(
+            num_tiles=len(tile_entities),
+            entity_list=tile_entities,
+            ori_bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            labels=torch.as_tensor([ann.label for ann in bbox_anns]),
+            ori_labels=torch.as_tensor([ann.label for ann in bbox_anns]),
         )
 
     def convert_tile(self, tile_item: DatasetItem) -> OTXDataEntity:

@@ -11,10 +11,10 @@ from datumaro import Dataset as DmDataset
 from datumaro.plugins.tiling.merge_tile import MergeTile
 from torchvision import tv_tensors
 
-from otx.core.data.entity.detection import DetBatchPredEntity
+from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
 
 
-def merge(tile_preds: list[DetBatchPredEntity]) -> DetBatchPredEntity:
+def merge(tile_preds: list[DetBatchPredEntity]) -> DetPredEntity:
     """Merge tile predictions into full image prediction.
 
     Args:
@@ -70,18 +70,14 @@ def merge(tile_preds: list[DetBatchPredEntity]) -> DetBatchPredEntity:
     if len(pred_bboxes) == 0:
         pred_bboxes = torch.empty((0, 4))
 
-    return DetBatchPredEntity(
-        batch_size=1,
-        images=[tv_tensors.Image(full_img)],
-        imgs_info=[tile_info],
-        scores=[torch.tensor(pred_scores, device="cuda")],
-        bboxes=[
-            tv_tensors.BoundingBoxes(
+    return DetPredEntity(
+        image=tv_tensors.Image(full_img),
+        img_info=tile_info,
+        score=torch.tensor(pred_scores, device="cuda"),
+        bboxes=tv_tensors.BoundingBoxes(
                 pred_bboxes,
                 format="XYXY",
                 canvas_size=full_img.shape[:2],
-                device="cuda",
-            ),
-        ],
-        labels=[torch.tensor(pred_labels, device="cuda")],
+                device="cuda"),
+        labels=torch.tensor(pred_labels, device="cuda"),
     )
