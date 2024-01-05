@@ -46,15 +46,21 @@ class PackInputs(MMPretrainPackInputs):
 
     def _pack_common_inputs(self, results: dict) -> dict[str, Any]:
         transformed = super().transform(results)
+        image = tv_tensors.Image(transformed.get("inputs"))
         data_samples = transformed["data_samples"]
-        img_shape = data_samples.img_shape
+
+        # Some MM* transforms return (H, W, C), not (H, W)
+        img_shape = data_samples.img_shape if len(data_samples.img_shape) == 2 else data_samples.img_shape[:2]
+        ori_shape = data_samples.ori_shape
+        pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
+        scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
 
         return {
-            "image": tv_tensors.Image(transformed.get("inputs")),
+            "image": image,
             "img_shape": img_shape,
-            "ori_shape": data_samples.ori_shape,
-            "pad_shape": data_samples.metainfo.get("pad_shape", img_shape),
-            "scale_factor": data_samples.metainfo.get("scale_factor", (1.0, 1.0)),
+            "ori_shape": ori_shape,
+            "pad_shape": pad_shape,
+            "scale_factor": scale_factor,
             "labels": results["__otx__"].labels,
         }
 
@@ -62,17 +68,18 @@ class PackInputs(MMPretrainPackInputs):
         """Pack multiclass classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)
 
-        return MulticlassClsDataEntity(
+        data_entity = MulticlassClsDataEntity(
             image=packed_common_inputs["image"],
             img_info=ImageInfo(
                 img_idx=0,
                 img_shape=packed_common_inputs["img_shape"],
                 ori_shape=packed_common_inputs["ori_shape"],
-                pad_shape=packed_common_inputs["pad_shape"],
                 scale_factor=packed_common_inputs["scale_factor"],
             ),
             labels=packed_common_inputs["labels"],
         )
+        data_entity.img_info.pad_shape = packed_common_inputs["pad_shape"]
+        return data_entity
 
     def _pack_multilabel_inputs(self, results: dict) -> MultilabelClsDataEntity:
         """Pack multilabel classification inputs.
@@ -84,35 +91,37 @@ class PackInputs(MMPretrainPackInputs):
         """
         packed_common_inputs = self._pack_common_inputs(results)
 
-        return MultilabelClsDataEntity(
+        data_entity = MultilabelClsDataEntity(
             image=packed_common_inputs["image"],
             img_info=ImageInfo(
                 img_idx=0,
                 img_shape=packed_common_inputs["img_shape"],
                 ori_shape=packed_common_inputs["ori_shape"],
-                pad_shape=packed_common_inputs["pad_shape"],
                 scale_factor=packed_common_inputs["scale_factor"],
             ),
             labels=packed_common_inputs["labels"],
         )
-
+        data_entity.img_info.pad_shape = packed_common_inputs["pad_shape"]
+        return data_entity
+    
     def _pack_hlabel_inputs(self, results: dict) -> HlabelClsDataEntity:
         """Pack hlabel classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)
         otx_data_entity = results["__otx__"]
 
-        return HlabelClsDataEntity(
+        data_entity = HlabelClsDataEntity(
             image=packed_common_inputs["image"],
             img_info=ImageInfo(
                 img_idx=0,
                 img_shape=packed_common_inputs["img_shape"],
                 ori_shape=packed_common_inputs["ori_shape"],
-                pad_shape=packed_common_inputs["pad_shape"],
                 scale_factor=packed_common_inputs["scale_factor"],
             ),
             labels=packed_common_inputs["labels"],
             hlabel_info=otx_data_entity.hlabel_info,
         )
+        data_entity.img_info.pad_shape = packed_common_inputs["pad_shape"]
+        return data_entity
 
 
 class MMPretrainTransformLib(MMCVTransformLib):

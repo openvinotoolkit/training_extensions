@@ -4,9 +4,12 @@
 """Utility functions for OTX data entities."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch.utils._pytree as pytree
 
-from otx.core.data.entity.base import T_OTXDataEntity
+if TYPE_CHECKING:
+    from otx.core.data.entity.base import T_OTXDataEntity
 
 
 def register_pytree_node(cls: type[T_OTXDataEntity]) -> type[T_OTXDataEntity]:

@@ -18,7 +18,7 @@ class TestLoadAnnotations:
     def test_transform(self) -> None:
         data_entity = DetDataEntity(
             tv_tensors.Image(torch.randn(3, 224, 224)),
-            ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
+            ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
             tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
             LongTensor([1]),
         )
@@ -35,10 +35,10 @@ class TestPackDetInputs:
     def test_transform(self) -> None:
         transform = PackDetInputs()
         data_entity = DetDataEntity(
-            np.ndarray((224, 224, 3)),
-            ImageInfo(0, (224, 224, 3), (224, 224, 3), (0, 0, 0), (1.0, 1.0)),
-            tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
-            LongTensor([1]),
+            image=np.ndarray((224, 224, 3)),
+            img_info=ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
+            bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+            labels=LongTensor([1]),
         )
         data_entity = LoadAnnotations().transform(LoadImageFromFile().transform(data_entity))
         results = transform.transform(data_entity)
