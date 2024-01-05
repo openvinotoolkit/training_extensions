@@ -61,8 +61,12 @@ def pytest_addoption(parser):
     parser.addoption(
         "--output-root",
         action="store",
-        default="exp/perf",
-        help="Output root directory.",
+        help="Output root directory. Defaults to temp directory.",
+    )
+    parser.addoption(
+        "--summary-csv",
+        action="store",
+        help="Path to output summary cvs file. Defaults to {output-root}/benchmark-summary.csv",
     )
     parser.addoption(
         "--dry-run",
@@ -73,9 +77,11 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session")
-def fxt_output_root(request: pytest.FixtureRequest) -> Path:
+def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Output root + date + short commit hash."""
     output_root = request.config.getoption("--output-root")
+    if output_root is None:
+        output_root = tmp_path_factory.mktemp("otx-benchmark")
     data_str = datetime.now().strftime("%Y%m%d-%H%M%S")
     commit_str = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("ascii").strip()
     return Path(output_root) / (data_str + "-" + commit_str)
@@ -134,13 +140,15 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
 
 
 @pytest.fixture(scope="session", autouse=True)
-def fxt_benchmark_summary(fxt_output_root: Path):
+def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path):
     """Summarize all results at the end of test session."""
     yield
     all_results = OTXBenchmark.load_result(fxt_output_root)
     if all_results is not None:
         print("=" * 20, "[Benchmark summary]")
         print(all_results)
-        output_path = fxt_output_root / "benchmark-summary.csv"
+        output_path = request.config.getoption("--summary-csv")
+        if not output_path:
+            output_path = fxt_output_root / "benchmark-summary.csv"
         all_results.to_csv(output_path, index=False)
         print(f"  -> Saved to {output_path}.")
