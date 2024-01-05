@@ -1,34 +1,24 @@
-class_path: otx.core.model.module.classification.OTXMulticlassClsLitModule
+class_path: otx.core.model.module.classification.OTXMultilabelClsLitModule
 init_args:
   torch_compile: false
   otx_model:
-    class_path: otx.core.model.entity.classification.MMPretrainMulticlassClsModel
+    class_path: otx.core.model.entity.classification.MMPretrainMultilabelClsModel
     init_args:
       config:
         backbone:
           pretrained: true
           type: OTXEfficientNetV2
         head:
-          act_cfg:
-            type: HSwish
-          dropout_rate: 0.2
           in_channels: 1280
-          init_cfg:
-            bias: 0.0
-            layer: Linear
-            mean: 0.0
-            std: 0.01
-            type: Normal
-          loss:
-            loss_weight: 1.0
-            type: CrossEntropyLoss
-          mid_channels:
-            - 1280
           num_classes: 1000
-          topk:
-            - 1
-            - 5
-          type: StackedLinearClsHead
+          loss:
+            reduction: sum
+            gamma_neg: 1.0
+            gamma_pos: 0.0
+            type: AsymmetricAngularLossWithIgnore
+          normalized: true
+          scale: 7.0
+          type: CustomMultiLabelLinearClsHead
         neck:
           type: GlobalAveragePooling
         data_preprocessor:
@@ -40,7 +30,7 @@ init_args:
             - 58.395
             - 57.12
             - 57.375
-          to_rgb: false
+          to_rgb: False
           type: ClsDataPreprocessor
         type: ImageClassifier
   optimizer:

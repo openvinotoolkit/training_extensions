@@ -4,6 +4,8 @@
 """Class definition for action classification lightning module used in OTX."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from torch import Tensor
 from torchmetrics.classification.accuracy import Accuracy
@@ -15,6 +17,9 @@ from otx.core.data.entity.action_classification import (
 from otx.core.model.entity.action_classification import OTXActionClsModel
 from otx.core.model.module.base import OTXLitModule
 
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
 
 class OTXActionClsLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX detection task."""
@@ -22,11 +27,16 @@ class OTXActionClsLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXActionClsModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
         num_classes = otx_model.config.get("cls_head", {}).get("num_classes", None)
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
         self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
@@ -94,8 +104,3 @@ class OTXActionClsLitModule(OTXLitModule):
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"

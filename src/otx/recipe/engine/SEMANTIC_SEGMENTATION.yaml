@@ -19,14 +19,14 @@ callbacks:
       monitor: val/mIoU
       mode: max
       save_top_k: 1
-      save_last: True
-      auto_insert_metric_name: False
+      save_last: true
+      auto_insert_metric_name: false
       filename: "epoch_{epoch:03d}"
   - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
     init_args:
       prog_bar: true
-      on_step: True
-      on_epoch: True
+      on_step: false
+      on_epoch: true
   - class_path: lightning.pytorch.callbacks.RichModelSummary
     init_args:
       max_depth: 1
@@ -41,8 +41,8 @@ logger:
     init_args:
       save_dir: ""
       name: "tensorboard/"
-      log_graph: False
-      default_hp_metric: True
+      log_graph: false
+      default_hp_metric: true
       prefix: ""
 deterministic: false
 seed: null

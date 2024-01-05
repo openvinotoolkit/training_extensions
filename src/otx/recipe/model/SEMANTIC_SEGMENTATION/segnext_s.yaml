@@ -49,7 +49,7 @@ init_args:
             type: BN
           type: MSCAN
         data_preprocessor:
-          bgr_to_rgb: true
+          bgr_to_rgb: false
           mean:
             - 123.675
             - 116.28

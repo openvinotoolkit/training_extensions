@@ -1,5 +1,5 @@
 engine:
-  task: DETECTION
+  task: MULTI_LABEL_CLS
   device: auto
 
 # engine.train arguments
@@ -7,7 +7,7 @@ max_epochs: 10
 callbacks:
   - class_path: lightning.pytorch.callbacks.EarlyStopping
     init_args:
-      monitor: val/map
+      monitor: val/accuracy
       mode: max
       patience: 100
   - class_path: lightning.pytorch.callbacks.RichProgressBar
@@ -16,7 +16,7 @@ callbacks:
       leave: false
   - class_path: lightning.pytorch.callbacks.ModelCheckpoint
     init_args:
-      monitor: val/map
+      monitor: val/accuracy
       mode: max
       save_top_k: 1
       save_last: true

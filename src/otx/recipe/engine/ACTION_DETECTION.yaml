@@ -1,5 +1,5 @@
 engine:
-  task: DETECTION
+  task: ACTION_DETECTION
   device: auto
 
 # engine.train arguments

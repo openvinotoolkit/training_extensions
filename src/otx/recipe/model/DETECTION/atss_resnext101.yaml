@@ -32,7 +32,7 @@ init_args:
             - 255
             - 255
             - 255
-          bgr_to_rgb: true
+          bgr_to_rgb: false
           pad_size_divisor: 32
         backbone:
           type: ResNeXt

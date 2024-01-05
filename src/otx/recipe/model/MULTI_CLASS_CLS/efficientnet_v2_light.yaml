@@ -1,8 +1,8 @@
-class_path: otx.core.model.module.classification.OTXClassificationLitModule
+class_path: otx.core.model.module.classification.OTXMulticlassClsLitModule
 init_args:
   torch_compile: false
   otx_model:
-    class_path: otx.core.model.entity.classification.MMPretrainCompatibleModel
+    class_path: otx.core.model.entity.classification.MMPretrainMulticlassClsModel
     init_args:
       config:
         backbone:
@@ -29,7 +29,7 @@ init_args:
             - 58.395
             - 57.12
             - 57.375
-          to_rgb: True
+          to_rgb: false
           type: ClsDataPreprocessor
         type: ImageClassifier
   optimizer:

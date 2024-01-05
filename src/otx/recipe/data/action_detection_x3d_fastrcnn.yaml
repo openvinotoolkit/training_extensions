@@ -1,0 +1,76 @@
+task: ACTION_DETECTION
+config:
+  data_format: ava
+  mem_cache_size: 1GB
+  mem_cache_img_max_size:
+    - 500
+    - 500
+  train_subset:
+    subset_name: train
+    transform_lib_type: MMACTION
+    batch_size: 8
+    num_workers: 2
+    transforms:
+      - type: LoadVideoForDetection
+      - type: LoadAnnotations
+      - type: SampleAVAFrames
+        clip_len: 32
+        frame_interval: 2
+      - type: RawFrameDecode
+        io_backend: disk
+      - type: RandomRescale
+        scale_range:
+          - 256
+          - 320
+      - type: RandomCrop
+        size: 256
+      - type: Flip
+        flip_ratio: 0.5
+      - type: FormatShape
+        input_format: NCTHW
+        collapse: true
+      - type: PackActionInputs
+  val_subset:
+    subset_name: val
+    transform_lib_type: MMACTION
+    batch_size: 1
+    num_workers: 2
+    transforms:
+      - type: LoadVideoForDetection
+      - type: LoadAnnotations
+      - type: SampleAVAFrames
+        clip_len: 32
+        frame_interval: 2
+        test_mode: true
+      - type: RawFrameDecode
+        io_backend: disk
+      - type: Resize
+        scale:
+          - -1
+          - 256
+      - type: FormatShape
+        input_format: NCTHW
+        collapse: true
+      - type: PackActionInputs
+  test_subset:
+    subset_name: test
+    transform_lib_type: MMACTION
+    batch_size: 1
+    num_workers: 2
+    transforms:
+      - type: LoadVideoForDetection
+      - type: LoadAnnotations
+      - type: SampleAVAFrames
+        clip_len: 32
+        frame_interval: 2
+        test_mode: true
+      - type: RawFrameDecode
+        io_backend: disk
+      - type: Resize
+        scale:
+          - -1
+          - 256
+      - type: FormatShape
+        input_format: NCTHW
+        collapse: true
+      - type: PackActionInputs

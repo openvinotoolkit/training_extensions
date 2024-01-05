@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, ActionDetBatchPredEntity
@@ -15,7 +16,6 @@ from otx.core.model.entity.base import OTXModel
 from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
-    from omegaconf import DictConfig
     from torch import device, nn
 
 
@@ -31,9 +31,9 @@ class MMActionCompatibleModel(OTXActionDetModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
-        self.config = config
+    def __init__(self, config: DictConfig | dict) -> None:
         self.load_from = config.pop("load_from", None)
+        self.config = DictConfig(config)
         super().__init__()
 
     def _create_model(self) -> nn.Module:

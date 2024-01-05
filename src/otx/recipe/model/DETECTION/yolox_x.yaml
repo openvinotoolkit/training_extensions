@@ -27,7 +27,7 @@ init_args:
             - 1.0
             - 1.0
             - 1.0
-          bgr_to_rgb: true
+          bgr_to_rgb: false
           pad_size_divisor: 32
         backbone:
           type: CSPDarknet

@@ -1,0 +1,46 @@
+task: MULTI_LABEL_CLS
+config:
+  data_format: datumaro
+  mem_cache_img_max_size:
+    - 500
+    - 500
+  mem_cache_size: 1GB
+  train_subset:
+    subset_name: train
+    num_workers: 2
+    batch_size: 64
+    transform_lib_type: MMPRETRAIN
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        scale: 224
+        type: RandomResizedCrop
+      - type: PackInputs
+  val_subset:
+    subset_name: val
+    num_workers: 2
+    batch_size: 64
+    transform_lib_type: MMPRETRAIN
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+  test_subset:
+    subset_name: test
+    num_workers: 2
+    batch_size: 64
+    transform_lib_type: MMPRETRAIN
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs

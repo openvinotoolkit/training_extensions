@@ -18,6 +18,7 @@ from otx.core.utils import get_otx_root_path
 
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
     OTXTaskType.MULTI_CLASS_CLS: ["imagenet", "datumaro", "imagenet_with_subset_dirs"],
+    OTXTaskType.MULTI_LABEL_CLS: ["imagenet", "datumaro", "imagenet_with_subset_dirs"],
     OTXTaskType.DETECTION: ["coco", "voc", "yolo"],
     OTXTaskType.SEMANTIC_SEGMENTATION: [
         "cityscapes",
@@ -27,20 +28,28 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
         "ade20k2020",
     ],
     OTXTaskType.INSTANCE_SEGMENTATION: ["coco", "voc"],
+    OTXTaskType.ACTION_CLASSIFICATION: ["kinetics"],
+    OTXTaskType.ACTION_DETECTION: ["ava"],
 }
 
 DEFAULT_MODEL = {
     OTXTaskType.MULTI_CLASS_CLS: "otx_efficientnet_b0",
+    OTXTaskType.MULTI_LABEL_CLS: "efficientnet_b0_light",
     OTXTaskType.DETECTION: "atss_mobilenetv2",
     OTXTaskType.SEMANTIC_SEGMENTATION: "litehrnet_18",
     OTXTaskType.INSTANCE_SEGMENTATION: "maskrcnn_r50",
+    OTXTaskType.ACTION_CLASSIFICATION: "x3d",
+    OTXTaskType.ACTION_DETECTION: "x3d_fastrcnn",
 }
 
 DEFAULT_DATA = {
-    OTXTaskType.MULTI_CLASS_CLS: "multi_class_cls_default",
+    OTXTaskType.MULTI_CLASS_CLS: "multi_class_cls_base",
+    OTXTaskType.MULTI_LABEL_CLS: "multi_label_cls_base",
     OTXTaskType.DETECTION: "detection_atss",
     OTXTaskType.SEMANTIC_SEGMENTATION: "semantic_segmentation_litehrnet",
     OTXTaskType.INSTANCE_SEGMENTATION: "instance_segmentation_maskrcnn",
+    OTXTaskType.ACTION_CLASSIFICATION: "action_classification_x3d",
+    OTXTaskType.ACTION_DETECTION: "action_detection_x3d_fastrcnn",
 }
 
 
