@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
+import cv2
 import numpy as np
 import pytest
 from datumaro.components.annotation import Bbox, Label, Mask
@@ -27,22 +28,33 @@ from otx.core.data.mem_cache import MemCacheHandlerSingleton
 
 if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset, T_OTXDataEntity
+    from otx.core.data.mem_cache import MemCacheHandlerBase
     from pytest_mock import MockerFixture
 
 
-@pytest.fixture(autouse=True)
-def fxt_mem_cache() -> None:
-    MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=1024 * 1024)
-    yield
+@pytest.fixture()
+def fxt_mem_cache_handler() -> MemCacheHandlerBase:
+    handler = MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=1024 * 1024)
+    yield handler
     MemCacheHandlerSingleton.delete()
 
 
-@pytest.fixture()
-def fxt_dm_item() -> DatasetItem:
+@pytest.fixture(params=["bytes", "numpy"])
+def fxt_dm_item(request) -> DatasetItem:
+    np_img = np.zeros(shape=(10, 10, 3), dtype=np.uint8)
+
+    if request.param == "bytes":
+        _, np_bytes = cv2.imencode(".png", np_img)
+        media = Image.from_bytes(np_bytes.tobytes())
+    elif request.param == "numpy":
+        media = Image.from_numpy(np_img)
+    else:
+        raise ValueError(request.param)
+
     return DatasetItem(
         id="item",
         subset="train",
-        media=Image.from_numpy(np.zeros(shape=(10, 10, 3), dtype=np.uint8)),
+        media=media,
         annotations=[
             Label(label=0),
             Bbox(x=0, y=0, w=1, h=1, label=0),

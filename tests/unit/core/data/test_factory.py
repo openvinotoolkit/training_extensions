@@ -46,11 +46,17 @@ class TestOTXDatasetFactory:
             (OTXTaskType.SEMANTIC_SEGMENTATION, OTXSegmentationDataset),
         ],
     )
-    def test_create(self, fxt_mock_dm_subset, task_type, dataset_cls, mocker) -> None:
+    def test_create(self, fxt_mock_dm_subset, fxt_mem_cache_handler, task_type, dataset_cls, mocker) -> None:
         mocker.patch.object(TransformLibFactory, "generate", return_value=None)
         cfg_subset = mocker.MagicMock(spec=SubsetConfig)
         cfg_data_module = mocker.MagicMock(spec=DataModuleConfig)
         assert isinstance(
-            OTXDatasetFactory.create(task_type, fxt_mock_dm_subset, cfg_subset, cfg_data_module),
+            OTXDatasetFactory.create(
+                task=task_type,
+                dm_subset=fxt_mock_dm_subset,
+                mem_cache_handler=fxt_mem_cache_handler,
+                cfg_subset=cfg_subset,
+                cfg_data_module=cfg_data_module,
+            ),
             dataset_cls,
         )
