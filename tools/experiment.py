@@ -647,11 +647,11 @@ class ExpInfo:
             var_combinations = self._product_all_cases(self.variables, command)
             if not var_combinations:
                 self._commands = [Command(command=command)]
-
-            command_arr = []
-            for var_combination in var_combinations:
-                command_arr.append(Command(self._replace_var_in_target(var_combination, command), var_combination))
-            self._commands = command_arr
+            else:
+                command_arr = []
+                for var_combination in var_combinations:
+                    command_arr.append(Command(self._replace_var_in_target(var_combination, command), var_combination))
+                self._commands = command_arr
         return self._commands
 
     def _product_all_cases(
@@ -954,10 +954,11 @@ def print_experiments_summary(output_path: Path):
         output_path (Path): Output path where experiment summary file is saved.
     """
     rich_console.rule("[bold green]Experiment summary")
-    for exp in output_path.iterdir():
-        summary_file = exp / "exp_summary.csv"
+    
+    for summary_file in output_path.rglob("exp_summary.csv"):
+        exp_name = summary_file.parent.name
         if not summary_file.exists():
-            print(f"{exp.name} doesn't have exp_summary.csv file. Skipped.")
+            print(f"{exp_name} doesn't have exp_summary.csv file. Skipped.")
             continue
 
         with summary_file.open() as f:
@@ -968,7 +969,7 @@ def print_experiments_summary(output_path: Path):
             for row in exp_summary_csv:
                 rows.append(dict((header, val) for header, val in zip(headers, row)))
 
-        print_table(headers, rows, f"{exp.name}")
+        print_table(headers, rows, f"{exp_name}")
 
 
 def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
@@ -987,8 +988,10 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     if dryrun:
         return
 
-    if total_failed_cases:
-        log_exp_failed_cases(total_failed_cases, output_path)
+    for failed_cases in total_failed_cases.values():
+        if failed_cases:
+            log_exp_failed_cases(total_failed_cases, output_path)
+            break
 
     print_experiments_summary(output_path)
 
