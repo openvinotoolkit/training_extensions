@@ -80,13 +80,12 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         for param_name in self.classification_layers:
             model_param = self.state_dict()[param_name].clone()
             ckpt_param = state_dict[prefix + param_name]
-            if model_param.shape != ckpt_param.shape:
-                for model_t, ckpt_t in enumerate(model2ckpt):
-                    if ckpt_t >= 0:
-                        model_param[model_t].copy_(ckpt_param[ckpt_t])
+            for model_t, ckpt_t in enumerate(model2ckpt):
+                if ckpt_t >= 0:
+                    model_param[model_t].copy_(ckpt_param[ckpt_t])
 
-                # Replace checkpoint weight by mixed weights
-                state_dict[prefix + param_name] = model_param
+            # Replace checkpoint weight by mixed weights
+            state_dict[prefix + param_name] = model_param
 
     @staticmethod
     def map_class_names(src_classes: list[str], dst_classes: list[str]) -> list[int]:
