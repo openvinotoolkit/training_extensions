@@ -943,7 +943,7 @@ def run_experiment(exp_info: ExpInfo, dryrun: bool = False) -> List[CommandFailI
             otx_cmd_runner = OtxCommandRunner(
                 command_ins,
                 exp_info.output_path
-                / Path("_".join(command_ins.variable.values()).replace("/", "_") + f"_repeat_{repeat_idx}"),
+                / "_".join(list(command_ins.variable.values()) + ["repeat", str(repeat_idx)]).replace("/", "_"),
                 repeat_idx
             )
             otx_cmd_runner.run_command_list(dryrun)
