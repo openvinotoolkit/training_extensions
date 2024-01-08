@@ -19,7 +19,6 @@
 import datetime
 import time
 from contextlib import ExitStack
-from functools import partial
 from pathlib import Path
 from typing import Optional
 
