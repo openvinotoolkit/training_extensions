@@ -25,6 +25,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self) -> None:
         super().__init__()
+        self.classification_layers: list[str] = []
         self.model = self._create_model()
 
     @abstractmethod
@@ -76,7 +77,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Modify input state_dict according to class name matching before weight loading."""
         model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
 
-        for param_name in self.state_dict():
+        for param_name in self.classification_layers:
             model_param = self.state_dict()[param_name].clone()
             ckpt_param = state_dict[prefix + param_name]
             if model_param.shape != ckpt_param.shape:

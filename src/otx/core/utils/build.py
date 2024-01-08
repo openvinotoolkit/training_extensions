@@ -5,19 +5,20 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from mmengine.logging import MMLogger
+from omegaconf import DictConfig
 
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
     from mmengine.registry import Registry
-    from omegaconf import DictConfig
     from torch import nn
 
 
-def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str) -> nn.Module:
+def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str | None = None) -> nn.Module:
     """Build a model by using the registry."""
     from mmengine.runner import load_checkpoint
 
@@ -37,3 +38,30 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str)
         load_checkpoint(model, load_from)
 
     return model
+
+
+def get_classification_layers(config: DictConfig, model_registry: Registry, prefix: str = "") -> nn.Module:
+    """Return classification layer names by comparing two different number of classes models."""
+    sample_config = deepcopy(config)
+    modify_num_classes(sample_config, 5)
+    sample_model_dict = build_mm_model(sample_config, model_registry, None).state_dict()
+
+    modify_num_classes(sample_config, 6)
+    incremental_model_dict = build_mm_model(sample_config, model_registry, None).state_dict()
+
+    return [
+        prefix + key for key in sample_model_dict if sample_model_dict[key].shape != incremental_model_dict[key].shape
+    ]
+
+
+def modify_num_classes(config: DictConfig, num_classes: int) -> None:
+    """Modify num_classes of config."""
+    for key, value in config.items():
+        if key == "num_classes":
+            config[key] = num_classes
+        elif isinstance(value, (DictConfig, dict)):
+            modify_num_classes(value, num_classes)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, (DictConfig, dict)):
+                    modify_num_classes(item, num_classes)
