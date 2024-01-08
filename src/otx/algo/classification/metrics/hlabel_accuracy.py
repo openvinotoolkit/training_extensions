@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import torch
 from torchmetrics import Metric
-from torchmetrics.classification import Accuracy, MultilabelAccuracy
+from torchmetrics.classification import Accuracy, MultilabelAccuracy, MultilabelAveragePrecision
 
 
 class HLabelAccuracy(Metric):
