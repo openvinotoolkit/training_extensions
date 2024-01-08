@@ -29,8 +29,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
-    OTXTaskType.MULTI_CLASS_CLS: ["imagenet", "datumaro", "imagenet_with_subset_dirs"],
-    OTXTaskType.MULTI_LABEL_CLS: ["imagenet", "datumaro", "imagenet_with_subset_dirs"],
+    OTXTaskType.MULTI_CLASS_CLS: ["imagenet_with_subset_dirs"],
+    OTXTaskType.MULTI_LABEL_CLS: ["datumaro"],
     OTXTaskType.DETECTION: ["coco", "voc", "yolo"],
     OTXTaskType.SEMANTIC_SEGMENTATION: [
         "cityscapes",
@@ -172,7 +172,7 @@ def replace_key(config: dict, key: str, value: Any) -> None:  # noqa: ANN401
         None
     """
     for k, v in config.items():
-        if k == key:
+        if k == key and value is not None:
             logger.warning(f"Replace {k} with {value}")
             config[k] = value
         elif isinstance(v, dict):
@@ -276,7 +276,7 @@ class AutoConfigurator:
         msg = f"{config_file} does not exist."
         raise FileNotFoundError(msg)
 
-    def load_default_model_config(self, model: str | None = None) -> dict:
+    def load_default_model_config(self, model: str | None = None, num_classes: int | None = None) -> dict:
         """Load the default model configuration for the task.
 
         Returns:
@@ -292,6 +292,8 @@ class AutoConfigurator:
             model_cfg_path = model_dict[model]
             with Path(model_cfg_path).open() as f:
                 model_config = yaml.safe_load(f)
+            # Update num_classes
+            replace_key(model_config, "num_classes", num_classes)
             return model_config.get("model", model_config)
         msg = f"{model} does not exist."
         raise FileNotFoundError(msg)
@@ -338,12 +340,10 @@ class AutoConfigurator:
         Returns:
             OTXModel: The instantiated OTXModel object.
         """
-        model_config = self.load_default_model_config(model=model)
+        model_config = self.load_default_model_config(model=model, num_classes=num_classes)
         if not isinstance(model_config, (dict, DictConfig)):
             msg = "Please double-check model config."
             raise TypeError(msg)
-        # Update num_classes
-        replace_key(model_config, "num_classes", num_classes)
         logger.warning(f"Set Default Model: {model_config}")
         return instantiate_class(args=(), init=model_config)
 

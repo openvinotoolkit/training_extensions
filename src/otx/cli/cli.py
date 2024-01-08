@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from jsonargparse import ActionConfigFile, ArgumentParser, Namespace
+from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
 from rich.console import Console
 
 from otx import OTX_LOGO, __version__
@@ -143,6 +143,7 @@ class OTXCLI:
                 "engine",
                 fail_untyped=False,
                 sub_configs=True,
+                instantiate=False,
                 skip=engine_skip,
             )
             sub_parser.link_arguments("data_root", "engine.data_root")
@@ -218,7 +219,6 @@ class OTXCLI:
                 default_engine_config = auto_configurator.load_default_engine_config()
                 default_engine_config = flatten_dict(default_engine_config)
                 default_engine_config["engine.data_root"] = data_root
-                default_engine_config["engine.task"] = task if task is not None else auto_configurator.task
                 sub_parser.set_defaults(default_engine_config)
 
             if "logger" in added:
@@ -243,7 +243,18 @@ class OTXCLI:
             self.config_init = self.parser.instantiate_classes(self.config)
             self.datamodule = self._get(self.config_init, "data")
             self.model = self._get(self.config_init, "model")
-            self.engine = self._get(self.config_init, "engine")
+            optimizer_kwargs = self._get(self.config_init, "optimizer")
+            scheduler_kwargs = self._get(self.config_init, "scheduler")
+            from otx.core.utils.instantiators import partial_instantiate_class
+
+            engine_kwargs = self._get(self.config_init, "engine")
+            self.engine = Engine(
+                model=self.model,
+                optimizer=partial_instantiate_class(namespace_to_dict(optimizer_kwargs)),
+                scheduler=partial_instantiate_class(namespace_to_dict(scheduler_kwargs)),
+                datamodule=self.datamodule,
+                **engine_kwargs,
+            )
 
     def _get(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Utility to get a config value which might be inside a subcommand."""

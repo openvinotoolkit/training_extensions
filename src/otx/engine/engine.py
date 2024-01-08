@@ -115,10 +115,10 @@ class Engine:
             data_root=data_root,
             task=task,
         )
-        self.task = self._auto_configurator.task
         self.datamodule: OTXDataModule = (
             datamodule if datamodule is not None else self._auto_configurator.get_datamodule()
         )
+        self.task = self.datamodule.task
 
         self._trainer: Trainer | None = None
         self._model: OTXModel = (
