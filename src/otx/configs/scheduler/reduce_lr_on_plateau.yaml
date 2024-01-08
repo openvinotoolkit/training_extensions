@@ -1,0 +1,6 @@
+class_path: lightning.pytorch.cli.ReduceLROnPlateau
+init_args:
+  mode: min
+  factor: 0.5
+  patience: 1
+  monitor: train/loss

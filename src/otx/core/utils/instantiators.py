@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.loggers import Logger
 
-    from otx.core.model.module.base import OTXLitModule
 
 log = pylogger.get_pylogger(__name__)
 
@@ -85,29 +84,3 @@ def partial_instantiate_class(init: dict) -> partial:
     module = __import__(class_module, fromlist=[class_name])
     args_class = getattr(module, class_name)
     return partial(args_class, **kwargs)
-
-
-def instantiate_model(model_cfg: dict | None) -> OTXLitModule | None:
-    """Instantiate a module based on the provided module configuration.
-
-    Args:
-        module_cfg (dict | None): The module configuration.
-
-    Returns:
-        LightningModule | OTXDataModule | None: The instantiated module.
-    """
-    if not model_cfg:
-        log.warning("No model configs found! Skipping...")
-        return None
-
-    model_args = model_cfg.get("init_args", {})
-    model_args["otx_model"] = instantiate_class(args=(), init=model_args["otx_model"])
-    model_args["optimizer"] = partial_instantiate_class(init=model_args["optimizer"])
-    model_args["scheduler"] = partial_instantiate_class(init=model_args["scheduler"])
-    model_cfg["init_args"] = model_args
-
-    if isinstance(model_cfg, dict) and "class_path" in model_cfg:
-        log.info(f"Instantiating module <{model_cfg['class_path']}>")
-        return instantiate_class(args=(), init=model_cfg)
-
-    return None

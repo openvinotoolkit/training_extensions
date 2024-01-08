@@ -1,0 +1,34 @@
+class_path: otx.core.model.entity.action_classification.MMActionCompatibleModel
+init_args:
+  config:
+    load_from: https://download.openmmlab.com/mmaction/recognition/x3d/facebook/x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth
+    backbone:
+      gamma_b: 2.25
+      gamma_d: 2.2
+      gamma_w: 1
+      type: X3D
+    cls_head:
+      average_clips: prob
+      dropout_ratio: 0.5
+      fc1_bias: false
+      in_channels: 432
+      num_classes: 400
+      spatial_type: avg
+      type: X3DHead
+    data_preprocessor:
+      format_shape: NCTHW
+      mean:
+        - 114.75
+        - 114.75
+        - 114.75
+      std:
+        - 57.38
+        - 57.38
+        - 57.38
+      type: ActionDataPreprocessor
+    test_cfg: null
+    train_cfg: null
+    type: Recognizer3D
+# data: action_classification_x3d
+# optimizer: torch.optim.AdamW: lr=0.001, weight_decay=0.0001
+# scheduler: lightning.pytorch.cli.ReduceLROnPlateau: mode=min, factor=0.1, patience=10, monitor=train/loss

@@ -1,0 +1,69 @@
+class_path: otx.core.model.entity.segmentation.MMSegCompatibleModel
+init_args:
+  config:
+    backbone:
+      name: dinov2_vits14_reg
+      freeze_backbone: true
+      out_index:
+        - 8
+        - 9
+        - 10
+        - 11
+      type: DinoVisionTransformer
+    data_preprocessor:
+      bgr_to_rgb: false
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      pad_val: 0
+      seg_pad_val: 255
+      size:
+        - 560
+        - 560
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+      test_cfg:
+        size_divisor: 14
+      type: SegDataPreProcessor
+    decode_head:
+      init_cfg:
+        checkpoint: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth
+        type: Pretrained
+        prefix: decode_head
+      type: FCNHead
+      in_channels:
+        - 384
+        - 384
+        - 384
+        - 384
+      in_index:
+        - 0
+        - 1
+        - 2
+        - 3
+      input_transform: resize_concat
+      channels: 1536
+      kernel_size: 1
+      num_convs: 1
+      concat_input: false
+      dropout_ratio: -1
+      num_classes: 2
+      norm_cfg:
+        type: SyncBN
+        requires_grad: true
+      align_corners: false
+      loss_decode:
+        type: CrossEntropyLoss
+        use_sigmoid: false
+        loss_weight: 1.0
+    pretrained: null
+    test_cfg:
+      mode: whole
+    train_cfg: {}
+    type: EncoderDecoder
+# data: semantic_segmentation_dino_v2
+# optimizer: torch.optim.AdamW: lr=0.001, betas=[0.9, 0.999], weight_decay=0.0001
+# scheduler: torch.optim.lr_scheduler.PolynomialLR: total_iters=100, power=0.9, last_epoch=-1

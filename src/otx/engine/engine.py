@@ -9,29 +9,64 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import yaml
-from lightning import LightningModule, Trainer, seed_everything
+from lightning import Trainer, seed_everything
+from lightning.pytorch.cli import instantiate_class
+from rich.console import Console
+from rich.table import Table
 
 from otx.core.config.device import DeviceConfig
 from otx.core.config.engine import EngineConfig
 from otx.core.data.module import OTXDataModule
+from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import OTXDeviceType
 from otx.core.types.task import OTXTaskType
-from otx.core.utils.auto_configuration import AutoConfigurator
+from otx.core.utils.auto_configuration import AutoConfigurator, load_model_configs
 from otx.core.utils.cache import TrainerArgumentsCache
 from otx.core.utils.instantiators import (
     instantiate_callbacks,
     instantiate_loggers,
-    instantiate_model,
+    partial_instantiate_class,
 )
 
 if TYPE_CHECKING:
     from lightning import Callback
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
-    from omegaconf import DictConfig
+    from lightning.pytorch.utilities.types import EVAL_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
-    from otx.core.types.transformer_libs import TransformLibType
+
+MODULE_PER_TASK = {
+    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.module.classification.OTXMulticlassClsLitModule",
+    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
+    OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
+    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
+    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
+    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
+    OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
+}
+
+
+def list_models() -> str:
+    """Returns a list of model names for OTX.
+
+    Returns:
+        str: a table of list model.
+    """
+    table = Table(title="List model of OTX")
+    table.add_column("Task", justify="left", style="yellow")
+    table.add_column("Model Name", justify="left", style="cyan")
+    # table.add_column("Config Path", justify="left", style="white")
+    task_list = [task.value for task in MODULE_PER_TASK]
+    for task in task_list:
+        model_dict = load_model_configs(task)
+        for model_name in model_dict:
+            table.add_row(task, model_name)
+    console = Console()
+    with console.capture() as capture:
+        console.print(table, end="")
+    return capture.get()
 
 
 class Engine:
@@ -51,6 +86,11 @@ class Engine:
         task: OTXTaskType | None = None,
         work_dir: str | Path = "./otx-workspace",
         data_root: str | Path | None = None,
+        datamodule: OTXDataModule | None = None,
+        model: OTXModel | str | None = None,
+        optimizer: OptimizerCallable | None = None,
+        scheduler: LRSchedulerCallable | None = None,
+        checkpoint: str | None = None,
         device: OTXDeviceType = OTXDeviceType.auto,
         **kwargs,
     ):
@@ -62,8 +102,8 @@ class Engine:
             device (OTXDeviceType, optional):  The devices to be used. Defaults to "auto".
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
         """
-        self.task = task
         self.work_dir = work_dir
+        self.checkpoint = checkpoint
         self.device = DeviceConfig(accelerator=device)
         self._cache = TrainerArgumentsCache(
             default_root_dir=self.work_dir,
@@ -75,10 +115,26 @@ class Engine:
             data_root=data_root,
             task=task,
         )
+        self.task = self._auto_configurator.task
+        self.datamodule: OTXDataModule = (
+            datamodule if datamodule is not None else self._auto_configurator.get_datamodule()
+        )
 
         self._trainer: Trainer | None = None
-        self._model: LightningModule | None = None
-        self._datamodule: OTXDataModule | None = None
+        self._model: OTXModel = (
+            model
+            if isinstance(model, OTXModel)
+            else self._auto_configurator.get_model(
+                model=model,
+                num_classes=self.datamodule.num_classes,
+            )
+        )
+        self.optimizer: OptimizerCallable = (
+            optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
+        )
+        self.scheduler: LRSchedulerCallable = (
+            scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
+        )
 
     """
     General OTX Entry Points
@@ -86,9 +142,6 @@ class Engine:
 
     def train(
         self,
-        model: LightningModule | None = None,
-        datamodule: OTXDataModule | None = None,
-        checkpoint: str | Path | None = None,
         max_epochs: int = 10,
         seed: int | None = None,
         deterministic: bool = False,
@@ -101,9 +154,6 @@ class Engine:
         """Trains the model using the provided LightningModule and OTXDataModule.
 
         Args:
-            model (LightningModule): The LightningModule to be trained.
-            datamodule (OTXDataModule): The OTXDataModule containing the training data.
-            checkpoint (str | Path | None, optional): The path to a checkpoint file to resume training from.
             max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
             seed (int | None, optional): The random seed. Defaults to None.
             deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
@@ -146,10 +196,11 @@ class Engine:
                 otx train --config <CONFIG_PATH, str>
                 ```
         """
-        if datamodule is None:
-            datamodule = self.datamodule
-        if model is None:
-            model = self.model
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
 
         if seed is not None:
             seed_everything(seed, workers=True)
@@ -165,20 +216,18 @@ class Engine:
         )
 
         self.trainer.fit(
-            model=model,
-            datamodule=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
+            model=lit_module,
+            datamodule=self.datamodule,
+            ckpt_path=self.checkpoint,
         )
-        self.model = model
-        self.datamodule = datamodule
+        self.checkpoint = self.trainer.checkpoint_callback.best_model_path
 
         return self.trainer.callback_metrics
 
     def test(
         self,
-        model: LightningModule | None = None,
-        datamodule: OTXDataModule | None = None,
         checkpoint: str | Path | None = None,
+        datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -212,29 +261,26 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        if model is None:
-            model = self.model
-        if datamodule is None:
-            datamodule = self.datamodule
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
 
         self._build_trainer(**kwargs)
 
         self.trainer.test(
-            model=model,
-            datamodule=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
+            model=lit_module,
+            dataloaders=datamodule if datamodule is not None else self.datamodule,
+            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
-
-        self.model = model
-        self.datamodule = datamodule
 
         return self.trainer.callback_metrics
 
     def predict(
         self,
-        model: LightningModule | None = None,
-        datamodule: OTXDataModule | None = None,
         checkpoint: str | Path | None = None,
+        datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         return_predictions: bool | None = None,
         **kwargs,
     ) -> list | None:
@@ -270,19 +316,17 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        if model is None:
-            model = self.model
-        if datamodule is None:
-            datamodule = self.datamodule
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
 
         self._build_trainer(**kwargs)
 
-        self.model = model
-        self.datamodule = datamodule
-
         return self.trainer.predict(
-            model=model,
-            datamodule=datamodule,
+            model=lit_module,
+            datamodule=datamodule if datamodule is not None else self.datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
             return_predictions=return_predictions,
         )
@@ -317,7 +361,9 @@ class Engine:
                 config_dict = yaml.safe_load(f)
             data_config = config_dict.pop("data", {})
             datamodule = OTXDataModule.from_config(config=data_config)
-            model = instantiate_model(config_dict.pop("model", None))
+            model = instantiate_class(args=(), init=config_dict.pop("model", {}))
+            optimizer = partial_instantiate_class(init=config_dict.pop("optimizer", {}))
+            scheduler = partial_instantiate_class(init=config_dict.pop("scheduler", {}))
             engine_args = config_dict.pop("engine", config_dict)
             engine_config = EngineConfig(**engine_args)
         else:
@@ -325,25 +371,17 @@ class Engine:
 
         callbacks = instantiate_callbacks(config_dict.pop("callbacks", []))
         logger = instantiate_loggers(config_dict.pop("logger", None))
-        engine = cls(
+        return cls(
             task=engine_config.task,
             work_dir=engine_config.work_dir,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            datamodule=datamodule,
             callbacks=callbacks,
             logger=logger,
             **config_dict,
         )
-        engine._model = model  # noqa: SLF001
-        engine._datamodule = datamodule  # noqa: SLF001
-        return engine
-
-    def list_models(self) -> list[str]:
-        """Returns a list of models associated with the given task.
-
-        Returns:
-            list[str]: A list of model names.
-        """
-        model_dict = self._auto_configurator.load_model_configs()
-        return list(model_dict.keys())
 
     """
     Property and setter functions provided by Engine.
@@ -380,176 +418,48 @@ class Engine:
         return self._cache.args
 
     @property
-    def model(self) -> LightningModule:
+    def model(self) -> OTXModel:
         """Returns the model object associated with the engine.
 
-        To get this property, you should execute `Engine.train()` function first.
-
         Returns:
-            LightningModule: The LightningModule object.
+            OTXModel: The OTXModel object.
         """
-        if self._model is None:
-            self._model = self.set_otx_model()
         return self._model
 
     @model.setter
-    def model(self, model: LightningModule | str) -> None:
+    def model(self, model: OTXModel | str) -> None:
         """Sets the model for the engine.
 
         Args:
-            model (LightningModule): The model to be set.
+            model (OTXModel): The model to be set.
 
         Returns:
             None
         """
         if isinstance(model, str):
-            model = self.set_otx_model(model)
+            model = self._auto_configurator.get_model(model)
         self._model = model
 
-    @property
-    def datamodule(self) -> OTXDataModule:
-        """Returns the OTXDataModule object associated with the engine.
-
-        Returns:
-            OTXDataModule: The OTXDataModule object.
-        """
-        if self._datamodule is None:
-            self._datamodule = self.set_datamodule()
-        return self._datamodule
-
-    @datamodule.setter
-    def datamodule(self, datamodule: OTXDataModule) -> None:
-        """Sets the datamodule for the engine.
-
-        Args:
-            datamodule (OTXDataModule): The datamodule to be set.
-
-        Returns:
-            None
-        """
-        self._datamodule = datamodule
-
-    @property
-    def data_root(self) -> str | Path:
-        """Returns the data root path.
-
-        Returns:
-            str | Path: The data root path.
-        """
-        return self._auto_configurator.data_root
-
-    @data_root.setter
-    def data_root(self, data_root: str | Path) -> None:
-        """Set the data root directory for the engine.
-
-        Args:
-            data_root (str | Path): The path to the data root directory.
-
-        Returns:
-            None
-        """
-        self._auto_configurator.data_root = data_root
-
-    """
-    Functions and properties for Advanced-API users.
-    """
-
-    @property
-    def default_otx_model_config(self) -> dict | DictConfig:
-        """Returns the default model configuration from AutoConfigurator.
-
-        Returns:
-            dict | DictConfig: The default model configuration from _auto_configurator.
-        """
-        if not self._auto_configurator.model_cfg:
-            self._auto_configurator.load_default_model_config()
-        return self._auto_configurator.model_cfg
-
-    def set_otx_model(
+    def _build_lightning_module(
         self,
-        model_name: str | None = None,
-        overrides: dict | None = None,
+        model: OTXModel,
+        optimizer: OptimizerCallable,
+        scheduler: LRSchedulerCallable,
     ) -> OTXLitModule:
-        """Retrieves the specified model based on the given model name.
+        """Builds a LightningModule based on the provided OTXModel.
 
         Args:
-            model_name (str): The name of the model to retrieve.
+            model (OTXModel): The OTXModel to be used for building the LightningModule.
 
         Returns:
-            OTXLitModule: The retrieved model.
+            OTXLitModule: The built LightningModule.
         """
-        if model_name is not None:
-            self._auto_configurator.load_default_model_config(model_name=model_name)
-        self._model = OTXLitModule.from_config(self.default_otx_model_config, overrides=overrides)
-        return self._model
-
-    def set_datamodule(
-        self,
-        data_root: str | Path | None = None,
-        data_format: str | None = None,
-        mem_cache_size: str | None = None,
-        mem_cache_img_max_size: tuple[int, int] | None = None,
-        include_polygons: bool | None = None,
-        batch_size: int | dict[str, int] | None = None,
-        num_workers: int | dict[str, int] | None = None,
-        transforms: list | dict[str, list] | None = None,
-        transform_lib_type: TransformLibType | dict[str, TransformLibType] | None = None,
-    ) -> OTXDataModule:
-        """Returns an instance of OTXDataModule based on the provided configuration.
-
-        Args:
-            data_root (str): The root directory of the data.
-            task (OTXTaskType): The type of OTX task.
-
-            data_format (str | None, optional): The format of the data. Defaults to None.
-            mem_cache_size (str | None, optional): The size of the memory cache. Defaults to None.
-            mem_cache_img_max_size (tuple[int, int] | None, optional): The maximum size of images in the memory cache.
-                Defaults to None.
-            include_polygons (bool | None, optional): Whether to include polygons. Defaults to None.
-
-            batch_size (int | dict[str, int] | None, optional): The batch size. Defaults to None.
-            num_workers (int | dict[str, int] | None, optional): The number of workers. Defaults to None.
-            transforms (list | dict[str, list] | None, optional): The list of transforms. Defaults to None.
-            transform_lib_type (TransformLibType | dict[str, TransformLibType] | None, optional):
-                The type of transform library. Defaults to None.
-
-        Returns:
-            OTXDataModule: An instance of OTXDataModule based on the provided configuration.
-        """
-        # Load default DataModuleConfig
-        if data_root is None:
-            data_root = self._auto_configurator.data_root
-        default_config = self._auto_configurator.load_default_data_config()
-
-        # Update DataModuleConfig
-        default_config["config"]["data_root"] = data_root
-        datamodule_arguments = {
-            "data_format": data_format,
-            "mem_cache_size": mem_cache_size,
-            "mem_cache_img_max_size": mem_cache_img_max_size,
-            "include_polygons": include_polygons,
-        }
-        for datamodule_key, datamodule_value in datamodule_arguments.items():
-            if datamodule_value is not None:
-                default_config["config"][datamodule_key] = datamodule_value
-
-        # Update SubsetConfig
-        subset_arguments = {
-            "batch_size": batch_size,
-            "num_workers": num_workers,
-            "transforms": transforms,
-            "transform_lib_type": transform_lib_type,
-        }
-        for subset_key, subset_value in subset_arguments.items():
-            if subset_value is not None:
-                if isinstance(subset_value, dict):
-                    for subset_name, value in subset_value.items():
-                        default_config["config"][subset_name][subset_key] = value
-                else:
-                    default_config["config"]["train_subset"][subset_key] = subset_value
-                    default_config["config"]["val_subset"][subset_key] = subset_value
-                    default_config["config"]["test_subset"][subset_key] = subset_value
-
-        # Return OTXDataModule
-        self._datamodule = OTXDataModule.from_config(config=default_config)
-        return self._datamodule
+        class_module, class_name = MODULE_PER_TASK[self.task].rsplit(".", 1)
+        module = __import__(class_module, fromlist=[class_name])
+        lightning_module = getattr(module, class_name)
+        return lightning_module(
+            otx_model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            torch_compile=False,
+        )

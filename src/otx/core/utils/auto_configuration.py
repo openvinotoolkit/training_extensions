@@ -6,15 +6,27 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import datumaro
 import yaml
+from lightning.pytorch.cli import instantiate_class
 from omegaconf import DictConfig
 
+from otx.core.data.module import OTXDataModule
+from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.core.utils import get_otx_root_path
+from otx.core.utils.instantiators import partial_instantiate_class
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.types.transformer_libs import TransformLibType
+
+logger = logging.getLogger()
 
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
     OTXTaskType.MULTI_CLASS_CLS: ["imagenet", "datumaro", "imagenet_with_subset_dirs"],
@@ -42,6 +54,26 @@ DEFAULT_MODEL = {
     OTXTaskType.ACTION_DETECTION: "x3d_fastrcnn",
 }
 
+DEFAULT_OPTIMIZER = {
+    OTXTaskType.MULTI_CLASS_CLS: "sgd",
+    OTXTaskType.MULTI_LABEL_CLS: "sgd",
+    OTXTaskType.DETECTION: "sgd",
+    OTXTaskType.SEMANTIC_SEGMENTATION: "sgd",
+    OTXTaskType.INSTANCE_SEGMENTATION: "sgd",
+    OTXTaskType.ACTION_CLASSIFICATION: "sgd",
+    OTXTaskType.ACTION_DETECTION: "sgd",
+}
+
+DEFAULT_SCHEDULER = {
+    OTXTaskType.MULTI_CLASS_CLS: "reduce_lr_on_plateau",
+    OTXTaskType.MULTI_LABEL_CLS: "reduce_lr_on_plateau",
+    OTXTaskType.DETECTION: "reduce_lr_on_plateau",
+    OTXTaskType.SEMANTIC_SEGMENTATION: "reduce_lr_on_plateau",
+    OTXTaskType.INSTANCE_SEGMENTATION: "reduce_lr_on_plateau",
+    OTXTaskType.ACTION_CLASSIFICATION: "reduce_lr_on_plateau",
+    OTXTaskType.ACTION_DETECTION: "reduce_lr_on_plateau",
+}
+
 DEFAULT_DATA = {
     OTXTaskType.MULTI_CLASS_CLS: "multi_class_cls_base",
     OTXTaskType.MULTI_LABEL_CLS: "multi_label_cls_base",
@@ -53,7 +85,7 @@ DEFAULT_DATA = {
 }
 
 
-RECIPE_PATH = Path(get_otx_root_path()) / "recipe"
+CONFIG_PATH = Path(get_otx_root_path()) / "configs"
 
 
 def is_cvat_format(path: Path) -> bool:
@@ -141,6 +173,7 @@ def replace_key(config: dict, key: str, value: Any) -> None:  # noqa: ANN401
     """
     for k, v in config.items():
         if k == key:
+            logger.warning(f"Replace {k} with {value}")
             config[k] = value
         elif isinstance(v, dict):
             replace_key(v, key, value)
@@ -148,6 +181,21 @@ def replace_key(config: dict, key: str, value: Any) -> None:  # noqa: ANN401
             for item in v:
                 if isinstance(item, dict):
                     replace_key(item, key, value)
+
+
+def load_model_configs(task: str) -> dict[str, str]:
+    """Loads the model configurations from the specified directory.
+
+    Returns:
+        A dictionary mapping file names to their corresponding file paths.
+    """
+    model_dir = CONFIG_PATH / "model" / task
+    file_path_dict = {}
+    for file_path in model_dir.iterdir():
+        if str(file_path).endswith("yaml") and file_path.is_file():
+            file_name = file_path.stem
+            file_path_dict[file_name] = str(file_path)
+    return file_path_dict
 
 
 class AutoConfigurator:
@@ -172,29 +220,9 @@ class AutoConfigurator:
         data_root: str | Path | None = None,
         task: str | None = None,
     ) -> None:
-        self._data_root = data_root
+        self.data_root = data_root
+
         self._task = self._configure_task_type(data_root, task)
-        self.model_cfg = DictConfig({})
-
-    @property
-    def data_root(self) -> str | Path:
-        """Returns the root directory for data storage.
-
-        Raises:
-            RuntimeError: If the data root is not set.
-
-        Returns:
-            str | Path: The root directory for data storage.
-        """
-        if self._data_root is None:
-            msg = "data_root is None"
-            raise RuntimeError(msg)
-        return self._data_root
-
-    @data_root.setter
-    def data_root(self, data_root: str | Path) -> None:
-        self._data_root = data_root
-        self._task = self._configure_task_type(data_root, self._task)
 
     @property
     def task(self) -> OTXTaskType:
@@ -241,50 +269,31 @@ class AutoConfigurator:
         Raises:
             FileNotFoundError: If the configuration file does not exist.
         """
-        config_file = RECIPE_PATH / "data" / f"{DEFAULT_DATA[self.task]}.yaml"
+        config_file = CONFIG_PATH / "data" / f"{DEFAULT_DATA[self.task]}.yaml"
         if config_file.exists():
             with Path(config_file).open() as f:
                 return yaml.safe_load(f)
         msg = f"{config_file} does not exist."
         raise FileNotFoundError(msg)
 
-    def load_model_configs(self) -> dict[str, str]:
-        """Loads the model configurations from the specified directory.
+    def load_default_model_config(self, model: str | None = None) -> dict:
+        """Load the default model configuration for the task.
 
         Returns:
-            A dictionary mapping file names to their corresponding file paths.
-        """
-        model_dir = RECIPE_PATH / "model" / self.task.value
-        file_path_dict = {}
-        for file_path in model_dir.iterdir():
-            if str(file_path).endswith("yaml") and file_path.is_file():
-                file_name = file_path.stem
-                file_path_dict[file_name] = str(file_path)
-        return file_path_dict
-
-    def load_default_model_config(self, model_name: str | None = None) -> dict:
-        """Loads the default model configuration.
-
-        Args:
-            model_name (str | None): The name of the model to load the configuration for. If None, the default model
-                configuration for the task will be loaded.
+            dict: The default model configuration.
 
         Raises:
-            FileNotFoundError: If the specified model configuration file does not exist.
-
-        Returns:
-            dict
+            FileNotFoundError: If the configuration file does not exist.
         """
-        if model_name is None:
-            model_name = DEFAULT_MODEL[self.task]
-        model_dict = self.load_model_configs()
-        if model_name in model_dict:
-            model_cfg_path = model_dict[model_name]
+        if model is None:
+            model = DEFAULT_MODEL[self.task]
+        model_dict = load_model_configs(self.task.value)
+        if model in model_dict:
+            model_cfg_path = model_dict[model]
             with Path(model_cfg_path).open() as f:
-                config = yaml.safe_load(f)
-            self.model_cfg = DictConfig(config.get("model", config))
-            return config
-        msg = f"{model_name} does not exist."
+                model_config = yaml.safe_load(f)
+            return model_config.get("model", model_config)
+        msg = f"{model} does not exist."
         raise FileNotFoundError(msg)
 
     def load_default_engine_config(self) -> dict:
@@ -293,6 +302,142 @@ class AutoConfigurator:
         Returns:
             dict
         """
-        config_file = RECIPE_PATH / "engine" / f"{self.task.value}.yaml"
+        config_file = CONFIG_PATH / "engine" / f"{self.task.value}.yaml"
         with Path(config_file).open() as f:
             return yaml.safe_load(f)
+
+    def load_default_optimizer_config(self) -> dict:
+        """Loads the default optimizer configuration.
+
+        Returns:
+            dict
+        """
+        config_file = CONFIG_PATH / "optimizer" / f"{DEFAULT_OPTIMIZER[self.task]}.yaml"
+        with Path(config_file).open() as f:
+            optimizer_cfg = yaml.safe_load(f)
+        return optimizer_cfg.get("optimizer", optimizer_cfg)
+
+    def load_default_scheduler_config(self) -> dict:
+        """Loads the default scheduler configuration.
+
+        Returns:
+            dict
+        """
+        config_file = CONFIG_PATH / "scheduler" / f"{DEFAULT_SCHEDULER[self.task]}.yaml"
+        with Path(config_file).open() as f:
+            scheduler_cfg = yaml.safe_load(f)
+        return scheduler_cfg.get("scheduler", scheduler_cfg)
+
+    def get_model(self, model: str | None = None, num_classes: int | None = None) -> OTXModel:
+        """Get the model from the given model name.
+
+        Args:
+            model (str | None): The name of the model to load the configuration for. If None, the default model
+                configuration for the task will be loaded.
+
+        Returns:
+            OTXModel: The instantiated OTXModel object.
+        """
+        model_config = self.load_default_model_config(model=model)
+        if not isinstance(model_config, (dict, DictConfig)):
+            msg = "Please double-check model config."
+            raise TypeError(msg)
+        # Update num_classes
+        replace_key(model_config, "num_classes", num_classes)
+        logger.warning(f"Set Default Model: {model_config}")
+        return instantiate_class(args=(), init=model_config)
+
+    def get_optimizer(self, **kwargs) -> OptimizerCallable:
+        """Get the optimizer from the given optimizer name.
+
+        Returns:
+            OptimizerCallable: The instantiated optimizer object.
+        """
+        optimizer_cfg = self.load_default_optimizer_config()
+        for key, value in kwargs.items():
+            replace_key(optimizer_cfg, key, value)
+        logger.warning(f"Set Default Optimizer: {optimizer_cfg}")
+        return partial_instantiate_class(init=optimizer_cfg)
+
+    def get_scheduler(self, **kwargs) -> LRSchedulerCallable:
+        """Get the scheduler from the given scheduler name.
+
+        Returns:
+            LRSchedulerCallable: The instantiated scheduler object.
+        """
+        scheduler_cfg = self.load_default_scheduler_config()
+        for key, value in kwargs.items():
+            replace_key(scheduler_cfg, key, value)
+        logger.warning(f"Set Default Scheduler: {scheduler_cfg}")
+        return partial_instantiate_class(init=scheduler_cfg)
+
+    def get_datamodule(
+        self,
+        data_root: str | Path | None = None,
+        data_format: str | None = None,
+        mem_cache_size: str | None = None,
+        mem_cache_img_max_size: tuple[int, int] | None = None,
+        include_polygons: bool | None = None,
+        batch_size: int | dict[str, int] | None = None,
+        num_workers: int | dict[str, int] | None = None,
+        transforms: list | dict[str, list] | None = None,
+        transform_lib_type: TransformLibType | dict[str, TransformLibType] | None = None,
+    ) -> OTXDataModule:
+        """Returns an instance of OTXDataModule based on the provided configuration.
+
+        Args:
+            data_root (str): The root directory of the data.
+            task (OTXTaskType): The type of OTX task.
+
+            data_format (str | None, optional): The format of the data. Defaults to None.
+            mem_cache_size (str | None, optional): The size of the memory cache. Defaults to None.
+            mem_cache_img_max_size (tuple[int, int] | None, optional): The maximum size of images in the memory cache.
+                Defaults to None.
+            include_polygons (bool | None, optional): Whether to include polygons. Defaults to None.
+
+            batch_size (int | dict[str, int] | None, optional): The batch size. Defaults to None.
+            num_workers (int | dict[str, int] | None, optional): The number of workers. Defaults to None.
+            transforms (list | dict[str, list] | None, optional): The list of transforms. Defaults to None.
+            transform_lib_type (TransformLibType | dict[str, TransformLibType] | None, optional):
+                The type of transform library. Defaults to None.
+
+        Returns:
+            OTXDataModule: An instance of OTXDataModule based on the provided configuration.
+        """
+        # Load default DataModuleConfig
+        if data_root is None:
+            data_root = self.data_root
+        default_config = self.load_default_data_config()
+
+        # Update DataModuleConfig
+        default_config["config"]["data_root"] = data_root
+        datamodule_arguments = {
+            "data_format": data_format,
+            "mem_cache_size": mem_cache_size,
+            "mem_cache_img_max_size": mem_cache_img_max_size,
+            "include_polygons": include_polygons,
+        }
+        for datamodule_key, datamodule_value in datamodule_arguments.items():
+            if datamodule_value is not None:
+                default_config["config"][datamodule_key] = datamodule_value
+
+        # Update SubsetConfig
+        subset_arguments = {
+            "batch_size": batch_size,
+            "num_workers": num_workers,
+            "transforms": transforms,
+            "transform_lib_type": transform_lib_type,
+        }
+        for subset_key, subset_value in subset_arguments.items():
+            if subset_value is not None:
+                if isinstance(subset_value, dict):
+                    for subset_name, value in subset_value.items():
+                        default_config["config"][subset_name][subset_key] = value
+                else:
+                    default_config["config"]["train_subset"][subset_key] = subset_value
+                    default_config["config"]["val_subset"][subset_key] = subset_value
+                    default_config["config"]["test_subset"][subset_key] = subset_value
+
+        # Return OTXDataModule
+        self._datamodule = OTXDataModule.from_config(config=default_config)
+        return self._datamodule

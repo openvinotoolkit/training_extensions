@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import yaml
 from datumaro import Dataset as DmDataset
+from datumaro.components.annotation import AnnotationType
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
@@ -47,6 +48,7 @@ class OTXDataModule(LightningDataModule):
             self.config.data_root,
             format=self.config.data_format,
         )
+        self.num_classes = len(dataset.categories()[AnnotationType.label])
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,

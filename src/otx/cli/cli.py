@@ -105,10 +105,10 @@ class OTXCLI:
             A dictionary where the keys are the subcommands and the values are sets of required arguments.
         """
         return {
-            "train": {"model", "datamodule"},
-            "test": {"model", "datamodule"},
-            "predict": {"model"},
-            "export": {"model"},
+            "train": set(),
+            "test": {"datamodule"},
+            "predict": {"datamodule"},
+            "export": set(),
         }
 
     def add_subcommands(self) -> None:
@@ -137,45 +137,72 @@ class OTXCLI:
             auto_configurator = AutoConfigurator(data_root=data_root, task=task)
 
             sub_parser = self.subcommand_parser()
+            engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
             sub_parser.add_class_arguments(
                 Engine,
                 "engine",
                 fail_untyped=False,
                 sub_configs=True,
+                skip=engine_skip,
             )
             sub_parser.link_arguments("data_root", "engine.data_root")
 
-            if "model" in self.engine_subcommands()[subcommand]:
-                from otx.core.model.module.base import OTXLitModule
+            # Model Settings
+            # if "model" in self.engine_subcommands()[subcommand]:
+            from otx.core.model.entity.base import OTXModel
 
-                model_kwargs: dict[str, Any] = {"fail_untyped": False}
-                if data_root is not None and "--model" not in sys.argv:
-                    # Add Default values from Auto-Configurator
-                    model_kwargs["default"] = auto_configurator.load_default_model_config()
+            model_kwargs: dict[str, Any] = {"fail_untyped": False}
+            if data_root is not None and "--model" not in sys.argv:
+                # Add Default values from Auto-Configurator
+                model_kwargs["default"] = auto_configurator.load_default_model_config()
 
-                sub_parser.add_subclass_arguments(
-                    OTXLitModule,
-                    "model",
-                    required=False,
-                    **model_kwargs,
-                )
-            if "datamodule" in self.engine_subcommands()[subcommand]:
-                from otx.core.data.module import OTXDataModule
+            sub_parser.add_subclass_arguments(
+                OTXModel,
+                "model",
+                required=False,
+                **model_kwargs,
+            )
+            # Datamodule Settings
+            # if "datamodule" in self.engine_subcommands()[subcommand]:
+            from otx.core.data.module import OTXDataModule
 
-                sub_parser.add_class_arguments(
-                    OTXDataModule,
-                    "data",
-                    fail_untyped=False,
-                    sub_configs=True,
-                )
+            sub_parser.add_class_arguments(
+                OTXDataModule,
+                "data",
+                fail_untyped=False,
+                sub_configs=True,
+            )
 
-                if data_root is not None:
-                    # Add Default values from Auto-Configurator
-                    default_data_config = auto_configurator.load_default_data_config()
-                    default_data_config = flatten_dict({"data": default_data_config})
-                    default_data_config["data.config.data_root"] = data_root
-                    default_data_config["data.task"] = task if task is not None else auto_configurator.task
-                    sub_parser.set_defaults(default_data_config)
+            if data_root is not None:
+                # Add Default values from Auto-Configurator
+                default_data_config = auto_configurator.load_default_data_config()
+                default_data_config = flatten_dict({"data": default_data_config})
+                default_data_config["data.config.data_root"] = data_root
+                default_data_config["data.task"] = task if task is not None else auto_configurator.task
+                sub_parser.set_defaults(default_data_config)
+
+            # Optimizer & Scheduler Settings
+            from lightning.pytorch.cli import LRSchedulerTypeTuple
+            from torch.optim import Optimizer
+
+            optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
+            scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
+            if data_root is not None:
+                # Add Default values from Auto-Configurator
+                if "--optimizer" not in sys.argv:
+                    optim_kwargs["default"] = auto_configurator.load_default_optimizer_config()
+                if "--scheduler" not in sys.argv:
+                    scheduler_kwargs["default"] = auto_configurator.load_default_scheduler_config()
+            sub_parser.add_subclass_arguments(
+                baseclass=(Optimizer,),
+                nested_key="optimizer",
+                **optim_kwargs,
+            )
+            sub_parser.add_subclass_arguments(
+                baseclass=LRSchedulerTypeTuple,
+                nested_key="scheduler",
+                **scheduler_kwargs,
+            )
 
             skip: set[str | int] = set(self.engine_subcommands()[subcommand])
             fn = getattr(Engine, subcommand)
@@ -230,13 +257,9 @@ class OTXCLI:
 
     def _prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
-        fn_kwargs = {
+        return {
             k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
         }
-        fn_kwargs["model"] = self.model
-        if self.datamodule is not None:
-            fn_kwargs["datamodule"] = self.datamodule
-        return fn_kwargs
 
     def save_config(self) -> None:
         """Save the configuration for the specified subcommand.

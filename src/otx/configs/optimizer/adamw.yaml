@@ -1,0 +1,4 @@
+class_path: torch.optim.AdamW
+init_args:
+  lr: 1e-5
+  weight_decay: 0.05

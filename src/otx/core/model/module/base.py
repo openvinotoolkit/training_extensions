@@ -4,18 +4,14 @@
 """Class definition for base lightning module used in OTX."""
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import torch
-import yaml
 from lightning import LightningModule
-from omegaconf import DictConfig, OmegaConf
 from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.instantiators import instantiate_model
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -41,43 +37,6 @@ class OTXLitModule(LightningModule):
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False, ignore=["otx_model"])
-
-    @classmethod
-    def from_config(
-        cls,
-        config: dict | DictConfig | str | Path,
-        overrides: dict | None = None,
-    ) -> OTXLitModule:
-        """Create an instance of OTXLitModule from a configuration file.
-
-        Args:
-            config (dict | str | Path): Path to the configuration file.
-
-        Returns:
-            OTXLitModule: An instance of OTXLitModule.
-
-        """
-        if isinstance(config, (str, Path)):
-            with Path(config).open() as f:
-                config = yaml.safe_load(f)
-        if not isinstance(config, (dict, DictConfig)):
-            msg = "Please double-check model config."
-            raise TypeError(msg)
-        model_cfg = config.get("model", config)
-
-        # Override model configuration
-        if overrides is not None:
-            model_cfg = DictConfig(model_cfg)
-            model_cfg.merge_with(overrides)
-
-        # Instantiate model
-        if isinstance(model_cfg, DictConfig):
-            model_cfg = OmegaConf.to_container(model_cfg)
-        model = instantiate_model(model_cfg=model_cfg)
-        if model is None:
-            msg = "Please double-check model config."
-            raise TypeError(msg)
-        return model
 
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
