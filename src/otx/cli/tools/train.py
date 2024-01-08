@@ -298,7 +298,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
         dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
     )
 
-    if resource_tracker is not None:
+    if resource_tracker is not None and exit_stack is None:
         resource_tracker.stop()
 
     model_path = config_manager.output_path / "models"
