@@ -173,6 +173,8 @@ class ExperimentResult:
                     formatted_result[f"{metric}({task})"] = round(score, 4)
             elif isinstance(val, float):
                 formatted_result[key] = round(val, 4)
+            else:
+                formatted_result[key] = val
 
         return formatted_result
 
@@ -368,10 +370,16 @@ class MMCVExpParser(BaseExpParser):
         for line in lines:
             iter_history = json.loads(line)
             if iter_history.get("mode") == "train":
-                self._iter_time_arr.append(iter_history["time"])
-                self._data_time_arr.append(iter_history["data_time"])
                 if iter_history["epoch"] > last_epoch:
                     last_epoch = iter_history["epoch"]
+                if last_epoch <= 2:  # if epoch >= 2, first epcoh is excluded from the calcuation
+                    iter_time = []
+                    data_time = []
+                iter_time.append(iter_history["time"])
+                data_time.append(iter_history["data_time"])
+
+        self._iter_time_arr.extend(iter_time)
+        self._data_time_arr.extend(data_time)
 
         self._exp_result.epoch = last_epoch
 
