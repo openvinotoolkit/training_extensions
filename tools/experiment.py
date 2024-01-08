@@ -962,7 +962,7 @@ def print_experiments_summary(output_path: Path):
         output_path (Path): Output path where experiment summary file is saved.
     """
     rich_console.rule("[bold green]Experiment summary")
-    
+
     for summary_file in output_path.rglob("exp_summary.csv"):
         exp_name = summary_file.parent.name
         if not summary_file.exists():

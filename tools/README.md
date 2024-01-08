@@ -111,7 +111,7 @@ Arguments for recipe
   Values outside the experiment element, except for output_path and constants, will be disregarded.
   If `constants` exsist at both upper most level and experiment element,
   they're merged while experiment element takes precedence.
-    - name (required) : Specifies the unique name for the experiment. This name will be utilized as the directory name where the output of the experiment is stored.
+  - name (required) : Specifies the unique name for the experiment. This name will be utilized as the directory name where the output of the experiment is stored.
 
 Upon completion of each experiment, the results are organized within the own workspace.
 Following the conclusion of all experiments, all experiment results are aggregated in two distinct formats:
