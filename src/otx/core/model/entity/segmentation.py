@@ -13,7 +13,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.build import build_mm_model
+from otx.core.utils.build import build_mm_model, get_classification_layers
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
@@ -56,6 +56,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                 else:
                     return buf.device
 
+        self.classification_layers = get_classification_layers(self.config, MODELS, "model.")
         return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
