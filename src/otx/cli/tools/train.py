@@ -288,9 +288,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     resource_tracker = None
     if args.track_resource_usage and not is_multigpu_child_process():
         resource_tracker = ResourceTracker(
-            config_manager.output_path / "resource_usage.yaml",
-            args.track_resource_usage,
-            args.gpus
+            config_manager.output_path / "resource_usage.yaml", args.track_resource_usage, args.gpus
         )
         resource_tracker.start()
         if exit_stack is not None:

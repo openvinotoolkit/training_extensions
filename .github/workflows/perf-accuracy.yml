@@ -7,17 +7,17 @@ on:
         type: choice
         description: Model type to run benchmark
         options:
-        - default  # speed, balance, accuracy models only
-        - all      # default + other models
+          - default # speed, balance, accuracy models only
+          - all # default + other models
         default: default
       data-size:
         type: choice
         description: Dataset size to run benchmark
         options:
-        - small
-        - medium
-        - large
-        - all
+          - small
+          - medium
+          - large
+          - all
         default: all
       num-repeat:
         description: Overrides default per-data-size number of repeat setting
@@ -29,9 +29,9 @@ on:
         type: choice
         description: The last operation to evaluate. 'optimize' means all.
         options:
-        - train
-        - export
-        - optimize
+          - train
+          - export
+          - optimize
         default: optimize
 
 jobs:
