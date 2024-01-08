@@ -29,7 +29,7 @@ class OTXMulticlassClsModel(
     """Base class for the classification models used in OTX."""
 
 
-def _create_mmpretrain_model(config: DictConfig, load_from: str) -> nn.Module:
+def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, list[str]]:
     from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
     from mmpretrain.registry import MODELS
 

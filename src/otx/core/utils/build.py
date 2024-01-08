@@ -40,7 +40,7 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str 
     return model
 
 
-def get_classification_layers(config: DictConfig, model_registry: Registry, prefix: str = "") -> nn.Module:
+def get_classification_layers(config: DictConfig, model_registry: Registry, prefix: str = "") -> list[str]:
     """Return classification layer names by comparing two different number of classes models."""
     sample_config = deepcopy(config)
     modify_num_classes(sample_config, 5)
