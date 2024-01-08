@@ -59,5 +59,6 @@ jobs:
           path: |
             .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}.csv
             .tox/tests-reg_${{ inputs.task }}*.csv
+            .tox/perf-*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}
