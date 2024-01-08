@@ -13,9 +13,14 @@ from datumaro.plugins.tiling.merge_tile import MergeTile
 from torchvision import tv_tensors
 
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
 
 
-def merge(tile_preds: list[DetBatchPredEntity]) -> DetPredEntity:
+#TODO: Add support for InstanceSegPredEntity
+
+def merge(
+    tile_preds: list[DetBatchPredEntity | InstanceSegBatchPredEntity],
+) -> DetPredEntity | InstanceSegPredEntity:
     """Merge tile predictions into full image prediction.
 
     Args:

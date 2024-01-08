@@ -12,8 +12,10 @@ from otx.core.types.task import OTXTaskType
 
 from .base import ImageInfo
 from .detection import DetDataEntity
+from .instance_segmentation import InstanceSegDataEntity
 
 if TYPE_CHECKING:
+    from datumaro import Polygon
     from torch import LongTensor
     from torchvision import tv_tensors
 
@@ -73,4 +75,68 @@ class TileBatchDetDataEntity:
             ],
             bboxes=[tile_entity.ori_bboxes for tile_entity in batch_entities],
             labels=[tile_entity.ori_labels for tile_entity in batch_entities],
+        )
+
+
+@dataclass
+class TileInstSegDataEntity:
+    """Data entity for tile task.
+
+    :param entity: A list of OTXDataEntity
+    """
+
+    num_tiles: int
+    entity_list: list[InstanceSegDataEntity]
+    ori_bboxes: tv_tensors.BoundingBoxes
+    ori_labels: LongTensor
+    ori_masks: tv_tensors.Mask
+    ori_polygons: list[Polygon]
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.INSTANCE_SEGMENTATION
+
+
+@dataclass
+class TileBatchInstSegDataEntity:
+    """Batch data entity for tile task."""
+
+    batch_size: int
+    batch_tiles: list[list[tv_tensors.Image]]
+    batch_tile_infos: list[list[ImageInfo]]
+    bboxes: list[tv_tensors.BoundingBoxes]
+    labels: list[list[LongTensor]]
+    masks: list[tv_tensors.Mask]
+    polygons: list[list[Polygon]]
+
+    @classmethod
+    def collate_fn(cls, batch_entities: list[TileInstSegDataEntity]) -> TileBatchInstSegDataEntity:
+        """Collate function to collect TileInstSegDataEntity into TileBatchInstSegDataEntity in data loader."""
+        if (batch_size := len(batch_entities)) == 0:
+            msg = "collate_fn() input should have > 0 entities"
+            raise RuntimeError(msg)
+
+        task = batch_entities[0].task
+
+        for tile_entity in batch_entities:
+            for entity in tile_entity.entity_list:
+                if entity.task != task:
+                    msg = "collate_fn() input should include a single OTX task"
+                    raise RuntimeError(msg)
+
+                if not isinstance(entity, InstanceSegDataEntity):
+                    msg = "All entities should be InstanceSegDataEntity before collate_fn()"
+                    raise TypeError(msg)
+
+        return TileBatchInstSegDataEntity(
+            batch_size=batch_size,
+            batch_tiles=[[entity.image for entity in tile_entity.entity_list] for tile_entity in batch_entities],
+            batch_tile_infos=[
+                [entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities
+            ],
+            bboxes=[tile_entity.ori_bboxes for tile_entity in batch_entities],
+            labels=[tile_entity.ori_labels for tile_entity in batch_entities],
+            masks=[tile_entity.ori_masks for tile_entity in batch_entities],
+            polygons=[tile_entity.ori_polygons for tile_entity in batch_entities],
         )

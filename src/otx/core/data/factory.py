@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.core.data.dataset.tile import OTXTileTestDataset, OTXTileTrainDataset
+from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -146,8 +146,9 @@ class OTXDatasetFactory:
             )
 
         if cfg_data_module.tile_config.enable_tiler:
-            if cfg_subset.subset_name == "train":
-                return OTXTileTrainDataset(dataset, cfg_data_module.tile_config)
-            return OTXTileTestDataset(dataset, cfg_data_module.tile_config)
-
+            return OTXTileDatasetFactory.create(
+                task,
+                dataset,
+                cfg_data_module.tile_config,
+            )
         return dataset

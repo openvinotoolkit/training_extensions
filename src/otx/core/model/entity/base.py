@@ -16,7 +16,8 @@ from otx.core.data.entity.base import (
     T_OTXBatchPredEntity,
 )
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.data.entity.tile import TileBatchDetDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity, InstanceSegPredEntity
+from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDataEntity
 from otx.core.utils.tile_merge import merge
 
 
@@ -43,8 +44,12 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Customize OTX output batch data entity if needed for you model."""
         raise NotImplementedError
 
-    def unpack_tiles(self, inputs: TileBatchDetDataEntity) -> T_OTXBatchDataEntity:
+    def unpack_tiles(
+        self,
+        inputs: TileBatchDetDataEntity | TileBatchInstSegDataEntity,
+    ) -> DetBatchPredEntity | InstanceSegPredEntity:
         """Unpack tiles into batch data entity."""
+        #TODO: Add support for InstanceSegPredEntity
         pred_entities = []
         for tiles, tile_infos, bboxes, labels in zip(
             inputs.batch_tiles,
@@ -54,13 +59,21 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         ):
             tile_preds = []
             for tile, tile_info in zip(tiles, tile_infos):
-                tile_input = DetBatchDataEntity(
-                    batch_size=1,
-                    images=[tile],
-                    imgs_info=[tile_info],
-                    bboxes=[bboxes],
-                    labels=[labels],
-                )
+                if isinstance(inputs, TileBatchDetDataEntity):
+                    tile_input = DetBatchDataEntity(
+                        image=tile,
+                        img_info=tile_info,
+                        bboxes=bboxes,
+                        labels=labels,
+                    )
+                elif isinstance(inputs, TileBatchInstSegDataEntity):
+                    tile_input = InstanceSegDataEntity(
+                        image=tile,
+                        img_info=tile_info,
+                        bboxes=bboxes,
+                        labels=labels,
+                        polygons=inputs.polygons,
+                    )
                 tile_preds.append(self.forward(tile_input))
             pred_entities.append(merge(tile_preds))
 
@@ -79,7 +92,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         # If customize_inputs is overrided
-        if isinstance(inputs, TileBatchDetDataEntity):
+        if isinstance(inputs, (TileBatchDetDataEntity, TileBatchInstSegDataEntity)):
             return self.unpack_tiles(inputs)
 
         outputs = (
