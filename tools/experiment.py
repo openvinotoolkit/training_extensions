@@ -367,14 +367,16 @@ class MMCVExpParser(BaseExpParser):
             lines = f.readlines()
 
         last_epoch = 0
+        iter_time = []
+        data_time = []
         for line in lines:
             iter_history = json.loads(line)
             if iter_history.get("mode") == "train":
                 if iter_history["epoch"] > last_epoch:
                     last_epoch = iter_history["epoch"]
-                if last_epoch <= 2:  # if epoch >= 2, first epcoh is excluded from the calcuation
-                    iter_time = []
-                    data_time = []
+                    if last_epoch <= 2:  # if epoch >= 2, first epcoh is excluded from the calcuation
+                        iter_time = []
+                        data_time = []
                 iter_time.append(iter_history["time"])
                 data_time.append(iter_history["data_time"])
 
