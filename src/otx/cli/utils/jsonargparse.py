@@ -6,10 +6,11 @@
 from __future__ import annotations
 
 import ast
+from pathlib import Path
 from typing import Any, TypeVar
 
 import docstring_parser
-from jsonargparse import Namespace, dict_to_namespace
+from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace
 
 
 def get_short_docstring(component: TypeVar) -> str | None:
@@ -92,4 +93,48 @@ def update(
     return self
 
 
+# To provide overriding of the Config file
+def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace, dest: str, value: str) -> None:  # noqa: ARG001
+    """Applies the configuration to the parser.
+
+    Args:
+        parser: The parser object.
+        cfg: The configuration object.
+        dest: The destination attribute.
+        value: The value to be applied.
+
+    Returns:
+        None
+    """
+    from jsonargparse._actions import _ActionSubCommands, previous_config_context
+    from jsonargparse._link_arguments import skip_apply_links
+    from jsonargparse._loaders_dumpers import get_loader_exceptions, load_value
+    from jsonargparse._optionals import get_config_read_mode
+
+    with _ActionSubCommands.not_single_subcommand(), previous_config_context(cfg), skip_apply_links():
+        kwargs = {"env": False, "defaults": False, "_skip_check": True, "_fail_no_subcommand": False}
+        try:
+            cfg_path: Path | None = Path(value, mode=get_config_read_mode())
+        except TypeError:
+            try:
+                if isinstance(load_value(value), str):
+                    raise
+                cfg_path = None
+                cfg_file = parser.parse_string(value, **kwargs)
+            except (TypeError, *get_loader_exceptions()) as ex_str:
+                msg = f'Parser key "{dest}": {ex_str}'
+                raise TypeError(msg) from ex_str
+        else:
+            cfg_file = parser.parse_path(value, **kwargs)
+        cfg_merged = parser.merge_config(cfg_file, cfg)
+        cfg.__dict__.update(cfg_merged.__dict__)
+        overrides = cfg.__dict__.pop("overrides", None)
+        if overrides is not None:
+            cfg.__dict__.update(overrides)
+        if cfg.get(dest) is None:
+            cfg[dest] = []
+        cfg[dest].append(cfg_path)
+
+
 Namespace.update = update
+ActionConfigFile.apply_config = apply_config

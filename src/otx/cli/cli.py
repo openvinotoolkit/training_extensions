@@ -135,6 +135,7 @@ class OTXCLI:
             if "--task" in sys.argv:
                 task = sys.argv[sys.argv.index("--task") + 1]
             auto_configurator = AutoConfigurator(data_root=data_root, task=task)
+            enable_auto_config = data_root is not None and "--config" not in sys.argv
 
             sub_parser = self.subcommand_parser()
             engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
@@ -149,11 +150,10 @@ class OTXCLI:
             sub_parser.link_arguments("data_root", "engine.data_root")
 
             # Model Settings
-            # if "model" in self.engine_subcommands()[subcommand]:
             from otx.core.model.entity.base import OTXModel
 
             model_kwargs: dict[str, Any] = {"fail_untyped": False}
-            if data_root is not None and "--model" not in sys.argv:
+            if enable_auto_config and "--model" not in sys.argv:
                 # Add Default values from Auto-Configurator
                 model_kwargs["default"] = auto_configurator.load_default_model_config()
 
@@ -164,7 +164,6 @@ class OTXCLI:
                 **model_kwargs,
             )
             # Datamodule Settings
-            # if "datamodule" in self.engine_subcommands()[subcommand]:
             from otx.core.data.module import OTXDataModule
 
             sub_parser.add_class_arguments(
@@ -174,11 +173,10 @@ class OTXCLI:
                 sub_configs=True,
             )
 
-            if data_root is not None:
+            if enable_auto_config:
                 # Add Default values from Auto-Configurator
                 default_data_config = auto_configurator.load_default_data_config()
                 default_data_config = flatten_dict({"data": default_data_config})
-                default_data_config["data.config.data_root"] = data_root
                 default_data_config["data.task"] = task if task is not None else auto_configurator.task
                 sub_parser.set_defaults(default_data_config)
 
@@ -188,7 +186,7 @@ class OTXCLI:
 
             optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
             scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
-            if data_root is not None:
+            if enable_auto_config:
                 # Add Default values from Auto-Configurator
                 if "--optimizer" not in sys.argv:
                     optim_kwargs["default"] = auto_configurator.load_default_optimizer_config()
@@ -214,12 +212,18 @@ class OTXCLI:
                 skip=skip,
                 fail_untyped=False,
             )
-            if data_root is not None and subcommand == "train":
+            if enable_auto_config and subcommand == "train":
                 # Add Default values from Auto-Configurator
                 default_engine_config = auto_configurator.load_default_engine_config()
                 default_engine_config = flatten_dict(default_engine_config)
-                default_engine_config["engine.data_root"] = data_root
                 sub_parser.set_defaults(default_engine_config)
+            if data_root is not None:
+                sub_parser.set_defaults(
+                    **{
+                        "data.config.data_root": data_root,
+                        "engine.data_root": data_root,
+                    },
+                )
 
             if "logger" in added:
                 sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")

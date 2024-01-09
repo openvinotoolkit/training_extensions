@@ -22,20 +22,16 @@ if TYPE_CHECKING:
     from rich.console import RenderableType
 
 
-BASE_ARGUMENTS = {"config", "print_config", "help", "engine", "model", "model.help"}
+BASE_ARGUMENTS = {"config", "print_config", "help", "engine", "model", "model.help", "data_root", "task"}
 ENGINE_ARGUMENTS = {f"engine.{field.name}" for field in EngineConfig.__dataclass_fields__.values()}
 REQUIRED_ARGUMENTS = {
     "train": {
         "data",
-        "data.task",
-        "data.config.data_root",
-        "checkpoint",
+        "optimizer",
+        "scheduler",
     }.union(BASE_ARGUMENTS).union(ENGINE_ARGUMENTS),
     "test": {
         "data",
-        "data.task",
-        "data.config.data_root",
-        "checkpoint",
     }.union(BASE_ARGUMENTS).union(ENGINE_ARGUMENTS),
 }
 

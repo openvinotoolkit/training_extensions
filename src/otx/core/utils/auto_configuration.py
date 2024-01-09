@@ -85,7 +85,7 @@ DEFAULT_DATA = {
 }
 
 
-CONFIG_PATH = Path(get_otx_root_path()) / "configs"
+CONFIG_PATH = Path(get_otx_root_path()) / "configs" / "_base_"
 
 
 def is_cvat_format(path: Path) -> bool:

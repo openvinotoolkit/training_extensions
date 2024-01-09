@@ -17,3 +17,6 @@ class EngineConfig:
     task: OTXTaskType
     device: str
     work_dir: str = "./otx-workspace"
+
+    data_root: str | None = None
+    checkpoint: str | None = None
