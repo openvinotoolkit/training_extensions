@@ -107,7 +107,6 @@ class PackInputs(MMPretrainPackInputs):
     def _pack_hlabel_inputs(self, results: dict) -> HlabelClsDataEntity:
         """Pack hlabel classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)
-        otx_data_entity = results["__otx__"]
 
         data_entity = HlabelClsDataEntity(
             image=packed_common_inputs["image"],
@@ -118,7 +117,6 @@ class PackInputs(MMPretrainPackInputs):
                 scale_factor=packed_common_inputs["scale_factor"],
             ),
             labels=packed_common_inputs["labels"],
-            hlabel_info=otx_data_entity.hlabel_info,
         )
         data_entity.img_info.pad_shape = packed_common_inputs["pad_shape"]
         return data_entity

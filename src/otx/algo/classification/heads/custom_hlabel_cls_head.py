@@ -74,9 +74,9 @@ class CustomHierarchicalClsHead(BaseModule):
         pre_logits = self.pre_logits(feats)
         return self.fc(pre_logits)
 
-    def _get_hlabel_info(self, data_samples: list[DataSample]) -> HLabelInfo:
-        """Get hlabel information."""
-        return data_samples[0].hlabel_info
+    def set_hlabel_info(self, hlabel_info: HLabelInfo) -> None:
+        """Set hlabel information."""
+        self.hlabel_info = hlabel_info
 
     def _get_gt_label(self, data_samples: list[DataSample]) -> torch.Tensor:
         """Get gt labels from data samples."""
@@ -106,7 +106,6 @@ class CustomHierarchicalClsHead(BaseModule):
         """
         losses = {}
         cls_scores = self(feats)
-        hlabel_info = self._get_hlabel_info(data_samples)
         gt_labels = self._get_gt_label(data_samples)
 
         losses = {"loss": 0.0}
@@ -114,9 +113,9 @@ class CustomHierarchicalClsHead(BaseModule):
         # Multiclass loss
         num_effective_heads_in_batch = 0  # consider the label removal case
         for i in range(self.num_multiclass_heads):
-            if i not in hlabel_info.empty_multiclass_head_indices:
+            if i not in self.hlabel_info.empty_multiclass_head_indices:
                 head_gt = gt_labels[:, i]
-                logit_range = self._get_head_idx_to_logits_range(hlabel_info, i)
+                logit_range = self._get_head_idx_to_logits_range(self.hlabel_info, i)
                 head_logits = cls_scores[:, logit_range[0] : logit_range[1]]
                 valid_mask = head_gt >= 0
 
@@ -131,8 +130,8 @@ class CustomHierarchicalClsHead(BaseModule):
 
         # Multilabel loss
         if self.num_multilabel_classes > 0:
-            head_gt = gt_labels[:, hlabel_info.num_multiclass_heads :]
-            head_logits = cls_scores[:, hlabel_info.num_single_label_classes :]
+            head_gt = gt_labels[:, self.hlabel_info.num_multiclass_heads :]
+            head_logits = cls_scores[:, self.hlabel_info.num_single_label_classes :]
             valid_mask = head_gt > 0
             head_gt = head_gt[valid_mask]
             if len(head_gt) > 0:
@@ -176,13 +175,11 @@ class CustomHierarchicalClsHead(BaseModule):
         if data_samples is None:
             data_samples = [DataSample() for _ in range(cls_scores.size(0))]
 
-        hlabel_info = self._get_hlabel_info(data_samples)
-
         # Multiclass
         multiclass_pred_scores = []
         multiclass_pred_labels = []
         for i in range(self.num_multiclass_heads):
-            logit_range = self._get_head_idx_to_logits_range(hlabel_info, i)
+            logit_range = self._get_head_idx_to_logits_range(self.hlabel_info, i)
             multiclass_logit = cls_scores[:, logit_range[0] : logit_range[1]]
             multiclass_pred = torch.softmax(multiclass_logit, dim=1)
             multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
@@ -194,7 +191,7 @@ class CustomHierarchicalClsHead(BaseModule):
         multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
 
         if self.num_multilabel_classes > 0:
-            multilabel_logits = cls_scores[:, hlabel_info.num_single_label_classes :]
+            multilabel_logits = cls_scores[:, self.hlabel_info.num_single_label_classes :]
 
             multilabel_pred_scores = torch.sigmoid(multilabel_logits)
             multilabel_pred_labels = (multilabel_pred_scores >= self.thr).int()

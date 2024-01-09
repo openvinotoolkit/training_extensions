@@ -247,7 +247,9 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        return _create_mmpretrain_model(self.config, self.load_from)
+        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        self.classification_layers = classification_layers
+        return model
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -263,14 +265,12 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
-                    "hlabel_info": hlabel_info,
                 },
                 gt_label=labels,
             )
-            for img_info, labels, hlabel_info in zip(
+            for img_info, labels in zip(
                 entity.imgs_info,
                 entity.labels,
-                entity.hlabel_info,
             )
         ]
         preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
@@ -279,7 +279,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
         mmpretrain_inputs["mode"] = "loss" if self.training else "predict"
         return mmpretrain_inputs
-        
+
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
@@ -308,13 +308,13 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
         return HlabelClsBatchPredEntity(
             batch_size=len(outputs),
+            images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
             labels=labels,
-            hlabel_info=inputs.hlabel_info,
         )
-        
-        
+
+
 class OVClassificationCompatibleModel(OTXMulticlassClsModel):
     """Classification model compatible for OpenVINO IR inference.
 

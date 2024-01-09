@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import torch
 from torchmetrics import Metric
-from torchmetrics.classification import Accuracy, MultilabelAccuracy, MultilabelAveragePrecision
+from torchmetrics.classification import Accuracy, MultilabelAccuracy
 
 
 class HLabelAccuracy(Metric):
@@ -26,64 +26,55 @@ class HLabelAccuracy(Metric):
         self,
         num_multiclass_heads: int,
         num_multilabel_classes: int,
+        head_idx_to_logits_range: dict[str, tuple[int, int]],
         threshold_multilabel: float = 0.5,
-        head_idx_to_logits_range: dict[str, tuple[int, int]] | None = None,
     ):
         super().__init__()
 
         self.num_multiclass_heads = num_multiclass_heads
+        if num_multiclass_heads == 0:
+            msg = "The number of multiclass heads should be larger than 0"
+            raise ValueError(msg)
+
         self.num_multilabel_classes = num_multilabel_classes
         self.threshold_multilabel = threshold_multilabel
         self.head_idx_to_logits_range = head_idx_to_logits_range
 
         # Multiclass classification accuracy will be defined later
-        self.multiclass_head_accuracy: list[Accuracy] | None = None
+        self.multiclass_head_accuracy: list[Accuracy] = [
+            Accuracy(
+                task="multiclass",
+                num_classes=int(head_range[1] - head_range[0]),
+            )
+            for head_range in self.head_idx_to_logits_range.values()
+        ]
 
         # Multilabel classification accuracy metrics
         if num_multilabel_classes > 0:
-            self.multilabel_accuracy = MultilabelAveragePrecision(
-                num_labels=self.num_multilabel_classes, average='macro'
+            self.multilabel_accuracy = MultilabelAccuracy(
+                num_labels=self.num_multilabel_classes,
+                threshold=0.5,
+                average="macro",
             )
-            # self.multilabel_accuracy = MultilabelAccuracy(
-            #     num_labels=self.num_multilabel_classes,
-            #     threshold=0.5,
-            #     average="macro",
-            # )
 
-        if num_multiclass_heads == 0:
-            msg = "The number of multiclass heads should be larger than 0"
-            raise ValueError(msg)
-
-    def _set_multiclass_head_accuracy(self, device: str) -> None:
-        """Set the multiclass metric for each multiclass heads."""
-        if isinstance(self.head_idx_to_logits_range, dict):
-            self.multiclass_head_accuracy = [
-                Accuracy(
-                    task="multiclass",
-                    num_classes=int(head_range[1] - head_range[0]),
-                ).to(device)
-                for head_range in self.head_idx_to_logits_range.values()
-            ]
-        else:
-            msg = "head_idx_to_logits_range should be set."
-            raise TypeError(msg)
+    def _metric_to_device(self, metric: Metric, device: str) -> None:
+        """One time update the device of metric."""
+        self.flag = False
+        if not self.flag:
+            metric.to(device)
+            self.flag = True
 
     def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
         """Update state with predictions and targets."""
-        if not self.multiclass_head_accuracy:
-            self._set_multiclass_head_accuracy(preds.device)
-
-        # to avoid the mypy error: [union-attr]
-        if not isinstance(self.multiclass_head_accuracy, list):
-            msg = f"multiclass_head_accuracy should have type: list, got {type(self.multiclass_head_accuracy)}."
-            raise TypeError(msg)
-
         # Split preds into multiclass and multilabel parts
         for head_idx in range(self.num_multiclass_heads):
             preds_multiclass = preds[:, head_idx]
             target_multiclass = target[:, head_idx]
             multiclass_mask = target_multiclass > 0
-            if not torch.all(multiclass_mask == False):
+
+            is_all_multiclass_ignored = not multiclass_mask.any()
+            if not is_all_multiclass_ignored:
+                self._metric_to_device(self.multiclass_head_accuracy[head_idx], preds.device)
                 self.multiclass_head_accuracy[head_idx].update(
                     preds_multiclass[multiclass_mask],
                     target_multiclass[multiclass_mask],
@@ -98,12 +89,6 @@ class HLabelAccuracy(Metric):
 
     def compute(self) -> torch.Tensor:
         """Compute the final statistics."""
-        # to avoid the mypy error: [union-attr]
-        if not isinstance(self.multiclass_head_accuracy, list):
-            msg = f"multiclass_head_accuracy should have type: list, got {type(self.multiclass_head_accuracy)}."
-            raise TypeError(msg)
-
-        # Calculate multiclass and multilabel metrics
         multiclass_accs = torch.mean(
             torch.stack(
                 [acc.compute() for acc in self.multiclass_head_accuracy],

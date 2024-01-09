@@ -6,11 +6,13 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
+from dataclasses import dataclass
 from io import BytesIO
 from typing import TYPE_CHECKING, Callable, Generic, List, Union
 
 import cv2
 import numpy as np
+from datumaro.components.annotation import AnnotationType
 from datumaro.components.media import ImageFromFile
 from PIL import Image as PILImage
 from torch.utils.data import Dataset
@@ -25,6 +27,28 @@ if TYPE_CHECKING:
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
 Transforms = Union[Compose, Callable, List[Callable]]
+
+
+@dataclass
+class SubsetDataMetaInfo:
+    """Meta information of each subset datasets."""
+
+    class_names: list[str]
+
+    @property
+    def num_classes(self) -> int:
+        """Return number of classes."""
+        return len(self.class_names)
+
+
+@dataclass
+class DataMetaInfo:
+    """Data meta information of OTXDataModule.
+
+    It includes the each subset's data meta info.
+    """
+
+    subset_info: dict[str, SubsetDataMetaInfo]
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -44,6 +68,10 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.mem_cache_handler = mem_cache_handler
         self.mem_cache_img_max_size = mem_cache_img_max_size
         self.max_refetch = max_refetch
+
+        self.subset_meta_info = SubsetDataMetaInfo(
+            class_names=[category.name for category in self.dm_subset.categories()[AnnotationType.label]],
+        )
 
     def __len__(self) -> int:
         return len(self.ids)

@@ -4,12 +4,15 @@
 """Class definition for classification lightning module used in OTX."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from torch import Tensor
 from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy
 
 from otx.algo.classification.metrics import HLabelAccuracy
+from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
@@ -20,6 +23,9 @@ from otx.core.data.entity.classification import (
 )
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
+
+if TYPE_CHECKING:
+    from otx.core.data.dataset.base import DataMetaInfo
 
 
 class OTXMulticlassClsLitModule(OTXLitModule):
@@ -202,19 +208,33 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        head_cfg = otx_model.config.get("head")
-        self.num_labels = head_cfg.get("num_classes")
-        self.num_multiclass_heads = head_cfg.get("num_multiclass_heads")
-        self.num_multilabel_classes = head_cfg.get("num_multilabel_classes")
+
+    def _set_hlabel_setup(self) -> None:
+        train_meta_info = self._meta_info.subset_info["train"]
+        if not isinstance(train_meta_info, HLabelMetaInfo):
+            msg = f"The type of train_meta_info should be HLabelMetaInfo, got {type(train_meta_info)}."
+            raise TypeError(msg)
+
+        self.hlabel_info = train_meta_info.hlabel_info
+
+        # Set the OTXHlabelClsModel params to make proper hlabel setup.
+        self.model.model.head.set_hlabel_info(self.hlabel_info)
+
+        # Set the OTXHlabelClsLitModule params.
+        self.num_labels = len(train_meta_info.class_names)
+        self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
+        self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
         self.val_metric = HLabelAccuracy(
             num_multiclass_heads=self.num_multiclass_heads,
             num_multilabel_classes=self.num_multilabel_classes,
+            head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
         )
         self.test_metric = HLabelAccuracy(
             num_multiclass_heads=self.num_multiclass_heads,
             num_multilabel_classes=self.num_multilabel_classes,
+            head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
         )
 
     def on_validation_epoch_start(self) -> None:
@@ -244,9 +264,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        if not self.val_metric.head_idx_to_logits_range:
-            self.val_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
-
         preds = self.model(inputs)
 
         if not isinstance(preds, HlabelClsBatchPredEntity):
@@ -262,13 +279,13 @@ class OTXHlabelClsLitModule(OTXLitModule):
         inputs: HlabelClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         if self.num_multilabel_classes > 0:
-            preds_multiclass = torch.stack(preds.labels)[:, :self.num_multiclass_heads]
-            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads:]
-            preds = torch.cat([preds_multiclass, preds_multilabel], dim=1)
+            preds_multiclass = torch.stack(preds.labels)[:, : self.num_multiclass_heads]
+            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads :]
+            pred_result = torch.cat([preds_multiclass, preds_multilabel], dim=1)
         else:
-            preds = torch.stack(preds.labels)
+            pred_result = torch.stack(preds.labels)
         return {
-            "preds": preds,
+            "preds": pred_result,
             "target": torch.stack(inputs.labels),
         }
 
@@ -279,16 +296,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        if not self.test_metric.head_idx_to_logits_range:
-            self.test_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
-
         preds = self.model(inputs)
 
         if not isinstance(preds, HlabelClsBatchPredEntity):
             raise TypeError(preds)
-
-        if not self.test_metric.head_idx_to_logits_range:
-            self.test_metric.head_idx_to_logits_range = inputs.hlabel_info[0].head_idx_to_logits_range
 
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
@@ -298,3 +309,16 @@ class OTXHlabelClsLitModule(OTXLitModule):
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
+
+    @property
+    def meta_info(self) -> DataMetaInfo:
+        """Meta information of OTXLitModule."""
+        if self._meta_info is None:
+            err_msg = "meta_info is referenced before assignment"
+            raise ValueError(err_msg)
+        return self._meta_info
+
+    @meta_info.setter
+    def meta_info(self, meta_info: DataMetaInfo) -> None:
+        self._meta_info = meta_info
+        self._set_hlabel_setup()

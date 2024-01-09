@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 
-from operator import itemgetter
-from typing import Any, Callable
+from dataclasses import dataclass
+from typing import Callable
 
 import torch
 from datumaro import Image, Label
@@ -24,7 +24,14 @@ from otx.core.data.entity.classification import (
     MultilabelClsDataEntity,
 )
 
-from .base import OTXDataset
+from .base import OTXDataset, SubsetDataMetaInfo
+
+
+@dataclass
+class HLabelMetaInfo(SubsetDataMetaInfo):
+    """Meta information of hlabel classification."""
+
+    hlabel_info: HLabelInfo
 
 
 class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
@@ -101,9 +108,14 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.dm_categories = self.dm_subset.categories()[AnnotationType.label]
-        self.hlabel_info = self._get_hlabel_info()
 
-        if self.hlabel_info.num_multiclass_heads == 0:
+        # Hlabel classification used HLabelMetaInfo to insert the HLabelInfo.
+        self.subset_meta_info = HLabelMetaInfo(
+            class_names=[category.name for category in self.dm_categories],
+            hlabel_info=HLabelInfo.from_dm_label_groups(self.dm_categories),
+        )
+
+        if self.subset_meta_info.hlabel_info.num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
 
@@ -123,7 +135,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
                 ori_shape=img_shape,
             ),
             labels=torch.as_tensor(hlabel_labels),
-            hlabel_info=self.hlabel_info,
         )
 
         return self._apply_transforms(entity)
@@ -148,8 +159,12 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         [Multilabel Head: [0, 1, 1]]
         2, 3, 4 indices = [0, 1, 1] -> ["Circle"(X), "Lion"(O), "Panda"(O)]
         """
-        num_multiclass_heads = self.hlabel_info.num_multiclass_heads
-        num_multilabel_classes = self.hlabel_info.num_multilabel_classes
+        if not isinstance(self.subset_meta_info, HLabelMetaInfo):
+            msg = f"The type of subset_meta_info should be HLabelMetaInfo, got {type(self.subset_meta_info)}."
+            raise TypeError(msg)
+
+        num_multiclass_heads = self.subset_meta_info.hlabel_info.num_multiclass_heads
+        num_multilabel_classes = self.subset_meta_info.hlabel_info.num_multilabel_classes
 
         # NOTE: currently ignored labels are not considered yet.
         ignored_labels: list = []
@@ -160,7 +175,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         for ann in label_anns:
             ann_name = self.dm_categories.items[ann.label].name
-            group_idx, in_group_idx = self.hlabel_info.class_to_group_idx[ann_name]
+            group_idx, in_group_idx = self.subset_meta_info.hlabel_info.class_to_group_idx[ann_name]
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
@@ -170,92 +185,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
                 class_indices[num_multiclass_heads + in_group_idx] = -1
 
         return class_indices
-
-    def _get_hlabel_info(self) -> HLabelInfo:
-        """Get H-label information.
-
-        To check the detailed information, please see the definition of HLabelInfo.
-        """
-
-        def get_exclusive_group_info(all_groups: list[Label | list[Label]]) -> dict[str, Any]:
-            """Get exclusive group information."""
-            exclusive_groups = [g for g in all_groups if len(g) > 1]
-            exclusive_groups.sort(key=itemgetter(0))
-
-            last_logits_pos = 0
-            num_single_label_classes = 0
-            head_idx_to_logits_range = {}
-            class_to_idx = {}
-
-            for i, group in enumerate(exclusive_groups):
-                head_idx_to_logits_range[str(i)] = (last_logits_pos, last_logits_pos + len(group))
-                last_logits_pos += len(group)
-                for j, c in enumerate(group):
-                    class_to_idx[c] = (i, j)
-                    num_single_label_classes += 1
-
-            return {
-                "num_multiclass_heads": len(exclusive_groups),
-                "exclusive_groups": exclusive_groups,
-                "head_idx_to_logits_range": head_idx_to_logits_range,
-                "class_to_idx": class_to_idx,
-                "num_single_label_classes": num_single_label_classes,
-            }
-
-        def get_single_label_group_info(
-            all_groups: list[Label | list[Label]],
-            num_exclusive_groups: int,
-        ) -> dict[str, Any]:
-            """Get single label group information."""
-            single_label_groups = [g for g in all_groups if len(g) == 1]
-            single_label_groups.sort(key=itemgetter(0))
-
-            class_to_idx = {}
-
-            for i, group in enumerate(single_label_groups):
-                class_to_idx[group[0]] = (num_exclusive_groups, i)
-
-            return {
-                "num_multilabel_classes": len(single_label_groups),
-                "class_to_idx": class_to_idx,
-            }
-
-        def merge_class_to_idx(
-            exclusive_ctoi: dict[str, tuple[int, int]],
-            single_label_ctoi: dict[str, tuple[int, int]],
-        ) -> dict[str, tuple[int, int]]:
-            """Merge the class_to_idx information from exclusive and single_label groups."""
-
-            def put_key_values(src: dict, dst: dict) -> None:
-                """Put key and values from src to dst."""
-                for k, v in src.items():
-                    dst[k] = v
-
-            class_to_idx: dict[str, tuple[int, int]] = {}
-            put_key_values(exclusive_ctoi, class_to_idx)
-            put_key_values(single_label_ctoi, class_to_idx)
-            return class_to_idx
-
-        all_groups = [label_group.labels for label_group in self.dm_categories.label_groups]
-
-        exclusive_group_info = get_exclusive_group_info(all_groups)
-        single_label_group_info = get_single_label_group_info(all_groups, exclusive_group_info["num_multiclass_heads"])
-
-        merged_class_to_idx = merge_class_to_idx(
-            exclusive_group_info["class_to_idx"],
-            single_label_group_info["class_to_idx"],
-        )
-
-        return HLabelInfo(
-            num_multiclass_heads=exclusive_group_info["num_multiclass_heads"],
-            num_multilabel_classes=single_label_group_info["num_multilabel_classes"],
-            head_idx_to_logits_range=exclusive_group_info["head_idx_to_logits_range"],
-            num_single_label_classes=exclusive_group_info["num_single_label_classes"],
-            class_to_group_idx=merged_class_to_idx,
-            all_groups=all_groups,
-            label_to_idx=self.dm_categories._indices,  # noqa: SLF001
-            empty_multiclass_head_indices=[],  # consider the label removing case
-        )
 
     @property
     def collate_fn(self) -> Callable:
