@@ -30,8 +30,8 @@ class OTXDetectionLitModule(OTXLitModule):
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
-        self.val_metric = MeanAveragePrecision(class_metrics=True)
-        self.test_metric = MeanAveragePrecision(class_metrics=True)
+        self.val_metric = MeanAveragePrecision()
+        self.test_metric = MeanAveragePrecision()
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -56,13 +56,7 @@ class OTXDetectionLitModule(OTXLitModule):
                 log.debug("Cannot log item which is not Tensor")
                 continue
             if v.numel() != 1:
-                for idx, value in enumerate(v):
-                    self.log(
-                        f"{key}/{k}{idx}",
-                        value,
-                        sync_dist=True,
-                        prog_bar=True,
-                    )
+                log.debug("Cannot log Tensor which is not scalar")
                 continue
 
             self.log(

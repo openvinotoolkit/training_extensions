@@ -61,10 +61,10 @@ class OTXSSD(MMDetCompatibleModel):
         Return:
             dict[str, dict[str, int]]
             A dictionary contain classification layer's name and information.
-            Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
-            it the layer is related bbox regression for object detection.
-            Extra classes is default class except class from data.
-            Normally it is related with background classes.
+            `use_bg` means whether SSD use background class. It if True if SSD use softmax loss, and
+            it is False if SSD use cross entropy loss.
+            `num_anchors` means number of anchors of layer. SSD have classification per each anchor,
+            so we have to update every anchors.
         """
         sample_config = deepcopy(config)
         modify_num_classes(sample_config, 3)

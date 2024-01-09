@@ -57,7 +57,7 @@ def get_classification_layers(
         dict[str, dict[str, int]]
         A dictionary contain classification layer's name and information.
         Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
-        it the layer is related bbox regression for object detection.
+        if the layer is related bbox regression for object detection.
         Extra classes is default class except class from data.
         Normally it is related with background classes.
     """
