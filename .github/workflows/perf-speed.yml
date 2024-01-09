@@ -18,13 +18,13 @@ on:
           - medium
           - large
           - all
-        default: large
+        default: medium
       num-repeat:
         description: Overrides default per-data-size number of repeat setting
-        default: 0
+        default: 1
       num-epoch:
         description: Overrides default per-model number of epoch setting
-        default: 0
+        default: 3
       eval-upto:
         type: choice
         description: The last operation to evaluate. 'optimize' means all.
@@ -35,8 +35,8 @@ on:
         default: optimize
 
 jobs:
-  Perf-Speed-Benchmark-Tests:
-    name: Perf-Speed-Benchmark-Test-py310-all
+  Perf-Speed-Benchmark:
+    name: Perf-Speed-Benchmark-all-py310
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
@@ -50,6 +50,7 @@ jobs:
         --data-size ${{ inputs.data-size }}
         --num-repeat ${{ inputs.num-repeat }}
         --num-epoch ${{ inputs.num-epoch }}
+        --eval-upto ${{ inputs.eval-upto }}
         --summary-csv .tox/perf-speed-benchmark-all.csv
       runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
       task: all
