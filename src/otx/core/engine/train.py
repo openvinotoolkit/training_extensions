@@ -116,7 +116,6 @@ def train(
             if cfg.checkpoint is not None:
                 loaded_checkpoint = torch.load(cfg.checkpoint)
                 model.load_state_dict(loaded_checkpoint["state_dict"])
-                trainer.test(model=model, datamodule=datamodule)
             # train
             trainer.fit(model=model, datamodule=datamodule)
 
