@@ -25,7 +25,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.classification_layers: dict[str, dict[str, int]] = {}
+        self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
 
     @abstractmethod
