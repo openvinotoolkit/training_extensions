@@ -523,15 +523,19 @@
 
     <span class="n">resource_tracker</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">track_resource_usage</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_multigpu_child_process</span><span class="p">():</span>
-        <span class="n">resource_tracker</span> <span class="o">=</span> <span class="n">ResourceTracker</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">track_resource_usage</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">gpus</span><span class="p">)</span>
+        <span class="n">resource_tracker</span> <span class="o">=</span> <span class="n">ResourceTracker</span><span class="p">(</span>
+            <span class="n">config_manager</span><span class="o">.</span><span class="n">output_path</span> <span class="o">/</span> <span class="s2">&quot;resource_usage.yaml&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">track_resource_usage</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">gpus</span>
+        <span class="p">)</span>
         <span class="n">resource_tracker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">exit_stack</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exit_stack</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">resource_tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
 
     <span class="n">task</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
         <span class="n">dataset</span><span class="p">,</span> <span class="n">output_model</span><span class="p">,</span> <span class="n">train_parameters</span><span class="o">=</span><span class="n">TrainParameters</span><span class="p">(),</span> <span class="n">seed</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">deterministic</span>
     <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">resource_tracker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">resource_tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">config_manager</span><span class="o">.</span><span class="n">output_path</span> <span class="o">/</span> <span class="s2">&quot;resource_usage.yaml&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resource_tracker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">exit_stack</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">resource_tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
     <span class="n">model_path</span> <span class="o">=</span> <span class="n">config_manager</span><span class="o">.</span><span class="n">output_path</span> <span class="o">/</span> <span class="s2">&quot;models&quot;</span>
     <span class="n">save_model_data</span><span class="p">(</span><span class="n">output_model</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">model_path</span><span class="p">))</span>

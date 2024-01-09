@@ -267,12 +267,16 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to track resources usage.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        output_path (Union[str, Path]): Output file path to save CPU &amp; GPU utilization and max meory usage values.</span>
 <span class="sd">        resource_type (str, optional): Which resource to track. Available values are cpu, gpu or all now.</span>
 <span class="sd">                                        Defaults to &quot;all&quot;.</span>
 <span class="sd">        gpu_ids (Optional[str]): GPU indices to record.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">gpu_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">gpu_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span>
         <span class="k">if</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_resource_type</span> <span class="o">=</span> <span class="n">AVAILABLE_RESOURCE_TYPE</span>
         <span class="k">else</span><span class="p">:</span>
@@ -299,19 +303,12 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mem_check_proc</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ResourceTracker.stop"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.experiment.html#otx.cli.utils.experiment.ResourceTracker.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Terminate a process to record resources usage.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            output_path (Union[str, Path]): Output file path to save CPU &amp; GPU utilization and max meory usage values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ResourceTracker.stop"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.experiment.html#otx.cli.utils.experiment.ResourceTracker.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Terminate a process to record resources usage.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mem_check_proc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mem_check_proc</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
             <span class="k">return</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mem_check_proc</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mem_check_proc</span><span class="o">.</span><span class="n">exitcode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mem_check_proc</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
