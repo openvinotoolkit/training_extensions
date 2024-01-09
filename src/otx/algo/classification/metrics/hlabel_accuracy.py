@@ -41,14 +41,14 @@ class HLabelAccuracy(Metric):
 
         # Multilabel classification accuracy metrics
         if num_multilabel_classes > 0:
-            # self.multilabel_accuracy = MultilabelAveragePrecision(
-            #     num_labels=self.num_multilabel_classes, average='macro'
-            # )
-            self.multilabel_accuracy = MultilabelAccuracy(
-                num_labels=self.num_multilabel_classes,
-                threshold=0.5,
-                average="macro",
+            self.multilabel_accuracy = MultilabelAveragePrecision(
+                num_labels=self.num_multilabel_classes, average='macro'
             )
+            # self.multilabel_accuracy = MultilabelAccuracy(
+            #     num_labels=self.num_multilabel_classes,
+            #     threshold=0.5,
+            #     average="macro",
+            # )
 
         if num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0"
@@ -83,10 +83,11 @@ class HLabelAccuracy(Metric):
             preds_multiclass = preds[:, head_idx]
             target_multiclass = target[:, head_idx]
             multiclass_mask = target_multiclass > 0
-            self.multiclass_head_accuracy[head_idx].update(
-                preds_multiclass[multiclass_mask],
-                target_multiclass[multiclass_mask],
-            )
+            if not torch.all(multiclass_mask == False):
+                self.multiclass_head_accuracy[head_idx].update(
+                    preds_multiclass[multiclass_mask],
+                    target_multiclass[multiclass_mask],
+                )
 
         if self.num_multilabel_classes > 0:
             # Split preds into multiclass and multilabel parts

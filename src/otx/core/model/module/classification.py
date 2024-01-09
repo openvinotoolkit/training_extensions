@@ -261,8 +261,14 @@ class OTXHlabelClsLitModule(OTXLitModule):
         preds: HlabelClsBatchPredEntity,
         inputs: HlabelClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
+        if self.num_multilabel_classes > 0:
+            preds_multiclass = torch.stack(preds.labels)[:, :self.num_multiclass_heads]
+            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads:]
+            preds = torch.cat([preds_multiclass, preds_multilabel], dim=1)
+        else:
+            preds = torch.stack(preds.labels)
         return {
-            "preds": torch.stack(preds.labels),
+            "preds": preds,
             "target": torch.stack(inputs.labels),
         }
 

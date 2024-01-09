@@ -28,14 +28,12 @@ def test(cfg: TrainConfig) -> tuple[Trainer, dict[str, Any]]:
 
     log.info(f"Instantiating model <{cfg.model}>")
     model: LightningModule = hydra.utils.instantiate(cfg.model)
+    model.meta_info = datamodule.meta_info
 
     log.info(f"Instantiating trainer <{cfg.trainer}>")
     trainer: Trainer = hydra.utils.instantiate(cfg.trainer)
 
     log.info("Starting testing!")
-    if cfg.checkpoint is None:
-        msg = "Checkpoint was not found! Could you please specify 'checkpoint'?"
-        raise ValueError(msg)
     trainer.test(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
 
     test_metrics = trainer.callback_metrics

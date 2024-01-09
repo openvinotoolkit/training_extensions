@@ -37,6 +37,11 @@ def otx_test(overrides: list[str]) -> None:
     :param overrides: Override List values.
     :return: Optional[float] with optimized metric value.
     """
+    from otx.core.config import register_configs
+
+    # This should be in front of hydra.initialize()
+    register_configs()
+
     with initialize(config_path="../config", version_base="1.3", job_name="otx_test"):
         cfg = compose(config_name="test", overrides=overrides, return_hydra_config=True)
         configure_hydra_outputs(cfg)
