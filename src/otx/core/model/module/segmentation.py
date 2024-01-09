@@ -96,7 +96,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         self,
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
-    ) -> dict[str, list[dict[str, Tensor]]]:
+    ) -> list[dict[str, Tensor]]:
         return [
             {
                 "preds": pred_mask,

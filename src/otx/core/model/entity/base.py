@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 from torch import nn
@@ -111,7 +111,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         return src2dst
 
 
-class OVModel(OTXModel):
+class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+    """Base class for the OpenVINO model."""
+
     def __init__(self, config: DictConfig) -> None:
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
@@ -150,12 +152,12 @@ class OVModel(OTXModel):
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
 
-        def _callback(result, user_data) -> None:
+        def _callback(result: NamedTuple, user_data: list[NamedTuple]) -> None:
             user_data.append(result)
 
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
         if self.async_inference:
-            outputs = []
+            outputs: list[Any] = []
             self.model.set_callback(_callback)
             for im in numpy_inputs:
                 if not self.model.is_ready():
@@ -165,8 +167,4 @@ class OVModel(OTXModel):
         else:
             outputs = [self.model(im) for im in numpy_inputs]
 
-        return (
-            self._customize_outputs(outputs, inputs)
-            if self._customize_outputs != OTXModel._customize_outputs
-            else outputs
-        )
+        return self._customize_outputs(outputs, inputs)

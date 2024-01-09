@@ -161,8 +161,8 @@ class OVDetectionModel(OVModel):
         bboxes = []
         scores = []
         labels = []
-        for object in outputs:
-            output_objects = object.objects
+        for obj in outputs:
+            output_objects = obj.objects
             if len(output_objects):
                 bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
             else:

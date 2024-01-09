@@ -186,8 +186,8 @@ class OVInstanceSegModel(OVModel):
         scores = []
         labels = []
         masks = []
-        for object in outputs:
-            output_objects = object.segmentedObjects
+        for obj in outputs:
+            output_objects = obj.segmentedObjects
             if len(output_objects):
                 bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
             else:
