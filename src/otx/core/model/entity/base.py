@@ -19,6 +19,7 @@ from otx.core.data.entity.base import (
 from otx.core.utils.build import get_default_async_reqs_num
 
 if TYPE_CHECKING:
+    import torch
     from omegaconf import DictConfig
 
 
@@ -27,6 +28,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self) -> None:
         super().__init__()
+        self.classification_layers: list[str] = []
         self.model = self._create_model()
 
     @abstractmethod
@@ -62,6 +64,51 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )
+
+    def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
+        """Register load_state_dict_pre_hook.
+
+        Args:
+            model_classes (list[str]): Class names from training data.
+            ckpt_classes (list[str]): Class names from checkpoint state dictionary.
+        """
+        self.model_classes = model_classes
+        self.ckpt_classes = ckpt_classes
+        self._register_load_state_dict_pre_hook(self.load_state_dict_pre_hook)
+
+    def load_state_dict_pre_hook(self, state_dict: dict[str, torch.Tensor], prefix: str, *args, **kwargs) -> None:
+        """Modify input state_dict according to class name matching before weight loading."""
+        model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
+
+        for param_name in self.classification_layers:
+            model_param = self.state_dict()[param_name].clone()
+            ckpt_param = state_dict[prefix + param_name]
+            for model_t, ckpt_t in enumerate(model2ckpt):
+                if ckpt_t >= 0:
+                    model_param[model_t].copy_(ckpt_param[ckpt_t])
+
+            # Replace checkpoint weight by mixed weights
+            state_dict[prefix + param_name] = model_param
+
+    @staticmethod
+    def map_class_names(src_classes: list[str], dst_classes: list[str]) -> list[int]:
+        """Computes src to dst index mapping.
+
+        src2dst[src_idx] = dst_idx
+        #  according to class name matching, -1 for non-matched ones
+        assert(len(src2dst) == len(src_classes))
+        ex)
+          src_classes = ['person', 'car', 'tree']
+          dst_classes = ['tree', 'person', 'sky', 'ball']
+          -> Returns src2dst = [1, -1, 0]
+        """
+        src2dst = []
+        for src_class in src_classes:
+            if src_class in dst_classes:
+                src2dst.append(dst_classes.index(src_class))
+            else:
+                src2dst.append(-1)
+        return src2dst
 
 
 class OVModel(OTXModel):

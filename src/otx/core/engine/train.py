@@ -54,6 +54,7 @@ def train(
     Returns:
         A tuple with Pytorch Lightning Trainer and Python dict of metrics
     """
+    import torch
     from lightning import seed_everything
 
     from otx.core.data.module import OTXDataModule
@@ -69,9 +70,9 @@ def train(
 
     log.info(f"Instantiating datamodule <{cfg.data}>")
     datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
-
     log.info(f"Instantiating model <{cfg.model}>")
     model: OTXLitModule = hydra.utils.instantiate(cfg.model)
+    model.meta_info = datamodule.meta_info
 
     if otx_model is not None:
         if not isinstance(otx_model, OTXModel):
@@ -108,7 +109,15 @@ def train(
 
     if cfg.train:
         log.info("Starting training!")
-        trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
+        if cfg.resume:
+            trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.checkpoint)
+        else:
+            # load weight to finetune the model
+            if cfg.checkpoint is not None:
+                loaded_checkpoint = torch.load(cfg.checkpoint)
+                model.load_state_dict(loaded_checkpoint["state_dict"])
+            # train
+            trainer.fit(model=model, datamodule=datamodule)
 
     train_metrics = trainer.callback_metrics
 

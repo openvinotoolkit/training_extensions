@@ -5,9 +5,11 @@
 from __future__ import annotations
 
 import logging as log
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from datumaro import Dataset as DmDataset
+from datumaro.components.annotation import AnnotationType
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
@@ -22,6 +24,21 @@ if TYPE_CHECKING:
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
 
     from .dataset.base import OTXDataset
+
+
+@dataclass
+class DataMetaInfo:
+    """Meta information of OTXDataModule.
+
+    This meta information will be used by OTXLitModule.
+    """
+
+    class_names: list[str]
+
+    @property
+    def num_classes(self) -> int:
+        """Return number of classes."""
+        return len(self.class_names)
 
 
 class OTXDataModule(LightningDataModule):
@@ -46,9 +63,9 @@ class OTXDataModule(LightningDataModule):
 
         VIDEO_EXTENSIONS.append(".mp4")
 
-        dataset = DmDataset.import_from(
-            self.config.data_root,
-            format=self.config.data_format,
+        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        self.meta_info = DataMetaInfo(
+            class_names=[category.name for category in dataset.categories()[AnnotationType.label]],
         )
 
         config_mapping = {

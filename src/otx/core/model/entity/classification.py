@@ -17,7 +17,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model
+from otx.core.utils.build import build_mm_model, get_classification_layers
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -31,7 +31,7 @@ class OTXMulticlassClsModel(
     """Base class for the classification models used in OTX."""
 
 
-def _create_mmpretrain_model(config: DictConfig, load_from: str) -> nn.Module:
+def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, list[str]]:
     from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
     from mmpretrain.registry import MODELS
 
@@ -48,7 +48,8 @@ def _create_mmpretrain_model(config: DictConfig, load_from: str) -> nn.Module:
             else:
                 return buf.device
 
-    return build_mm_model(config, MODELS, load_from)
+    classification_layers = get_classification_layers(config, MODELS, "model.")
+    return build_mm_model(config, MODELS, load_from), classification_layers
 
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
@@ -65,7 +66,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        return _create_mmpretrain_model(self.config, self.load_from)
+        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        self.classification_layers = classification_layers
+        return model
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -155,7 +158,9 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        return _create_mmpretrain_model(self.config, self.load_from)
+        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        self.classification_layers = classification_layers
+        return model
 
     def _customize_inputs(self, entity: MultilabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
