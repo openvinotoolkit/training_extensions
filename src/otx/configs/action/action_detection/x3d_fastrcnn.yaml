@@ -1,0 +1,14 @@
+model: ../../_base_/model/ACTION_DETECTION/x3d_fastrcnn.yaml
+data: ../../_base_/data/action_detection_x3d_fastrcnn.yaml
+optimizer: ../../_base_/optimizer/sgd.yaml
+scheduler: ../../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.005
+      weight_decay: 1e-05
+  scheduler:
+    init_args:
+      factor: 0.1
+      patience: 10

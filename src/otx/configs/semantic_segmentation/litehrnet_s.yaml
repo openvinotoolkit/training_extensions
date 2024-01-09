@@ -1,0 +1,14 @@
+model: ../_base_/model/SEMANTIC_SEGMENTATION/litehrnet_s.yaml
+data: ../_base_/data/semantic_segmentation_litehrnet.yaml
+optimizer: ../_base_/optimizer/adamw.yaml
+scheduler: ../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.001
+      weight_decay: 0.0001
+  scheduler:
+    init_args:
+      factor: 0.1
+      patience: 10

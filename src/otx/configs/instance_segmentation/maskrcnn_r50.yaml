@@ -1,0 +1,14 @@
+model: ../_base_/model/INSTANCE_SEGMENTATION/maskrcnn_r50.yaml
+data: ../_base_/data/instance_segmentation_maskrcnn.yaml
+optimizer: ../_base_/optimizer/sgd.yaml
+scheduler: ../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.007
+      weight_decay: 0.001
+  scheduler:
+    init_args:
+      factor: 0.1
+      patience: 10

@@ -1,0 +1,10 @@
+model: ../_base_/model/DETECTION/rtmdet_tiny.yaml
+data: ../_base_/data/detection_rtmdet.yaml
+optimizer: ../_base_/optimizer/adam.yaml
+scheduler: ../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.001
+      weight_decay: 0.0

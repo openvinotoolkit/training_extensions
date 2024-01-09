@@ -1,0 +1,9 @@
+model: ../../_base_/model/MULTI_LABEL_CLS/efficientnet_v2_light.yaml
+data: ../../_base_/data/multi_label_cls_random_flip.yaml
+optimizer: ../../_base_/optimizer/sgd.yaml
+scheduler: ../../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.0071

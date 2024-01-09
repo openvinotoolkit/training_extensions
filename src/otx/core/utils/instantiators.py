@@ -43,11 +43,11 @@ def instantiate_callbacks(callbacks_cfg: list) -> list[Callback]:
     return callbacks
 
 
-def instantiate_loggers(logger_cfg: dict | None) -> list[Logger]:
+def instantiate_loggers(logger_cfg: list | None) -> list[Logger]:
     """Instantiate loggers based on the provided logger configuration.
 
     Args:
-        logger_cfg (dict | None): The logger configuration.
+        logger_cfg (list | None): The logger configuration.
 
     Returns:
         list[Logger]: The list of instantiated loggers.
@@ -58,14 +58,15 @@ def instantiate_loggers(logger_cfg: dict | None) -> list[Logger]:
         log.warning("No logger configs found! Skipping...")
         return logger
 
-    if isinstance(logger_cfg, dict) and "class_path" in logger_cfg:
-        log.info(f"Instantiating logger <{logger_cfg['class_path']}>")
-        logger.append(instantiate_class(args=(), init=logger_cfg))
+    for lg_conf in logger_cfg:
+        if isinstance(lg_conf, dict) and "class_path" in lg_conf:
+            log.info(f"Instantiating logger <{lg_conf['class_path']}>")
+            logger.append(instantiate_class(args=(), init=lg_conf))
 
     return logger
 
 
-def partial_instantiate_class(init: dict) -> partial:
+def partial_instantiate_class(init: dict | None) -> partial | None:
     """Partially instantiates a class with the given initialization arguments.
 
     Copy from lightning.pytorch.cli.instantiate_class and modify it to use partial.
@@ -79,6 +80,8 @@ def partial_instantiate_class(init: dict) -> partial:
     Returns:
         partial: A partial object representing the partially instantiated class.
     """
+    if not init:
+        return None
     kwargs = init.get("init_args", {})
     class_module, class_name = init["class_path"].rsplit(".", 1)
     module = __import__(class_module, fromlist=[class_name])

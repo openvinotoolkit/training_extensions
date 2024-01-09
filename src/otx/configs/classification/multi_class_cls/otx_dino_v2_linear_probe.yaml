@@ -1,0 +1,9 @@
+model: ../../_base_/model/MULTI_CLASS_CLS/otx_dino_v2_linear_probe.yaml
+data: ../../_base_/data/multi_class_cls_dino_v2_linear_probe.yaml
+optimizer: ../../_base_/optimizer/sgd.yaml
+scheduler: ../../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.007

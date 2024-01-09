@@ -1,0 +1,15 @@
+model: ../_base_/model/SEMANTIC_SEGMENTATION/dino_v2.yaml
+data: ../_base_/data/semantic_segmentation_dino_v2.yaml
+optimizer: ../_base_/optimizer/adamw.yaml
+scheduler: ../_base_/scheduler/polynomial_lr.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.001
+      weight_decay: 0.0001
+  scheduler:
+    init_args:
+      total_iters: 100
+      power: 0.9
+      last_epoch: -1

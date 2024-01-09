@@ -1,0 +1,110 @@
+engine:
+  work_dir: ./otx-workspace
+  device: auto
+data:
+  task: MULTI_CLASS_CLS
+  config:
+    data_format: imagenet_with_subset_dirs
+    train_subset:
+      batch_size: 64
+      subset_name: train
+      transform_lib_type: MMPRETRAIN
+      transforms:
+        - type: LoadImageFromFile
+        - backend: cv2
+          scale: 224
+          type: RandomResizedCrop
+        - type: PackInputs
+      num_workers: 2
+    val_subset:
+      batch_size: 64
+      subset_name: val
+      transform_lib_type: MMPRETRAIN
+      transforms:
+        - type: LoadImageFromFile
+        - backend: cv2
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+      num_workers: 2
+    test_subset:
+      batch_size: 64
+      subset_name: test
+      transform_lib_type: MMPRETRAIN
+      transforms:
+        - type: LoadImageFromFile
+        - backend: cv2
+          edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+      num_workers: 2
+    mem_cache_size: 1GB
+    mem_cache_img_max_size:
+      - 500
+      - 500
+    include_polygons: false
+max_epochs: 10
+deterministic: false
+precision: 32
+val_check_interval: 1
+model:
+  class_path: otx.core.model.entity.classification.MMPretrainMulticlassClsModel
+  init_args:
+    config:
+      backbone:
+        version: b0
+        pretrained: true
+        type: OTXEfficientNet
+      head:
+        in_channels: 1280
+        loss:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+        num_classes: 1000
+        topk:
+          - 1
+          - 5
+        type: LinearClsHead
+      neck:
+        type: GlobalAveragePooling
+      data_preprocessor:
+        mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: false
+        type: ClsDataPreprocessor
+      type: ImageClassifier
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.0049
+    momentum: 0.9
+    dampening: 0
+    weight_decay: 0.0001
+    nesterov: false
+    maximize: false
+    differentiable: false
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    monitor: train/loss
+    mode: min
+    factor: 0.5
+    patience: 1
+    threshold: 0.0001
+    threshold_mode: rel
+    cooldown: 0
+    min_lr: 0
+    eps: 1.0e-08
+    verbose: false

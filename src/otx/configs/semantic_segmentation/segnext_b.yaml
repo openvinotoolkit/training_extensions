@@ -1,0 +1,15 @@
+model: ../_base_/model/SEMANTIC_SEGMENTATION/segnext_b.yaml
+data: ../_base_/data/semantic_segmentation_segnext.yaml
+optimizer: ../_base_/optimizer/adamw.yaml
+scheduler: ../_base_/scheduler/polynomial_lr.yaml
+
+overrides:
+  optimizer:
+    init_args:
+      lr: 0.000006
+      weight_decay: 0.01
+  scheduler:
+    init_args:
+      total_iters: 5
+      power: 1.0
+      last_epoch: -1

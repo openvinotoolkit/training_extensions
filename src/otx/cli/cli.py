@@ -212,8 +212,8 @@ class OTXCLI:
                 skip=skip,
                 fail_untyped=False,
             )
-            if enable_auto_config and subcommand == "train":
-                # Add Default values from Auto-Configurator
+            if data_root is not None and subcommand == "train":
+                # Add Default values of Callbacks & Logger
                 default_engine_config = auto_configurator.load_default_engine_config()
                 default_engine_config = flatten_dict(default_engine_config)
                 sub_parser.set_defaults(default_engine_config)
@@ -246,19 +246,36 @@ class OTXCLI:
         if self.subcommand in self.engine_subcommands():
             self.config_init = self.parser.instantiate_classes(self.config)
             self.datamodule = self._get(self.config_init, "data")
-            self.model = self._get(self.config_init, "model")
-            optimizer_kwargs = self._get(self.config_init, "optimizer")
-            scheduler_kwargs = self._get(self.config_init, "scheduler")
-            from otx.core.utils.instantiators import partial_instantiate_class
+            self.model, optimizer, scheduler = self.instantiate_model()
 
             engine_kwargs = self._get(self.config_init, "engine")
             self.engine = Engine(
                 model=self.model,
-                optimizer=partial_instantiate_class(namespace_to_dict(optimizer_kwargs)),
-                scheduler=partial_instantiate_class(namespace_to_dict(scheduler_kwargs)),
+                optimizer=optimizer,
+                scheduler=scheduler,
                 datamodule=self.datamodule,
                 **engine_kwargs,
             )
+
+    def instantiate_model(self) -> tuple:
+        """Instantiate the model based on the subcommand.
+
+        This method checks if the subcommand is one of the engine subcommands.
+        If it is, it instantiates the model.
+
+        Returns:
+            tuple: The model and optimizer and scheduler.
+        """
+        model = self._get(self.config_init, "model")
+        optimizer_kwargs = self._get(self.config_init, "optimizer", {})
+        if isinstance(optimizer_kwargs, Namespace):
+            optimizer_kwargs = namespace_to_dict(optimizer_kwargs)
+        scheduler_kwargs = self._get(self.config_init, "scheduler", {})
+        if isinstance(scheduler_kwargs, Namespace):
+            scheduler_kwargs = namespace_to_dict(scheduler_kwargs)
+        from otx.core.utils.instantiators import partial_instantiate_class
+
+        return model, partial_instantiate_class(optimizer_kwargs), partial_instantiate_class(scheduler_kwargs)
 
     def _get(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Utility to get a config value which might be inside a subcommand."""

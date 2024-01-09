@@ -370,7 +370,7 @@ class Engine:
             engine_config = config
 
         callbacks = instantiate_callbacks(config_dict.pop("callbacks", []))
-        logger = instantiate_loggers(config_dict.pop("logger", None))
+        logger = instantiate_loggers(config_dict.pop("logger", []))
         return cls(
             task=engine_config.task,
             work_dir=engine_config.work_dir,
