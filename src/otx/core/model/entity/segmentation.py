@@ -7,12 +7,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model
 
 if TYPE_CHECKING:
@@ -122,30 +121,12 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         )
 
 
-class OVSegmentationCompatibleModel(OTXSegmentationModel):
+class OVSegmentationModel(OVModel):
     """Semantic segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX segmentation model compatible for OTX testing pipeline.
     """
-
-    def __init__(self, config: DictConfig) -> None:
-        self.model_name = config.pop("model_name")
-        self.config = config
-        super().__init__()
-
-    def _create_model(self) -> nn.Module:
-        from openvino.model_api.models import SegmentationModel
-
-        return SegmentationModel.create_model(self.model_name, model_type="Segmentation")
-
-    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
-        if entity.batch_size > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-        # restore original numpy image
-        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
-        return {"inputs": img}
 
     def _customize_outputs(
         self,
@@ -159,5 +140,5 @@ class OVSegmentationCompatibleModel(OTXSegmentationModel):
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],
-            masks=[tv_tensors.Mask(outputs.resultImage)],
+            masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
         )

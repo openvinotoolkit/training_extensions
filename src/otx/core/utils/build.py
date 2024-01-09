@@ -37,3 +37,13 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str)
         load_checkpoint(model, load_from)
 
     return model
+
+
+def get_default_async_reqs_num() -> int:
+    """Returns a default number of infer request for OV models."""
+    import os
+
+    reqs_num = os.cpu_count()
+    if reqs_num is not None:
+        return max(1, int(reqs_num / 2))
+    return 1

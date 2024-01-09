@@ -7,9 +7,14 @@ defaults:
 
 data:
   data_format: coco_instances
+  test_subset:
+    batch_size: 64
 
 model:
   otx_model:
-    _target_: otx.core.model.entity.detection.OVDetectionCompatibleModel
+    _target_: otx.core.model.entity.detection.OVDetectionModel
     config:
       model_name: ssd300
+      use_tp_mode: True
+      model_type: "SSD"
+      async_inference: True
