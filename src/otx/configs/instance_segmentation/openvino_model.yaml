@@ -1,0 +1,10 @@
+model: ../../_base_/model/INSTANCE_SEGMENTATION/openvino_model.yaml
+data: ../../_base_/data/openvino.yaml
+optimizer: ../../_base_/optimizer/adam.yaml
+scheduler: ../../_base_/scheduler/reduce_lr_on_plateau.yaml
+
+overrides:
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      data_format: coco_instances

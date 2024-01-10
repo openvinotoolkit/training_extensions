@@ -4,6 +4,8 @@
 """Class definition for base lightning module used in OTX."""
 from __future__ import annotations
 
+import logging
+import warnings
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -11,6 +13,7 @@ from lightning import LightningModule
 from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
+from otx.core.data.module import DataMetaInfo
 from otx.core.model.entity.base import OTXModel
 
 if TYPE_CHECKING:
@@ -33,6 +36,8 @@ class OTXLitModule(LightningModule):
         self.torch_compile = torch_compile
         self.optimizer = optimizer
         self.scheduler = scheduler
+        self.torch_compile = torch_compile
+        self._meta_info: DataMetaInfo | None = None
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -106,3 +111,65 @@ class OTXLitModule(LightningModule):
                 },
             }
         return {"optimizer": optimizer}
+
+    def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
+        """Register self.model's load_state_dict_pre_hook.
+
+        Args:
+            model_classes (list[str]): Class names from training data.
+            ckpt_classes (list[str]): Class names from checkpoint state dictionary.
+        """
+        self.model.register_load_state_dict_pre_hook(model_classes, ckpt_classes)
+
+    def state_dict(self) -> dict[str, Any]:
+        """Return state dictionary of model entity with meta information.
+
+        Returns:
+            A dictionary containing datamodule state.
+
+        """
+        state_dict = super().state_dict()
+        state_dict["meta_info"] = self.meta_info
+        return state_dict
+
+    def load_state_dict(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
+        """Load state dictionary from checkpoint state dictionary.
+
+        If checkpoint's meta_info and OTXLitModule's meta_info are different,
+        load_state_pre_hook for smart weight loading will be registered.
+        """
+        ckpt_meta_info = state_dict.pop("meta_info", None)
+        if ckpt_meta_info and self.meta_info is None:
+            msg = (
+                "`state_dict` to load has `meta_info`, but the current model has no `meta_info`. "
+                "It is recommended to set proper `meta_info` for the incremental learning case."
+            )
+            warnings.warn(msg, stacklevel=2)
+        if ckpt_meta_info and self.meta_info and ckpt_meta_info != self.meta_info:
+            logger = logging.getLogger()
+            logger.info(
+                f"Data classes from checkpoint: {ckpt_meta_info.class_names} -> "
+                f"Data classes from training data: {self.meta_info.class_names}",
+            )
+            self.register_load_state_dict_pre_hook(
+                self.meta_info.class_names,
+                ckpt_meta_info.class_names,
+            )
+        return super().load_state_dict(state_dict, *args, **kwargs)
+
+    @property
+    def lr_scheduler_monitor_key(self) -> str:
+        """Metric name that the learning rate scheduler monitor."""
+        return "val/loss"
+
+    @property
+    def meta_info(self) -> DataMetaInfo:
+        """Meta information of OTXLitModule."""
+        if self._meta_info is None:
+            err_msg = "meta_info is referenced before assignment"
+            raise ValueError(err_msg)
+        return self._meta_info
+
+    @meta_info.setter
+    def meta_info(self, meta_info: DataMetaInfo) -> None:
+        self._meta_info = meta_info

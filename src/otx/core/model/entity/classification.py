@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
+import torch
 from omegaconf import DictConfig
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -17,7 +19,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.build import build_mm_model
+from otx.core.utils.build import build_mm_model, get_classification_layers
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -30,7 +32,7 @@ class OTXMulticlassClsModel(
     """Base class for the classification models used in OTX."""
 
 
-def _create_mmpretrain_model(config: DictConfig, load_from: str) -> nn.Module:
+def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, list[str]]:
     from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
     from mmpretrain.registry import MODELS
 
@@ -47,7 +49,8 @@ def _create_mmpretrain_model(config: DictConfig, load_from: str) -> nn.Module:
             else:
                 return buf.device
 
-    return build_mm_model(config, MODELS, load_from)
+    classification_layers = get_classification_layers(config, MODELS, "model.")
+    return build_mm_model(config, MODELS, load_from), classification_layers
 
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
@@ -64,7 +67,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        return _create_mmpretrain_model(self.config, self.load_from)
+        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        self.classification_layers = classification_layers
+        return model
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -154,7 +159,9 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         super().__init__()
 
     def _create_model(self) -> nn.Module:
-        return _create_mmpretrain_model(self.config, self.load_from)
+        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        self.classification_layers = classification_layers
+        return model
 
     def _customize_inputs(self, entity: MultilabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -213,6 +220,50 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
         return MultilabelClsBatchPredEntity(
             batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            labels=labels,
+        )
+
+
+class OVClassificationCompatibleModel(OTXMulticlassClsModel):
+    """Classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def __init__(self, config: DictConfig | dict) -> None:
+        self.model_name = config.pop("model_name")
+        self.config = DictConfig(config)
+        super().__init__()
+
+    def _create_model(self) -> nn.Module:
+        from openvino.model_api.models import ClassificationModel
+
+        return ClassificationModel.create_model(self.model_name, model_type="Classification")
+
+    def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+        if entity.batch_size > 1:
+            msg = "Only sync inference with batch = 1 is supported for now"
+            raise RuntimeError(msg)
+        # restore original numpy image
+        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
+        return {"inputs": img}
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: MulticlassClsBatchDataEntity,
+    ) -> MulticlassClsBatchPredEntity:
+        # add label index
+        labels = [torch.tensor(outputs.top_labels[0][0], dtype=torch.long)]
+        # add probability
+        scores = [torch.tensor(outputs.top_labels[0][2])]
+
+        return MulticlassClsBatchPredEntity(
+            batch_size=1,
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,

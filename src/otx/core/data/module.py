@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging as log
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -26,6 +27,21 @@ if TYPE_CHECKING:
     from .dataset.base import OTXDataset
 
 
+@dataclass
+class DataMetaInfo:
+    """Meta information of OTXDataModule.
+
+    This meta information will be used by OTXLitModule.
+    """
+
+    class_names: list[str]
+
+    @property
+    def num_classes(self) -> int:
+        """Return number of classes."""
+        return len(self.class_names)
+
+
 class OTXDataModule(LightningDataModule):
     """LightningDataModule extension for OTX pipeline."""
 
@@ -44,11 +60,10 @@ class OTXDataModule(LightningDataModule):
 
         VIDEO_EXTENSIONS.append(".mp4")
 
-        dataset = DmDataset.import_from(
-            self.config.data_root,
-            format=self.config.data_format,
+        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        self.meta_info = DataMetaInfo(
+            class_names=[category.name for category in dataset.categories()[AnnotationType.label]],
         )
-        self.num_classes = len(dataset.categories()[AnnotationType.label])
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,

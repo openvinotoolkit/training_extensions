@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
+import torch
 import yaml
 from lightning import Trainer, seed_everything
 from lightning.pytorch.cli import instantiate_class
@@ -133,7 +134,7 @@ class Engine:
             if isinstance(model, OTXModel)
             else self._auto_configurator.get_model(
                 model=model,
-                num_classes=self.datamodule.num_classes,
+                num_classes=self.datamodule.meta_info.num_classes,
             )
         )
         self.optimizer: OptimizerCallable = (
@@ -156,6 +157,7 @@ class Engine:
         val_check_interval: int | float | None = 1,
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
+        resume: bool = False,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -168,6 +170,7 @@ class Engine:
             val_check_interval (int | float | None, optional): The validation check interval. Defaults to 1.
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
+            resume (bool, optional): If True, tries to resume training from existing checkpoint.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -208,6 +211,7 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        lit_module.meta_info = self.datamodule.meta_info
 
         if seed is not None:
             seed_everything(seed, workers=True)
@@ -221,11 +225,17 @@ class Engine:
             val_check_interval=val_check_interval,
             **kwargs,
         )
+        fit_kwargs: dict[str, Any] = {}
+        if resume:
+            fit_kwargs["ckpt_path"] = self.checkpoint
+        elif self.checkpoint is not None:
+            loaded_checkpoint = torch.load(self.checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
         self.trainer.fit(
             model=lit_module,
             datamodule=self.datamodule,
-            ckpt_path=self.checkpoint,
+            **fit_kwargs,
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
 
@@ -271,12 +281,15 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
 
         self._build_trainer(**kwargs)
 
         self.trainer.test(
             model=lit_module,
-            dataloaders=datamodule if datamodule is not None else self.datamodule,
+            dataloaders=datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
 

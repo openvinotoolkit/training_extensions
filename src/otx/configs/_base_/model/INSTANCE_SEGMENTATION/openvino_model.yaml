@@ -1,0 +1,5 @@
+class_path: otx.core.model.entity.instance_segmentation.OVInstanceSegCompatibleModel
+init_args:
+  config:
+    model_name: yolact-resnet50-fpn-pytorch
+    model_type: YOLACT

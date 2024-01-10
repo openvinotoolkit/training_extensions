@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import datumaro
 import yaml
@@ -19,6 +19,7 @@ from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.core.utils import get_otx_root_path
+from otx.core.utils.build import modify_num_classes
 from otx.core.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
@@ -168,29 +169,6 @@ def configure_data_format(data_root: str | Path) -> str:
     return data_format
 
 
-def replace_key(config: dict, key: str, value: Any) -> None:  # noqa: ANN401
-    """Recursively replaces the value of in a nested dictionary with the given key-value.
-
-    Args:
-        config (dict): The dictionary to be modified.
-        key (str): The key want to replace in the nested dictionary
-        value (Any): value to update for key
-
-    Returns:
-        None
-    """
-    for k, v in config.items():
-        if k == key and value is not None:
-            logger.warning(f"Replace {k} with {value}")
-            config[k] = value
-        elif isinstance(v, dict):
-            replace_key(v, key, value)
-        elif isinstance(v, list):
-            for item in v:
-                if isinstance(item, dict):
-                    replace_key(item, key, value)
-
-
 def load_model_configs(task: str) -> dict[str, str]:
     """Loads the model configurations from the specified directory.
 
@@ -301,7 +279,8 @@ class AutoConfigurator:
             with Path(model_cfg_path).open() as f:
                 model_config = yaml.safe_load(f)
             # Update num_classes
-            replace_key(model_config, "num_classes", num_classes)
+            if num_classes is not None:
+                modify_num_classes(model_config, num_classes)
             return model_config.get("model", model_config)
         msg = f"{model} does not exist."
         raise FileNotFoundError(msg)
@@ -358,15 +337,13 @@ class AutoConfigurator:
         logger.warning(f"Set Default Model: {model_config}")
         return instantiate_class(args=(), init=model_config)
 
-    def get_optimizer(self, **kwargs) -> OptimizerCallable:
+    def get_optimizer(self) -> OptimizerCallable:
         """Get the optimizer from the given optimizer name.
 
         Returns:
             OptimizerCallable: The instantiated optimizer object.
         """
         optimizer_cfg = self.load_default_optimizer_config()
-        for key, value in kwargs.items():
-            replace_key(optimizer_cfg, key, value)
         logger.warning(f"Set Default Optimizer: {optimizer_cfg}")
         optimizer = partial_instantiate_class(init=optimizer_cfg)
         if optimizer is None:
@@ -374,15 +351,13 @@ class AutoConfigurator:
             raise TypeError(msg)
         return optimizer
 
-    def get_scheduler(self, **kwargs) -> LRSchedulerCallable:
+    def get_scheduler(self) -> LRSchedulerCallable:
         """Get the scheduler from the given scheduler name.
 
         Returns:
             LRSchedulerCallable: The instantiated scheduler object.
         """
         scheduler_cfg = self.load_default_scheduler_config()
-        for key, value in kwargs.items():
-            replace_key(scheduler_cfg, key, value)
         logger.warning(f"Set Default Scheduler: {scheduler_cfg}")
         scheduler = partial_instantiate_class(init=scheduler_cfg)
         if scheduler is None:

@@ -1,0 +1,4 @@
+model: ../../_base_/model/MULTI_CLASS_CLS/openvino_model.yaml
+data: ../../_base_/data/openvino.yaml
+optimizer: ../../_base_/optimizer/adam.yaml
+scheduler: ../../_base_/scheduler/reduce_lr_on_plateau.yaml

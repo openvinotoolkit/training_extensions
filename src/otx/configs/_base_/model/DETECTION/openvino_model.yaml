@@ -1,0 +1,4 @@
+class_path: otx.core.model.entity.detection.OVDetectionCompatibleModel
+init_args:
+  config:
+    model_name: ssd300
