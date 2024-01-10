@@ -10,12 +10,8 @@ from typing import TYPE_CHECKING, Callable
 import numpy as np
 import torch
 from datumaro import Polygon
-from mmdet.datasets.transforms import (
-    LoadAnnotations as MMDetLoadAnnotations,
-)
-from mmdet.datasets.transforms import (
-    PackDetInputs as MMDetPackDetInputs,
-)
+from mmdet.datasets.transforms import LoadAnnotations as MMDetLoadAnnotations
+from mmdet.datasets.transforms import PackDetInputs as MMDetPackDetInputs
 from mmdet.registry import TRANSFORMS
 from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from torchvision import tv_tensors
@@ -23,6 +19,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
+from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 
 from .mmcv import MMCVTransformLib
 
@@ -43,14 +40,14 @@ class LoadAnnotations(MMDetLoadAnnotations):
             msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
             raise RuntimeError(msg)
 
-        if self.with_bbox and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity)):
+        if self.with_bbox and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity, VisualPromptingDataEntity)):
             gt_bboxes = otx_data_entity.bboxes.numpy()
             results["gt_bboxes"] = gt_bboxes
-        if self.with_label and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity)):
+        if self.with_label and isinstance(otx_data_entity, (DetDataEntity, InstanceSegDataEntity, VisualPromptingDataEntity)):
             gt_bboxes_labels = otx_data_entity.labels.numpy()
             results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
-        if self.with_mask and isinstance(otx_data_entity, InstanceSegDataEntity):
+        if self.with_mask and isinstance(otx_data_entity, (InstanceSegDataEntity, VisualPromptingDataEntity)):
             height, width = results["ori_shape"]
             gt_masks = self._generate_gt_masks(otx_data_entity, height, width)
             results["gt_masks"] = gt_masks
@@ -58,7 +55,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
 
     def _generate_gt_masks(
         self,
-        otx_data_entity: InstanceSegDataEntity,
+        otx_data_entity: InstanceSegDataEntity | VisualPromptingDataEntity,
         height: int,
         width: int,
     ) -> BitmapMasks | PolygonMasks:
@@ -87,14 +84,16 @@ class LoadAnnotations(MMDetLoadAnnotations):
 class PackDetInputs(MMDetPackDetInputs):
     """Class to override PackDetInputs LoadAnnotations."""
 
-    def transform(self, results: dict) -> DetDataEntity | InstanceSegDataEntity:
-        """Pack MMDet data entity into DetDataEntity or InstanceSegDataEntity."""
+    def transform(self, results: dict) -> DetDataEntity | InstanceSegDataEntity | VisualPromptingDataEntity:
+        """Pack MMDet data entity into DetDataEntity, InstanceSegDataEntity, or VisualPromptingDataEntity."""
         otx_data_entity = results["__otx__"]
 
         if isinstance(otx_data_entity, DetDataEntity):
             return self.pack_det_inputs(results)
         if isinstance(otx_data_entity, InstanceSegDataEntity):
             return self.pack_inst_inputs(results)
+        if isinstance(otx_data_entity, VisualPromptingDataEntity):
+            return self.pack_visprompt_inputs(results)
         msg = "Unsupported data entity type"
         raise TypeError(msg)
 
@@ -127,6 +126,27 @@ class PackDetInputs(MMDetPackDetInputs):
         masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
 
         return InstanceSegDataEntity(
+            image=tv_tensors.Image(transformed.get("inputs")),
+            img_info=image_info,
+            bboxes=bboxes,
+            masks=masks,
+            labels=labels,
+            polygons=polygons,
+        )
+
+    def pack_visprompt_inputs(self, results: dict) -> VisualPromptingDataEntity:
+        """Pack MMDet data entity into VisualPromptingDataEntity."""
+        transformed = super().transform(results)
+        data_samples = transformed["data_samples"]
+        img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
+
+        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
+        labels = data_samples.gt_instances.labels
+        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor)
+
+        masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
+
+        return VisualPromptingDataEntity(
             image=tv_tensors.Image(transformed.get("inputs")),
             img_info=image_info,
             bboxes=bboxes,

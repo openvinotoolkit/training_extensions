@@ -5,12 +5,21 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity)
 from otx.core.model.entity.base import OTXModel
+
+if TYPE_CHECKING:
+    from omegaconf import DictConfig
 
 
 class OTXVisualPromptingModel(
     OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity],
 ):
     """Base class for the visual prompting models used in OTX."""
+    
+    def __init__(self, config: DictConfig) -> None:
+        self.config = config
+        super().__init__()

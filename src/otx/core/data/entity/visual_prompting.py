@@ -17,6 +17,7 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from datumaro import Polygon
     from torch import LongTensor
 
 
@@ -25,7 +26,11 @@ if TYPE_CHECKING:
 class VisualPromptingDataEntity(OTXDataEntity):
     """Data entity for visual prompting task.
 
-    :param labels: labels as integer indices
+    Attributes:
+        bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the instances.
+        masks (tv_tensors.Mask): The masks of the instances.
+        labels (LongTensor): The labels of the instances.
+        polygons (list[Polygon]): The polygons of the instances.
     """
 
     @property
@@ -33,7 +38,10 @@ class VisualPromptingDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.VISUAL_PROMPTING
 
+    bboxes: tv_tensors.BoundingBoxes
+    masks: tv_tensors.Mask
     labels: LongTensor
+    polygons: list[Polygon]
     
     
 @dataclass
@@ -45,10 +53,17 @@ class VisualPromptingPredEntity(VisualPromptingDataEntity, OTXPredEntity):
 class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntity]):
     """Data entity for visual prompting task.
 
-    :param labels: A list of bbox labels as integer indices
+    Attributes:
+        bboxes (list[tv_tensors.BoundingBoxes]): List of bounding boxes.
+        masks (list[tv_tensors.Mask]): List of masks.
+        labels (list[LongTensor]): List of labels.
+        polygons (list[list[Polygon]]): List of polygons.
     """
 
+    bboxes: list[tv_tensors.BoundingBoxes]
+    masks: list[tv_tensors.Mask]
     labels: list[LongTensor]
+    polygons: list[list[Polygon]]
 
     @property
     def task(self) -> OTXTaskType:
@@ -60,18 +75,30 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
         cls,
         entities: list[VisualPromptingDataEntity],
     ) -> VisualPromptingBatchDataEntity:
-        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
+        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
+
+        Args:
+            entities (list[VisualPromptingDataEntity]): List of VisualPromptingDataEntity objects.
+
+        Returns:
+            VisualPromptingBatchDataEntity: The collated batch data entity.
+        """
         batch_data = super().collate_fn(entities)
         return VisualPromptingBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)),
+            images=batch_data.images,
             imgs_info=batch_data.imgs_info,
+            bboxes=[entity.bboxes for entity in entities],
+            masks=[entity.masks for entity in entities],
             labels=[entity.labels for entity in entities],
+            polygons=[entity.polygons for entity in entities],
         )
 
     def pin_memory(self) -> VisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
         super().pin_memory()
+        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
+        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
         return self
     

@@ -147,4 +147,17 @@ class OTXDatasetFactory:
                 mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
+            
+        if task == OTXTaskType.VISUAL_PROMPTING:
+            from .dataset.visual_prompting import OTXVisualPromptingDataset
+
+            # NOTE: DataModuleConfig does not have include_polygons attribute
+            include_polygons = getattr(cfg_data_module, "include_polygons", False)
+            return OTXVisualPromptingDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+                include_polygons=include_polygons,
+            )
         raise NotImplementedError(task)
