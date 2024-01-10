@@ -3,6 +3,6 @@
 """Custom model implementations for detection task."""
 
 from . import backbones, heads
-from .otx_ssd import OTXSSD
+from .ssd import SSD
 
-__all__ = ["backbones", "heads", "OTXSSD"]
+__all__ = ["backbones", "heads", "SSD"]

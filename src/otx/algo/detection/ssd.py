@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class OTXSSD(MMDetCompatibleModel):
+class SSD(MMDetCompatibleModel):
     """Detecion model class for SSD."""
 
     def _create_model(self) -> nn.Module:
@@ -103,7 +103,7 @@ class OTXSSD(MMDetCompatibleModel):
                 num_ckpt_classes = len(self.ckpt_classes)
                 num_model_classes = len(self.model_classes)
 
-            for anchor_idx in range(num_anchors):  # For each anchor
+            for anchor_idx in range(num_anchors):
                 for model_t, ckpt_t in enumerate(model2ckpt):
                     if ckpt_t >= 0:
                         # Copying only matched weight rows

@@ -41,11 +41,11 @@ class CustomSSDHead(SSDHead):
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
 
-        act_cfg = self.act_cfg.copy()
-        act_cfg.setdefault("inplace", True)
+        activation_config = self.act_cfg.copy()
+        activation_config.setdefault("inplace", True)
         for in_channel, num_base_priors in zip(self.in_channels, self.num_base_priors):
             if self.use_depthwise:
-                activation_layer = MODELS.build(act_cfg)
+                activation_layer = MODELS.build(activation_config)
 
                 self.reg_convs.append(
                     nn.Sequential(
