@@ -13,6 +13,7 @@ from datumaro import Image, Label
 from datumaro.components.annotation import AnnotationType
 from torch.nn import functional
 
+from otx.core.data.dataset.base import DataMetaInfo, OTXDataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -24,11 +25,9 @@ from otx.core.data.entity.classification import (
     MultilabelClsDataEntity,
 )
 
-from .base import OTXDataset, SubsetDataMetaInfo
-
 
 @dataclass
-class HLabelMetaInfo(SubsetDataMetaInfo):
+class HLabelMetaInfo(DataMetaInfo):
     """Meta information of hlabel classification."""
 
     hlabel_info: HLabelInfo
@@ -110,12 +109,12 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         self.dm_categories = self.dm_subset.categories()[AnnotationType.label]
 
         # Hlabel classification used HLabelMetaInfo to insert the HLabelInfo.
-        self.subset_meta_info = HLabelMetaInfo(
+        self.meta_info = HLabelMetaInfo(
             class_names=[category.name for category in self.dm_categories],
             hlabel_info=HLabelInfo.from_dm_label_groups(self.dm_categories),
         )
 
-        if self.subset_meta_info.hlabel_info.num_multiclass_heads == 0:
+        if self.meta_info.hlabel_info.num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
 
@@ -159,12 +158,12 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         [Multilabel Head: [0, 1, 1]]
         2, 3, 4 indices = [0, 1, 1] -> ["Circle"(X), "Lion"(O), "Panda"(O)]
         """
-        if not isinstance(self.subset_meta_info, HLabelMetaInfo):
-            msg = f"The type of subset_meta_info should be HLabelMetaInfo, got {type(self.subset_meta_info)}."
+        if not isinstance(self.meta_info, HLabelMetaInfo):
+            msg = f"The type of meta_info should be HLabelMetaInfo, got {type(self.meta_info)}."
             raise TypeError(msg)
 
-        num_multiclass_heads = self.subset_meta_info.hlabel_info.num_multiclass_heads
-        num_multilabel_classes = self.subset_meta_info.hlabel_info.num_multilabel_classes
+        num_multiclass_heads = self.meta_info.hlabel_info.num_multiclass_heads
+        num_multilabel_classes = self.meta_info.hlabel_info.num_multilabel_classes
 
         # NOTE: currently ignored labels are not considered yet.
         ignored_labels: list = []
@@ -175,7 +174,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         for ann in label_anns:
             ann_name = self.dm_categories.items[ann.label].name
-            group_idx, in_group_idx = self.subset_meta_info.hlabel_info.class_to_group_idx[ann_name]
+            group_idx, in_group_idx = self.meta_info.hlabel_info.class_to_group_idx[ann_name]
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx

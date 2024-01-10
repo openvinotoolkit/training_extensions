@@ -138,24 +138,21 @@ class OTXLitModule(LightningModule):
         """
         ckpt_meta_info = state_dict.pop("meta_info", None)
 
-        train_ckpt_meta_info = ckpt_meta_info.subset_info["train"]
-        train_meta_info = self.meta_info.subset_info["train"]
-
-        if train_ckpt_meta_info and train_meta_info is None:
+        if ckpt_meta_info and self.meta_info is None:
             msg = (
                 "`state_dict` to load has `meta_info`, but the current model has no `meta_info`. "
                 "It is recommended to set proper `meta_info` for the incremental learning case."
             )
             warnings.warn(msg, stacklevel=2)
-        if train_ckpt_meta_info and train_meta_info and train_ckpt_meta_info != train_meta_info:
+        if ckpt_meta_info and self.meta_info and ckpt_meta_info != self.meta_info:
             logger = logging.getLogger()
             logger.info(
-                f"Data classes from checkpoint: {train_ckpt_meta_info.class_names} -> "
-                f"Data classes from training data: {train_meta_info.class_names}",
+                f"Data classes from checkpoint: {ckpt_meta_info.class_names} -> "
+                f"Data classes from training data: {self.meta_info.class_names}",
             )
             self.register_load_state_dict_pre_hook(
-                train_meta_info.class_names,
-                train_ckpt_meta_info.class_names,
+                self.meta_info.class_names,
+                ckpt_meta_info.class_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
 

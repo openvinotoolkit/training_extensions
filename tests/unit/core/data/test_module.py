@@ -35,6 +35,8 @@ class TestModule:
         "task",
         [
             OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.MULTI_LABEL_CLS,
+            OTXTaskType.H_LABEL_CLS,
             OTXTaskType.DETECTION,
             OTXTaskType.SEMANTIC_SEGMENTATION,
         ],

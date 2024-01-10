@@ -21,7 +21,7 @@ from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
-    from otx.core.data.dataset.base import OTXDataset, SubsetDataMetaInfo
+    from otx.core.data.dataset.base import OTXDataset
 
 
 class OTXDataModule(LightningDataModule):
@@ -65,7 +65,7 @@ class OTXDataModule(LightningDataModule):
             mem_size=mem_size,
         )
 
-        meta_info_dict: dict[str, SubsetDataMetaInfo] = {}
+        meta_infos: list[DataMetaInfo] = []
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -79,13 +79,20 @@ class OTXDataModule(LightningDataModule):
                 cfg_data_module=config,
             )
 
-            meta_info_dict[name] = self.subsets[name].subset_meta_info
-
+            meta_infos += [self.subsets[name].meta_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
-        self.meta_info = DataMetaInfo(
-            subset_info=meta_info_dict,
-        )
+        if self._is_meta_info_valid(meta_infos) is False:
+            msg = "All data meta infos of subsets should be the same."
+            raise ValueError(msg)
+
+        self.meta_info = next(iter(meta_infos))
+
+    def _is_meta_info_valid(self, meta_infos: list[DataMetaInfo]) -> bool:
+        """Check whether there are mismatches in the metainfo for the all subsets."""
+        if all(meta_info == meta_infos[0] for meta_info in meta_infos):
+            return True
+        return False
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:

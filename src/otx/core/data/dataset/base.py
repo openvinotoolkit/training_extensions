@@ -30,7 +30,7 @@ Transforms = Union[Compose, Callable, List[Callable]]
 
 
 @dataclass
-class SubsetDataMetaInfo:
+class DataMetaInfo:
     """Meta information of each subset datasets."""
 
     class_names: list[str]
@@ -39,16 +39,6 @@ class SubsetDataMetaInfo:
     def num_classes(self) -> int:
         """Return number of classes."""
         return len(self.class_names)
-
-
-@dataclass
-class DataMetaInfo:
-    """Data meta information of OTXDataModule.
-
-    It includes the each subset's data meta info.
-    """
-
-    subset_info: dict[str, SubsetDataMetaInfo]
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -69,7 +59,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.mem_cache_img_max_size = mem_cache_img_max_size
         self.max_refetch = max_refetch
 
-        self.subset_meta_info = SubsetDataMetaInfo(
+        self.meta_info = DataMetaInfo(
             class_names=[category.name for category in self.dm_subset.categories()[AnnotationType.label]],
         )
 

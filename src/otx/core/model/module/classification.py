@@ -210,18 +210,17 @@ class OTXHlabelClsLitModule(OTXLitModule):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
     def _set_hlabel_setup(self) -> None:
-        train_meta_info = self._meta_info.subset_info["train"]
-        if not isinstance(train_meta_info, HLabelMetaInfo):
-            msg = f"The type of train_meta_info should be HLabelMetaInfo, got {type(train_meta_info)}."
+        if not isinstance(self.meta_info, HLabelMetaInfo):
+            msg = f"The type of self.meta_info should be HLabelMetaInfo, got {type(self.meta_info)}."
             raise TypeError(msg)
 
-        self.hlabel_info = train_meta_info.hlabel_info
+        self.hlabel_info = self.meta_info.hlabel_info
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
         self.model.model.head.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
-        self.num_labels = len(train_meta_info.class_names)
+        self.num_labels = len(self.meta_info.class_names)
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
