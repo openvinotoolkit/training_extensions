@@ -104,11 +104,11 @@ class SSD(MMDetCompatibleModel):
                 num_model_classes = len(self.model_classes)
 
             for anchor_idx in range(num_anchors):
-                for model_t, ckpt_t in enumerate(model2ckpt):
-                    if ckpt_t >= 0:
+                for model_dst, ckpt_dst in enumerate(model2ckpt):
+                    if ckpt_dst >= 0:
                         # Copying only matched weight rows
-                        model_param[anchor_idx * num_model_classes + model_t].copy_(
-                            ckpt_param[anchor_idx * num_ckpt_classes + ckpt_t],
+                        model_param[anchor_idx * num_model_classes + model_dst].copy_(
+                            ckpt_param[anchor_idx * num_ckpt_classes + ckpt_dst],
                         )
                 if use_bg:
                     model_param[anchor_idx * num_model_classes + num_model_classes - 1].copy_(

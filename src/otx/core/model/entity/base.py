@@ -82,10 +82,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             ckpt_param = state_dict[prefix + param_name]
             stride = info.get("stride", 1)
             num_extra_classes = info.get("num_extra_classes", 0)
-            for model_t, ckpt_t in enumerate(model2ckpt):
-                if ckpt_t >= 0:
-                    model_param[(model_t) * stride : (model_t + 1) * stride].copy_(
-                        ckpt_param[(ckpt_t) * stride : (ckpt_t + 1) * stride],
+            for model_dst, ckpt_dst in enumerate(model2ckpt):
+                if ckpt_dst >= 0:
+                    model_param[(model_dst) * stride : (model_dst + 1) * stride].copy_(
+                        ckpt_param[(ckpt_dst) * stride : (ckpt_dst + 1) * stride],
                     )
             if num_extra_classes > 0:
                 num_ckpt_class = len(self.ckpt_classes)
