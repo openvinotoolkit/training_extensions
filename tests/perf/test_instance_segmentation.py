@@ -38,15 +38,16 @@ class TestPerfInstanceSegmentation:
             ],
             "num_repeat": 3,
         },
-        "large": {
-            "tags": {
-                "task": "instance_segmentation",
-            },
-            "datasets": [
-                "instance_seg/bdd_large",
-            ],
-            "num_repeat": 1,
-        },
+        # TODO: Refine large dataset
+        # "large": {
+        #     "tags": {
+        #         "task": "instance_segmentation",
+        #     },
+        #     "datasets": [
+        #         "instance_seg/bdd_large",
+        #     ],
+        #     "num_repeat": 1,
+        # },
     }
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
@@ -98,16 +99,17 @@ class TestPerfTilingInstanceSegmentation:
             "num_repeat": 3,
             "train_params": TILING_PARAMS,
         },
-        "large": {
-            "tags": {
-                "task": "tiling_instance_segmentation",
-            },
-            "datasets": [
-                "tiling_instance_seg/bdd_large",
-            ],
-            "num_repeat": 1,
-            "train_params": TILING_PARAMS,
-        },
+        # TODO: Refine large dataset
+        # "large": {
+        #     "tags": {
+        #         "task": "tiling_instance_segmentation",
+        #     },
+        #     "datasets": [
+        #         "tiling_instance_seg/dota_large",
+        #     ],
+        #     "num_repeat": 1,
+        #     "train_params": TILING_PARAMS,
+        # },
     }
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)

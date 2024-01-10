@@ -426,12 +426,16 @@ class HpoRunner:
             if "range" in self._hpo_config["hp_space"][batch_size_name]:
                 max_val = self._hpo_config["hp_space"][batch_size_name]["range"][1]
                 min_val = self._hpo_config["hp_space"][batch_size_name]["range"][0]
+                step = 1
+                if self._hpo_config["hp_space"][batch_size_name]["param_type"] in ["quniform", "qloguniform"]:
+                    step = self._hpo_config["hp_space"][batch_size_name]["range"][2]
                 if max_val > self._train_dataset_size:
                     max_val = self._train_dataset_size
                     self._hpo_config["hp_space"][batch_size_name]["range"][1] = max_val
             else:
                 max_val = self._hpo_config["hp_space"][batch_size_name]["max"]
                 min_val = self._hpo_config["hp_space"][batch_size_name]["min"]
+                step = self._hpo_config["hp_space"][batch_size_name].get("step", 1)
 
                 if max_val > self._train_dataset_size:
                     max_val = self._train_dataset_size
@@ -439,10 +443,13 @@ class HpoRunner:
 
             # If trainset size is lower than min batch size range,
             # fix batch size to trainset size
+            reason_to_fix_bs = ""
             if min_val >= max_val:
-                logger.info(
-                    "Train set size is equal or lower than batch size range. Batch size is fixed to train set size."
-                )
+                reason_to_fix_bs = "Train set size is equal or lower than batch size range."
+            elif max_val - min_val < step:
+                reason_to_fix_bs = "Difference between min and train set size is lesser than step."
+            if reason_to_fix_bs:
+                logger.info(f"{reason_to_fix_bs} Batch size is fixed to train set size.")
                 del self._hpo_config["hp_space"][batch_size_name]
                 self._fixed_hp[batch_size_name] = self._train_dataset_size
                 self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)

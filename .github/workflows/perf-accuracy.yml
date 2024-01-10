@@ -35,7 +35,7 @@ on:
         default: optimize
 
 jobs:
-  Perf-Accuracy-Benchmark-Tests:
+  Perf-Accuracy-Benchmark:
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +50,7 @@ jobs:
             task: "anomaly"
           - toxenv_task: "cls"
             task: "classification"
-    name: Perf-Accuracy-Benchmark-Test-py310-${{ matrix.toxenv_task }}
+    name: Perf-Accuracy-Benchmark-${{ matrix.toxenv_task }}-py310
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
@@ -64,6 +64,7 @@ jobs:
         --data-size ${{ inputs.data-size }}
         --num-repeat ${{ inputs.num-repeat }}
         --num-epoch ${{ inputs.num-epoch }}
+        --eval-upto ${{ inputs.eval-upto }}
         --summary-csv .tox/perf-accuracy-benchmark-${{ matrix.toxenv_task }}.csv
       runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
       task: ${{ matrix.task }}

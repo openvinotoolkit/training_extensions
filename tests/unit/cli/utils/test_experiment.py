@@ -22,8 +22,9 @@ class TestResourceTracker:
     @e2e_pytest_unit
     @pytest.mark.parametrize("resource_type", ("cpu", "gpu", "all", "cpu,gpu"))
     @pytest.mark.parametrize("gpu_ids", (None, "0", "0,3"))
-    def test_init(self, resource_type, gpu_ids):
-        ResourceTracker(resource_type, gpu_ids)
+    @pytest.mark.parametrize("output_path", ("fake", Path("fake")))
+    def test_init(self, output_path, resource_type, gpu_ids):
+        ResourceTracker(output_path, resource_type, gpu_ids)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("resource_type", ("cpu", "gpu", "all", "cpu,gpu"))
@@ -41,7 +42,7 @@ class TestResourceTracker:
             expected_gpu_ids[0] = 0
 
         # run
-        resource_tracker = ResourceTracker(resource_type, gpu_ids)
+        resource_tracker = ResourceTracker("fake_output", resource_type, gpu_ids)
         resource_tracker.start()
 
         self.mock_proc.start.assert_called_once()  # check that a process to track resource usages starts
@@ -51,7 +52,7 @@ class TestResourceTracker:
 
     @e2e_pytest_unit
     def test_start_multiple_times(self):
-        resource_tracker = ResourceTracker()
+        resource_tracker = ResourceTracker("fake_output")
 
         # run multiple times
         resource_tracker.start()
@@ -63,9 +64,9 @@ class TestResourceTracker:
     def test_stop(self):
         output_path = Path("fake")
 
-        resource_tracker = ResourceTracker()
+        resource_tracker = ResourceTracker(output_path)
         resource_tracker.start()
-        resource_tracker.stop(output_path)
+        resource_tracker.stop()
 
         # check that code to terminate a process is executed properly
         self.mock_queue.put.assert_called_once_with(output_path)
@@ -77,9 +78,9 @@ class TestResourceTracker:
         output_path = Path("fake")
         self.mock_proc.exitcode = None
 
-        resource_tracker = ResourceTracker()
+        resource_tracker = ResourceTracker(output_path)
         resource_tracker.start()
-        resource_tracker.stop(output_path)
+        resource_tracker.stop()
 
         # check that code to terminate a process is executed properly
         self.mock_queue.put.assert_called_once_with(output_path)
@@ -90,8 +91,8 @@ class TestResourceTracker:
 
     @e2e_pytest_unit
     def test_stop_before_start(self):
-        resource_tracker = ResourceTracker()
-        resource_tracker.stop("fake")
+        resource_tracker = ResourceTracker("fake")
+        resource_tracker.stop()
 
         # check that code to make a process done isn't called
         self.mock_queue.put.assert_not_called()
