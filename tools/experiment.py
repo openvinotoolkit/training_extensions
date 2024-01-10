@@ -152,6 +152,8 @@ class ExperimentResult:
                     formatted_result[f"{metric}({task})"] = round(score, 4)
             elif isinstance(val, float):
                 formatted_result[key] = round(val, 4)
+            else:
+                formatted_result[key] = val
 
         return formatted_result
 
