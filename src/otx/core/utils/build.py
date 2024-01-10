@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -45,9 +46,10 @@ def get_default_async_reqs_num() -> int:
     import os
 
     reqs_num = os.cpu_count()
-    if reqs_num is not None:
-        return max(1, int(reqs_num / 2))
-    return 1
+    reqs_num = max(1, int(reqs_num / 2)) if reqs_num is not None else 1
+    msg = f"Set the default number of OpenVINO inference requests to {reqs_num}. You can specify the value in config."
+    warnings.warn(msg, stacklevel=1)
+    return reqs_num
 
 
 def get_classification_layers(config: DictConfig, model_registry: Registry, prefix: str = "") -> list[str]:

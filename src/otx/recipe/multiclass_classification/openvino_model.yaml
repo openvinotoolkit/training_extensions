@@ -16,7 +16,7 @@ model:
     config:
       model_name: efficientnet-b0-pytorch
       async_inference: True
-      use_tp_mode: False
+      use_throughput_mode: False
       model_type: Classification
       head:
         num_classes: 1000

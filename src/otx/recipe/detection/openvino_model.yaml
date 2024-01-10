@@ -15,6 +15,6 @@ model:
     _target_: otx.core.model.entity.detection.OVDetectionModel
     config:
       model_name: ssd300
-      use_tp_mode: True
+      use_throughput_mode: True
       model_type: "SSD"
       async_inference: True

@@ -17,4 +17,4 @@ model:
       model_name: /home/kprokofi/training_extensions/otx-workspace-INSTANCE_SEGMENTATION/outputs/20240109_072818_export/openvino/openvino.xml
       model_type: MaskRCNN
       async_inference: True
-      use_tp_mode: True
+      use_throughput_mode: True

@@ -16,7 +16,7 @@ model:
     config:
       model_name: drn-d-38
       async_inference: True
-      use_tp_mode: True
+      use_throughput_mode: True
       model_type: "Segmentation"
       decode_head:
         num_classes: 19

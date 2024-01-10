@@ -236,17 +236,15 @@ class OVMulticlassClassificationModel(OVModel):
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: MultilabelClsBatchDataEntity,
+        inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity:
-        # add label index
-        labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
-        # add probability
-        scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
+        pred_labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
+        pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
 
         return MulticlassClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
+            scores=pred_scores,
+            labels=pred_labels,
         )

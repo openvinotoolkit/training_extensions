@@ -119,7 +119,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
         self.num_requests = config.pop("max_num_requests", get_default_async_reqs_num())
-        self.use_tp_mode = config.pop("use_tp_mode", False)
+        self.use_throughput_mode = config.pop("use_throughput_mode", False)
         self.config = config
         super().__init__()
 
@@ -129,7 +129,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         from openvino.model_api.models import Model
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
-        if self.use_tp_mode:
+        if self.use_throughput_mode:
             plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
 
         model_adapter = OpenvinoAdapter(
