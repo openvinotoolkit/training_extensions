@@ -24,6 +24,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         super().__init__()
         self.model = self._create_model()
 
+    def export(self, deploy_cfg: dict | None = None):
+        """Export a PyTorch model for this class."""
+        raise NotImplementedError
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""

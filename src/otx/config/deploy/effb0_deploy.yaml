@@ -1,0 +1,39 @@
+backend_config:
+  mo_options: null
+  model_inputs:
+  - opt_shapes:
+      input:
+      - -1
+      - 3
+      - 224
+      - 224
+  type: openvino
+codebase_config:
+  task: Classification
+  type: mmpretrain
+input_data:
+  file_path: null
+  shape:
+  - 128
+  - 128
+  - 3
+ir_config:
+  dynamic_axes:
+    data:
+      0: batch
+      1: channel
+      2: height
+      3: width
+    logits:
+      0: batch
+  export_params: true
+  input_names:
+  - data
+  input_shape: null
+  keep_initializers_as_inputs: false
+  opset_version: 11
+  optimize: false
+  output_names:
+  - logits
+  save_file: end2end.onnx
+  type: onnx

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
+from pathlib import Path
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -64,6 +65,21 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__()
+
+    def export(
+            self,
+            output_dir: Path | str,
+            deploy_cfg: dict | None = None,
+            precision: str = "fp32",
+            test_pipeline: dict | None = None,
+        ):
+        """Export a PyTorch model for this class."""
+        if deploy_cfg is None:
+            raise NotImplementedError
+        else:
+            from otx.core.model.utils.mmdeploy import MMdeployExporter
+            exporter = MMdeployExporter(self._create_model, output_dir, self.config, deploy_cfg, test_pipeline)
+            exporter.cvt_torch2onnx()
 
     def _create_model(self) -> nn.Module:
         return _create_mmpretrain_model(self.config, self.load_from)

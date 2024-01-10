@@ -4,6 +4,7 @@ defaults:
   - override /callbacks: classification
   - override /data: multiclass_mmpretrain
   - override /model: multiclass_mmpretrain
+  - override /deploy: effb0_deploy
 data:
   train_subset:
     batch_size: 64

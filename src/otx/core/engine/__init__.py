@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from otx.core.config import TrainConfig
 from otx.core.engine.train import train
+from otx.core.engine.export import export
 
 if TYPE_CHECKING:
     from lightning import Trainer
@@ -42,13 +43,6 @@ class Engine:
         """Predict with the trained model."""
         raise NotImplementedError
 
-    def export(self, *args, **kwargs) -> None:
+    def export(self, cfg) -> None:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
-        # return export(
-        #     self.cfg.deploy_cfg,
-        #     model,
-        #     f"{output_path}/openvino",
-        #     half_precision,
-        #     onnx_only=export_format == ExportType.ONNX,
-        # )
-        raise NotImplementedError
+        return export(cfg)
