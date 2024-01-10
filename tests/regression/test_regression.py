@@ -108,7 +108,7 @@ class TestMultiClassCls(BaseTest):
         )
         for idx in range(1, 4)
     ]
-    DATASET_TEST_CASES.extend = [
+    DATASET_TEST_CASES.extend([
         DatasetTestCase(
             name=f"multiclass_CUB_medium",
             data_root=Path("multiclass_CUB_medium"),
@@ -123,7 +123,7 @@ class TestMultiClassCls(BaseTest):
             num_classes=20,
             extra_overrides={"trainer.max_epochs": "20"},
         )
-    ]
+    ])
 
     @pytest.mark.parametrize(
         "model_test_case",
@@ -176,7 +176,7 @@ class TestMultilabelCls(BaseTest):
         )
         for idx in range(1, 4)
     ]
-    DATASET_TEST_CASES.extend = [
+    DATASET_TEST_CASES.extend([
         DatasetTestCase(
             name=f"multilabel_CUB_medium",
             data_root=Path("multilabel_CUB_medium"),
@@ -191,7 +191,7 @@ class TestMultilabelCls(BaseTest):
             num_classes=21,
             extra_overrides={"trainer.max_epochs": "20"},
         )
-    ]
+    ])
 
     @pytest.mark.parametrize(
         "model_test_case",
