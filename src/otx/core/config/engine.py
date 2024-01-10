@@ -14,9 +14,9 @@ from otx.core.types.task import OTXTaskType
 class EngineConfig:
     """Configuration class for the engine."""
 
+    data_root: str
     task: OTXTaskType
     device: str
     work_dir: str = "./otx-workspace"
 
-    data_root: str | None = None
     checkpoint: str | None = None

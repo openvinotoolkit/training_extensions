@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
 
-MODULE_PER_TASK = {
+LITMODULE_PER_TASK = {
     OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.module.classification.OTXMulticlassClsLitModule",
     OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
     OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
@@ -57,12 +57,12 @@ def list_models() -> str:
     table = Table(title="List model of OTX")
     table.add_column("Task", justify="left", style="yellow")
     table.add_column("Model Name", justify="left", style="cyan")
-    # table.add_column("Config Path", justify="left", style="white")
-    task_list = [task.value for task in MODULE_PER_TASK]
+    table.add_column("Config Path", justify="left", style="white")
+    task_list = [task.value for task in LITMODULE_PER_TASK]
     for task in task_list:
         model_dict = load_model_configs(task)
-        for model_name in model_dict:
-            table.add_row(task, model_name)
+        for model_name, model_path in model_dict.items():
+            table.add_row(task, model_name, model_path)
     console = Console()
     with console.capture() as capture:
         console.print(table, end="")
@@ -175,10 +175,10 @@ class Engine:
 
         Example:
         >>> engine.train(
-            model=LightningModule(),
-            datamodule=OTXDataModule(),
-            checkpoint="checkpoint.ckpt",
             max_epochs=3,
+            seed=1234,
+            deterministic=False,
+            precision="32",
         )
 
         CLI Usage:
@@ -200,7 +200,7 @@ class Engine:
                 ```
             4. If you have a complete configuration file, run it like this.
                 ```python
-                otx train --config <CONFIG_PATH, str>
+                otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
         lit_module = self._build_lightning_module(
@@ -240,8 +240,7 @@ class Engine:
         """Run the testing phase of the engine.
 
         Args:
-            model (LightningModule | None, optional): The model to be tested.
-            datamodule (OTXDataModule | None, optional): The data module containing the test data.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (str | Path | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
@@ -251,7 +250,6 @@ class Engine:
 
         Example:
         >>> engine.test(
-            model=LightningModule(),
             datamodule=OTXDataModule(),
             checkpoint="checkpoint.ckpt",
         )
@@ -294,10 +292,9 @@ class Engine:
         """Run predictions using the specified model and data.
 
         Args:
-            model (LightningModule | None): The model to use for predictions.
-            datamodule (OTXDataModule | None): The data module to use for predictions.
-            checkpoint (str | Path | None): The path to the checkpoint file to load the model from.
-            return_predictions (bool | None): Whether to return the predictions or not.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
+            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            return_predictions (bool | None, optional): Whether to return the predictions or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -305,7 +302,6 @@ class Engine:
 
         Example:
         >>> engine.predict(
-            model=LightningModule(),
             datamodule=OTXDataModule(),
             checkpoint="checkpoint.ckpt",
             return_predictions=True,
@@ -362,6 +358,7 @@ class Engine:
         )
         """
         model = None
+        data_root = ""
         datamodule = None
         if isinstance(config, (str, Path)):
             with Path(config).open() as f:
@@ -376,9 +373,11 @@ class Engine:
         else:
             engine_config = config
 
+        data_root = config_dict.pop("data_root", "")
         callbacks = instantiate_callbacks(config_dict.pop("callbacks", []))
         logger = instantiate_loggers(config_dict.pop("logger", []))
         return cls(
+            data_root=data_root,
             task=engine_config.task,
             work_dir=engine_config.work_dir,
             model=model,
@@ -453,15 +452,17 @@ class Engine:
         optimizer: OptimizerCallable,
         scheduler: LRSchedulerCallable,
     ) -> OTXLitModule:
-        """Builds a LightningModule based on the provided OTXModel.
+        """Builds a LightningModule for engine workflow.
 
         Args:
-            model (OTXModel): The OTXModel to be used for building the LightningModule.
+            model (OTXModel): The OTXModel instance.
+            optimizer (OptimizerCallable): The optimizer callable.
+            scheduler (LRSchedulerCallable): The learning rate scheduler callable.
 
         Returns:
-            OTXLitModule: The built LightningModule.
+            OTXLitModule: The built LightningModule instance.
         """
-        class_module, class_name = MODULE_PER_TASK[self.task].rsplit(".", 1)
+        class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
         module = __import__(class_module, fromlist=[class_name])
         lightning_module = getattr(module, class_name)
         return lightning_module(

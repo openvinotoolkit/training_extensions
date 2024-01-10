@@ -161,7 +161,10 @@ def configure_data_format(data_root: str | Path) -> str:
         data_format = "mvtec"
     else:
         data_formats = datumaro.Environment().detect_dataset(str(data_root))
-        data_format = data_formats[0] if "imagenet" not in data_formats else "imagenet"
+        if "imagenet_with_subset_dirs" not in data_formats:
+            data_format = data_formats[0]
+        else:
+            data_format = "imagenet_with_subset_dirs"
     return data_format
 
 
@@ -336,14 +339,17 @@ class AutoConfigurator:
         return scheduler_cfg.get("scheduler", scheduler_cfg)
 
     def get_model(self, model: str | None = None, num_classes: int | None = None) -> OTXModel:
-        """Get the model from the given model name.
+        """Retrieves the OTXModel instance based on the provided model and number of classes.
 
         Args:
-            model (str | None): The name of the model to load the configuration for. If None, the default model
-                configuration for the task will be loaded.
+            model (str | None): The name of the model to retrieve. Defaults to None.
+            num_classes (int | None): The number of classes for the model. Defaults to None.
 
         Returns:
-            OTXModel: The instantiated OTXModel object.
+            OTXModel: The instantiated OTXModel instance.
+
+        Raises:
+            TypeError: If the model configuration is not a dictionary or DictConfig.
         """
         model_config = self.load_default_model_config(model=model, num_classes=num_classes)
         if not isinstance(model_config, (dict, DictConfig)):
@@ -362,7 +368,11 @@ class AutoConfigurator:
         for key, value in kwargs.items():
             replace_key(optimizer_cfg, key, value)
         logger.warning(f"Set Default Optimizer: {optimizer_cfg}")
-        return partial_instantiate_class(init=optimizer_cfg)
+        optimizer = partial_instantiate_class(init=optimizer_cfg)
+        if optimizer is None:
+            msg = "Please double-check optimizer config."
+            raise TypeError(msg)
+        return optimizer
 
     def get_scheduler(self, **kwargs) -> LRSchedulerCallable:
         """Get the scheduler from the given scheduler name.
@@ -374,7 +384,11 @@ class AutoConfigurator:
         for key, value in kwargs.items():
             replace_key(scheduler_cfg, key, value)
         logger.warning(f"Set Default Scheduler: {scheduler_cfg}")
-        return partial_instantiate_class(init=scheduler_cfg)
+        scheduler = partial_instantiate_class(init=scheduler_cfg)
+        if scheduler is None:
+            msg = "Please double-check scheduler config."
+            raise TypeError(msg)
+        return scheduler
 
     def get_datamodule(
         self,
