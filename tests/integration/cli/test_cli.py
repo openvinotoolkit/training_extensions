@@ -12,58 +12,65 @@ from otx.cli import main
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
-RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
-ALL_RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.yaml")]
-RECIPE_OV_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/openvino_model.yaml")]
-RECIPE_LIST = set(ALL_RECIPE_LIST) - set(RECIPE_OV_LIST)
+RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "configs"
+RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in p.parts]
+RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
+RECIPE_LIST = list(set(RECIPE_LIST) - set(RECIPE_OV_LIST))
+
 
 # [TODO]: This is a temporary approach.
 DATASET = {
-    "multiclass_classification": {
-        "data_dir": "tests/assets/classification_dataset",
+    "multi_class_cls": {
+        "data_root": "tests/assets/classification_dataset",
         "overrides": [
-            "--model.otx_model.config.head.num_classes",
+            "--model.config.head.num_classes",
             "2",
         ],
     },
-    "multilabel_classification": {
-        "data_dir": "tests/assets/multilabel_classification",
+    "multi_label_cls": {
+        "data_root": "tests/assets/multilabel_classification",
         "overrides": [
-            "model.otx_model.config.head.num_classes=2",
+            "--model.config.head.num_classes",
+            "2",
         ],
     },
     "detection": {
-        "data_dir": "tests/assets/car_tree_bug",
+        "data_root": "tests/assets/car_tree_bug",
         "overrides": [
-            "--model.otx_model.config.bbox_head.num_classes",
+            "--model.config.bbox_head.num_classes",
             "3",
         ],
     },
     "instance_segmentation": {
-        "data_dir": "tests/assets/car_tree_bug",
+        "data_root": "tests/assets/car_tree_bug",
         "overrides": [
-            "--model.otx_model.config.roi_head.bbox_head.num_classes",
+            "--model.config.roi_head.bbox_head.num_classes",
             "3",
-            "--model.otx_model.config.roi_head.mask_head.num_classes",
+            "--model.config.roi_head.mask_head.num_classes",
             "3",
         ],
     },
-    "segmentation": {
-        "data_dir": "tests/assets/common_semantic_segmentation_dataset/supervised",
+    "semantic_segmentation": {
+        "data_root": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "overrides": [
-            "--model.otx_model.config.decode_head.num_classes",
+            "--model.config.decode_head.num_classes",
             "2",
         ],
     },
     "action_classification": {
-        "data_dir": "tests/assets/action_classification_dataset/",
-        "overrides": ["model.otx_model.config.cls_head.num_classes=2"],
+        "data_root": "tests/assets/action_classification_dataset/",
+        "overrides": [
+            "--model.config.cls_head.num_classes",
+            "2",
+        ],
     },
     "action_detection": {
-        "data_dir": "tests/assets/action_detection_dataset/",
+        "data_root": "tests/assets/action_detection_dataset/",
         "overrides": [
-            "model.otx_model.config.roi_head.bbox_head.num_classes=5",
-            "+model.otx_model.config.roi_head.bbox_head.topk=3",
+            "--model.config.roi_head.bbox_head.num_classes",
+            "5",
+            "--model.config.roi_head.bbox_head.topk",
+            "3",
         ],
     },
 }
@@ -96,8 +103,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         str(recipe),
         "--engine.work_dir",
         str(tmp_path_train),
-        "--data.config.data_root",
-        DATASET[task]["data_dir"],
+        "--data_root",
+        DATASET[task]["data_root"],
         "--max_epochs",
         "2",
         *DATASET[task]["overrides"],
@@ -124,8 +131,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         str(recipe),
         "--engine.work_dir",
         str(tmp_path_test),
-        "--data.config.data_root",
-        DATASET[task]["data_dir"],
+        "--data_root",
+        DATASET[task]["data_root"],
         *DATASET[task]["overrides"],
         f"--checkpoint={ckpt_files[-1]}",
     ]
@@ -133,9 +140,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     with patch("sys.argv", command_cfg):
         main()
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "otx_test.log").exists()
-    assert (tmp_path_test / "outputs" / "lightning_logs").exists()
+    assert tmp_path_test.exists()
+    assert (tmp_path_test / "configs.yaml").exists()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
@@ -152,23 +158,27 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
     Returns:
         None
     """
-    task = recipe.split("/")[0]
-    model_name = recipe.split("/")[1].split(".")[0]
+    task = recipe.split("/")[-2]
+    model_name = recipe.split("/")[-1].split(".")[0]
 
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
         "otx",
         "test",
-        f"+recipe={recipe}",
-        f"base.data_dir={DATASET[task]['data_dir']}",
-        f"base.work_dir={tmp_path_test}",
-        f"base.output_dir={tmp_path_test / 'outputs'}",
+        "--config",
+        str(recipe),
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_test),
+        "--engine.device",
+        "cpu",
     ]
 
     with patch("sys.argv", command_cfg):
         main()
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "otx_test.log").exists()
-    assert (tmp_path_test / "outputs" / "lightning_logs").exists()
+    assert tmp_path_test.exists()
+    assert (tmp_path_test / "configs.yaml").exists()
+    assert (tmp_path_test / "lightning_logs").exists()

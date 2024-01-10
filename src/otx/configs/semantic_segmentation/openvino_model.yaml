@@ -1,7 +1,7 @@
-model: ../../_base_/model/SEMANTIC_SEGMENTATION/openvino_model.yaml
-data: ../../_base_/data/openvino.yaml
-optimizer: ../../_base_/optimizer/adam.yaml
-scheduler: ../../_base_/scheduler/reduce_lr_on_plateau.yaml
+model: ../_base_/model/SEMANTIC_SEGMENTATION/openvino_model.yaml
+data: ../_base_/data/openvino.yaml
+optimizer: ../_base_/optimizer/adam.yaml
+scheduler: ../_base_/scheduler/reduce_lr_on_plateau.yaml
 
 overrides:
   data:
