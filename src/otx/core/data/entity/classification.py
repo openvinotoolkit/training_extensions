@@ -344,7 +344,7 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
         batch_data = super().collate_fn(entities)
         return HlabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_data.images,
+            images=tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)),
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
