@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Run Tests
+        env:
+          MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
         run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }} -- ${{ inputs.tests-dir }}
       - name: Upload test results
         uses: actions/upload-artifact@v3

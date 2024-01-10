@@ -2,15 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import pytest
 import os
+import shutil
 import subprocess
-import yaml
-from pathlib import Path
-from typing import List
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List
 
-from otx.api.entities.model_template import ModelTemplate, ModelCategory
+import mlflow
+import pandas as pd
+import pytest
+import yaml
+
+from otx import __version__ as VERSION
+from otx.api.entities.model_template import ModelCategory, ModelTemplate
+
 from .benchmark import OTXBenchmark
 
 
@@ -139,8 +145,79 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
     return benchmark
 
 
+def logging_perf_results_to_mlflow(version: str, git_hash: str, results: pd.DataFrame, client: "MlflowClient"):
+    class DummyDatasetSource(mlflow.data.DatasetSource):
+        @staticmethod
+        def _get_source_type():
+            return "dummy"
+
+    class DummyDataset(mlflow.data.Dataset):
+        def _to_dict(self, base_dict):
+            return {
+                "name": base_dict["name"],
+                "digest": base_dict["digest"],
+                "source": base_dict["source"],
+                "source_type": base_dict["source_type"],
+            }
+
+    exp_name = f"OTX Performance Benchmark"
+    exp = client.get_experiment_by_name(exp_name)
+    if exp is None:
+        exp_id = client.create_experiment(exp_name, tags={"Project": "OpenVINO Training Extensions"})
+    else:
+        exp_id = exp.experiment_id
+
+    mlflow.set_experiment(experiment_id=exp_id)
+
+    rows = results.to_dict(orient="records")
+    for row in rows:
+        task = row.pop("task")
+        model = row.pop("model")
+        data = row.pop("data")
+        data = os.path.dirname(data)
+        data_sz = row.pop("data_size")
+        benchmark = row.pop("benchmark")
+        runs = client.search_runs(
+            exp_id,
+            filter_string=f"tags.task LIKE '%{task}%' AND "
+            f"tags.model LIKE '%{model}%' AND "
+            f"tags.data LIKE '%{data}%' AND "
+            f"tags.benchmark LIKE '%{benchmark}%'",
+        )
+        run = None
+        is_new_run = True
+        run_name = f"[{benchmark}] {task} | {model}"
+        if len(runs) == 0:
+            run = client.create_run(exp_id, run_name=run_name)
+        else:
+            is_new_run = False
+            run = runs[0]
+
+        with mlflow.start_run(run_id=run.info.run_id):
+            if is_new_run:
+                mlflow.set_tag("task", task)
+                mlflow.set_tag("model", model)
+                mlflow.set_tag("data", data)
+                mlflow.set_tag("benchmark", benchmark)
+                dat_src = DummyDatasetSource()
+                dataset = DummyDataset(dat_src, data, data_sz)
+                mlflow.log_input(dataset)
+            mlflow.set_tag("version", version)
+            mlflow.set_tag("git-hash", git_hash)
+            for k, v in row.items():
+                if isinstance(v, int) or isinstance(v, float):
+                    k = k.replace("(", "_")
+                    k = k.replace(")", "")
+                    k = k.replace("%", "percentage")
+                    history = client.get_metric_history(run.info.run_id, k)
+                    step = 0
+                    if len(history) > 0:
+                        step = history[-1].step + 1
+                    mlflow.log_metric(k, v, step=step)
+
+
 @pytest.fixture(scope="session", autouse=True)
-def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path):
+def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_mlflow_client):
     """Summarize all results at the end of test session."""
     yield
     all_results = OTXBenchmark.load_result(fxt_output_root)
@@ -152,3 +229,11 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path)
             output_path = fxt_output_root / "benchmark-summary.csv"
         all_results.to_csv(output_path, index=False)
         print(f"  -> Saved to {output_path}.")
+
+        # logging to the mlflow
+        version = VERSION
+        git_hash = str(fxt_output_root).split("-")[-1]
+        logging_perf_results_to_mlflow(version, git_hash, all_results, fxt_mlflow_client)
+
+    if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
+        shutil.rmtree(fxt_output_root)
