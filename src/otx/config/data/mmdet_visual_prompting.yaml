@@ -41,6 +41,9 @@ val_subset:
   transforms:
     - type: LoadImageFromFile
       backend_args: null
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: true
     - type: Resize
       keep_ratio: true
       scale:
@@ -59,9 +62,6 @@ val_subset:
       size:
         - 1024
         - 1024
-    - type: LoadAnnotations
-      with_bbox: true
-      with_mask: true
     - type: PackDetInputs
       meta_keys:
         - img_id
@@ -76,6 +76,9 @@ test_subset:
   transforms:
     - type: LoadImageFromFile
       backend_args: null
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: true
     - type: Resize
       keep_ratio: true
       scale:
@@ -94,9 +97,6 @@ test_subset:
       size:
         - 1024
         - 1024
-    - type: LoadAnnotations
-      with_bbox: true
-      with_mask: true
     - type: PackDetInputs
       meta_keys:
         - img_id
