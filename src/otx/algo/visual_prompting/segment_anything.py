@@ -3,6 +3,9 @@
 
 """Segment Anything model for the OTX visual prompting."""
 
+import logging as log
+import re
+from collections import OrderedDict
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -26,6 +29,7 @@ class SegmentAnything(nn.Module):
     def __init__(
         self,
         backbone: str,
+        load_from: Optional[str] = None,
         image_size: int = 1024,
         image_embedding_size: int = 64,
         embed_dim: int = 256,
@@ -35,6 +39,9 @@ class SegmentAnything(nn.Module):
         transformer_dim: int = 256,
         iou_head_depth: int = 3,
         iou_head_hidden_dim: int = 256,
+        freeze_image_encoder: bool = True,
+        freeze_prompt_encoder: bool = True,
+        freeze_mask_decoder: bool = False,
     ) -> None:
         super().__init__()
 
@@ -54,6 +61,44 @@ class SegmentAnything(nn.Module):
             iou_head_depth=iou_head_depth,
             iou_head_hidden_dim=iou_head_hidden_dim,
         )
+        
+        self.load_checkpoint(load_from=load_from)
+        self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
+        
+    def freeze_networks(self, freeze_image_encoder: bool, freeze_prompt_encoder: bool, freeze_mask_decoder: bool) -> None:
+        """Freeze networks depending on config."""
+        if freeze_image_encoder:
+            for param in self.image_encoder.parameters():
+                param.requires_grad = False
+
+        if freeze_prompt_encoder:
+            for param in self.prompt_encoder.parameters():
+                param.requires_grad = False
+
+        if freeze_mask_decoder:
+            for param in self.mask_decoder.parameters():
+                param.requires_grad = False
+                
+    def load_checkpoint(
+        self,
+        load_from: Optional[str] = None,
+    ) -> None:
+        """Load checkpoint for SAM.
+
+        Args:
+            load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
+        """
+        
+        try:
+            state_dict = torch.hub.load_state_dict_from_url(str(load_from))
+            for key in ["image_encoder.norm_head.weight", "image_encoder.norm_head.bias", "image_encoder.head.weight", "image_encoder.head.bias"]:
+                state_dict.pop(key)
+            self.load_state_dict(state_dict)
+        except:
+            log.info((
+                f"{load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
+                f"To manually load {load_from}, try to set it to trainer.checkpoint."
+            ))
         
     def forward(
         self,
@@ -221,7 +266,7 @@ class SegmentAnything(nn.Module):
 class OTXSegmentAnything(OTXVisualPromptingModel):
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
-        return SegmentAnything(backbone=self.config.backbone)
+        return SegmentAnything(**self.config)
 
     def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:
         """Customize the inputs for the model."""
