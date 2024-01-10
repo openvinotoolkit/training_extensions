@@ -23,17 +23,21 @@ class TestTorchVisionTransformLib:
         prefix = "torchvision.transforms.v2"
         cfg = f"""
         transforms:
-          - _target_: {prefix}.RandomResizedCrop
-            size: [224, 224]
-            antialias: True
-          - _target_: {prefix}.RandomHorizontalFlip
-            p: 0.5
-          - _target_: {prefix}.ToDtype
-            dtype: ${{as_torch_dtype:torch.float32}}
-            scale: True
-          - _target_: {prefix}.Normalize
-            mean: [0.485, 0.456, 0.406]
-            std: [0.229, 0.224, 0.225]
+          - class_path: {prefix}.RandomResizedCrop
+            init_args:
+              size: [224, 224]
+              antialias: True
+          - class_path: {prefix}.RandomHorizontalFlip
+            init_args:
+              p: 0.5
+          - class_path: {prefix}.ToDtype
+            init_args:
+              dtype: ${{as_torch_dtype:torch.float32}}
+              scale: True
+          - class_path: {prefix}.Normalize
+            init_args:
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]
         """
         return OmegaConf.create(cfg)
 

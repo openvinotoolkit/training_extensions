@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 class TestOTXSegmentationModel:
     @pytest.fixture()
     def config(self) -> DictConfig:
-        return OmegaConf.load("src/otx/recipe/segmentation/segnext_s.yaml")
+        return OmegaConf.load("src/otx/configs/_base_/model/SEMANTIC_SEGMENTATION/segnext_s.yaml")
 
     @pytest.fixture()
     def model(self, config) -> MMSegCompatibleModel:
-        return MMSegCompatibleModel(config.model.otx_model.config)
+        return MMSegCompatibleModel(config.init_args.config)
 
     def test_create_model(self, model) -> None:
         mmseg_model = model._create_model()
