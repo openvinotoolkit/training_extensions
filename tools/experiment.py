@@ -19,12 +19,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import product
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from otx.cli.tools.cli import main as otx_cli
 from rich.console import Console
 from rich.table import Table
+
+rich_console = Console()
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -64,6 +66,25 @@ def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, 
     if not train_record_files:
         return None
     return train_record_files[0]
+
+
+def cvt_number_to_str(target: Dict):
+    """Convert int or float in dict to string.
+
+    Args:
+        target (Dict): Dictionary object to change int or float to string in.
+    """
+    result = copy(target)
+
+    for key, val in result.items():
+        if isinstance(val, (int, float)):
+            result[key] = str(val)
+        elif isinstance(val, list):
+            for i in range(len(val)):
+                if isinstance(val[i], (int, float)):
+                    val[i] = str(val[i])
+
+    return result
 
 
 class EvalResult:
@@ -346,13 +367,21 @@ class MMCVExpParser(BaseExpParser):
             lines = f.readlines()
 
         last_epoch = 0
+        iter_time = []
+        data_time = []
         for line in lines:
             iter_history = json.loads(line)
             if iter_history.get("mode") == "train":
-                self._iter_time_arr.append(iter_history["time"])
-                self._data_time_arr.append(iter_history["data_time"])
                 if iter_history["epoch"] > last_epoch:
                     last_epoch = iter_history["epoch"]
+                    if last_epoch <= 2:  # if epoch >= 2, first epcoh is excluded from the calcuation
+                        iter_time = []
+                        data_time = []
+                iter_time.append(iter_history["time"])
+                data_time.append(iter_history["data_time"])
+
+        self._iter_time_arr.extend(iter_time)
+        self._data_time_arr.extend(data_time)
 
         self._exp_result.epoch = last_epoch
 
@@ -388,16 +417,20 @@ class AnomalibExpParser(BaseExpParser):
                     self._parse_eval_output(eval_files[0])
 
 
-def get_exp_parser(workspace: Path) -> BaseExpParser:
+def get_exp_parser(workspace: Path) -> Union[BaseExpParser, None]:
     """Get experiment parser depending on framework.
 
     Args:
         workspace (Path): Workspace to parse.
 
     Returns:
-        BaseExpParser: Experiment parser.
+        Union[BaseExpParser, None]: Experiment parser. If template file doesn't exist in the workspace, return None.
     """
-    with (workspace / "template.yaml").open("r") as f:
+    template_file = workspace / "template.yaml"
+    if not template_file.exists():
+        return None
+
+    with template_file.open("r") as f:
         template = yaml.safe_load(f)
 
     if "anomaly" in template["task_type"].lower():
@@ -417,6 +450,9 @@ def organize_exp_result(workspace: Union[str, Path], exp_meta: Optional[Dict[str
         workspace = Path(workspace)
 
     exp_parser = get_exp_parser(workspace)
+    if exp_parser is None:
+        print(f"Unable to find which task \"{workspace}\" is. Parsing experiment result is skipped.")
+        return
     exp_parser.parse_exp_log()
 
     exp_result = exp_parser.get_exp_result()
@@ -453,24 +489,22 @@ def print_table(headers: List[str], rows: List[Dict[str, Any]], table_title: str
         rows (List[Dict[str, Any]]): Rows of table.
         table_title (str, optional): Table title. Defaults to "Table".
     """
-    # print experiment summary to console
     table = Table(title=table_title)
     for header in headers:
         table.add_column(header, justify="center", no_wrap=True)
-    for each_exp_result_summary in rows:
+    for row in rows:
         table_row = []
         for header in headers:
-            val = each_exp_result_summary.get(header)
+            val = row.get(header)
             table_row.append(str(val))
 
         table.add_row(*table_row)
 
-    console = Console()
-    console.print(table)
+    rich_console.print(table, justify="center", crop=False)
 
 
 def aggregate_all_exp_result(exp_dir: Union[str, Path]):
-    """Aggregate all experiment results.
+    """Aggregate all experiment results and save it and it's summary as a file.
 
     Args:
         exp_dir (Union[str, Path]): Experiment directory.
@@ -545,8 +579,6 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
         rows.append(each_exp_result)
     write_csv(exp_dir / "exp_summary.csv", headers, rows)
 
-    print_table(headers, rows, "Experiment Summary")
-
 
 @dataclass
 class Command:
@@ -556,28 +588,44 @@ class Command:
     variable: Dict[str, str] = field(default_factory=dict)
 
 
-class ExpRecipeParser:
-    """Class to parse an experiment recipe.
+class ExpInfo:
+    """Class to store experiment information.
+
+    It does additional things to provide complete experiment information.
+    For example, it replaces constants or varilabes if necessary,
+    and then it makes all possibles commands based on variables.
 
     Args:
-        recipe_file (Union[str, Path]): Recipe file to parse.
+        command (Union[str, List[str]]): All commands to exeucte.
+        output_path (Path): Output path to save experiment result.
+        name (str, optional): Experiment name. Defaults to "".
+        constants (Dict[str, str], optional):
+            Constants. If there are constants in variables or commands,
+            they are replaced based on this value. Defaults to None.
+        variables (Dict[str, str], optional):
+            Variables. If there are variables in command, they're replaced based on this value. Defaults to None.
+        repeat (int, optional): How many times to repeat experiments. Defaults to 1.
     """
 
-    def __init__(self, recipe_file: Union[str, Path]):
-        if not os.path.exists(recipe_file):
-            raise RuntimeError(f"{recipe_file} doesn't exist.")
-
-        with open(recipe_file, "r") as f:
-            self._exp_recipe: Dict = yaml.safe_load(f)
-        constants = self._exp_recipe.get("constants", {})
-        self._cvt_number_to_str(constants)
-        self._constants: Dict[str, str] = constants
-        self._variables: Optional[Dict[str, str]] = None
+    def __init__(
+        self,
+        command: Union[str, List[str]],
+        output_path: Path,
+        name: str = "",
+        constants: Optional[Dict[str, str]] = None,
+        variables: Optional[Dict[str, str]] = None,
+        repeat: int = 1,
+    ):
+        self._raw_command = command
         self._commands: Optional[List[Command]] = None
-        self.output_path: Path = Path(
-            self._exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
-        )
-        self.repeat: int = self._exp_recipe.get("repeat", 1)
+        self.output_path = output_path
+        self.name = name
+        self._constants = constants if constants is not None else {}
+        if variables is None:
+            variables = {}
+        self._raw_variables = cvt_number_to_str(variables)
+        self._variables: Optional[Dict[str, str]] = None
+        self.repeat = repeat
         self._replace_pat = re.compile(r"\$\{(\w+)\}")
 
     @property
@@ -589,9 +637,7 @@ class ExpRecipeParser:
     def variables(self) -> Dict[str, Union[str, List[str]]]:
         """Variables in recipe file. If it contains constants, they're replaced by real value."""
         if self._variables is None:
-            variables = self._exp_recipe.get("variables", {})
-            self._cvt_number_to_str(variables)
-            self._variables = self._replace_var_in_target(self.constants, variables)
+            self._variables = self._replace_var_in_target(self.constants, self._raw_variables)
         return self._variables
 
     @property
@@ -604,18 +650,18 @@ class ExpRecipeParser:
             List[Command]: List of Command instances.
         """
         if self._commands is None:
-            command = self._exp_recipe.get("command", [])
+            command = self._raw_command
             if isinstance(command, str):
                 command = [command]
             command = self._replace_var_in_target(self.constants, command)
             var_combinations = self._product_all_cases(self.variables, command)
             if not var_combinations:
                 self._commands = [Command(command=command)]
-
-            command_arr = []
-            for var_combination in var_combinations:
-                command_arr.append(Command(self._replace_var_in_target(var_combination, command), var_combination))
-            self._commands = command_arr
+            else:
+                command_arr = []
+                for var_combination in var_combinations:
+                    command_arr.append(Command(self._replace_var_in_target(var_combination, command), var_combination))
+                self._commands = command_arr
         return self._commands
 
     def _product_all_cases(
@@ -666,16 +712,52 @@ class ExpRecipeParser:
 
         return target
 
-    @staticmethod
-    def _cvt_number_to_str(target: Dict):
-        """Convert int or float in dict to string."""
-        for key, val in target.items():
-            if isinstance(val, (int, float)):
-                target[key] = str(val)
-            elif isinstance(val, list):
-                for i in range(len(val)):
-                    if isinstance(val[i], (int, float)):
-                        val[i] = str(val[i])
+
+
+def parse_exp_recipe(recipe_file: Union[str, Path]) -> Tuple[List[ExpInfo], Path]:
+    """Parse an experiment recipe and return list of expeirment information and output path.
+
+    Args:
+        recipe_file (Union[str, Path]): Recipe file to parse.
+
+    Raises:
+        RuntimeError: If recipe file doesn't exist, error is raised.
+
+    Returns:
+        Tuple[List[ExpInfo], Path]: List of expeirment information and output path.
+    """
+    if not os.path.exists(recipe_file):
+        raise RuntimeError(f"{recipe_file} doesn't exist.")
+
+    with open(recipe_file, "r") as f:
+        exp_recipe: Dict = yaml.safe_load(f)
+
+    ori_constants: Dict[str, str] = cvt_number_to_str(exp_recipe.get("constants", {}))
+    output_path = Path(exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"))
+    exp_info_list = []
+
+    if "experiments" not in exp_recipe:
+        exp_recipe["experiments"] = [exp_recipe]
+        exp_recipe["experiments"][0]["name"] = ""
+        exp_recipe["experiments"][0].pop("constants")
+
+    for exp in exp_recipe["experiments"]:
+        constants = copy(ori_constants)
+        if "constants" in exp:
+            constants.update(exp["constants"])
+
+        exp_info_list.append(
+            ExpInfo(
+                exp["command"],
+                output_path / exp["name"],
+                exp["name"],
+                constants,
+                exp.get("variables"),
+                exp.get("repeat", 1)
+            )
+        )
+
+    return exp_info_list, output_path
 
 
 @dataclass
@@ -693,24 +775,31 @@ class CommandFailInfo:
         return result
 
 
-def log_fail_cases(fail_cases: List[CommandFailInfo], output_path: Path):
-    """Print fail cases and save it as a file.
+def log_exp_failed_cases(
+    failed_cases: Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]],
+    output_path: Path,
+):
+    """Print experiments failed cases to console and save them in each experiment directory as a file.
 
     Args:
-        fail_cases (List[CommandFailInfo]): False cases.
-        output_path (Path): Where fale cases are saved.
+        failed_cases (Union[List[CommandFailInfo], Dict[str, List[CommandFailInfo]]]):
+            List of CommandFailInfo or Dictionary having experiment name as key and CommandFailInfo object as value.
+        output_path (Path): Directory where experiment direcory exists.
     """
-    console = Console()
-    console.rule("[bold red]List of failed cases")
-    for each_fail_case in fail_cases:
-        console.print(f"Case : {each_fail_case.variable}", crop=False)
-        console.print(f"command : {each_fail_case.command}", crop=False)
-        console.print("Error log:", str(each_fail_case.exception), crop=False)
-        console.print()
-    console.rule()
+    if isinstance(failed_cases, list):
+        failed_cases = {"" : failed_cases}
 
-    with (output_path / "failed_cases.yaml").open("w") as f:
-        yaml.safe_dump([fail_case.get_formatted_result() for fail_case in fail_cases], f)
+    for exp_name, failed_cases in failed_cases.items():
+        rich_console.rule(f"[bold red]{exp_name} failed cases ")
+
+        for each_fail_case in failed_cases:
+            rich_console.print(f"Case : {each_fail_case.variable}", crop=False)
+            rich_console.print(f"command : {each_fail_case.command}", crop=False)
+            rich_console.print("Error log:", str(each_fail_case.exception), crop=False)
+            rich_console.print()
+
+        with (output_path / exp_name / "failed_cases.yaml").open("w") as f:
+            yaml.safe_dump([fail_case.get_formatted_result() for fail_case in failed_cases], f)
 
 
 class OtxCommandRunner:
@@ -731,14 +820,14 @@ class OtxCommandRunner:
         "optimize": ["weights.pth", "openvino.bin"]
     }
 
-    def __init__(self, command_ins: Command, repeat_idx: int):
+    def __init__(self, command_ins: Command, workspace: Path, repeat_idx: int):
         self._command_ins = command_ins
         self._repeat_idx = repeat_idx
         self._command_var = copy(command_ins.variable)
-        self._workspace = Path("_".join(self._command_var.values()).replace("/", "_") + f"_repeat_{repeat_idx}")
+        self._workspace = workspace
         self._command_var["repeat"] = str(repeat_idx)
         self._fail_logs: List[CommandFailInfo] = []
-        self._previous_cmd_entry: Optional[List[str]] = []
+        self._previous_cmd_entry: List[str] = []
 
     @property
     def fail_logs(self) -> List[CommandFailInfo]:
@@ -839,6 +928,60 @@ class OtxCommandRunner:
         command.insert(index, key)
 
 
+def run_experiment(exp_info: ExpInfo, dryrun: bool = False) -> List[CommandFailInfo]:
+    """Run single expeirment.
+
+    Args:
+        exp_info (ExpInfo): ExpInfo having expreiment information to conduct.
+        dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
+
+    Returns:
+        List[CommandFailInfo]: List of failed command information.
+    """
+    failed_cases: List[CommandFailInfo] = []
+
+    for command_ins in exp_info.commands:
+        for repeat_idx in range(exp_info.repeat):
+            otx_cmd_runner = OtxCommandRunner(
+                command_ins,
+                exp_info.output_path
+                / "_".join(list(command_ins.variable.values()) + ["repeat", str(repeat_idx)]).replace("/", "_"),
+                repeat_idx
+            )
+            otx_cmd_runner.run_command_list(dryrun)
+            failed_cases.extend(otx_cmd_runner.fail_logs)
+
+    if not dryrun:
+        aggregate_all_exp_result(exp_info.output_path)
+
+    return failed_cases
+
+
+def print_experiments_summary(output_path: Path):
+    """Print experiment summary to console and save it as a file.
+
+    Args:
+        output_path (Path): Output path where experiment summary file is saved.
+    """
+    rich_console.rule("[bold green]Experiment summary")
+
+    for summary_file in output_path.rglob("exp_summary.csv"):
+        exp_name = summary_file.parent.name
+        if not summary_file.exists():
+            print(f"{exp_name} doesn't have exp_summary.csv file. Skipped.")
+            continue
+
+        with summary_file.open() as f:
+            exp_summary_csv = csv.reader(f)
+
+            headers = next(exp_summary_csv)
+            rows = []
+            for row in exp_summary_csv:
+                rows.append(dict((header, val) for header, val in zip(headers, row)))
+
+        print_table(headers, rows, f"{exp_name}")
+
+
 def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
     """Run experiments based on the recipe.
 
@@ -846,26 +989,21 @@ def run_experiment_recipe(recipe_file: Union[str, Path], dryrun: bool = False):
         recipe_file (Union[str, Path]): Recipe file to run.
         dryrun (bool, optional): Whether to only print experiment commands. Defaults to False.
     """
-    exp_recipe = ExpRecipeParser(recipe_file)
-    output_path = exp_recipe.output_path
-    output_path.mkdir(parents=True, exist_ok=True)
-    current_dir = os.getcwd()
-    os.chdir(output_path)
+    total_failed_cases: Dict[str, List[CommandFailInfo]] = {}
+    exp_info_list, output_path = parse_exp_recipe(recipe_file)
+    for exp_info in exp_info_list:
+        failed_cases = run_experiment(exp_info, dryrun)
+        total_failed_cases[exp_info.name] = failed_cases
 
-    fail_cases: List[CommandFailInfo] = []
-    for command_ins in exp_recipe.commands:
-        for repeat_idx in range(exp_recipe.repeat):
-            otx_cmd_runner = OtxCommandRunner(command_ins, repeat_idx)
-            otx_cmd_runner.run_command_list(dryrun)
-            fail_cases.extend(otx_cmd_runner.fail_logs)
+    if dryrun:
+        return
 
-    os.chdir(current_dir)
+    for failed_cases in total_failed_cases.values():
+        if failed_cases:
+            log_exp_failed_cases(total_failed_cases, output_path)
+            break
 
-    if fail_cases:
-        log_fail_cases(fail_cases, output_path)
-
-    if not dryrun:
-        aggregate_all_exp_result(output_path)
+    print_experiments_summary(output_path)
 
 
 def main():
