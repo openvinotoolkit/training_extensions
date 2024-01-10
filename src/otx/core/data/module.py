@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from datumaro import Dataset as DmDataset
 from datumaro.components.annotation import AnnotationType
 from lightning import LightningDataModule
+from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 
 from otx.core.data.factory import OTXDatasetFactory
@@ -21,9 +22,10 @@ from otx.core.data.mem_cache import (
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
+    from lightning.pytorch.utilities.parsing import AttributeDict
 
-    from .dataset.base import OTXDataset
+    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
+    from otx.core.data.dataset.base import OTXDataset
 
 
 @dataclass
@@ -157,3 +159,19 @@ class OTXDataModule(LightningDataModule):
         """Teardown for each stage."""
         # clean up after fit or test
         # called on every process in DDP
+
+    @property
+    def hparams_initial(self) -> AttributeDict:
+        """The collection of hyperparameters saved with `save_hyperparameters()`. It is read-only.
+
+        The reason why we override is that we have some custom resolvers for `DictConfig`.
+        Some resolved Python objects has not a primitive type, so that is not loggable without errors.
+        Therefore, we need to unresolve it this time.
+        """
+        hp = super().hparams_initial
+        for key, value in hp.items():
+            if isinstance(value, DictConfig):
+                # It should be unresolved to make it loggable
+                hp[key] = OmegaConf.to_container(value, resolve=False)
+
+        return hp
