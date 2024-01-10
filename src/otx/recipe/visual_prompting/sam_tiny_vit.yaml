@@ -1,0 +1,32 @@
+# @package _global_
+defaults:
+  - override /base: visual_prompting
+  - override /callbacks: visual_prompting
+  - override /data: mmdet_visual_prompting
+  # - override /data: torchvision_visual_prompting
+  - override /model: torch_visual_prompting
+data:
+  train_subset:
+    batch_size: 2
+  val_subset:
+    batch_size: 1
+  test_subset:
+    batch_size: 1
+model:
+  otx_model:
+    _target_: otx.algo.visual_prompting.segment_anything.OTXSegmentAnything
+    config:
+      backbone: tiny_vit
+      load_from: "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt"
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 0.001
+    betas: [0.9, 0.999]
+    weight_decay: 0.0
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+    _partial_: true
+    mode: min
+    factor: 0.1
+    patience: 10

@@ -1,0 +1,106 @@
+defaults:
+  - default
+  - base_inst_seg
+
+data_format: coco_instances
+include_polygons: false
+
+train_subset:
+  batch_size: 2
+  num_workers: 0
+  transform_lib_type: MMDET
+  transforms:
+    - type: LoadImageFromFile
+      backend_args: null
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: true
+    - type: Resize
+      keep_ratio: true
+      scale:
+        - 1024
+        - 1024
+    - type: Normalize
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+    - type: Pad
+      size:
+        - 1024
+        - 1024
+    - type: PackDetInputs
+val_subset:
+  batch_size: 1
+  num_workers: 0
+  transform_lib_type: MMDET
+  transforms:
+    - type: LoadImageFromFile
+      backend_args: null
+    - type: Resize
+      keep_ratio: true
+      scale:
+        - 1024
+        - 1024
+    - type: Normalize
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+    - type: Pad
+      size:
+        - 1024
+        - 1024
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: true
+    - type: PackDetInputs
+      meta_keys:
+        - img_id
+        - img_path
+        - ori_shape
+        - img_shape
+        - scale_factor
+test_subset:
+  batch_size: 1
+  num_workers: 0
+  transform_lib_type: MMDET
+  transforms:
+    - type: LoadImageFromFile
+      backend_args: null
+    - type: Resize
+      keep_ratio: true
+      scale:
+        - 1024
+        - 1024
+    - type: Normalize
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+    - type: Pad
+      size:
+        - 1024
+        - 1024
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: true
+    - type: PackDetInputs
+      meta_keys:
+        - img_id
+        - img_path
+        - ori_shape
+        - img_shape
+        - scale_factor
