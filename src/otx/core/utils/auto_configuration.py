@@ -44,44 +44,49 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
     OTXTaskType.ACTION_DETECTION: ["ava"],
 }
 
-DEFAULT_MODEL = {
-    OTXTaskType.MULTI_CLASS_CLS: "otx_efficientnet_b0",
-    OTXTaskType.MULTI_LABEL_CLS: "efficientnet_b0_light",
-    OTXTaskType.DETECTION: "atss_mobilenetv2",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "litehrnet_18",
-    OTXTaskType.INSTANCE_SEGMENTATION: "maskrcnn_r50",
-    OTXTaskType.ACTION_CLASSIFICATION: "x3d",
-    OTXTaskType.ACTION_DETECTION: "x3d_fastrcnn",
-}
-
-DEFAULT_OPTIMIZER = {
-    OTXTaskType.MULTI_CLASS_CLS: "sgd",
-    OTXTaskType.MULTI_LABEL_CLS: "sgd",
-    OTXTaskType.DETECTION: "sgd",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "sgd",
-    OTXTaskType.INSTANCE_SEGMENTATION: "sgd",
-    OTXTaskType.ACTION_CLASSIFICATION: "sgd",
-    OTXTaskType.ACTION_DETECTION: "sgd",
-}
-
-DEFAULT_SCHEDULER = {
-    OTXTaskType.MULTI_CLASS_CLS: "reduce_lr_on_plateau",
-    OTXTaskType.MULTI_LABEL_CLS: "reduce_lr_on_plateau",
-    OTXTaskType.DETECTION: "reduce_lr_on_plateau",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "reduce_lr_on_plateau",
-    OTXTaskType.INSTANCE_SEGMENTATION: "reduce_lr_on_plateau",
-    OTXTaskType.ACTION_CLASSIFICATION: "reduce_lr_on_plateau",
-    OTXTaskType.ACTION_DETECTION: "reduce_lr_on_plateau",
-}
-
-DEFAULT_DATA = {
-    OTXTaskType.MULTI_CLASS_CLS: "multi_class_cls_base",
-    OTXTaskType.MULTI_LABEL_CLS: "multi_label_cls_base",
-    OTXTaskType.DETECTION: "detection_atss",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "semantic_segmentation_litehrnet",
-    OTXTaskType.INSTANCE_SEGMENTATION: "instance_segmentation_maskrcnn",
-    OTXTaskType.ACTION_CLASSIFICATION: "action_classification_x3d",
-    OTXTaskType.ACTION_DETECTION: "action_detection_x3d_fastrcnn",
+DEFAULT_CONFIG_PER_TASK = {
+    OTXTaskType.MULTI_CLASS_CLS: {
+        "model": "otx_efficientnet_b0",
+        "data": "multi_class_cls_base",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
+    OTXTaskType.MULTI_LABEL_CLS: {
+        "model": "efficientnet_b0_light",
+        "data": "multi_label_cls_base",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
+    OTXTaskType.DETECTION: {
+        "model": "atss_mobilenetv2",
+        "data": "detection_atss",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
+    OTXTaskType.INSTANCE_SEGMENTATION: {
+        "model": "maskrcnn_r50",
+        "data": "instance_segmentation_maskrcnn",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
+    OTXTaskType.SEMANTIC_SEGMENTATION: {
+        "model": "litehrnet_18",
+        "data": "semantic_segmentation_litehrnet",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
+    OTXTaskType.ACTION_CLASSIFICATION: {
+        "model": "x3d",
+        "data": "action_classification_x3d",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
+    OTXTaskType.ACTION_DETECTION: {
+        "model": "x3d_fastrcnn",
+        "data": "action_detection_x3d_fastrcnn",
+        "optimizer": "sgd",
+        "scheduler": "reduce_lr_on_plateau",
+    },
 }
 
 
@@ -269,7 +274,7 @@ class AutoConfigurator:
         Raises:
             FileNotFoundError: If the configuration file does not exist.
         """
-        config_file = CONFIG_PATH / "data" / f"{DEFAULT_DATA[self.task]}.yaml"
+        config_file = CONFIG_PATH / "data" / f"{DEFAULT_CONFIG_PER_TASK[self.task]['data']}.yaml"
         if config_file.exists():
             with Path(config_file).open() as f:
                 return yaml.safe_load(f)
@@ -286,7 +291,7 @@ class AutoConfigurator:
             FileNotFoundError: If the configuration file does not exist.
         """
         if model is None:
-            model = DEFAULT_MODEL[self.task]
+            model = DEFAULT_CONFIG_PER_TASK[self.task]["model"]
         model_dict = load_model_configs(self.task.value)
         if model in model_dict:
             model_cfg_path = model_dict[model]
@@ -314,7 +319,7 @@ class AutoConfigurator:
         Returns:
             dict
         """
-        config_file = CONFIG_PATH / "optimizer" / f"{DEFAULT_OPTIMIZER[self.task]}.yaml"
+        config_file = CONFIG_PATH / "optimizer" / f"{DEFAULT_CONFIG_PER_TASK[self.task]['optimizer']}.yaml"
         with Path(config_file).open() as f:
             optimizer_cfg = yaml.safe_load(f)
         return optimizer_cfg.get("optimizer", optimizer_cfg)
@@ -325,7 +330,7 @@ class AutoConfigurator:
         Returns:
             dict
         """
-        config_file = CONFIG_PATH / "scheduler" / f"{DEFAULT_SCHEDULER[self.task]}.yaml"
+        config_file = CONFIG_PATH / "scheduler" / f"{DEFAULT_CONFIG_PER_TASK[self.task]['scheduler']}.yaml"
         with Path(config_file).open() as f:
             scheduler_cfg = yaml.safe_load(f)
         return scheduler_cfg.get("scheduler", scheduler_cfg)

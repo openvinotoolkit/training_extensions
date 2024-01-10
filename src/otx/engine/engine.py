@@ -76,7 +76,8 @@ class Engine:
 
     Example:
     >>> engine = Engine(
-        work_dir="output/folder/path",
+        data_root="dataset/path",
+        task="MULTI_CLASS_CLS",
     )
     """
 
@@ -97,10 +98,16 @@ class Engine:
         """Initializes the Engine object.
 
         Args:
-            task (OTXTaskType | None, optional): The Task type want to use in Engine.
-            work_dir (str | Path | None, optional): The working directory. Defaults to None.
-            device (OTXDeviceType, optional):  The devices to be used. Defaults to "auto".
-            **kwargs: Additional keyword arguments for pl.Trainer configuration.
+            data_root (str | Path): The root directory of the data.
+            task (OTXTaskType | None, optional): The task type. Defaults to None.
+            work_dir (str | Path, optional): The working directory. Defaults to "./otx-workspace".
+            datamodule (OTXDataModule | None, optional): The data module. Defaults to None.
+            model (OTXModel | str | None, optional): The model. Defaults to None.
+            optimizer (OptimizerCallable | None, optional): The optimizer. Defaults to None.
+            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler. Defaults to None.
+            checkpoint (str | None, optional): The checkpoint. Defaults to None.
+            device (OTXDeviceType, optional): The device type. Defaults to OTXDeviceType.auto.
+            **kwargs: Additional keyword arguments for pl.Trainer.
         """
         self.work_dir = work_dir
         self.checkpoint = checkpoint
