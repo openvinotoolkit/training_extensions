@@ -99,24 +99,21 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         pred_info = []
         target_info = []
 
-        for bboxes, masks, scores, labels in zip(
-            preds.bboxes,
+        for masks, scores, labels in zip(
             preds.masks,
             preds.scores,
             preds.labels,
         ):
             pred_info.append(
                 {
-                    "boxes": bboxes.data,
                     "masks": masks.data,
                     "scores": scores,
                     "labels": labels,
                 },
             )
 
-        for imgs_info, bboxes, masks, polygons, labels in zip(
+        for imgs_info, masks, polygons, labels in zip(
             inputs.imgs_info,
-            inputs.bboxes,
             inputs.masks,
             inputs.polygons,
             inputs.labels,
@@ -124,7 +121,6 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
             target_info.append(
                 {
-                    "boxes": bboxes.data,
                     "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
                     "labels": labels,
                 },

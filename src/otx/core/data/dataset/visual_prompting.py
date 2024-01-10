@@ -60,6 +60,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)
         labels = np.array(gt_labels, dtype=np.int64)
 
+        # set entity without masks to avoid resizing masks
         entity = VisualPromptingDataEntity(
             image=img_data,
             img_info=ImageInfo(
@@ -72,11 +73,15 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            masks=tv_tensors.Mask(masks, dtype=torch.uint8),
+            masks=None,
             labels=torch.as_tensor(labels),
             polygons=gt_polygons,
         )
-        return self._apply_transforms(entity)
+        transformed_entity = self._apply_transforms(entity)
+
+        # insert masks to transformed_entity
+        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)
+        return transformed_entity
 
     @property
     def collate_fn(self) -> Callable:

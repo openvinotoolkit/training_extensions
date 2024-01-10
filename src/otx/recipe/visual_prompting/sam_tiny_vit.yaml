@@ -18,6 +18,9 @@ model:
     config:
       backbone: tiny_vit
       load_from: "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt"
+      freeze_image_encoder: true
+      freeze_prompt_encoder: true
+      freeze_mask_decoder: false
   optimizer:
     _target_: torch.optim.Adam
     _partial_: true

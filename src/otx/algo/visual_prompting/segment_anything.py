@@ -30,6 +30,7 @@ class SegmentAnything(nn.Module):
         self,
         backbone: str,
         load_from: Optional[str] = None,
+        mask_threshold: float = 0.,
         image_size: int = 1024,
         image_embedding_size: int = 64,
         embed_dim: int = 256,
@@ -45,6 +46,7 @@ class SegmentAnything(nn.Module):
     ) -> None:
         super().__init__()
 
+        self.mask_threshold = mask_threshold
         self.image_size = image_size
         
         self.image_encoder = SAMImageEncoder(backbone=backbone)
@@ -103,14 +105,16 @@ class SegmentAnything(nn.Module):
     def forward(
         self,
         images: Tensor,
+        ori_shapes: List[Tensor],
         bboxes: List[Optional[Tensor]],
-        # masks: Optional[List[Optional[Tensor]]] = None,
         points: Optional[List[Optional[Tuple[Tensor, Tensor]]]] = None, # TODO
-    ) -> Tuple[List[Tensor], List[Tensor]]:
+        gt_masks: Optional[List[Tensor]] = None,
+    ) -> Tensor | Tuple[List[Tensor], List[Tensor]]:
         """Forward method for SAM training/validation/prediction.
 
         Args:
             images (Tensor): Images with shape (B, C, H, W).
+            ori_shapes (List[Tensor]): List of original shapes per image.
             bboxes (List[Tensor], optional): A Nx4 array given a box prompt to the model, in XYXY format.
             points (List[Tuple[Tensor, Tensor]], optional): Point coordinates and labels to embed.
                 Point coordinates are BxNx2 arrays of point prompts to the model.
@@ -120,10 +124,11 @@ class SegmentAnything(nn.Module):
             #     coming from a previous prediction iteration. Has form Bx1xHxW, where
             #     for SAM, H=W=256. Masks returned by a previous iteration of the
             #     predict method do not need further transformation.
+            gt_masks (List[Tensor], optional): Ground truth masks for loss calculation.
 
         Returns:
-            pred_masks (List[Tensor]): List with predicted masks with shape (B, 1, H, W).
-            ious (List[Tensor]): List with IoU predictions with shape (N, 1).
+            (Tensor): Calculated loss values.
+            (Tuple[List[Tensor], List[Tensor]]): Tuple of list with predicted masks with shape (B, 1, H, W) and List with IoU predictions with shape (N, 1).
         """
         image_embeddings = self.image_encoder(images)
         pred_masks = []
@@ -144,32 +149,34 @@ class SegmentAnything(nn.Module):
             )
 
             pred_masks.append(low_res_masks)
-            ious.append(iou_predictions)
+            ious.append(iou_predictions.squeeze())
 
         if self.training:
             loss_dice = 0.0
             loss_focal = 0.0
             loss_iou = 0.0
 
-            num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-            for i, (pred_mask, gt_mask, iou_prediction) in enumerate(zip(pred_masks, gt_masks, iou_predictions)):
-                pred_mask = self.postprocess_masks(
-                    pred_mask, self.image_size, batch["padding"][i], batch["original_size"][i]
-                )
+            num_masks = [len(pred_mask) for pred_mask in pred_masks]
+            for pred_mask, gt_mask, iou, ori_shape, num_mask in zip(pred_masks, gt_masks, ious, ori_shapes, num_masks):
+                pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
                 pred_mask = pred_mask.sigmoid()
                 pred_mask = pred_mask.flatten(1)
                 gt_mask = gt_mask.flatten(1).float()
 
                 # calculate losses
-                loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_masks)
-                loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
+                loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_mask)
+                loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_mask)
                 batch_iou = self.calculate_iou(pred_mask, gt_mask)
-                loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction="sum") / num_masks
+                loss_iou += F.mse_loss(iou, batch_iou)
 
             loss = 20.0 * loss_focal + loss_dice + loss_iou
             return loss
 
-        return pred_masks, ious
+        post_processed_pred_masks: List[Tensor] = []
+        for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
+            post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
+            post_processed_pred_masks.append(post_processed_pred_mask.squeeze() > self.mask_threshold)
+        return post_processed_pred_masks, ious
     
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
@@ -207,13 +214,11 @@ class SegmentAnything(nn.Module):
             Tensor: The focal loss.
         """
         loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
-        if self.config.model.loss_type.lower() == "sam":
-            # focal loss for SAM loss
-            p_t = inputs * targets + (1 - inputs) * (1 - targets)
-            loss = loss * ((1 - p_t) ** gamma)
-            if alpha >= 0:
-                alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
-                loss = alpha_t * loss
+        p_t = inputs * targets + (1 - inputs) * (1 - targets)
+        loss = loss * ((1 - p_t) ** gamma)
+        if alpha >= 0:
+            alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
+            loss = alpha_t * loss
         return loss.mean(1).sum() / num_masks
 
     def calculate_iou(self, inputs: Tensor, targets: Tensor, epsilon: float = 1e-7) -> Tensor:
@@ -273,9 +278,10 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         images = torch.stack(inputs.images, dim=0).to(dtype=torch.float32)
         return {
             "images": images,
+            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
             "bboxes": self._inspect_prompts(inputs.bboxes),
             # "points": self.inspect_prompts(inputs.points), # TODO
-            # "masks": self._inspect_prompts(inputs.masks), # to be removed
+            "gt_masks": inputs.masks,
         }
 
     def _customize_outputs(
@@ -287,36 +293,19 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         if self.training:
             return {"loss": outputs}
         
-        pred_masks, ious = outputs
-        
-        scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
-        for output in outputs:
-            if not isinstance(output, DetDataSample):
-                raise TypeError(output)
+        scores: list[torch.Tensor] = []
+        labels: list[torch.LongTensor] = inputs.labels
+        for mask, score in zip(*outputs):
+            masks.append(tv_tensors.Mask(mask, dtype=torch.bool))
+            scores.append(score)
 
-            scores.append(output.pred_instances.scores)
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    output.pred_instances.bboxes,
-                    format="XYXY",
-                    canvas_size=output.img_shape,
-                ),
-            )
-            output_masks = tv_tensors.Mask(
-                output.pred_instances.masks,
-                dtype=torch.bool,
-            )
-            masks.append(output_masks)
-            labels.append(output.pred_instances.labels)
-
-        return InstanceSegBatchPredEntity(
+        return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
-            bboxes=bboxes,
+            bboxes=[],
             masks=masks,
             polygons=[],
             labels=labels,

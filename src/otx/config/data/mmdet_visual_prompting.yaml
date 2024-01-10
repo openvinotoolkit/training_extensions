@@ -14,7 +14,7 @@ train_subset:
       backend_args: null
     - type: LoadAnnotations
       with_bbox: true
-      with_mask: true
+      with_mask: false
     - type: Resize
       keep_ratio: true
       scale:
@@ -43,7 +43,7 @@ val_subset:
       backend_args: null
     - type: LoadAnnotations
       with_bbox: true
-      with_mask: true
+      with_mask: false
     - type: Resize
       keep_ratio: true
       scale:
@@ -78,7 +78,7 @@ test_subset:
       backend_args: null
     - type: LoadAnnotations
       with_bbox: true
-      with_mask: true
+      with_mask: false
     - type: Resize
       keep_ratio: true
       scale:

@@ -144,15 +144,15 @@ class PackDetInputs(MMDetPackDetInputs):
         labels = data_samples.gt_instances.labels
         image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor)
 
-        masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
+        # masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
 
         return VisualPromptingDataEntity(
             image=tv_tensors.Image(transformed.get("inputs")),
             img_info=image_info,
             bboxes=bboxes,
-            masks=masks,
+            masks=None,
             labels=labels,
-            polygons=polygons,
+            polygons=None,
         )
 
     def extract_metadata(
