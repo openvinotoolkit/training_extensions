@@ -107,8 +107,7 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={"trainer.max_epochs": "20"},
         )
         for idx in range(1, 4)
-    ]
-    DATASET_TEST_CASES.extend([
+    ] + [
         DatasetTestCase(
             name=f"multiclass_CUB_medium",
             data_root=Path("multiclass_CUB_medium"),
@@ -123,7 +122,7 @@ class TestMultiClassCls(BaseTest):
             num_classes=20,
             extra_overrides={"trainer.max_epochs": "20"},
         )
-    ])
+    ]
 
     @pytest.mark.parametrize(
         "model_test_case",
@@ -175,8 +174,7 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={"trainer.max_epochs": "20"},
         )
         for idx in range(1, 4)
-    ]
-    DATASET_TEST_CASES.extend([
+    ] + [
         DatasetTestCase(
             name=f"multilabel_CUB_medium",
             data_root=Path("multilabel_CUB_medium"),
@@ -191,7 +189,7 @@ class TestMultilabelCls(BaseTest):
             num_classes=21,
             extra_overrides={"trainer.max_epochs": "20"},
         )
-    ])
+    ]
 
     @pytest.mark.parametrize(
         "model_test_case",
@@ -246,25 +244,22 @@ class TestObjectDetection(BaseTest):
             extra_overrides={"trainer.max_epochs": "10"},
         )
         for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name="pothole_medium",
+            data_root="pothole_medium",
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={"trainer.max_epochs": "10"}
+        ),
+        DatasetTestCase(
+            name="vitens_large",
+            data_root="vitens_large",
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={"trainer.max_epochs": "10"}
+        )
     ]
-    DATASET_TEST_CASES.extend(
-        [
-            DatasetTestCase(
-                name="pothole_medium",
-                data_root="pothole_medium",
-                data_format="coco",
-                num_classes=1,
-                extra_overrides={"trainer.max_epochs": "10"}
-            ),
-            DatasetTestCase(
-                name="vitens_large",
-                data_root="vitens_large",
-                data_format="coco",
-                num_classes=1,
-                extra_overrides={"trainer.max_epochs": "10"}
-            ),
-        ]
-    )
 
     @pytest.mark.parametrize(
         "model_test_case",
