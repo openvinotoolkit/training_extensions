@@ -50,6 +50,7 @@ jobs:
         --data-size ${{ inputs.data-size }}
         --num-repeat ${{ inputs.num-repeat }}
         --num-epoch ${{ inputs.num-epoch }}
+        --eval-upto ${{ inputs.eval-upto }}
         --summary-csv .tox/perf-speed-benchmark-all.csv
       runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
       task: all
