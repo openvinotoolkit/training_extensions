@@ -83,9 +83,9 @@ class Engine:
     def __init__(
         self,
         *,
+        data_root: str | Path,
         task: OTXTaskType | None = None,
         work_dir: str | Path = "./otx-workspace",
-        data_root: str | Path | None = None,
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
         optimizer: OptimizerCallable | None = None,

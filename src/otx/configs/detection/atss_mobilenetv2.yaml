@@ -1,7 +1,7 @@
 model: ../_base_/model/DETECTION/atss_mobilenetv2.yaml
 data: ../_base_/data/detection_atss.yaml
 optimizer: ../_base_/optimizer/sgd.yaml
-schduler: ../_base_/scheduler/reduce_lr_on_plateau.yaml
+scheduler: ../_base_/scheduler/reduce_lr_on_plateau.yaml
 
 overrides:
   optimizer:
