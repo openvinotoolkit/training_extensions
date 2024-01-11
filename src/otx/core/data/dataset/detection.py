@@ -33,6 +33,7 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
             if len(bbox_anns) > 0
             else np.zeros((0, 4), dtype=np.float32)
         )
+
         entity = DetDataEntity(
             image=img_data,
             img_info=ImageInfo(
