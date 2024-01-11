@@ -38,6 +38,7 @@ data:
 model:
   otx_model:
     _target_: otx.algo.classification.efficientnet_b0.EfficientNetB0ForMulticlassCls
+    light: false
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
