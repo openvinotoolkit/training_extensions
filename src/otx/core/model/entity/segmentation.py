@@ -18,6 +18,7 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import ImageResultWithSoftPrediction
     from torch import device, nn
 
 
@@ -133,7 +134,7 @@ class OVSegmentationModel(OVModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[ImageResultWithSoftPrediction],
         inputs: SegBatchDataEntity,
     ) -> SegBatchPredEntity | OTXBatchLossEntity:
         # add label index

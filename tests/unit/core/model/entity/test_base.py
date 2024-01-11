@@ -51,7 +51,7 @@ class TestOTXModel:
 
 class TestOVModel:
     @pytest.fixture()
-    def entity(self) -> OTXBatchDataEntity:
+    def input_batch(self) -> OTXBatchDataEntity:
         image = [torch.rand(3, 10, 10) for _ in range(3)]
         return OTXBatchDataEntity(3, image, [])
 
@@ -60,15 +60,15 @@ class TestOVModel:
         config = {"model_name": "efficientnet-b0-pytorch", "model_type": "Classification"}
         return OVModel(num_classes=2, config=config)
 
-    def test_customize_inputs(self, model, entity) -> None:
-        inputs = model._customize_inputs(entity)
+    def test_customize_inputs(self, model, input_batch) -> None:
+        inputs = model._customize_inputs(input_batch)
         assert isinstance(inputs, dict)
         assert "inputs" in inputs
-        assert inputs["inputs"][1].shape == np.transpose(entity.images[1].numpy(), (1, 2, 0)).shape
+        assert inputs["inputs"][1].shape == np.transpose(input_batch.images[1].numpy(), (1, 2, 0)).shape
 
-    def test_forward(self, model, entity) -> None:
+    def test_forward(self, model, input_batch) -> None:
         model._customize_outputs = lambda x, _: x
-        outputs = model.forward(entity)
+        outputs = model.forward(input_batch)
         assert isinstance(outputs, list)
         assert len(outputs) == 3
         assert isinstance(outputs[2], ClassificationResult)

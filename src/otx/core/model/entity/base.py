@@ -19,7 +19,7 @@ from otx.core.data.entity.base import (
     T_OTXBatchPredEntity,
 )
 from otx.core.types.export import OTXExportFormat
-from otx.core.utils.build import get_default_async_reqs_num
+from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
@@ -213,14 +213,24 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
-    """Base class for the OpenVINO model."""
+    """Base class for the OpenVINO model.
+
+    This is a base class representing interface for interacting with OpenVINO
+    Intermidiate Representation (IR) models. OVModel can create and validate
+    OpenVINO IR model directly from provided path locally or from
+    OpenVINO OMZ repository. (Only PyTorch models are supported).
+    OVModel supports synchoronous as well as asynchronous inference type.
+
+    Args:
+        num_classes: Number of classes this model can predict.
+    """
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
-        self.num_requests = config.pop("max_num_requests", get_default_async_reqs_num())
+        self.num_requests = config.pop("max_num_requests", get_default_num_async_infer_requests())
         self.use_throughput_mode = config.pop("use_throughput_mode", False)
         self.config = config
         super().__init__(num_classes)

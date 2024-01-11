@@ -23,6 +23,7 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import device, nn
 
 
@@ -171,7 +172,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         )
 
 
-class OVInstanceSegModel(OVModel):
+class OVInstanceSegmentationModel(OVModel):
     """Instance segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -180,7 +181,7 @@ class OVInstanceSegModel(OVModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[InstanceSegmentationResult],
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
         # add label index

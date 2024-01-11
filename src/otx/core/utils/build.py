@@ -41,15 +41,16 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str 
     return model
 
 
-def get_default_async_reqs_num() -> int:
+def get_default_num_async_infer_requests() -> int:
     """Returns a default number of infer request for OV models."""
     import os
 
-    reqs_num = os.cpu_count()
-    reqs_num = max(1, int(reqs_num / 2)) if reqs_num is not None else 1
-    msg = f"Set the default number of OpenVINO inference requests to {reqs_num}. You can specify the value in config."
+    number_requests = os.cpu_count()
+    number_requests = max(1, int(number_requests / 2)) if number_requests is not None else 1
+    msg = f"""Set the default number of OpenVINO inference requests to {number_requests}.
+            You can specify the value in config."""
     warnings.warn(msg, stacklevel=1)
-    return reqs_num
+    return number_requests
 
 
 def get_classification_layers(

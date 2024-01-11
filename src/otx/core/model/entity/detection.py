@@ -19,6 +19,7 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import DetectionResult
     from torch import device, nn
 
 
@@ -156,7 +157,7 @@ class OVDetectionModel(OVModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[DetectionResult],
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         # add label index

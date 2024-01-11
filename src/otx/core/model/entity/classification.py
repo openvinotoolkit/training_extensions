@@ -25,6 +25,7 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
 
@@ -327,7 +328,7 @@ class OVMulticlassClassificationModel(OVModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[ClassificationResult],
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity:
         pred_labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
