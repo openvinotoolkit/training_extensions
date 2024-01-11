@@ -18,6 +18,7 @@ class TestCustomSSDHead:
                 "widths": [[38, 92, 271, 141], [206, 386, 716, 453, 788]],
                 "heights": [[48, 147, 158, 324], [587, 381, 323, 702, 741]],
             },
+            act_cfg={"type": "ReLU"},
         )
 
         assert isinstance(self.head.loss_cls, CrossEntropyLoss)

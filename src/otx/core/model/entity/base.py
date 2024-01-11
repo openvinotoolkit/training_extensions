@@ -25,7 +25,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.classification_layers: list[str] = []
+        self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
 
     @abstractmethod
@@ -77,12 +77,22 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Modify input state_dict according to class name matching before weight loading."""
         model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
 
-        for param_name in self.classification_layers:
+        for param_name, info in self.classification_layers.items():
             model_param = self.state_dict()[param_name].clone()
             ckpt_param = state_dict[prefix + param_name]
-            for model_t, ckpt_t in enumerate(model2ckpt):
-                if ckpt_t >= 0:
-                    model_param[model_t].copy_(ckpt_param[ckpt_t])
+            stride = info.get("stride", 1)
+            num_extra_classes = info.get("num_extra_classes", 0)
+            for model_dst, ckpt_dst in enumerate(model2ckpt):
+                if ckpt_dst >= 0:
+                    model_param[(model_dst) * stride : (model_dst + 1) * stride].copy_(
+                        ckpt_param[(ckpt_dst) * stride : (ckpt_dst + 1) * stride],
+                    )
+            if num_extra_classes > 0:
+                num_ckpt_class = len(self.ckpt_classes)
+                num_model_class = len(self.model_classes)
+                model_param[(num_model_class) * stride : (num_model_class + 1) * stride].copy_(
+                    ckpt_param[(num_ckpt_class) * stride : (num_ckpt_class + 1) * stride],
+                )
 
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
