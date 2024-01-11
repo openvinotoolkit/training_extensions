@@ -5,7 +5,9 @@ _target_: otx.core.model.module.classification.OTXHlabelClsLitModule
 
 otx_model:
   _target_: otx.core.model.entity.classification.MMPretrainHlabelClsModel
-  config: ???
+  num_classes: ???
+  num_multiclass_heads: ???
+  num_multilabel_classes: ???
 
 # compile model for faster training with pytorch 2.0
 torch_compile: false

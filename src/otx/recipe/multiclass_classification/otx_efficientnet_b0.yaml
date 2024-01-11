@@ -37,46 +37,7 @@ data:
       - type: PackInputs
 model:
   otx_model:
-    config:
-      backbone:
-        version: b0
-        pretrained: true
-        type: OTXEfficientNet
-      head:
-        act_cfg:
-          type: HSwish
-        dropout_rate: 0.2
-        in_channels: 1280
-        init_cfg:
-          bias: 0.0
-          layer: Linear
-          mean: 0.0
-          std: 0.01
-          type: Normal
-        loss:
-          loss_weight: 1.0
-          type: CrossEntropyLoss
-        mid_channels:
-          - 1280
-        num_classes: 1000
-        topk:
-          - 1
-          - 5
-        type: StackedLinearClsHead
-      neck:
-        type: GlobalAveragePooling
-      data_preprocessor:
-        mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: False
-        type: ClsDataPreprocessor
-      type: ImageClassifier
+    _target_: otx.algo.classification.efficientnet_b0.EfficientNetB0ForMulticlassCls
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
