@@ -182,11 +182,13 @@ class PackActionInputs(MMPackActionInputs):
         img_shape = data_samples.img_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
+        attributes = data_samples.metainfo.get("attributes", {})
         image_info = ImageInfo(
             img_idx=0,
             img_shape=img_shape,
             ori_shape=ori_shape,
             scale_factor=scale_factor,
+            attributes=attributes,
         )
         image_info.pad_shape = pad_shape
 

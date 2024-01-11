@@ -15,8 +15,8 @@ from datumaro import Dataset as DmDataset
 from datumaro.plugins.tiling.merge_tile import MergeTile
 from torchvision import tv_tensors
 
-from otx.core.data.entity.detection import DetBatchDataEntity, DetPredEntity
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegPredEntity
+from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
 
 if TYPE_CHECKING:
     from otx.core.data.entity.base import ImageInfo
@@ -72,8 +72,7 @@ def extract_inst_seg_preds(
         for pred_box, pred_label in zip(pred_bboxes, pred_labels):
             x1, y1, x2, y2 = (int(value) for value in pred_box)
             pred_label_mask = pred_masks_by_label[pred_label]
-            # TODO: Performance issue here if there are too many instances.
-            # Add also copying mem to GPU is slow.
+            # TODO: Performance issue here if there are too many mask instances.
             bitmask = np.zeros_like(pred_label_mask)
             bitmask[y1:y2, x1:x2] = pred_label_mask[y1:y2, x1:x2]
             pred_mask_instances.append(bitmask)
@@ -90,7 +89,7 @@ def extract_inst_seg_preds(
 
 
 def merge_detection_tiles(
-    tile_preds: list[DetBatchDataEntity],
+    tile_preds: list[DetBatchPredEntity],
 ) -> DetPredEntity:
     dataset_items = []
     anno_id = 0
@@ -129,7 +128,7 @@ def merge_detection_tiles(
 
 
 def merge_inst_seg_tiles(
-    tile_preds: list[InstanceSegBatchDataEntity],
+    tile_preds: list[InstanceSegBatchPredEntity],
 ) -> InstanceSegPredEntity:
     dataset_items = []
     anno_id = 0

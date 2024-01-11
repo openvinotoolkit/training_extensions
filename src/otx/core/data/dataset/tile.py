@@ -24,6 +24,7 @@ from otx.core.data.entity.tile import (
     TileInstSegDataEntity,
 )
 from otx.core.types.task import OTXTaskType
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .base import OTXDataset
 
@@ -56,6 +57,7 @@ class OTXTileDataset(OTXDataset):
         super().__init__(
             dataset.dm_subset,
             dataset.transforms,
+            dataset.mem_cache_handler,
             dataset.mem_cache_img_max_size,
             dataset.max_refetch,
         )
@@ -106,8 +108,6 @@ class OTXTileDetTestDataset(OTXTileDataset):
             img_idx=dataset_item.attributes["id"],
             img_shape=tile_shape,
             ori_shape=tile_shape,
-            pad_shape=tile_shape,
-            scale_factor=(1.0, 1.0),
             attributes=dataset_item.attributes,
         )
         return DetDataEntity(
@@ -122,7 +122,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
             labels=torch.as_tensor([]),
         )
 
-    def _get_item_impl(self, index: int) -> OTXDataEntity | None:
+    def _get_item_impl(self, index: int) -> OTXDataEntity:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
@@ -143,12 +143,19 @@ class OTXTileDetTestDataset(OTXTileDataset):
             overlap=(self.tile_config.overlap, self.tile_config.overlap),
             threshold_drop_ann=0.5,
         )
-        tile_entities = []
+        tile_entities: list[DetDataEntity] = []
         for tile in tile_ds:
             tile_entity = self.convert_entity(tile)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
+            if transformed_tile is None:
+                msg = "Transformed tile is None"
+                raise RuntimeError(msg)
             tile_entities.append(transformed_tile)
+
+        # NOTE: Ignoring [return-value] check as _get_item_impl only returns OTXDataEntity.
+        # In the case of tiling, it return TileDetDataEntity which wraps a list of OTXDataEntity (tiles)
+        # which is not a subclass of OTXDataEntity.
 
         return TileDetDataEntity(
             num_tiles=len(tile_entities),
@@ -159,7 +166,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
                 canvas_size=img_shape,
             ),
             ori_labels=torch.as_tensor([ann.label for ann in bbox_anns]),
-        )
+        )  # type: ignore[return-value]
 
 
 class OTXTileInstSegTestDataset(OTXTileDataset):
@@ -178,8 +185,6 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             img_idx=dataset_item.attributes["id"],
             img_shape=tile_shape,
             ori_shape=tile_shape,
-            pad_shape=tile_shape,
-            scale_factor=(1.0, 1.0),
             attributes=dataset_item.attributes,
         )
         return InstanceSegDataEntity(
@@ -196,7 +201,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             polygons=[],
         )
 
-    def _get_item_impl(self, index: int) -> OTXDataEntity | None:
+    def _get_item_impl(self, index: int) -> OTXDataEntity:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
@@ -229,12 +234,19 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             overlap=(self.tile_config.overlap, self.tile_config.overlap),
             threshold_drop_ann=0.5,
         )
-        tile_entities = []
+        tile_entities: list[InstanceSegDataEntity] = []
         for tile in tile_ds:
             tile_entity = self.convert_entity(tile)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
+            if transformed_tile is None:
+                msg = "Transformed tile is None"
+                raise RuntimeError(msg)
             tile_entities.append(transformed_tile)
+
+        # NOTE: Ignoring [return-value] check as _get_item_impl only returns OTXDataEntity.
+        # In the case of tiling, it return TileDetDataEntity which wraps a list of OTXDataEntity (tiles)
+        # which is not a subclass of OTXDataEntity.
 
         return TileInstSegDataEntity(
             num_tiles=len(tile_entities),
@@ -247,4 +259,4 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             ori_labels=torch.as_tensor(labels),
             ori_masks=tv_tensors.Mask(masks, dtype=torch.uint8),
             ori_polygons=gt_polygons,
-        )
+        )  # type: ignore[return-value]

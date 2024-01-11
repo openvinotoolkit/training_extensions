@@ -16,9 +16,11 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
+from otx.core.data.entity.tile import TileBatchInstSegDataEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.tile_merge import merge_inst_seg_tiles
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -30,6 +32,52 @@ class OTXInstanceSegModel(
     OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
 ):
     """Base class for the detection models used in OTX."""
+
+    def unpack_inst_seg_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
+        """Unpack instance segmentation tiles.
+
+        Args:
+            inputs (TileBatchInstSegDataEntity): _description_
+
+        Returns:
+            InstanceSegBatchPredEntity: _description_
+        """
+        pred_entities = []
+        for tiles, tile_infos, bboxes, masks, polygons, labels in zip(
+            inputs.batch_tiles,
+            inputs.batch_tile_infos,
+            inputs.bboxes,
+            inputs.masks,
+            inputs.polygons,
+            inputs.labels,
+        ):
+            tile_preds: list[InstanceSegBatchPredEntity] = []
+            for tile, tile_info in zip(tiles, tile_infos):
+                tile_input = InstanceSegBatchDataEntity(
+                    batch_size=1,
+                    images=[tile],
+                    imgs_info=[tile_info],
+                    bboxes=[bboxes],
+                    masks=[masks],
+                    polygons=[polygons],
+                    labels=[labels],
+                )
+                output = self.forward(tile_input)
+                if isinstance(output, OTXBatchLossEntity):
+                    msg = "Loss output is not supported for tile merging"
+                    raise RuntimeError(msg)
+                tile_preds.append(output)
+            pred_entities.append(merge_inst_seg_tiles(tile_preds))
+        return InstanceSegBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[entity.image for entity in pred_entities],
+            imgs_info=[entity.img_info for entity in pred_entities],
+            scores=[entity.score for entity in pred_entities],
+            bboxes=[entity.bboxes for entity in pred_entities],
+            labels=[entity.labels for entity in pred_entities],
+            masks=[entity.masks for entity in pred_entities],
+            polygons=[entity.polygons for entity in pred_entities],
+        )
 
 
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):

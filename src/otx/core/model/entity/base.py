@@ -17,11 +17,6 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.data.entity.instance_segmentation import (
-    InstanceSegBatchDataEntity,
-    InstanceSegBatchPredEntity,
-)
 from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDataEntity
 from otx.core.types.export import OTXExportFormat
 
@@ -29,7 +24,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
-from otx.core.utils.tile_merge import merge_detection_tiles, merge_inst_seg_tiles
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -88,82 +82,16 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Customize OTX output batch data entity if needed for you model."""
         raise NotImplementedError
 
-    def unpack_tiles(
-        self,
-        inputs: TileBatchDetDataEntity | TileBatchInstSegDataEntity,
-    ) -> DetBatchPredEntity | InstanceSegBatchPredEntity:
-        """Unpack tiles into batch data entity."""
-        pred_entities = []
-        if isinstance(inputs, TileBatchDetDataEntity):
-            for tiles, tile_infos, bboxes, labels in zip(
-                inputs.batch_tiles,
-                inputs.batch_tile_infos,
-                inputs.bboxes,
-                inputs.labels,
-            ):
-                tile_preds: list[DetBatchDataEntity] = []
-                for tile, tile_info in zip(tiles, tile_infos):
-                    tile_input = DetBatchDataEntity(
-                        batch_size=1,
-                        images=[tile],
-                        imgs_info=[tile_info],
-                        bboxes=[bboxes],
-                        labels=[labels],
-                    )
-                    tile_preds.append(self.forward(tile_input))
-                pred_entities.append(merge_detection_tiles(tile_preds))
-
-            return DetBatchPredEntity(
-                batch_size=inputs.batch_size,
-                images=[entity.image for entity in pred_entities],
-                imgs_info=[entity.img_info for entity in pred_entities],
-                scores=[entity.score for entity in pred_entities],
-                bboxes=[entity.bboxes for entity in pred_entities],
-                labels=[entity.labels for entity in pred_entities],
-            )
-        if isinstance(inputs, TileBatchInstSegDataEntity):
-            for tiles, tile_infos, bboxes, masks, polygons, labels in zip(
-                inputs.batch_tiles,
-                inputs.batch_tile_infos,
-                inputs.bboxes,
-                inputs.masks,
-                inputs.polygons,
-                inputs.labels,
-            ):
-                tile_preds = []
-                for tile, tile_info in zip(tiles, tile_infos):
-                    tile_input = InstanceSegBatchDataEntity(
-                        batch_size=1,
-                        images=[tile],
-                        imgs_info=[tile_info],
-                        bboxes=[bboxes],
-                        masks=[masks],
-                        polygons=[polygons],
-                        labels=[labels],
-                    )
-                    tile_preds.append(self.forward(tile_input))
-                pred_entities.append(merge_inst_seg_tiles(tile_preds))
-            return InstanceSegBatchPredEntity(
-                batch_size=inputs.batch_size,
-                images=[entity.image for entity in pred_entities],
-                imgs_info=[entity.img_info for entity in pred_entities],
-                scores=[entity.score for entity in pred_entities],
-                bboxes=[entity.bboxes for entity in pred_entities],
-                labels=[entity.labels for entity in pred_entities],
-                masks=[entity.masks for entity in pred_entities],
-                polygons=[entity.polygons for entity in pred_entities],
-            )
-        msg = f"Unsupported input type: {type(inputs)}"
-        raise NotImplementedError(msg)
-
     def forward(
         self,
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         # If customize_inputs is overrided
-        if isinstance(inputs, (TileBatchDetDataEntity, TileBatchInstSegDataEntity)):
-            return self.unpack_tiles(inputs)
+        if isinstance(inputs, TileBatchDetDataEntity):
+            return self.unpack_det_tiles(inputs)
+        if isinstance(inputs, TileBatchInstSegDataEntity):
+            return self.unpack_inst_seg_tiles(inputs)
 
         outputs = (
             self.model(**self._customize_inputs(inputs))

@@ -45,14 +45,12 @@ class ImageInfo(tv_tensors.TVTensor):
     img_idx: int
     img_shape: tuple[int, int]
     ori_shape: tuple[int, int]
-    pad_shape: tuple[int, int]
-    scale_factor: tuple[float, float]
+    attributes: dict
     padding: tuple[int, int, int, int] = (0, 0, 0, 0)
     scale_factor: tuple[float, float] | None = (1.0, 1.0)
     normalized: bool = False
     norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0)
-    attributes: dict = {}
 
     @classmethod
     def _wrap(
@@ -62,6 +60,7 @@ class ImageInfo(tv_tensors.TVTensor):
         img_idx: int,
         img_shape: tuple[int, int],
         ori_shape: tuple[int, int],
+        attributes: dict,
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
         scale_factor: tuple[float, float] | None = (1.0, 1.0),
         normalized: bool = False,
@@ -77,6 +76,7 @@ class ImageInfo(tv_tensors.TVTensor):
         image_info.normalized = normalized
         image_info.norm_mean = norm_mean
         image_info.norm_std = norm_std
+        image_info.attributes = attributes
         return image_info
 
     def __new__(  # noqa: D102
@@ -84,6 +84,7 @@ class ImageInfo(tv_tensors.TVTensor):
         img_idx: int,
         img_shape: tuple[int, int],
         ori_shape: tuple[int, int],
+        attributes: dict,
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
         scale_factor: tuple[float, float] | None = (1.0, 1.0),
         normalized: bool = False,
@@ -95,6 +96,7 @@ class ImageInfo(tv_tensors.TVTensor):
             img_idx=img_idx,
             img_shape=img_shape,
             ori_shape=ori_shape,
+            attributes=attributes,
             padding=padding,
             scale_factor=scale_factor,
             normalized=normalized,
@@ -126,6 +128,7 @@ class ImageInfo(tv_tensors.TVTensor):
                 img_idx=image_info.img_idx,
                 img_shape=image_info.img_shape,
                 ori_shape=image_info.ori_shape,
+                attributes=image_info.attributes,
                 padding=image_info.padding,
                 scale_factor=image_info.scale_factor,
                 normalized=image_info.normalized,
@@ -140,6 +143,7 @@ class ImageInfo(tv_tensors.TVTensor):
                     img_idx=image_info.img_idx,
                     img_shape=image_info.img_shape,
                     ori_shape=image_info.ori_shape,
+                    attributes=image_info.attributes,
                     padding=image_info.padding,
                     scale_factor=image_info.scale_factor,
                     normalized=image_info.normalized,
