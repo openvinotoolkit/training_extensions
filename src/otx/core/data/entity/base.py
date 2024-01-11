@@ -52,7 +52,7 @@ class ImageInfo(tv_tensors.TVTensor):
     normalized: bool = False
     norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0)
-    attributes: dict | None = None
+    attributes: dict = {}
 
     @classmethod
     def _wrap(

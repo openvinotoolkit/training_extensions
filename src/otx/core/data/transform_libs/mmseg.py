@@ -68,6 +68,7 @@ class PackSegInputs(MMSegPackInputs):
                 img_shape=img_shape,
                 ori_shape=ori_shape,
                 scale_factor=scale_factor,
+                attributes={},
             ),
             gt_seg_map=masks,
         )

@@ -65,6 +65,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                attributes={},
             ),
             bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
