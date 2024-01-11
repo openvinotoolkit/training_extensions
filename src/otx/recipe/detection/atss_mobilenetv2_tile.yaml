@@ -4,14 +4,12 @@ defaults:
   - override /callbacks: detection
   - override /data: mmdet
   - override /model: mmdet
-
 data:
   tile_config:
     enable_tiler: true
     grid_size:
       - 2
       - 2
-  data_format: coco_instances
   train_subset:
     batch_size: 8
     transforms:
@@ -122,7 +120,7 @@ model:
           - 255
           - 255
           - 255
-        bgr_to_rgb: true
+        bgr_to_rgb: false
         pad_size_divisor: 32
       type: ATSS
       neck:

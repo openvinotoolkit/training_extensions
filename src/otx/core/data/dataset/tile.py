@@ -30,10 +30,16 @@ from .base import OTXDataset
 
 if TYPE_CHECKING:
     from otx.core.config.data import TilerConfig
+    from otx.core.data.dataset.detection import OTXDetectionDataset
+    from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
     from otx.core.data.entity.base import OTXDataEntity
+
+# ruff: noqa: SLF001
 
 
 class OTXTileDatasetFactory:
+    """OTX tile dataset factory."""
+
     @classmethod
     def create(
         cls,
@@ -41,19 +47,40 @@ class OTXTileDatasetFactory:
         dataset: OTXDataset,
         tile_config: TilerConfig,
     ) -> OTXTileDataset:
+        """Create a tile dataset based on the task type and subset type.
+
+        NOte: All task utilize the same OTXTileTrainDataset for training.
+              In testing, we use different tile dataset for different task
+              type due to different annotation format and data entity.
+
+        Args:
+            task (OTXTaskType): OTX task type.
+            dataset (OTXDataset): OTX dataset.
+            tile_config (TilerConfig): Tile configuration.
+
+        Returns:
+            OTXTileDataset: Tile dataset.
+        """
         if dataset.dm_subset.name == "train":
-            return OTXTileTrainDataset(task, dataset, tile_config)
+            return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
-            return OTXTileDetTestDataset(task, dataset, tile_config)
+            return OTXTileDetTestDataset(dataset, tile_config)
         if task == OTXTaskType.INSTANCE_SEGMENTATION:
-            return OTXTileInstSegTestDataset(task, dataset, tile_config)
-
-        raise NotImplementedError
+            return OTXTileInstSegTestDataset(dataset, tile_config)
+        msg = f"Unsupported task type: {task}"
+        raise NotImplementedError(msg)
 
 
 class OTXTileDataset(OTXDataset):
-    def __init__(self, task: OTXTaskType, dataset: OTXDataset, tile_config: TilerConfig) -> None:
+    """OTX tile dataset base class.
+
+    Args:
+        dataset (OTXDataset): OTX dataset.
+        tile_config (TilerConfig): Tile configuration.
+    """
+
+    def __init__(self, dataset: OTXDataset, tile_config: TilerConfig) -> None:
         super().__init__(
             dataset.dm_subset,
             dataset.transforms,
@@ -61,7 +88,6 @@ class OTXTileDataset(OTXDataset):
             dataset.mem_cache_img_max_size,
             dataset.max_refetch,
         )
-        self.task = task
         self.tile_config = tile_config
         self._dataset = dataset
 
@@ -70,14 +96,23 @@ class OTXTileDataset(OTXDataset):
 
     @property
     def collate_fn(self) -> Callable:
+        """Collate function from the original dataset."""
         return self._dataset.collate_fn
 
     def _get_item_impl(self, index: int) -> OTXDataEntity | None:
+        """Get item implementation from the original dataset."""
         return self._dataset._get_item_impl(index)
 
 
 class OTXTileTrainDataset(OTXTileDataset):
-    def __init__(self, task: OTXTaskType, dataset: OTXDataset, tile_config: TilerConfig) -> None:
+    """OTX tile train dataset.
+
+    Args:
+        dataset (OTXDataset): OTX dataset.
+        tile_config (TilerConfig): Tile configuration.
+    """
+
+    def __init__(self, dataset: OTXDataset, tile_config: TilerConfig) -> None:
         dm_dataset = dataset.dm_subset.as_dataset()
         dm_dataset = dm_dataset.transform(
             Tile,
@@ -89,40 +124,44 @@ class OTXTileTrainDataset(OTXTileDataset):
         dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
         dataset.dm_subset = dm_subset
         dataset.ids = [item.id for item in dm_subset]
-        super().__init__(task, dataset, tile_config)
+        super().__init__(dataset, tile_config)
 
 
 class OTXTileDetTestDataset(OTXTileDataset):
-    def __init__(self, task: OTXTaskType, dataset: OTXDataset, tile_config: TilerConfig) -> None:
-        super().__init__(task, dataset, tile_config)
+    """OTX tile detection test dataset.
+
+    OTXTileDetTestDataset wraps a list of tiles (DetDataEntity) into a single TileDetDataEntity for testing/predicting.
+
+    Args:
+        dataset (OTXDetDataset): OTX detection dataset.
+        tile_config (TilerConfig): Tile configuration.
+    """
+
+    def __init__(self, dataset: OTXDetectionDataset, tile_config: TilerConfig) -> None:
+        super().__init__(dataset, tile_config)
 
     @property
     def collate_fn(self) -> Callable:
+        """Collate function for tile detection test dataset."""
         return TileBatchDetDataEntity.collate_fn
 
-    def convert_entity(self, dataset_item: DatasetItem) -> DetDataEntity:
-        """Convert a tile dataset item to OTXDataEntity."""
-        tile_img = dataset_item.media_as(Image).data
-        tile_shape = tile_img.shape[:2]
-        img_info = ImageInfo(
-            img_idx=dataset_item.attributes["id"],
-            img_shape=tile_shape,
-            ori_shape=tile_shape,
-            attributes=dataset_item.attributes,
-        )
-        return DetDataEntity(
-            image=tile_img,
-            img_info=img_info,
-            # we don't need tile-level annotations
-            bboxes=tv_tensors.BoundingBoxes(
-                [],
-                format=tv_tensors.BoundingBoxFormat.XYXY,
-                canvas_size=tile_shape,
-            ),
-            labels=torch.as_tensor([]),
-        )
+    def _get_item_impl(self, index: int) -> TileDetDataEntity:  # type: ignore[override]
+        """Get item implementation.
 
-    def _get_item_impl(self, index: int) -> OTXDataEntity:
+        Transform a single dataset item to multiple tiles using Datumaro tiling plugin, and
+        wrap tiles into a single TileDetDataEntity.
+
+        Args:
+            index (int): Index of the dataset item.
+
+        Returns:
+            TileDetDataEntity: tile detection data entity that wraps a list of detection data entities.
+
+        Note:
+            Ignoring [override] check is necessary here since OTXDataset._get_item_impl exclusively permits
+            the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
+            imperative to encapsulate tiles within a unified entity, namely TileDetDataEntity.
+        """
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
@@ -145,17 +184,13 @@ class OTXTileDetTestDataset(OTXTileDataset):
         )
         tile_entities: list[DetDataEntity] = []
         for tile in tile_ds:
-            tile_entity = self.convert_entity(tile)
+            tile_entity = self._convert_entity(tile)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
             if transformed_tile is None:
                 msg = "Transformed tile is None"
                 raise RuntimeError(msg)
             tile_entities.append(transformed_tile)
-
-        # NOTE: Ignoring [return-value] check as _get_item_impl only returns OTXDataEntity.
-        # In the case of tiling, it return TileDetDataEntity which wraps a list of OTXDataEntity (tiles)
-        # which is not a subclass of OTXDataEntity.
 
         return TileDetDataEntity(
             num_tiles=len(tile_entities),
@@ -166,19 +201,10 @@ class OTXTileDetTestDataset(OTXTileDataset):
                 canvas_size=img_shape,
             ),
             ori_labels=torch.as_tensor([ann.label for ann in bbox_anns]),
-        )  # type: ignore[return-value]
+        )
 
-
-class OTXTileInstSegTestDataset(OTXTileDataset):
-    def __init__(self, task: OTXTaskType, dataset: OTXDataset, tile_config: TilerConfig) -> None:
-        super().__init__(task, dataset, tile_config)
-
-    @property
-    def collate_fn(self) -> Callable:
-        return TileBatchInstSegDataEntity.collate_fn
-
-    def convert_entity(self, dataset_item: DatasetItem) -> InstanceSegDataEntity:
-        """Convert a tile dataset item to OTXDataEntity."""
+    def _convert_entity(self, dataset_item: DatasetItem) -> DetDataEntity:
+        """Convert a tile datumaro dataset item to DetDataEntity."""
         tile_img = dataset_item.media_as(Image).data
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
@@ -187,7 +213,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             ori_shape=tile_shape,
             attributes=dataset_item.attributes,
         )
-        return InstanceSegDataEntity(
+        return DetDataEntity(
             image=tile_img,
             img_info=img_info,
             # we don't need tile-level annotations
@@ -197,11 +223,45 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
                 canvas_size=tile_shape,
             ),
             labels=torch.as_tensor([]),
-            masks=tv_tensors.Mask(np.zeros((0, *tile_shape), dtype=bool)),
-            polygons=[],
         )
 
-    def _get_item_impl(self, index: int) -> OTXDataEntity:
+
+class OTXTileInstSegTestDataset(OTXTileDataset):
+    """OTX tile inst-seg test dataset.
+
+    OTXTileDetTestDataset wraps a list of tiles (InstanceSegDataEntity) into a single TileDetDataEntity
+    for testing/predicting.
+
+    Args:
+        dataset (OTXInstanceSegDataset): OTX inst-seg dataset.
+        tile_config (TilerConfig): Tile configuration.
+    """
+
+    def __init__(self, dataset: OTXInstanceSegDataset, tile_config: TilerConfig) -> None:
+        super().__init__(dataset, tile_config)
+
+    @property
+    def collate_fn(self) -> Callable:
+        """Collate function for tile inst-seg test dataset."""
+        return TileBatchInstSegDataEntity.collate_fn
+
+    def _get_item_impl(self, index: int) -> TileInstSegDataEntity:  # type: ignore[override]
+        """Get item implementation.
+
+        Transform a single dataset item to multiple tiles using Datumaro tiling plugin, and
+        wrap tiles into a single TileInstSegDataEntity.
+
+        Args:
+            index (int): Index of the dataset item.
+
+        Returns:
+            TileInstSegDataEntity: tile inst-seg data entity that wraps a list of inst-seg data entities.
+
+        Note:
+            Ignoring [override] check is necessary here since OTXDataset._get_item_impl exclusively permits
+            the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
+            imperative to encapsulate tiles within a unified entity, namely TileInstSegDataEntity.
+        """
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
@@ -236,17 +296,13 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
         )
         tile_entities: list[InstanceSegDataEntity] = []
         for tile in tile_ds:
-            tile_entity = self.convert_entity(tile)
+            tile_entity = self._convert_entity(tile)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
             if transformed_tile is None:
                 msg = "Transformed tile is None"
                 raise RuntimeError(msg)
             tile_entities.append(transformed_tile)
-
-        # NOTE: Ignoring [return-value] check as _get_item_impl only returns OTXDataEntity.
-        # In the case of tiling, it return TileDetDataEntity which wraps a list of OTXDataEntity (tiles)
-        # which is not a subclass of OTXDataEntity.
 
         return TileInstSegDataEntity(
             num_tiles=len(tile_entities),
@@ -259,4 +315,28 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             ori_labels=torch.as_tensor(labels),
             ori_masks=tv_tensors.Mask(masks, dtype=torch.uint8),
             ori_polygons=gt_polygons,
-        )  # type: ignore[return-value]
+        )
+
+    def _convert_entity(self, dataset_item: DatasetItem) -> InstanceSegDataEntity:
+        """Convert a tile dataset item to InstanceSegDataEntity."""
+        tile_img = dataset_item.media_as(Image).data
+        tile_shape = tile_img.shape[:2]
+        img_info = ImageInfo(
+            img_idx=dataset_item.attributes["id"],
+            img_shape=tile_shape,
+            ori_shape=tile_shape,
+            attributes=dataset_item.attributes,
+        )
+        return InstanceSegDataEntity(
+            image=tile_img,
+            img_info=img_info,
+            # we don't need tile-level annotations
+            bboxes=tv_tensors.BoundingBoxes(
+                [],
+                format=tv_tensors.BoundingBoxFormat.XYXY,
+                canvas_size=tile_shape,
+            ),
+            labels=torch.as_tensor([]),
+            masks=tv_tensors.Mask(np.zeros((0, *tile_shape), dtype=bool)),
+            polygons=[],
+        )

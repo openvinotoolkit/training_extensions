@@ -57,7 +57,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 output = self.forward(tile_input)
                 if isinstance(output, OTXBatchLossEntity):
                     msg = "Loss output is not supported for tile merging"
-                    raise RuntimeError(msg)
+                    raise TypeError(msg)
                 tile_preds.append(output)
             pred_entities.append(merge_detection_tiles(tile_preds))
 
