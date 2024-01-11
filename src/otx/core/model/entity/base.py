@@ -15,8 +15,11 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
+from otx.core.types.export import OTXExportFormat
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import torch
 
 
@@ -116,3 +119,48 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             else:
                 src2dst.append(-1)
         return src2dst
+
+    def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+        """
+        if export_format == OTXExportFormat.OPENVINO:
+            self._export_to_openvino(output_dir)
+        if export_format == OTXExportFormat.ONNX:
+            self._export_to_onnx()
+        if export_format == OTXExportFormat.EXPORTABLE_CODE:
+            self._export_to_exportable_code()
+
+    def _export_to_openvino(self, output_dir: Path) -> None:
+        """Export to OpenVINO Intermediate Representation format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def _export_to_onnx(self) -> None:
+        """Export to ONNX format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def _export_to_exportable_code(self) -> None:
+        """Export to exportable code format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def register_explain_hook(self) -> None:
+        """Register explain hook.
+
+        TBD
+        """
+        raise NotImplementedError

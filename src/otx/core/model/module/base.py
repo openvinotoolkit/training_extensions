@@ -14,8 +14,11 @@ from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
+from otx.core.types.export import OTXExportFormat
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from otx.core.data.dataset.base import DataMetaInfo
 
 
@@ -172,3 +175,12 @@ class OTXLitModule(LightningModule):
     @meta_info.setter
     def meta_info(self, meta_info: DataMetaInfo) -> None:
         self._meta_info = meta_info
+
+    def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
+        """Export the member `OTXModel` of this module to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+        """
+        self.model.export(output_dir, export_format)
