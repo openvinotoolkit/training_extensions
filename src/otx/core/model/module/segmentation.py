@@ -115,8 +115,8 @@ class OTXSegmentationLitModule(OTXLitModule):
         preds = self.model(inputs)
         if not isinstance(preds, SegBatchPredEntity):
             raise TypeError(preds)
-        pred_list = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for prediction in pred_list:
+        predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for prediction in predictions:
             self.test_metric.update(**prediction)
 
     @property
