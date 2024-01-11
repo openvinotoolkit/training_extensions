@@ -8,6 +8,8 @@ import logging as log
 
 import torch
 from torch import Tensor
+from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
+from torchmetrics.collections import MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
@@ -30,8 +32,24 @@ class OTXVisualPromptingLitModule(OTXLitModule):
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")
+        self.val_metric = MetricCollection(
+            [
+                BinaryJaccardIndex(),
+                BinaryF1Score(),
+                Dice(),
+                MeanAveragePrecision(iou_type="segm"),
+            ],
+            compute_groups=[["BinaryJaccardIndex", "BinaryF1Score", "Dice"], ["MeanAveragePrecision"]]
+        )
+        self.test_metric = MetricCollection(
+            [
+                BinaryJaccardIndex(),
+                BinaryF1Score(),
+                Dice(),
+                MeanAveragePrecision(iou_type="segm"),
+            ],
+            compute_groups=[["BinaryJaccardIndex", "BinaryF1Score", "Dice"], ["MeanAveragePrecision"]]
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -86,9 +104,19 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         if not isinstance(preds, VisualPromptingBatchPredEntity):
             raise TypeError(preds)
 
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for i, metrics in self.val_metric.compute_groups.items():
+            if i == 0:
+                # for binary mask
+                for metric in metrics:
+                    for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                        self.val_metric.__getitem__(metric).update(cvt_preds["masks"], cvt_target["masks"])
+            else:
+                # for instance segmentation
+                for metric in metrics:
+                    self.val_metric.__getitem__(metric).update(
+                        preds=[{k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]],
+                        target=converted_entities["target"])
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -143,9 +171,17 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         if not isinstance(preds, VisualPromptingBatchPredEntity):
             raise TypeError(preds)
 
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for i, metrics in self.test_metric.compute_groups.items():
+            if i == 0:
+                # for binary mask
+                for metric in metrics:
+                    for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                        self.test_metric.__getitem__(metric).update(cvt_preds["masks"], cvt_target["masks"])
+            else:
+                # for instance segmentation
+                for metric in metrics:
+                    self.test_metric.__getitem__(metric).update(**converted_entities)
 
     @property
     def lr_scheduler_monitor_key(self) -> str:

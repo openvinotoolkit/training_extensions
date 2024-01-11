@@ -175,7 +175,7 @@ class SegmentAnything(nn.Module):
         post_processed_pred_masks: List[Tensor] = []
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
-            post_processed_pred_masks.append(post_processed_pred_mask.squeeze() > self.mask_threshold)
+            post_processed_pred_masks.append(post_processed_pred_mask.squeeze().sigmoid())
         return post_processed_pred_masks, ious
     
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
@@ -297,7 +297,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         scores: list[torch.Tensor] = []
         labels: list[torch.LongTensor] = inputs.labels
         for mask, score in zip(*outputs):
-            masks.append(tv_tensors.Mask(mask, dtype=torch.bool))
+            masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
             scores.append(score)
 
         return VisualPromptingBatchPredEntity(
