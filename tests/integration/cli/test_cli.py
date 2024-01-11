@@ -22,46 +22,45 @@ DATASET = {
     "multiclass_classification": {
         "data_dir": "tests/assets/classification_dataset",
         "overrides": [
-            "model.otx_model.config.head.num_classes=2",
+            "model.otx_model.num_classes=2",
         ],
     },
     "multilabel_classification": {
         "data_dir": "tests/assets/multilabel_classification",
         "overrides": [
-            "model.otx_model.config.head.num_classes=2",
+            "model.otx_model.num_classes=2",
         ],
     },
     "hlabel_classification": {
         "data_dir": "tests/assets/hlabel_classification",
         "overrides": [
-            "model.otx_model.config.head.num_classes=7",
+            "model.otx_model.num_classes=7",
             "model.otx_model.config.head.num_multiclass_heads=2",
             "model.otx_model.config.head.num_multilabel_classes=3",
         ],
     },
     "detection": {
         "data_dir": "tests/assets/car_tree_bug",
-        "overrides": ["model.otx_model.config.bbox_head.num_classes=3"],
+        "overrides": ["model.otx_model.num_classes=3"],
     },
     "instance_segmentation": {
         "data_dir": "tests/assets/car_tree_bug",
         "overrides": [
-            "model.otx_model.config.roi_head.bbox_head.num_classes=3",
-            "model.otx_model.config.roi_head.mask_head.num_classes=3",
+            "model.otx_model.num_classes=3",
         ],
     },
     "segmentation": {
         "data_dir": "tests/assets/common_semantic_segmentation_dataset/supervised",
-        "overrides": ["model.otx_model.config.decode_head.num_classes=2"],
+        "overrides": ["model.otx_model.num_classes=2"],
     },
     "action_classification": {
         "data_dir": "tests/assets/action_classification_dataset/",
-        "overrides": ["model.otx_model.config.cls_head.num_classes=2"],
+        "overrides": ["model.otx_model.num_classes=2"],
     },
     "action_detection": {
         "data_dir": "tests/assets/action_detection_dataset/",
         "overrides": [
-            "model.otx_model.config.roi_head.bbox_head.num_classes=5",
+            "model.otx_model.num_classes=5",
             "+model.otx_model.config.roi_head.bbox_head.topk=3",
         ],
     },

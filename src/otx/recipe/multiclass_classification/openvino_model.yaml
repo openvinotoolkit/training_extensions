@@ -15,3 +15,4 @@ model:
       model_name: efficientnet-b0-pytorch
       head:
         num_classes: 1000
+    num_classes: 1000
