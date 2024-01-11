@@ -9,3 +9,20 @@ otx_model:
 
 # compile model for faster training with pytorch 2.0
 torch_compile: false
+
+export_config:
+  format: OPENVINO
+  precision: FP32
+  input_height: 224
+  input_width: 224
+  resize_mode: standard
+  pad_value: 0
+  swap_rgb: false
+  mean:
+    - 0
+    - 0
+    - 0
+  std:
+    - 1
+    - 1
+    - 1

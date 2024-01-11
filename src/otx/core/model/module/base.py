@@ -5,16 +5,19 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 import warnings
 from typing import Any
 
 import torch
 from lightning import LightningModule
 from torch import Tensor
+from otx.core.config.export import ExportConfig
 
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.module import DataMetaInfo
 from otx.core.model.entity.base import OTXModel
+from otx.core.types.export import OTX_EXPORT_FORMAT_TO_EXTENSION
 
 
 class OTXLitModule(LightningModule):
@@ -26,6 +29,7 @@ class OTXLitModule(LightningModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        export_config: ExportConfig,
     ):
         super().__init__()
 
@@ -34,6 +38,7 @@ class OTXLitModule(LightningModule):
         self.scheduler = scheduler
         self.torch_compile = torch_compile
         self._meta_info: DataMetaInfo | None = None
+        self._export_config = export_config
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -170,3 +175,19 @@ class OTXLitModule(LightningModule):
     @meta_info.setter
     def meta_info(self, meta_info: DataMetaInfo) -> None:
         self._meta_info = meta_info
+
+    def export(self, output_dir: str) ->  str:
+        """Export model"""
+
+        model_path = Path(output_dir) / ("exported_model." + OTX_EXPORT_FORMAT_TO_EXTENSION[self._export_config.format])
+        self.model.export(input_size=(self._export_config.input_height, self._export_config.input_width),
+                          save_path=str(model_path),
+                          format=self._export_config.format, precision=self._export_config.precision,
+                          mean=self._export_config.mean,
+                          std=self._export_config.std,
+                          resize_mode=self._export_config.resize_mode,
+                          pad_value=self._export_config.pad_value,
+                          swap_rgb=self._export_config.swap_rgb,
+                          label_names=self.meta_info.class_names,
+                          label_ids=self.meta_info.class_names)
+        return str(model_path)

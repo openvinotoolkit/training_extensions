@@ -6,8 +6,10 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, List, Tuple
 
+import openvino
+import torch
 from torch import nn
 
 from otx.core.data.entity.base import (
@@ -15,6 +17,7 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
+from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 
 if TYPE_CHECKING:
     import torch
@@ -106,3 +109,30 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             else:
                 src2dst.append(-1)
         return src2dst
+
+    @abstractmethod
+    def _embed_model_metadata(self, model: Any, ) -> Any:
+        """Embeds metadata to the exported model"""
+        return model
+
+    def export(self, input_size: Tuple[int, int], save_path: str, format: OTXExportFormatType = "OPENVINO",
+               precision: OTXExportPrecisionType = "FP32", mean: Tuple[float, float,float] = (0., 0., 0.),
+               std: Tuple[float, float,float] = (1., 1., 1.), resize_mode: str = "standard", pad_value: int = 0, swap_rgb: bool = False,
+               label_names: List[str] = [], label_ids: List[str] = []) -> None:
+        """Export model to a deployable format.
+
+        The resulting model is ready to be executed via ModelAPI."""
+
+        dummy_tensor = torch.rand((1, 3, *input_size)).to(next(self.model.parameters()).device)
+        if format == OTXExportFormatType.OPENVINO:
+            exported_model = openvino.convert_model(self.model, example_input=dummy_tensor)
+            exported_model = self._embed_model_metadata(exported_model)
+            openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        elif format == OTXExportFormatType.ONNX:
+            torch.onnx.export(self.model, dummy_tensor, save_path)
+            if precision == OTXExportPrecisionType.FP16:
+                import onnx
+                from onnxconverter_common import float16
+                tmp_model = onnx.load(save_path)
+                model_fp16 = float16.convert_float_to_float16(tmp_model)
+                onnx.save(model_fp16, save_path)

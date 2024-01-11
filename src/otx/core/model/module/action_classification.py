@@ -7,6 +7,7 @@ from __future__ import annotations
 import torch
 from torch import Tensor
 from torchmetrics.classification.accuracy import Accuracy
+from otx.core.config.export import ExportConfig
 
 from otx.core.data.entity.action_classification import (
     ActionClsBatchDataEntity,
@@ -25,8 +26,9 @@ class OTXActionClsLitModule(OTXLitModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        export_config: ExportConfig,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(otx_model, optimizer, scheduler, torch_compile, export_config)
         num_classes = otx_model.config.get("cls_head", {}).get("num_classes", None)
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
         self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)

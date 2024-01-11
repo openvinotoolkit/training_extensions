@@ -5,6 +5,8 @@
 
 from dataclasses import dataclass
 
+from otx.core.config.export import ExportConfig
+
 
 @dataclass
 class ModelConfig:
@@ -15,3 +17,4 @@ class ModelConfig:
     scheduler: dict
     otx_model: dict
     torch_compile: bool
+    export_config: ExportConfig
