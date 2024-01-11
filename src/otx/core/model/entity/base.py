@@ -18,8 +18,9 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
-from otx.core.utils.build import get_default_async_reqs_num
 from otx.core.types.export import OTXExportFormat
+from otx.core.utils.build import get_default_async_reqs_num
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -214,14 +215,15 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model."""
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
         self.num_requests = config.pop("max_num_requests", get_default_async_reqs_num())
         self.use_throughput_mode = config.pop("use_throughput_mode", False)
         self.config = config
-        super().__init__()
+        super().__init__(num_classes)
 
     def _create_model(self) -> nn.Module:
         """Create a OV model with help of Model API."""
