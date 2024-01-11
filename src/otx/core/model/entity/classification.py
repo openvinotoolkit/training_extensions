@@ -11,6 +11,8 @@ import torch
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
+    HlabelClsBatchDataEntity,
+    HlabelClsBatchPredEntity,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchDataEntity,
@@ -18,6 +20,7 @@ from otx.core.data.entity.classification import (
 )
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -31,7 +34,7 @@ class OTXMulticlassClsModel(
     """Base class for the classification models used in OTX."""
 
 
-def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, list[str]]:
+def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
     from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
     from mmpretrain.registry import MODELS
 
@@ -60,10 +63,11 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
@@ -152,10 +156,11 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
@@ -218,6 +223,93 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             labels.append(output.pred_label)
 
         return MultilabelClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            labels=labels,
+        )
+
+
+class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
+    """H-label classification models used in OTX."""
+
+
+class MMPretrainHlabelClsModel(OTXHlabelClsModel):
+    """H-label Classification model compatible for MMPretrain.
+
+    It can consume MMPretrain model configuration translated into OTX configuration
+    (please see otx.tools.translate_mmrecipe) and create the OTX classification model
+    compatible for OTX pipelines.
+    """
+
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        self.config = config
+        self.load_from = config.pop("load_from", None)
+        super().__init__(num_classes=num_classes)
+
+    def _create_model(self) -> nn.Module:
+        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        self.classification_layers = classification_layers
+        return model
+
+    def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
+        from mmpretrain.structures import DataSample
+
+        mmpretrain_inputs: dict[str, Any] = {}
+
+        mmpretrain_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
+        mmpretrain_inputs["data_samples"] = [
+            DataSample(
+                metainfo={
+                    "img_id": img_info.img_idx,
+                    "img_shape": img_info.img_shape,
+                    "ori_shape": img_info.ori_shape,
+                    "pad_shape": img_info.pad_shape,
+                    "scale_factor": img_info.scale_factor,
+                },
+                gt_label=labels,
+            )
+            for img_info, labels in zip(
+                entity.imgs_info,
+                entity.labels,
+            )
+        ]
+        preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
+
+        mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
+
+        mmpretrain_inputs["mode"] = "loss" if self.training else "predict"
+        return mmpretrain_inputs
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: HlabelClsBatchDataEntity,
+    ) -> HlabelClsBatchPredEntity | OTXBatchLossEntity:
+        from mmpretrain.structures import DataSample
+
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                losses[k] = v
+            return losses
+
+        scores = []
+        labels = []
+
+        for output in outputs:
+            if not isinstance(output, DataSample):
+                raise TypeError(output)
+
+            scores.append(output.pred_score)
+            labels.append(output.pred_label)
+
+        return HlabelClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,

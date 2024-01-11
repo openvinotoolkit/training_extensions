@@ -16,11 +16,15 @@ class MockNNModule(torch.nn.Module):
 class TestOTXModel:
     def test_smart_weight_loading(self, mocker) -> None:
         mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(2))
-        prev_model = OTXModel()
+        prev_model = OTXModel(num_classes=2)
 
         mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(3))
-        current_model = OTXModel()
+        current_model = OTXModel(num_classes=3)
         current_model.classification_layers = ["model.head.weight", "model.head.bias"]
+        current_model.classification_layers = {
+            "model.head.weight": {"stride": 1, "num_extra_classes": 0},
+            "model.head.bias": {"stride": 1, "num_extra_classes": 0},
+        }
 
         prev_classes = ["car", "truck"]
         current_classes = ["car", "bus", "truck"]

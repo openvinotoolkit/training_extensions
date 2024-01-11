@@ -15,7 +15,7 @@ class TestOTXModel:
 
     @pytest.fixture()
     def fxt_model(self, fxt_rtmdet_tiny_model_config) -> MMDetCompatibleModel:
-        return MMDetCompatibleModel(config=fxt_rtmdet_tiny_model_config)
+        return MMDetCompatibleModel(num_classes=3, config=fxt_rtmdet_tiny_model_config)
 
     def test_forward_train(
         self,

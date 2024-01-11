@@ -65,9 +65,9 @@ class DINOv2(nn.Module):
 class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
         self.config = config
-        super().__init__()  # create the model
+        super().__init__(num_classes=num_classes)  # create the model
 
     def _create_model(self) -> nn.Module:
         """Create the model."""

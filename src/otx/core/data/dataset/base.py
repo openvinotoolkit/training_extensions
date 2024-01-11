@@ -6,11 +6,13 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
+from dataclasses import dataclass
 from io import BytesIO
 from typing import TYPE_CHECKING, Callable, Generic, List, Union
 
 import cv2
 import numpy as np
+from datumaro.components.annotation import AnnotationType
 from datumaro.components.media import ImageFromFile
 from PIL import Image as PILImage
 from torch.utils.data import Dataset
@@ -25,6 +27,30 @@ if TYPE_CHECKING:
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
 Transforms = Union[Compose, Callable, List[Callable]]
+
+
+@dataclass
+class LabelInfo:
+    """Object to represent label information."""
+
+    label_names: list[str]
+
+    @property
+    def num_classes(self) -> int:
+        """Return number of labels."""
+        return len(self.label_names)
+
+    @classmethod
+    def from_num_classes(cls, num_classes: int) -> LabelInfo:
+        """Create this object from the number of classes.
+
+        Args:
+            num_classes: Number of classes
+
+        Returns:
+            LabelInfo(label_names=["label_0", ...])
+        """
+        return LabelInfo(label_names=[f"label_{idx}" for idx in range(num_classes)])
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -44,6 +70,10 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.mem_cache_handler = mem_cache_handler
         self.mem_cache_img_max_size = mem_cache_img_max_size
         self.max_refetch = max_refetch
+
+        self.meta_info = LabelInfo(
+            label_names=[category.name for category in self.dm_subset.categories()[AnnotationType.label]],
+        )
 
     def __len__(self) -> int:
         return len(self.ids)

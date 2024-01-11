@@ -18,3 +18,4 @@ model:
       use_throughput_mode: True
       model_type: "SSD"
       async_inference: True
+    num_classes: 20

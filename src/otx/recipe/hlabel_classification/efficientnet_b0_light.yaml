@@ -1,0 +1,78 @@
+# @package _global_
+defaults:
+  - override /base: hlabel_classification
+  - override /callbacks: hlabel_classification
+  - override /data: hlabel_mmpretrain
+  - override /model: hlabel_mmpretrain
+data:
+  train_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        scale: 224
+        type: RandomResizedCrop
+      - type: PackInputs
+  val_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+  test_subset:
+    batch_size: 64
+    transforms:
+      - type: LoadImageFromFile
+      - backend: cv2
+        edge: short
+        scale: 256
+        type: ResizeEdge
+      - crop_size: 224
+        type: CenterCrop
+      - type: PackInputs
+model:
+  otx_model:
+    config:
+      backbone:
+        version: b0
+        pretrained: true
+        type: OTXEfficientNet
+      head:
+        num_multiclass_heads: 0
+        num_multilabel_classes: 0
+        in_channels: 1280
+        num_classes: 1000
+        multiclass_loss_cfg:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+        multilabel_loss_cfg:
+          reduction: sum
+          gamma_neg: 1.0
+          gamma_pos: 0.0
+          type: AsymmetricAngularLossWithIgnore
+        type: CustomHierarchicalClsHead
+      neck:
+        type: GlobalAveragePooling
+      data_preprocessor:
+        mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: False
+        type: ClsDataPreprocessor
+      type: ImageClassifier
+  optimizer:
+    _target_: torch.optim.SGD
+    lr: 0.0049
+  scheduler:
+    factor: 0.5
+    patience: 1

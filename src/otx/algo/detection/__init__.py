@@ -3,5 +3,6 @@
 """Custom model implementations for detection task."""
 
 from . import backbones, heads
+from .ssd import SSD
 
-__all__ = ["backbones", "heads"]
+__all__ = ["backbones", "heads", "SSD"]

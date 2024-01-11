@@ -20,3 +20,4 @@ model:
       model_type: Classification
       head:
         num_classes: 1000
+    num_classes: 1000

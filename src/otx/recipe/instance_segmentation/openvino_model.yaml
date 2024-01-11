@@ -18,3 +18,4 @@ model:
       model_type: MaskRCNN
       async_inference: True
       use_throughput_mode: True
+    num_classes: 80

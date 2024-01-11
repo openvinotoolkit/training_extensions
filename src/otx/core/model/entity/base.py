@@ -5,31 +5,68 @@
 
 from __future__ import annotations
 
+import warnings
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 from torch import nn
 
+from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
 from otx.core.utils.build import get_default_async_reqs_num
+from otx.core.types.export import OTXExportFormat
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import torch
     from omegaconf import DictConfig
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
-    """Base class for the models used in OTX."""
+    """Base class for the models used in OTX.
 
-    def __init__(self) -> None:
+    Args:
+        num_classes: Number of classes this model can predict.
+    """
+
+    def __init__(self, num_classes: int) -> None:
         super().__init__()
-        self.classification_layers: list[str] = []
+
+        self._label_info = LabelInfo.from_num_classes(num_classes)
+        self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get this model label information."""
+        return self._label_info
+
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set this model label information."""
+        if isinstance(label_info, list):
+            label_info = LabelInfo(label_names=label_info)
+
+        old_num_classes = self._label_info.num_classes
+        new_num_classes = label_info.num_classes
+
+        if old_num_classes != new_num_classes:
+            msg = (
+                f"Given LabelInfo has the different number of classes "
+                f"({old_num_classes}!={new_num_classes}). "
+                "The model prediction layer is reset to the new number of classes "
+                f"(={new_num_classes})."
+            )
+            warnings.warn(msg, stacklevel=0)
+            self._reset_prediction_layer(num_classes=label_info.num_classes)
+
+        self._label_info = label_info
 
     @abstractmethod
     def _create_model(self) -> nn.Module:
@@ -80,12 +117,22 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Modify input state_dict according to class name matching before weight loading."""
         model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
 
-        for param_name in self.classification_layers:
+        for param_name, info in self.classification_layers.items():
             model_param = self.state_dict()[param_name].clone()
             ckpt_param = state_dict[prefix + param_name]
-            for model_t, ckpt_t in enumerate(model2ckpt):
-                if ckpt_t >= 0:
-                    model_param[model_t].copy_(ckpt_param[ckpt_t])
+            stride = info.get("stride", 1)
+            num_extra_classes = info.get("num_extra_classes", 0)
+            for model_dst, ckpt_dst in enumerate(model2ckpt):
+                if ckpt_dst >= 0:
+                    model_param[(model_dst) * stride : (model_dst + 1) * stride].copy_(
+                        ckpt_param[(ckpt_dst) * stride : (ckpt_dst + 1) * stride],
+                    )
+            if num_extra_classes > 0:
+                num_ckpt_class = len(self.ckpt_classes)
+                num_model_class = len(self.model_classes)
+                model_param[(num_model_class) * stride : (num_model_class + 1) * stride].copy_(
+                    ckpt_param[(num_ckpt_class) * stride : (num_ckpt_class + 1) * stride],
+                )
 
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
@@ -109,6 +156,59 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             else:
                 src2dst.append(-1)
         return src2dst
+
+    def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+        """
+        if export_format == OTXExportFormat.OPENVINO:
+            self._export_to_openvino(output_dir)
+        if export_format == OTXExportFormat.ONNX:
+            self._export_to_onnx()
+        if export_format == OTXExportFormat.EXPORTABLE_CODE:
+            self._export_to_exportable_code()
+
+    def _export_to_openvino(self, output_dir: Path) -> None:
+        """Export to OpenVINO Intermediate Representation format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def _export_to_onnx(self) -> None:
+        """Export to ONNX format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def _export_to_exportable_code(self) -> None:
+        """Export to exportable code format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def register_explain_hook(self) -> None:
+        """Register explain hook.
+
+        TBD
+        """
+        raise NotImplementedError
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        """Reset its prediction layer with a given number of classes.
+
+        Args:
+            num_classes: Number of classes
+        """
+        raise NotImplementedError
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):

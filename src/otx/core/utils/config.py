@@ -6,13 +6,12 @@
 from __future__ import annotations
 
 from numbers import Number
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from mmengine.config import Config as MMConfig
-from omegaconf import OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 
 if TYPE_CHECKING:
-    from omegaconf import DictConfig
+    from mmengine.config import Config as MMConfig
 
 
 def to_tuple(dict_: dict) -> dict:
@@ -48,6 +47,8 @@ def convert_conf_to_mmconfig_dict(
     to: Literal["tuple", "list"] = "tuple",
 ) -> MMConfig:
     """Convert OTX format config object to MMEngine config object."""
+    from mmengine.config import Config as MMConfig
+
     dict_cfg = OmegaConf.to_container(cfg)
 
     if to == "tuple":
@@ -66,3 +67,29 @@ def mmconfig_dict_to_dict(obj: MMConfig | list[MMConfig]) -> list | dict:
         return {k: mmconfig_dict_to_dict(v) for k, v in obj.to_dict().items()}
 
     return obj
+
+
+def inplace_num_classes(
+    cfg: DictConfig | ListConfig | Any,  # noqa: ANN401
+    num_classes: int,
+) -> DictConfig | ListConfig | Any:  # noqa: ANN401
+    """Inplace the number of classes values in a given config object.
+
+    Args:
+        cfg: Config object to inplace the number of classes values
+        num_classes: Number of classes to inplace
+    Returns:
+        Inplaced config object
+    """
+    if isinstance(cfg, DictConfig):
+        for key in cfg:
+            if key == "num_classes" and isinstance(cfg[key], int):
+                cfg[key] = num_classes
+            else:
+                cfg[key] = inplace_num_classes(cfg[key], num_classes)
+
+    if isinstance(cfg, ListConfig):
+        for idx in range(len(cfg)):
+            cfg[idx] = inplace_num_classes(cfg[idx], num_classes)
+
+    return cfg

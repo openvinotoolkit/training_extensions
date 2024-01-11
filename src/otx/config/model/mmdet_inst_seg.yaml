@@ -1,3 +1,6 @@
+defaults:
+  - default
+
 _target_: otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule
 
 optimizer:
