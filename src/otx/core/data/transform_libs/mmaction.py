@@ -177,12 +177,15 @@ class PackActionInputs(MMPackActionInputs):
         transformed = super().transform(results)
         image = tv_tensors.Image(transformed.get("inputs"))
         data_samples = transformed["data_samples"]
+        if (otx_data_entity := results.get("__otx__")) is None:
+            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
+            raise RuntimeError(msg)
 
         ori_shape = results["original_shape"]
         img_shape = data_samples.img_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
-        attributes = data_samples.metainfo.get("attributes", {})
+        attributes = otx_data_entity.img_info.attributes
         image_info = ImageInfo(
             img_idx=0,
             img_shape=img_shape,

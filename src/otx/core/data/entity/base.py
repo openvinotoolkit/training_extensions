@@ -23,16 +23,11 @@ from otx.core.types.task import OTXTaskType
 class ImageInfo(tv_tensors.TVTensor):
     """Meta info for image.
 
-    :param img_id: Image id
-    :param img_shape: Image shape after preprocessing
-    :param ori_shape: Image shape right after loading it
-    :param pad_shape: Image shape before padding
-    :param scale_factor: Scale factor if the image is rescaled during preprocessing
-    :param attributes: Image attributes
     Attributes:
         img_id: Image id
         img_shape: Image shape (heigth, width) after preprocessing
         ori_shape: Image shape (heigth, width) right after loading it
+        attributes: Image attributes
         padding: Number of pixels to pad all borders (left, top, right, bottom)
         scale_factor: Scale factor (height, width) if the image is resized during preprocessing.
             Default value is `(1.0, 1.0)` when there is no resizing. However, if the image is cropped,

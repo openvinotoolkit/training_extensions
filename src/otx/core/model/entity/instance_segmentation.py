@@ -37,10 +37,10 @@ class OTXInstanceSegModel(
         """Unpack instance segmentation tiles.
 
         Args:
-            inputs (TileBatchInstSegDataEntity): _description_
+            inputs (TileBatchInstSegDataEntity): Tile batch data entity.
 
         Returns:
-            InstanceSegBatchPredEntity: _description_
+            InstanceSegBatchPredEntity: Merged instance segmentation prediction.
         """
         pred_entities = []
         for tiles, tile_infos, bboxes, masks, polygons, labels in zip(

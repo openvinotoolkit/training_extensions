@@ -33,10 +33,10 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         """Unpack detection tiles.
 
         Args:
-            inputs (TileBatchDetDataEntity):
+            inputs (TileBatchDetDataEntity): Tile batch data entity.
 
         Returns:
-            DetBatchPredEntity: _description_
+            DetBatchPredEntity: Merged detection prediction.
         """
         pred_entities = []
         for tiles, tile_infos, bboxes, labels in zip(
