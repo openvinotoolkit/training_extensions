@@ -29,9 +29,15 @@ class OTXSegmentationLitModule(OTXLitModule):
         torch_compile: bool,
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        num_classes = otx_model.config.get("decode_head", {}).get("num_classes", None)
+        if num_classes is None:
+            msg = """JaccardIndex metric cannot be used with num_classes = None.
+            Please, specify number of classes in config."""
+            raise RuntimeError(msg)
+
         metric_params = {
             "task": "multiclass",
-            "num_classes": otx_model.model.decode_head.num_classes,
+            "num_classes": num_classes,
             "ignore_index": 255,
         }
 

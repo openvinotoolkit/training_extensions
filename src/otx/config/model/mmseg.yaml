@@ -14,6 +14,7 @@ scheduler:
 otx_model:
   _target_: otx.core.model.entity.segmentation.MMSegCompatibleModel
   config: ???
+  num_classes: ???
 
 # compile model for faster training with pytorch 2.0
 torch_compile: false

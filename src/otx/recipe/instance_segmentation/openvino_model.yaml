@@ -1,0 +1,17 @@
+# @package _global_
+defaults:
+  - override /base: instance_segmentation
+  - override /callbacks: instance_segmentation
+  - override /data: openvino
+  - override /model: mmdet_inst_seg
+
+data:
+  data_format: coco_instances
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.instance_segmentation.OVInstanceSegCompatibleModel
+    config:
+      model_name: yolact-resnet50-fpn-pytorch
+      model_type: YOLACT
+    num_classes: 80

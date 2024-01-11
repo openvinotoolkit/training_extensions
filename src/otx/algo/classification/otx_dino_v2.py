@@ -11,7 +11,10 @@ import torch
 from torch import nn
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
+from otx.core.data.entity.classification import (
+    MulticlassClsBatchDataEntity,
+    MulticlassClsBatchPredEntity,
+)
 from otx.core.model.entity.classification import OTXMulticlassClsModel
 
 if TYPE_CHECKING:
@@ -62,9 +65,9 @@ class DINOv2(nn.Module):
 class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
         self.config = config
-        super().__init__()  # create the model
+        super().__init__(num_classes=num_classes)  # create the model
 
     def _create_model(self) -> nn.Module:
         """Create the model."""
@@ -77,10 +80,10 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         """Customize the inputs for the model."""
-        inputs: dict[str, Any] = {}
-        inputs["imgs"] = torch.stack(entity.images)
-        inputs["labels"] = torch.cat(entity.labels)
-        return inputs
+        return {
+            "imgs": entity.stacked_images,
+            "labels": torch.cat(entity.labels),
+        }
 
     def _customize_outputs(
         self,

@@ -5,11 +5,48 @@ from __future__ import annotations
 
 import pytest
 import torch
+from mmpretrain.structures import DataSample
 from omegaconf import DictConfig
+from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.classification import HLabelInfo, MulticlassClsBatchDataEntity
 from torchvision import tv_tensors
 
-from src.otx.core.data.entity.base import ImageInfo
-from src.otx.core.data.entity.classification import MulticlassClsBatchDataEntity
+
+@pytest.fixture()
+def fxt_data_sample() -> DataSample:
+    data_sample = DataSample(
+        img_shape=(24, 24, 3),
+        gt_label=torch.zeros(6, dtype=torch.long),
+    )
+    return [data_sample, data_sample]
+
+
+@pytest.fixture()
+def fxt_hlabel_info() -> HLabelInfo:
+    return HLabelInfo(
+        num_multiclass_heads=3,
+        num_multilabel_classes=0,
+        head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},
+        num_single_label_classes=6,
+        empty_multiclass_head_indices=[],
+        class_to_group_idx={
+            "0": (0, 0),
+            "1": (0, 1),
+            "2": (1, 0),
+            "3": (1, 1),
+            "4": (2, 0),
+            "5": (2, 1),
+        },
+        all_groups=[["0", "1"], ["2", "3"], ["4", "5"]],
+        label_to_idx={
+            "0": 0,
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+        },
+    )
 
 
 @pytest.fixture()
@@ -17,16 +54,7 @@ def fxt_multiclass_cls_batch_data_entity() -> MulticlassClsBatchDataEntity:
     batch_size = 2
     random_tensor = torch.randn((batch_size, 3, 224, 224))
     tv_tensor = tv_tensors.Image(data=random_tensor)
-    img_infos = [
-        ImageInfo(
-            img_idx=i,
-            img_shape=(224, 224),
-            ori_shape=(224, 224),
-            pad_shape=(0, 0),
-            scale_factor=(1.0, 1.0),
-        )
-        for i in range(batch_size)
-    ]
+    img_infos = [ImageInfo(img_idx=i, img_shape=(224, 224), ori_shape=(224, 224)) for i in range(batch_size)]
     return MulticlassClsBatchDataEntity(
         batch_size=2,
         images=tv_tensor,

@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from torchvision import tv_tensors
+
 from otx.core.types.task import OTXTaskType
 
 from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
@@ -15,7 +17,6 @@ from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPred
 if TYPE_CHECKING:
     from datumaro import Polygon
     from torch import LongTensor
-    from torchvision import tv_tensors
 
 
 @dataclass
@@ -86,6 +87,14 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
             labels=[entity.labels for entity in entities],
             polygons=[entity.polygons for entity in entities],
         )
+
+    def pin_memory(self) -> InstanceSegBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
+        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
 
 
 @dataclass

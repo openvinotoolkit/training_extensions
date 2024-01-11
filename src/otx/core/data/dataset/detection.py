@@ -33,15 +33,12 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
             if len(bbox_anns) > 0
             else np.zeros((0, 4), dtype=np.float32)
         )
-
         entity = DetDataEntity(
             image=img_data,
             img_info=ImageInfo(
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
-                pad_shape=img_shape,
-                scale_factor=(1.0, 1.0),
                 attributes=item.attributes,
             ),
             bboxes=tv_tensors.BoundingBoxes(

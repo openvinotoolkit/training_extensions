@@ -182,8 +182,16 @@ class PackActionInputs(MMPackActionInputs):
         img_shape = data_samples.img_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
+        image_info = ImageInfo(
+            img_idx=0,
+            img_shape=img_shape,
+            ori_shape=ori_shape,
+            scale_factor=scale_factor,
+        )
+        image_info.pad_shape = pad_shape
 
-        labels = results["__otx__"].labels
+        data_entity: ActionClsDataEntity | ActionDetDataEntity = results["__otx__"]
+        labels = data_entity.labels
 
         if "gt_bboxes" in results:
             proposals = tv_tensors.BoundingBoxes(
@@ -199,13 +207,7 @@ class PackActionInputs(MMPackActionInputs):
 
             return ActionDetDataEntity(
                 image=image,
-                img_info=ImageInfo(
-                    img_idx=0,
-                    img_shape=img_shape,
-                    ori_shape=ori_shape,
-                    pad_shape=pad_shape,
-                    scale_factor=scale_factor,
-                ),
+                img_info=image_info,
                 bboxes=bboxes,
                 labels=labels,
                 proposals=proposals,
@@ -215,15 +217,11 @@ class PackActionInputs(MMPackActionInputs):
         return ActionClsDataEntity(
             video=results["__otx__"].video,
             image=image,
-            img_info=ImageInfo(
-                img_idx=0,
-                img_shape=img_shape,
-                ori_shape=ori_shape,
-                pad_shape=pad_shape,
-                scale_factor=scale_factor,
-            ),
+            img_info=image_info,
             labels=labels,
         )
+
+        return data_entity
 
 
 class MMActionTransformLib:

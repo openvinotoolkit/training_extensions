@@ -37,7 +37,6 @@ class TorchVisionTransformLib:
         transforms = []
         for cfg in config.transforms:
             transform = hydra.utils.instantiate(cfg)
-
             if type(transform) not in availables:
                 msg = f"transform={transform} is not a valid TorchVision V2 transform"
                 raise ValueError(msg)

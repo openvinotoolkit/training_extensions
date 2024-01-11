@@ -119,7 +119,7 @@ model:
           - 58.395
           - 57.12
           - 57.375
-        bgr_to_rgb: true
+        bgr_to_rgb: false
         pad_size_divisor: 32
       backbone:
         type: CSPDarknet

@@ -63,7 +63,7 @@ model:
           - 58.395
           - 57.12
           - 57.375
-        to_rgb: True
+        to_rgb: False
         type: ClsDataPreprocessor
       type: ImageClassifier
   optimizer:

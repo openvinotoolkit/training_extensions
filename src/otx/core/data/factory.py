@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
+    from otx.core.data.mem_cache import MemCacheHandlerBase
 
 
 __all__ = ["TransformLibFactory", "OTXDatasetFactory"]
@@ -48,11 +49,6 @@ class TransformLibFactory:
 
             return MMDetTransformLib.generate(config)
 
-        if config.transform_lib_type == TransformLibType.MMDET_INST_SEG:
-            from .transform_libs.mmdet_inst_seg import MMDetInstSegTransformLib
-
-            return MMDetInstSegTransformLib.generate(config)
-
         if config.transform_lib_type == TransformLibType.MMSEG:
             from .transform_libs.mmseg import MMSegTransformLib
 
@@ -74,6 +70,7 @@ class OTXDatasetFactory:
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DatasetSubset,
+        mem_cache_handler: MemCacheHandlerBase,
         cfg_subset: SubsetConfig,
         cfg_data_module: DataModuleConfig | InstSegDataModuleConfig,
     ) -> OTXDataset:
@@ -85,6 +82,7 @@ class OTXDatasetFactory:
             dataset = OTXMulticlassClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -92,6 +90,16 @@ class OTXDatasetFactory:
             from .dataset.classification import OTXMultilabelClsDataset
 
             dataset = OTXMultilabelClsDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
+
+        if task == OTXTaskType.H_LABEL_CLS:
+            from .dataset.classification import OTXHlabelClsDataset
+
+            return OTXHlabelClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
@@ -103,6 +111,7 @@ class OTXDatasetFactory:
             dataset = OTXDetectionDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -114,6 +123,7 @@ class OTXDatasetFactory:
             dataset = OTXInstanceSegDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
                 include_polygons=include_polygons,
             )
@@ -124,6 +134,7 @@ class OTXDatasetFactory:
             dataset = OTXSegmentationDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -133,6 +144,7 @@ class OTXDatasetFactory:
             dataset = OTXActionClsDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
@@ -142,6 +154,7 @@ class OTXDatasetFactory:
             dataset = OTXActionDetDataset(
                 dm_subset=dm_subset,
                 transforms=transforms,
+                mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
