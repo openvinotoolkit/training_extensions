@@ -88,6 +88,10 @@ class TestModule:
         fxt_real_tv_cls_config,
         tmpdir,
     ) -> None:
+        # Dataset will have "train", "val", and "test" subsets
+        mock_dm_subsets = {name: MagicMock() for name in ["train", "val", "test"]}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+
         module = OTXDataModule(task=OTXTaskType.MULTI_CLASS_CLS, config=fxt_real_tv_cls_config)
         logger = CSVLogger(tmpdir)
         logger.log_hyperparams(module.hparams_initial)
