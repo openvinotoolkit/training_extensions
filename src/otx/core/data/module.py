@@ -5,14 +5,13 @@
 from __future__ import annotations
 
 import logging as log
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from datumaro import Dataset as DmDataset
-from datumaro.components.annotation import AnnotationType
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
+from otx.core.data.dataset.base import DataMetaInfo
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
@@ -22,23 +21,7 @@ from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
-
-    from .dataset.base import OTXDataset
-
-
-@dataclass
-class DataMetaInfo:
-    """Meta information of OTXDataModule.
-
-    This meta information will be used by OTXLitModule.
-    """
-
-    class_names: list[str]
-
-    @property
-    def num_classes(self) -> int:
-        """Return number of classes."""
-        return len(self.class_names)
+    from otx.core.data.dataset.base import OTXDataset
 
 
 class OTXDataModule(LightningDataModule):
@@ -64,9 +47,6 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
-        self.meta_info = DataMetaInfo(
-            class_names=[category.name for category in dataset.categories()[AnnotationType.label]],
-        )
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -85,6 +65,7 @@ class OTXDataModule(LightningDataModule):
             mem_size=mem_size,
         )
 
+        meta_infos: list[DataMetaInfo] = []
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -97,7 +78,21 @@ class OTXDataModule(LightningDataModule):
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,
             )
+
+            meta_infos += [self.subsets[name].meta_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
+
+        if self._is_meta_info_valid(meta_infos) is False:
+            msg = "All data meta infos of subsets should be the same."
+            raise ValueError(msg)
+
+        self.meta_info = next(iter(meta_infos))
+
+    def _is_meta_info_valid(self, meta_infos: list[DataMetaInfo]) -> bool:
+        """Check whether there are mismatches in the metainfo for the all subsets."""
+        if all(meta_info == meta_infos[0] for meta_info in meta_infos):
+            return True
+        return False
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:

@@ -6,15 +6,17 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 from lightning import LightningModule
 from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
-from otx.core.data.module import DataMetaInfo
 from otx.core.model.entity.base import OTXModel
+
+if TYPE_CHECKING:
+    from otx.core.data.dataset.base import DataMetaInfo
 
 
 class OTXLitModule(LightningModule):
@@ -33,7 +35,6 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
-        self._meta_info: DataMetaInfo | None = None
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -136,6 +137,7 @@ class OTXLitModule(LightningModule):
         load_state_pre_hook for smart weight loading will be registered.
         """
         ckpt_meta_info = state_dict.pop("meta_info", None)
+
         if ckpt_meta_info and self.meta_info is None:
             msg = (
                 "`state_dict` to load has `meta_info`, but the current model has no `meta_info`. "
