@@ -5,11 +5,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, List, Union
 
 import numpy as np
 import torch
 from datumaro import Polygon
+from mmcv.transforms import BaseTransform
 from mmdet.datasets.transforms import LoadAnnotations as MMDetLoadAnnotations
 from mmdet.datasets.transforms import PackDetInputs as MMDetPackDetInputs
 from mmdet.registry import TRANSFORMS
@@ -205,6 +206,42 @@ class PackDetInputs(MMDetPackDetInputs):
         polygons = [Polygon(polygon[0]) for polygon in masks.masks] if isinstance(masks, PolygonMasks) else []
 
         return masks_tensor, polygons
+    
+    
+@TRANSFORMS.register_module()
+class PerturbBoundingBoxes(BaseTransform):
+    """Perturb bounding boxes with random offset values.
+    
+    Args:
+        offset (Union[int, List[int]]): Offset value(s) to be used for bounding boxes perturbation.
+            If given offset argument is single integer, it will be converted a list with [offset] * 4.
+            This list consists of offsets of x1, y1, x2, and y2 for perturbation.
+    """
+    def __init__(self, offset: Union[int, List[int]]):
+        self.offset = [offset] * 4 if isinstance(offset, int) else offset
+        
+    def transform(self, results: dict) -> dict:
+        height, width = results["img_shape"]
+        perturb_scale = np.minimum(np.array([width, height] * 2) * 0.1, self.offset)
+        
+        perturbed_bboxes: List[np.ndarray] = []
+        for bbox in results["gt_bboxes"]:
+            perturbed_bbox = self.get_perturbed_bbox(bbox, perturb_scale)
+            perturbed_bboxes.append(perturbed_bbox)
+        results["gt_bboxes"] = np.stack(perturbed_bboxes, axis=0)
+        return results
+    
+    def get_perturbed_bbox(self, bbox: np.ndarray, perturb_scale: np.ndarray, trials: int = 10):
+        for trial in range(trials):
+            perturbed_bbox = bbox + np.random.normal(0, perturb_scale - trial, size=4)
+            if self._is_valid_bbox(perturbed_bbox):
+                return perturbed_bbox
+        return bbox # if not perturbed during trials
+    
+    def _is_valid_bbox(self, perturbed_bbox: np.ndarray) -> np.ndarray:
+        if (perturbed_bbox[0] < perturbed_bbox[2]) and (perturbed_bbox[1] < perturbed_bbox[3]):
+            return True
+        return False
 
 
 class MMDetTransformLib(MMCVTransformLib):
