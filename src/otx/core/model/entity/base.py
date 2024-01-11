@@ -8,6 +8,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, List, Tuple
 
+import onnx
 import openvino
 import torch
 from torch import nn
@@ -130,9 +131,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
         elif format == OTXExportFormatType.ONNX:
             torch.onnx.export(self.model, dummy_tensor, save_path)
+            onnx_model = onnx.load(save_path)
+            onnx_model = self._embed_model_metadata(onnx_model)
             if precision == OTXExportPrecisionType.FP16:
-                import onnx
                 from onnxconverter_common import float16
-                tmp_model = onnx.load(save_path)
-                model_fp16 = float16.convert_float_to_float16(tmp_model)
-                onnx.save(model_fp16, save_path)
+                onnx_model = float16.convert_float_to_float16(onnx_model)
+            onnx.save(onnx_model, save_path)
