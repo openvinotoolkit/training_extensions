@@ -13,7 +13,7 @@ from datumaro import Image, Label
 from datumaro.components.annotation import AnnotationType
 from torch.nn import functional
 
-from otx.core.data.dataset.base import DataMetaInfo, OTXDataset
+from otx.core.data.dataset.base import LabelInfo, OTXDataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -27,7 +27,7 @@ from otx.core.data.entity.classification import (
 
 
 @dataclass
-class HLabelMetaInfo(DataMetaInfo):
+class HLabelMetaInfo(LabelInfo):
     """Meta information of hlabel classification."""
 
     hlabel_info: HLabelInfo
@@ -110,7 +110,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         # Hlabel classification used HLabelMetaInfo to insert the HLabelInfo.
         self.meta_info = HLabelMetaInfo(
-            class_names=[category.name for category in self.dm_categories],
+            label_names=[category.name for category in self.dm_categories],
             hlabel_info=HLabelInfo.from_dm_label_groups(self.dm_categories),
         )
 

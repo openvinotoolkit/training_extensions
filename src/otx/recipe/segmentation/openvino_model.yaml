@@ -15,3 +15,4 @@ model:
       model_name: drn-d-38
       decode_head:
         num_classes: 19
+    num_classes: 19

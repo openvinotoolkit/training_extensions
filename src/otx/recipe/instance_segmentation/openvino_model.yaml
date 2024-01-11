@@ -14,3 +14,4 @@ model:
     config:
       model_name: yolact-resnet50-fpn-pytorch
       model_type: YOLACT
+    num_classes: 80

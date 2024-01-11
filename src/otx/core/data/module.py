@@ -12,7 +12,7 @@ from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 
-from otx.core.data.dataset.base import DataMetaInfo
+from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
@@ -68,7 +68,7 @@ class OTXDataModule(LightningDataModule):
             mem_size=mem_size,
         )
 
-        meta_infos: list[DataMetaInfo] = []
+        meta_infos: list[LabelInfo] = []
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -91,7 +91,7 @@ class OTXDataModule(LightningDataModule):
 
         self.meta_info = next(iter(meta_infos))
 
-    def _is_meta_info_valid(self, meta_infos: list[DataMetaInfo]) -> bool:
+    def _is_meta_info_valid(self, meta_infos: list[LabelInfo]) -> bool:
         """Check whether there are mismatches in the metainfo for the all subsets."""
         if all(meta_info == meta_infos[0] for meta_info in meta_infos):
             return True

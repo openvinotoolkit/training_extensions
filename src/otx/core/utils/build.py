@@ -8,7 +8,6 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from mmengine.logging import MMLogger
 from omegaconf import DictConfig
 
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
@@ -20,6 +19,7 @@ if TYPE_CHECKING:
 
 def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str | None = None) -> nn.Module:
     """Build a model by using the registry."""
+    from mmengine.logging import MMLogger
     from mmengine.runner import load_checkpoint
 
     from otx import algo  # noqa: F401

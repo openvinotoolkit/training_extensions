@@ -45,7 +45,6 @@ class BaseTest:
         fxt_num_repeat: int,
         fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
-        head_name: str,
     ) -> None:
         for seed in range(fxt_num_repeat):
             test_case = RegressionTestCase(
@@ -70,7 +69,7 @@ class BaseTest:
             with mlflow.start_run(tags=tags, run_name=run_name):
                 overrides = [
                     f"+recipe={test_case.model.task}/{test_case.model.name}",
-                    f"model.otx_model.config.{head_name}.num_classes={test_case.dataset.num_classes}",
+                    f"model.otx_model.num_classes={test_case.dataset.num_classes}",
                     f"data.data_root={data_root}",
                     f"data.data_format={test_case.dataset.data_format}",
                     f"base.output_dir={test_case.output_dir}",
@@ -152,7 +151,6 @@ class TestMultiClassCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
-            head_name="head",
         )
 
 
@@ -219,7 +217,6 @@ class TestMultilabelCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
-            head_name="head",
         )
 
 
@@ -271,7 +268,6 @@ class TestHlabelCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
-            head_name="head",
         )
 
 class TestObjectDetection(BaseTest):
@@ -338,5 +334,4 @@ class TestObjectDetection(BaseTest):
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
             tmpdir=tmpdir,
-            head_name="bbox_head",
         )

@@ -13,3 +13,4 @@ model:
     _target_: otx.core.model.entity.detection.OVDetectionCompatibleModel
     config:
       model_name: ssd300
+    num_classes: 20

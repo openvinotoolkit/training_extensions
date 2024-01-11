@@ -19,7 +19,7 @@ from otx.core.types.export import OTXExportFormat
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from otx.core.data.dataset.base import DataMetaInfo
+    from otx.core.data.dataset.base import LabelInfo
 
 
 class OTXLitModule(LightningModule):
@@ -151,10 +151,10 @@ class OTXLitModule(LightningModule):
             logger = logging.getLogger()
             logger.info(
                 f"Data classes from checkpoint: {ckpt_meta_info.class_names} -> "
-                f"Data classes from training data: {self.meta_info.class_names}",
+                f"Data classes from training data: {self.meta_info.label_names}",
             )
             self.register_load_state_dict_pre_hook(
-                self.meta_info.class_names,
+                self.meta_info.label_names,
                 ckpt_meta_info.class_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
@@ -165,16 +165,14 @@ class OTXLitModule(LightningModule):
         return "val/loss"
 
     @property
-    def meta_info(self) -> DataMetaInfo:
-        """Meta information of OTXLitModule."""
-        if self._meta_info is None:
-            err_msg = "meta_info is referenced before assignment"
-            raise ValueError(err_msg)
-        return self._meta_info
+    def label_info(self) -> LabelInfo:
+        """Get the member `OTXModel` label information."""
+        return self.model.label_info
 
-    @meta_info.setter
-    def meta_info(self, meta_info: DataMetaInfo) -> None:
-        self._meta_info = meta_info
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set the member `OTXModel` label information."""
+        self.model.label_info = label_info  # type: ignore[assignment]
 
     def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
         """Export the member `OTXModel` of this module to the specified output directory.
