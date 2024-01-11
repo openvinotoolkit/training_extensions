@@ -7,7 +7,7 @@ include_polygons: false
 
 train_subset:
   batch_size: 2
-  num_workers: 0
+  num_workers: 4
   transform_lib_type: MMDET
   transforms:
     - type: LoadImageFromFile
@@ -38,7 +38,7 @@ train_subset:
     - type: PackDetInputs
 val_subset:
   batch_size: 1
-  num_workers: 0
+  num_workers: 4
   transform_lib_type: MMDET
   transforms:
     - type: LoadImageFromFile
@@ -73,7 +73,7 @@ val_subset:
         - scale_factor
 test_subset:
   batch_size: 1
-  num_workers: 0
+  num_workers: 4
   transform_lib_type: MMDET
   transforms:
     - type: LoadImageFromFile

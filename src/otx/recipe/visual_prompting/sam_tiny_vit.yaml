@@ -25,3 +25,5 @@ model:
     _target_: torch.optim.Adam
     _partial_: true
     lr: 0.00001
+trainer:
+  max_epochs: 100
