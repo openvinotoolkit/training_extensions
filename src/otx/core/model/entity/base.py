@@ -5,14 +5,16 @@
 
 from __future__ import annotations
 
+import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Tuple
 
 import onnx
 import openvino
 import torch
 from torch import nn
 
+from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -21,16 +23,52 @@ from otx.core.data.entity.base import (
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import torch
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
-    """Base class for the models used in OTX."""
+    """Base class for the models used in OTX.
 
-    def __init__(self) -> None:
+    Args:
+        num_classes: Number of classes this model can predict.
+    """
+
+    _EXPORTED_MODEL_BASE_NAME = "exported_model"
+
+    def __init__(self, num_classes: int) -> None:
         super().__init__()
-        self.classification_layers: list[str] = []
+
+        self._label_info = LabelInfo.from_num_classes(num_classes)
+        self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get this model label information."""
+        return self._label_info
+
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set this model label information."""
+        if isinstance(label_info, list):
+            label_info = LabelInfo(label_names=label_info)
+
+        old_num_classes = self._label_info.num_classes
+        new_num_classes = label_info.num_classes
+
+        if old_num_classes != new_num_classes:
+            msg = (
+                f"Given LabelInfo has the different number of classes "
+                f"({old_num_classes}!={new_num_classes}). "
+                "The model prediction layer is reset to the new number of classes "
+                f"(={new_num_classes})."
+            )
+            warnings.warn(msg, stacklevel=0)
+            self._reset_prediction_layer(num_classes=label_info.num_classes)
+
+        self._label_info = label_info
 
     @abstractmethod
     def _create_model(self) -> nn.Module:
@@ -53,7 +91,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
-        # If customize_inputs is overrided
+        # If customize_inputs is overridden
         outputs = (
             self.model(**self._customize_inputs(inputs))
             if self._customize_inputs != OTXModel._customize_inputs
@@ -81,17 +119,26 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Modify input state_dict according to class name matching before weight loading."""
         model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
 
-        for param_name in self.classification_layers:
+        for param_name, info in self.classification_layers.items():
             model_param = self.state_dict()[param_name].clone()
             ckpt_param = state_dict[prefix + param_name]
-            for model_t, ckpt_t in enumerate(model2ckpt):
-                if ckpt_t >= 0:
-                    model_param[model_t].copy_(ckpt_param[ckpt_t])
+            stride = info.get("stride", 1)
+            num_extra_classes = info.get("num_extra_classes", 0)
+            for model_dst, ckpt_dst in enumerate(model2ckpt):
+                if ckpt_dst >= 0:
+                    model_param[(model_dst) * stride : (model_dst + 1) * stride].copy_(
+                        ckpt_param[(ckpt_dst) * stride : (ckpt_dst + 1) * stride],
+                    )
+            if num_extra_classes > 0:
+                num_ckpt_class = len(self.ckpt_classes)
+                num_model_class = len(self.model_classes)
+                model_param[(num_model_class) * stride : (num_model_class + 1) * stride].copy_(
+                    ckpt_param[(num_ckpt_class) * stride : (num_ckpt_class + 1) * stride],
+                )
 
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
 
-    @staticmethod
     def map_class_names(src_classes: list[str], dst_classes: list[str]) -> list[int]:
         """Computes src to dst index mapping.
 
@@ -111,29 +158,105 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                 src2dst.append(-1)
         return src2dst
 
-    @abstractmethod
-    def _embed_model_metadata(self, model: Any, ) -> Any:
+    def export(self, output_dir: Path, export_format: OTXExportFormatType, input_size: Tuple[int, int],
+               precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32, mean: Tuple[float, float,float] = (0., 0., 0.),
+               std: Tuple[float, float,float] = (1., 1., 1.), resize_mode: str = "standard", pad_value: int = 0, swap_rgb: bool = False) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+        """
+
+        metadata = self._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+
+        if export_format == OTXExportFormatType.OPENVINO:
+            self._export_to_openvino(output_dir, input_size, precision, metadata)
+        if export_format == OTXExportFormatType.ONNX:
+            self._export_to_onnx(output_dir, input_size, precision, metadata)
+        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
+            self._export_to_exportable_code()
+
+    def _generate_model_metadata(self, mean: Tuple[float, float,float],
+                                 std: Tuple[float, float,float], resize_mode: str,
+                                 pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
         """Embeds metadata to the exported model"""
-        return model
+        #raise NotImplementedError
+        return {}
 
-    def export(self, input_size: Tuple[int, int], save_path: str, format: OTXExportFormatType = "OPENVINO",
-               precision: OTXExportPrecisionType = "FP32", mean: Tuple[float, float,float] = (0., 0., 0.),
-               std: Tuple[float, float,float] = (1., 1., 1.), resize_mode: str = "standard", pad_value: int = 0, swap_rgb: bool = False,
-               label_names: List[str] = [], label_ids: List[str] = []) -> None:
-        """Export model to a deployable format.
+    @staticmethod
+    def _embed_openvino_ir_metadata(ov_model: openvino.Model, metadata:  Dict[Tuple[str, str], Any]) -> openvino.Model:
+        """Embeds metadata to OpenVINO model"""
 
-        The resulting model is ready to be executed via ModelAPI."""
+        for k, data in metadata.items():
+            ov_model.set_rt_info(data, list(k))
 
+        return ov_model
+
+    def _export_to_openvino(self, output_dir: Path, input_size: Tuple[int, int],
+                            precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+                            metadata: Dict[Tuple[str, str], Any] = {}) -> None:
+        """Export to OpenVINO Intermediate Representation format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
         dummy_tensor = torch.rand((1, 3, *input_size)).to(next(self.model.parameters()).device)
-        if format == OTXExportFormatType.OPENVINO:
-            exported_model = openvino.convert_model(self.model, example_input=dummy_tensor)
-            exported_model = self._embed_model_metadata(exported_model)
-            openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
-        elif format == OTXExportFormatType.ONNX:
-            torch.onnx.export(self.model, dummy_tensor, save_path)
-            onnx_model = onnx.load(save_path)
-            onnx_model = self._embed_model_metadata(onnx_model)
-            if precision == OTXExportPrecisionType.FP16:
-                from onnxconverter_common import float16
-                onnx_model = float16.convert_float_to_float16(onnx_model)
-            onnx.save(onnx_model, save_path)
+        exported_model = openvino.convert_model(self.model, example_input=dummy_tensor)
+        exported_model = OTXModel._embed_openvino_ir_metadata(exported_model, metadata)
+        save_path = output_dir / (self._EXPORTED_MODEL_BASE_NAME + ".xml")
+        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        raise NotImplementedError
+
+    @staticmethod
+    def _embed_onnx_metadata(onnx_model: onnx.ModelProto, metadata: Dict[Tuple[str, str], Any]) -> onnx.ModelProto:
+        """Embeds metadata to ONNX model"""
+
+        for item in metadata:
+            meta = onnx_model.metadata_props.add()
+            attr_path = " ".join(map(str, item))
+            meta.key = attr_path.strip()
+            meta.value = str(metadata[item])
+
+        return onnx_model
+
+    def _export_to_onnx(self, output_dir: Path, input_size: Tuple[int, int],
+                        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+                        metadata: Dict[Tuple[str, str], Any] = {}) -> None:
+        """Export to ONNX format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        dummy_tensor = torch.rand((1, 3, *input_size)).to(next(self.model.parameters()).device)
+        save_path = str(output_dir / (self._EXPORTED_MODEL_BASE_NAME + ".onnx"))
+        torch.onnx.export(self.model, dummy_tensor, save_path)
+        onnx_model = onnx.load(save_path)
+        onnx_model = OTXModel._embed_onnx_metadata(onnx_model, metadata)
+        if precision == OTXExportPrecisionType.FP16:
+            from onnxconverter_common import float16
+            onnx_model = float16.convert_float_to_float16(onnx_model)
+        onnx.save(onnx_model, save_path)
+
+    def _export_to_exportable_code(self) -> None:
+        """Export to exportable code format.
+
+        Args:
+            output_dir: Directory path to save exported binary files
+        """
+        raise NotImplementedError
+
+    def register_explain_hook(self) -> None:
+        """Register explain hook.
+
+        TBD
+        """
+        raise NotImplementedError
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        """Reset its prediction layer with a given number of classes.
+
+        Args:
+            num_classes: Number of classes
+        """
+        raise NotImplementedError

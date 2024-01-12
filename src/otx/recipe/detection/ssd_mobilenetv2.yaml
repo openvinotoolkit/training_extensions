@@ -84,6 +84,7 @@ data:
           - pad_shape
 model:
   otx_model:
+    _target_: otx.algo.detection.ssd.SSD
     config:
       load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth
       train_cfg:

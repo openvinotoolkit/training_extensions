@@ -5,14 +5,14 @@
 from __future__ import annotations
 
 import logging as log
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from datumaro import Dataset as DmDataset
-from datumaro.components.annotation import AnnotationType
 from lightning import LightningDataModule
+from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 
+from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
@@ -21,24 +21,10 @@ from otx.core.data.mem_cache import (
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from lightning.pytorch.utilities.parsing import AttributeDict
+
     from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
-
-    from .dataset.base import OTXDataset
-
-
-@dataclass
-class DataMetaInfo:
-    """Meta information of OTXDataModule.
-
-    This meta information will be used by OTXLitModule.
-    """
-
-    class_names: list[str]
-
-    @property
-    def num_classes(self) -> int:
-        """Return number of classes."""
-        return len(self.class_names)
+    from otx.core.data.dataset.base import OTXDataset
 
 
 class OTXDataModule(LightningDataModule):
@@ -64,9 +50,6 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
-        self.meta_info = DataMetaInfo(
-            class_names=[category.name for category in dataset.categories()[AnnotationType.label]],
-        )
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -85,6 +68,7 @@ class OTXDataModule(LightningDataModule):
             mem_size=mem_size,
         )
 
+        meta_infos: list[LabelInfo] = []
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -97,7 +81,21 @@ class OTXDataModule(LightningDataModule):
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,
             )
+
+            meta_infos += [self.subsets[name].meta_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
+
+        if self._is_meta_info_valid(meta_infos) is False:
+            msg = "All data meta infos of subsets should be the same."
+            raise ValueError(msg)
+
+        self.meta_info = next(iter(meta_infos))
+
+    def _is_meta_info_valid(self, meta_infos: list[LabelInfo]) -> bool:
+        """Check whether there are mismatches in the metainfo for the all subsets."""
+        if all(meta_info == meta_infos[0] for meta_info in meta_infos):
+            return True
+        return False
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:
@@ -157,3 +155,19 @@ class OTXDataModule(LightningDataModule):
         """Teardown for each stage."""
         # clean up after fit or test
         # called on every process in DDP
+
+    @property
+    def hparams_initial(self) -> AttributeDict:
+        """The collection of hyperparameters saved with `save_hyperparameters()`. It is read-only.
+
+        The reason why we override is that we have some custom resolvers for `DictConfig`.
+        Some resolved Python objects has not a primitive type, so that is not loggable without errors.
+        Therefore, we need to unresolve it this time.
+        """
+        hp = super().hparams_initial
+        for key, value in hp.items():
+            if isinstance(value, DictConfig):
+                # It should be unresolved to make it loggable
+                hp[key] = OmegaConf.to_container(value, resolve=False)
+
+        return hp

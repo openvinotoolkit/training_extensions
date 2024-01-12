@@ -45,7 +45,6 @@ class BaseTest:
         fxt_num_repeat: int,
         fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
-        head_name: str,
     ) -> None:
         for seed in range(fxt_num_repeat):
             test_case = RegressionTestCase(
@@ -70,7 +69,7 @@ class BaseTest:
             with mlflow.start_run(tags=tags, run_name=run_name):
                 overrides = [
                     f"+recipe={test_case.model.task}/{test_case.model.name}",
-                    f"model.otx_model.config.{head_name}.num_classes={test_case.dataset.num_classes}",
+                    f"model.otx_model.num_classes={test_case.dataset.num_classes}",
                     f"data.data_root={data_root}",
                     f"data.data_format={test_case.dataset.data_format}",
                     f"base.output_dir={test_case.output_dir}",
@@ -107,6 +106,21 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={"trainer.max_epochs": "20"},
         )
         for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name=f"multiclass_CUB_medium",
+            data_root=Path("multiclass_CUB_medium"),
+            data_format="imagenet_with_subset_dirs",
+            num_classes=67,
+            extra_overrides={"trainer.max_epochs": "20"},
+        ),
+        DatasetTestCase(
+            name=f"multiclass_food101_large",
+            data_root=Path("multiclass_food101_large"),
+            data_format="imagenet_with_subset_dirs",
+            num_classes=20,
+            extra_overrides={"trainer.max_epochs": "20"},
+        )
     ]
 
     @pytest.mark.parametrize(
@@ -137,7 +151,6 @@ class TestMultiClassCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
-            head_name="head",
         )
 
 
@@ -154,6 +167,72 @@ class TestMultilabelCls(BaseTest):
         DatasetTestCase(
             name=f"multilabel_CUB_small_{idx}",
             data_root=Path("multilabel_CUB_small") / f"{idx}",
+            data_format="datumaro",
+            num_classes=3,
+            extra_overrides={"trainer.max_epochs": "20"},
+        )
+        for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name=f"multilabel_CUB_medium",
+            data_root=Path("multilabel_CUB_medium"),
+            data_format="datumaro",
+            num_classes=68,
+            extra_overrides={"trainer.max_epochs": "20"},
+        ),
+        DatasetTestCase(
+            name=f"multilabel_food101_large",
+            data_root=Path("multilabel_food101_large"),
+            data_format="datumaro",
+            num_classes=21,
+            extra_overrides={"trainer.max_epochs": "20"},
+        )
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )
+
+
+class TestHlabelCls(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="hlabel_classification", name="efficientnet_b0_light"),
+        ModelTestCase(task="hlabel_classification", name="efficientnet_v2_light"),
+        ModelTestCase(task="hlabel_classification", name="mobilenet_v3_large_light"),
+        ModelTestCase(task="hlabel_classification", name="otx_deit_tiny"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [  # noqa: RUF012
+        DatasetTestCase(
+            name=f"hlabel_CUB_small_{idx}",
+            data_root=Path("hlabel_CUB_small") / f"{idx}",
             data_format="datumaro",
             num_classes=3,
             extra_overrides={"trainer.max_epochs": "20"},
@@ -189,9 +268,7 @@ class TestMultilabelCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
-            head_name="head",
         )
-
 
 class TestObjectDetection(BaseTest):
     # Test case parametrization for model
@@ -214,25 +291,22 @@ class TestObjectDetection(BaseTest):
             extra_overrides={"trainer.max_epochs": "10"},
         )
         for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name="pothole_medium",
+            data_root="pothole_medium",
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={"trainer.max_epochs": "10"}
+        ),
+        DatasetTestCase(
+            name="vitens_large",
+            data_root="vitens_large",
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={"trainer.max_epochs": "10"}
+        )
     ]
-    DATASET_TEST_CASES.extend(
-        [
-            DatasetTestCase(
-                name="pothole_medium",
-                data_root="pothole_medium",
-                data_format="coco",
-                num_classes=1,
-                extra_overrides={"trainer.max_epochs": "10"}
-            ),
-            DatasetTestCase(
-                name="vitens_large",
-                data_root="vitens_large",
-                data_format="coco",
-                num_classes=1,
-                extra_overrides={"trainer.max_epochs": "10"}
-            ),
-        ]
-    )
 
     @pytest.mark.parametrize(
         "model_test_case",
@@ -260,5 +334,4 @@ class TestObjectDetection(BaseTest):
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
             tmpdir=tmpdir,
-            head_name="bbox_head",
         )

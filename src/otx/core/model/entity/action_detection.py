@@ -13,6 +13,7 @@ from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, Acti
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -31,10 +32,11 @@ class MMActionCompatibleModel(OTXActionDetModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         from mmaction.models.data_preprocessors import (
