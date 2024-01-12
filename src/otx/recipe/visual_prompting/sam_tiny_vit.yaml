@@ -25,5 +25,10 @@ model:
     _target_: torch.optim.Adam
     _partial_: true
     lr: 0.00001
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ConstantLR
+    _partial_: true
+    factor: 1
+    total_iters: -1
 trainer:
   max_epochs: 100
