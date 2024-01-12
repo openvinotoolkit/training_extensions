@@ -3,6 +3,7 @@
 
 
 import os
+import re
 import shutil
 import subprocess
 from datetime import datetime
@@ -93,6 +94,13 @@ def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.Tem
     return Path(output_root) / (data_str + "-" + commit_str)
 
 
+@pytest.fixture(scope="session")
+def fxt_working_branch() -> str:
+    """Git branch name for the current HEAD."""
+    branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
+    return branch
+
+
 @pytest.fixture
 def fxt_model_id(request: pytest.FixtureRequest) -> str:
     """Skip by model category."""
@@ -145,7 +153,9 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
     return benchmark
 
 
-def logging_perf_results_to_mlflow(version: str, git_hash: str, results: pd.DataFrame, client: "MlflowClient"):
+def logging_perf_results_to_mlflow(
+    version: str, branch: str, git_hash: str, results: pd.DataFrame, client: "MlflowClient"
+):
     class DummyDatasetSource(mlflow.data.DatasetSource):
         @staticmethod
         def _get_source_type():
@@ -160,10 +170,10 @@ def logging_perf_results_to_mlflow(version: str, git_hash: str, results: pd.Data
                 "source_type": base_dict["source_type"],
             }
 
-    exp_name = f"OTX Performance Benchmark"
+    exp_name = f"[{branch}] OTX Performance Benchmark"
     exp = client.get_experiment_by_name(exp_name)
     if exp is None:
-        exp_id = client.create_experiment(exp_name, tags={"Project": "OpenVINO Training Extensions"})
+        exp_id = client.create_experiment(exp_name, tags={"Project": "OpenVINO Training Extensions", "Branch": branch})
     else:
         exp_id = exp.experiment_id
 
@@ -213,11 +223,12 @@ def logging_perf_results_to_mlflow(version: str, git_hash: str, results: pd.Data
                     step = 0
                     if len(history) > 0:
                         step = history[-1].step + 1
-                    mlflow.log_metric(k, v, step=step)
+                    # set 'synchronous' to True to show the metric graph correctly
+                    mlflow.log_metric(k, v, step=step, synchronous=True)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_mlflow_client):
+def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_working_branch, fxt_mlflow_client):
     """Summarize all results at the end of test session."""
     yield
     all_results = OTXBenchmark.load_result(fxt_output_root)
@@ -230,10 +241,11 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path,
         all_results.to_csv(output_path, index=False)
         print(f"  -> Saved to {output_path}.")
 
-        # logging to the mlflow
-        version = VERSION
-        git_hash = str(fxt_output_root).split("-")[-1]
-        logging_perf_results_to_mlflow(version, git_hash, all_results, fxt_mlflow_client)
+        # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
+        if fxt_working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", fxt_working_branch)):
+            version = VERSION
+            git_hash = str(fxt_output_root).split("-")[-1]
+            logging_perf_results_to_mlflow(version, fxt_working_branch, git_hash, all_results, fxt_mlflow_client)
 
     if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
         shutil.rmtree(fxt_output_root)
