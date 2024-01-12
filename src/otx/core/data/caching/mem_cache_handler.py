@@ -5,10 +5,9 @@
 
 import ctypes as ct
 import multiprocessing as mp
+import os
 import signal
 import sys
-import os
-from functools import partial
 from multiprocessing.managers import DictProxy
 from typing import Any, Dict, Optional, Tuple, Union
 
