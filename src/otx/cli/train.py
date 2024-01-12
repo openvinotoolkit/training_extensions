@@ -64,7 +64,7 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
         trainer_kwargs = {**cfg.trainer}
         engine = Engine(
             task=cfg.base.task,
-            work_dir=cfg.base.work_dir,
+            work_dir=cfg.base.output_dir,
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,

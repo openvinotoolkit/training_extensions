@@ -43,6 +43,8 @@ def otx_test(overrides: list[str]) -> None:
 
         trainer_kwargs = {**cfg.trainer}
         engine = Engine(
+            task=cfg.base.task,
+            work_dir=cfg.base.output_dir,
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,
