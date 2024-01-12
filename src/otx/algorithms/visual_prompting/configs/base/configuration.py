@@ -44,6 +44,11 @@ class VisualPromptingBaseConfig(BaseConfig):
         description = header
 
     @attrs
+    class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
+        header = string_attribute("Parameters for the OTX algo-backend")
+        description = header
+
+    @attrs
     class __Postprocessing(ParameterGroup):
         header = string_attribute("Postprocessing")
         description = header
@@ -97,6 +102,36 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        mask_threshold = configurable_float(
+            default_value=0.0,
+            header="Mask threshold",
+            description=(
+                "The threshold to apply to the raw logit output of the model, for each pixel. "
+                "A higher value means a stricter segmentation prediction."
+            ),
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        sim_threshold = configurable_float(
+            default_value=0.65,
+            header="Similarity threshold",
+            description="The threshold to filter point candidates based on similarity scores.",
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        num_bg_points = configurable_integer(
+            default_value=1,
+            header="The number of background points",
+            description="The number of background points to be used as negative prompts.",
+            min_value=1,
+            max_value=1024,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
     @attrs
     class __POTParameter(BaseConfig.BasePOTParameter):
         header = string_attribute("POT Parameters")
@@ -112,5 +147,6 @@ class VisualPromptingBaseConfig(BaseConfig):
         )
 
     learning_parameters = add_parameter_group(__LearningParameters)
+    algo_backend = add_parameter_group(__AlgoBackend)
     postprocessing = add_parameter_group(__Postprocessing)
     pot_parameters = add_parameter_group(__POTParameter)

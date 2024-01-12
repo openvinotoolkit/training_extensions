@@ -250,12 +250,15 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
     path_to_xml = os.path.join(save_path, "openvino.xml")
     assert os.path.exists(os.path.join(save_path, "label_schema.json"))
     if not is_onnx:
-        if "Visual_Prompting" in template.model_template_id:
+        if any(map(lambda x: x in template.model_template_id, ("Visual_Prompting", "Zero_Shot"))):
             path_to_xml = os.path.join(save_path, "visual_prompting_decoder.xml")
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.xml"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.bin"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.xml"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.bin"))
+            if "Zero_Shot" in template.model_template_id:
+                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.xml"))
+                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.bin"))
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
@@ -266,9 +269,11 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
                     xml_model = xml_stream.read()
                     assert f"{input_size[1]},{input_size[0]}" in xml_model
     else:
-        if "Visual_Prompting" in template.model_template_id:
+        if any(map(lambda x: x in template.model_template_id, ("Visual_Prompting", "Zero_Shot"))):
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.onnx"))
+            if "Zero_Shot" in template.model_template_id:
+                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.onnx"))
         else:
             path_to_onnx = os.path.join(save_path, "model.onnx")
             assert os.path.exists(path_to_onnx)
@@ -337,14 +342,16 @@ def otx_eval_openvino_testing(
     args,
     threshold=0.0,
     half_precision=False,
+    is_visual_prompting=False,
 ):
     template_work_dir = get_template_dir(template, root)
-    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    weights_file = "visual_prompting_decoder" if is_visual_prompting else "openvino"
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/{weights_file}.xml"
     output_path = f"{template_work_dir}/exported_{template.model_template_id}"
     perf_path = f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
 
     if half_precision:
-        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/openvino.xml"
+        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/{weights_file}.xml"
         output_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16"
         perf_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/performance.json"
 
@@ -883,7 +890,7 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_all_classes(template, root, otx_dir, args):
@@ -973,7 +980,7 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".png" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".png", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
@@ -1014,7 +1021,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".tiff" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".tiff", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
@@ -1106,7 +1113,7 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
     assert os.path.exists(output_dir)
     if trained:
         assert len(os.listdir(output_dir)) > 0
-        assert all([os.path.splitext(fname)[1] == ".png" for fname in os.listdir(output_dir)])
+        assert all([os.path.splitext(fname)[1] in [".png", ".log"] for fname in os.listdir(output_dir)])
 
 
 def otx_find_testing():

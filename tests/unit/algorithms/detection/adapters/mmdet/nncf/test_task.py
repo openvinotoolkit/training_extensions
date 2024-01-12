@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from contextlib import nullcontext
 import os
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -11,11 +13,13 @@ from mmcv.utils import Config
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.detection.adapters.mmdet.nncf.task import DetectionNNCFTask
 from otx.api.configuration.helper import create
+from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
 from otx.api.entities.model_template import TaskType, parse_model_template
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.algorithms.detection.adapters.mmdet.test_task import MockDataLoader, MockDataset
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_TEMPLATE_DIR,
     generate_det_dataset,
@@ -31,6 +35,7 @@ class TestOTXDetTaskNNCF:
         task_env = init_environment(hyper_parameters, model_template)
         self.model = otx_model
         self.det_nncf_task = DetectionNNCFTask(task_env, output_path=str(tmp_dir_path))
+        self.dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
 
     @e2e_pytest_unit
     def test_save_model(self, mocker):
@@ -58,7 +63,6 @@ class TestOTXDetTaskNNCF:
     @e2e_pytest_unit
     def test_optimize(self, mocker):
         """Test optimize method in OTXDetTaskNNCF."""
-        self.dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
         mock_lcurve_val = OTXLoggerHook.Curve()
         mock_lcurve_val.x = [0, 1]
         mock_lcurve_val.y = [0.1, 0.2]
@@ -87,6 +91,38 @@ class TestOTXDetTaskNNCF:
         mock_run_task.assert_called_once()
         assert self.model.performance != NullPerformance()
         assert self.model.performance.score.value == 0.1
+
+    @e2e_pytest_unit
+    def test_infer(self, mocker) -> None:
+        """Test infer function."""
+
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.nncf.task.build_nncf_detector",
+            return_value=(None, MagicMock()),
+        )
+        mocker.patch(
+            "otx.algorithms.common.adapters.mmcv.utils.builder.build_dataset",
+            return_value=MockDataset(self.dataset, "det"),
+        )
+        mocker.patch(
+            "otx.algorithms.common.adapters.mmcv.utils.builder.build_dataloader",
+            return_value=MockDataLoader(self.dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
+            return_value=[
+                np.array([np.array([[0, 0, 1, 1, 0.1]]), np.array([[0, 0, 1, 1, 0.2]]), np.array([[0, 0, 1, 1, 0.7]])])
+            ],
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        inference_parameters = InferenceParameters(is_evaluation=True)
+        outputs = self.det_nncf_task.infer(self.dataset, inference_parameters)
+        for output in outputs:
+            assert output.get_annotations()[-1].get_labels()[0].probability == 0.7
 
     @e2e_pytest_unit
     def test_initialize(self, mocker):
