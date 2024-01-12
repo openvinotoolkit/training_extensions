@@ -239,7 +239,7 @@ class PerturbBoundingBoxes(BaseTransform):
         return bbox # if not perturbed during trials
     
     def _is_valid_bbox(self, perturbed_bbox: np.ndarray) -> np.ndarray:
-        if (perturbed_bbox[0] < perturbed_bbox[2]) and (perturbed_bbox[1] < perturbed_bbox[3]):
+        if (int(perturbed_bbox[0]) < int(perturbed_bbox[2])) and (int(perturbed_bbox[1]) < int(perturbed_bbox[3])):
             return True
         return False
 

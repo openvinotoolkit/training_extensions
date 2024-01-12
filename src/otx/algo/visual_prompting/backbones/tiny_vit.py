@@ -30,7 +30,7 @@ class Conv2d_BN(nn.Sequential):
         bn_weight_init: float = 1.0,
     ) -> None:
         super().__init__()
-        self.add_module("conv", nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias=False))
+        self.add_module("c", nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias=False))
         bn = nn.BatchNorm2d(out_channels)
         nn.init.constant_(bn.weight, bn_weight_init)
         nn.init.constant_(bn.bias, 0)
