@@ -5,6 +5,10 @@
 
 import ctypes as ct
 import multiprocessing as mp
+import signal
+import sys
+import os
+from functools import partial
 from multiprocessing.managers import DictProxy
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -145,6 +149,21 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
         self._cache_addr: DictProxy = self._manager.dict()
         self._lock = mp.Lock()
         self._freeze = mp.Value(ct.c_bool, False, lock=False)
+        self._main_pid = os.getpid()
+
+        signal.signal(signal.SIGINT, self._signal_handler_for_manager)
+        signal.signal(signal.SIGTERM, self._signal_handler_for_manager)
+
+    def _signal_handler_for_manager(self, signum, _frame):
+        # This code prevents child processses from being killed unintentionally by proccesses forked from main process
+        if self._main_pid != os.getpid():
+            sys.exit()
+
+        singal_name = {2: "SIGINT", 15: "SIGTERM"}
+        logger.warning(f"{singal_name[signum]} is sent. shutdown multiprocessing Manager.")
+
+        self._manager.shutdown()
+        sys.exit(1)
 
     def __del__(self):
         """When deleting, manager should also be shutdowned."""
