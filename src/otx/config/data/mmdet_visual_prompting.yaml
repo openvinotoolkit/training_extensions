@@ -15,13 +15,13 @@ train_subset:
     - type: LoadAnnotations
       with_bbox: true
       with_mask: false
-    - type: PerturbBoundingBoxes
-      offset: 20
     - type: Resize
       keep_ratio: true
       scale:
         - 1024
         - 1024
+    - type: PerturbBoundingBoxes
+      offset: 20
     - type: Normalize
       mean:
         - 123.675

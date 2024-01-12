@@ -219,21 +219,21 @@ class PerturbBoundingBoxes(BaseTransform):
     """
     def __init__(self, offset: Union[int, List[int]]):
         self.offset = [offset] * 4 if isinstance(offset, int) else offset
+        self.direction = np.array([-1, -1, 1, 1])
         
     def transform(self, results: dict) -> dict:
         height, width = results["img_shape"]
-        perturb_scale = np.minimum(np.array([width, height] * 2) * 0.1, self.offset)
-        
         perturbed_bboxes: List[np.ndarray] = []
         for bbox in results["gt_bboxes"]:
-            perturbed_bbox = self.get_perturbed_bbox(bbox, perturb_scale)
+            perturbed_bbox = self.get_perturbed_bbox(bbox, width, height)
             perturbed_bboxes.append(perturbed_bbox)
         results["gt_bboxes"] = np.stack(perturbed_bboxes, axis=0)
         return results
     
-    def get_perturbed_bbox(self, bbox: np.ndarray, perturb_scale: np.ndarray, trials: int = 10):
-        for trial in range(trials):
-            perturbed_bbox = bbox + np.random.normal(0, perturb_scale - trial, size=4)
+    def get_perturbed_bbox(self, bbox: np.ndarray, width: int, height: int, trials: int = 10):
+        for _ in range(trials):
+            perturbed_bbox = bbox + np.random.randint(0, self.offset, size=4) * self.direction
+            perturbed_bbox = np.clip(perturbed_bbox, [0, 0, 0, 0], [width-1, height-1, width-1, height-1])
             if self._is_valid_bbox(perturbed_bbox):
                 return perturbed_bbox
         return bbox # if not perturbed during trials
