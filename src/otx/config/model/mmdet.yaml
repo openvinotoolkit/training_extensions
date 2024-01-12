@@ -5,7 +5,6 @@ _target_: otx.core.model.module.detection.OTXDetectionLitModule
 
 otx_model:
   _target_: otx.core.model.entity.detection.MMDetCompatibleModel
-  config: ???
 
 # compile model for faster training with pytorch 2.0
 torch_compile: false
