@@ -25,3 +25,13 @@ export_config:
   resize_mode: standard
   pad_value: 0
   swap_rgb: false
+  input_height: 224
+  input_width: 224
+  mean:
+    - 0
+    - 0
+    - 0
+  std:
+    - 1
+    - 1
+    - 1
