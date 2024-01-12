@@ -6,16 +6,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 import hydra
 import logging as log
 from hydra import compose, initialize
-from jsonargparse import ArgumentParser
 from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
-
-if TYPE_CHECKING:
-    from jsonargparse._actions import _ActionSubCommands
 
 
 def otx_test(overrides: list[str]) -> None:

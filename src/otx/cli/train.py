@@ -10,13 +10,11 @@ import logging as log
 from typing import TYPE_CHECKING, Any
 import hydra
 from hydra import compose, initialize
-from jsonargparse import ArgumentParser
 from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 
 if TYPE_CHECKING:
-    from jsonargparse._actions import _ActionSubCommands
     from lightning import Callback
     from lightning.pytorch.loggers import Logger
 
@@ -65,6 +63,8 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
 
         trainer_kwargs = {**cfg.trainer}
         engine = Engine(
+            task=cfg.base.task,
+            work_dir=cfg.base.work_dir,
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -76,6 +76,7 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
         train_metrics = {}
 
         trainer_kwargs.pop("_target_", None)
+        trainer_kwargs.pop("default_root_dir", None)
         if cfg.train:
             train_metrics = engine.train(
                 callbacks=callbacks,
