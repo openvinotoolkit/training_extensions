@@ -21,6 +21,7 @@ model:
       freeze_image_encoder: true
       freeze_prompt_encoder: true
       freeze_mask_decoder: false
+    num_classes: 1
   optimizer:
     _target_: torch.optim.Adam
     _partial_: true

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity)
 from otx.core.model.entity.base import OTXModel
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -20,6 +21,7 @@ class OTXVisualPromptingModel(
 ):
     """Base class for the visual prompting models used in OTX."""
     
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, config: DictConfig, num_classes: int) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        super().__init__()
+        super().__init__(num_classes=num_classes)
