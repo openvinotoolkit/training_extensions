@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Tuple
-
 import json
+from typing import TYPE_CHECKING, Any
+
 import torch
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -35,9 +35,14 @@ class OTXMulticlassClsModel(
 ):
     """Base class for the classification models used in OTX."""
 
-    def _generate_model_metadata(self, mean: Tuple[float, float,float],
-                            std: Tuple[float, float,float], resize_mode: str,
-                            pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
+    def _generate_model_metadata(
+        self,
+        mean: tuple[float, float, float],
+        std: tuple[float, float, float],
+        resize_mode: str,
+        pad_value: int,
+        swap_rgb: bool,
+    ) -> dict[tuple[str, str], Any]:
         metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
         metadata[("model_info", "model_type")] = "Classification"
         metadata[("model_info", "task_type")] = "classification"
@@ -159,9 +164,14 @@ class OTXMultilabelClsModel(
 ):
     """Multi-label classification models used in OTX."""
 
-    def _generate_model_metadata(self, mean: Tuple[float, float,float],
-                                 std: Tuple[float, float,float], resize_mode: str,
-                                 pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
+    def _generate_model_metadata(
+        self,
+        mean: tuple[float, float, float],
+        std: tuple[float, float, float],
+        resize_mode: str,
+        pad_value: int,
+        swap_rgb: bool,
+    ) -> dict[tuple[str, str], Any]:
         metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
         metadata[("model_info", "model_type")] = "Classification"
         metadata[("model_info", "task_type")] = "classification"
@@ -257,9 +267,14 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
     """H-label classification models used in OTX."""
 
-    def _generate_model_metadata(self, mean: Tuple[float, float,float],
-                                 std: Tuple[float, float,float], resize_mode: str,
-                                 pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
+    def _generate_model_metadata(
+        self,
+        mean: tuple[float, float, float],
+        std: tuple[float, float, float],
+        resize_mode: str,
+        pad_value: int,
+        swap_rgb: bool,
+    ) -> dict[tuple[str, str], Any]:
         metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
         metadata[("model_info", "model_type")] = "Classification"
         metadata[("model_info", "task_type")] = "classification"

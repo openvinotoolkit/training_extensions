@@ -7,13 +7,12 @@ from __future__ import annotations
 
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Generic, NamedTuple, Tuple
+from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
+import numpy as np
 import onnx
 import openvino
 import torch
-
-import numpy as np
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -28,6 +27,7 @@ from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from pathlib import Path
+
     from omegaconf import DictConfig
 
 
