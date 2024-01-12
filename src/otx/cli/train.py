@@ -21,20 +21,6 @@ if TYPE_CHECKING:
     from lightning.pytorch.loggers import Logger
 
 
-def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
-    """Add subparser for train command.
-
-    Args:
-        subcommands_action (_ActionSubCommands): Sub-Command in CLI.
-
-    Returns:
-        None
-    """
-    parser = ArgumentParser()
-    parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
-    subcommands_action.add_subcommand("train", parser, help="Training subcommand for OTX")
-
-
 def otx_train(overrides: list[str]) -> dict[str, Any]:
     """Main entry point for training.
 

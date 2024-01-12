@@ -18,20 +18,6 @@ if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
 
-def add_test_parser(subcommands_action: _ActionSubCommands) -> None:
-    """Add subparser for test command.
-
-    Args:
-        subcommands_action (_ActionSubCommands): Sub-Command in CLI.
-
-    Returns:
-        None
-    """
-    parser = ArgumentParser()
-    parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
-    subcommands_action.add_subcommand("test", parser, help="Testing subcommand for OTX")
-
-
 def otx_test(overrides: list[str]) -> None:
     """Main entry point for testing.
 
