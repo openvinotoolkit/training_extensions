@@ -176,3 +176,8 @@ model:
     mode: min
     factor: 0.1
     patience: 10
+  export_config:
+    input_height: 544
+    input_width: 544
+    mean: ${..otx_model.config.data_preprocessor.mean}
+    std: ${..otx_model.config.data_preprocessor.std}

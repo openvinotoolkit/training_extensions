@@ -9,8 +9,8 @@ import logging as log
 import torch
 from torch import Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
-from otx.core.config.export import ExportConfig
 
+from otx.core.config.export import ExportConfig
 from otx.core.data.entity.action_detection import (
     ActionDetBatchDataEntity,
     ActionDetBatchPredEntity,

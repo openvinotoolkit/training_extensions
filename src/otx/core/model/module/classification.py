@@ -10,9 +10,9 @@ import torch
 from torch import Tensor
 from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy
-from otx.core.config.export import ExportConfig
 
 from otx.algo.classification.metrics import HLabelAccuracy
+from otx.core.config.export import ExportConfig
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -209,8 +209,9 @@ class OTXHlabelClsLitModule(OTXLitModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        export_config: ExportConfig,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(otx_model, optimizer, scheduler, torch_compile, export_config)
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):

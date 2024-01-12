@@ -81,3 +81,8 @@ model:
   optimizer:
     _target_: torch.optim.AdamW
     lr: 1e-5
+  export_config:
+    input_height: 224
+    input_width: 224
+    mean: ${..otx_model.config.data_preprocessor.mean}
+    std: ${..otx_model.config.data_preprocessor.std}

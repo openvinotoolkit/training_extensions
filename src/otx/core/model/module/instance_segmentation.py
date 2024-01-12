@@ -11,6 +11,7 @@ from torch import Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
+from otx.core.config.export import ExportConfig
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
@@ -29,8 +30,9 @@ class OTXInstanceSegLitModule(OTXLitModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        export_config: ExportConfig,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(otx_model, optimizer, scheduler, torch_compile, export_config)
 
         self.val_metric = MeanAveragePrecision(iou_type="segm")
         self.test_metric = MeanAveragePrecision(iou_type="segm")
