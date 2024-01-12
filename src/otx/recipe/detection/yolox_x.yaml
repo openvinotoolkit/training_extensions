@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - override /trainer: default
   - override /base: detection
   - override /callbacks: detection
   - override /data: mmdet
@@ -20,8 +21,8 @@ data:
           - 640
       - type: RandomAffine
         scaling_ratio_range:
-          - 0.5
-          - 1.5
+          - 0.1
+          - 2.0
         border:
           - -320
           - -320
@@ -44,7 +45,7 @@ data:
         scale:
           - 640
           - 640
-        keep_ratio: false
+        keep_ratio: true
       - type: RandomFlip
         prob: 0.5
       - type: Pad
@@ -63,14 +64,17 @@ data:
           - img_shape
           - pad_shape
   val_subset:
-    batch_size: 1
+    batch_size: 4
     transforms:
       - type: LoadImageFromFile
       - type: Resize
         scale:
           - 640
           - 640
-        keep_ratio: false
+        keep_ratio: True
+      - type: Pad
+        pad_to_square: true
+        pad_val: 114
       - type: LoadAnnotations
         with_bbox: true
       - type: PackDetInputs
@@ -82,14 +86,17 @@ data:
           - img_shape
           - pad_shape
   test_subset:
-    batch_size: 1
+    batch_size: 4
     transforms:
       - type: LoadImageFromFile
       - type: Resize
         scale:
           - 640
           - 640
-        keep_ratio: false
+        keep_ratio: True
+      - type: Pad
+        pad_to_square: true
+        pad_val: 114
       - type: LoadAnnotations
         with_bbox: true
       - type: PackDetInputs
@@ -151,6 +158,8 @@ model:
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
-    lr: 0.0001
-    weight_decay: 0.001
+    lr: 0.001
+    weight_decay: 0.0001
     momentum: 0.9
+trainer:
+  gradient_clip_val: 35.0
