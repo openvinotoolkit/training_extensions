@@ -45,10 +45,10 @@ class Engine:
     This class defines the common interface for OTX, including methods for training and testing.
 
     Example:
-    >>> engine = Engine(
-        data_root="dataset/path",
-        task="MULTI_CLASS_CLS",
-    )
+        >>> engine = Engine(
+            data_root="dataset/path",
+            task="MULTI_CLASS_CLS",
+        )
     """
 
     def __init__(
@@ -134,12 +134,12 @@ class Engine:
             dict[str, Any]: A dictionary containing the callback metrics from the trainer.
 
         Example:
-        >>> engine.train(
-            max_epochs=3,
-            seed=1234,
-            deterministic=False,
-            precision="32",
-        )
+            >>> engine.train(
+                max_epochs=3,
+                seed=1234,
+                deterministic=False,
+                precision="32",
+            )
 
         CLI Usage:
             1. you can train with data_root only. then OTX will provide default model.
@@ -216,10 +216,10 @@ class Engine:
             dict: Dictionary containing the callback metrics from the trainer.
 
         Example:
-        >>> engine.test(
-            datamodule=OTXDataModule(),
-            checkpoint="checkpoint.ckpt",
-        )
+            >>> engine.test(
+                datamodule=OTXDataModule(),
+                checkpoint="checkpoint.ckpt",
+            )
 
         CLI Usage:
             1. you can pick a model.
@@ -271,11 +271,11 @@ class Engine:
             list | None: The predictions if `return_predictions` is True, otherwise None.
 
         Example:
-        >>> engine.predict(
-            datamodule=OTXDataModule(),
-            checkpoint="checkpoint.ckpt",
-            return_predictions=True,
-        )
+            >>> engine.predict(
+                datamodule=OTXDataModule(),
+                checkpoint="checkpoint.ckpt",
+                return_predictions=True,
+            )
 
         CLI Usage:
             1. you can pick a model.
