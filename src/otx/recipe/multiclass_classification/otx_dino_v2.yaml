@@ -81,3 +81,14 @@ model:
   optimizer:
     _target_: torch.optim.AdamW
     lr: 1e-5
+  export_config:
+    input_height: 224
+    input_width: 224
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375

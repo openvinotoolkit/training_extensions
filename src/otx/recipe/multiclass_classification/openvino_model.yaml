@@ -7,6 +7,8 @@ defaults:
 
 data:
   data_format: imagenet_with_subset_dirs
+  test_subset:
+    batch_size: 256
 
 model:
   otx_model:
