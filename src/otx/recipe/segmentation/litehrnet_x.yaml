@@ -203,13 +203,13 @@ model:
     factor: 0.1
     patience: 10
   export_config:
-      input_height: 544
-      input_width: 544
-      mean:
-        - 123.675
-        - 116.28
-        - 103.53
-      std:
-        - 58.395
-        - 57.12
-        - 57.375
+    input_height: 544
+    input_width: 544
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375

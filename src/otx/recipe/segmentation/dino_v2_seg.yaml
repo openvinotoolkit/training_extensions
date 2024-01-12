@@ -129,13 +129,13 @@ model:
     power: 0.9
     last_epoch: -1
   export_config:
-      input_height: 560
-      input_width: 560
-      mean:
-        - 123.675
-        - 116.28
-        - 103.53
-      std:
-        - 58.395
-        - 57.12
-        - 57.375
+    input_height: 560
+    input_width: 560
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375
