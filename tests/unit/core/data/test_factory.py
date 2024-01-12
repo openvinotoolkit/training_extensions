@@ -4,7 +4,7 @@
 """Test Factory classes for dataset and transforms."""
 
 import pytest
-from otx.core.config.data import DataModuleConfig, SubsetConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.data.dataset.classification import OTXMulticlassClsDataset
 from otx.core.data.dataset.detection import OTXDetectionDataset
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
@@ -50,6 +50,8 @@ class TestOTXDatasetFactory:
         mocker.patch.object(TransformLibFactory, "generate", return_value=None)
         cfg_subset = mocker.MagicMock(spec=SubsetConfig)
         cfg_data_module = mocker.MagicMock(spec=DataModuleConfig)
+        cfg_data_module.tile_config = mocker.MagicMock(spec=TilerConfig)
+        cfg_data_module.tile_config.enable_tiler = False
         assert isinstance(
             OTXDatasetFactory.create(
                 task=task_type,
