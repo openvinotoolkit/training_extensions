@@ -1,0 +1,23 @@
+# @package _global_
+defaults:
+  - override /base: classification
+  - override /callbacks: classification
+  - override /data: openvino
+  - override /model: torch_classification
+
+data:
+  data_format: imagenet_with_subset_dirs
+  test_subset:
+    batch_size: 128
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.classification.OVMulticlassClassificationModel
+    config:
+      model_name: efficientnet-b0-pytorch
+      async_inference: True
+      use_throughput_mode: False
+      model_type: Classification
+      head:
+        num_classes: 1000
+    num_classes: 1000

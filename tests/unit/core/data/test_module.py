@@ -1,8 +1,12 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from importlib_resources import files
+from lightning.pytorch.loggers import CSVLogger
+from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
@@ -35,6 +39,8 @@ class TestModule:
         "task",
         [
             OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.MULTI_LABEL_CLS,
+            OTXTaskType.H_LABEL_CLS,
             OTXTaskType.DETECTION,
             OTXTaskType.SEMANTIC_SEGMENTATION,
         ],
@@ -58,3 +64,38 @@ class TestModule:
         OTXDataModule(task=task, config=fxt_config)
 
         assert mock_otx_dataset_factory.create.call_count == 3
+
+    @pytest.fixture()
+    def fxt_real_tv_cls_config(self) -> DictConfig:
+        cfg_path = files("otx") / "config" / "data" / "torchvision_cls.yaml"
+        cfg = OmegaConf.load(cfg_path)
+        cfg.data_root = "."
+        cfg.train_subset.subset_name = "train"
+        cfg.train_subset.num_workers = 0
+        cfg.val_subset.subset_name = "val"
+        cfg.val_subset.num_workers = 0
+        cfg.test_subset.subset_name = "test"
+        cfg.test_subset.num_workers = 0
+        cfg.mem_cache_size = "1GB"
+        return cfg
+
+    @patch("otx.core.data.module.OTXDatasetFactory")
+    @patch("otx.core.data.module.DmDataset.import_from")
+    def test_hparams_initial_is_loggable(
+        self,
+        mock_dm_dataset,
+        mock_otx_dataset_factory,
+        fxt_real_tv_cls_config,
+        tmpdir,
+    ) -> None:
+        # Dataset will have "train", "val", and "test" subsets
+        mock_dm_subsets = {name: MagicMock() for name in ["train", "val", "test"]}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+
+        module = OTXDataModule(task=OTXTaskType.MULTI_CLASS_CLS, config=fxt_real_tv_cls_config)
+        logger = CSVLogger(tmpdir)
+        logger.log_hyperparams(module.hparams_initial)
+        logger.save()
+
+        hparams_path = Path(logger.log_dir) / "hparams.yaml"
+        assert hparams_path.exists()

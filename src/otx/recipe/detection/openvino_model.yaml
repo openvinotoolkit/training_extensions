@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - override /base: detection
+  - override /callbacks: detection
+  - override /data: openvino
+  - override /model: mmdet
+
+data:
+  data_format: coco_instances
+  test_subset:
+    batch_size: 64
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.detection.OVDetectionModel
+    config:
+      model_name: ssd300
+      use_throughput_mode: True
+      model_type: "SSD"
+      async_inference: True
+    num_classes: 20

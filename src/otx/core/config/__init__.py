@@ -39,6 +39,7 @@ class TrainConfig:
     debug: Optional[str]
     train: bool
     test: bool
+    resume: bool = False
 
     seed: Optional[int] = None
     checkpoint: Optional[str] = None

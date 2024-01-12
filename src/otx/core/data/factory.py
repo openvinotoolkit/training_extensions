@@ -95,6 +95,15 @@ class OTXDatasetFactory:
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
 
+        if task == OTXTaskType.H_LABEL_CLS:
+            from .dataset.classification import OTXHlabelClsDataset
+
+            return OTXHlabelClsDataset(
+                dm_subset=dm_subset,
+                transforms=transforms,
+                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
+            )
+
         if task == OTXTaskType.DETECTION:
             from .dataset.detection import OTXDetectionDataset
 

@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - override /base: instance_segmentation
+  - override /callbacks: instance_segmentation
+  - override /data: openvino
+  - override /model: mmdet_inst_seg
+
+data:
+  data_format: coco_instances
+  test_subset:
+    batch_size: 2
+
+model:
+  otx_model:
+    _target_: otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel
+    config:
+      model_name: /home/kprokofi/training_extensions/otx-workspace-INSTANCE_SEGMENTATION/outputs/20240109_072818_export/openvino/openvino.xml
+      model_type: MaskRCNN
+      async_inference: True
+      use_throughput_mode: True
+    num_classes: 80

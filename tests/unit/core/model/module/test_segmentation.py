@@ -33,9 +33,7 @@ class TestOTXSegmentationModel:
     def model(self, mocker, fxt_seg_data_entity) -> OTXSegmentationLitModule:
         # define otx model
         otx_model = mocker.MagicMock(spec=MMSegCompatibleModel)
-        otx_model.model = mocker.MagicMock(spec=torch.nn.Module)
-        otx_model.model.decode_head = mocker.MagicMock(spec=torch.nn.Module)
-        otx_model.model.decode_head.num_classes = 2
+        otx_model.config = {"decode_head": {"num_classes": 2}}
         # define lightning model
         model = OTXSegmentationLitModule(otx_model, MagicMock, MagicMock, False)
         model.model.return_value = fxt_seg_data_entity[1]
@@ -57,7 +55,7 @@ class TestOTXSegmentationModel:
     def test_convert_pred_entity_to_compute_metric(self, model, fxt_seg_data_entity) -> None:
         pred_entity = fxt_seg_data_entity[2]
         out = model._convert_pred_entity_to_compute_metric(pred_entity, fxt_seg_data_entity[2])
-        assert isinstance(out, dict)
-        assert "preds" in out
-        assert "target" in out
-        assert out["preds"].sum() == out["target"].sum()
+        assert isinstance(out, list)
+        assert "preds" in out[-1]
+        assert "target" in out[-1]
+        assert out[-1]["preds"].sum() == out[-1]["target"].sum()

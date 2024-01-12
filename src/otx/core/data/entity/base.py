@@ -393,10 +393,6 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             msg = "collate_fn() input should include a single OTX task"
             raise RuntimeError(msg)
 
-        if not all(entity.image_type == ImageType.TV_IMAGE for entity in entities):
-            msg = "All entities should be torchvision's Image tensor before collate_fn()"
-            raise RuntimeError(msg)
-
         return OTXBatchDataEntity(
             batch_size=batch_size,
             images=[entity.image for entity in entities],

@@ -16,12 +16,14 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
-from otx.core.model.entity.base import OTXModel
-from otx.core.utils.build import build_mm_model
+from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.utils.build import build_mm_model, get_classification_layers
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import device, nn
 
 
@@ -34,10 +36,11 @@ class OTXInstanceSegModel(
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -59,6 +62,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
                 else:
                     return buf.device
 
+        self.classification_layers = get_classification_layers(self.config, MODELS, "model.")
         return build_mm_model(self.config, MODELS, self.load_from)
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
@@ -155,6 +159,52 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             )
             masks.append(output_masks)
             labels.append(output.pred_instances.labels)
+
+        return InstanceSegBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            masks=masks,
+            polygons=[],
+            labels=labels,
+        )
+
+
+class OVInstanceSegmentationModel(OVModel):
+    """Instance segmentation model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX detection model compatible for OTX testing pipeline.
+    """
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceSegmentationResult],
+        inputs: InstanceSegBatchDataEntity,
+    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
+        # add label index
+        bboxes = []
+        scores = []
+        labels = []
+        masks = []
+        for output in outputs:
+            output_objects = output.segmentedObjects
+            if len(output_objects):
+                bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
+            else:
+                bbox = torch.empty(size=(0, 0))
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    bbox,
+                    format="XYXY",
+                    canvas_size=inputs.imgs_info[-1].img_shape,
+                ),
+            )
+            scores.append(torch.tensor([output.score for output in output_objects]))
+            masks.append(torch.tensor([output.mask for output in output_objects]))
+            labels.append(torch.tensor([output.id for output in output_objects]))
 
         return InstanceSegBatchPredEntity(
             batch_size=len(outputs),
