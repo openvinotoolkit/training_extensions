@@ -15,7 +15,7 @@ otx_model:
   num_classes: ???
 
 export_config:
-  format: OPENVINO
+  export_format: OPENVINO
   precision: FP32
   resize_mode: standard
   pad_value: 0

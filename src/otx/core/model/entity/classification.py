@@ -281,7 +281,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
         metadata[("model_info", "multilabel")] = str(False)
         metadata[("model_info", "hierarchical")] = str(True)
         metadata[("model_info", "multilabel")] = str(0.5)
-        hierarchical_config = {}
+        hierarchical_config: dict = {}
         hierarchical_config["cls_heads_info"] = {}
         hierarchical_config["label_tree_edges"] = []
 

@@ -183,9 +183,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         metadata = self._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
 
         if export_format == OTXExportFormatType.OPENVINO:
-            self._export_to_openvino(output_dir, input_size, precision, metadata)
+            self._export_to_openvino(output_dir, input_size, metadata, precision)
         if export_format == OTXExportFormatType.ONNX:
-            self._export_to_onnx(output_dir, input_size, precision, metadata)
+            self._export_to_onnx(output_dir, input_size, metadata, precision)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
             self._export_to_exportable_code()
 
