@@ -45,9 +45,20 @@ class Engine:
     This class defines the common interface for OTX, including methods for training and testing.
 
     Example:
+        # Auto-Configuration with data_root
         >>> engine = Engine(
-            data_root="dataset/path",
-            task="MULTI_CLASS_CLS",
+            data_root=<dataset/path>,
+        )
+        # With Custom OTXModel
+        >>> engine = Engine(
+            data_root=<dataset/path>,
+            model=OTXModel(...),
+            checkpoint=<checkpoint/path>,
+        )
+        # With Custom OTXDataModule
+        >>> engine = Engine(
+            model = OTXModel(...),
+            datamodule = OTXDataModule(...),
         )
     """
 
