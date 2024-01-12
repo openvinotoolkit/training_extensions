@@ -14,7 +14,7 @@ from otx.core.config.device import DeviceConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
-from otx.core.types.device import OTXDeviceType
+from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
@@ -62,7 +62,7 @@ class Engine:
         optimizer: OptimizerCallable | None = None,
         scheduler: LRSchedulerCallable | None = None,
         checkpoint: str | None = None,
-        device: OTXDeviceType = OTXDeviceType.auto,
+        device: DeviceType = DeviceType.auto,
         **kwargs,
     ):
         """Initializes the Engine object.
@@ -76,7 +76,7 @@ class Engine:
             optimizer (OptimizerCallable | None, optional): The optimizer. Defaults to None.
             scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler. Defaults to None.
             checkpoint (str | None, optional): The checkpoint. Defaults to None.
-            device (OTXDeviceType, optional): The device type. Defaults to OTXDeviceType.auto.
+            device (DeviceType, optional): The device type. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
         self.work_dir = work_dir

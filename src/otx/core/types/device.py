@@ -8,7 +8,7 @@ from __future__ import annotations
 from enum import Enum
 
 
-class OTXDeviceType(str, Enum):
+class DeviceType(str, Enum):
     """OTX Device type definition."""
     # ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
 
