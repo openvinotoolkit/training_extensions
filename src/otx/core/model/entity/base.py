@@ -181,8 +181,25 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                                  std: Tuple[float, float,float], resize_mode: str,
                                  pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
         """Embeds metadata to the exported model"""
-        #raise NotImplementedError
-        return {}
+
+        all_labels = ""
+        all_label_ids = ""
+        for lbl in self.label_info.label_names:
+            all_labels += lbl.replace(" ", "_") + " "
+            all_label_ids += lbl.replace(" ", "_") + " "
+
+        mean_str = " ".join(map(str, mean))
+        std_str = " ".join(map(str, std))
+
+        return {
+            ("model_info", "labels"): all_labels.strip(),
+            ("model_info", "label_ids"): all_label_ids.strip(),
+            ("model_info", "mean_values"): mean_str.strip(),
+            ("model_info", "scale_values"): std_str.strip(),
+            ("model_info", "resize_type"): resize_mode,
+            ("model_info", "pad_value"): str(pad_value),
+            ("model_info", "reverse_input_channels"): str(swap_rgb),
+        }
 
     @staticmethod
     def _embed_openvino_ir_metadata(ov_model: openvino.Model, metadata:  Dict[Tuple[str, str], Any]) -> openvino.Model:
@@ -206,7 +223,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         exported_model = OTXModel._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (self._EXPORTED_MODEL_BASE_NAME + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
-        raise NotImplementedError
 
     @staticmethod
     def _embed_onnx_metadata(onnx_model: onnx.ModelProto, metadata: Dict[Tuple[str, str], Any]) -> onnx.ModelProto:
