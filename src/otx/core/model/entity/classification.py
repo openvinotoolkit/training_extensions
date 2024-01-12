@@ -5,8 +5,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, Tuple
 
+import json
 import numpy as np
 import torch
 
@@ -33,6 +34,16 @@ class OTXMulticlassClsModel(
     OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
 ):
     """Base class for the classification models used in OTX."""
+
+    def _generate_model_metadata(self, mean: Tuple[float, float,float],
+                            std: Tuple[float, float,float], resize_mode: str,
+                            pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata[("model_info", "model_type")] = "Classification"
+        metadata[("model_info", "task_type")] = "classification"
+        metadata[("model_info", "multilabel")] = str(False)
+        metadata[("model_info", "hierarchical")] = str(False)
+        return metadata
 
 
 def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
@@ -148,6 +159,17 @@ class OTXMultilabelClsModel(
 ):
     """Multi-label classification models used in OTX."""
 
+    def _generate_model_metadata(self, mean: Tuple[float, float,float],
+                                 std: Tuple[float, float,float], resize_mode: str,
+                                 pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata[("model_info", "model_type")] = "Classification"
+        metadata[("model_info", "task_type")] = "classification"
+        metadata[("model_info", "multilabel")] = str(True)
+        metadata[("model_info", "hierarchical")] = str(False)
+        metadata[("model_info", "multilabel")] = str(0.5)
+        return metadata
+
 
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     """Multi-label Classification model compatible for MMPretrain.
@@ -234,6 +256,23 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
     """H-label classification models used in OTX."""
+
+    def _generate_model_metadata(self, mean: Tuple[float, float,float],
+                                 std: Tuple[float, float,float], resize_mode: str,
+                                 pad_value: int, swap_rgb: bool) -> Dict[Tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata[("model_info", "model_type")] = "Classification"
+        metadata[("model_info", "task_type")] = "classification"
+        metadata[("model_info", "multilabel")] = str(False)
+        metadata[("model_info", "hierarchical")] = str(True)
+        metadata[("model_info", "multilabel")] = str(0.5)
+        hierarchical_config = {}
+        hierarchical_config["cls_heads_info"] = {}
+        hierarchical_config["label_tree_edges"] = []
+
+        metadata[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
+
+        return metadata
 
 
 class MMPretrainHlabelClsModel(OTXHlabelClsModel):
