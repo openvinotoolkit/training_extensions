@@ -22,8 +22,6 @@ jobs:
   #   steps:
   #     - name: Checkout repository
   #       uses: actions/checkout@v3
-  #     - name: Installing Rust toolchain
-  #       uses: actions-rust-lang/setup-rust-toolchain@v1
   #     - name: Set up Python
   #       uses: actions/setup-python@v4
   #       with:
@@ -56,7 +54,7 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
-      runs-on: "['otx-gpu-t4-1']"
+      runs-on: "['otx-gpu-v100-1']"
       custom-container: true
   # Coverage:
   #   runs-on: [otx-gpu-t4-2]
