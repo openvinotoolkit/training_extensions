@@ -50,4 +50,3 @@ def otx_export(overrides: list[str]) -> None:
         from otx.core.engine.export import export
 
         output_path = export(cfg)
-

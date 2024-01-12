@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import hydra
 import torch
@@ -13,7 +13,7 @@ import torch
 from otx.core.config import TrainConfig
 
 if TYPE_CHECKING:
-    from lightning import LightningModule, Trainer
+    from lightning import LightningModule
 
 
 def export(cfg: TrainConfig) -> str:

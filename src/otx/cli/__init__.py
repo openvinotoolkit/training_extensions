@@ -8,7 +8,6 @@ from __future__ import annotations
 from jsonargparse import ArgumentParser
 
 from otx import __version__
-from otx.cli.export import otx_export
 
 
 class OTXCLI:
@@ -56,7 +55,6 @@ class OTXCLI:
         from otx.cli.export import add_export_parser
 
         add_export_parser(parser_subcommands)
-
 
     def run(self) -> None:
         """Run the OTX CLI."""

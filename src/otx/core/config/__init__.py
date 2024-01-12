@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Optional
 
 from .base import BaseConfig
 from .data import DataModuleConfig, InstSegDataModuleConfig
-from .export import ExportConfig
 from .model import ModelConfig
 from .trainer import TrainerConfig
 

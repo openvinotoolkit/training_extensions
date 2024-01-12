@@ -5,15 +5,15 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 import warnings
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import torch
 from lightning import LightningModule
 from torch import Tensor
-from otx.core.config.export import ExportConfig
 
+from otx.core.config.export import ExportConfig
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 
@@ -183,11 +183,14 @@ class OTXLitModule(LightningModule):
         Args:
             output_dir: Directory path to save exported binary files.
         """
-        self.model.export(input_size=(self._export_config.input_height, self._export_config.input_width),
-                          output_dir=output_dir,
-                          export_format=self._export_config.format, precision=self._export_config.precision,
-                          mean=self._export_config.mean,
-                          std=self._export_config.std,
-                          resize_mode=self._export_config.resize_mode,
-                          pad_value=self._export_config.pad_value,
-                          swap_rgb=self._export_config.swap_rgb)
+        self.model.export(
+            input_size=(self._export_config.input_height, self._export_config.input_width),
+            output_dir=output_dir,
+            export_format=self._export_config.format,
+            precision=self._export_config.precision,
+            mean=self._export_config.mean,
+            std=self._export_config.std,
+            resize_mode=self._export_config.resize_mode,
+            pad_value=self._export_config.pad_value,
+            swap_rgb=self._export_config.swap_rgb,
+        )

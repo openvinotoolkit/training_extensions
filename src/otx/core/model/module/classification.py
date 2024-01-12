@@ -10,9 +10,9 @@ import torch
 from torch import Tensor
 from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy
-from otx.core.config.export import ExportConfig
 
 from otx.algo.classification.metrics import HLabelAccuracy
+from otx.core.config.export import ExportConfig
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,

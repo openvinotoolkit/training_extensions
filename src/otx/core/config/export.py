@@ -6,7 +6,7 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-from otx.core.types.export import OTXExportPrecisionType, OTXExportFormatType
+from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 
 
 @dataclass

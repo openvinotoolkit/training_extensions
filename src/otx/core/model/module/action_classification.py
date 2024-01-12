@@ -7,8 +7,8 @@ from __future__ import annotations
 import torch
 from torch import Tensor
 from torchmetrics.classification.accuracy import Accuracy
-from otx.core.config.export import ExportConfig
 
+from otx.core.config.export import ExportConfig
 from otx.core.data.entity.action_classification import (
     ActionClsBatchDataEntity,
     ActionClsBatchPredEntity,
