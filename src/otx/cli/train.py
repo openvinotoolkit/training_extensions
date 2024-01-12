@@ -6,17 +6,19 @@
 
 from __future__ import annotations
 
+import logging as log
 from typing import TYPE_CHECKING, Any
-
+import hydra
 from hydra import compose, initialize
 from jsonargparse import ArgumentParser
-
+from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
-    from pytorch_lightning import Trainer
+    from lightning import Callback
+    from lightning.pytorch.loggers import Logger
 
 
 def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
@@ -49,7 +51,56 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
         configure_hydra_outputs(cfg)
 
         # train the model
-        from otx.core.engine import Engine
+        from lightning import seed_everything
 
-        engine = Engine()
-        return engine.train(cfg)
+        from otx.core.data.module import OTXDataModule
+        from otx.core.utils.instantiators import (
+            instantiate_callbacks,
+            instantiate_loggers,
+        )
+
+        if cfg.seed is not None:
+            seed_everything(cfg.seed, workers=True)
+
+        log.info(f"Instantiating datamodule <{cfg.data}>")
+        datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+        log.info(f"Instantiating model <{cfg.model}>")
+        model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
+        optimizer = hydra.utils.instantiate(cfg.model.optimizer)
+        scheduler = hydra.utils.instantiate(cfg.model.scheduler)
+
+        log.info("Instantiating callbacks...")
+        callbacks: list[Callback] = instantiate_callbacks(cfg.callbacks)
+
+        log.info("Instantiating loggers...")
+        logger: list[Logger] = instantiate_loggers(cfg.logger)
+
+        from otx.engine import Engine
+
+        breakpoint()
+
+        device = cfg.trainer.pop("accelerator", "auto")
+        engine = Engine(
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            datamodule=datamodule,
+            checkpoint=cfg.checkpoint,
+            device=device,
+        )
+
+        train_metrics = {}
+        cfg.trainer.pop("_target_", None)
+        if cfg.train:
+            train_metrics = engine.train(
+                callbacks=callbacks,
+                logger=logger,
+                resume=cfg.resume,
+                **cfg.trainer,
+            )
+
+        test_metrics = {}
+        if cfg.test:
+            test_metrics = engine.test()
+
+        return {**train_metrics, **test_metrics}

@@ -43,7 +43,7 @@ class TestOTXCLI:
 
     def test_train_command(self, fxt_train_command, mocker, tmpdir) -> None:
         # Test that main function runs with help -> return 0
-        mock_engine_train = mocker.patch("otx.core.engine.Engine.train")
+        mock_engine_train = mocker.patch("otx.engine.Engine.train")
         cli = OTXCLI()
 
         assert cli.config["subcommand"] == "train"
