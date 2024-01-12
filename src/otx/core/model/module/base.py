@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
 from lightning import LightningModule
@@ -15,12 +15,9 @@ from torch import Tensor
 
 from otx.core.config.export import ExportConfig
 from otx.core.data.entity.base import OTXBatchDataEntity
+from otx.core.data.module import DataMetaInfo
 from otx.core.model.entity.base import OTXModel
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from otx.core.data.dataset.base import LabelInfo
+from otx.core.types.export import OTX_EXPORT_FORMAT_TO_EXTENSION
 
 
 class OTXLitModule(LightningModule):
@@ -40,6 +37,7 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
+        self._meta_info: DataMetaInfo | None = None
         self._export_config = export_config
 
         # this line allows to access init params with 'self.hparams' attribute
@@ -143,7 +141,6 @@ class OTXLitModule(LightningModule):
         load_state_pre_hook for smart weight loading will be registered.
         """
         ckpt_meta_info = state_dict.pop("meta_info", None)
-
         if ckpt_meta_info and self.meta_info is None:
             msg = (
                 "`state_dict` to load has `meta_info`, but the current model has no `meta_info`. "
@@ -154,10 +151,10 @@ class OTXLitModule(LightningModule):
             logger = logging.getLogger()
             logger.info(
                 f"Data classes from checkpoint: {ckpt_meta_info.class_names} -> "
-                f"Data classes from training data: {self.meta_info.label_names}",
+                f"Data classes from training data: {self.meta_info.class_names}",
             )
             self.register_load_state_dict_pre_hook(
-                self.meta_info.label_names,
+                self.meta_info.class_names,
                 ckpt_meta_info.class_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
@@ -168,29 +165,31 @@ class OTXLitModule(LightningModule):
         return "val/loss"
 
     @property
-    def label_info(self) -> LabelInfo:
-        """Get the member `OTXModel` label information."""
-        return self.model.label_info
+    def meta_info(self) -> DataMetaInfo:
+        """Meta information of OTXLitModule."""
+        if self._meta_info is None:
+            err_msg = "meta_info is referenced before assignment"
+            raise ValueError(err_msg)
+        return self._meta_info
 
-    @label_info.setter
-    def label_info(self, label_info: LabelInfo | list[str]) -> None:
-        """Set the member `OTXModel` label information."""
-        self.model.label_info = label_info  # type: ignore[assignment]
+    @meta_info.setter
+    def meta_info(self, meta_info: DataMetaInfo) -> None:
+        self._meta_info = meta_info
 
-    def export(self, output_dir: Path) -> None:
-        """Export the member `OTXModel` of this module to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-        """
+    def export(self, output_dir: str) -> str:
+        """Export model."""
+        model_path = Path(output_dir) / ("exported_model." + OTX_EXPORT_FORMAT_TO_EXTENSION[self._export_config.format])
         self.model.export(
             input_size=(self._export_config.input_height, self._export_config.input_width),
-            output_dir=output_dir,
-            export_format=self._export_config.format,
+            save_path=str(model_path),
+            format=self._export_config.format,
             precision=self._export_config.precision,
             mean=self._export_config.mean,
             std=self._export_config.std,
             resize_mode=self._export_config.resize_mode,
             pad_value=self._export_config.pad_value,
             swap_rgb=self._export_config.swap_rgb,
+            label_names=self.meta_info.class_names,
+            label_ids=self.meta_info.class_names,
         )
+        return str(model_path)

@@ -25,8 +25,6 @@ from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 if TYPE_CHECKING:
     from pathlib import Path
 
-    import torch
-
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the models used in OTX.
@@ -139,6 +137,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
 
+    @staticmethod
     def map_class_names(src_classes: list[str], dst_classes: list[str]) -> list[int]:
         """Computes src to dst index mapping.
 
@@ -193,7 +192,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         pad_value: int,
         swap_rgb: bool,
     ) -> dict[tuple[str, str], Any]:
-        """Embeds metadata to the exported model"""
+        """Embeds metadata to the exported model."""
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
@@ -215,7 +214,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     @staticmethod
     def _embed_openvino_ir_metadata(ov_model: openvino.Model, metadata: dict[tuple[str, str], Any]) -> openvino.Model:
-        """Embeds metadata to OpenVINO model"""
+        """Embeds metadata to OpenVINO model."""
         for k, data in metadata.items():
             ov_model.set_rt_info(data, list(k))
 
@@ -225,8 +224,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self,
         output_dir: Path,
         input_size: tuple[int, int],
+        metadata: dict[tuple[str, str], Any],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-        metadata: dict[tuple[str, str], Any] = {},
     ) -> None:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -241,7 +240,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     @staticmethod
     def _embed_onnx_metadata(onnx_model: onnx.ModelProto, metadata: dict[tuple[str, str], Any]) -> onnx.ModelProto:
-        """Embeds metadata to ONNX model"""
+        """Embeds metadata to ONNX model."""
         for item in metadata:
             meta = onnx_model.metadata_props.add()
             attr_path = " ".join(map(str, item))
@@ -254,8 +253,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self,
         output_dir: Path,
         input_size: tuple[int, int],
+        metadata: dict[tuple[str, str], Any],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-        metadata: dict[tuple[str, str], Any] = {},
     ) -> None:
         """Export to ONNX format.
 

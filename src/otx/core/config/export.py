@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Config data type objects for export method."""
+from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Tuple
 
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 
@@ -13,13 +13,13 @@ from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 class ExportConfig:
     """DTO for export configuration."""
 
-    format: OTXExportFormatType
+    export_format: OTXExportFormatType
     precision: OTXExportPrecisionType
 
     input_height: int
     input_width: int
-    mean: Tuple[float, float, float]
-    std: Tuple[float, float, float]
+    mean: tuple[float, float, float]
+    std: tuple[float, float, float]
     resize_mode: str
     pad_value: int
     swap_rgb: bool
