@@ -60,14 +60,13 @@ def otx_test(overrides: list[str]) -> None:
 
         from otx.engine import Engine
 
-        device = cfg.trainer.pop("accelerator", "auto")
+        trainer_kwargs = {**cfg.trainer}
         engine = Engine(
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,
             datamodule=datamodule,
             checkpoint=cfg.checkpoint,
-            device=device,
+            device=trainer_kwargs.pop("accelerator", "auto"),
         )
-        cfg.trainer.pop("_target_", None)
         engine.test()

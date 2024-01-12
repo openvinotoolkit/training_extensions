@@ -77,26 +77,25 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
 
         from otx.engine import Engine
 
-        breakpoint()
-
-        device = cfg.trainer.pop("accelerator", "auto")
+        trainer_kwargs = {**cfg.trainer}
         engine = Engine(
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,
             datamodule=datamodule,
             checkpoint=cfg.checkpoint,
-            device=device,
+            device=trainer_kwargs.pop("accelerator", "auto"),
         )
 
         train_metrics = {}
-        cfg.trainer.pop("_target_", None)
+
+        trainer_kwargs.pop("_target_", None)
         if cfg.train:
             train_metrics = engine.train(
                 callbacks=callbacks,
                 logger=logger,
                 resume=cfg.resume,
-                **cfg.trainer,
+                **trainer_kwargs,
             )
 
         test_metrics = {}
