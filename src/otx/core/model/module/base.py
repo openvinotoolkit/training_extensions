@@ -40,6 +40,7 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
+        self._export_config = export_config
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
