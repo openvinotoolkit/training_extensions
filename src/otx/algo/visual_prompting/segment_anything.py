@@ -311,7 +311,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             labels=labels,
         )
     
-    def _inspect_prompts(self, prompts: List[Union[tv_tensors.BoundingBoxes, tv_tensors.Mask]]) -> List[Optional[Union[tv_tensors.BoundingBoxes, tv_tensors.Mask]]]:
+    def _inspect_prompts(self, prompts: List[tv_tensors.BoundingBoxes]) -> List[Optional[tv_tensors.BoundingBoxes]]:
         """Inspect if given prompts are empty.
         
         If there are empty prompts (shape=0), they will be converted to None.

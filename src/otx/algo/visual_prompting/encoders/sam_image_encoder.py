@@ -21,8 +21,6 @@ class SAMImageEncoder(nn.Module):
     def __new__(cls, backbone: str, *args, **kwargs):
         if backbone.lower() == "tiny_vit":
             from otx.algo.visual_prompting.backbones.tiny_vit import TinyViT as BACKBONE
-        elif backbone.lower() == "vit_b":
-            pass
         else:
             raise ValueError(f"{backbone} is not supported for SAMImageEncoder. Set among tiny_vit and vit_b.")
         return BACKBONE(**cls.backbone_configs.get(backbone))

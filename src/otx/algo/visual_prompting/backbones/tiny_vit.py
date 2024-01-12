@@ -10,7 +10,7 @@ import torch
 import torch.nn.functional as F
 from timm.models.layers import DropPath
 from timm.models.layers import to_2tuple, trunc_normal_
-from torch import nn
+from torch import nn, Tensor
 
 from otx.algo.visual_prompting.utils.layer_norm_2d import LayerNorm2d
 
@@ -21,7 +21,7 @@ class Conv2d_BN(nn.Sequential):
     def __init__(
         self,
         in_channels: int,
-        out_channnels: int,
+        out_channels: int,
         kernel_size: int = 1,
         stride: int = 1,
         padding: int = 0,
@@ -30,8 +30,8 @@ class Conv2d_BN(nn.Sequential):
         bn_weight_init: float = 1.0,
     ) -> None:
         super().__init__()
-        self.add_module("c", nn.Conv2d(in_channels, out_channnels, kernel_size, stride, padding, dilation, groups, bias=False))
-        bn = nn.BatchNorm2d(out_channnels)
+        self.add_module("conv", nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias=False))
+        bn = nn.BatchNorm2d(out_channels)
         nn.init.constant_(bn.weight, bn_weight_init)
         nn.init.constant_(bn.bias, 0)
         self.add_module("bn", bn)
@@ -39,22 +39,22 @@ class Conv2d_BN(nn.Sequential):
     @torch.no_grad()
     def fuse(self) -> nn.Module:
         """Fuse weights and biases."""
-        c, bn = self._modules.values()
-        w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-        w = c.weight * w[:, None, None, None]
-        b = bn.bias - bn.running_mean * bn.weight / (bn.running_var + bn.eps) ** 0.5
-        m = nn.Conv2d(
-            w.size(1) * self.c.groups,
-            w.size(0),
-            w.shape[2:],
-            stride=self.c.stride,
-            padding=self.c.padding,
-            dilation=self.c.dilation,
-            groups=self.c.groups,
+        conv, bn = self._modules.values()
+        weight = bn.weight / (bn.running_var + bn.eps) ** 0.5
+        weight = conv.weight * weight[:, None, None, None]
+        bias = bn.bias - bn.running_mean * bn.weight / (bn.running_var + bn.eps) ** 0.5
+        fulsed_module = nn.Conv2d(
+            weight.size(1) * self.conv.groups,
+            weight.size(0),
+            weight.shape[2:],
+            stride=self.conv.stride,
+            padding=self.conv.padding,
+            dilation=self.conv.dilation,
+            groups=self.conv.groups,
         )
-        m.weight.data.copy_(w)
-        m.bias.data.copy_(b)
-        return m
+        fulsed_module.weight.data.copy_(weight)
+        fulsed_module.bias.data.copy_(bias)
+        return fulsed_module
 
 
 class PatchEmbed(nn.Module):
@@ -74,7 +74,7 @@ class PatchEmbed(nn.Module):
             Conv2d_BN(n // 2, n, 3, 2, 1),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         return self.seq(x)
 
@@ -106,7 +106,7 @@ class MBConv(nn.Module):
 
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()  # type: ignore
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         shortcut = x
 
@@ -143,7 +143,7 @@ class PatchMerging(nn.Module):
         self.conv2 = Conv2d_BN(out_dim, out_dim, 3, stride_c, 1, groups=out_dim)
         self.conv3 = Conv2d_BN(out_dim, out_dim, 1, 1, 0)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         if x.ndim == 3:
             height, width = self.input_resolution
@@ -200,7 +200,7 @@ class ConvLayer(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         for blk in self.blocks:
             x = blk(x)
@@ -229,7 +229,7 @@ class Mlp(nn.Module):
         self.act = act_layer()
         self.drop = nn.Dropout(drop)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         x = self.norm(x)
 
@@ -290,7 +290,7 @@ class Attention(nn.Module):
         else:
             self.register_buffer("ab", self.attention_biases[:, self.attention_bias_idxs], persistent=False)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:  # x (B,N,C)
+    def forward(self, x: Tensor) -> Tensor:  # x (B,N,C)
         """Forward."""
         B, N, _ = x.shape
 
@@ -366,7 +366,7 @@ class TinyViTBlock(nn.Module):
         padding = local_conv_size // 2
         self.local_conv = Conv2d_BN(dim, dim, kernel_size=local_conv_size, stride=1, padding=padding, groups=dim)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         H, W = self.input_resolution
         B, L, C = x.shape
@@ -480,7 +480,7 @@ class BasicLayer(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         for blk in self.blocks:
             x = blk(x)
@@ -626,7 +626,7 @@ class TinyViT(nn.Module):
         """Keyworkds for no weight decay."""
         return {"attention_biases"}
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         x = self.patch_embed(x)
 
