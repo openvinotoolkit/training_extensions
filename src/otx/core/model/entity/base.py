@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
+import numpy as np
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -18,11 +19,14 @@ from otx.core.data.entity.base import (
     T_OTXBatchPredEntity,
 )
 from otx.core.types.export import OTXExportFormat
+from otx.core.utils.build import get_default_num_async_infer_requests
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
+    from omegaconf import DictConfig
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -206,3 +210,73 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             num_classes: Number of classes
         """
         raise NotImplementedError
+
+
+class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+    """Base class for the OpenVINO model.
+
+    This is a base class representing interface for interacting with OpenVINO
+    Intermidiate Representation (IR) models. OVModel can create and validate
+    OpenVINO IR model directly from provided path locally or from
+    OpenVINO OMZ repository. (Only PyTorch models are supported).
+    OVModel supports synchoronous as well as asynchronous inference type.
+
+    Args:
+        num_classes: Number of classes this model can predict.
+    """
+
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        self.model_name = config.pop("model_name")
+        self.model_type = config.pop("model_type")
+        self.async_inference = config.pop("async_inference", False)
+        self.num_requests = config.pop("max_num_requests", get_default_num_async_infer_requests())
+        self.use_throughput_mode = config.pop("use_throughput_mode", False)
+        self.config = config
+        super().__init__(num_classes)
+
+    def _create_model(self) -> nn.Module:
+        """Create a OV model with help of Model API."""
+        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from openvino.model_api.models import Model
+
+        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.use_throughput_mode:
+            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
+
+        model_adapter = OpenvinoAdapter(
+            create_core(),
+            self.model_name,
+            max_num_requests=self.num_requests,
+            plugin_config=plugin_config,
+        )
+
+        return Model.create_model(model_adapter, model_type=self.model_type)
+
+    def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
+        # restore original numpy image
+        images = [np.transpose(im.numpy(), (1, 2, 0)) for im in entity.images]
+        return {"inputs": images}
+
+    def forward(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+
+        def _callback(result: NamedTuple, user_data: list[NamedTuple]) -> None:
+            user_data.append(result)
+
+        numpy_inputs = self._customize_inputs(inputs)["inputs"]
+        if self.async_inference:
+            outputs: list[Any] = []
+            self.model.set_callback(_callback)
+            for im in numpy_inputs:
+                if not self.model.is_ready():
+                    self.model.await_any()
+                self.model.infer_async(im, user_data=outputs)
+            self.model.await_all()
+        else:
+            outputs = [self.model(im) for im in numpy_inputs]
+
+        return self._customize_outputs(outputs, inputs)
