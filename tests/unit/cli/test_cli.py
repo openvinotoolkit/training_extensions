@@ -42,6 +42,9 @@ class TestOTXCLI:
         return argv
 
     def test_train_command(self, fxt_train_command, mocker, tmpdir) -> None:
+        if sys.version_info[1] < 9:
+            pytest.skip("Hydra fails to create default config in python < 3.9")
+
         # Test that main function runs with help -> return 0
         mock_engine_train = mocker.patch("otx.core.engine.Engine.train")
         cli = OTXCLI()
