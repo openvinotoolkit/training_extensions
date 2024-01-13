@@ -28,7 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "datumaro",
+    "datumaro==1.6.0rc1",
     "omegaconf",
     "hydra-core",
     "rich",
@@ -70,9 +70,9 @@ base = [
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
-    "openvino==2023.0.0",
-    "openvino-dev==2023.0.0",
-    "openvino-model-api==0.1.7",
+    "openvino==2023.2.0",
+    "openvino-dev==2023.2.0",
+    "openvino-model-api==0.1.8",
     "onnx==1.13.0",
     "onnxconverter-common==1.14.0"
 ]
