@@ -26,10 +26,10 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
+class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
     """Base class for the detection models used in OTX."""
 
-    def unpack_det_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
+    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
         """Unpack detection tiles.
 
         Args:

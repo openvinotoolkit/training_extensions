@@ -19,6 +19,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
+from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class OTXMulticlassClsModel(
-    OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+    OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """Base class for the classification models used in OTX."""
 
@@ -144,7 +145,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
 
 class OTXMultilabelClsModel(
-    OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+    OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """Multi-label classification models used in OTX."""
 
@@ -232,7 +233,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         )
 
 
-class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
+class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity, T_OTXTileBatchDataEntity]):
     """H-label classification models used in OTX."""
 
 

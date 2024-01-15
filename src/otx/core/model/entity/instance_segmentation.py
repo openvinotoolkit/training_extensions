@@ -29,11 +29,11 @@ if TYPE_CHECKING:
 
 
 class OTXInstanceSegModel(
-    OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
+    OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, TileBatchInstSegDataEntity],
 ):
     """Base class for the detection models used in OTX."""
 
-    def unpack_inst_seg_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
+    def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
 
         Args:

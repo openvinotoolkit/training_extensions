@@ -70,7 +70,7 @@ class OTXTileDatasetFactory:
             return OTXTileDetTestDataset(dataset, tile_config)
         if task == OTXTaskType.INSTANCE_SEGMENTATION:
             return OTXTileInstSegTestDataset(dataset, tile_config)
-        msg = f"Unsupported task type: {task}"
+        msg = f"Unsupported task type: {task} for tiling"
         raise NotImplementedError(msg)
 
 

@@ -6,11 +6,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from otx.core.types.task import OTXTaskType
 
-from .base import ImageInfo
+from .base import ImageInfo, T_OTXBatchDataEntity
 from .detection import DetBatchDataEntity, DetDataEntity
 from .instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 
@@ -18,6 +18,12 @@ if TYPE_CHECKING:
     from datumaro import Polygon
     from torch import LongTensor
     from torchvision import tv_tensors
+
+
+T_OTXTileBatchDataEntity = TypeVar(
+    "T_OTXTileBatchDataEntity",
+    bound="OTXTileBatchDataEntity",
+)
 
 
 @dataclass
@@ -39,12 +45,28 @@ class TileDetDataEntity:
 
 
 @dataclass
-class TileBatchDetDataEntity:
-    """Batch data entity for tile task."""
+class OTXTileBatchDataEntity(Generic[T_OTXBatchDataEntity]):
+    """Batch data entity for tile task.
+
+    Attributes:
+        batch_size (int): The size of the batch.
+        batch_tiles (list[list[tv_tensors.Image]]): The batch of tile images.
+        batch_tile_infos (list[list[ImageInfo]]): The information about the tiles.
+    """
 
     batch_size: int
     batch_tiles: list[list[tv_tensors.Image]]
     batch_tile_infos: list[list[ImageInfo]]
+
+    def unbind(self) -> list[T_OTXBatchDataEntity]:
+        """Unbind batch data entity."""
+        raise NotImplementedError
+
+
+@dataclass
+class TileBatchDetDataEntity(OTXTileBatchDataEntity):
+    """Batch data entity for tile task."""
+
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
 
@@ -114,12 +136,9 @@ class TileInstSegDataEntity:
 
 
 @dataclass
-class TileBatchInstSegDataEntity:
+class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
     """Batch data entity for tile task."""
 
-    batch_size: int
-    batch_tiles: list[list[tv_tensors.Image]]
-    batch_tile_infos: list[list[ImageInfo]]
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
     masks: list[tv_tensors.Mask]

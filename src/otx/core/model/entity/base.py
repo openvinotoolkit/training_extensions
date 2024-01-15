@@ -17,7 +17,7 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
-from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.types.export import OTXExportFormat
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     import torch
 
 
-class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """Base class for the models used in OTX.
 
     Args:
@@ -88,10 +88,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         # If customize_inputs is overrided
-        if isinstance(inputs, TileBatchDetDataEntity):
-            return self.unpack_det_tiles(inputs)
-        if isinstance(inputs, TileBatchInstSegDataEntity):
-            return self.unpack_inst_seg_tiles(inputs)
+        if isinstance(inputs, OTXTileBatchDataEntity):
+            return self.forward_tiles(inputs)
 
         outputs = (
             self.model(**self._customize_inputs(inputs))
@@ -104,6 +102,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )
+
+    def forward_tiles(self, inputs: T_OTXTileBatchDataEntity) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function for tile task."""
+        raise NotImplementedError
 
     def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
         """Register load_state_dict_pre_hook.
