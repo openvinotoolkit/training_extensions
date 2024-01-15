@@ -18,7 +18,6 @@ results/
 build/
 dist/
 !src/otx/recipes/**
-src/otx/recipes/**/__pycache__/
 *egg-info
 
 *.pth
