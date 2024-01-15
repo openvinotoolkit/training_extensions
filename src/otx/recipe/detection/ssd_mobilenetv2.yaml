@@ -4,6 +4,7 @@ defaults:
   - override /callbacks: detection
   - override /data: mmdet
   - override /model: mmdet
+  - override /deploy: ssd_mobilenetv2_deploy
 data:
   train_subset:
     batch_size: 8

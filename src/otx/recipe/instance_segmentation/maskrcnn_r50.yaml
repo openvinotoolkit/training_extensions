@@ -4,6 +4,7 @@ defaults:
   - override /callbacks: instance_segmentation
   - override /data: mmdet_inst_seg
   - override /model: mmdet_inst_seg
+  - override /deploy: maskrcnn_r50_deploy
 
 data:
   train_subset:

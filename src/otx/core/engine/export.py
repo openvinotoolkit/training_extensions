@@ -55,4 +55,4 @@ def export(
     else:
         model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
 
-    model.export(cfg.base.output_dir, cfg.deploy, test_pipeline=cfg.data.test_subset.transforms)
+    model.export(cfg.base.output_dir, cfg.export_format, cfg.deploy, test_pipeline=cfg.data.test_subset.transforms)

@@ -1,0 +1,55 @@
+backend_config:
+  mo_options: null
+  model_inputs:
+  - opt_shapes:
+      input:
+      - -1
+      - 3
+      - 736
+      - 992
+  type: openvino
+codebase_config:
+  model_type: end2end
+  post_processing:
+    background_label_id: -1
+    confidence_threshold: 0.005
+    iou_threshold: 0.5
+    keep_top_k: 100
+    max_output_boxes_per_class: 200
+    pre_top_k: 5000
+    score_threshold: 0.05
+  task: ObjectDetection
+  type: mmdet
+input_data:
+  file_path: null
+  shape:
+  - 128
+  - 128
+  - 3
+ir_config:
+  dynamic_axes:
+    boxes:
+      0: batch
+      1: num_dets
+    image:
+      0: batch
+      1: channel
+      2: height
+      3: width
+    labels:
+      0: batch
+      1: num_dets
+  export_params: true
+  input_names:
+  - image
+  input_shape:
+  - 992
+  - 736
+  keep_initializers_as_inputs: false
+  opset_version: 11
+  optimize: false
+  output_names:
+  - boxes
+  - labels
+  save_file: end2end.onnx
+  type: onnx

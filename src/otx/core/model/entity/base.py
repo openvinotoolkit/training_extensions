@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import Any, Generic
+from pathlib import Path
+from copy import copy
 
 from torch import nn
 
@@ -24,7 +26,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         super().__init__()
         self.model = self._create_model()
 
-    def export(self, deploy_cfg: dict | None = None):
+    def export(
+            self,
+            output_dir: Path | str,
+            export_format: str = "ONNX",
+            deploy_cfg: dict | None = None,
+            precision: str = "fp32",
+            test_pipeline: dict | None = None,
+        ):
         """Export a PyTorch model for this class."""
         raise NotImplementedError
 

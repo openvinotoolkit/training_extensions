@@ -3,18 +3,25 @@
 #
 from __future__ import annotations
 
+import os
 import os.path as osp
 import logging as log
-import numpy as np
-import cv2
+import time
 from copy import copy
 from typing import Callable
+from subprocess import CalledProcessError
+
+import cv2
+import numpy as np
+import mmdeploy.apis.openvino as openvino_api
 from omegaconf import DictConfig, OmegaConf
 from mmdeploy.apis import extract_model, get_predefined_partition_cfg, torch2onnx, build_task_processor
-from mmdeploy.utils import get_partition_config
+from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
+from mmdeploy.utils import get_ir_config, get_partition_config
 from mmengine.config import Config as MMConfig
 
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from .onnx import prepare_onnx_for_openvino
 
 
 class MMdeployExporter:
@@ -30,13 +37,16 @@ class MMdeployExporter:
     ):
         self._model_builder = model_builder
         self.output_dir = output_dir
-        model_cfg = convert_conf_to_mmconfig_dict(model_cfg)
+        model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
         new_pipeline = [OmegaConf.to_container(test_pipeline[i]) for i in range(len(test_pipeline))]
         self._model_cfg = MMConfig({"model" : model_cfg, "test_pipeline" : new_pipeline})
         self._deploy_cfg = convert_conf_to_mmconfig_dict(deploy_cfg)
         self.model_name = model_name
 
-    def cvt_torch2onnx(self):
+        patch_input_preprocessing(model_cfg, self._deploy_cfg)
+        patch_input_shape(model_cfg, self._deploy_cfg)
+
+    def cvt_torch2onnx(self) -> str:
         log.info(f'torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}')
         input_data = self._get_input_data()
         
@@ -60,6 +70,8 @@ class MMdeployExporter:
             self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs, self.output_dir)
 
         log.info('torch2onnx finished.')
+
+        return osp.join(self.output_dir, onnx_file_name)
 
     def _register_model_builder(self):
         task_processor = build_task_processor(self._model_cfg, self._deploy_cfg, "cpu")
@@ -110,13 +122,42 @@ class MMdeployExporter:
                 dynamic_axes=dynamic_axes,
                 save_file=save_path)
 
-    def cvt_onnx2openvino(self, precision: str = "fp32"):
-        deploy_cfg = copy(deploy_cfg)
+    def cvt_onnx2openvino(self, onnx_path: str, precision: str = "fp32"):
+        deploy_cfg = copy(self._deploy_cfg)
 
-        if precision == "fp16":  # NOTE use MO?
+        if precision == "fp16":
             deploy_cfg.backend_config.mo_options.flags.append("--compress_to_fp16")
 
-        raise NotImplementedError
+        input_info = get_input_info_from_cfg(deploy_cfg)
+        output_names = get_ir_config(deploy_cfg).output_names
+        mo_options = get_mo_options_from_cfg(deploy_cfg)
+
+        mo_options.args += f'--model_name "{self.model_name}" '
+
+        onnx_ready_path = osp.join(osp.dirname(onnx_path), f"{self.model_name}_ready.onnx")
+        prepare_onnx_for_openvino(onnx_path, osp.join(osp.dirname(onnx_path), f"{self.model_name}_ready.onnx"))
+
+        try:
+            openvino_api.from_onnx(onnx_ready_path, self.output_dir, input_info, output_names, mo_options)
+        except CalledProcessError as e:
+            # NOTE: mo returns non zero return code (245) even though it successfully generate IR
+            cur_time = time.time()
+            time_threshold = 5
+            if not (
+                e.returncode == 245
+                and not {self.model_name + ".bin", self.model_name + ".xml"} - set(os.listdir(self.output_dir))
+                and (
+                    osp.getmtime(osp.join(self.output_dir, self.model_name + ".bin")) - cur_time < time_threshold
+                    and osp.getmtime(osp.join(self.output_dir, self.model_name + ".xml")) - cur_time < time_threshold
+                )
+            ):
+                raise e
+
+        return (
+            osp.join(self.output_dir, self.model_name + ".xml"),
+            osp.join(self.output_dir, self.model_name + ".bin"),
+        )
+
 
 
 def mmdeploy_init_model_helper(*args, **kwargs):
@@ -133,3 +174,104 @@ def mmdeploy_init_model_helper(*args, **kwargs):
         i.requires_grad = False
 
     return model
+
+
+def patch_input_preprocessing(model_cfg: MMConfig, deploy_cfg: MMConfig):
+    """Update backend configuration with input preprocessing options.
+
+    - If `"to_rgb"` in Normalize config is truthy, it adds `"--reverse_input_channels"` as a flag.
+
+    The function then sets default values for the backend configuration in `deploy_cfg`.
+
+    Args:
+        cfg (mmcv.ConfigDict): Config object containing test pipeline and other configurations.
+        deploy_cfg (mmcv.ConfigDict): DeployConfig object containing backend configuration.
+
+    Returns:
+        None: This function updates the input `deploy_cfg` object directly.
+    """
+    normalize_cfg = model_cfg.data_preprocessor
+
+    # Set options based on Normalize config
+    options = {
+        "flags": ["--reverse_input_channels"] if normalize_cfg.get("to_rgb", False) else [],
+        "args": {
+            "--mean_values": list(normalize_cfg.get("mean", [])),
+            "--scale_values": list(normalize_cfg.get("std", [])),
+        },
+    }
+
+    # Set default backend configuration
+    mo_options = deploy_cfg.backend_config.get("mo_options", MMConfig())
+    mo_options = MMConfig() if mo_options is None else mo_options
+    mo_options.args = mo_options.get("args", MMConfig())
+    mo_options.flags = mo_options.get("flags", [])
+
+    # Override backend configuration with options from Normalize config
+    mo_options.args.update(options["args"])
+    mo_options.flags = list(set(mo_options.flags + options["flags"]))
+
+    deploy_cfg.backend_config.mo_options = mo_options
+
+
+def patch_input_shape(cfg: MMConfig, deploy_cfg: MMConfig):
+    """Update backend configuration with input shape information.
+
+    This function retrieves the input size from `cfg.data.test.pipeline`,
+    then sets the input shape for the backend model in `deploy_cfg`
+
+    ```
+    {
+        "opt_shapes": {
+            "input": [1, 3, *size]
+        }
+    }
+    ```
+
+    Args:
+        cfg (Config): Config object containing test pipeline and other configurations.
+        deploy_cfg (DeployConfig): DeployConfig object containing backend configuration.
+
+    Returns:
+        None: This function updates the input `deploy_cfg` object directly.
+    """
+    # NOTE: Current OTX 2.0 doesn't have InputSizeManager, so input shape is set in the file manually.
+    assert deploy_cfg.ir_config.input_shape is not None
+    if deploy_cfg.backend_config.type == "openvino":
+        assert isinstance(deploy_cfg.backend_config.model_inputs[0].opt_shapes["input"], list)
+    return
+    input_size_manager = InputSizeManager(cfg)
+    size = input_size_manager.get_input_size_from_cfg("test")
+
+    assert all(isinstance(i, int) and i > 0 for i in size)
+    # default is static shape to prevent an unexpected error
+    # when converting to OpenVINO IR
+    w, h = size
+    log.info(f"Patching OpenVINO IR input shape: {size}")
+    deploy_cfg.ir_config.input_shape = (w, h)
+    deploy_cfg.backend_config.model_inputs = [MMConfig(opt_shapes=MMConfig(input=[-1, 3, h, w]))]
+
+
+def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
+    """Patch IR scale factor inplace from hyper parameters to deploy config.
+
+    Args:
+        deploy_cfg (ConfigDict): mmcv deploy config
+        hyper_parameters (DetectionConfig): OTX detection hyper parameters
+    """
+    return
+    # TODO: need to implement after tiling is implemented
+
+    if hyper_parameters.tiling_parameters.enable_tiling:
+        scale_ir_input = deploy_cfg.get("scale_ir_input", False)
+        if scale_ir_input:
+            tile_ir_scale_factor = hyper_parameters.tiling_parameters.tile_ir_scale_factor
+            log.info(f"Apply OpenVINO IR scale factor: {tile_ir_scale_factor}")
+            ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
+            ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
+            ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
+            deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
+            deploy_cfg.backend_config.model_inputs = [
+                ConfigDict(opt_shapes=ConfigDict(input=[1, 3, ir_input_shape[2], ir_input_shape[3]]))
+            ]
+            print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")

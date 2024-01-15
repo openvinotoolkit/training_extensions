@@ -9,6 +9,7 @@ defaults:
   - deploy: none
   - _self_
 
+export_format: ONNX
 train: true
 test: false
 

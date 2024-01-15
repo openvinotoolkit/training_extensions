@@ -4,6 +4,7 @@ defaults:
   - override /callbacks: detection
   - override /data: mmdet
   - override /model: mmdet
+  - override /deploy: atss_resnext101_deploy
 data:
   train_subset:
     batch_size: 4

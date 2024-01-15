@@ -6,6 +6,7 @@ defaults:
   - trainer: default
   - model: mmdet
   - logger: csv
+  - deploy: none
   - _self_
 
 train: true

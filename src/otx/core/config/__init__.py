@@ -43,6 +43,7 @@ class TrainConfig:
 
     seed: Optional[int] = None
     checkpoint: Optional[str] = None
+    export_format: str = "ONNX"
 
 
 def as_int_tuple(*args) -> tuple[int, ...]:

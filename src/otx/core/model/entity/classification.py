@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 from pathlib import Path
+from copy import copy
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -69,6 +70,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     def export(
             self,
             output_dir: Path | str,
+            export_format: str = "ONNX",
             deploy_cfg: dict | None = None,
             precision: str = "fp32",
             test_pipeline: dict | None = None,
@@ -78,8 +80,29 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             raise NotImplementedError
         else:
             from otx.core.model.utils.mmdeploy import MMdeployExporter
+            deploy_cfg = copy(deploy_cfg)
+
+            if export_format == "ONNX":
+                backend_cfg_backup = deploy_cfg["backend_config"]
+                self._update_deploy_cfg_for_onnx(deploy_cfg)
+
             exporter = MMdeployExporter(self._create_model, output_dir, self.config, deploy_cfg, test_pipeline)
             exporter.cvt_torch2onnx()
+
+            if export_format == "ONNX":
+                pass
+                # results["inference_parameters"] = {}
+                # results["inference_parameters"]["mean_values"] = " ".join(
+                #     map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+                # )
+                # results["inference_parameters"]["scale_values"] = " ".join(
+                #     map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+                # )
+
+    @staticmethod
+    def _update_deploy_cfg_for_onnx(deploy_cfg: dict):
+        deploy_cfg["backend_config"] = {"type": "onnxruntime"}
+        deploy_cfg["ir_config"]["dynamic_axes"]["data"] = {0: "batch"}
 
     def _create_model(self) -> nn.Module:
         return _create_mmpretrain_model(self.config, self.load_from)
