@@ -23,3 +23,6 @@ class ExportConfig:
     resize_mode: str
     pad_value: int
     swap_rgb: bool
+    mmdeploy_config: str | None
+    mm_model_config: dict | None
+    test_pipeline: list[dict] | None

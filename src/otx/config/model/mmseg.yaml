@@ -35,3 +35,6 @@ export_config:
     - 1
     - 1
     - 1
+  mmdeploy_config: null
+  mm_model_config: null
+  test_pipeline: null

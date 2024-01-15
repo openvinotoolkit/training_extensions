@@ -192,4 +192,7 @@ class OTXLitModule(LightningModule):
             resize_mode=self._export_config.resize_mode,
             pad_value=self._export_config.pad_value,
             swap_rgb=self._export_config.swap_rgb,
+            mmdeploy_config=self._export_config.mmdeploy_config,
+            mm_model_config=self._export_config.mm_model_config,
+            test_pipeline=self._export_config.test_pipeline,
         )
