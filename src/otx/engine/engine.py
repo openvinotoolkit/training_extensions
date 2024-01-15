@@ -43,24 +43,28 @@ LITMODULE_PER_TASK = {
 class Engine:
     """OTX Engine.
 
-    This class defines the common interface for OTX, including methods for training and testing.
+    This class defines the Engine for OTX, which governs each step of the OTX workflow.
 
     Example:
-        # Auto-Configuration with data_root
+        The following examples show how to use the Engine class.
+
+        Auto-Configuration with data_root
         >>> engine = Engine(
-            data_root=<dataset/path>,
-        )
-        # With Custom OTXModel
+        ...     data_root=<dataset/path>,
+        ... )
+
+        Create Engine with Custom OTXModel
         >>> engine = Engine(
-            data_root=<dataset/path>,
-            model=OTXModel(...),
-            checkpoint=<checkpoint/path>,
-        )
-        # With Custom OTXDataModule
+        ...     data_root=<dataset/path>,
+        ...     model=OTXModel(...),
+        ...     checkpoint=<checkpoint/path>,
+        ... )
+
+        Create Engine with Custom OTXDataModule
         >>> engine = Engine(
-            model = OTXModel(...),
-            datamodule = OTXDataModule(...),
-        )
+        ...     model = OTXModel(...),
+        ...     datamodule = OTXDataModule(...),
+        ... )
     """
 
     def __init__(
@@ -77,18 +81,19 @@ class Engine:
         device: DeviceType = DeviceType.auto,
         **kwargs,
     ):
-        """Initializes the Engine object.
+        """Initializes the OTX Engine.
 
         Args:
-            data_root (str | Path): The root directory of the data.
-            task (OTXTaskType | None, optional): The task type. Defaults to None.
-            work_dir (str | Path, optional): The working directory. Defaults to "./otx-workspace".
-            datamodule (OTXDataModule | None, optional): The data module. Defaults to None.
-            model (OTXModel | str | None, optional): The model. Defaults to None.
-            optimizer (OptimizerCallable | None, optional): The optimizer. Defaults to None.
-            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler. Defaults to None.
-            checkpoint (str | None, optional): The checkpoint. Defaults to None.
-            device (DeviceType, optional): The device type. Defaults to DeviceType.auto.
+            data_root (str | Path | None, optional): Root directory for the data. Defaults to None.
+            task (OTXTaskType | None, optional): The type of OTX task. Defaults to None.
+            work_dir (str | Path, optional): Working directory for the engine. Defaults to "./otx-workspace".
+            datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
+            model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
+            optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
+            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
+                Defaults to None.
+            checkpoint (str | None, optional): Path to the checkpoint file. Defaults to None.
+            device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
         self.work_dir = work_dir
@@ -113,9 +118,9 @@ class Engine:
         self.optimizer: OptimizerCallable = optimizer
         self.scheduler: LRSchedulerCallable = scheduler
 
-    """
-    General OTX Entry Points
-    """
+    # ------------------------------------------------------------------------ #
+    # General OTX Entry Points
+    # ------------------------------------------------------------------------ #
 
     def train(
         self,
@@ -147,11 +152,11 @@ class Engine:
 
         Example:
             >>> engine.train(
-                max_epochs=3,
-                seed=1234,
-                deterministic=False,
-                precision="32",
-            )
+            ...     max_epochs=3,
+            ...     seed=1234,
+            ...     deterministic=False,
+            ...     precision="32",
+            ... )
 
         CLI Usage:
             1. you can train with data_root only. then OTX will provide default model.
@@ -229,9 +234,9 @@ class Engine:
 
         Example:
             >>> engine.test(
-                datamodule=OTXDataModule(),
-                checkpoint="checkpoint.ckpt",
-            )
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ... )
 
         CLI Usage:
             1. you can pick a model.
@@ -284,10 +289,10 @@ class Engine:
 
         Example:
             >>> engine.predict(
-                datamodule=OTXDataModule(),
-                checkpoint="checkpoint.ckpt",
-                return_predictions=True,
-            )
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ...     return_predictions=True,
+            ... )
 
         CLI Usage:
             1. you can pick a model.
@@ -320,9 +325,9 @@ class Engine:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
         raise NotImplementedError
 
-    """
-    Property and setter functions provided by Engine.
-    """
+    # ------------------------------------------------------------------------ #
+    # Property and setter functions provided by Engine.
+    # ------------------------------------------------------------------------ #
 
     @property
     def trainer(self) -> Trainer:
