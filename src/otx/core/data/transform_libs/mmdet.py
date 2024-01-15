@@ -213,35 +213,47 @@ class PerturbBoundingBoxes(BaseTransform):
     """Perturb bounding boxes with random offset values.
     
     Args:
-        offset (Union[int, List[int]]): Offset value(s) to be used for bounding boxes perturbation.
-            If given offset argument is single integer, it will be converted a list with [offset] * 4.
-            This list consists of offsets of x1, y1, x2, and y2 for perturbation.
+        offset (int): Offset value to be used for bounding boxes perturbation.
     """
-    def __init__(self, offset: Union[int, List[int]]):
-        self.offset = [offset] * 4 if isinstance(offset, int) else offset
-        self.direction = np.array([-1, -1, 1, 1])
+    def __init__(self, offset: int):
+        self.offset = offset
         
     def transform(self, results: dict) -> dict:
         height, width = results["img_shape"]
         perturbed_bboxes: List[np.ndarray] = []
         for bbox in results["gt_bboxes"]:
-            perturbed_bbox = self.get_perturbed_bbox(bbox, width, height)
+            perturbed_bbox = self.get_perturbed_bbox(*bbox, width, height, self.offset)
             perturbed_bboxes.append(perturbed_bbox)
         results["gt_bboxes"] = np.stack(perturbed_bboxes, axis=0)
         return results
     
-    def get_perturbed_bbox(self, bbox: np.ndarray, width: int, height: int, trials: int = 10):
-        for _ in range(trials):
-            perturbed_bbox = bbox + np.random.randint(0, self.offset, size=4) * self.direction
-            perturbed_bbox = np.clip(perturbed_bbox, [0, 0, 0, 0], [width-1, height-1, width-1, height-1])
-            if self._is_valid_bbox(perturbed_bbox):
-                return perturbed_bbox
-        return bbox # if not perturbed during trials
-    
-    def _is_valid_bbox(self, perturbed_bbox: np.ndarray) -> np.ndarray:
-        if (int(perturbed_bbox[0]) < int(perturbed_bbox[2])) and (int(perturbed_bbox[1]) < int(perturbed_bbox[3])):
-            return True
-        return False
+    def get_perturbed_bbox(  # noqa: D417
+        self, x1: int, y1: int, x2: int, y2: int, width: int, height: int, offset_bbox: int = 0
+    ) -> List[int]:
+        """Generate bounding box.
+
+        Args:
+            x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
+            width (int): Width of image.
+            height (int): Height of image.
+            offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
+
+        Returns:
+            List[int]: Generated bounding box.
+        """
+
+        def get_randomness(length: int) -> int:
+            if offset_bbox == 0:
+                return 0
+            return np.random.normal(0, min(length * 0.1, offset_bbox))
+
+        bbox = np.array([
+            max(0, x1 + get_randomness(width)),
+            max(0, y1 + get_randomness(height)),
+            min(width, x2 + get_randomness(width)),
+            min(height, y2 + get_randomness(height)),
+        ])
+        return bbox
 
 
 class MMDetTransformLib(MMCVTransformLib):
