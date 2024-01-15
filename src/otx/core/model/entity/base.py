@@ -265,20 +265,18 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Model forward function."""
 
         def _callback(result: NamedTuple, idx: int) -> None:
-            outputs.append((idx, result))
+            output_dict[idx] = result
 
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
         if self.async_inference:
-            outputs: list[Any] = []
+            output_dict: dict[int, NamedTuple] = {}
             self.model.set_callback(_callback)
             for idx, im in enumerate(numpy_inputs):
                 if not self.model.is_ready():
                     self.model.await_any()
                 self.model.infer_async(im, user_data=idx)
             self.model.await_all()
-            # sort outputs in ascending order and keep model output only
-            outputs.sort()
-            outputs = [out[1] for out in outputs]
+            outputs = [out[1] for out in sorted(output_dict.items())]
         else:
             outputs = [self.model(im) for im in numpy_inputs]
 
