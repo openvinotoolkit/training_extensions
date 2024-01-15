@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
 from mmseg.datasets.transforms import (
@@ -16,7 +17,6 @@ from mmseg.datasets.transforms import (
 from mmseg.registry import TRANSFORMS
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegDataEntity
 
 from .mmcv import MMCVTransformLib
@@ -59,16 +59,18 @@ class PackSegInputs(MMSegPackInputs):
         ori_shape = data_samples.ori_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
+
+        image_info = deepcopy(results["__otx__"].img_info)
+        image_info.img_shape = img_shape
+        image_info.ori_shape = ori_shape
+        image_info.scale_factor = scale_factor
+        image_info.pad_shape = pad_shape
+
         masks = data_samples.gt_sem_seg.data
 
         data_entity = SegDataEntity(
             image=image,
-            img_info=ImageInfo(
-                img_idx=0,
-                img_shape=img_shape,
-                ori_shape=ori_shape,
-                scale_factor=scale_factor,
-            ),
+            img_info=image_info,
             gt_seg_map=masks,
         )
         data_entity.img_info.pad_shape = pad_shape
