@@ -1,3 +1,7 @@
+"""OTX utility functions."""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import signal
 from functools import partial
 from typing import Callable

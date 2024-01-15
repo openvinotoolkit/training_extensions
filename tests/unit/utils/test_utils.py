@@ -27,4 +27,4 @@ def test_append_signal_handler(mocker):
     # check
     sig_hand_1.assert_called_once()
     sig_hand_2.assert_called_once()
-    assert spy_signal.call_args == ((signal.SIGTERM, signal.SIG_DFL), )
+    assert spy_signal.call_args == ((signal.SIGTERM, signal.SIG_DFL),)

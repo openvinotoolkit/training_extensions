@@ -260,7 +260,7 @@ class TestMultiGPUManager:
         assert self.mock_append_signal_handler.call_count == 2
         assert self.mock_append_signal_handler.call_args_list == [
             ((signal.SIGINT, self.multigpu_manager._terminate_signal_handler),),
-            ((signal.SIGTERM, self.multigpu_manager._terminate_signal_handler),)
+            ((signal.SIGTERM, self.multigpu_manager._terminate_signal_handler),),
         ]
 
         # check that optimized hyper parameters are in sys.argv to pass them to child process

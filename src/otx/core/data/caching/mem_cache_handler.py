@@ -7,7 +7,6 @@ import ctypes as ct
 import multiprocessing as mp
 import os
 import signal
-import sys
 from multiprocessing.managers import DictProxy
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -15,8 +14,8 @@ import numpy as np
 import psutil
 from multiprocess.synchronize import Lock
 
-from otx.utils.logger import get_logger
 from otx.utils import append_signal_handler
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 GIB = 1024**3

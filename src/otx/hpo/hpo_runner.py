@@ -18,7 +18,6 @@ import multiprocessing
 import os
 import queue
 import signal
-import sys
 import time
 from copy import deepcopy
 from dataclasses import dataclass
