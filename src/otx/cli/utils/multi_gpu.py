@@ -30,6 +30,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from otx.api.configuration import ConfigurableParameters
+from otx.utils import append_signal_handler
 from otx.utils.logger import get_logger
 
 logger = get_logger()
@@ -190,8 +191,8 @@ class MultiGPUManager:
 
         self._processes = self._spawn_multi_gpu_processes(output_path)
 
-        signal.signal(signal.SIGINT, self._terminate_signal_handler)
-        signal.signal(signal.SIGTERM, self._terminate_signal_handler)
+        append_signal_handler(signal.SIGINT, self._terminate_signal_handler)
+        append_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
 
         self.initialize_multigpu_train(self._rdzv_endpoint, self._base_rank, 0, self._gpu_ids, self._world_size)
 
@@ -319,14 +320,12 @@ class MultiGPUManager:
     def _terminate_signal_handler(self, signum, _frame):
         # This code prevents child processses from being killed unintentionally by proccesses forked from main process
         if self._main_pid != os.getpid():
-            sys.exit()
+            return
 
         self._kill_child_process()
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}
         logger.warning(f"{singal_name[signum]} is sent. process exited.")
-
-        sys.exit(1)
 
     def _kill_child_process(self):
         for process in self._processes:

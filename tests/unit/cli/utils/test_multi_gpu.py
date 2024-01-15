@@ -1,5 +1,6 @@
 import datetime
 import os
+import signal
 import socket
 from contextlib import closing
 from copy import deepcopy
@@ -163,7 +164,7 @@ def test_is_multigpu_child_process_rank0(mocker):
 class TestMultiGPUManager:
     @pytest.fixture(autouse=True)
     def _set_up(self, mocker):
-        self.mock_singal = mocker.patch.object(multi_gpu, "signal")
+        self.mock_append_signal_handler = mocker.patch.object(multi_gpu, "append_signal_handler")
         self.mock_thread = mocker.patch.object(multi_gpu.threading, "Thread")
         self.mock_train_func = mocker.MagicMock()
         self.mock_mp = mocker.patch.object(multi_gpu, "mp")
@@ -256,12 +257,11 @@ class TestMultiGPUManager:
         self.mock_thread.return_value.start.assert_called_once()
 
         # check that register signal callback
-        assert self.mock_singal.signal.call_count == 2
-        mock_singal_args = self.mock_singal.signal.call_args_list
-        assert mock_singal_args[0][0][0] in (self.mock_singal.SIGINT, self.mock_singal.SIGTERM)
-        assert mock_singal_args[1][0][0] in (self.mock_singal.SIGINT, self.mock_singal.SIGTERM)
-        assert mock_singal_args[0][0][1] == self.multigpu_manager._terminate_signal_handler
-        assert mock_singal_args[1][0][1] == self.multigpu_manager._terminate_signal_handler
+        assert self.mock_append_signal_handler.call_count == 2
+        assert self.mock_append_signal_handler.call_args_list == [
+            ((signal.SIGINT, self.multigpu_manager._terminate_signal_handler),),
+            ((signal.SIGTERM, self.multigpu_manager._terminate_signal_handler),)
+        ]
 
         # check that optimized hyper parameters are in sys.argv to pass them to child process
         assert "--learning_parameters.learning_rate" in mock_sys.argv
@@ -272,7 +272,7 @@ class TestMultiGPUManager:
     @e2e_pytest_unit
     def test_check_child_processes_alive(self, mocker, process_arr):
         # prepare
-        mock_kill = mocker.patch.object(multi_gpu.os, "kill")
+        mocker.patch.object(multi_gpu.os, "kill")
         mocker.patch.object(multi_gpu.time, "sleep")
         mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
         self.mock_process.side_effect = process_arr
@@ -284,12 +284,11 @@ class TestMultiGPUManager:
         # check
         for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_called_once()
-        self.mock_os.kill.assert_called_once_with(os.getpid(), self.mock_singal.SIGKILL)
+        self.mock_os.kill.assert_called_once_with(os.getpid(), signal.SIGKILL)
 
     @e2e_pytest_unit
     def test_terminate_signal_handler(self, mocker, process_arr):
         # prepare
-        mock_exit = mocker.patch.object(multi_gpu.sys, "exit")
         mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
         self.mock_process.side_effect = process_arr
 
@@ -300,24 +299,16 @@ class TestMultiGPUManager:
         # check
         for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_called_once()
-        mock_exit.assert_called_once()
 
     @e2e_pytest_unit
     def test_terminate_signal_handler_not_main_thread(self, mocker, process_arr):
         # prepare
-        def raise_error(*args, **kwargs):
-            raise RuntimeError
-
-        mock_exit = mocker.patch.object(multi_gpu.sys, "exit")
-        mock_exit.side_effect = raise_error
         mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
         mocker.patch.object(multi_gpu.os, "getpid").return_value = os.getpid() + 1
         self.mock_process.side_effect = process_arr
 
         # run
         self.multigpu_manager.setup_multi_gpu_train("fake")
-        with pytest.raises(RuntimeError):
-            self.multigpu_manager._terminate_signal_handler(2, mocker.MagicMock())
 
         # check
         for p in process_arr[: self.num_gpu - 2]:

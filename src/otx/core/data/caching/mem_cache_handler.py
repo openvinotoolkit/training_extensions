@@ -16,6 +16,7 @@ import psutil
 from multiprocess.synchronize import Lock
 
 from otx.utils.logger import get_logger
+from otx.utils import append_signal_handler
 
 logger = get_logger()
 GIB = 1024**3
@@ -150,19 +151,18 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
         self._freeze = mp.Value(ct.c_bool, False, lock=False)
         self._main_pid = os.getpid()
 
-        signal.signal(signal.SIGINT, self._signal_handler_for_manager)
-        signal.signal(signal.SIGTERM, self._signal_handler_for_manager)
+        append_signal_handler(signal.SIGINT, self._signal_handler_for_manager)
+        append_signal_handler(signal.SIGTERM, self._signal_handler_for_manager)
 
     def _signal_handler_for_manager(self, signum, _frame):
         # This code prevents child processses from being killed unintentionally by proccesses forked from main process
         if self._main_pid != os.getpid():
-            sys.exit()
+            return
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}
         logger.warning(f"{singal_name[signum]} is sent. shutdown multiprocessing Manager.")
 
-        self._manager.shutdown()
-        sys.exit(1)
+        self.__del__()
 
     def __del__(self):
         """When deleting, manager should also be shutdowned."""
