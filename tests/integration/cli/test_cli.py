@@ -68,7 +68,7 @@ DATASET = {
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
+def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -119,7 +119,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         f"base.data_dir={DATASET[task]['data_dir']}",
         f"base.work_dir={tmp_path_test}",
         f"base.output_dir={tmp_path_test / 'outputs'}",
-        "trainer=gpu",
+        f"trainer={fxt_accelerator}",
         *DATASET[task]["overrides"],
         f"checkpoint={ckpt_files[-1]}",
     ]

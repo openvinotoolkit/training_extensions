@@ -32,3 +32,8 @@ def fxt_clean_up_mem_cache() -> None:
     """
     yield
     MemCacheHandlerSingleton.delete()
+
+
+@pytest.fixture(params=[pytest.param("gpu", marks=pytest.mark.gpu)])
+def fxt_accelerator(request: pytest.FixtureRequest) -> str:
+    return request.param
