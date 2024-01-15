@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
-from typing import Any
 
 
 @dataclass
