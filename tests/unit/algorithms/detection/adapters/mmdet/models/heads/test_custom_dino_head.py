@@ -11,6 +11,7 @@ from mmdet.core import build_assigner
 from mmdet.core.bbox.assigners import AssignResult, HungarianAssigner
 from mmdet.models.builder import build_detector
 
+import otx.algorithms.detection.adapters.mmdet.models  # to register modules to mmdet
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
