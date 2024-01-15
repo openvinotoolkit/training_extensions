@@ -52,6 +52,8 @@ jobs:
         env:
           MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
           BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
+          GH_CTX_REF_NAME: ${{ github.ref_name }}
+          GH_CTX_SHA: ${{ github.sha  }}
         run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }} -- ${{ inputs.tests-dir }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
