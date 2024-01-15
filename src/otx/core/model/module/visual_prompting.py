@@ -8,6 +8,7 @@ import logging as log
 
 import torch
 from torch import Tensor
+from torchmetrics.aggregation import MeanMetric
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 from torchmetrics.collections import MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -32,23 +33,29 @@ class OTXVisualPromptingLitModule(OTXLitModule):
     ):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
+        self.train_metric = MetricCollection(
+            dict(
+                Loss=MeanMetric(),
+                Loss_Dice=MeanMetric(),
+                Loss_Focal=MeanMetric(),
+                Loss_IoU=MeanMetric(),
+            )
+        )
         self.val_metric = MetricCollection(
-            [
-                BinaryJaccardIndex(),
-                BinaryF1Score(),
-                Dice(),
-                MeanAveragePrecision(iou_type="segm"),
-            ],
-            compute_groups=[["BinaryJaccardIndex", "BinaryF1Score", "Dice"], ["MeanAveragePrecision"]]
+            dict(
+                IoU=BinaryJaccardIndex(),
+                F1=BinaryF1Score(),
+                Dice=Dice(),
+                mAP=MeanAveragePrecision(iou_type="segm")
+            ),
         )
         self.test_metric = MetricCollection(
-            [
-                BinaryJaccardIndex(),
-                BinaryF1Score(),
-                Dice(),
-                MeanAveragePrecision(iou_type="segm"),
-            ],
-            compute_groups=[["BinaryJaccardIndex", "BinaryF1Score", "Dice"], ["MeanAveragePrecision"]]
+            dict(
+                IoU=BinaryJaccardIndex(),
+                F1=BinaryF1Score(),
+                Dice=Dice(),
+                mAP=MeanAveragePrecision(iou_type="segm")
+            ),
         )
 
     def on_validation_epoch_start(self) -> None:
@@ -85,6 +92,41 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 sync_dist=True,
                 prog_bar=True,
             )
+            
+    def training_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> Tensor:
+        """Step for model training."""
+        train_loss = self.model(inputs)
+
+        if isinstance(train_loss, Tensor):
+            self.log(
+                "train/loss",
+                train_loss,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+            )
+            self.train_metric["Loss"].update(train_loss)
+
+        elif isinstance(train_loss, dict):
+            for k, v in train_loss.items():
+                self.log(
+                    f"train/{k}",
+                    v,
+                    on_step=True,
+                    on_epoch=False,
+                    prog_bar=True,
+                )
+            for name, metric in zip(
+                ["loss_focal", "loss_iou", "loss_dice", "loss"],
+                ["Loss_Focal", "Loss_IoU", "Loss_Dice", "Loss"]
+            ):
+                if name in self.train_metric:
+                    self.train_metric[name].update(train_loss.get(metric, 0.))
+
+        else:
+            raise TypeError(train_loss)
+
+        return train_loss
 
     def validation_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -105,18 +147,16 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             raise TypeError(preds)
 
         converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for i, metrics in self.val_metric.compute_groups.items():
-            if i == 0:
-                # for binary mask
-                for metric in metrics:
-                    for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                        self.val_metric.__getitem__(metric).update(cvt_preds["masks"], cvt_target["masks"])
-            else:
-                # for instance segmentation
-                for metric in metrics:
-                    self.val_metric.__getitem__(metric).update(
-                        preds=[{k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]],
-                        target=converted_entities["target"])
+        for name, metric in self.val_metric.items():
+            if name == "mAP":
+                # MeanAveragePrecision
+                _preds = [{k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]]
+                _target = converted_entities["target"]
+                metric.update(preds=_preds, target=_target)
+            elif name in ["IoU", "F1", "Dice"]:
+                # BinaryJaccardIndex, BinaryF1Score, Dice
+                for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                    metric.update(cvt_preds["masks"], cvt_target["masks"])
 
     def _convert_pred_entity_to_compute_metric(
         self,
