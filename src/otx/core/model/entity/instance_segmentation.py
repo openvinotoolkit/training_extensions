@@ -42,41 +42,24 @@ class OTXInstanceSegModel(
         Returns:
             InstanceSegBatchPredEntity: Merged instance segmentation prediction.
         """
-        pred_entities = []
-        for tiles, tile_infos, bboxes, masks, polygons, labels in zip(
-            inputs.batch_tiles,
-            inputs.batch_tile_infos,
-            inputs.bboxes,
-            inputs.masks,
-            inputs.polygons,
-            inputs.labels,
-        ):
-            tile_preds: list[InstanceSegBatchPredEntity] = []
-            for tile, tile_info in zip(tiles, tile_infos):
-                tile_input = InstanceSegBatchDataEntity(
-                    batch_size=1,
-                    images=[tile],
-                    imgs_info=[tile_info],
-                    bboxes=[bboxes],
-                    masks=[masks],
-                    polygons=[polygons],
-                    labels=[labels],
-                )
-                output = self.forward(tile_input)
-                if isinstance(output, OTXBatchLossEntity):
-                    msg = "Loss output is not supported for tile merging"
-                    raise TypeError(msg)
-                tile_preds.append(output)
-            pred_entities.append(merge_inst_seg_tiles(tile_preds))
+        tile_preds: list[InstanceSegBatchPredEntity] = []
+        for tile_input in inputs.unbind():
+            output = self.forward(tile_input)
+            if isinstance(output, OTXBatchLossEntity):
+                msg = "Loss output is not supported for tile merging"
+                raise TypeError(msg)
+            tile_preds.append(output)
+        pred_entity = merge_inst_seg_tiles(tile_preds)
+
         return InstanceSegBatchPredEntity(
             batch_size=inputs.batch_size,
-            images=[entity.image for entity in pred_entities],
-            imgs_info=[entity.img_info for entity in pred_entities],
-            scores=[entity.score for entity in pred_entities],
-            bboxes=[entity.bboxes for entity in pred_entities],
-            labels=[entity.labels for entity in pred_entities],
-            masks=[entity.masks for entity in pred_entities],
-            polygons=[entity.polygons for entity in pred_entities],
+            images=[pred_entity.image],
+            imgs_info=[pred_entity.img_info],
+            scores=[pred_entity.score],
+            bboxes=[pred_entity.bboxes],
+            labels=[pred_entity.labels],
+            masks=[pred_entity.masks],
+            polygons=[pred_entity.polygons],
         )
 
 

@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 from otx.core.types.task import OTXTaskType
 
 from .base import ImageInfo
-from .detection import DetDataEntity
-from .instance_segmentation import InstanceSegDataEntity
+from .detection import DetBatchDataEntity, DetDataEntity
+from .instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 
 if TYPE_CHECKING:
     from datumaro import Polygon
@@ -46,7 +46,22 @@ class TileBatchDetDataEntity:
     batch_tiles: list[list[tv_tensors.Image]]
     batch_tile_infos: list[list[ImageInfo]]
     bboxes: list[tv_tensors.BoundingBoxes]
-    labels: list[list[LongTensor]]
+    labels: list[LongTensor]
+
+    def unbind(self) -> list[DetBatchDataEntity]:
+        """Unbind batch data entity for detection task."""
+        tiles = [tile for tiles in self.batch_tiles for tile in tiles]
+        tile_infos = [tile_info for tile_infos in self.batch_tile_infos for tile_info in tile_infos]
+        return [
+            DetBatchDataEntity(
+                batch_size=self.batch_size,
+                images=[tile],
+                imgs_info=[tile_info],
+                bboxes=self.bboxes,
+                labels=self.labels,
+            )
+            for tile, tile_info in zip(tiles, tile_infos)
+        ]
 
     @classmethod
     def collate_fn(cls, batch_entities: list[TileDetDataEntity]) -> TileBatchDetDataEntity:
@@ -106,9 +121,26 @@ class TileBatchInstSegDataEntity:
     batch_tiles: list[list[tv_tensors.Image]]
     batch_tile_infos: list[list[ImageInfo]]
     bboxes: list[tv_tensors.BoundingBoxes]
-    labels: list[list[LongTensor]]
+    labels: list[LongTensor]
     masks: list[tv_tensors.Mask]
     polygons: list[list[Polygon]]
+
+    def unbind(self) -> list[InstanceSegBatchDataEntity]:
+        """Unbind batch data entity for instance segmentation task."""
+        tiles = [tile for tiles in self.batch_tiles for tile in tiles]
+        tile_infos = [tile_info for tile_infos in self.batch_tile_infos for tile_info in tile_infos]
+        return [
+            InstanceSegBatchDataEntity(
+                batch_size=self.batch_size,
+                images=[tile],
+                imgs_info=[tile_info],
+                bboxes=self.bboxes,
+                labels=self.labels,
+                masks=self.masks,
+                polygons=self.polygons,
+            )
+            for tile, tile_info in zip(tiles, tile_infos)
+        ]
 
     @classmethod
     def collate_fn(cls, batch_entities: list[TileInstSegDataEntity]) -> TileBatchInstSegDataEntity:
