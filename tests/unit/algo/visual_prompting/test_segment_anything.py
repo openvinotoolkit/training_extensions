@@ -72,8 +72,10 @@ class TestSegmentAnything:
         
         if training:
             # check loss
-            assert isinstance(results, Tensor)
-            assert results.ndim == 0
+            assert isinstance(results, dict)
+            for metric in ["loss", "loss_focal", "loss_dice", "loss_iou"]:
+                assert isinstance(results[metric], Tensor)
+            assert results["loss"].ndim == 0
         else:
             assert isinstance(results, tuple)
             assert all([isinstance(r, list) for r in results])
@@ -194,7 +196,7 @@ class TestOTXSegmentAnything:
         
     def test_customize_outputs(self, model, fxt_vpm_data_entity) -> None:
         """Test _customize_outputs."""
-        outputs = torch.tensor(1.)
+        outputs = {"loss": torch.tensor(1.)}
         result = model._customize_outputs(outputs, fxt_vpm_data_entity[2])
         assert isinstance(result, dict)
         assert "loss" in result
