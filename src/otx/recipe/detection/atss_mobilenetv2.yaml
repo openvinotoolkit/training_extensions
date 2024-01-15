@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - override /trainer: default
   - override /base: detection
   - override /callbacks: detection
   - override /data: mmdet
@@ -39,7 +40,7 @@ data:
           - img_shape
           - pad_shape
   val_subset:
-    batch_size: 1
+    batch_size: 8
     transforms:
       - type: LoadImageFromFile
       - type: Resize
@@ -58,7 +59,7 @@ data:
           - img_shape
           - pad_shape
   test_subset:
-    batch_size: 1
+    batch_size: 8
     transforms:
       - type: LoadImageFromFile
       - type: Resize
@@ -177,5 +178,7 @@ model:
     _target_: torch.optim.SGD
     _partial_: true
     lr: 0.004
-    weight_decay: 0.001
+    weight_decay: 0.0001
     momentum: 0.9
+trainer:
+  gradient_clip_val: 35.0
