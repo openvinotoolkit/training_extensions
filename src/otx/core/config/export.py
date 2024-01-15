@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
+from typing import Any
 
 
 @dataclass
@@ -23,3 +24,5 @@ class ExportConfig:
     resize_mode: str
     pad_value: int
     swap_rgb: bool
+    via_onnx: bool
+    onnx_export_configuration: list[dict[str, Any]] | None = None

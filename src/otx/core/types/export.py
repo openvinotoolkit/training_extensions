@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from enum import Enum
-
+from torch.onnx import OperatorExportTypes
 
 class OTXExportFormatType(str, Enum):
     """OTX export format type definition."""
