@@ -156,21 +156,22 @@ class SegmentAnything(nn.Module):
             loss_focal = 0.0
             loss_iou = 0.0
 
-            num_masks = [len(pred_mask) for pred_mask in pred_masks]
-            for pred_mask, gt_mask, iou, ori_shape, num_mask in zip(pred_masks, gt_masks, ious, ori_shapes, num_masks):
+            num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
+            for pred_mask, gt_mask, iou, ori_shape in zip(pred_masks, gt_masks, ious, ori_shapes):
                 pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
                 pred_mask = pred_mask.sigmoid()
                 pred_mask = pred_mask.flatten(1)
                 gt_mask = gt_mask.flatten(1).float()
 
                 # calculate losses
-                loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_mask)
-                loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_mask)
+                loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_masks)
+                loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
                 batch_iou = self.calculate_iou(pred_mask, gt_mask)
-                loss_iou += F.mse_loss(iou, batch_iou)
+                loss_iou += F.mse_loss(iou, batch_iou, reduction="sum") / num_masks
 
             loss = 20.0 * loss_focal + loss_dice + loss_iou
-            return loss
+            
+            return {"loss": loss, "loss_focal": loss_focal, "loss_dice": loss_dice, "loss_iou": loss_iou}
 
         post_processed_pred_masks: List[Tensor] = []
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
@@ -291,7 +292,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
     ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for you model."""
         if self.training:
-            return {"loss": outputs}
+            return outputs
         
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
