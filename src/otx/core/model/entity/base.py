@@ -264,18 +264,21 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
 
-        def _callback(result: NamedTuple, user_data: list[NamedTuple]) -> None:
-            user_data.append(result)
+        def _callback(result: NamedTuple, idx: int) -> None:
+            outputs.append((idx, result))
 
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
         if self.async_inference:
             outputs: list[Any] = []
             self.model.set_callback(_callback)
-            for im in numpy_inputs:
+            for idx, im in enumerate(numpy_inputs):
                 if not self.model.is_ready():
                     self.model.await_any()
-                self.model.infer_async(im, user_data=outputs)
+                self.model.infer_async(im, user_data=idx)
             self.model.await_all()
+            # sort outputs in ascending order and keep model output only
+            outputs.sort()
+            outputs = [out[1] for out in outputs]
         else:
             outputs = [self.model(im) for im in numpy_inputs]
 
