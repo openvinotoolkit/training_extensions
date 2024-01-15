@@ -18,11 +18,11 @@ from otx.algo.visual_prompting.backbones.tiny_vit import (Attention,
 
 class TestConv2d_BN:
     def setup(self):
-        self.conv2d_bn = Conv2d_BN(in_channels=1, out_channels=1)
+        self.conv2d_bn = Conv2d_BN(a=1, b=1)
 
     def test_init(self):
         """Test __init__."""
-        assert isinstance(self.conv2d_bn.conv, nn.Conv2d)
+        assert isinstance(self.conv2d_bn.c, nn.Conv2d)
         assert isinstance(self.conv2d_bn.bn, nn.BatchNorm2d)
 
     def test_fuse(self):
@@ -30,7 +30,7 @@ class TestConv2d_BN:
         fulsed_module = self.conv2d_bn.fuse()
 
         tmp_w = self.conv2d_bn.bn.weight / (self.conv2d_bn.bn.running_var + self.conv2d_bn.bn.eps) ** 0.5
-        new_w = self.conv2d_bn.conv.weight * tmp_w[:, None, None, None]
+        new_w = self.conv2d_bn.c.weight * tmp_w[:, None, None, None]
         new_b = self.conv2d_bn.bn.bias - self.conv2d_bn.bn.running_mean * tmp_w
 
         assert torch.isclose(fulsed_module.weight, new_w)

@@ -20,18 +20,18 @@ class Conv2d_BN(nn.Sequential):
 
     def __init__(
         self,
-        in_channels: int,
-        out_channels: int,
-        kernel_size: int = 1,
+        a: int,
+        b: int,
+        ks: int = 1,
         stride: int = 1,
-        padding: int = 0,
+        pad: int = 0,
         dilation: int = 1,
         groups: int = 1,
         bn_weight_init: float = 1.0,
     ) -> None:
         super().__init__()
-        self.add_module("c", nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias=False))
-        bn = nn.BatchNorm2d(out_channels)
+        self.add_module("c", nn.Conv2d(a, b, ks, stride, pad, dilation, groups, bias=False))
+        bn = nn.BatchNorm2d(b)
         nn.init.constant_(bn.weight, bn_weight_init)
         nn.init.constant_(bn.bias, 0)
         self.add_module("bn", bn)
@@ -39,22 +39,22 @@ class Conv2d_BN(nn.Sequential):
     @torch.no_grad()
     def fuse(self) -> nn.Module:
         """Fuse weights and biases."""
-        conv, bn = self._modules.values()
-        weight = bn.weight / (bn.running_var + bn.eps) ** 0.5
-        weight = conv.weight * weight[:, None, None, None]
-        bias = bn.bias - bn.running_mean * bn.weight / (bn.running_var + bn.eps) ** 0.5
-        fulsed_module = nn.Conv2d(
-            weight.size(1) * self.conv.groups,
-            weight.size(0),
-            weight.shape[2:],
-            stride=self.conv.stride,
-            padding=self.conv.padding,
-            dilation=self.conv.dilation,
-            groups=self.conv.groups,
+        c, bn = self._modules.values()
+        w = bn.weight / (bn.running_var + bn.eps) ** 0.5
+        w = c.weight * w[:, None, None, None]
+        b = bn.bias - bn.running_mean * bn.weight / (bn.running_var + bn.eps) ** 0.5
+        m = nn.Conv2d(
+            w.size(1) * self.c.groups,
+            w.size(0),
+            w.shape[2:],
+            stride=self.c.stride,
+            padding=self.c.padding,
+            dilation=self.c.dilation,
+            groups=self.c.groups,
         )
-        fulsed_module.weight.data.copy_(weight)
-        fulsed_module.bias.data.copy_(bias)
-        return fulsed_module
+        m.weight.data.copy_(w)
+        m.bias.data.copy_(b)
+        return m
 
 
 class PatchEmbed(nn.Module):
@@ -95,13 +95,13 @@ class MBConv(nn.Module):
         self.hidden_chans = int(in_chans * expand_ratio)
         self.out_chans = out_chans
 
-        self.conv1 = Conv2d_BN(in_chans, self.hidden_chans, kernel_size=1)
+        self.conv1 = Conv2d_BN(in_chans, self.hidden_chans, ks=1)
         self.act1 = activation()
 
-        self.conv2 = Conv2d_BN(self.hidden_chans, self.hidden_chans, kernel_size=3, stride=1, padding=1, groups=self.hidden_chans)
+        self.conv2 = Conv2d_BN(self.hidden_chans, self.hidden_chans, ks=3, stride=1, pad=1, groups=self.hidden_chans)
         self.act2 = activation()
 
-        self.conv3 = Conv2d_BN(self.hidden_chans, out_chans, kernel_size=1, bn_weight_init=0.0)
+        self.conv3 = Conv2d_BN(self.hidden_chans, out_chans, ks=1, bn_weight_init=0.0)
         self.act3 = activation()
 
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()  # type: ignore
@@ -363,8 +363,8 @@ class TinyViTBlock(nn.Module):
         mlp_activation = activation
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=mlp_activation, drop=drop)
 
-        padding = local_conv_size // 2
-        self.local_conv = Conv2d_BN(dim, dim, kernel_size=local_conv_size, stride=1, padding=padding, groups=dim)
+        pad = local_conv_size // 2
+        self.local_conv = Conv2d_BN(dim, dim, ks=local_conv_size, stride=1, pad=pad, groups=dim)
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward."""
