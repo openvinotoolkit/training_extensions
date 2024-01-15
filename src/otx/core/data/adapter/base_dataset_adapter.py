@@ -276,9 +276,12 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         """To filter out the abnormal polygon."""
         x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
         y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
-        return min(x_points) < max(x_points) and min(y_points) < max(y_points) and max(x_points) < width and max(
-            y_points
-        ) < height
+        return (
+            min(x_points) < max(x_points)
+            and min(y_points) < max(y_points)
+            and max(x_points) < width
+            and max(y_points) < height
+        )
 
     def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
         """To filter out the abrnormal bbox."""
