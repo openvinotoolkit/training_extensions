@@ -418,27 +418,3 @@ class OVMulticlassClassificationModel(OVModel):
             scores=pred_scores,
             labels=pred_labels,
         )
-
-class OVMultilabelClassificationModel(OVModel):
-    """Multilabel classification model compatible for OpenVINO IR inference.
-
-    It can consume OpenVINO IR model path or model name from Intel OMZ repository
-    and create the OTX classification model compatible for OTX testing pipeline.
-    """
-
-    def _customize_outputs(
-        self,
-        outputs: list[ClassificationResult],
-        inputs: MultilabelClsBatchDataEntity,
-    ) -> MultilabelClsBatchPredEntity:
-        breakpoint()
-        pred_labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
-        pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
-
-        return MultilabelClsBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=pred_scores,
-            labels=pred_labels,
-        )

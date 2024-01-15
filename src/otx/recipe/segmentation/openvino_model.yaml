@@ -14,10 +14,10 @@ model:
   otx_model:
     _target_: otx.core.model.entity.segmentation.OVSegmentationModel
     config:
-      model_name: /home/kprokofi/training_extensions_2/training_extensions/outputs/exported_models/segnext_s_kv_large/exported_model.xml
+      model_name: drn-d-38
       async_inference: True
-      use_throughput_mode: False
+      use_throughput_mode: True
       model_type: "Segmentation"
       decode_head:
-        num_classes: 2
-    num_classes: 2
+        num_classes: 19
+    num_classes: 19

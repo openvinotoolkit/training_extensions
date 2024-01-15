@@ -284,7 +284,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], Any] | None = None,
         onnx_configuration: dict[str, Any] | None = None,
-        return_path: bool = False
+        return_path_to_export_ir: bool = False
     ) -> None | str:
         """Export to ONNX format.
 
@@ -300,17 +300,19 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             onnx_configuration["operator_export_type"] = getattr(OperatorExportTypes, operator)
 
         torch.onnx.export(self.model, dummy_tensor, save_path, **onnx_configuration)
-        # onnx_model = onnx.load(save_path)
-        # if metadata is None:
-        #     metadata = {}
-        # onnx_model = OTXModel._embed_onnx_metadata(onnx_model, metadata)
-        # if precision == OTXExportPrecisionType.FP16:
-        #     from onnxconverter_common import float16
-
-        #     onnx_model = float16.convert_float_to_float16(onnx_model)
-        # onnx.save(onnx_model, save_path)
-        if return_path:
+        if return_path_to_export_ir:
             return save_path
+
+        onnx_model = onnx.load(save_path)
+        if metadata is None:
+            metadata = {}
+        onnx_model = OTXModel._embed_onnx_metadata(onnx_model, metadata)
+        if precision == OTXExportPrecisionType.FP16:
+            from onnxconverter_common import float16
+
+            onnx_model = float16.convert_float_to_float16(onnx_model)
+        onnx.save(onnx_model, save_path)
+
 
     def _export_to_exportable_code(self) -> None:
         """Export to exportable code format.
