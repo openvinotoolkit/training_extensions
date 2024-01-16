@@ -135,8 +135,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         task_name in recipe
         for task_name in [
             "hlabel_classification",
-            "segmentation",
             "detection",
+            "dino_v2",
             "instance_segmentation",
             "action_classification",
         ]
