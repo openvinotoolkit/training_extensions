@@ -35,8 +35,8 @@ DATASET = {
         "data_dir": "tests/assets/hlabel_classification",
         "overrides": [
             "model.otx_model.num_classes=7",
-            "model.otx_model.config.head.num_multiclass_heads=2",
-            "model.otx_model.config.head.num_multilabel_classes=3",
+            "model.otx_model.num_multiclass_heads=2",
+            "model.otx_model.num_multilabel_classes=3",
         ],
     },
     "detection": {
@@ -61,7 +61,7 @@ DATASET = {
         "data_dir": "tests/assets/action_detection_dataset/",
         "overrides": [
             "model.otx_model.num_classes=5",
-            "+model.otx_model.config.roi_head.bbox_head.topk=3",
+            "model.otx_model.topk=3",
         ],
     },
 }
