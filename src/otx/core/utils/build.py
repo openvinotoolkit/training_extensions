@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -38,6 +39,18 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str 
         load_checkpoint(model, load_from)
 
     return model
+
+
+def get_default_num_async_infer_requests() -> int:
+    """Returns a default number of infer request for OV models."""
+    import os
+
+    number_requests = os.cpu_count()
+    number_requests = max(1, int(number_requests / 2)) if number_requests is not None else 1
+    msg = f"""Set the default number of OpenVINO inference requests to {number_requests}.
+            You can specify the value in config."""
+    warnings.warn(msg, stacklevel=1)
+    return number_requests
 
 
 def get_classification_layers(

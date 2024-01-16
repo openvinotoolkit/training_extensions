@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - override /trainer: default
   - override /base: action_detection
   - override /callbacks: action_detection
   - override /data: mmaction_detection
@@ -75,3 +76,5 @@ model:
     lr: 0.005
     momentum: 0.9
     weight_decay: 0.00001
+trainer:
+  precision: 32

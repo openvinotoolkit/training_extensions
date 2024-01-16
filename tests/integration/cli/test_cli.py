@@ -68,7 +68,7 @@ DATASET = {
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
+def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -119,6 +119,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         f"base.data_dir={DATASET[task]['data_dir']}",
         f"base.work_dir={tmp_path_test}",
         f"base.output_dir={tmp_path_test / 'outputs'}",
+        f"trainer={fxt_accelerator}",
         *DATASET[task]["overrides"],
         f"checkpoint={ckpt_files[-1]}",
     ]
@@ -145,6 +146,11 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
     Returns:
         None
     """
+    if recipe == "instance_segmentation/openvino_model.yaml":
+        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
+        # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
+        pytest.skip("OMZ doesn't have proper model for Pytorch MaskRCNN interface.")
+
     task = recipe.split("/")[0]
     model_name = recipe.split("/")[1].split(".")[0]
 
