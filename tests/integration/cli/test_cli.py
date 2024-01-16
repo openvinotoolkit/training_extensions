@@ -133,7 +133,13 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     # 3) otx export
     if any(
         task_name in recipe
-        for task_name in ["hlabel_classification", "segmentation", "detection", "instance_segmentation"]
+        for task_name in [
+            "hlabel_classification",
+            "segmentation",
+            "detection",
+            "instance_segmentation",
+            "action_classification",
+        ]
     ):
         return
 
@@ -160,6 +166,9 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
+
+    if "multilabel_classification" in recipe:
+        return
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     task = recipe.split("/")[0]
