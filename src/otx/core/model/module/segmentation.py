@@ -62,6 +62,9 @@ class OTXSegmentationLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: JaccardIndex, key: str) -> None:
         results = meter.compute()
+        if results is None:
+            msg = f"{meter} has no data to compute metric or there is an error computing metric"
+            raise RuntimeError(msg)
 
         if isinstance(results, Tensor):
             if results.numel() != 1:
@@ -88,19 +91,22 @@ class OTXSegmentationLitModule(OTXLitModule):
         if not isinstance(preds, SegBatchPredEntity):
             raise TypeError(preds)
 
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for prediction in predictions:
+            self.val_metric.update(**prediction)
 
     def _convert_pred_entity_to_compute_metric(
         self,
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
-    ) -> dict[str, list[dict[str, Tensor]]]:
-        return {
-            "preds": torch.cat(preds.masks, dim=0),
-            "target": torch.cat(inputs.masks, dim=0),
-        }
+    ) -> list[dict[str, Tensor]]:
+        return [
+            {
+                "preds": pred_mask,
+                "target": target_mask,
+            }
+            for pred_mask, target_mask in zip(preds.masks, inputs.masks)
+        ]
 
     def test_step(self, inputs: SegBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -112,10 +118,9 @@ class OTXSegmentationLitModule(OTXLitModule):
         preds = self.model(inputs)
         if not isinstance(preds, SegBatchPredEntity):
             raise TypeError(preds)
-
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for prediction in predictions:
+            self.test_metric.update(**prediction)
 
     @property
     def lr_scheduler_monitor_key(self) -> str:

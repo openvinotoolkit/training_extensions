@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - override /trainer: default
   - override /base: detection
   - override /callbacks: detection
   - override /data: mmdet
@@ -119,3 +120,5 @@ model:
   otx_model:
     _target_: otx.algo.detection.rtmdet.RTMDet
     variant: tiny
+trainer:
+  precision: 32
