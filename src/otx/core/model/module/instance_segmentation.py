@@ -57,6 +57,10 @@ class OTXInstanceSegLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: MeanAveragePrecision, subset_name: str) -> None:
         results = meter.compute()
+        if results is None:
+            msg = f"{meter} has no data to compute metric or there is an error computing metric"
+            raise RuntimeError(msg)
+
         for metric, value in results.items():
             if not isinstance(value, Tensor):
                 log.debug("Cannot log item which is not Tensor")

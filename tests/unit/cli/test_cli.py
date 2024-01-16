@@ -46,13 +46,13 @@ class TestOTXCLI:
             pytest.skip("Hydra fails to create default config in python < 3.9")
 
         # Test that main function runs with help -> return 0
-        mock_engine_train = mocker.patch("otx.core.engine.Engine.train")
+        mock_otx_train = mocker.patch("otx.cli.train.otx_train")
         cli = OTXCLI()
 
         assert cli.config["subcommand"] == "train"
         assert "overrides" in cli.config["train"]
         assert cli.config["train"]["overrides"] == fxt_train_command[2:]
 
-        cfg = mock_engine_train.call_args.args[0]
-        assert cfg["checkpoint"] == "my_checkpoint"
-        assert cfg["base"]["output_dir"] == tmpdir
+        assert mock_otx_train.call_count == 1
+        assert "overrides" in mock_otx_train.call_args.kwargs
+        assert mock_otx_train.call_args.kwargs["overrides"] == fxt_train_command[2:]

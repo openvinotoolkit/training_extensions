@@ -46,15 +46,21 @@ class OTXCLI:
         from otx.cli.install import add_install_parser
 
         add_install_parser(parser_subcommands)
-        from otx.cli.train import add_train_parser
 
-        add_train_parser(parser_subcommands)
-        from otx.cli.test import add_test_parser
+        # otx train parser
+        train_parser = ArgumentParser()
+        train_parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
+        parser_subcommands.add_subcommand("train", train_parser, help="Training subcommand for OTX")
 
-        add_test_parser(parser_subcommands)
-        from otx.cli.export import add_export_parser
+        # otx test parser
+        test_parser = ArgumentParser()
+        test_parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
+        parser_subcommands.add_subcommand("test", test_parser, help="Testing subcommand for OTX")
 
-        add_export_parser(parser_subcommands)
+        # otx export parser
+        export_parser = ArgumentParser()
+        export_parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
+        parser_subcommands.add_subcommand("export", test_parser, help="Export subcommand for OTX")
 
     def run(self) -> None:
         """Run the OTX CLI."""
