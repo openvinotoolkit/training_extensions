@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging as log
+from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
@@ -19,6 +20,9 @@ from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
 
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
 
 class OTXInstanceSegLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX instance segmentation task."""
@@ -26,11 +30,16 @@ class OTXInstanceSegLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXInstanceSegModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
 
         self.val_metric = MeanAveragePrecision(iou_type="segm")
         self.test_metric = MeanAveragePrecision(iou_type="segm")

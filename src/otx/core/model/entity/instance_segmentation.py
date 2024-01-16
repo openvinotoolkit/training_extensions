@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -22,7 +23,6 @@ from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import device, nn
 
@@ -36,7 +36,8 @@ class OTXInstanceSegModel(
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig | dict) -> None:
+        config = DictConfig(config)
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
