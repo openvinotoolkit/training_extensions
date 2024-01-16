@@ -156,8 +156,8 @@ class OTXLitModule(LightningModule):
                 f"Data classes from training data: {self.meta_info.label_names}",
             )
             self.register_load_state_dict_pre_hook(
-                self.meta_info.label_names,
-                ckpt_meta_info.class_names,
+                self.meta_info.class_names,
+                ckpt_meta_info.label_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
 
@@ -192,4 +192,6 @@ class OTXLitModule(LightningModule):
             resize_mode=self._export_config.resize_mode,
             pad_value=self._export_config.pad_value,
             swap_rgb=self._export_config.swap_rgb,
+            via_onnx=self._export_config.via_onnx,
+            onnx_export_configuration=self._export_config.onnx_export_configuration,
         )

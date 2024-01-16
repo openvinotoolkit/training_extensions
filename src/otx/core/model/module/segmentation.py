@@ -92,7 +92,7 @@ class OTXSegmentationLitModule(OTXLitModule):
 
         pred_list = self._convert_pred_entity_to_compute_metric(preds, inputs)
         for prediction in pred_list:
-            self.test_metric.update(**prediction)
+            self.val_metric.update(**prediction)
 
     def _convert_pred_entity_to_compute_metric(
         self,

@@ -30,3 +30,6 @@ export_config:
     - 1
     - 1
     - 1
+  via_onnx: false
+  onnx_export_configuration:
+    - operator_export_type: ONNX

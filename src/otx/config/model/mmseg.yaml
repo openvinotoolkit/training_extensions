@@ -23,6 +23,9 @@ export_config:
   export_format: OPENVINO
   precision: FP32
   resize_mode: standard
+  via_onnx: false
+  onnx_export_configuration:
+    - operator_export_type: ONNX
   pad_value: 0
   swap_rgb: false
   input_height: 224
