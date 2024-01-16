@@ -88,8 +88,8 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
                 batch_size=self.batch_size,
                 images=tiles[i : i + self.batch_size],
                 imgs_info=img_infos[i : i + self.batch_size],
-                bboxes=self.bboxes[i : i + self.batch_size],
-                labels=self.labels[i : i + self.batch_size],
+                bboxes=[[] for _ in range(self.batch_size)],
+                labels=[[] for _ in range(self.batch_size)],
             )
             for i in range(0, len(tiles), self.batch_size)
         ]
@@ -168,10 +168,10 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
                 batch_size=self.batch_size,
                 images=tiles[i : i + self.batch_size],
                 imgs_info=tile_infos[i : i + self.batch_size],
-                bboxes=self.bboxes[i : i + self.batch_size],
-                labels=self.labels[i : i + self.batch_size],
-                masks=self.masks[i : i + self.batch_size],
-                polygons=self.polygons[i : i + self.batch_size],
+                bboxes=[[] for _ in range(self.batch_size)],
+                labels=[[] for _ in range(self.batch_size)],
+                masks=[[] for _ in range(self.batch_size)],
+                polygons=[[] for _ in range(self.batch_size)],
             )
             for i in range(0, len(tiles), self.batch_size)
         ]
