@@ -36,7 +36,9 @@ dependencies = [
     "psutil", # Mem cache needs system checks
     "ftfy",
     "regex",
-    "importlib_resources"
+    "importlib_resources",
+    "docstring_parser", # CLI help-formatter
+    "rich_argparse", # CLI help-formatter
 ]
 
 [project.optional-dependencies]
