@@ -35,5 +35,6 @@ def export(cfg: TrainConfig) -> str:
     log.info("Starting exporting!")
     model.eval()
     model.export(cfg.base.output_dir)
+    log.info(f"Model exported to {cfg.base.output_dir}")
 
     return ""

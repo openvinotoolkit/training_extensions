@@ -131,13 +131,16 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
     assert (tmp_path_test / "outputs" / "lightning_logs").exists()
 
     # 3) otx export
-    if any(task_name in recipe for task_name in ["hlabel_classification", "segmentation", "detection", "instance_segmentation"]):
+    if any(
+        task_name in recipe
+        for task_name in ["hlabel_classification", "segmentation", "detection", "instance_segmentation"]
+    ):
         return
 
     format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml"}
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    for format in format_to_ext.keys():
+    for fmt in format_to_ext:
         command_cfg = [
             "otx",
             "export",
@@ -147,14 +150,14 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
             f"base.output_dir={tmp_path_test / 'outputs'}",
             *DATASET[task]["overrides"],
             f"checkpoint={ckpt_files[-1]}",
-            f"model.export_config.export_format={format}",
+            f"model.export_config.export_format={fmt}",
         ]
 
         with patch("sys.argv", command_cfg):
             main()
 
         assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[format]}").exists()
+        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
