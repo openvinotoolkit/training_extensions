@@ -10,7 +10,7 @@ early_stopping:
   check_finite: True # when set True, stops training when the monitor becomes NaN or infinite
   stopping_threshold: null # stop training immediately once the monitored quantity reaches this threshold
   divergence_threshold: null # stop training as soon as the monitored quantity becomes worse than this threshold
-  check_on_train_epoch_end: null # whether to run early stopping at the end of the training epoch
+  check_on_train_epoch_end: false # run early stopping at the end of the validation epoch
   # log_rank_zero_only: False  # this keyword argument isn't available in stable version
 
 # https://lightning.ai/docs/pytorch/stable/api/lightning.pytorch.callbacks.ModelCheckpoint.html
@@ -30,13 +30,6 @@ model_checkpoint:
   every_n_epochs: null # number of epochs between checkpoints
   save_on_train_epoch_end: null # whether to run checkpointing at the end of the training epoch or the end of validation
 
-# https://lightning.ai/docs/pytorch/stable/api/lightning.pytorch.callbacks.IterationTimer.html
-iteration_timer:
-  _target_: otx.algo.callbacks.iteration_timer.IterationTimer
-  prog_bar: True
-  on_step: False
-  on_epoch: True
-
 # https://lightning.ai/docs/pytorch/stable/api/lightning.pytorch.callbacks.RichModelSummary.html
 model_summary:
   _target_: lightning.pytorch.callbacks.RichModelSummary
@@ -51,3 +44,17 @@ learning_rate_monitor:
   _target_: lightning.pytorch.callbacks.LearningRateMonitor
   logging_interval: epoch
   log_momentum: True
+
+# OTX custom callbacks
+# src/otx/algo/callbacks/iteration_timer.py
+iteration_timer:
+  _target_: otx.algo.callbacks.iteration_timer.IterationTimer
+  prog_bar: True
+  on_step: False
+  on_epoch: True
+
+# src/otx/algo/callbacks/adaptive_train_scheduling.py
+adaptive_train_scheduling:
+  _target_: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+  max_interval: 5
+  decay: -0.025
