@@ -159,6 +159,29 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         assert (tmp_path_test / "outputs").exists()
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
+    # 4) infer of the exported models
+
+    tmp_path_test = tmp_path / f"otx_test_{model_name}"
+    task = recipe.split("/")[0]
+    export_test_recipe = f"{task}/openvino_model.yaml"
+    exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
+
+    command_cfg = [
+        "otx",
+        "test",
+        f"+recipe={export_test_recipe}",
+        f"base.data_dir={DATASET[task]['data_dir']}",
+        f"base.work_dir={tmp_path_test}",
+        f"base.output_dir={tmp_path_test / 'outputs'}",
+        *DATASET[task]["overrides"],
+        f"model.otx_model.config.model_name={exported_model_path}",
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
 def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
