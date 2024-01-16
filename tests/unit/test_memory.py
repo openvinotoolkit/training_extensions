@@ -4,7 +4,7 @@ import time
 import pytest
 
 
-@pytest.skip(reason="only for the debugging")
+@pytest.mark.skip(reason="only for the debugging")
 def test_memory_bound():
     print(psutil.virtual_memory())
     alloc = []
@@ -12,6 +12,6 @@ def test_memory_bound():
     idx = 0
     while idx < 1024:
         alloc.append(f"{idx}{alloc_unit}")
-        print(psutil.virtual_memory())
+        print(f"[{idx}]{psutil.virtual_memory()}")
         time.sleep(1)
         idx += 1
