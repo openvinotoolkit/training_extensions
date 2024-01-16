@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import cv2
@@ -118,98 +119,139 @@ def create_merged_inst_seg_prediction(
 
 
 def merge_detection_tiles(
-    tile_preds: list[DetBatchPredEntity],
-) -> DetPredEntity:
+    batch_tile_preds: list[DetBatchPredEntity],
+) -> list[DetPredEntity]:
     """Merge detection tiles into one single detection prediction.
 
     Args:
         tile_preds (list[DetBatchPredEntity]): List of tile predictions.
 
     Returns:
-        DetPredEntity: Merged detection prediction.
+        list[DetPredEntity]: List of merged detection prediction.
     """
-    dataset_items = []
+    dataset_item_to_merge = defaultdict(list)
     anno_id = 0
+    img_ids = []
+    image_infos = []
 
-    for tile_pred in tile_preds:
-        annotations = []
-        for batch_bboxes, batch_labels, batch_scores in zip(tile_pred.bboxes, tile_pred.labels, tile_pred.scores):
-            for bbox, label, score in zip(batch_bboxes.data, batch_labels, batch_scores):
-                _bbox = bbox.detach().cpu().numpy()
-                _label = label.detach().cpu().numpy()
-                _score = score.detach().cpu().numpy()
-                x1, y1, x2, y2 = _bbox
-                w, h = x2 - x1, y2 - y1
-                annotations.append(
-                    Bbox(x1, y1, w, h, label=_label, id=anno_id, attributes={"score": _score}),
-                )
-                anno_id += 1
+    current_tile_id = None
+    for tile_preds in batch_tile_preds:
+        for tile_img, tile_info in zip(tile_preds.images, tile_preds.imgs_info):
+            annotations = []
+            # NOTE: tile_bboxes, tile_labels, tile_scores are lists of tensors or empty lists.
+            for tile_bboxes, tile_labels, tile_scores in zip(tile_preds.bboxes, tile_preds.labels, tile_preds.scores):
+                if len(tile_bboxes):
+                    _bboxes = tile_bboxes.data.detach().cpu().numpy()
+                    _labels = tile_labels.detach().cpu().numpy()
+                    _scores = tile_scores.detach().cpu().numpy()
+                    for _bbox, _label, _score in zip(_bboxes, _labels, _scores):
+                        x1, y1, x2, y2 = _bbox
+                        w, h = x2 - x1, y2 - y1
+                        annotations.append(
+                            Bbox(x1, y1, w, h, label=_label, id=anno_id, attributes={"score": _score}),
+                        )
+                        anno_id += 1
 
-        tile_info = tile_pred.imgs_info[0]
-        tile_img = tile_pred.images[0].detach().cpu().numpy().transpose(1, 2, 0)
-        tile_img = cv2.resize(tile_img, tile_info.ori_shape)
-        dataset_item = DatasetItem(
-            media=Image.from_numpy(tile_img),
-            id=tile_info.attributes.get("tile_idx", 0),
-            annotations=annotations,
-            attributes=tile_info.attributes,
-        )
-        dataset_items.append(dataset_item)
+            np_tile_img = tile_img.detach().cpu().numpy().transpose(1, 2, 0)
+            np_tile_img = cv2.resize(np_tile_img, tile_info.ori_shape)
+            tile_id = tile_info.attributes["tile_id"]
+            tile_idx = tile_info.attributes["tile_idx"]
+            if tile_id != current_tile_id:
+                image_infos.append(tile_info)
+                current_tile_id = tile_id
+                anno_id = 0
 
-    merged_item = merge_dataset_items(dataset_items)
-    img_info = tile_preds[0].imgs_info[0]
-    full_img = merged_item.media_as(Image).data
-    return create_merged_detection_prediction(full_img, img_info, merged_item)
+            if tile_id not in img_ids:
+                img_ids.append(tile_id)
+            dataset_item = DatasetItem(
+                media=Image.from_numpy(np_tile_img),
+                id=tile_idx,
+                annotations=annotations,
+                attributes=tile_info.attributes,
+            )
+            dataset_item_to_merge[tile_id].append(dataset_item)
+
+    predictions = []
+    for img_id, image_info in zip(img_ids, image_infos):
+        merged_item = merge_dataset_items(dataset_item_to_merge[img_id])
+        full_img = merged_item.media_as(Image).data
+        predictions.append(create_merged_detection_prediction(full_img, image_info, merged_item))
+    return predictions
 
 
 def merge_inst_seg_tiles(
-    tile_preds: list[InstanceSegBatchPredEntity],
-) -> InstanceSegPredEntity:
+    batch_tile_preds: list[InstanceSegBatchPredEntity],
+) -> list[InstanceSegPredEntity]:
     """Merge instance segmentation tiles into one single inst-seg prediction.
 
     Args:
         tile_preds (list[InstanceSegBatchPredEntity]): List of tile inst-seg predictions.
 
     Returns:
-        InstanceSegPredEntity: Merged inst-seg prediction.
+        list[InstanceSegPredEntity]: List of merged inst-seg prediction.
     """
-    dataset_items = []
+    dataset_item_to_merge = defaultdict(list)
     anno_id = 0
-    for tile_pred in tile_preds:
-        annotations = []
-        for batch_bboxes, batch_labels, batch_scores, batch_masks in zip(
-            tile_pred.bboxes,
-            tile_pred.labels,
-            tile_pred.scores,
-            tile_pred.masks,
-        ):
-            for bbox, label, score, mask in zip(batch_bboxes.data, batch_labels, batch_scores, batch_masks):
-                _bbox = bbox.detach().cpu().numpy()
-                _label = label.detach().cpu().numpy()
-                _score = score.detach().cpu().numpy()
-                _mask = mask.detach().cpu().numpy()
-                x1, y1, x2, y2 = _bbox
-                w, h = x2 - x1, y2 - y1
-                annotations.extend(
-                    [
-                        Mask(_mask, label=_label, id=anno_id, group=anno_id, attributes={"score": _score}),
-                        Bbox(x1, y1, w, h, label=_label, id=anno_id, group=anno_id, attributes={"score": _score}),
-                    ],
-                )
-                anno_id += 1
+    img_ids = []
+    image_infos = []
 
-        tile_info = tile_pred.imgs_info[0]
-        tile_img = tile_pred.images[0].detach().cpu().numpy().transpose(1, 2, 0)
-        tile_img = cv2.resize(tile_img, tile_info.ori_shape)
-        dataset_item = DatasetItem(
-            media=Image.from_numpy(tile_img),
-            id=tile_info.attributes["tile_idx"],
-            annotations=annotations,
-            attributes=tile_info.attributes,
-        )
-        dataset_items.append(dataset_item)
+    current_tile_id = None
+    for tile_preds in batch_tile_preds:
+        for tile_img, tile_info in zip(tile_preds.images, tile_preds.imgs_info):
+            annotations = []
+            for tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
+                tile_preds.bboxes,
+                tile_preds.labels,
+                tile_preds.scores,
+                tile_preds.masks,
+            ):
+                if len(tile_bboxes):
+                    _bboxes = tile_bboxes.data.detach().cpu().numpy()
+                    _labels = tile_labels.detach().cpu().numpy()
+                    _scores = tile_scores.detach().cpu().numpy()
+                    _masks = tile_masks.detach().cpu().numpy()
+                    for _bbox, _label, _score, _mask in zip(_bboxes, _labels, _scores, _masks):
+                        x1, y1, x2, y2 = _bbox
+                        w, h = x2 - x1, y2 - y1
+                        annotations.extend(
+                            [
+                                Mask(_mask, label=_label, id=anno_id, group=anno_id, attributes={"score": _score}),
+                                Bbox(
+                                    x1,
+                                    y1,
+                                    w,
+                                    h,
+                                    label=_label,
+                                    id=anno_id,
+                                    group=anno_id,
+                                    attributes={"score": _score},
+                                ),
+                            ],
+                        )
+                        anno_id += 1
 
-    merged_item = merge_dataset_items(dataset_items)
-    img_info = tile_preds[0].imgs_info[0]
-    full_img = merged_item.media_as(Image).data
-    return create_merged_inst_seg_prediction(full_img, img_info, merged_item)
+            np_tile_img = tile_img.detach().cpu().numpy().transpose(1, 2, 0)
+            np_tile_img = cv2.resize(np_tile_img, tile_info.ori_shape)
+            tile_id = tile_info.attributes["tile_id"]
+            tile_idx = tile_info.attributes["tile_idx"]
+            if tile_id != current_tile_id:
+                image_infos.append(tile_info)
+                current_tile_id = tile_id
+                anno_id = 0
+
+            if tile_id not in img_ids:
+                img_ids.append(tile_id)
+            dataset_item = DatasetItem(
+                media=Image.from_numpy(np_tile_img),
+                id=tile_idx,
+                annotations=annotations,
+                attributes=tile_info.attributes,
+            )
+            dataset_item_to_merge[tile_id].append(dataset_item)
+
+    predictions = []
+    for img_id, image_info in zip(img_ids, image_infos):
+        merged_item = merge_dataset_items(dataset_item_to_merge[img_id])
+        full_img = merged_item.media_as(Image).data
+        predictions.append(create_merged_inst_seg_prediction(full_img, image_info, merged_item))
+    return predictions
