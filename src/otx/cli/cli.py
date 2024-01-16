@@ -157,6 +157,7 @@ class OTXCLI:
                 fail_untyped=False,
                 sub_configs=True,
             )
+            sub_parser.link_arguments("data_root", "data.config.data_root")
 
             # Optimizer & Scheduler Settings
             from lightning.pytorch.cli import LRSchedulerTypeTuple
