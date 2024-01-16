@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib
 import tempfile
 import warnings
+import os
 from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
@@ -262,6 +263,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             deploy_cfg = MMConfig.fromfile(config_module.__file__)
             mm_model_config.pop("load_from")
 
+            # export ONNX
             exporter = MMdeployExporter(
                 self._create_model,
                 output_dir,
@@ -270,7 +272,17 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                 test_pipeline
             )
             onnx_path = exporter.cvt_torch2onnx()
-            exporter.cvt_onnx2openvino(onnx_path, precision)
+
+            # export OpenVINO
+            exported_model = openvino.convert_model(
+                onnx_path,
+                input=(openvino.runtime.PartialShape((1, 3, *input_size)),),
+            )
+            # tmp_ov_xml, tmp_ov_bin = exporter.cvt_onnx2openvino(onnx_path, precision)
+            # ov_core = openvino.Core()
+            # exported_model = ov_core.read_model(tmp_ov_xml, tmp_ov_bin)
+            # os.remove(tmp_ov_xml)
+            # os.remove(tmp_ov_bin)
         elif via_onnx:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 save_path = Path(tmpdirname) / "tmp_model.onnx"
@@ -291,6 +303,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         exported_model = OTXModel._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (self._EXPORTED_MODEL_BASE_NAME + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+
+        print(f"Model export is done. file is saved at {save_path}")
 
     @staticmethod
     def _embed_onnx_metadata(onnx_model: onnx.ModelProto, metadata: dict[tuple[str, str], Any]) -> onnx.ModelProto:

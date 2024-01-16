@@ -186,3 +186,11 @@ model:
     lr: 0.001
     weight_decay: 0.001
     momentum: 0.9
+  export_config:
+    input_height: 736
+    input_width: 992
+    mean: ${..otx_model.config.data_preprocessor.mean}
+    std: ${..otx_model.config.data_preprocessor.std}
+    mmdeploy_config: otx.config.mmdeploy.detection.atss_resnext101
+    mm_model_config: ${..otx_model.config}
+    test_pipeline: ${...data.test_subset.transforms}
