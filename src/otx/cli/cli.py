@@ -102,11 +102,12 @@ class OTXCLI:
         Returns:
             A dictionary where the keys are the subcommands and the values are sets of required arguments.
         """
+        device_kwargs = {"accelerator", "devices"}
         return {
-            "train": set(),
-            "test": {"datamodule"},
-            "predict": {"datamodule"},
-            "export": set(),
+            "train": device_kwargs,
+            "test": {"datamodule"}.union(device_kwargs),
+            "predict": {"datamodule"}.union(device_kwargs),
+            "export": device_kwargs,
         }
 
     def add_subcommands(self) -> None:
@@ -182,12 +183,13 @@ class OTXCLI:
             added = sub_parser.add_method_arguments(
                 Engine,
                 subcommand,
+                nested_key=f"{subcommand}",
                 skip=skip,
                 fail_untyped=False,
             )
 
-            if "logger" in added:
-                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
+            if f"{subcommand}.logger" in added:
+                sub_parser.link_arguments("engine.work_dir", f"{subcommand}.logger.init_args.save_dir")
 
             self._subcommand_method_arguments[subcommand] = added
             self._subcommand_parsers[subcommand] = sub_parser
@@ -251,7 +253,9 @@ class OTXCLI:
     def _prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
         return {
-            k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
+            f"{k.split('.')[-1]}": v
+            for k, v in self.config_init[subcommand].items()
+            if k in self._subcommand_method_arguments[subcommand]
         }
 
     def save_config(self) -> None:
