@@ -5,10 +5,12 @@
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any
 
 import torch
 
+from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -33,6 +35,33 @@ class OTXMulticlassClsModel(
     OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
 ):
     """Base class for the classification models used in OTX."""
+
+    @abstractmethod
+    def head_forward_fn(self, x):
+        """Defines neck (if available) and head forward function."""
+
+    @property
+    @abstractmethod
+    def has_gap(self):
+        """Defines if GAP is used right after backbone."""
+
+    def register_explain_hook(self, backbone: torch.nn.Module) -> None:
+        """Register explain hook at the model backbone output."""
+        self.explain_hook = ReciproCAMHook(
+            self.head_forward_fn,
+            num_classes=self.num_classes,
+            optimize_gap=self.has_gap,
+        )
+        self.explain_hook.handle = backbone.register_forward_hook(self.explain_hook.recording_forward)
+
+    def remove_explain_hook_handle(self) -> None:
+        """Removes explain hook from the model."""
+        if self.explain_hook.handle is not None:
+            self.explain_hook.handle.remove()
+
+    def reset_explain_hook(self):
+        """Clear all history of explain records."""
+        self.explain_hook.reset()
 
 
 def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
