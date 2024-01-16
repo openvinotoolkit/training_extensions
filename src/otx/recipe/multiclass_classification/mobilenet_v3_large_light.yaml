@@ -81,3 +81,4 @@ model:
     input_width: 224
     mean: ${..otx_model.config.data_preprocessor.mean}
     std: ${..otx_model.config.data_preprocessor.std}
+    via_onnx: true
