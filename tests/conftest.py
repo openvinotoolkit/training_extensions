@@ -98,13 +98,14 @@ def manage_tm_config_for_testing():
 
 @pytest.fixture(autouse=True, scope="session")
 def init_mlflow_tracking():
-    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI", "http://localhost:8080")
-    mlflow.set_tracking_uri(uri=uri)
+    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    if uri is not None:
+        mlflow.set_tracking_uri(uri=uri)
 
     yield
 
 
 @pytest.fixture(scope="session")
 def fxt_mlflow_client():
-    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI", "http://localhost:8080")
-    return mlflow.MlflowClient(uri)
+    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    return mlflow.MlflowClient(uri) if uri is not None else None
