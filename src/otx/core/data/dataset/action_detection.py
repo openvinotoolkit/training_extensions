@@ -45,7 +45,6 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
                 img_idx=idx,
                 img_shape=img_shape,
                 ori_shape=img_shape,
-                attributes=item.attributes,
             ),
             bboxes=tv_tensors.BoundingBoxes(
                 bboxes,

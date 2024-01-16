@@ -39,7 +39,6 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
-                attributes=item.attributes,
             ),
             gt_seg_map=tv_tensors.Mask(
                 torch.as_tensor(mask_anns, dtype=torch.long),

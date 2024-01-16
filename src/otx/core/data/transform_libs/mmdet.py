@@ -103,17 +103,13 @@ class PackDetInputs(MMDetPackDetInputs):
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
         img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
-        if (otx_data_entity := results.get("__otx__")) is None:
-            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
-            raise RuntimeError(msg)
-        attributes = otx_data_entity.img_info.attributes
 
         bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
         labels = data_samples.gt_instances.labels
 
         return DetDataEntity(
             image=tv_tensors.Image(transformed.get("inputs")),
-            img_info=self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor, attributes),
+            img_info=self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor),
             bboxes=bboxes,
             labels=labels,
         )
@@ -123,14 +119,10 @@ class PackDetInputs(MMDetPackDetInputs):
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
         img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
-        if (otx_data_entity := results.get("__otx__")) is None:
-            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
-            raise RuntimeError(msg)
-        attributes = otx_data_entity.img_info.attributes
 
         bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
         labels = data_samples.gt_instances.labels
-        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor, attributes)
+        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor)
 
         masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
 
@@ -172,7 +164,6 @@ class PackDetInputs(MMDetPackDetInputs):
         ori_shape: tuple[int, int],
         pad_shape: tuple[int, int],
         scale_factor: tuple[float, float],
-        attributes: dict,
     ) -> ImageInfo:
         """Create ImageInfo instance."""
         image_info = ImageInfo(
@@ -180,7 +171,6 @@ class PackDetInputs(MMDetPackDetInputs):
             img_shape=img_shape,
             ori_shape=ori_shape,
             scale_factor=scale_factor,
-            attributes=attributes,
         )
         image_info.pad_shape = pad_shape
         return image_info

@@ -67,9 +67,6 @@ class PackInputs(MMPretrainPackInputs):
     def _pack_multiclass_inputs(self, results: dict) -> MulticlassClsDataEntity:
         """Pack multiclass classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)
-        if (otx_data_entity := results.get("__otx__")) is None:
-            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
-            raise RuntimeError(msg)
 
         data_entity = MulticlassClsDataEntity(
             image=packed_common_inputs["image"],
@@ -78,7 +75,6 @@ class PackInputs(MMPretrainPackInputs):
                 img_shape=packed_common_inputs["img_shape"],
                 ori_shape=packed_common_inputs["ori_shape"],
                 scale_factor=packed_common_inputs["scale_factor"],
-                attributes=otx_data_entity.img_info.attributes,
             ),
             labels=packed_common_inputs["labels"],
         )
@@ -94,9 +90,6 @@ class PackInputs(MMPretrainPackInputs):
         That's the reason why I reamined same function.
         """
         packed_common_inputs = self._pack_common_inputs(results)
-        if (otx_data_entity := results.get("__otx__")) is None:
-            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
-            raise RuntimeError(msg)
 
         data_entity = MultilabelClsDataEntity(
             image=packed_common_inputs["image"],
@@ -105,7 +98,6 @@ class PackInputs(MMPretrainPackInputs):
                 img_shape=packed_common_inputs["img_shape"],
                 ori_shape=packed_common_inputs["ori_shape"],
                 scale_factor=packed_common_inputs["scale_factor"],
-                attributes=otx_data_entity.img_info.attributes,
             ),
             labels=packed_common_inputs["labels"],
         )
@@ -115,9 +107,6 @@ class PackInputs(MMPretrainPackInputs):
     def _pack_hlabel_inputs(self, results: dict) -> HlabelClsDataEntity:
         """Pack hlabel classification inputs."""
         packed_common_inputs = self._pack_common_inputs(results)
-        if (otx_data_entity := results.get("__otx__")) is None:
-            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
-            raise RuntimeError(msg)
 
         data_entity = HlabelClsDataEntity(
             image=packed_common_inputs["image"],
@@ -126,7 +115,6 @@ class PackInputs(MMPretrainPackInputs):
                 img_shape=packed_common_inputs["img_shape"],
                 ori_shape=packed_common_inputs["ori_shape"],
                 scale_factor=packed_common_inputs["scale_factor"],
-                attributes=otx_data_entity.img_info.attributes,
             ),
             labels=packed_common_inputs["labels"],
         )

@@ -44,13 +44,15 @@ class OTXInstanceSegModel(
             InstanceSegBatchPredEntity: Merged instance segmentation prediction.
         """
         tile_preds: list[InstanceSegBatchPredEntity] = []
-        for tile_input in inputs.unbind():
-            output = self.forward(tile_input)
+        tile_attrs: list[list[dict[str, int | str]]] = []
+        for batch_tile_attrs, batch_tile_input in inputs.unbind():
+            output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
                 msg = "Loss output is not supported for tile merging"
                 raise TypeError(msg)
             tile_preds.append(output)
-        pred_entities = merge_inst_seg_tiles(tile_preds)
+            tile_attrs.append(batch_tile_attrs)
+        pred_entities = merge_inst_seg_tiles(tile_preds, tile_attrs)
 
         return InstanceSegBatchPredEntity(
             batch_size=inputs.batch_size,

@@ -54,9 +54,6 @@ class PackSegInputs(MMSegPackInputs):
         transformed = super().transform(results)
         image = tv_tensors.Image(transformed.get("inputs"))
         data_samples = transformed["data_samples"]
-        if (otx_data_entity := results.get("__otx__")) is None:
-            msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
-            raise RuntimeError(msg)
 
         img_shape = data_samples.img_shape
         ori_shape = data_samples.ori_shape
@@ -71,7 +68,6 @@ class PackSegInputs(MMSegPackInputs):
                 img_shape=img_shape,
                 ori_shape=ori_shape,
                 scale_factor=scale_factor,
-                attributes=otx_data_entity.img_info.attributes,
             ),
             gt_seg_map=masks,
         )

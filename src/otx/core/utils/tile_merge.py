@@ -120,6 +120,7 @@ def create_merged_inst_seg_prediction(
 
 def merge_detection_tiles(
     batch_tile_preds: list[DetBatchPredEntity],
+    batch_tile_attrs: list[list[dict]],
 ) -> list[DetPredEntity]:
     """Merge detection tiles into one single detection prediction.
 
@@ -135,8 +136,8 @@ def merge_detection_tiles(
     image_infos = []
 
     current_tile_id = None
-    for tile_preds in batch_tile_preds:
-        for tile_img, tile_info in zip(tile_preds.images, tile_preds.imgs_info):
+    for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
+        for tile_img, tile_img_info, tile_attr in zip(tile_preds.images, tile_preds.imgs_info, tile_attrs):
             annotations = []
             # NOTE: tile_bboxes, tile_labels, tile_scores are lists of tensors or empty lists.
             for tile_bboxes, tile_labels, tile_scores in zip(tile_preds.bboxes, tile_preds.labels, tile_preds.scores):
@@ -153,11 +154,11 @@ def merge_detection_tiles(
                         anno_id += 1
 
             np_tile_img = tile_img.detach().cpu().numpy().transpose(1, 2, 0)
-            np_tile_img = cv2.resize(np_tile_img, tile_info.ori_shape)
-            tile_id = tile_info.attributes["tile_id"]
-            tile_idx = tile_info.attributes["tile_idx"]
-            if tile_id != current_tile_id:
-                image_infos.append(tile_info)
+            np_tile_img = cv2.resize(np_tile_img, tile_img_info.ori_shape)
+            tile_idx = tile_attr["tile_idx"]
+            tile_id = tile_attr["tile_id"]
+            if current_tile_id != tile_id:
+                image_infos.append(tile_img_info)
                 current_tile_id = tile_id
                 anno_id = 0
 
@@ -167,7 +168,7 @@ def merge_detection_tiles(
                 media=Image.from_numpy(np_tile_img),
                 id=tile_idx,
                 annotations=annotations,
-                attributes=tile_info.attributes,
+                attributes=tile_attr,
             )
             dataset_item_to_merge[tile_id].append(dataset_item)
 
@@ -181,6 +182,7 @@ def merge_detection_tiles(
 
 def merge_inst_seg_tiles(
     batch_tile_preds: list[InstanceSegBatchPredEntity],
+    batch_tile_attrs: list[list[dict[str, int | str]]],
 ) -> list[InstanceSegPredEntity]:
     """Merge instance segmentation tiles into one single inst-seg prediction.
 
@@ -196,8 +198,8 @@ def merge_inst_seg_tiles(
     image_infos = []
 
     current_tile_id = None
-    for tile_preds in batch_tile_preds:
-        for tile_img, tile_info in zip(tile_preds.images, tile_preds.imgs_info):
+    for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
+        for tile_img, tile_img_info, tile_attr in zip(tile_preds.images, tile_preds.imgs_info, tile_attrs):
             annotations = []
             for tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
                 tile_preds.bboxes,
@@ -231,11 +233,11 @@ def merge_inst_seg_tiles(
                         anno_id += 1
 
             np_tile_img = tile_img.detach().cpu().numpy().transpose(1, 2, 0)
-            np_tile_img = cv2.resize(np_tile_img, tile_info.ori_shape)
-            tile_id = tile_info.attributes["tile_id"]
-            tile_idx = tile_info.attributes["tile_idx"]
-            if tile_id != current_tile_id:
-                image_infos.append(tile_info)
+            np_tile_img = cv2.resize(np_tile_img, tile_img_info.ori_shape)
+            tile_idx = tile_attr["tile_idx"]
+            tile_id = tile_attr["tile_id"]
+            if current_tile_id != tile_id:
+                image_infos.append(tile_img_info)
                 current_tile_id = tile_id
                 anno_id = 0
 
@@ -245,7 +247,7 @@ def merge_inst_seg_tiles(
                 media=Image.from_numpy(np_tile_img),
                 id=tile_idx,
                 annotations=annotations,
-                attributes=tile_info.attributes,
+                attributes=tile_attr,
             )
             dataset_item_to_merge[tile_id].append(dataset_item)
 

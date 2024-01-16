@@ -40,7 +40,6 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
-                attributes=item.attributes,
             ),
             bboxes=tv_tensors.BoundingBoxes(
                 bboxes,

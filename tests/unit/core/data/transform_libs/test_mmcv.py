@@ -16,7 +16,7 @@ class TestLoadImageFromFile:
         transform = LoadImageFromFile()
         data_entity = OTXDataEntity(
             np.ndarray((224, 224, 3)),
-            ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224), attributes={}),
+            ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
         )
         out = transform.transform(data_entity)
         assert out["img_shape"] == (224, 224)

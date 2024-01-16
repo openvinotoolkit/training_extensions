@@ -185,6 +185,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
             threshold_drop_ann=0.5,
         )
         tile_entities: list[DetDataEntity] = []
+        tile_attrs: list[dict] = []
         for tile in tile_ds:
             tile_entity = self._convert_entity(tile)
             # apply the same transforms as the original dataset
@@ -193,10 +194,12 @@ class OTXTileDetTestDataset(OTXTileDataset):
                 msg = "Transformed tile is None"
                 raise RuntimeError(msg)
             tile_entities.append(transformed_tile)
+            tile_attrs.append(tile.attributes)
 
         return TileDetDataEntity(
             num_tiles=len(tile_entities),
             entity_list=tile_entities,
+            tile_attr_list=tile_attrs,
             ori_bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
@@ -213,7 +216,6 @@ class OTXTileDetTestDataset(OTXTileDataset):
             img_idx=dataset_item.attributes["id"],
             img_shape=tile_shape,
             ori_shape=tile_shape,
-            attributes=dataset_item.attributes,
         )
         return DetDataEntity(
             image=tile_img,
@@ -297,6 +299,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             threshold_drop_ann=0.5,
         )
         tile_entities: list[InstanceSegDataEntity] = []
+        tile_attrs: list[dict] = []
         for tile in tile_ds:
             tile_entity = self._convert_entity(tile)
             # apply the same transforms as the original dataset
@@ -305,10 +308,12 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
                 msg = "Transformed tile is None"
                 raise RuntimeError(msg)
             tile_entities.append(transformed_tile)
+            tile_attrs.append(tile.attributes)
 
         return TileInstSegDataEntity(
             num_tiles=len(tile_entities),
             entity_list=tile_entities,
+            tile_attr_list=tile_attrs,
             ori_bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
@@ -327,7 +332,6 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             img_idx=dataset_item.attributes["id"],
             img_shape=tile_shape,
             ori_shape=tile_shape,
-            attributes=dataset_item.attributes,
         )
         return InstanceSegDataEntity(
             image=tile_img,
