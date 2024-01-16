@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - override /trainer: default
   - override /base: detection
   - override /callbacks: detection
   - override /data: mmdet
@@ -208,3 +209,5 @@ model:
         debug: false
         pos_weight: -1
       type: RTMDet
+trainer:
+  precision: 32

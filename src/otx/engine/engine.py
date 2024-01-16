@@ -128,7 +128,7 @@ class Engine:
         seed: int | None = None,
         deterministic: bool = False,
         precision: _PRECISION_INPUT | None = "32",
-        val_check_interval: int | float | None = 1,
+        val_check_interval: int | float | None = None,
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
@@ -141,7 +141,7 @@ class Engine:
             seed (int | None, optional): The random seed. Defaults to None.
             deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
             precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
-            val_check_interval (int | float | None, optional): The validation check interval. Defaults to 1.
+            val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
