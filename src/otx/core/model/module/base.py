@@ -127,6 +127,14 @@ class OTXLitModule(LightningModule):
 
         """
         state_dict = super().state_dict()
+        
+        def detach_complex_prefix(state_dict: dict[str, Any]) -> None:
+            """Detach the model.model prefix to make more readable."""
+            for key, value in state_dict.items():
+                if key.startswith("model.model."):
+                    new_key = key.replace("model.model.", "", 1)
+                    state_dict[new_key] = value
+        detach_complex_prefix(state_dict)
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
