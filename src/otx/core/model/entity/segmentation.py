@@ -12,10 +12,13 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
@@ -43,6 +46,13 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         return metadata
 
 
+def _get_export_params_from_seg_mmconfig(config: DictConfig) -> dict[str, Any]:
+    return {
+        "mean": config["data_preprocessor"]["mean"],
+        "std": config["data_preprocessor"]["std"],
+    }
+
+
 class MMSegCompatibleModel(OTXSegmentationModel):
     """Segmentation model compatible for MMSeg.
 
@@ -54,6 +64,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
+        self.export_params = _get_export_params_from_seg_mmconfig(config)
         self.load_from = self.config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
 
@@ -140,6 +151,30 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             scores=[],
             masks=masks,
         )
+
+    def _configure_export_parameters(self) -> None:
+        self.export_params["resize_mode"] = "standard"
+        self.export_params["pad_value"] = 0
+        self.export_params["swap_rgb"] = False
+        self.export_params["via_onnx"] = False
+        self.export_params["input_size"] = (1, 3, 512, 512)
+        self.export_params["onnx_export_configuration"] = None
+
+    def export(
+        self,
+        output_dir: Path,
+        export_format: OTXExportFormatType,
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+    ) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+            precision: Precision of the exported model.
+        """
+        self._configure_export_parameters()
+        self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
 class OVSegmentationModel(OVModel):
