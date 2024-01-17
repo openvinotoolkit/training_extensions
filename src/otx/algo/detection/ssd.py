@@ -6,8 +6,9 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
+from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.detection import MMDetCompatibleModel
 from otx.core.utils.build import build_mm_model, modify_num_classes
 
@@ -20,6 +21,11 @@ if TYPE_CHECKING:
 
 class SSD(MMDetCompatibleModel):
     """Detecion model class for SSD."""
+
+    def __init__(self, num_classes: int, variant: Literal["mobilenetv2"]) -> None:
+        model_name = f"ssd_{variant}"
+        config = read_mmconfig(model_name=model_name)
+        super().__init__(num_classes=num_classes, config=config)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (

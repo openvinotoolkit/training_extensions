@@ -11,7 +11,7 @@ data:
       - type: LoadImageFromFile
       - backend: cv2
         scale: 224
-        type: RandomResizedCrop
+        type: Resize
       - direction: horizontal
         prob: 0.5
         type: RandomFlip
@@ -21,22 +21,16 @@ data:
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
+        scale: 224
+        type: Resize
       - type: PackInputs
   test_subset:
     batch_size: 64
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
+        scale: 224
+        type: Resize
       - type: PackInputs
 model:
   otx_model:
