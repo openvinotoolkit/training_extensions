@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from datumaro import DatasetSubset, Image, Polygon
 from torchvision import tv_tensors
+import torchvision.transforms.v2 as tvt_v2
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.visual_prompting import (
@@ -73,14 +74,15 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            masks=None,
+            masks=tv_tensors.Mask(masks, dtype=torch.uint8) if isinstance(self.transforms, tvt_v2.Transform) else None,
             labels=torch.as_tensor(labels),
             polygons=gt_polygons,
         )
         transformed_entity = self._apply_transforms(entity)
 
         # insert masks to transformed_entity
-        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)
+        if not isinstance(self.transforms, tvt_v2.Transform):
+            transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)
         return transformed_entity
 
     @property

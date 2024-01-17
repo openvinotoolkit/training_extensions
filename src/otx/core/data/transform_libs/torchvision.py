@@ -6,15 +6,40 @@
 from __future__ import annotations
 
 from inspect import isclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
 import hydra
 import torchvision.transforms.v2 as tvt_v2
+from torchvision.transforms.v2 import functional as F
+from torchvision.tv_tensors import Image
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
 
     from otx.core.config.data import SubsetConfig
+    
+    
+class ResizeOnlyImage(tvt_v2.Resize):
+    def _transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
+        if isinstance(inpt, (Image)):
+            return super()._transform(inpt, params)
+        return inpt
+
+
+class PadtoFixedSize(tvt_v2.Transform):
+    def _transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
+        if isinstance(inpt, (Image)):
+            _, h, w = inpt.shape
+            max_dim = max(w, h)
+            pad_w = max_dim - w
+            pad_h = max_dim - h
+            padding = (0, 0, pad_w, pad_h)
+            return self._call_kernel(F.pad, inpt, padding=padding, fill=0, padding_mode="constant")  # type: ignore[arg-type]
+        return inpt
+
+
+tvt_v2.ResizeOnlyImage = ResizeOnlyImage
+tvt_v2.PadtoFixedSize = PadtoFixedSize
 
 
 class TorchVisionTransformLib:
