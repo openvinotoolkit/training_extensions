@@ -298,7 +298,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                 output_dir,
                 mm_model_config,
                 deploy_cfg,
-                test_pipeline
+                test_pipeline,
+                input_size,
             )
             onnx_path = exporter.cvt_torch2onnx()
 
@@ -307,11 +308,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                 onnx_path,
                 input=(openvino.runtime.PartialShape(input_size),),
             )
-            # tmp_ov_xml, tmp_ov_bin = exporter.cvt_onnx2openvino(onnx_path, precision)
-            # ov_core = openvino.Core()
-            # exported_model = ov_core.read_model(tmp_ov_xml, tmp_ov_bin)
-            # os.remove(tmp_ov_xml)
-            # os.remove(tmp_ov_bin)
         elif via_onnx:
             import shutil
             with tempfile.TemporaryDirectory() as tmpdirname:

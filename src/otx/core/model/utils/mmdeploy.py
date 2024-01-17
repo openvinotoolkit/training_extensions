@@ -53,7 +53,7 @@ class MMdeployExporter:
 
         patch_input_preprocessing(model_cfg, self._deploy_cfg)
         if input_size is not None:
-            patch_input_shape(self._deploy_cfg, input_size[1], input_size[0])
+            patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
 
     def cvt_torch2onnx(self) -> str:
         log.info(f'torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}')
@@ -105,7 +105,7 @@ class MMdeployExporter:
 
 
     def cvt_torch2onnx_partition(self, deploy_cfg, partition_cfgs, args):
-        # NOTE draft version. need to modify code.
+        # NOTE draft version. need for exporting tilling model.
         raise NotImplementedError
 
         if 'partition_cfg' in partition_cfgs:
@@ -244,7 +244,9 @@ def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
         None: This function updates the input `deploy_cfg` object directly.
     """
     deploy_cfg.ir_config.input_shape = (width, height)
-    deploy_cfg.backend_config.model_inputs = [MMConfig(opt_shapes=MMConfig(input=[-1, 3, height, width]))]
+    deploy_cfg.backend_config.model_inputs = [
+        MMConfig(dict(opt_shapes=MMConfig(dict(input=[-1, 3, height, width]))))
+    ]
 
 
 def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
