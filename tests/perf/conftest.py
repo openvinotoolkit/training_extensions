@@ -5,7 +5,6 @@
 import os
 import re
 import shutil
-import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
@@ -90,14 +89,16 @@ def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.Tem
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
     data_str = datetime.now().strftime("%Y%m%d-%H%M%S")
-    commit_str = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("ascii").strip()
-    return Path(output_root) / (data_str + "-" + commit_str)
+    commit_str = os.environ.get("GH_CTX_SHA", "unknown")
+    print(f"Git SHA configured with {commit_str}")
+    return Path(output_root) / (data_str + "-" + commit_str[:7])
 
 
 @pytest.fixture(scope="session")
 def fxt_working_branch() -> str:
     """Git branch name for the current HEAD."""
-    branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
+    branch = os.environ.get("GH_CTX_REF_NAME", "unknown")
+    print(f"working branch name fixture configured with {branch}")
     return branch
 
 
@@ -240,6 +241,13 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path,
             output_path = fxt_output_root / "benchmark-summary.csv"
         all_results.to_csv(output_path, index=False)
         print(f"  -> Saved to {output_path}.")
+
+        if fxt_mlflow_client is None:
+            print(
+                "Tracking server is not configured. for logging results, "
+                "set 'MLFLOW_TRACKING_SERVER_URI' environment variable to server URI ."
+            )
+            return
 
         # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
         if fxt_working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", fxt_working_branch)):
