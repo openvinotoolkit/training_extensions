@@ -166,7 +166,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         )
 
     def _configure_export_parameters(self) -> None:
-        image_size = getattr(self, "image_size", (224,224))
+        image_size = getattr(self, "image_size", (224, 224))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
@@ -301,7 +301,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         )
 
     def _configure_export_parameters(self) -> None:
-        image_size = getattr(self, "image_size", (224,224))
+        image_size = getattr(self, "image_size", (224, 224))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
@@ -436,7 +436,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         )
 
     def _configure_export_parameters(self) -> None:
-        image_size = getattr(self, "image_size", (224,224))
+        image_size = getattr(self, "image_size", (224, 224))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
@@ -497,7 +497,6 @@ class OVMultilabelClassificationModel(OVModel):
         outputs: list[ClassificationResult],
         inputs: MultilabelClsBatchDataEntity,
     ) -> MultilabelClsBatchPredEntity:
-
         predicted_labels = []
         pred_scores = []
         for out in outputs:

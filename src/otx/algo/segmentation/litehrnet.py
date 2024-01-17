@@ -5,9 +5,11 @@
 
 from typing import Literal
 
+from torch.onnx import OperatorExportTypes
+
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
-from torch.onnx import OperatorExportTypes
+
 
 class LiteHRNet(MMSegCompatibleModel):
     """LiteHRNet Model."""
@@ -21,4 +23,6 @@ class LiteHRNet(MMSegCompatibleModel):
     def _configure_export_parameters(self) -> None:
         super()._configure_export_parameters()
         self.export_params["via_onnx"] = True
-        self.export_params["onnx_export_configuration"] = {"operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK}
+        self.export_params["onnx_export_configuration"] = {
+            "operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK,
+        }

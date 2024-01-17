@@ -153,7 +153,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         )
 
     def _configure_export_parameters(self) -> None:
-        image_size = getattr(self, "image_size", (512,512))
+        image_size = getattr(self, "image_size", (512, 512))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
