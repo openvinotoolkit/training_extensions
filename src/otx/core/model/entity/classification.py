@@ -31,28 +31,58 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class OTXMulticlassClsModel(
-    OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
-):
-    """Base class for the classification models used in OTX."""
+class ExplainClsHookMixIn:
+    # # ???
+    # @property
+    # @abstractmethod
+    # def model(self) -> int:
+    #     """Defines model."""
 
-    @abstractmethod
-    def head_forward_fn(self, x):
-        """Defines neck (if available) and head forward function."""
+    # # ???
+    # @property
+    # @abstractmethod
+    # def num_classes(self) -> int:
+    #     """Defines number of classes."""
 
     @property
-    @abstractmethod
     def has_gap(self):
-        """Defines if GAP is used right after backbone."""
+        """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
+        return True
 
-    def register_explain_hook(self, backbone: torch.nn.Module) -> None:
+    @property
+    def num_classes(self):
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        if not hasattr(self, "label_info"):
+            raise ValueError
+        return self.label_info.num_classes
+
+    @property
+    def backbone(self):
+        """Returns model's backbone. Can be redefined at the model's level."""
+        if not hasattr(self, "model"):
+            raise ValueError
+        if not hasattr(self.model, "backbone"):
+            raise ValueError
+        return self.model.backbone
+
+    def register_explain_hook(self) -> None:
         """Register explain hook at the model backbone output."""
-        self.explain_hook = ReciproCAMHook(
+        self.explain_hook = ReciproCAMHook.create_and_register_hook(
+            self.backbone,
             self.head_forward_fn,
             num_classes=self.num_classes,
             optimize_gap=self.has_gap,
         )
-        self.explain_hook.handle = backbone.register_forward_hook(self.explain_hook.recording_forward)
+
+    def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
+        """Performs model's neck and head forward. Can be redefined at the model's level."""
+        if not hasattr(self, "model"):
+            raise ValueError
+        with torch.no_grad():  # ?
+            if self.model.neck is not None:
+                x = self.model.neck(x)
+            logits = self.model.head.forward([x])
+        return logits
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
@@ -62,6 +92,13 @@ class OTXMulticlassClsModel(
     def reset_explain_hook(self):
         """Clear all history of explain records."""
         self.explain_hook.reset()
+
+
+class OTXMulticlassClsModel(
+    ExplainClsHookMixIn,
+    OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+):
+    """Base class for the classification models used in OTX."""
 
 
 def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
@@ -173,6 +210,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
 
 class OTXMultilabelClsModel(
+    ExplainClsHookMixIn,
     OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
 ):
     """Multi-label classification models used in OTX."""
@@ -261,7 +299,10 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         )
 
 
-class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
+class OTXHlabelClsModel(
+    ExplainClsHookMixIn,
+    OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+):
     """H-label classification models used in OTX."""
 
 

@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union, Callable
 
 import numpy as np
 import torch
@@ -93,6 +93,18 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         self._head_forward_fn = head_forward_fn
         self._num_classes = num_classes
         self._optimize_gap = optimize_gap
+
+    @classmethod
+    def create_and_register_hook(
+            cls, backbone, head_forward_fn: Callable, num_classes: int, optimize_gap: bool
+    ) -> BaseRecordingForwardHook:
+        hook = cls(
+            head_forward_fn,
+            num_classes=num_classes,
+            optimize_gap=optimize_gap,
+        )
+        hook.handle = backbone.register_forward_hook(hook.recording_forward)
+        return hook
 
     def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the class-wise saliency maps using Recipro-CAM and then normalizing to (0, 255).

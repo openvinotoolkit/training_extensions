@@ -40,7 +40,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         super().__init__()
 
         self._label_info = LabelInfo.from_num_classes(num_classes)
-        self.num_classes = num_classes
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self.explain_hook = None
@@ -195,13 +194,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         Args:
             output_dir: Directory path to save exported binary files
-        """
-        raise NotImplementedError
-
-    def register_explain_hook(self) -> None:
-        """Register explain hook.
-
-        TBD
         """
         raise NotImplementedError
 
