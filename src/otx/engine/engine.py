@@ -332,6 +332,7 @@ class Engine:
             output_dir=output_dir,
             export_format=cfg.export_format,
             precision=cfg.precision,
+            test_pipeline=self.datamodule.config.test_subset.transforms if self.model.need_mmdeploy() else None,
         )
 
     # ------------------------------------------------------------------------ #

@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import importlib
 import tempfile
 import warnings
 from abc import abstractmethod
@@ -167,6 +168,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         output_dir: Path,
         export_format: OTXExportFormatType,
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        test_pipeline: list[dict] | None = None,
     ) -> None:
         """Export this model to the specified output directory.
 
@@ -174,6 +176,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             output_dir: Directory path to save exported binary files.
             export_format: Format in which this `OTXModel` is exported.
             precision: Precision of the exported model.
+            test_pipeline: Test data pipeline. It's necessary if using mmdeploy.
         """
         raise NotImplementedError
 
@@ -190,6 +193,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         swap_rgb: bool = False,
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
+        mmdeploy_config: str | None = None,
+        mm_model_config: dict | None = None,
+        test_pipeline: list[dict] | None = None,
     ) -> None:
         """Export this model to the specified output directory.
 
@@ -200,10 +206,29 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         metadata = self._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
 
         if export_format == OTXExportFormatType.OPENVINO:
-            self._export_to_openvino(output_dir, input_size, precision, metadata, via_onnx, onnx_export_configuration)
-        if export_format == OTXExportFormatType.ONNX:
-            self._export_to_onnx(output_dir, input_size, precision, metadata, onnx_export_configuration)
-        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
+            self._export_to_openvino(
+                output_dir,
+                input_size,
+                precision,
+                metadata,
+                via_onnx,
+                onnx_export_configuration,
+                mmdeploy_config,
+                mm_model_config,
+                test_pipeline,
+            )
+        elif export_format == OTXExportFormatType.ONNX:
+            self._export_to_onnx(
+                output_dir,
+                input_size,
+                precision,
+                metadata,
+                onnx_export_configuration,
+                mmdeploy_config=mmdeploy_config,
+                mm_model_config=mm_model_config,
+                test_pipeline=test_pipeline,
+            )
+        elif export_format == OTXExportFormatType.EXPORTABLE_CODE:
             self._export_to_exportable_code()
 
     def _generate_model_metadata(
@@ -250,6 +275,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         metadata: dict[tuple[str, str], Any] | None = None,
         via_onnx: bool = False,
         onnx_configuration: dict[str, Any] | None = None,
+        mmdeploy_config: str | None = None,
+        mm_model_config: dict | None = None,
+        test_pipeline: list[dict] | None = None,
     ) -> None:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -258,7 +286,33 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """
         dummy_tensor = torch.rand(input_size).to(next(self.model.parameters()).device)
 
-        if via_onnx:
+        if mmdeploy_config is not None:
+            from otx.core.model.utils.mmdeploy import MMdeployExporter
+            from mmengine import Config as MMConfig
+            config_module = importlib.import_module(mmdeploy_config)
+            deploy_cfg = MMConfig.fromfile(config_module.__file__)
+
+            # export ONNX
+            exporter = MMdeployExporter(
+                self._create_model,
+                output_dir,
+                mm_model_config,
+                deploy_cfg,
+                test_pipeline
+            )
+            onnx_path = exporter.cvt_torch2onnx()
+
+            # export OpenVINO
+            exported_model = openvino.convert_model(
+                onnx_path,
+                input=(openvino.runtime.PartialShape((1, 3, *input_size)),),
+            )
+            # tmp_ov_xml, tmp_ov_bin = exporter.cvt_onnx2openvino(onnx_path, precision)
+            # ov_core = openvino.Core()
+            # exported_model = ov_core.read_model(tmp_ov_xml, tmp_ov_bin)
+            # os.remove(tmp_ov_xml)
+            # os.remove(tmp_ov_bin)
+        elif via_onnx:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 save_path = Path(tmpdirname)
                 onnx_model_path = self._export_to_onnx(
@@ -305,6 +359,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         metadata: dict[tuple[str, str], Any] | None = None,
         onnx_configuration: dict[str, Any] | None = None,
         return_path_to_export_ir: bool = False,
+        mmdeploy_config: str | None = None,
+        mm_model_config: dict | None = None,
+        test_pipeline: list[dict] | None = None,
     ) -> None | str:
         """Export to ONNX format.
 
@@ -329,6 +386,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             onnx_model = float16.convert_float_to_float16(onnx_model)
         onnx.save(onnx_model, save_path)
         return None
+
+    def need_mmdeploy(self):
+        """Whether mmdeploy is used when exporting a model."""
+        return False
 
     def _export_to_exportable_code(self) -> None:
         """Export to exportable code format.

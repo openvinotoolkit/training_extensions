@@ -20,6 +20,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.model.utils import get_mean_std_from_data_processing
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -75,13 +76,6 @@ def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Mod
     return build_mm_model(config, MODELS, load_from), classification_layers
 
 
-def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
-    return {
-        "mean": config["data_preprocessor"]["mean"],
-        "std": config["data_preprocessor"]["std"],
-    }
-
-
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     """Multi-class Classification model compatible for MMPretrain.
 
@@ -93,7 +87,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
+        self.export_params = get_mean_std_from_data_processing(config)
         self.load_from = config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
 
@@ -186,7 +180,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             export_format: Format in which this `OTXModel` is exported.
             precision: Precision of the exported model.
         """
-        self._configure_export_parameters()
         self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
@@ -227,7 +220,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
+        self.export_params = self._get_export_parameters()
         self.load_from = config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
 
@@ -299,13 +292,16 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             labels=labels,
         )
 
-    def _configure_export_parameters(self) -> None:
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 224, 224)
-        self.export_params["onnx_export_configuration"] = None
+    def _get_export_parameters(self) -> None:
+        export_params = get_mean_std_from_data_processing(self.config)
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = (1, 3, 224, 224)
+        export_params["onnx_export_configuration"] = None
+
+        return export_params
 
     def export(
         self,
@@ -320,7 +316,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             export_format: Format in which this `OTXModel` is exported.
             precision: Precision of the exported model.
         """
-        self._configure_export_parameters()
         self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
@@ -361,7 +356,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
+        self.export_params = self._get_export_parameters()
         self.load_from = config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
 
@@ -433,19 +428,23 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             labels=labels,
         )
 
-    def _configure_export_parameters(self) -> None:
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 224, 224)
-        self.export_params["onnx_export_configuration"] = None
+    def _get_export_parameters(self) -> None:
+        export_params = get_mean_std_from_data_processing(self.config)
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = (1, 3, 224, 224)
+        export_params["onnx_export_configuration"] = None
+
+        return export_params
 
     def export(
         self,
         output_dir: Path,
         export_format: OTXExportFormatType,
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        test_pipeline: list[dict] | None = None,
     ) -> None:
         """Export this model to the specified output directory.
 
@@ -453,8 +452,8 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             output_dir: Directory path to save exported binary files.
             export_format: Format in which this `OTXModel` is exported.
             precision: Precision of the exported model.
+            test_pipeline: Test data pipeline. It's necessary if using mmdeploy.
         """
-        self._configure_export_parameters()
         self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
