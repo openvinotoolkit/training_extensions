@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -14,7 +13,6 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.model.utils import get_mean_std_from_data_processing
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -168,39 +166,8 @@ class MMDetCompatibleModel(OTXDetectionModel):
             labels=labels,
         )
 
-    def _get_export_parameters(self) -> None:
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-
-        # TODO This is workaround. need to move code below to each model class in the future.
-        if self.config.type == "ATSS":
-            export_params["input_size"] = (1, 3, 736, 992)
-            export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.atss"
-            export_params["mm_model_config"] = copy(self.config)
-            export_params["mm_model_config"].pop("load_from")
-        elif self.config.type == "SingleStageDetector":
-            export_params["input_size"] = (1, 3, 864, 864)
-            export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.ssd_mobilenetv2"
-            export_params["mm_model_config"] = copy(self.config)
-            export_params["mm_model_config"].pop("load_from")
-        elif self.config.type == "YOLOX":
-            if self.config.backbone.widen_factor == 0.375:  # yolox_tiny
-                export_params["input_size"] = (1, 3, 416, 416)
-                export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.yolox_tiny"
-                export_params["mm_model_config"] = copy(self.config)
-                export_params["mm_model_config"].pop("load_from")
-            else:  # other yolox variants
-                export_params["input_size"] = (1, 3, 640, 640)
-                export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.yolox"
-                export_params["mm_model_config"] = copy(self.config)
-                export_params["mm_model_config"].pop("load_from")
-        else:
-            raise ValueError("Unknown model. Setting mmdeploy is failed.")
-
-        return export_params
+    def _get_export_parameters(self) -> dict[str, Any]:
+        raise NotImplementedError
 
     def export(
         self,

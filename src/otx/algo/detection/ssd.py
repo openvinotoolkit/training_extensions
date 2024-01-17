@@ -5,10 +5,11 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
-from typing import TYPE_CHECKING, Literal
+from copy import deepcopy, copy
+from typing import TYPE_CHECKING, Literal, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.core.model.utils import get_mean_std_from_data_processing
 from otx.core.model.entity.detection import MMDetCompatibleModel
 from otx.core.utils.build import build_mm_model, modify_num_classes
 
@@ -123,3 +124,16 @@ class SSD(MMDetCompatibleModel):
 
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
+
+    def _get_export_parameters(self) -> dict[str, Any]:
+        export_params = get_mean_std_from_data_processing(self.config)
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = (1, 3, 864, 864)
+        export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.ssd_mobilenetv2"
+        export_params["mm_model_config"] = copy(self.config)
+        export_params["mm_model_config"].pop("load_from")
+
+        return export_params
