@@ -42,6 +42,9 @@ def fxt_mem_cache_handler() -> MemCacheHandlerBase:
 @pytest.fixture(params=["bytes", "numpy"])
 def fxt_dm_item(request) -> DatasetItem:
     np_img = np.zeros(shape=(10, 10, 3), dtype=np.uint8)
+    np_img[:, :, 0] = 0  # Set 0 for B channel
+    np_img[:, :, 1] = 1  # Set 1 for G channel
+    np_img[:, :, 2] = 2  # Set 2 for R channel
 
     if request.param == "bytes":
         _, np_bytes = cv2.imencode(".png", np_img)

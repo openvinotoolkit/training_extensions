@@ -52,6 +52,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                image_color_channel=self.image_color_channel,
             ),
             labels=torch.as_tensor([ann.label for ann in label_anns]),
         )
@@ -85,6 +86,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                image_color_channel=self.image_color_channel,
             ),
             labels=self._convert_to_onehot(labels),
         )
@@ -93,7 +95,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
 
     def _convert_to_onehot(self, labels: torch.tensor) -> torch.tensor:
         """Convert label to one-hot vector format."""
-        return functional.one_hot(labels, self.num_classes).sum(0)
+        return functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
 
     @property
     def collate_fn(self) -> Callable:
@@ -132,6 +134,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                image_color_channel=self.image_color_channel,
             ),
             labels=torch.as_tensor(hlabel_labels),
         )

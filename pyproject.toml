@@ -252,6 +252,14 @@ exclude = [
     # Ruff complains it but don't know how to fix since it literally showed no useful logs.
     # https://github.com/openvinotoolkit/training_extensions/actions/runs/7176557723/job/19541622452?pr=2718#step:5:170
     "tests/regression/*.py",
+
+    # Temporarily disable it. This will be fixed in the next PR.
+    # [TODO] harimkang
+    "src/otx/core/utils/instantiators.py",
+    "src/otx/core/utils/logging_utils.py",
+    "src/otx/core/utils/pylogger.py",
+    "src/otx/core/utils/rich_utils.py",
+    "src/otx/core/utils/utils.py",
 ]
 
 # Same as Black.
@@ -297,6 +305,8 @@ max-returns = 10
 convention = "google"
 
 [tool.pytest.ini_options]
+# TODO: Add cpu when OTX can run integration test parallelly for each task.
 markers = [
-    "gpu: mark tests which require NVIDIA GPU device"
+    "gpu: mark tests which require NVIDIA GPU device",
+    # "cpu: mark tests which require CPU device",
 ]

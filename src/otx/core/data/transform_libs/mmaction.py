@@ -20,7 +20,6 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.action_detection import ActionDetDataEntity
-from otx.core.data.entity.base import ImageInfo
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
@@ -182,15 +181,15 @@ class PackActionInputs(MMPackActionInputs):
         img_shape = data_samples.img_shape
         pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
-        image_info = ImageInfo(
-            img_idx=0,
-            img_shape=img_shape,
-            ori_shape=ori_shape,
-            scale_factor=scale_factor,
-        )
-        image_info.pad_shape = pad_shape
 
         data_entity: ActionClsDataEntity | ActionDetDataEntity = results["__otx__"]
+
+        image_info = deepcopy(data_entity.img_info)
+        image_info.img_shape = img_shape
+        image_info.ori_shape = ori_shape
+        image_info.scale_factor = scale_factor
+        image_info.pad_shape = pad_shape
+
         labels = data_entity.labels
 
         if "gt_bboxes" in results:
@@ -220,8 +219,6 @@ class PackActionInputs(MMPackActionInputs):
             img_info=image_info,
             labels=labels,
         )
-
-        return data_entity
 
 
 class MMActionTransformLib:
