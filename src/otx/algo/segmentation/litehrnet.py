@@ -17,7 +17,6 @@ class LiteHRNet(MMSegCompatibleModel):
     def __init__(self, num_classes: int, variant: Literal["18", "s", "x"]) -> None:
         model_name = f"litehrnet_{variant}"
         config = read_mmconfig(model_name=model_name)
-        self.image_size = config["data_preprocessor"]["size"]
         super().__init__(num_classes=num_classes, config=config)
 
     def _configure_export_parameters(self) -> None:

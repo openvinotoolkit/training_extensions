@@ -18,7 +18,6 @@ class DeitTinyForHLabelCls(MMPretrainHlabelClsModel):
         config = read_mmconfig(model_name="deit_tiny", subdir_name="hlabel_classification")
         config.head.num_multiclass_heads = num_multiclass_heads
         config.head.num_multilabel_classes = num_multilabel_classes
-        self.image_size = config["data_preprocessor"].get("size", (224, 224))
         super().__init__(num_classes=num_classes, config=config)
 
 

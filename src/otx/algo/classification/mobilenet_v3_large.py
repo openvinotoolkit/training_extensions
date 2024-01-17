@@ -32,7 +32,6 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
     def __init__(self, num_classes: int, light: bool = False) -> None:
         model_name = "mobilenet_v3_large_light" if light else "mobilenet_v3_large"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
-        self.image_size = config["data_preprocessor"].get("size", (224, 224))
         super().__init__(num_classes=num_classes, config=config)
 
     def _configure_export_parameters(self) -> None:
