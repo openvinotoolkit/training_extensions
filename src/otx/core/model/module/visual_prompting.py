@@ -34,10 +34,10 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
         self.train_metric = MetricCollection(
             {
-                "Loss": MeanMetric(),
-                "Loss_Dice": MeanMetric(),
-                "Loss_Focal": MeanMetric(),
-                "Loss_IoU": MeanMetric(),
+                "loss": MeanMetric(),
+                "loss_dice": MeanMetric(),
+                "loss_focal": MeanMetric(),
+                "loss_iou": MeanMetric(),
             },
         )
         self.val_metric = MetricCollection(
@@ -75,7 +75,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         self._log_metrics(self.test_metric, "test")
         self.test_metric.reset()
 
-    def _log_metrics(self, meter: MeanAveragePrecision, subset_name: str) -> None:
+    def _log_metrics(self, meter: MetricCollection, subset_name: str) -> None:
         results = meter.compute()
         for metric, value in results.items():
             if not isinstance(value, Tensor):
@@ -97,33 +97,17 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         train_loss = self.model(inputs)
 
         if isinstance(train_loss, Tensor):
-            self.log(
-                "train/loss",
-                train_loss,
-                on_step=True,
-                on_epoch=False,
-                prog_bar=True,
-            )
             self.train_metric["Loss"].update(train_loss)
 
         elif isinstance(train_loss, dict):
             for k, v in train_loss.items():
-                self.log(
-                    f"train/{k}",
-                    v,
-                    on_step=True,
-                    on_epoch=False,
-                    prog_bar=True,
-                )
-            for name, metric in zip(
-                ["loss_focal", "loss_iou", "loss_dice", "loss"],
-                ["Loss_Focal", "Loss_IoU", "Loss_Dice", "Loss"],
-            ):
-                if name in self.train_metric:
-                    self.train_metric[name].update(train_loss.get(metric, 0.0))
+                if k in self.train_metric:
+                    self.train_metric[k].update(v)
 
         else:
             raise TypeError(train_loss)
+        
+        self._log_metrics(self.train_metric, "train")
 
         return train_loss
 
