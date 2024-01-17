@@ -29,6 +29,10 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
         super().__init__(num_classes=num_classes, config=config)
 
+    def _configure_export_parameters(self):
+        super()._configure_export_parameters()
+        self.export_params["via_onnx"] = True
+
 
 class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
     """MobileNetV3 Model for multi-class classification task."""

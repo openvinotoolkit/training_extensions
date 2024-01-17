@@ -51,9 +51,3 @@ model:
   scheduler:
     factor: 0.5
     patience: 1
-  export_config:
-    input_height: 224
-    input_width: 224
-    mean: ${..otx_model.config.data_preprocessor.mean}
-    std: ${..otx_model.config.data_preprocessor.std}
-    via_onnx: true
