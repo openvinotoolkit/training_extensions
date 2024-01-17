@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
-
+    from openvino.model_api.models import Model
 
 class OTXMulticlassClsModel(
     OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
@@ -344,11 +344,15 @@ class OVMulticlassClassificationModel(OVModel):
 
 
 class OVHlabelClassificationModel(OVModel):
-    """Hierarhical classification model compatible for OpenVINO IR inference.
+    """Hierarchical classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX classification model compatible for OTX testing pipeline.
     """
+    def _create_model(self, *args) -> Model:
+        # confidence_threshold is 0.0 to return scores for all classes
+        configuration = {"hierarchical": True, "confidence_threshold": 0.0}
+        return super()._create_model(configuration)
 
     def _customize_outputs(
         self,
@@ -365,4 +369,32 @@ class OVHlabelClassificationModel(OVModel):
             imgs_info=inputs.imgs_info,
             scores=pred_scores,
             labels=pred_labels,
+        )
+
+
+class OVMultilabelClassificationModel(OVModel):
+    """Multilabel classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def _create_model(self, *args) -> Model:
+        # confidence_threshold is 0.0 to return scores for all classes
+        configuration = {"multilabel": True, "confidence_threshold": 0.0}
+        return super()._create_model(configuration)
+
+    def _customize_outputs(
+        self,
+        outputs: list[ClassificationResult],
+        inputs: MultilabelClsBatchDataEntity,
+    ) -> MultilabelClsBatchPredEntity:
+        pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
+
+        return MultilabelClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=pred_scores,
+            labels=[],
         )
