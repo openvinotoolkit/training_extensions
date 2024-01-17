@@ -10,21 +10,25 @@ from pathlib import Path
 from typing import Any
 
 import onnx
-import torch
 import openvino
+import torch
 
 from otx.core.types.export import OTXExportPrecisionType
 
 
 class OTXModelExporter:
-    """Base class for the model exporters used in OTX.
-    """
+    """Base class for the model exporters used in OTX."""
+
     @abstractmethod
-    def to_openvino(self, model: torch.nn.Module, output_dir: Path, base_model_name: str = "exported_model",
-                    precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-                    metadata: dict[tuple[str, str],str] | None = None) -> None:
-        """
-        Export to OpenVINO Intermediate Representation format.
+    def to_openvino(
+        self,
+        model: torch.nn.Module,
+        output_dir: Path,
+        base_model_name: str = "exported_model",
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        metadata: dict[tuple[str, str], str] | None = None,
+    ) -> None:
+        """Export to OpenVINO Intermediate Representation format.
 
         Args:
             model (torch.nn.Module): pytorch model top export
@@ -35,11 +39,15 @@ class OTXModelExporter:
         """
 
     @abstractmethod
-    def to_onnx(self, model: torch.nn.Module, output_dir: Path, base_model_name: str = "exported_model",
-                precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-                metadata: dict[tuple[str, str],str] | None = None) -> None:
-        """
-        Export to ONNX format
+    def to_onnx(
+        self,
+        model: torch.nn.Module,
+        output_dir: Path,
+        base_model_name: str = "exported_model",
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        metadata: dict[tuple[str, str], str] | None = None,
+    ) -> None:
+        """Export to ONNX format
 
         Args:
             model (torch.nn.Module): pytorch model top export
