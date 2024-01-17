@@ -303,7 +303,7 @@ class TestObjectDetection(BaseTest):
             data_root=Path("pothole_small") / f"{idx}",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
         )
         for idx in range(1, 4)
     ] + [
@@ -312,14 +312,14 @@ class TestObjectDetection(BaseTest):
             data_root="pothole_medium",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
         ),
         DatasetTestCase(
             name="vitens_large",
             data_root="vitens_large",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
         )
     ]
 
