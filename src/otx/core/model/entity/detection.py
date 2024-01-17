@@ -174,11 +174,28 @@ class MMDetCompatibleModel(OTXDetectionModel):
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
         export_params["via_onnx"] = False
-        export_params["input_size"] = (1, 3, 736, 992)
 
-        # TODO need to move code below to each model class in the future
-        export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.atss_mobilenetv2"
-        export_params["mm_model_config"] = copy(self.config)
+        # TODO This is workaround. need to move code below to each model class in the future.
+        if self.config.type == "ATSS":
+            export_params["input_size"] = (1, 3, 736, 992)
+            export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.atss"
+            export_params["mm_model_config"] = copy(self.config)
+        elif self.config.type == "SingleStageDetector":
+            export_params["input_size"] = (1, 3, 864, 864)
+            export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.ssd_mobilenetv2"
+            export_params["mm_model_config"] = copy(self.config)
+        elif self.config.type == "YOLOX":
+            if self.config.backbone.widen_factor == 0.375:  # yolox_tiny
+                export_params["input_size"] = (1, 3, 416, 416)
+                export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.yolox_tiny"
+                export_params["mm_model_config"] = copy(self.config)
+            else:  # other yolox variants
+                export_params["input_size"] = (1, 3, 640, 640)
+                export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.yolox"
+                export_params["mm_model_config"] = copy(self.config)
+        else:
+            raise ValueError("Unknown model. Setting mmdeploy is failed.")
+
         export_params["mm_model_config"].pop("load_from")
 
         return export_params

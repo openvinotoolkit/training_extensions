@@ -13,6 +13,12 @@ from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 
+class FakeDataModule:
+    def __init__(self, config = None, task = None):
+        self.config = config
+        self.task = task
+
+
 def otx_export(overrides: list[str]) -> None:
     """Main entry point for model exporting.
 
@@ -28,10 +34,11 @@ def otx_export(overrides: list[str]) -> None:
         configure_hydra_outputs(cfg)
 
         # export the model
-        from otx.core.data.module import OTXDataModule
+        # from otx.core.data.module import OTXDataModule
 
-        log.info(f"Instantiating datamodule <{cfg.data}>")
-        datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+        # log.info(f"Instantiating datamodule <{cfg.data}>")
+        # datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+        datamodule = FakeDataModule(task=cfg.base.task, config=cfg.data)
 
         log.info(f"Instantiating model <{cfg.model}>")
         model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
