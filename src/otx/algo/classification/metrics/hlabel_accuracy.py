@@ -72,9 +72,10 @@ class HLabelAccuracy(Metric):
             target_multiclass = target[:, head_idx]
             multiclass_mask = target_multiclass > 0
 
+            # Torchmetric should be located at the same device with tensors.
+            self._metric_to_device(self.multiclass_head_accuracy[head_idx], preds.device)
             is_all_multiclass_ignored = not multiclass_mask.any()
             if not is_all_multiclass_ignored:
-                self._metric_to_device(self.multiclass_head_accuracy[head_idx], preds.device)
                 self.multiclass_head_accuracy[head_idx].update(
                     preds_multiclass[multiclass_mask],
                     target_multiclass[multiclass_mask],

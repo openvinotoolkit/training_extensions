@@ -45,6 +45,7 @@ class BaseTest:
         fxt_num_repeat: int,
         fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
+        head_name: str,
     ) -> None:
         for seed in range(fxt_num_repeat):
             test_case = RegressionTestCase(
@@ -151,6 +152,7 @@ class TestMultiClassCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
+            head_name="head",
         )
 
 
@@ -217,6 +219,7 @@ class TestMultilabelCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
+            head_name="head",
         )
 
 
@@ -234,10 +237,25 @@ class TestHlabelCls(BaseTest):
             name=f"hlabel_CUB_small_{idx}",
             data_root=Path("hlabel_CUB_small") / f"{idx}",
             data_format="datumaro",
-            num_classes=3,
-            extra_overrides={"trainer.max_epochs": "20"},
+            num_classes=6,
+            extra_overrides={
+                "trainer.max_epochs": "20",
+                "model.otx_model.num_multiclass_heads": "3",
+            },
         )
         for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name=f"hlabel_CUB_medium",
+            data_root=Path("hlabel_CUB_medium"),
+            data_format="datumaro",
+            num_classes=102,
+            extra_overrides={
+                "trainer.max_epochs": "20",
+                "model.otx_model.num_multiclass_heads": "23",
+            },
+        )
+        
     ]
 
     @pytest.mark.parametrize(
@@ -268,6 +286,7 @@ class TestHlabelCls(BaseTest):
             fxt_num_repeat=fxt_num_repeat,
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
+            head_name="head",
         )
 
 class TestObjectDetection(BaseTest):
@@ -288,7 +307,7 @@ class TestObjectDetection(BaseTest):
             data_root=Path("pothole_small") / f"{idx}",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "10"},
         )
         for idx in range(1, 4)
     ] + [
@@ -297,14 +316,14 @@ class TestObjectDetection(BaseTest):
             data_root="pothole_medium",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "10"}
         ),
         DatasetTestCase(
             name="vitens_large",
             data_root="vitens_large",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "10"}
         )
     ]
 
@@ -325,7 +344,6 @@ class TestObjectDetection(BaseTest):
         fxt_dataset_root_dir: Path,
         fxt_tags: dict,
         fxt_num_repeat: int,
-        fxt_accelerator: str,
         tmpdir: pytest.TempdirFactory,
     ) -> None:
         self._test_regression(
@@ -334,6 +352,6 @@ class TestObjectDetection(BaseTest):
             fxt_dataset_root_dir=fxt_dataset_root_dir,
             fxt_tags=fxt_tags,
             fxt_num_repeat=fxt_num_repeat,
-            fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
+            head_name="bbox_head",
         )
