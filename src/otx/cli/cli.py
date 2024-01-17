@@ -9,10 +9,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import yaml
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
 from rich.console import Console
 
 from otx import OTX_LOGO, __version__
+from otx.cli.utils import get_otx_root_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring
 
@@ -92,6 +94,11 @@ class OTXCLI:
             "--task",
             type=str,
             help="Task Type.",
+        )
+        parser.add_argument(
+            "--callback_monitor",
+            type=str,
+            help="The metric for that model to monitor in the callback.",
         )
         return parser
 
@@ -183,13 +190,21 @@ class OTXCLI:
             added = sub_parser.add_method_arguments(
                 Engine,
                 subcommand,
-                nested_key=f"{subcommand}",
                 skip=skip,
                 fail_untyped=False,
             )
 
-            if f"{subcommand}.logger" in added:
-                sub_parser.link_arguments("engine.work_dir", f"{subcommand}.logger.init_args.save_dir")
+            # Load default subcommand config file
+            default_config_file = Path(get_otx_root_path()) / "configs" / "_base_" / f"{subcommand}.yaml"
+            if default_config_file.exists():
+                with Path(default_config_file).open() as f:
+                    default_config = yaml.safe_load(f)
+                sub_parser.set_defaults(**default_config)
+
+            if "logger" in added:
+                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
+            if "callbacks" in added:
+                sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
 
             self._subcommand_method_arguments[subcommand] = added
             self._subcommand_parsers[subcommand] = sub_parser
@@ -253,9 +268,7 @@ class OTXCLI:
     def _prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
         return {
-            f"{k.split('.')[-1]}": v
-            for k, v in self.config_init[subcommand].items()
-            if k in self._subcommand_method_arguments[subcommand]
+            k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
         }
 
     def save_config(self) -> None:
