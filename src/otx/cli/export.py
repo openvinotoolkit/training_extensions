@@ -38,6 +38,8 @@ def otx_export(overrides: list[str]) -> None:
 
         # log.info(f"Instantiating datamodule <{cfg.data}>")
         # datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+
+        # TODO this is workaround to prevent otx custom datapipeline module from being registered. Need to fix.
         datamodule = FakeDataModule(task=cfg.base.task, config=cfg.data)
 
         log.info(f"Instantiating model <{cfg.model}>")
