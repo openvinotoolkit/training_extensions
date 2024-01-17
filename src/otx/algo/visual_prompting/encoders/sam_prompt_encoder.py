@@ -3,7 +3,9 @@
 
 """SAM prompt encoder model for the OTX visual prompting."""
 
-from typing import Any, Optional, Tuple, Type
+from __future__ import annotations
+
+from typing import Any
 
 import numpy as np
 import torch
@@ -14,7 +16,7 @@ from otx.algo.visual_prompting.utils.layer_norm_2d import LayerNorm2d
 
 class SAMPromptEncoder(nn.Module):
     """Encodes prompts for input to SAM's mask decoder.
-    
+
     Reference: https://github.com/facebookresearch/segment-anything
 
     Args:
@@ -28,12 +30,11 @@ class SAMPromptEncoder(nn.Module):
     def __init__(
         self,
         embed_dim: int,
-        image_embedding_size: Tuple[int, int],
-        input_image_size: Tuple[int, int],
+        image_embedding_size: tuple[int, int],
+        input_image_size: tuple[int, int],
         mask_in_chans: int,
-        activation: Type[nn.Module] = nn.GELU,
+        activation: type[nn.Module] = nn.GELU,
     ) -> None:
-
         super().__init__()
         self.embed_dim = embed_dim
         self.input_image_size = input_image_size
@@ -121,14 +122,13 @@ class SAMPromptEncoder(nn.Module):
         Returns:
             torch.Tensor: The embedded masks, as (N, embed_dim).
         """
-        mask_embedding = self.mask_downscaling(masks)
-        return mask_embedding
+        return self.mask_downscaling(masks)
 
     def _get_batch_size(
         self,
-        points: Optional[Tuple[torch.Tensor, torch.Tensor]],
-        boxes: Optional[torch.Tensor],
-        masks: Optional[torch.Tensor],
+        points: tuple[torch.Tensor, torch.Tensor] | None,
+        boxes: torch.Tensor | None,
+        masks: torch.Tensor | None,
     ) -> int:
         """Gets the batch size of the output given the batch size of the input prompts.
 
@@ -142,7 +142,7 @@ class SAMPromptEncoder(nn.Module):
         """
         if points is not None:
             return points[0].shape[0]
-        elif boxes is not None:
+        elif boxes is not None:  # noqa: RET505
             return boxes.shape[0]
         elif masks is not None:
             return masks.shape[0]
@@ -159,10 +159,10 @@ class SAMPromptEncoder(nn.Module):
 
     def forward(
         self,
-        points: Optional[Tuple[torch.Tensor, torch.Tensor]],
-        boxes: Optional[torch.Tensor],
-        masks: Optional[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        points: tuple[torch.Tensor, torch.Tensor] | None,
+        boxes: torch.Tensor | None,
+        masks: torch.Tensor | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Embeds different types of prompts, returning both sparse and dense embeddings.
 
         Args:
@@ -179,7 +179,8 @@ class SAMPromptEncoder(nn.Module):
         Returns:
             sparse_embeddings (torch.Tensor): sparse embeddings for the points and boxes, with shape Nx1x(embed_dim),
                 where N is determined by the number of input points and boxes.
-            dense_embeddings (torch.Tensor): dense embeddings for the masks, in the shape Nx(embed_dim)x(embed_H)x(embed_W).
+            dense_embeddings (torch.Tensor): dense embeddings for the masks,
+                in the shape Nx(embed_dim)x(embed_H)x(embed_W).
         """
         bs = self._get_batch_size(points, boxes, masks)
         sparse_embeddings = torch.empty((bs, 0, self.embed_dim), device=self._get_device())
@@ -195,7 +196,10 @@ class SAMPromptEncoder(nn.Module):
             dense_embeddings = self._embed_masks(masks)
         else:
             dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
-                bs, -1, self.image_embedding_size[0], self.image_embedding_size[1]
+                bs,
+                -1,
+                self.image_embedding_size[0],
+                self.image_embedding_size[1],
             )
 
         return sparse_embeddings, dense_embeddings
@@ -209,7 +213,7 @@ class PositionEmbeddingRandom(nn.Module):
         scale (float): The scale of the positional encoding.
     """
 
-    def __init__(self, num_pos_feats: int = 64, scale: Optional[float] = None) -> None:
+    def __init__(self, num_pos_feats: int = 64, scale: float | None = None) -> None:
         super().__init__()
         if scale is None or scale <= 0.0:
             scale = 1.0
@@ -234,7 +238,7 @@ class PositionEmbeddingRandom(nn.Module):
         # outputs d_1 x ... x d_n x C shape
         return torch.cat([torch.sin(coords), torch.cos(coords)], dim=-1)
 
-    def forward(self, size: Tuple[int, int]) -> torch.Tensor:
+    def forward(self, size: tuple[int, int]) -> torch.Tensor:
         """Generate positional encoding for a grid of the specified size.
 
         Args:
@@ -254,7 +258,7 @@ class PositionEmbeddingRandom(nn.Module):
         pe = self._pe_encoding(torch.stack([x_embed, y_embed], dim=-1))
         return pe.permute(2, 0, 1)  # C x H x W
 
-    def forward_with_coords(self, coords_input: torch.Tensor, image_size: Tuple[int, int]) -> torch.Tensor:
+    def forward_with_coords(self, coords_input: torch.Tensor, image_size: tuple[int, int]) -> torch.Tensor:
         """Positionally encode points that are not normalized to [0,1].
 
         Args:

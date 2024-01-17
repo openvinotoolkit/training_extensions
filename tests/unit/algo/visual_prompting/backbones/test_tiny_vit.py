@@ -4,28 +4,31 @@
 from __future__ import annotations
 
 import torch
+from otx.algo.visual_prompting.backbones.tiny_vit import (
+    Attention,
+    BasicLayer,
+    Conv2d_BN,
+    ConvLayer,
+    MBConv,
+    Mlp,
+    PatchEmbed,
+    PatchMerging,
+    TinyViT,
+    TinyViTBlock,
+)
 from torch import nn
 
-from otx.algo.visual_prompting.backbones.tiny_vit import (Attention,
-                                                          BasicLayer,
-                                                          Conv2d_BN, ConvLayer,
-                                                          MBConv, Mlp,
-                                                          PatchEmbed,
-                                                          PatchMerging,
-                                                          TinyViT,
-                                                          TinyViTBlock)
 
-
-class TestConv2d_BN:
-    def setup(self):
+class TestConv2d_BN:  # noqa: N801
+    def setup(self) -> None:
         self.conv2d_bn = Conv2d_BN(a=1, b=1)
 
-    def test_init(self):
+    def test_init(self) -> None:
         """Test __init__."""
         assert isinstance(self.conv2d_bn.c, nn.Conv2d)
         assert isinstance(self.conv2d_bn.bn, nn.BatchNorm2d)
 
-    def test_fuse(self):
+    def test_fuse(self) -> None:
         """Test fuse."""
         fulsed_module = self.conv2d_bn.fuse()
 
@@ -35,10 +38,10 @@ class TestConv2d_BN:
 
         assert torch.isclose(fulsed_module.weight, new_w)
         assert torch.isclose(fulsed_module.bias, new_b)
-        
-        
+
+
 class TestPatchEmbed:
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         patch_embed = PatchEmbed(in_chans=3, embed_dim=4, resolution=6, activation=nn.Identity)
         input_tensor = torch.rand(1, 3, 6, 6)
@@ -49,7 +52,7 @@ class TestPatchEmbed:
 
 
 class TestMBConv:
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         mbconv = MBConv(in_chans=3, out_chans=3, expand_ratio=1.0, activation=nn.Identity, drop_path=1.0)
         input_tensor = torch.rand(1, 3, 24, 24)
@@ -57,10 +60,10 @@ class TestMBConv:
         results = mbconv(input_tensor)
 
         assert results.shape == torch.Size((1, 3, 24, 24))
-        
-        
+
+
 class TestPatchMerging:
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         patch_merging = PatchMerging(input_resolution=(6, 6), dim=3, out_dim=4, activation=nn.Identity)
         input_tensor = torch.rand(1, 3, 6, 6)
@@ -68,10 +71,10 @@ class TestPatchMerging:
         results = patch_merging(input_tensor)
 
         assert results.shape == torch.Size((1, 9, 4))
-        
-        
+
+
 class TestConvLayer:
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         conv_layer = ConvLayer(dim=3, input_resolution=(6, 6), depth=1, activation=nn.Identity)
         input_tensor = torch.rand(1, 3, 6, 6)
@@ -79,10 +82,10 @@ class TestConvLayer:
         results = conv_layer(input_tensor)
 
         assert results.shape == torch.Size((1, 3, 6, 6))
-        
-        
+
+
 class TestMlp:
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         mlp = Mlp(in_features=4, hidden_features=5, out_features=6)
         input_tensor = torch.rand(1, 4)
@@ -93,7 +96,7 @@ class TestMlp:
 
 
 class TestAttention:
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         attention = Attention(dim=4, key_dim=4, num_heads=1, attn_ratio=1, resolution=(2, 2))
         input_tensor = torch.rand(9, 4, 4)
@@ -104,7 +107,7 @@ class TestAttention:
 
 
 class TestTinyViTBlock:
-    def setup(self):
+    def setup(self) -> None:
         self.dim = 4
         self.input_resolution = (6, 6)
         self.num_heads = 1
@@ -118,7 +121,7 @@ class TestTinyViTBlock:
             mlp_ratio=self.mlp_ratio,
         )
 
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         input_tensor = torch.rand(1, 36, 4)
 
@@ -126,24 +129,21 @@ class TestTinyViTBlock:
 
         assert results.shape == torch.Size((1, 36, 4))
 
-    def test_extra_repr(self):
-        """Test extra_repr."""
-        (
-            f"dim={self.dim}, input_resolution={self.input_resolution}, num_heads={self.num_heads}, "
-            f"window_size={self.window_size}, mlp_ratio={self.mlp_ratio}"
-        ) == self.tiny_vit_block.extra_repr()
-
 
 class TestBasicLayer:
-    def setup(self):
+    def setup(self) -> None:
         self.dim = 4
         self.input_resolution = (6, 6)
         self.depth = 1
         self.basic_layer = BasicLayer(
-            dim=self.dim, input_resolution=self.input_resolution, depth=self.depth, num_heads=1, window_size=2
+            dim=self.dim,
+            input_resolution=self.input_resolution,
+            depth=self.depth,
+            num_heads=1,
+            window_size=2,
         )
 
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         input_tensor = torch.rand(1, 36, 4)
 
@@ -151,16 +151,16 @@ class TestBasicLayer:
 
         assert results.shape == torch.Size((1, 36, 4))
 
-    def test_extra_repr(self):
+    def test_extra_repr(self) -> None:
         """Test extra_repr."""
         assert (
             f"dim={self.dim}, input_resolution={self.input_resolution}, depth={self.depth}"
             == self.basic_layer.extra_repr()
         )
-        
-        
+
+
 class TestTinyViT:
-    def setup(self):
+    def setup(self) -> None:
         self.tiny_vit = TinyViT(
             img_size=1024,
             embed_dims=[64, 128, 160, 320],
@@ -171,7 +171,7 @@ class TestTinyViT:
             layer_lr_decay=2.0,
         )
 
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Test forward."""
         input_tensor = torch.rand(1, 3, 1024, 1024)
 

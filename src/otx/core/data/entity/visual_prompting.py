@@ -8,11 +8,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import (OTXBatchDataEntity, OTXBatchPredEntity,
-                                       OTXDataEntity, OTXPredEntity)
+from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
@@ -42,13 +40,13 @@ class VisualPromptingDataEntity(OTXDataEntity):
     masks: tv_tensors.Mask
     labels: LongTensor
     polygons: list[Polygon]
-    
-    
+
+
 @dataclass
 class VisualPromptingPredEntity(VisualPromptingDataEntity, OTXPredEntity):
     """Data entity to represent the visual prompting model output prediction."""
-    
-    
+
+
 @dataclass
 class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntity]):
     """Data entity for visual prompting task.
@@ -101,8 +99,8 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
         return self
-    
-    
+
+
 @dataclass
 class VisualPromptingBatchPredEntity(VisualPromptingBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for visual prompting task."""

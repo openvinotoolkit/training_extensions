@@ -156,7 +156,7 @@ class OTXDatasetFactory:
                 mem_cache_handler=mem_cache_handler,
                 mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
             )
-            
+
         if task == OTXTaskType.VISUAL_PROMPTING:
             from .dataset.visual_prompting import OTXVisualPromptingDataset
 

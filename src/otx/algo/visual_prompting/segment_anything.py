@@ -3,40 +3,37 @@
 
 """Segment Anything model for the OTX visual prompting."""
 
+from __future__ import annotations
+
 import logging as log
-import re
-from collections import OrderedDict
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import torch
 from torch import Tensor, nn
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
 
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
-from otx.algo.visual_prompting.encoders import (SAMImageEncoder,
-                                                SAMPromptEncoder)
+from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.visual_prompting import (
-    VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity)
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
 from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class SegmentAnything(nn.Module):
+    """Visual prompting model class for Segment Anything."""
+
     def __init__(
         self,
         backbone: str,
-        load_from: Optional[str] = None,
-        mask_threshold: float = 0.,
+        load_from: str | None = None,
+        mask_threshold: float = 0.0,
         image_size: int = 1024,
         image_embedding_size: int = 64,
         embed_dim: int = 256,
         mask_in_chans: int = 16,
         num_multimask_outputs: int = 3,
-        transformer_cfg: Dict[str, int] = dict(depth=2, embedding_dim=256, mlp_dim=2048, num_heads=8),
+        transformer_cfg: dict[str, int] | None = None,
         transformer_dim: int = 256,
         iou_head_depth: int = 3,
         iou_head_hidden_dim: int = 256,
@@ -45,10 +42,12 @@ class SegmentAnything(nn.Module):
         freeze_mask_decoder: bool = False,
     ) -> None:
         super().__init__()
+        if transformer_cfg is None:
+            transformer_cfg = {"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8}
 
         self.mask_threshold = mask_threshold
         self.image_size = image_size
-        
+
         self.image_encoder = SAMImageEncoder(backbone=backbone)
         self.prompt_encoder = SAMPromptEncoder(
             embed_dim=embed_dim,
@@ -63,11 +62,16 @@ class SegmentAnything(nn.Module):
             iou_head_depth=iou_head_depth,
             iou_head_hidden_dim=iou_head_hidden_dim,
         )
-        
+
         self.load_checkpoint(load_from=load_from)
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
-        
-    def freeze_networks(self, freeze_image_encoder: bool, freeze_prompt_encoder: bool, freeze_mask_decoder: bool) -> None:
+
+    def freeze_networks(
+        self,
+        freeze_image_encoder: bool,
+        freeze_prompt_encoder: bool,
+        freeze_mask_decoder: bool,
+    ) -> None:
         """Freeze networks depending on config."""
         if freeze_image_encoder:
             for param in self.image_encoder.parameters():
@@ -80,36 +84,40 @@ class SegmentAnything(nn.Module):
         if freeze_mask_decoder:
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
-                
+
     def load_checkpoint(
         self,
-        load_from: Optional[str] = None,
+        load_from: str | None,
     ) -> None:
         """Load checkpoint for SAM.
 
         Args:
             load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
         """
-        
         try:
             state_dict = torch.hub.load_state_dict_from_url(str(load_from))
-            for key in ["image_encoder.norm_head.weight", "image_encoder.norm_head.bias", "image_encoder.head.weight", "image_encoder.head.bias"]:
+            for key in [
+                "image_encoder.norm_head.weight",
+                "image_encoder.norm_head.bias",
+                "image_encoder.head.weight",
+                "image_encoder.head.bias",
+            ]:
                 state_dict.pop(key)
             self.load_state_dict(state_dict)
-        except:
-            log.info((
-                f"{load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
-                f"To manually load {load_from}, try to set it to trainer.checkpoint."
-            ))
-        
+        except ValueError as e:
+            log.info(
+                f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
+                f"To manually load {load_from}, try to set it to trainer.checkpoint.",
+            )
+
     def forward(
         self,
         images: Tensor,
-        ori_shapes: List[Tensor],
-        bboxes: List[Optional[Tensor]],
-        points: Optional[List[Optional[Tuple[Tensor, Tensor]]]] = None, # TODO
-        gt_masks: Optional[List[Tensor]] = None,
-    ) -> Tensor | Tuple[List[Tensor], List[Tensor]]:
+        ori_shapes: list[Tensor],
+        bboxes: list[Tensor | None] = None,
+        points: list[tuple[Tensor, Tensor] | None] | None = None,  # TODO(sungchul): enable point prompts # noqa: TD003
+        gt_masks: list[Tensor] | None = None,
+    ) -> Tensor | tuple[list[Tensor], list[Tensor]]:
         """Forward method for SAM training/validation/prediction.
 
         Args:
@@ -128,14 +136,15 @@ class SegmentAnything(nn.Module):
 
         Returns:
             (Tensor): Calculated loss values.
-            (Tuple[List[Tensor], List[Tensor]]): Tuple of list with predicted masks with shape (B, 1, H, W) and List with IoU predictions with shape (N, 1).
+            (Tuple[List[Tensor], List[Tensor]]): Tuple of list with predicted masks with shape (B, 1, H, W)
+                and List with IoU predictions with shape (N, 1).
         """
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
         for embedding, bbox in zip(image_embeddings, bboxes):
             sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                points=None, # TODO
+                points=None,  # TODO(sungchul): enable point prompts # noqa: TD003
                 boxes=bbox,
                 masks=None,
             )
@@ -157,28 +166,28 @@ class SegmentAnything(nn.Module):
             loss_iou = 0.0
 
             num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-            for pred_mask, gt_mask, iou, ori_shape in zip(pred_masks, gt_masks, ious, ori_shapes):
-                pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
-                pred_mask = pred_mask.sigmoid()
-                pred_mask = pred_mask.flatten(1)
-                gt_mask = gt_mask.flatten(1).float()
+            for pred_mask, gt_mask, iou, ori_shape in zip(pred_masks, gt_masks, ious, ori_shapes):  # type: ignore[arg-type]
+                post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
+                post_processed_pred_mask = post_processed_pred_mask.sigmoid()
+                post_processed_pred_mask = post_processed_pred_mask.flatten(1)
+                flatten_gt_mask = gt_mask.flatten(1).float()
 
                 # calculate losses
-                loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_masks)
-                loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
-                batch_iou = self.calculate_iou(pred_mask, gt_mask)
+                loss_dice += self.calculate_dice_loss(post_processed_pred_mask, flatten_gt_mask, num_masks)
+                loss_focal += self.calculate_sigmoid_ce_focal_loss(post_processed_pred_mask, flatten_gt_mask, num_masks)
+                batch_iou = self.calculate_iou(post_processed_pred_mask, flatten_gt_mask)
                 loss_iou += F.mse_loss(iou, batch_iou, reduction="sum") / num_masks
 
             loss = 20.0 * loss_focal + loss_dice + loss_iou
-            
+
             return {"loss": loss, "loss_focal": loss_focal, "loss_dice": loss_dice, "loss_iou": loss_iou}
 
-        post_processed_pred_masks: List[Tensor] = []
+        post_processed_pred_masks: list[Tensor] = []
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze().sigmoid())
         return post_processed_pred_masks, ious
-    
+
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
 
@@ -197,7 +206,12 @@ class SegmentAnything(nn.Module):
         return loss.sum() / num_masks
 
     def calculate_sigmoid_ce_focal_loss(
-        self, inputs: Tensor, targets: Tensor, num_masks: int, alpha: float = 0.25, gamma: float = 2
+        self,
+        inputs: Tensor,
+        targets: Tensor,
+        num_masks: int,
+        alpha: float = 0.25,
+        gamma: float = 2,
     ) -> Tensor:
         r"""Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002. # noqa: D301.
 
@@ -237,9 +251,8 @@ class SegmentAnything(nn.Module):
         pred_mask = (inputs >= 0.5).float()
         intersection = torch.sum(torch.mul(pred_mask, targets), dim=1)
         union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection
-        iou = intersection / (union + epsilon)
-        return iou
-    
+        return intersection / (union + epsilon)
+
     def postprocess_masks(self, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
         """Postprocess the predicted masks.
 
@@ -254,22 +267,23 @@ class SegmentAnything(nn.Module):
         """
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
-        prepadded_size = self.resize_longest_image_size(orig_size, input_size)
-        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
+        prepadded_size = self.get_prepadded_size(orig_size, input_size)
+        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
 
         orig_size = orig_size.to(torch.int64)
         h, w = orig_size[0], orig_size[1]
-        masks = F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
-        return masks
-    
-    def resize_longest_image_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
+        return F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
+
+    def get_prepadded_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
+        """Get pre-padded size."""
         scale = longest_side / torch.max(input_image_size)
         transformed_size = scale * input_image_size
-        transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
-        return transformed_size
+        return torch.floor(transformed_size + 0.5).to(torch.int64)
 
 
 class OTXSegmentAnything(OTXVisualPromptingModel):
+    """Visual Prompting model."""
+
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
         return SegmentAnything(**self.config)
@@ -281,7 +295,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             "images": images,
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
             "bboxes": self._inspect_prompts(inputs.bboxes),
-            # "points": self.inspect_prompts(inputs.points), # TODO
+            # "points": self.inspect_prompts(inputs.points), # TODO(sungchul): enable point prompts # noqa: TD003
             "gt_masks": inputs.masks,
         }
 
@@ -293,7 +307,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         """Customize OTX output batch data entity if needed for you model."""
         if self.training:
             return outputs
-        
+
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
         labels: list[torch.LongTensor] = inputs.labels
@@ -311,11 +325,10 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             polygons=[],
             labels=labels,
         )
-    
-    def _inspect_prompts(self, prompts: List[tv_tensors.BoundingBoxes]) -> List[Optional[tv_tensors.BoundingBoxes]]:
+
+    def _inspect_prompts(self, prompts: list[tv_tensors.BoundingBoxes]) -> list[tv_tensors.BoundingBoxes | None]:
         """Inspect if given prompts are empty.
-        
+
         If there are empty prompts (shape=0), they will be converted to None.
         """
-        converted_prompts = [p if p.shape[0] > 0 else None for p in prompts]
-        return converted_prompts
+        return [p if p.shape[0] > 0 else None for p in prompts]

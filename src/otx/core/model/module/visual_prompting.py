@@ -14,8 +14,7 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
-from otx.core.data.entity.visual_prompting import (
-    VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity)
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
 from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
@@ -34,28 +33,28 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
         self.train_metric = MetricCollection(
-            dict(
-                Loss=MeanMetric(),
-                Loss_Dice=MeanMetric(),
-                Loss_Focal=MeanMetric(),
-                Loss_IoU=MeanMetric(),
-            )
+            {
+                "Loss": MeanMetric(),
+                "Loss_Dice": MeanMetric(),
+                "Loss_Focal": MeanMetric(),
+                "Loss_IoU": MeanMetric(),
+            },
         )
         self.val_metric = MetricCollection(
-            dict(
-                IoU=BinaryJaccardIndex(),
-                F1=BinaryF1Score(),
-                Dice=Dice(),
-                mAP=MeanAveragePrecision(iou_type="segm")
-            ),
+            {
+                "IoU": BinaryJaccardIndex(),
+                "F1": BinaryF1Score(),
+                "Dice": Dice(),
+                "mAP": MeanAveragePrecision(iou_type="segm"),
+            },
         )
         self.test_metric = MetricCollection(
-            dict(
-                IoU=BinaryJaccardIndex(),
-                F1=BinaryF1Score(),
-                Dice=Dice(),
-                mAP=MeanAveragePrecision(iou_type="segm")
-            ),
+            {
+                "IoU": BinaryJaccardIndex(),
+                "F1": BinaryF1Score(),
+                "Dice": Dice(),
+                "mAP": MeanAveragePrecision(iou_type="segm"),
+            },
         )
 
     def on_validation_epoch_start(self) -> None:
@@ -92,8 +91,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 sync_dist=True,
                 prog_bar=True,
             )
-            
-    def training_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> Tensor:
+
+    def training_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> Tensor:  # type: ignore[override]
         """Step for model training."""
         train_loss = self.model(inputs)
 
@@ -118,10 +117,10 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 )
             for name, metric in zip(
                 ["loss_focal", "loss_iou", "loss_dice", "loss"],
-                ["Loss_Focal", "Loss_IoU", "Loss_Dice", "Loss"]
+                ["Loss_Focal", "Loss_IoU", "Loss_Dice", "Loss"],
             ):
                 if name in self.train_metric:
-                    self.train_metric[name].update(train_loss.get(metric, 0.))
+                    self.train_metric[name].update(train_loss.get(metric, 0.0))
 
         else:
             raise TypeError(train_loss)
@@ -150,7 +149,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         for name, metric in self.val_metric.items():
             if name == "mAP":
                 # MeanAveragePrecision
-                _preds = [{k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]]
+                _preds = [
+                    {k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]
+                ]
                 _target = converted_entities["target"]
                 metric.update(preds=_preds, target=_target)
             elif name in ["IoU", "F1", "Dice"]:
@@ -215,7 +216,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         for name, metric in self.test_metric.items():
             if name == "mAP":
                 # MeanAveragePrecision
-                _preds = [{k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]]
+                _preds = [
+                    {k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]
+                ]
                 _target = converted_entities["target"]
                 metric.update(preds=_preds, target=_target)
             elif name in ["IoU", "F1", "Dice"]:

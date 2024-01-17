@@ -16,7 +16,7 @@ train_subset:
       with_bbox: true
       with_mask: false
     - type: PerturbBoundingBoxes
-      offset: 20
+      offset: 0 # To be applied
     - type: Resize
       keep_ratio: true
       scale:

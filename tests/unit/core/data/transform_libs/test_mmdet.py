@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of mmdet transforms."""
 
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
 import torch
 from otx.core.config.data import SubsetConfig
 from otx.core.data.entity.base import ImageInfo
@@ -34,29 +36,38 @@ class TestLoadAnnotations:
 
 
 class TestPackDetInputs:
-    @pytest.mark.parametrize("data_entity,expected",
+    @pytest.mark.parametrize(
+        ("data_entity", "expected"),
         [
             (
                 DetDataEntity(
                     image=np.ndarray((224, 224, 3)),
                     img_info=ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
-                    bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                    bboxes=tv_tensors.BoundingBoxes(
+                        data=torch.Tensor([0, 0, 50, 50]),
+                        format="xywh",
+                        canvas_size=(224, 224),
+                    ),
                     labels=LongTensor([1]),
                 ),
-                torch.Size([3, 224, 224])
+                torch.Size([3, 224, 224]),
             ),
             (
                 VisualPromptingDataEntity(
                     image=np.ndarray((1024, 1024, 3)),
                     img_info=ImageInfo(img_idx=0, img_shape=(1024, 1024), ori_shape=(1024, 1024)),
-                    bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format=tv_tensors.BoundingBoxFormat.XYXY, canvas_size=(1024, 1024)),
+                    bboxes=tv_tensors.BoundingBoxes(
+                        data=torch.Tensor([0, 0, 50, 50]),
+                        format=tv_tensors.BoundingBoxFormat.XYXY,
+                        canvas_size=(1024, 1024),
+                    ),
                     masks=None,
                     labels=LongTensor([1]),
                     polygons=None,
                 ),
-                torch.Size([3, 1024, 1024])
-            )
-        ]
+                torch.Size([3, 1024, 1024]),
+            ),
+        ],
     )
     def test_transform(self, data_entity: DetDataEntity | VisualPromptingDataEntity, expected: torch.Size) -> None:
         transform = PackDetInputs()
@@ -65,26 +76,28 @@ class TestPackDetInputs:
         results = transform.transform(data_entity)
 
         assert results.image.shape == expected
-        
-        
+
+
 class TestPerturbBoundingBoxes:
-    def test_transform(self):
+    def test_transform(self) -> None:
         transform = PerturbBoundingBoxes(offset=20)
         inputs = {
             "img_shape": (300, 300),
-            "gt_bboxes": np.array([
-                [100, 100, 200, 200], # normal bbox
-                [0, 0, 299, 299], # can be out of size
-                [0, 0, 100, 100], # can be out of size
-                [100, 100, 299, 299], # can be out of size
-            ]),
+            "gt_bboxes": np.array(
+                [
+                    [100, 100, 200, 200],  # normal bbox
+                    [0, 0, 299, 299],  # can be out of size
+                    [0, 0, 100, 100],  # can be out of size
+                    [100, 100, 299, 299],  # can be out of size
+                ],
+            ),
         }
-        
+
         results = transform.transform(inputs)
-        
+
         assert isinstance(results, dict)
         assert results["gt_bboxes"].shape == inputs["gt_bboxes"].shape
-        assert np.all(results["gt_bboxes"][1] == inputs["gt_bboxes"][1]) # check if clipped
+        assert np.all(results["gt_bboxes"][1] == inputs["gt_bboxes"][1])  # check if clipped
         assert np.all(results["gt_bboxes"][2][:2] == inputs["gt_bboxes"][2][:2])
         assert np.all(results["gt_bboxes"][3][2:] == inputs["gt_bboxes"][3][2:])
 

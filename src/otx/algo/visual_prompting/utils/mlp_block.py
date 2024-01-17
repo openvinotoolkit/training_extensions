@@ -3,7 +3,7 @@
 
 """MLP block module for the OTX visual prompting."""
 
-from typing import Type
+from __future__ import annotations
 
 from torch import Tensor, nn
 
@@ -23,9 +23,8 @@ class MLPBlock(nn.Module):
         self,
         embedding_dim: int,
         mlp_dim: int,
-        act: Type[nn.Module] = nn.GELU,
+        act: type[nn.Module] = nn.GELU,
     ) -> None:
-
         super().__init__()
         self.lin1 = nn.Linear(embedding_dim, mlp_dim)
         self.lin2 = nn.Linear(mlp_dim, embedding_dim)

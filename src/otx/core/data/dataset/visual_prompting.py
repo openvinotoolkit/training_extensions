@@ -13,8 +13,7 @@ from datumaro import DatasetSubset, Image, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.visual_prompting import (
-    VisualPromptingBatchDataEntity, VisualPromptingDataEntity)
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .base import OTXDataset, Transforms
@@ -30,11 +29,11 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
             If set to False, polygons will be converted to bitmaps, and bitmaps will be used for training.
         **kwargs: Additional keyword arguments passed to the base class.
     """
-    
+
     def __init__(self, dm_subset: DatasetSubset, transforms: Transforms, include_polygons: bool, **kwargs) -> None:
         super().__init__(dm_subset, transforms, **kwargs)
         self.include_polygons = include_polygons
-    
+
     def _get_item_impl(self, index: int) -> VisualPromptingDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
@@ -47,7 +46,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                 bbox = np.array(annotation.get_bbox(), dtype=np.float32)
                 gt_bboxes.append(bbox)
                 gt_labels.append(annotation.label)
-                
+
                 if self.include_polygons:
                     gt_polygons.append(annotation)
                 else:
@@ -80,10 +79,10 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         transformed_entity = self._apply_transforms(entity)
 
         # insert masks to transformed_entity
-        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)
+        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)  # type: ignore[union-attr]
         return transformed_entity
 
     @property
     def collate_fn(self) -> Callable:
-        """Collection function to collect VisualPromptingDataEntity into VisualPromptingBatchDataEntity in data loader."""
+        """Collection function to collect VisualPromptingDataEntity into VisualPromptingBatchDataEntity in data loader."""  # noqa: E501
         return VisualPromptingBatchDataEntity.collate_fn
