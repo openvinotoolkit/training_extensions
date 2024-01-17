@@ -205,6 +205,7 @@ class OTXCLI:
                 sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
             if "callbacks" in added:
                 sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
+                sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
 
             self._subcommand_method_arguments[subcommand] = added
             self._subcommand_parsers[subcommand] = sub_parser

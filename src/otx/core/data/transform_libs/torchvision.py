@@ -8,8 +8,8 @@ from __future__ import annotations
 from inspect import isclass
 from typing import TYPE_CHECKING
 
-import hydra
 import torchvision.transforms.v2 as tvt_v2
+from lightning.pytorch.cli import instantiate_class
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
@@ -36,7 +36,7 @@ class TorchVisionTransformLib:
 
         transforms = []
         for cfg in config.transforms:
-            transform = hydra.utils.instantiate(cfg)
+            transform = instantiate_class(args=(), init=cfg)
             if type(transform) not in availables:
                 msg = f"transform={transform} is not a valid TorchVision V2 transform"
                 raise ValueError(msg)
