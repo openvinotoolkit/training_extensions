@@ -187,6 +187,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         main()
 
     assert (tmp_path_test / "outputs").exists()
+    assert (tmp_path_test / "outputs" / "otx_test.log").exists()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
