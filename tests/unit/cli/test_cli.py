@@ -70,7 +70,7 @@ class TestOTXCLI:
             "otx",
             "train",
             "--config",
-            "src/otx/configs/detection/atss_mobilenetv2.yaml",
+            "src/otx/recipe/detection/atss_mobilenetv2.yaml",
             "--data_root",
             "tests/assets/car_tree_bug",
             "--model.num_classes",

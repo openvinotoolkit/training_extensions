@@ -12,7 +12,7 @@ from otx.cli import main
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
-RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "configs"
+RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
 RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in p.parts]
 RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)

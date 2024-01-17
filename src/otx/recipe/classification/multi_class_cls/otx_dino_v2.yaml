@@ -1,0 +1,95 @@
+model:
+  class_path: otx.algo.classification.otx_dino_v2.DINOv2RegisterClassifier
+  init_args:
+    num_classes: 1000
+    config:
+      backbone:
+        name: dinov2_vits14_reg
+        frozen: false
+      head:
+        in_channels: 384
+        num_classes: 1000
+
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
+    lr: 1e-5
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: MULTI_CLASS_CLS
+  device: auto
+
+callback_monitor: val/accuracy
+
+data: ../../_base_/data/mmpretrain_base.yaml
+overrides:
+  data:
+    config:
+      train_subset:
+        transforms:
+          - type: LoadImageFromFile
+            to_float32: true
+          - mean:
+              - 123.675
+              - 116.28
+              - 103.53
+            std:
+              - 58.395
+              - 57.12
+              - 57.375
+            to_rgb: true
+            type: Normalize
+          - backend: cv2
+            scale: 224
+            type: RandomResizedCrop
+          - type: PackInputs
+      val_subset:
+        transforms:
+          - type: LoadImageFromFile
+            to_float32: true
+          - mean:
+              - 123.675
+              - 116.28
+              - 103.53
+            std:
+              - 58.395
+              - 57.12
+              - 57.375
+            to_rgb: true
+            type: Normalize
+          - backend: cv2
+            edge: short
+            scale: 256
+            type: ResizeEdge
+          - crop_size: 224
+            type: CenterCrop
+          - type: PackInputs
+      test_subset:
+        transforms:
+          - type: LoadImageFromFile
+            to_float32: true
+          - mean:
+              - 123.675
+              - 116.28
+              - 103.53
+            std:
+              - 58.395
+              - 57.12
+              - 57.375
+            to_rgb: true
+            type: Normalize
+          - backend: cv2
+            edge: short
+            scale: 256
+            type: ResizeEdge
+          - crop_size: 224
+            type: CenterCrop
+          - type: PackInputs

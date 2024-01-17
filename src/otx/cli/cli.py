@@ -195,7 +195,7 @@ class OTXCLI:
             )
 
             # Load default subcommand config file
-            default_config_file = Path(get_otx_root_path()) / "configs" / "_base_" / f"{subcommand}.yaml"
+            default_config_file = Path(get_otx_root_path()) / "recipe" / "_base_" / f"{subcommand}.yaml"
             if default_config_file.exists():
                 with Path(default_config_file).open() as f:
                     default_config = yaml.safe_load(f)

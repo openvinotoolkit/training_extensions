@@ -1,0 +1,76 @@
+model:
+  class_path: otx.algo.segmentation.segnext.SegNext
+  init_args:
+    num_classes: 2
+    variant: t
+
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
+    lr: 0.00006
+    betas:
+      - 0.9
+      - 0.999
+    weight_decay: 0.01
+
+scheduler:
+  class_path: torch.optim.lr_scheduler.PolynomialLR
+  init_args:
+    total_iters: 100
+    power: 0.9
+    last_epoch: -1
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
+
+callback_monitor: val/mIoU
+
+data: ../_base_/data/mmseg_base.yaml
+overrides:
+  data:
+    config:
+      train_subset:
+        transforms:
+          - type: LoadImageFromFile
+          - reduce_zero_label: true
+            type: LoadAnnotations
+          - keep_ratio: true
+            ratio_range:
+              - 0.5
+              - 2.0
+            scale:
+              - 2048
+              - 512
+            type: RandomResize
+          - cat_max_ratio: 0.75
+            crop_size:
+              - 512
+              - 512
+            type: RandomCrop
+          - prob: 0.5
+            type: RandomFlip
+          - type: PhotoMetricDistortion
+          - type: PackSegInputs
+      val_subset:
+        transforms:
+          - type: LoadImageFromFile
+          - keep_ratio: true
+            scale:
+              - 2048
+              - 512
+            type: Resize
+          - reduce_zero_label: true
+            type: LoadAnnotations
+          - type: PackSegInputs
+      test_subset:
+        transforms:
+          - type: LoadImageFromFile
+          - keep_ratio: true
+            scale:
+              - 2048
+              - 512
+            type: Resize
+          - reduce_zero_label: true
+            type: LoadAnnotations
+          - type: PackSegInputs
