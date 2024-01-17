@@ -166,11 +166,12 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         )
 
     def _configure_export_parameters(self) -> None:
+        image_size = getattr(self, "image_size", (224,224))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 224, 224)
+        self.export_params["input_size"] = (1, 3, *image_size)
         self.export_params["onnx_export_configuration"] = None
 
     def export(
@@ -300,11 +301,12 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         )
 
     def _configure_export_parameters(self) -> None:
+        image_size = getattr(self, "image_size", (224,224))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 224, 224)
+        self.export_params["input_size"] = (1, 3, *image_size)
         self.export_params["onnx_export_configuration"] = None
 
     def export(
@@ -434,11 +436,12 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         )
 
     def _configure_export_parameters(self) -> None:
+        image_size = getattr(self, "image_size", (224,224))
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 224, 224)
+        self.export_params["input_size"] = (1, 3, *image_size)
         self.export_params["onnx_export_configuration"] = None
 
     def export(

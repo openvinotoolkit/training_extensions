@@ -14,3 +14,7 @@ class DinoV2Seg(MMSegCompatibleModel):
         model_name = "dino_v2_seg"
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
+
+    def export(self):
+        msg = "{model_name} cannot be exported. It is not supported."
+        raise RuntimeError(msg)

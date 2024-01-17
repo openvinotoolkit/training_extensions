@@ -329,6 +329,7 @@ class Engine:
             output_dir (Path): Directory path to save exported binary files.
         """
         if self.checkpoint is not None:
+            self.model.eval()
             lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,

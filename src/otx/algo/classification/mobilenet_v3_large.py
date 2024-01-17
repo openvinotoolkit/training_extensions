@@ -18,6 +18,7 @@ class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
         config = read_mmconfig(model_name="mobilenet_v3_large_light", subdir_name="hlabel_classification")
         config.head.num_multiclass_heads = num_multiclass_heads
         config.head.num_multilabel_classes = num_multilabel_classes
+        self.image_size = config["data_preprocessor"].get('size', (224,224))
         super().__init__(num_classes=num_classes, config=config)
 
     def _configure_export_parameters(self) -> None:
@@ -31,6 +32,7 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
     def __init__(self, num_classes: int, light: bool = False) -> None:
         model_name = "mobilenet_v3_large_light" if light else "mobilenet_v3_large"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
+        self.image_size = config["data_preprocessor"].get('size', (224,224))
         super().__init__(num_classes=num_classes, config=config)
 
     def _configure_export_parameters(self) -> None:
@@ -43,6 +45,7 @@ class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
 
     def __init__(self, num_classes: int) -> None:
         config = read_mmconfig("mobilenet_v3_large_light", subdir_name="multilabel_classification")
+        self.image_size = config["data_preprocessor"].get('size', (224,224))
         super().__init__(num_classes=num_classes, config=config)
 
     def _configure_export_parameters(self) -> None:
