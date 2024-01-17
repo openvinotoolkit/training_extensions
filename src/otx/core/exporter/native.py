@@ -43,10 +43,7 @@ class OTXNativeModelExporter(OTXModelExporter):
 
     def _extend_model_metadata(self, metadata: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
         """Extends metadata coming from model with preprocessing-specific parameters.
-<<<<<<< HEAD
-=======
 
->>>>>>> vs/v2_export
         Model's original metadata has priority over exporter's extra metadata
 
         Args:

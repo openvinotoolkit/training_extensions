@@ -49,7 +49,7 @@ class OTXModelExporter:
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> None:
-        """Export to ONNX format
+        """Export to ONNX format.
 
         Args:
             model (torch.nn.Module): pytorch model top export
