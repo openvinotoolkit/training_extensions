@@ -328,12 +328,26 @@ class Engine:
         Args:
             output_dir (Path): Directory path to save exported binary files.
         """
-        self.model.export(
-            output_dir=output_dir,
-            export_format=cfg.export_format,
-            precision=cfg.precision,
-            test_pipeline=self.datamodule.config.test_subset.transforms if self.model.need_mmdeploy() else None,
-        )
+        if self.checkpoint is not None:
+            lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            )
+            lit_module.meta_info = self.datamodule.meta_info
+
+            loaded_checkpoint = torch.load(self.checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint["state_dict"])
+
+            self.model.export(
+                output_dir=output_dir,
+                export_format=cfg.export_format,
+                precision=cfg.precision,
+                test_pipeline=self.datamodule.config.test_subset.transforms if self.model.need_mmdeploy() else None,
+            )
+        else:
+            msg = "To make export, checkpoint must be specified."
+            raise RuntimeError(msg)
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.

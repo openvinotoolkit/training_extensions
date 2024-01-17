@@ -426,6 +426,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        self.num_classes = num_classes
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
@@ -454,7 +455,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image
-        images = [np.transpose(im.numpy(), (1, 2, 0)) for im in entity.images]
+        images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
         return {"inputs": images}
 
     def forward(

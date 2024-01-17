@@ -167,10 +167,6 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
-
-    if "multilabel_classification" in recipe:
-        return
-
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     task = recipe.split("/")[0]
     export_test_recipe = f"{task}/openvino_model.yaml"
@@ -211,6 +207,10 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
         pytest.skip("OMZ doesn't have proper model for Pytorch MaskRCNN interface.")
+    if recipe == "multilabel_classification/openvino_model.yaml":
+        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
+        # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
+        pytest.skip("OMZ doesn't have proper model for Pytorch multilabel interface.")
 
     task = recipe.split("/")[0]
     model_name = recipe.split("/")[1].split(".")[0]
