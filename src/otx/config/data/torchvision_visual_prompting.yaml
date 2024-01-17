@@ -3,47 +3,55 @@ defaults:
   - base_inst_seg
 
 data_format: coco_instances
-include_polygons: true
+include_polygons: false
 
 train_subset:
   batch_size: 2
   num_workers: 0
   transform_lib_type: TORCHVISION
   transforms:
-    - _target_: torchvision.transforms.v2.Resize
+    # - _target_: otx.core.data.transform_libs.torchvision.PerturbBoundingBoxes
+    #   offset: 20
+    - _target_: otx.core.data.transform_libs.torchvision.ResizewithLongestEdge
       size: 1023
       max_size: 1024
+      with_bbox: True
+    - _target_: otx.core.data.transform_libs.torchvision.PadtoFixedSize
     - _target_: torchvision.transforms.v2.ToDtype
       dtype: ${as_torch_dtype:torch.float32}
-      scale: True
+      scale: False
     - _target_: torchvision.transforms.v2.Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]
 val_subset:
   batch_size: 1
   num_workers: 0
   transform_lib_type: TORCHVISION
   transforms:
-    - _target_: torchvision.transforms.v2.Resize
+    - _target_: otx.core.data.transform_libs.torchvision.ResizewithLongestEdge
       size: 1023
       max_size: 1024
+      with_bbox: True
+    - _target_: otx.core.data.transform_libs.torchvision.PadtoFixedSize
     - _target_: torchvision.transforms.v2.ToDtype
       dtype: ${as_torch_dtype:torch.float32}
-      scale: True
+      scale: False
     - _target_: torchvision.transforms.v2.Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]
 test_subset:
   batch_size: 1
   num_workers: 0
   transform_lib_type: TORCHVISION
   transforms:
-    - _target_: torchvision.transforms.v2.Resize
+    - _target_: otx.core.data.transform_libs.torchvision.ResizewithLongestEdge
       size: 1023
       max_size: 1024
+      with_bbox: True
+    - _target_: otx.core.data.transform_libs.torchvision.PadtoFixedSize
     - _target_: torchvision.transforms.v2.ToDtype
       dtype: ${as_torch_dtype:torch.float32}
-      scale: True
+      scale: False
     - _target_: torchvision.transforms.v2.Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]

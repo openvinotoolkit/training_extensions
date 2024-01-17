@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from datumaro import DatasetSubset, Image, Polygon
 from torchvision import tv_tensors
+import torchvision.transforms.v2 as tvt_v2
 
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingDataEntity
@@ -79,7 +80,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         transformed_entity = self._apply_transforms(entity)
 
         # insert masks to transformed_entity
-        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)  # type: ignore[union-attr]
+        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)
         return transformed_entity
 
     @property
