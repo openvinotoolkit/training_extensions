@@ -6,14 +6,16 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from pathlib import Path
-from typing import Any
-
-import onnx
-import openvino
-import torch
+from typing import TYPE_CHECKING, Any
 
 from otx.core.types.export import OTXExportPrecisionType
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import onnx
+    import openvino
+    import torch
 
 
 class OTXModelExporter:

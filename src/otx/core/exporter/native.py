@@ -43,6 +43,10 @@ class OTXNativeModelExporter(OTXModelExporter):
 
     def _extend_model_metadata(self, metadata: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
         """Extends metadata coming from model with preprocessing-specific parameters.
+<<<<<<< HEAD
+=======
+
+>>>>>>> vs/v2_export
         Model's original metadata has priority over exporter's extra metadata
 
         Args:
@@ -73,6 +77,10 @@ class OTXNativeModelExporter(OTXModelExporter):
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> None:
+        """Export to OpenVINO Intermediate Representation format.
+
+        In this implementation the export is done only via standard OV/ONNX tools.
+        """
         dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
 
         if self.via_onnx:
@@ -97,11 +105,8 @@ class OTXNativeModelExporter(OTXModelExporter):
                 input=(openvino.runtime.PartialShape(self.input_size),),
             )
 
-        if metadata is None:
-            metadata = {}
-        else:
-            metadata = self._extend_model_metadata(metadata)
-        exported_model = OTXModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
+        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
+        exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
 
@@ -115,20 +120,16 @@ class OTXNativeModelExporter(OTXModelExporter):
     ) -> None:
         """Export to ONNX format.
 
-        Args:
-            output_dir: Directory path to save exported binary files
+        In this implementation the export is done only via standard OV/ONNX tools.
         """
         dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
         save_path = str(output_dir / (base_model_name + ".onnx"))
-        if metadata is None:
-            metadata = {}
-        else:
-            metadata = self._extend_model_metadata(metadata)
+        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
 
         torch.onnx.export(model, dummy_tensor, save_path, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
-        onnx_model = OTXModelExporter._embed_onnx_metadata(onnx_model, metadata)
+        onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
         if precision == OTXExportPrecisionType.FP16:
             from onnxconverter_common import float16
 
