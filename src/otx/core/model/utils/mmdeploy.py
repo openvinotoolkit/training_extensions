@@ -21,7 +21,7 @@ from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_
 from mmdeploy.utils import get_ir_config, get_partition_config
 from mmengine.config import Config as MMConfig
 
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
 from otx.core.types.export import OTXExportPrecisionType
 from .onnx import prepare_onnx_for_openvino
 
@@ -46,7 +46,7 @@ class MMdeployExporter:
         self._model_builder = model_builder
         self.output_dir = output_dir
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
-        new_pipeline = [OmegaConf.to_container(test_pipeline[i]) for i in range(len(test_pipeline))]
+        new_pipeline = [to_tuple(OmegaConf.to_container(test_pipeline[i])) for i in range(len(test_pipeline))]
         self._model_cfg = MMConfig({"model" : model_cfg, "test_pipeline" : new_pipeline})
         self._deploy_cfg = deploy_cfg
         self.model_name = model_name

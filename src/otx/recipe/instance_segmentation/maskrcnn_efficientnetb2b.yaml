@@ -273,7 +273,7 @@ model:
     input_width: 1024
     mean: ${..otx_model.config.data_preprocessor.mean}
     std: ${..otx_model.config.data_preprocessor.std}
-    mmdeploy_config: otx.config.mmdeploy.instance_segmentation.maskrcnn_efficientnetb2b
+    mmdeploy_config: otx.config.mmdeploy.instance_segmentation.maskrcnn
     mm_model_config: ${..otx_model.config}
     test_pipeline: ${...data.test_subset.transforms}
 
