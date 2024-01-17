@@ -75,85 +75,52 @@ class OTXDatasetFactory:
     ) -> OTXDataset:
         """Create OTXDataset."""
         transforms = TransformLibFactory.generate(cfg_subset)
+        common_kwargs = {
+            "dm_subset": dm_subset,
+            "transforms": transforms,
+            "mem_cache_handler": mem_cache_handler,
+            "mem_cache_img_max_size": cfg_data_module.mem_cache_img_max_size,
+            "image_color_channel": cfg_data_module.image_color_channel,
+        }
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
 
-            return OTXMulticlassClsDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXMulticlassClsDataset(**common_kwargs)
 
         if task == OTXTaskType.MULTI_LABEL_CLS:
             from .dataset.classification import OTXMultilabelClsDataset
 
-            return OTXMultilabelClsDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXMultilabelClsDataset(**common_kwargs)
 
         if task == OTXTaskType.H_LABEL_CLS:
             from .dataset.classification import OTXHlabelClsDataset
 
-            return OTXHlabelClsDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXHlabelClsDataset(**common_kwargs)
 
         if task == OTXTaskType.DETECTION:
             from .dataset.detection import OTXDetectionDataset
 
-            return OTXDetectionDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXDetectionDataset(**common_kwargs)
 
         if task == OTXTaskType.INSTANCE_SEGMENTATION:
             from .dataset.instance_segmentation import OTXInstanceSegDataset
 
             # NOTE: DataModuleConfig does not have include_polygons attribute
             include_polygons = getattr(cfg_data_module, "include_polygons", False)
-            return OTXInstanceSegDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-                include_polygons=include_polygons,
-            )
+            return OTXInstanceSegDataset(include_polygons=include_polygons, **common_kwargs)
 
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:
             from .dataset.segmentation import OTXSegmentationDataset
 
-            return OTXSegmentationDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXSegmentationDataset(**common_kwargs)
 
         if task == OTXTaskType.ACTION_CLASSIFICATION:
             from .dataset.action_classification import OTXActionClsDataset
 
-            return OTXActionClsDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXActionClsDataset(**common_kwargs)
 
         if task == OTXTaskType.ACTION_DETECTION:
             from .dataset.action_detection import OTXActionDetDataset
 
-            return OTXActionDetDataset(
-                dm_subset=dm_subset,
-                transforms=transforms,
-                mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=cfg_data_module.mem_cache_img_max_size,
-            )
+            return OTXActionDetDataset(**common_kwargs)
         raise NotImplementedError(task)
