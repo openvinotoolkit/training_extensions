@@ -212,16 +212,16 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             raise TypeError(preds)
 
         converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for i, metrics in self.test_metric.compute_groups.items():
-            if i == 0:
-                # for binary mask
-                for metric in metrics:
-                    for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                        self.test_metric.__getitem__(metric).update(cvt_preds["masks"], cvt_target["masks"])
-            else:
-                # for instance segmentation
-                for metric in metrics:
-                    self.test_metric.__getitem__(metric).update(**converted_entities)
+        for name, metric in self.test_metric.items():
+            if name == "mAP":
+                # MeanAveragePrecision
+                _preds = [{k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]]
+                _target = converted_entities["target"]
+                metric.update(preds=_preds, target=_target)
+            elif name in ["IoU", "F1", "Dice"]:
+                # BinaryJaccardIndex, BinaryF1Score, Dice
+                for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                    metric.update(cvt_preds["masks"], cvt_target["masks"])
 
     @property
     def lr_scheduler_monitor_key(self) -> str:
