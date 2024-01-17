@@ -64,6 +64,13 @@ DATASET = {
             "+model.otx_model.config.roi_head.bbox_head.topk=3",
         ],
     },
+    "visual_prompting": {
+        "data_dir": "tests/assets/car_tree_bug",
+        "overrides": [
+            "~model.scheduler.mode",
+            "~model.scheduler.patience",
+        ],
+    },
 }
 
 
