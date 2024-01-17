@@ -26,9 +26,8 @@ class OTXActionClsLitModule(OTXLitModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
-        export_config: ExportConfig,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile, export_config)
+        super().__init__(otx_model, optimizer, scheduler, torch_compile)
         num_classes = otx_model.config.get("cls_head", {}).get("num_classes", None)
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
         self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)

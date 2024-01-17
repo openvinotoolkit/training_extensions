@@ -35,6 +35,8 @@ def otx_export(overrides: list[str]) -> None:
 
         log.info(f"Instantiating model <{cfg.model}>")
         model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
+        optimizer = hydra.utils.instantiate(cfg.model.optimizer)
+        scheduler = hydra.utils.instantiate(cfg.model.scheduler)
 
         from otx.engine import Engine
 
@@ -43,10 +45,12 @@ def otx_export(overrides: list[str]) -> None:
             task=cfg.base.task,
             work_dir=cfg.base.output_dir,
             model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
             datamodule=datamodule,
             checkpoint=cfg.checkpoint,
             device=trainer_kwargs.pop("accelerator", "auto"),
         )
 
         log.info("Running model export")
-        engine.export(cfg.base.output_dir)
+        engine.export(cfg.base.output_dir, cfg.model.export_config)

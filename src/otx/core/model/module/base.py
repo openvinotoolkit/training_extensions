@@ -31,7 +31,6 @@ class OTXLitModule(LightningModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
-        export_config: ExportConfig,
     ):
         super().__init__()
 
@@ -39,7 +38,6 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
-        self._export_config = export_config
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -175,23 +173,3 @@ class OTXLitModule(LightningModule):
     def label_info(self, label_info: LabelInfo | list[str]) -> None:
         """Set the member `OTXModel` label information."""
         self.model.label_info = label_info  # type: ignore[assignment]
-
-    def export(self, output_dir: Path) -> None:
-        """Export the member `OTXModel` of this module to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-        """
-        self.model.export(
-            input_size=(self._export_config.input_height, self._export_config.input_width),
-            output_dir=output_dir,
-            export_format=self._export_config.export_format,
-            precision=self._export_config.precision,
-            mean=self._export_config.mean,
-            std=self._export_config.std,
-            resize_mode=self._export_config.resize_mode,
-            pad_value=self._export_config.pad_value,
-            swap_rgb=self._export_config.swap_rgb,
-            via_onnx=self._export_config.via_onnx,
-            onnx_export_configuration=self._export_config.onnx_export_configuration,
-        )

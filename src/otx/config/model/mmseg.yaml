@@ -22,19 +22,3 @@ torch_compile: false
 export_config:
   export_format: OPENVINO
   precision: FP32
-  resize_mode: standard
-  via_onnx: false
-  onnx_export_configuration:
-    - operator_export_type: ONNX
-  pad_value: 0
-  swap_rgb: false
-  input_height: 224
-  input_width: 224
-  mean:
-    - 0
-    - 0
-    - 0
-  std:
-    - 1
-    - 1
-    - 1

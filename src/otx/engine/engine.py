@@ -11,6 +11,7 @@ import torch
 from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
+from otx.core.config.export import ExportConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
@@ -321,9 +322,17 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, *args, **kwargs) -> None:
-        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
-        raise NotImplementedError
+    def export(self, output_dir: Path, cfg: ExportConfig) -> None:
+        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
+
+        Args:
+            output_dir (Path): Directory path to save exported binary files.
+        """
+        self.model.export(
+            output_dir=output_dir,
+            export_format=cfg.export_format,
+            precision=cfg.precision,
+        )
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.

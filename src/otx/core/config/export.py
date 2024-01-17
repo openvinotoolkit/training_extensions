@@ -16,13 +16,3 @@ class ExportConfig:
 
     export_format: OTXExportFormatType
     precision: OTXExportPrecisionType
-
-    input_height: int
-    input_width: int
-    mean: tuple[float, float, float]
-    std: tuple[float, float, float]
-    resize_mode: str
-    pad_value: int
-    swap_rgb: bool
-    via_onnx: bool
-    onnx_export_configuration: list[dict[str, Any]] | None = None

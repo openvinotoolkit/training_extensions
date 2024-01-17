@@ -28,9 +28,8 @@ class OTXDetectionLitModule(OTXLitModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
-        export_config: ExportConfig,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile, export_config)
+        super().__init__(otx_model, optimizer, scheduler, torch_compile)
 
         self.val_metric = MeanAveragePrecision()
         self.test_metric = MeanAveragePrecision()

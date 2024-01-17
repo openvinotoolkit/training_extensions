@@ -167,7 +167,22 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self,
         output_dir: Path,
         export_format: OTXExportFormatType,
-        input_size: tuple[int, int],
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+    ) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+            precision: Precision of the exported model.
+        """
+        raise NotImplementedError
+
+    def _export(
+        self,
+        output_dir: Path,
+        export_format: OTXExportFormatType,
+        input_size: tuple[int,...],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
@@ -231,7 +246,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def _export_to_openvino(
         self,
         output_dir: Path,
-        input_size: tuple[int, int],
+        input_size: tuple[int,...],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], Any] | None = None,
         via_onnx: bool = False,
@@ -242,7 +257,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         Args:
             output_dir: Directory path to save exported binary files
         """
-        dummy_tensor = torch.rand((1, 3, *input_size)).to(next(self.model.parameters()).device)
+        dummy_tensor = torch.rand(input_size).to(next(self.model.parameters()).device)
 
         if via_onnx:
             with tempfile.TemporaryDirectory() as tmpdirname:
@@ -257,13 +272,13 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                 )
                 exported_model = openvino.convert_model(
                     onnx_model_path,
-                    input=(openvino.runtime.PartialShape((1, 3, *input_size)),),
+                    input=(openvino.runtime.PartialShape(input_size),),
                 )
         else:
             exported_model = openvino.convert_model(
                 self.model,
                 example_input=dummy_tensor,
-                input=(openvino.runtime.PartialShape((1, 3, *input_size)),),
+                input=(openvino.runtime.PartialShape(input_size),),
             )
 
         if metadata is None:
@@ -286,7 +301,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def _export_to_onnx(
         self,
         output_dir: Path,
-        input_size: tuple[int, int],
+        input_size: tuple[int,...],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], Any] | None = None,
         onnx_configuration: list[dict[str, Any]] | None = None,
@@ -297,7 +312,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         Args:
             output_dir: Directory path to save exported binary files
         """
-        dummy_tensor = torch.rand((1, 3, *input_size)).to(next(self.model.parameters()).device)
+        dummy_tensor = torch.rand(input_size).to(next(self.model.parameters()).device)
         save_path = str(output_dir / (self._EXPORTED_MODEL_BASE_NAME + ".onnx"))
         export_configuration = onnx_configuration if onnx_configuration else {}
         export_configuration = {k: v for param in export_configuration for k, v in param.items()}

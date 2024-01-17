@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -20,6 +21,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
@@ -70,6 +72,13 @@ def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Mod
 
     classification_layers = get_classification_layers(config, MODELS, "model.")
     return build_mm_model(config, MODELS, load_from), classification_layers
+
+
+def _get_export_params_from_cls_mmconfig(config: DictConfig):
+    return {
+            "mean": config["data_preprocessor"]["mean"],
+            "std": config["data_preprocessor"]["std"],
+            }
 
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
@@ -153,6 +162,29 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             scores=scores,
             labels=labels,
         )
+
+    def export(
+        self,
+        output_dir: Path,
+        export_format: OTXExportFormatType,
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+    ) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+            precision: Precision of the exported model.
+        """
+        export_params = _get_export_params_from_cls_mmconfig(self.config)
+        self._export(output_dir, export_format, precision=precision,
+                     onnx_export_configuration=None,
+                     pad_value = 0,
+                     resize_mode = "standard",
+                     swap_rgb = False,
+                     via_onnx = False,
+                     input_size=(1,3,224,224),
+                    **export_params)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -263,6 +295,29 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             labels=labels,
         )
 
+    def export(
+        self,
+        output_dir: Path,
+        export_format: OTXExportFormatType,
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+    ) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+            precision: Precision of the exported model.
+        """
+        export_params = _get_export_params_from_cls_mmconfig(self.config)
+        self._export(output_dir, export_format, precision=precision,
+                     onnx_export_configuration=None,
+                     pad_value = 0,
+                     resize_mode = "standard",
+                     swap_rgb = False,
+                     via_onnx = False,
+                     input_size=(1,3,224,224),
+                    **export_params)
+
 
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
     """H-label classification models used in OTX."""
@@ -371,6 +426,29 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             scores=scores,
             labels=labels,
         )
+
+    def export(
+        self,
+        output_dir: Path,
+        export_format: OTXExportFormatType,
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+    ) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+            precision: Precision of the exported model.
+        """
+        export_params = _get_export_params_from_cls_mmconfig(self.config)
+        self._export(output_dir, export_format, precision=precision,
+                     onnx_export_configuration=None,
+                     pad_value = 0,
+                     resize_mode = "standard",
+                     swap_rgb = False,
+                     via_onnx = False,
+                     input_size=(1,3,224,224),
+                    **export_params)
 
 
 class OVMulticlassClassificationModel(OVModel):
