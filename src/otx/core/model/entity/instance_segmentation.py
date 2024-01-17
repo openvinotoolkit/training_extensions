@@ -16,12 +16,14 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import device, nn
 
 
@@ -34,10 +36,11 @@ class OTXInstanceSegModel(
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -169,51 +172,42 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         )
 
 
-class OVInstanceSegCompatibleModel(OTXInstanceSegModel):
+class OVInstanceSegmentationModel(OVModel):
     """Instance segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX detection model compatible for OTX testing pipeline.
     """
 
-    def __init__(self, config: DictConfig) -> None:
-        self.model_name = config.pop("model_name")
-        self.model_type = config.pop("model_type")
-        self.config = config
-        super().__init__()
-
-    def _create_model(self) -> nn.Module:
-        from openvino.model_api.models import Model
-
-        return Model.create_model(self.model_name, self.model_type)
-
-    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
-        if entity.batch_size > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-        # restore original numpy image
-        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
-        return {"inputs": img}
-
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[InstanceSegmentationResult],
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
         # add label index
-        scores = [torch.as_tensor(outputs[0])]
-        labels = [torch.as_tensor(outputs[1])]
-        bboxes = [
-            tv_tensors.BoundingBoxes(
-                outputs[2],
-                format="XYXY",
-                canvas_size=inputs.imgs_info[-1].img_shape,
-            ),
-        ]
-        masks = [tv_tensors.Mask(outputs[3])]
+        bboxes = []
+        scores = []
+        labels = []
+        masks = []
+        for output in outputs:
+            output_objects = output.segmentedObjects
+            if len(output_objects):
+                bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
+            else:
+                bbox = torch.empty(size=(0, 0))
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    bbox,
+                    format="XYXY",
+                    canvas_size=inputs.imgs_info[-1].img_shape,
+                ),
+            )
+            scores.append(torch.tensor([output.score for output in output_objects]))
+            masks.append(torch.tensor([output.mask for output in output_objects]))
+            labels.append(torch.tensor([output.id for output in output_objects]))
 
         return InstanceSegBatchPredEntity(
-            batch_size=1,
+            batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,

@@ -25,7 +25,7 @@ from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlas
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
-    from otx.core.data.dataset.base import DataMetaInfo
+    from otx.core.data.dataset.base import LabelInfo
 
 
 class OTXMulticlassClsLitModule(OTXLitModule):
@@ -61,6 +61,10 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
+        if results is None:
+            msg = f"{meter} has no data to compute metric or there is an error computing metric"
+            raise RuntimeError(msg)
+
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MulticlassClsBatchDataEntity, batch_idx: int) -> None:
@@ -220,7 +224,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.model.model.head.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
-        self.num_labels = len(self.meta_info.class_names)
+        self.num_labels = len(self.meta_info.label_names)
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
@@ -310,7 +314,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         return "train/loss"
 
     @property
-    def meta_info(self) -> DataMetaInfo:
+    def meta_info(self) -> LabelInfo:
         """Meta information of OTXLitModule."""
         if self._meta_info is None:
             err_msg = "meta_info is referenced before assignment"
@@ -318,6 +322,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
         return self._meta_info
 
     @meta_info.setter
-    def meta_info(self, meta_info: DataMetaInfo) -> None:
+    def meta_info(self, meta_info: LabelInfo) -> None:
         self._meta_info = meta_info
         self._set_hlabel_setup()

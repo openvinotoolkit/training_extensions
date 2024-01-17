@@ -5,21 +5,21 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 import torch
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import DetectionResult
     from torch import device, nn
 
 
@@ -35,10 +35,11 @@ class MMDetCompatibleModel(OTXDetectionModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -147,60 +148,45 @@ class MMDetCompatibleModel(OTXDetectionModel):
         )
 
 
-class OVDetectionCompatibleModel(OTXDetectionModel):
+class OVDetectionModel(OVModel):
     """Object detection model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX detection model compatible for OTX testing pipeline.
     """
 
-    def __init__(self, config: DictConfig) -> None:
-        self.model_name = config.pop("model_name")
-        self.config = config
-        super().__init__()
-
-    def _create_model(self) -> nn.Module:
-        from openvino.model_api.models import DetectionModel
-
-        model = DetectionModel.create_model(self.model_name)
-        if model.get_label_name(0).lower() == "background":
-            logging.warning(
-                "Background class detected. Labels shift will be applied during inference to match target labeles",
-            )
-        return model
-
-    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
-        if entity.batch_size > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-        # restore original numpy image
-        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
-        return {"inputs": img}
-
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[DetectionResult],
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         # add label index
-        outputs_objects = outputs.objects
-        bboxes = [
-            tv_tensors.BoundingBoxes(
-                [[output.xmin, output.ymin, output.xmax, output.ymax] for output in outputs_objects],
-                format="XYXY",
-                canvas_size=inputs.imgs_info[-1].img_shape,
-            ),
-        ]
-        scores = [torch.tensor([output.score for output in outputs_objects])]
+        bboxes = []
+        scores = []
+        labels = []
+        for output in outputs:
+            output_objects = output.objects
+            if len(output_objects):
+                bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
+            else:
+                bbox = torch.empty(size=(0, 0))
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    bbox,
+                    format="XYXY",
+                    canvas_size=inputs.imgs_info[-1].img_shape,
+                ),
+            )
+            scores.append(torch.tensor([output.score for output in output_objects]))
 
-        if self.model.get_label_name(0) == "background":
-            # some OMZ model requires to shift labeles
-            labels = [torch.tensor([output.id - 1 for output in outputs_objects])]
-        else:
-            labels = [torch.tensor([output.id for output in outputs_objects])]
+            if self.model.get_label_name(0) == "background":
+                # some OMZ model requires to shift labeles
+                labels.append(torch.tensor([output.id - 1 for output in output_objects]))
+            else:
+                labels.append(torch.tensor([output.id for output in output_objects]))
 
         return DetBatchPredEntity(
-            batch_size=1,
+            batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,

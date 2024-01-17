@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 import torch
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -19,12 +18,14 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
 
@@ -34,7 +35,7 @@ class OTXMulticlassClsModel(
     """Base class for the classification models used in OTX."""
 
 
-def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, list[str]]:
+def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
     from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
     from mmpretrain.registry import MODELS
 
@@ -63,10 +64,11 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
@@ -155,10 +157,11 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
@@ -241,10 +244,11 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__()
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
@@ -315,45 +319,25 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         )
 
 
-class OVClassificationCompatibleModel(OTXMulticlassClsModel):
+class OVMulticlassClassificationModel(OVModel):
     """Classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
-    def __init__(self, config: DictConfig) -> None:
-        self.model_name = config.pop("model_name")
-        self.config = config
-        super().__init__()
-
-    def _create_model(self) -> nn.Module:
-        from openvino.model_api.models import ClassificationModel
-
-        return ClassificationModel.create_model(self.model_name, model_type="Classification")
-
-    def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        if entity.batch_size > 1:
-            msg = "Only sync inference with batch = 1 is supported for now"
-            raise RuntimeError(msg)
-        # restore original numpy image
-        img = np.transpose(entity.images[-1].numpy(), (1, 2, 0))
-        return {"inputs": img}
-
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[ClassificationResult],
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity:
-        # add label index
-        labels = [torch.tensor(outputs.top_labels[0][0], dtype=torch.long)]
-        # add probability
-        scores = [torch.tensor(outputs.top_labels[0][2])]
+        pred_labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
+        pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
 
         return MulticlassClsBatchPredEntity(
-            batch_size=1,
+            batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
+            scores=pred_scores,
+            labels=pred_labels,
         )

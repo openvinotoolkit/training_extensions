@@ -30,6 +30,7 @@ class OTXActionClsDataset(OTXDataset[ActionClsDataEntity]):
                 img_idx=idx,
                 img_shape=(0, 0),
                 ori_shape=(0, 0),
+                image_color_channel=self.image_color_channel,
             ),
             labels=torch.as_tensor([ann.label for ann in label_anns]),
         )

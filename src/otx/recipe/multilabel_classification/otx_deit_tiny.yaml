@@ -11,65 +11,27 @@ data:
       - type: LoadImageFromFile
       - backend: cv2
         scale: 224
-        type: RandomResizedCrop
+        type: Resize
       - type: PackInputs
   val_subset:
     batch_size: 64
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
+        scale: 224
+        type: Resize
       - type: PackInputs
   test_subset:
     batch_size: 64
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
+        scale: 224
+        type: Resize
       - type: PackInputs
 model:
   otx_model:
-    config:
-      load_from: https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth
-      backbone:
-        arch: deit-tiny
-        type: VisionTransformer
-        img_size: 224
-        patch_size: 16
-      head:
-        in_channels: 192
-        num_classes: 1000
-        loss:
-          type: AsymmetricAngularLossWithIgnore
-        type: CustomMultiLabelLinearClsHead
-      data_preprocessor:
-        mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: False
-        type: ClsDataPreprocessor
-      init_cfg:
-        - std: 0.2
-          layer: Linear
-          type: TruncNormal
-        - bias: 0.
-          val: 1.
-          layer: LayerNorm
-          type: Constant
-      type: ImageClassifier
+    _target_: otx.algo.classification.deit_tiny.DeitTinyForMultilabelCls
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true

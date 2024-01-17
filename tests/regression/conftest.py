@@ -153,8 +153,3 @@ def fxt_recipe_dir() -> Path:
     import otx.recipe as otx_recipe
 
     return Path(otx_recipe.__file__).parent
-
-
-@pytest.fixture(params=[pytest.param("gpu", marks=pytest.mark.gpu)])
-def fxt_accelerator(request: pytest.FixtureRequest) -> str:
-    return request.param

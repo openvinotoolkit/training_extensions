@@ -13,7 +13,7 @@ from datumaro import Image, Label
 from datumaro.components.annotation import AnnotationType
 from torch.nn import functional
 
-from otx.core.data.dataset.base import DataMetaInfo, OTXDataset
+from otx.core.data.dataset.base import LabelInfo, OTXDataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -27,7 +27,7 @@ from otx.core.data.entity.classification import (
 
 
 @dataclass
-class HLabelMetaInfo(DataMetaInfo):
+class HLabelMetaInfo(LabelInfo):
     """Meta information of hlabel classification."""
 
     hlabel_info: HLabelInfo
@@ -52,6 +52,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                image_color_channel=self.image_color_channel,
             ),
             labels=torch.as_tensor([ann.label for ann in label_anns]),
         )
@@ -85,6 +86,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                image_color_channel=self.image_color_channel,
             ),
             labels=self._convert_to_onehot(labels),
         )
@@ -93,7 +95,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
 
     def _convert_to_onehot(self, labels: torch.tensor) -> torch.tensor:
         """Convert label to one-hot vector format."""
-        return functional.one_hot(labels, self.num_classes).sum(0)
+        return functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
 
     @property
     def collate_fn(self) -> Callable:
@@ -110,7 +112,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         # Hlabel classification used HLabelMetaInfo to insert the HLabelInfo.
         self.meta_info = HLabelMetaInfo(
-            class_names=[category.name for category in self.dm_categories],
+            label_names=[category.name for category in self.dm_categories],
             hlabel_info=HLabelInfo.from_dm_label_groups(self.dm_categories),
         )
 
@@ -132,6 +134,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
+                image_color_channel=self.image_color_channel,
             ),
             labels=torch.as_tensor(hlabel_labels),
         )

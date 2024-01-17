@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 import torch
+from importlib_resources import files
 from omegaconf import OmegaConf
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
 
@@ -19,11 +20,12 @@ if TYPE_CHECKING:
 class TestOTXSegmentationModel:
     @pytest.fixture()
     def config(self) -> DictConfig:
-        return OmegaConf.load("src/otx/recipe/segmentation/segnext_s.yaml")
+        cfg_path = files("otx") / "algo" / "segmentation" / "mmconfigs" / "segnext_t.yaml"
+        return OmegaConf.load(cfg_path)
 
     @pytest.fixture()
     def model(self, config) -> MMSegCompatibleModel:
-        return MMSegCompatibleModel(config.model.otx_model.config)
+        return MMSegCompatibleModel(num_classes=1, config=config)
 
     def test_create_model(self, model) -> None:
         mmseg_model = model._create_model()
