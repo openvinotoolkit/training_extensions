@@ -1,12 +1,12 @@
-name: V2 KPI Test
+name: V2 Performance Test
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # run daily on 18:00 UTC
+    - cron: '0 18 * * *'  # currently run daily on 18:00 UTC; [TODO]: run weekly 
   workflow_dispatch: # run on request
 
 jobs:
-  KPI-Test:
+  Performance-Test:
     runs-on: [self-hosted, linux, x64, dev]
     strategy:
       fail-fast: false
@@ -14,9 +14,9 @@ jobs:
         include:
           - python-version: "3.10"
             tox-env: "py310"
-    name: KPI-Test-Py${{ matrix.python-version }}
+    name: Performance-Test-Py${{ matrix.python-version }}
     concurrency:
-      group: ${{ github.workflow }}-KPI-${{ github.event.pull_request.number || github.ref }}
+      group: ${{ github.workflow }}-Performance-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout repository
@@ -27,9 +27,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install tox
         run: python -m pip install tox
-      - name: Run KPI Test
+      - name: Run Performance Test
         env:
           MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
-          CI_KPI_DATASET_ROOT_DIR: ${{ vars.CI_KPI_DATASET_ROOT_DIR }}
+          CI_Perfor_DATASET_ROOT_DIR: ${{ vars.CI_PERFORMANCE_DATASET_ROOT_DIR }}
           USER_NAME: ${{ vars.USER_NAME }}
-        run: tox -vv -e kpi-test
+        run: tox -vv -e performance-test
