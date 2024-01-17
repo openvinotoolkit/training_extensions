@@ -23,7 +23,24 @@ if TYPE_CHECKING:
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
-    """Base class for the detection models used in OTX."""
+    """Base class for the segmentation models used in OTX."""
+
+    def _generate_model_metadata(
+        self,
+        mean: tuple[float, float, float],
+        std: tuple[float, float, float],
+        resize_mode: str,
+        pad_value: int,
+        swap_rgb: bool,
+    ) -> dict[tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata[("model_info", "model_type")] = "Segmentation"
+        metadata[("model_info", "task_type")] = "segmentation"
+        metadata[("model_info", "return_soft_prediction")] = str(True)
+        metadata[("model_info", "soft_threshold")] = str(0.5)
+        metadata[("model_info", "blur_strength")] = str(1)
+
+        return metadata
 
 
 class MMSegCompatibleModel(OTXSegmentationModel):
