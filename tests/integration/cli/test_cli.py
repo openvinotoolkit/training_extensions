@@ -96,6 +96,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         DATASET[task]["data_root"],
         "--engine.work_dir",
         str(tmp_path_train / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
         "--max_epochs",
         "2",
         *DATASET[task]["overrides"],
