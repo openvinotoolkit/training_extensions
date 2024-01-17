@@ -309,7 +309,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                 input=(openvino.runtime.PartialShape(input_size),),
             )
         elif via_onnx:
-            import shutil
             with tempfile.TemporaryDirectory() as tmpdirname:
                 save_path = Path(tmpdirname)
                 onnx_model_path = self._export_to_onnx(
@@ -320,7 +319,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
                     onnx_configuration,
                     True,
                 )
-                shutil.copy(onnx_model_path, output_dir)
                 exported_model = openvino.convert_model(
                     onnx_model_path,
                     input=(openvino.runtime.PartialShape(input_size),),
