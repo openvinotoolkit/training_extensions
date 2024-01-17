@@ -21,6 +21,7 @@ from otx.core.data.entity.base import (
 from otx.core.types.export import OTXExportFormat
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.config import inplace_num_classes
+from openvino.model_api.models import Model
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -235,10 +236,9 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self.config = config
         super().__init__(num_classes)
 
-    def _create_model(self) -> nn.Module:
+    def _create_model(self, configuration: dict[str, Any] | None = None) -> Model:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from openvino.model_api.models import Model
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:
@@ -251,7 +251,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             plugin_config=plugin_config,
         )
 
-        return Model.create_model(model_adapter, model_type=self.model_type)
+        configuration = configuration if configuration is not None else {}
+        return Model.create_model(model_adapter, model_type=self.model_type, configuration=configuration)
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image
