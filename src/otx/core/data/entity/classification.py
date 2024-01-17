@@ -131,7 +131,7 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
         batch_data = super().collate_fn(entities)
         return MultilabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)),
+            images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )

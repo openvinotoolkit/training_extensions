@@ -93,7 +93,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
 
     def _convert_to_onehot(self, labels: torch.tensor) -> torch.tensor:
         """Convert label to one-hot vector format."""
-        return functional.one_hot(labels, self.num_classes).sum(0)
+        return functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
 
     @property
     def collate_fn(self) -> Callable:
