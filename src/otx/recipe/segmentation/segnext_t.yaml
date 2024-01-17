@@ -155,9 +155,3 @@ model:
     total_iters: 100
     power: 0.9
     last_epoch: -1
-  export_config:
-    input_height: 544
-    input_width: 544
-    mean: ${..otx_model.config.data_preprocessor.mean}
-    std: ${..otx_model.config.data_preprocessor.std}
-    via_onnx: true

@@ -16,7 +16,6 @@ import onnx
 import openvino
 import torch
 from torch import nn
-from torch.onnx import OperatorExportTypes
 
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
@@ -182,7 +181,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self,
         output_dir: Path,
         export_format: OTXExportFormatType,
-        input_size: tuple[int,...],
+        input_size: tuple[int, ...],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
@@ -190,7 +189,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         pad_value: int = 0,
         swap_rgb: bool = False,
         via_onnx: bool = False,
-        onnx_export_configuration: list[dict[str, Any]] | None = None,
+        onnx_export_configuration: dict[str, Any] | None = None,
     ) -> None:
         """Export this model to the specified output directory.
 
@@ -246,11 +245,11 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def _export_to_openvino(
         self,
         output_dir: Path,
-        input_size: tuple[int,...],
+        input_size: tuple[int, ...],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], Any] | None = None,
         via_onnx: bool = False,
-        onnx_configuration: list[dict[str, Any]] | None = None,
+        onnx_configuration: dict[str, Any] | None = None,
     ) -> None:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -301,10 +300,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def _export_to_onnx(
         self,
         output_dir: Path,
-        input_size: tuple[int,...],
+        input_size: tuple[int, ...],
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], Any] | None = None,
-        onnx_configuration: list[dict[str, Any]] | None = None,
+        onnx_configuration: dict[str, Any] | None = None,
         return_path_to_export_ir: bool = False,
     ) -> None | str:
         """Export to ONNX format.
@@ -315,10 +314,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         dummy_tensor = torch.rand(input_size).to(next(self.model.parameters()).device)
         save_path = str(output_dir / (self._EXPORTED_MODEL_BASE_NAME + ".onnx"))
         export_configuration = onnx_configuration if onnx_configuration else {}
-        export_configuration = {k: v for param in export_configuration for k, v in param.items()}
-        if "operator_export_type" in export_configuration:
-            operator = export_configuration["operator_export_type"]
-            export_configuration["operator_export_type"] = getattr(OperatorExportTypes, operator)
 
         torch.onnx.export(self.model, dummy_tensor, save_path, **export_configuration)
         if return_path_to_export_ir:

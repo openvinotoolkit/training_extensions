@@ -11,7 +11,6 @@ from torch import Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
-from otx.core.config.export import ExportConfig
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,

@@ -12,13 +12,10 @@ import torch
 from lightning import LightningModule
 from torch import Tensor
 
-from otx.core.config.export import ExportConfig
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from otx.core.data.dataset.base import LabelInfo
 
 

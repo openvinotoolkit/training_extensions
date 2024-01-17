@@ -10,7 +10,6 @@ import torch
 from torch import Tensor
 from torchmetrics import JaccardIndex
 
-from otx.core.config.export import ExportConfig
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
     SegBatchPredEntity,

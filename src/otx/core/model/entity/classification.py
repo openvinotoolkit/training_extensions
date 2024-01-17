@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -26,6 +25,8 @@ from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
@@ -74,11 +75,11 @@ def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Mod
     return build_mm_model(config, MODELS, load_from), classification_layers
 
 
-def _get_export_params_from_cls_mmconfig(config: DictConfig):
+def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
     return {
-            "mean": config["data_preprocessor"]["mean"],
-            "std": config["data_preprocessor"]["std"],
-            }
+        "mean": config["data_preprocessor"]["mean"],
+        "std": config["data_preprocessor"]["std"],
+    }
 
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
@@ -164,12 +165,12 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             labels=labels,
         )
 
-    def _configure_export_parameters(self):
+    def _configure_export_parameters(self) -> None:
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1,3,224,224)
+        self.export_params["input_size"] = (1, 3, 224, 224)
         self.export_params["onnx_export_configuration"] = None
 
     def export(
@@ -186,8 +187,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             precision: Precision of the exported model.
         """
         self._configure_export_parameters()
-        self._export(output_dir, export_format, precision=precision,
-                     **self.export_params)
+        self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -299,12 +299,12 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             labels=labels,
         )
 
-    def _configure_export_parameters(self):
+    def _configure_export_parameters(self) -> None:
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1,3,224,224)
+        self.export_params["input_size"] = (1, 3, 224, 224)
         self.export_params["onnx_export_configuration"] = None
 
     def export(
@@ -321,8 +321,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             precision: Precision of the exported model.
         """
         self._configure_export_parameters()
-        self._export(output_dir, export_format, precision=precision,
-                     **self.export_params)
+        self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
@@ -434,12 +433,12 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             labels=labels,
         )
 
-    def _configure_export_parameters(self):
+    def _configure_export_parameters(self) -> None:
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1,3,224,224)
+        self.export_params["input_size"] = (1, 3, 224, 224)
         self.export_params["onnx_export_configuration"] = None
 
     def export(
@@ -456,8 +455,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             precision: Precision of the exported model.
         """
         self._configure_export_parameters()
-        self._export(output_dir, export_format, precision=precision,
-                     **self.export_params)
+        self._export(output_dir, export_format, precision=precision, **self.export_params)
 
 
 class OVMulticlassClassificationModel(OVModel):
