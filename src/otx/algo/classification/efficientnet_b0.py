@@ -27,7 +27,6 @@ class EfficientNetB0ForMulticlassCls(MMPretrainMulticlassClsModel):
     def __init__(self, num_classes: int, light: bool = False) -> None:
         model_name = "efficientnet_b0_light" if light else "efficientnet_b0"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
-        self.image_size = config["data_preprocessor"].get("size", (224, 224))
         super().__init__(num_classes=num_classes, config=config)
 
 
@@ -36,5 +35,4 @@ class EfficientNetB0ForMultilabelCls(MMPretrainMultilabelClsModel):
 
     def __init__(self, num_classes: int) -> None:
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="multilabel_classification")
-        self.image_size = config["data_preprocessor"].get("size", (224, 224))
         super().__init__(num_classes=num_classes, config=config)

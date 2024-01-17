@@ -95,7 +95,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         self.config = config
         self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
-        self.image_size = 224, 224
+        self.image_size = (224, 224)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:

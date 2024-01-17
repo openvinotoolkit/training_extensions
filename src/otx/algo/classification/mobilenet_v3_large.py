@@ -44,7 +44,6 @@ class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
 
     def __init__(self, num_classes: int) -> None:
         config = read_mmconfig("mobilenet_v3_large_light", subdir_name="multilabel_classification")
-        self.image_size = config["data_preprocessor"].get("size", (224, 224))
         super().__init__(num_classes=num_classes, config=config)
 
     def _configure_export_parameters(self) -> None:
