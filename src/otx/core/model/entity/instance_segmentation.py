@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -17,10 +18,14 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.model.utils import get_mean_std_from_data_processing
+from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
@@ -32,6 +37,21 @@ class OTXInstanceSegModel(
 ):
     """Base class for the detection models used in OTX."""
 
+    def _generate_model_metadata(
+    self,
+    mean: tuple[float, float, float],
+    std: tuple[float, float, float],
+    resize_mode: str,
+    pad_value: int,
+    swap_rgb: bool,
+    ) -> dict[tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata[("model_info", "model_type")] = "MaskRCNN"
+        metadata[("model_info", "task_type")] = "instance_segmentation"
+        metadata[("model_info", "confidence_threshold")] = str(0.35)  # it was able to be set in OTX 1.X
+        metadata[("model_info", "iou_threshold")] = str(0.5)
+        return metadata
+
 
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
@@ -39,6 +59,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
+        self.export_params = self._get_export_parameters()
         self.load_from = self.config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
 
@@ -170,6 +191,53 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             polygons=[],
             labels=labels,
         )
+
+    def _get_export_parameters(self) -> None:
+        export_params = get_mean_std_from_data_processing(self.config)
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+
+        # TODO This is workaround. need to move code below to each model class in the future.
+        if self.config.backbone.type in ["efficientnet_b2b", "ResNet"]:
+            export_params["input_size"] = (1, 3, 1024, 1024)
+            export_params["mmdeploy_config"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn"
+            export_params["mm_model_config"] = copy(self.config)
+            export_params["mm_model_config"].pop("load_from")
+        elif self.config.backbone.type == "SwinTransformer":
+            export_params["input_size"] = (1, 3, 1344, 1344)
+            export_params["mmdeploy_config"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn_swint"
+            export_params["mm_model_config"] = copy(self.config)
+            export_params["mm_model_config"].pop("load_from")
+        else:
+            raise ValueError("Unknown model. Setting mmdeploy is failed.")
+
+        return export_params
+
+    def export(
+        self,
+        output_dir: Path,
+        export_format: OTXExportFormatType,
+        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        test_pipeline: list[dict] | None = None,
+    ) -> None:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir: Directory path to save exported binary files.
+            export_format: Format in which this `OTXModel` is exported.
+            precision: Precision of the exported model.
+            test_pipeline: Test data pipeline. It's necessary if using mmdeploy.
+        """
+        if self.need_mmdeploy() and test_pipeline is None:
+            raise ValueError("Current model needs test_pipeline to export for mmdpeloy.")
+
+        self._export(output_dir, export_format, precision=precision, **self.export_params, test_pipeline=test_pipeline)
+
+    def need_mmdeploy(self):
+        """Whether mmdeploy is used when exporting a model."""
+        return self.export_params.get("mmdeploy_config") != None
 
 
 class OVInstanceSegmentationModel(OVModel):
