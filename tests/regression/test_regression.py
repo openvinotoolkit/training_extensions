@@ -349,8 +349,8 @@ class TestInstanceSegmentation(BaseTest):
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
-            name="wgisd_small_3",
-            data_root=Path("wgisd_small") / "3",
+            name=f"wgisd_small_{idx}",
+            data_root=Path("wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
             extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"},
