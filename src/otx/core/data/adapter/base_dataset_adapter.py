@@ -193,9 +193,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         if encryption_key is not None:
             dataset_kwargs["encryption_key"] = encryption_key
 
-        if self.task_type == TaskType.VISUAL_PROMPTING:
-            if self.data_type in ["coco"]:
-                dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
+        # if self.task_type == TaskType.VISUAL_PROMPTING:
+        #     if self.data_type in ["coco"]:
+        #         dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
 
         dataset = DatumDataset.import_from(**dataset_kwargs)
 
@@ -274,13 +274,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _is_normal_polygon(self, annotation: DatumAnnotationType.polygon, width: int, height: int) -> bool:
         """To filter out the abnormal polygon."""
-        x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
-        y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
+        x_points = annotation.points[::2]  # Extract x-coordinates
+        y_points = annotation.points[1::2]  # Extract y-coordinates
+
         return (
-            min(x_points) < max(x_points)
-            and min(y_points) < max(y_points)
-            and max(x_points) < width
-            and max(y_points) < height
+            min(x_points) < max(x_points) < width
+            and min(y_points) < max(y_points) < height
+            and annotation.get_area() > 0
         )
 
     def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
