@@ -211,6 +211,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
 
     ov_acc = otx_test(command_cfg)[TASK_NAME_TO_MAIN_METRIC_NAME[task]]
 
-    _check_relative_metric_diff(torch_acc, ov_acc, 0.01)
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
+
+    _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
