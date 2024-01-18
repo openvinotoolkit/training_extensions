@@ -32,9 +32,9 @@ def as_torch_dtype(arg: str) -> dtype:
             ```yaml
             transforms:
                 - class_path: torchvision.transforms.v2.ToDtype
-                    init_args:
-                        dtype: ${as_torch_dtype:torch.float32}
-                        scale: True
+                  init_args:
+                    dtype: ${as_torch_dtype:torch.float32}
+                    scale: True
             ```
     """
     import torch
