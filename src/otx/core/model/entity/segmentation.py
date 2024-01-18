@@ -11,14 +11,13 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
@@ -30,13 +29,8 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
     def _generate_model_metadata(
         self,
-        mean: tuple[float, float, float],
-        std: tuple[float, float, float],
-        resize_mode: str,
-        pad_value: int,
-        swap_rgb: bool,
     ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "Segmentation"
         metadata[("model_info", "task_type")] = "segmentation"
         metadata[("model_info", "return_soft_prediction")] = str(True)
@@ -160,21 +154,12 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self.export_params["input_size"] = (1, 3, 512, 512)
         self.export_params["onnx_export_configuration"] = None
 
-    def export(
+    def _create_exporter(
         self,
-        output_dir: Path,
-        export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-    ) -> None:
-        """Export this model to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-            precision: Precision of the exported model.
-        """
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
         self._configure_export_parameters()
-        self._export(output_dir, export_format, precision=precision, **self.export_params)
+        return OTXNativeModelExporter(**self.export_params)
 
 
 class OVSegmentationModel(OVModel):
