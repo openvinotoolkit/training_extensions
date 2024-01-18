@@ -28,8 +28,4 @@ jobs:
       - name: Install tox
         run: python -m pip install tox
       - name: Run Performance Test
-        env:
-          MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
-          CI_Perfor_DATASET_ROOT_DIR: ${{ vars.CI_PERFORMANCE_DATASET_ROOT_DIR }}
-          USER_NAME: ${{ vars.USER_NAME }}
-        run: tox -vv -e performance-test
+        run: tox -vv -e performance-test -- --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }} --user-name ${{ vars.USER_NAME }} --dataset-root-dir ${{ vars.CI_PERFORMANCE_DATASET_ROOT_DIR }}
