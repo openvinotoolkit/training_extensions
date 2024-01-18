@@ -130,23 +130,23 @@ class OTXLitModule(LightningModule):
 
         """
         state_dict = super().state_dict()
-        
-        def resolve_prefix(state_dict: dict[str, Any]) -> None:
-            """Detach the model.model prefix to make more readable."""
-            for key in list(state_dict.keys()):
-                value = state_dict.pop(key)
-                if key.startswith("model.model."):
-                    key = key.replace("model.model.", "", 1)
-                state_dict[key] = value
-        breakpoint()
-        resolve_prefix(state_dict)
-        breakpoint()
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
     def _get_state_dict_from_ckpt(self, ckpt: dict[str, Any]) -> dict[str, Any]:
-        if "model" in ckpt.keys():
-            return ckpt["model"]["state_dict"]
+        """Get the state_dict, supporting the backward compatibility."""
+        def load_from_prev_otx_ckpt(state_dict: dict[str, Any]) -> None:
+            """Attach the model.model prefix to load without problem."""
+            for key in list(state_dict.keys()):
+                value = state_dict.pop(key)
+                key = "model.model." + key
+                state_dict[key] = value
+            return state_dict
+        
+        # TODO(sungmanc): need to consider OTXv0.x and openvino pretrained model # noqa: TD003
+        if "model" in ckpt.keys() and ckpt['VERSION'] is 1:
+            model_state_dict = ckpt["model"]["state_dict"]
+            return load_from_prev_otx_ckpt(model_state_dict)
         return ckpt["state_dict"]
     
     def load_state_dict(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
@@ -155,6 +155,7 @@ class OTXLitModule(LightningModule):
         If checkpoint's meta_info and OTXLitModule's meta_info are different,
         load_state_pre_hook for smart weight loading will be registered.
         """
+        state_dict = self._get_state_dict_from_ckpt(state_dict)
         
         ckpt_meta_info = state_dict.pop("meta_info", None)
 
