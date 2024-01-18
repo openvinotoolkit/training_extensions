@@ -284,7 +284,12 @@ class HLabelInfo:
         # However, need to check the correct format. <- TODO(sungman)
         def get_label_tree_edges(dm_label_groups: list[LabelCategories.LabelGroup]) -> list[list[str]]:
             """Get label tree edges information. Each edges represent [child, parent]."""
-            return [[label, label_group.name] for label_group in dm_label_groups for label in label_group.labels]
+            return [
+                [label, label_group.name]
+                for label_group in dm_label_groups
+                for label in label_group.labels
+                if len(label_group.labels) > 1
+            ]
 
         all_groups = [label_group.labels for label_group in dm_label_categories.label_groups]
 
