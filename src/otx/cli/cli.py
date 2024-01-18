@@ -16,7 +16,7 @@ from rich.console import Console
 from otx import OTX_LOGO, __version__
 from otx.cli.utils import get_otx_root_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
-from otx.cli.utils.jsonargparse import get_short_docstring
+from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -34,10 +34,11 @@ class OTXCLI:
     def __init__(self) -> None:
         """Initialize OTX CLI."""
         self.console = Console()
-        self.parser = self.init_parser()
         self._subcommand_method_arguments: dict[str, list[str]] = {}
-        self.add_subcommands()
-        self.config = self.parser.parse_args(_skip_check=True)
+        with patch_update_configs():
+            self.parser = self.init_parser()
+            self.add_subcommands()
+            self.config = self.parser.parse_args(_skip_check=True)
 
         self.subcommand = self.config["subcommand"]
         self.run()

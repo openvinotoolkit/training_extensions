@@ -6,8 +6,9 @@
 from __future__ import annotations
 
 import ast
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Iterator, TypeVar
 
 import docstring_parser
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace
@@ -136,5 +137,16 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg[dest].append(cfg_path)
 
 
-Namespace.update = update
-ActionConfigFile.apply_config = apply_config
+@contextmanager
+def patch_update_configs() -> Iterator[None]:
+    """Patch the update and apply_config methods of the given namespace and action_config_file objects."""
+    original_update = Namespace.update
+    original_apply_config = ActionConfigFile.apply_config
+
+    try:
+        Namespace.update = update
+        ActionConfigFile.apply_config = apply_config
+        yield
+    finally:
+        Namespace.update = original_update
+        ActionConfigFile.apply_config = original_apply_config
