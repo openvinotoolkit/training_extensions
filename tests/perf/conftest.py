@@ -227,7 +227,7 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path,
         output_path = request.config.getoption("--summary-csv")
         if not output_path:
             output_path = fxt_output_root / "benchmark-summary.csv"
-        all_results.to_csv(output_path, index=False)
+        all_results.to_csv(output_path)
         print(f"  -> Saved to {output_path}.")
 
         # logging to the mlflow
