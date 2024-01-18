@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -108,14 +109,14 @@ class PackDetInputs(MMDetPackDetInputs):
         """Pack MMDet data entity into DetDataEntity."""
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
-        img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
+        image_info = self.create_image_info(src_image_info=results["__otx__"].img_info, data_samples=data_samples)
 
-        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
+        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, image_info.img_shape)
         labels = data_samples.gt_instances.labels
 
         return DetDataEntity(
             image=tv_tensors.Image(transformed.get("inputs")),
-            img_info=self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor),
+            img_info=image_info,
             bboxes=bboxes,
             labels=labels,
         )
@@ -124,11 +125,10 @@ class PackDetInputs(MMDetPackDetInputs):
         """Pack MMDet data entity into InstanceSegDataEntity."""
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
-        img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
+        image_info = self.create_image_info(src_image_info=results["__otx__"].img_info, data_samples=data_samples)
 
-        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
+        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, image_info.img_shape)
         labels = data_samples.gt_instances.labels
-        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor)
 
         masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
 
@@ -164,9 +164,10 @@ class PackDetInputs(MMDetPackDetInputs):
 
     def extract_metadata(
         self,
+        src_image_info: ImageInfo,
         data_samples: DetDataSample,
-    ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[float, float]]:
-        """Extract metadata from data_samples."""
+    ) -> ImageInfo:
+        """Create ImageInfo instance from data_samples."""
         # Some MM* transforms return (H, W, C), not (H, W)
         img_shape = data_samples.img_shape if len(data_samples.img_shape) == 2 else data_samples.img_shape[:2]
         ori_shape = data_samples.ori_shape if len(data_samples.ori_shape) == 2 else data_samples.ori_shape[:2]
@@ -174,7 +175,14 @@ class PackDetInputs(MMDetPackDetInputs):
         if len(pad_shape) == 3:
             pad_shape = pad_shape[:2]
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
-        return img_shape, ori_shape, pad_shape, scale_factor
+
+        image_info = deepcopy(src_image_info)
+        image_info.img_shape = img_shape
+        image_info.ori_shape = ori_shape
+        image_info.scale_factor = scale_factor
+        image_info.pad_shape = pad_shape
+
+        return image_info
 
     def convert_bboxes(self, original_bboxes: torch.Tensor, img_shape: tuple[int, int]) -> tv_tensors.BoundingBoxes:
         """Convert bounding boxes to tv_tensors.BoundingBoxes format."""
@@ -183,24 +191,6 @@ class PackDetInputs(MMDetPackDetInputs):
             format=tv_tensors.BoundingBoxFormat.XYXY,
             canvas_size=img_shape,
         )
-
-    def create_image_info(
-        self,
-        img_idx: int,
-        img_shape: tuple[int, int],
-        ori_shape: tuple[int, int],
-        pad_shape: tuple[int, int],
-        scale_factor: tuple[float, float],
-    ) -> ImageInfo:
-        """Create ImageInfo instance."""
-        image_info = ImageInfo(
-            img_idx=img_idx,
-            img_shape=img_shape,
-            ori_shape=ori_shape,
-            scale_factor=scale_factor,
-        )
-        image_info.pad_shape = pad_shape
-        return image_info
 
     def convert_masks_and_polygons(self, masks: BitmapMasks | PolygonMasks) -> tuple[tv_tensors.Mask, list[Polygon]]:
         """Convert masks and polygons to the desired format."""
