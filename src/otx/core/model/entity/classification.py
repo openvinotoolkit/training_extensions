@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
+    from otx.core.data.entity.classification import HLabelInfo
+
 
 class OTXMulticlassClsModel(
     OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
@@ -256,6 +258,14 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self.classification_layers = classification_layers
         return model
 
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
+        """Set hierarchical information in model head.
+
+        Args:
+            hierarchical_info: the label information represents the hierarchy.
+        """
+        self.model.head.set_hlabel_info(hierarchical_info)
+
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
 
@@ -351,6 +361,25 @@ class OVHlabelClassificationModel(OVModel):
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        num_multiclass_heads: int,
+        num_multilabel_classes: int,
+    ) -> None:
+        config.num_multiclass_heads = num_multiclass_heads
+        config.num_multilabel_classes = num_multilabel_classes
+        super().__init__(num_classes, config)
+
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
+        """Set hierarchical information in model head.
+
+        Since OV IR model consist of all required hierarchy inforamtion,
+        this method serves as placehloder
+        """
+        return
+
     def _create_model(self, *args) -> Model:
         # confidence_threshold is 0.0 to return scores for all multilabel classes
         configuration = {"hierarchical": True, "confidence_threshold": 0.0}
@@ -361,9 +390,8 @@ class OVHlabelClassificationModel(OVModel):
         outputs: list[ClassificationResult],
         inputs: HlabelClsBatchDataEntity,
     ) -> HlabelClsBatchPredEntity:
-        breakpoint()
-        pred_labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
-        pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
+        pred_labels = [torch.tensor([label[0] for label in out.top_labels], dtype=torch.long) for out in outputs]
+        pred_scores = [torch.tensor([label[2] for label in out.top_labels]) for out in outputs]
 
         return HlabelClsBatchPredEntity(
             batch_size=len(outputs),

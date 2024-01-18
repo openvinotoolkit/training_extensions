@@ -221,7 +221,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.hlabel_info = self.meta_info.hlabel_info
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
-        self.model.model.head.set_hlabel_info(self.hlabel_info)
+        self.model.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
         self.num_labels = len(self.meta_info.label_names)

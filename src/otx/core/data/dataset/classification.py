@@ -62,6 +62,8 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
+        if not self.stack_images:
+            return MulticlassClsBatchDataEntity.collate_unstacked_fn
         return MulticlassClsBatchDataEntity.collate_fn
 
 
@@ -100,6 +102,8 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect MultilabelClsDataEntity into MultilabelClsBatchDataEntity in data loader."""
+        if not self.stack_images:
+            return MultilabelClsBatchDataEntity.collate_unstacked_fn
         return MultilabelClsBatchDataEntity.collate_fn
 
 
@@ -191,4 +195,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect HlabelClsDataEntity into HlabelClsBatchDataEntity in data loader."""
+        if not self.stack_images:
+            return HlabelClsBatchDataEntity.collate_unstacked_fn
         return HlabelClsBatchDataEntity.collate_fn
