@@ -193,9 +193,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         if encryption_key is not None:
             dataset_kwargs["encryption_key"] = encryption_key
 
-        # if self.task_type == TaskType.VISUAL_PROMPTING:
-        #     if self.data_type in ["coco"]:
-        #         dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
+        if self.task_type == TaskType.VISUAL_PROMPTING:
+            if self.data_type in ["coco"]:
+                dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
 
         dataset = DatumDataset.import_from(**dataset_kwargs)
 
