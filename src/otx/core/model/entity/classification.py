@@ -28,6 +28,7 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models import Model
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
@@ -443,11 +444,16 @@ class OVMulticlassClassificationModel(OVModel):
 
 
 class OVMultilabelClassificationModel(OVModel):
-    """Multilabel classification model compatible with OpenVINO IR inference.
+    """Multilabel classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX classification model compatible for OTX testing pipeline.
     """
+
+    def _create_model(self, *args) -> Model:
+        # confidence_threshold is 0.0 to return scores for all classes
+        configuration = {"multilabel": True, "confidence_threshold": 0.0}
+        return super()._create_model(configuration)
 
     def _customize_outputs(
         self,
