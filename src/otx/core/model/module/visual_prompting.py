@@ -124,25 +124,19 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         Returns:
             None
         """
-        preds = self.model(inputs)
+        self._inference_step(self.val_metric, inputs, batch_idx)
+        
+    def test_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
 
-        if not isinstance(preds, VisualPromptingBatchPredEntity):
-            raise TypeError(preds)
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
+            batch_idx (int): The index of the current batch.
 
-        converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for name, metric in self.val_metric.items():
-            if name == "mAP":
-                # MeanAveragePrecision
-                _preds = [
-                    {k: v > 0.5 if k == "masks" else v.squeeze(1) if k == "scores" else v for k, v in ett.items()}
-                    for ett in converted_entities["preds"]
-                ]
-                _target = converted_entities["target"]
-                metric.update(preds=_preds, target=_target)
-            elif name in ["IoU", "F1", "Dice"]:
-                # BinaryJaccardIndex, BinaryF1Score, Dice
-                for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                    metric.update(cvt_preds["masks"], cvt_target["masks"])
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+        """
+        self._inference_step(self.test_metric, inputs, batch_idx)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -181,24 +175,16 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             )
 
         return {"preds": pred_info, "target": target_info}
-
-    def test_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
-        """Perform a single test step on a batch of data from the test set.
-
-        Args:
-            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
-            batch_idx (int): The index of the current batch.
-
-        Raises:
-            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
-        """
+                    
+    def _inference_step(self, metric: MetricCollection, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single inference step on a batch of data from the inference set."""
         preds = self.model(inputs)
-
+        
         if not isinstance(preds, VisualPromptingBatchPredEntity):
             raise TypeError(preds)
-
+        
         converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for name, metric in self.test_metric.items():
+        for name, metric in metric.items():
             if name == "mAP":
                 # MeanAveragePrecision
                 _preds = [
