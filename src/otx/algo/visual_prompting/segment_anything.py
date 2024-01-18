@@ -158,7 +158,7 @@ class SegmentAnything(nn.Module):
             )
 
             pred_masks.append(low_res_masks)
-            ious.append(iou_predictions.squeeze())
+            ious.append(iou_predictions)
 
         if self.training:
             loss_dice = 0.0
@@ -176,7 +176,7 @@ class SegmentAnything(nn.Module):
                 loss_dice += self.calculate_dice_loss(post_processed_pred_mask, flatten_gt_mask, num_masks)
                 loss_focal += self.calculate_sigmoid_ce_focal_loss(post_processed_pred_mask, flatten_gt_mask, num_masks)
                 batch_iou = self.calculate_iou(post_processed_pred_mask, flatten_gt_mask)
-                loss_iou += F.mse_loss(iou, batch_iou, reduction="sum") / num_masks
+                loss_iou += F.mse_loss(iou, batch_iou.unsqueeze(1), reduction="sum") / num_masks
 
             loss = 20.0 * loss_focal + loss_dice + loss_iou
 
@@ -185,7 +185,7 @@ class SegmentAnything(nn.Module):
         post_processed_pred_masks: list[Tensor] = []
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
-            post_processed_pred_masks.append(post_processed_pred_mask.squeeze().sigmoid())
+            post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
         return post_processed_pred_masks, ious
 
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:

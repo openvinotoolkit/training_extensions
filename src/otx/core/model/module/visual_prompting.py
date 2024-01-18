@@ -134,7 +134,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             if name == "mAP":
                 # MeanAveragePrecision
                 _preds = [
-                    {k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]
+                    {k: v > 0.5 if k == "masks" else v.squeeze(1) if k == "scores" else v for k, v in ett.items()}
+                    for ett in converted_entities["preds"]
                 ]
                 _target = converted_entities["target"]
                 metric.update(preds=_preds, target=_target)
@@ -201,7 +202,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             if name == "mAP":
                 # MeanAveragePrecision
                 _preds = [
-                    {k: v > 0.5 if k == "masks" else v for k, v in ett.items()} for ett in converted_entities["preds"]
+                    {k: v > 0.5 if k == "masks" else v.squeeze(1) if k == "scores" else v for k, v in ett.items()}
+                    for ett in converted_entities["preds"]
                 ]
                 _target = converted_entities["target"]
                 metric.update(preds=_preds, target=_target)
