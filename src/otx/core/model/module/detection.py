@@ -139,5 +139,5 @@ class OTXDetectionLitModule(OTXLitModule):
         state_dict = super()._get_state_dict_from_ckpt(ckpt)
         for key in list(state_dict.keys()):
             if key.startswith("model.model.ema_"):
-                state_dict.pop(key) 
+                state_dict.pop(key)
         return state_dict

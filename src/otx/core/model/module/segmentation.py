@@ -132,5 +132,5 @@ class OTXSegmentationLitModule(OTXLitModule):
         state_dict = super()._get_state_dict_from_ckpt(ckpt)
         for key in list(state_dict.keys()):
             if "ham.bases" in key or "decode_head.aggregator.projects" in key:
-                state_dict.pop(key) 
+                state_dict.pop(key)
         return state_dict
