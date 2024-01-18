@@ -5,14 +5,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.config import inplace_num_classes
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class OTXVisualPromptingModel(

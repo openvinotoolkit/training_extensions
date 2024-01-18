@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import Any, Literal, Dict
+from typing import Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -19,11 +19,10 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
 from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 
-
-DEFAULT_CONFIG_SEGMENT_ANYTHING: Dict[str, Dict[str, Any]] = {
+DEFAULT_CONFIG_SEGMENT_ANYTHING: dict[str, dict[str, Any]] = {
     "tiny_vit": {
         "load_from": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
-    }
+    },
 }
 
 
@@ -290,11 +289,9 @@ class SegmentAnything(nn.Module):
 
 class OTXSegmentAnything(OTXVisualPromptingModel):
     """Visual Prompting model."""
+
     def __init__(self, backbone: Literal["tiny_vit"], num_classes: int = 0, **kwargs):
-        self.config = {
-            "backbone": backbone,
-            **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
-            **kwargs}
+        self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:

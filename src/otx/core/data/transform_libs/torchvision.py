@@ -30,7 +30,7 @@ class PerturbBoundingBoxes(tvt_v2.Transform):
     def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:  # noqa: ANN401
         output = self._perturb_bounding_boxes(inpt, self.offset)
         return tv_tensors.wrap(output, like=inpt)
-    
+
     def _perturb_bounding_boxes(self, inpt: torch.Tensor, offset: int) -> torch.Tensor:
         mean = torch.zeros_like(inpt)
         repeated_size = torch.tensor(inpt.canvas_size).repeat(len(inpt), 2)
