@@ -131,22 +131,31 @@ class OTXLitModule(LightningModule):
         """
         state_dict = super().state_dict()
         
-        def detach_complex_prefix(state_dict: dict[str, Any]) -> None:
+        def resolve_prefix(state_dict: dict[str, Any]) -> None:
             """Detach the model.model prefix to make more readable."""
-            for key, value in state_dict.items():
+            for key in list(state_dict.keys()):
+                value = state_dict.pop(key)
                 if key.startswith("model.model."):
-                    new_key = key.replace("model.model.", "", 1)
-                    state_dict[new_key] = value
-        detach_complex_prefix(state_dict)
+                    key = key.replace("model.model.", "", 1)
+                state_dict[key] = value
+        breakpoint()
+        resolve_prefix(state_dict)
+        breakpoint()
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
+    def _get_state_dict_from_ckpt(self, ckpt: dict[str, Any]) -> dict[str, Any]:
+        if "model" in ckpt.keys():
+            return ckpt["model"]["state_dict"]
+        return ckpt["state_dict"]
+    
     def load_state_dict(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
 
         If checkpoint's meta_info and OTXLitModule's meta_info are different,
         load_state_pre_hook for smart weight loading will be registered.
         """
+        
         ckpt_meta_info = state_dict.pop("meta_info", None)
 
         if ckpt_meta_info and self.meta_info is None:

@@ -204,6 +204,7 @@ class Engine:
             fit_kwargs["ckpt_path"] = self.checkpoint
         elif self.checkpoint is not None:
             loaded_checkpoint = torch.load(self.checkpoint)
+            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
         self.trainer.fit(
