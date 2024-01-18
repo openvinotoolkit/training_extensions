@@ -72,7 +72,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     Test OTX CLI e2e commands.
 
-    - 'otx train' with 2 epochs trainig
+    - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
     - 'otx test' with the exported model
