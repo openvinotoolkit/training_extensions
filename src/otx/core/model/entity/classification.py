@@ -5,13 +5,12 @@
 
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import TYPE_CHECKING, Any
 
 import torch
 
 from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
@@ -31,39 +30,20 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class ExplainClsHookMixIn:
-    # # ???
-    # @property
-    # @abstractmethod
-    # def model(self) -> int:
-    #     """Defines model."""
-
-    # # ???
-    # @property
-    # @abstractmethod
-    # def num_classes(self) -> int:
-    #     """Defines number of classes."""
+class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+    """OTX classification model which can attach a XAI hook."""
 
     @property
-    def has_gap(self):
+    def has_gap(self) -> bool:
         """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
         return True
 
     @property
-    def num_classes(self):
-        """Returns model's number of classes. Can be redefined at the model's level."""
-        if not hasattr(self, "label_info"):
-            raise ValueError
-        return self.label_info.num_classes
-
-    @property
-    def backbone(self):
+    def backbone(self) -> nn.Module:
         """Returns model's backbone. Can be redefined at the model's level."""
-        if not hasattr(self, "model"):
-            raise ValueError
-        if not hasattr(self.model, "backbone"):
-            raise ValueError
-        return self.model.backbone
+        if backbone := getattr(self.model, "backbone", None):
+            return backbone
+        raise ValueError
 
     def register_explain_hook(self) -> None:
         """Register explain hook at the model backbone output."""
@@ -74,30 +54,28 @@ class ExplainClsHookMixIn:
             optimize_gap=self.has_gap,
         )
 
+    @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward. Can be redefined at the model's level."""
-        if not hasattr(self, "model"):
+        if (neck := getattr(self.model, "neck", None)) is None:
             raise ValueError
-        with torch.no_grad():  # ?
-            if self.model.neck is not None:
-                x = self.model.neck(x)
-            logits = self.model.head.forward([x])
-        return logits
+        if (head := getattr(self.model, "head", None)) is None:
+            raise ValueError
+
+        output = neck(x)
+        return head(output)
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
         if self.explain_hook.handle is not None:
             self.explain_hook.handle.remove()
 
-    def reset_explain_hook(self):
+    def reset_explain_hook(self) -> None:
         """Clear all history of explain records."""
         self.explain_hook.reset()
 
 
-class OTXMulticlassClsModel(
-    ExplainClsHookMixIn,
-    OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
-):
+class OTXMulticlassClsModel(ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):
     """Base class for the classification models used in OTX."""
 
 
@@ -209,10 +187,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 ### It'll be integrated after H-label classification integration with more advanced design.
 
 
-class OTXMultilabelClsModel(
-    ExplainClsHookMixIn,
-    OTXModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
-):
+class OTXMultilabelClsModel(ExplainableOTXClsModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
     """Multi-label classification models used in OTX."""
 
 
@@ -300,8 +275,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
 
 class OTXHlabelClsModel(
-    ExplainClsHookMixIn,
-    OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+    ExplainableOTXClsModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
 ):
     """H-label classification models used in OTX."""
 

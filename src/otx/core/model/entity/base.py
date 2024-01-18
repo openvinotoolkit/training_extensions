@@ -42,7 +42,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
-        self.explain_hook = None
 
     @property
     def label_info(self) -> LabelInfo:
@@ -69,6 +68,11 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             self._reset_prediction_layer(num_classes=label_info.num_classes)
 
         self._label_info = label_info
+
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes
 
     @abstractmethod
     def _create_model(self) -> nn.Module:

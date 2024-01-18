@@ -5,14 +5,16 @@
 
 from __future__ import annotations
 
-from abc import ABC
-from typing import List, Optional, Sequence, Union, Callable
+from typing import TYPE_CHECKING, Callable, Sequence
 
 import numpy as np
 import torch
 
+if TYPE_CHECKING:
+    from torch.utils.hooks import RemovableHandle
 
-class BaseRecordingForwardHook(ABC):
+
+class BaseRecordingForwardHook:
     """While registered with the designated PyTorch module, this class caches feature vector during forward pass.
 
     Args:
@@ -20,16 +22,16 @@ class BaseRecordingForwardHook(ABC):
     """
 
     def __init__(self, normalize: bool = True) -> None:
-        self.handle = None
-        self._records: List[torch.Tensor] = []
+        self.handle: RemovableHandle | None = None
+        self._records: list[torch.Tensor] = []
         self._norm_saliency_maps = normalize
 
     @property
-    def records(self):
+    def records(self) -> list[torch.Tensor]:
         """Return records."""
         return self._records
 
-    def reset(self):
+    def reset(self) -> None:
         """Clear all history of records."""
         self._records.clear()
 
@@ -47,8 +49,12 @@ class BaseRecordingForwardHook(ABC):
         raise NotImplementedError
 
     def recording_forward(
-        self, _: torch.nn.Module, x: torch.Tensor, output: torch.Tensor
-    ):  # pylint: disable=unused-argument
+        self,
+        _: torch.nn.Module,
+        x: torch.Tensor,
+        output: torch.Tensor,
+    ) -> None:  # pylint: disable=unused-argument
+        """Record the XAI result during executing model forward function."""
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
             tensors_np = tensors.detach().cpu().numpy()
@@ -61,12 +67,13 @@ class BaseRecordingForwardHook(ABC):
         for tensor in tensors_np:
             self._records.append(tensor)
 
-    def _torch_to_numpy_from_list(self, tensor_list: List[Optional[torch.Tensor]]):
+    def _torch_to_numpy_from_list(self, tensor_list: list[torch.Tensor | None]) -> None:
         for i in range(len(tensor_list)):
-            if isinstance(tensor_list[i], list):
-                self._torch_to_numpy_from_list(tensor_list[i])
-            elif isinstance(tensor_list[i], torch.Tensor):
-                tensor_list[i] = tensor_list[i].detach().cpu().numpy()
+            tensor = tensor_list[i]
+            if isinstance(tensor, list):
+                self._torch_to_numpy_from_list(tensor)
+            elif isinstance(tensor, torch.Tensor):
+                tensor_list[i] = tensor.detach().cpu().numpy()
 
     @staticmethod
     def _normalize_map(saliency_maps: torch.Tensor) -> torch.Tensor:
@@ -88,7 +95,13 @@ class ReciproCAMHook(BaseRecordingForwardHook):
     Recipro-CAM: gradient-free reciprocal class activation map (https://arxiv.org/pdf/2209.14074.pdf)
     """
 
-    def __init__(self, head_forward_fn, num_classes, normalize=True, optimize_gap=False) -> None:
+    def __init__(
+        self,
+        head_forward_fn: Callable,
+        num_classes: int,
+        normalize: bool = True,
+        optimize_gap: bool = False,
+    ) -> None:
         super().__init__(normalize)
         self._head_forward_fn = head_forward_fn
         self._num_classes = num_classes
@@ -96,8 +109,13 @@ class ReciproCAMHook(BaseRecordingForwardHook):
 
     @classmethod
     def create_and_register_hook(
-            cls, backbone, head_forward_fn: Callable, num_classes: int, optimize_gap: bool
+        cls,
+        backbone: torch.nn.Module,
+        head_forward_fn: Callable,
+        num_classes: int,
+        optimize_gap: bool,
     ) -> BaseRecordingForwardHook:
+        """Create this object and register it to the module forward hook."""
         hook = cls(
             head_forward_fn,
             num_classes=num_classes,
@@ -106,7 +124,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         hook.handle = backbone.register_forward_hook(hook.recording_forward)
         return hook
 
-    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the class-wise saliency maps using Recipro-CAM and then normalizing to (0, 255).
 
         Args:
@@ -132,8 +150,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
             saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
             saliency_maps = self._normalize_map(saliency_maps)
 
-        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
-        return saliency_maps
+        return saliency_maps.reshape((batch_size, self._num_classes, h, w))
 
     def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
