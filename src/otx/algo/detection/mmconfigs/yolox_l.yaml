@@ -20,7 +20,7 @@ data_preprocessor:
     - 1.0
     - 1.0
     - 1.0
-  bgr_to_rgb: false
+  bgr_to_rgb: true
   pad_size_divisor: 32
 backbone:
   type: CSPDarknet
