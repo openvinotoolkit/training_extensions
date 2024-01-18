@@ -341,13 +341,13 @@ class TestObjectDetection(BaseTest):
 class TestSemanticSegmentation(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="semantic_segmentation", name="litehrnet_18"),
-        ModelTestCase(task="semantic_segmentation", name="litehrnet_s"),
-        ModelTestCase(task="semantic_segmentation", name="litehrnet_x"),
-        ModelTestCase(task="semantic_segmentation", name="segnext_b"),
-        ModelTestCase(task="semantic_segmentation", name="segnext_s"),
-        ModelTestCase(task="semantic_segmentation", name="segnext_t"),
-        ModelTestCase(task="semantic_segmentation", name="dino_v2_seg"),
+        ModelTestCase(task="segmentation", name="litehrnet_18"),
+        ModelTestCase(task="segmentation", name="litehrnet_s"),
+        ModelTestCase(task="segmentation", name="litehrnet_x"),
+        ModelTestCase(task="segmentation", name="segnext_b"),
+        ModelTestCase(task="segmentation", name="segnext_s"),
+        ModelTestCase(task="segmentation", name="segnext_t"),
+        ModelTestCase(task="segmentation", name="dino_v2_seg"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
