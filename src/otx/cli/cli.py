@@ -98,7 +98,7 @@ class OTXCLI:
         parser.add_argument(
             "--callback_monitor",
             type=str,
-            help="The metric for that model to monitor in the callback.",
+            help="The metric to monitor the model performance during training callbacks.",
         )
         return parser
 
@@ -131,6 +131,7 @@ class OTXCLI:
         parser_subcommands = self.parser.add_subcommands()
         self._set_extension_subcommands_parser(parser_subcommands)
         if not _ENGINE_AVAILABLE:
+            # If environment is not configured to use Engine, do not add a subcommand for Engine.
             return
         for subcommand in self.engine_subcommands():
             sub_parser = self.subcommand_parser()
@@ -187,7 +188,7 @@ class OTXCLI:
             skip: set[str | int] = set(self.engine_subcommands()[subcommand])
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
-            added = sub_parser.add_method_arguments(
+            added_arguments = sub_parser.add_method_arguments(
                 Engine,
                 subcommand,
                 skip=skip,
@@ -201,13 +202,13 @@ class OTXCLI:
                     default_config = yaml.safe_load(f)
                 sub_parser.set_defaults(**default_config)
 
-            if "logger" in added:
+            if "logger" in added_arguments:
                 sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
-            if "callbacks" in added:
+            if "callbacks" in added_arguments:
                 sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
                 sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
 
-            self._subcommand_method_arguments[subcommand] = added
+            self._subcommand_method_arguments[subcommand] = added_arguments
             self._subcommand_parsers[subcommand] = sub_parser
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)
 
@@ -224,10 +225,10 @@ class OTXCLI:
         """
         if self.subcommand in self.engine_subcommands():
             self.config_init = self.parser.instantiate_classes(self.config)
-            self.datamodule = self._get(self.config_init, "data")
+            self.datamodule = self.get_config_value(self.config_init, "data")
             self.model, optimizer, scheduler = self.instantiate_model()
 
-            engine_kwargs = self._get(self.config_init, "engine")
+            engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
                 model=self.model,
                 optimizer=optimizer,
@@ -245,22 +246,39 @@ class OTXCLI:
         Returns:
             tuple: The model and optimizer and scheduler.
         """
-        model = self._get(self.config_init, "model")
-        optimizer_kwargs = self._get(self.config_init, "optimizer", {})
+        model = self.get_config_value(self.config_init, "model")
+        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
         if isinstance(optimizer_kwargs, Namespace):
             optimizer_kwargs = namespace_to_dict(optimizer_kwargs)
-        scheduler_kwargs = self._get(self.config_init, "scheduler", {})
+        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
         if isinstance(scheduler_kwargs, Namespace):
             scheduler_kwargs = namespace_to_dict(scheduler_kwargs)
         from otx.core.utils.instantiators import partial_instantiate_class
 
         return model, partial_instantiate_class(optimizer_kwargs), partial_instantiate_class(scheduler_kwargs)
 
-    def _get(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
-        """Utility to get a config value which might be inside a subcommand."""
+    def get_config_value(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
+        """Retrieves the value of a configuration key from the given config object.
+
+        Args:
+            config (Namespace): The config object containing the configuration values.
+            key (str): The key of the configuration value to retrieve.
+            default (Any, optional): The default value to return if the key is not found. Defaults to None.
+
+        Returns:
+            Any: The value of the configuration key, or the default value if the key is not found.
+        """
         return config.get(str(self.subcommand), config).get(key, default)
 
-    def _parser(self, subcommand: str | None) -> ArgumentParser:
+    def get_subcommand_parser(self, subcommand: str | None) -> ArgumentParser:
+        """Returns the argument parser for the specified subcommand.
+
+        Args:
+            subcommand (str | None): The name of the subcommand. If None, returns the main parser.
+
+        Returns:
+            ArgumentParser: The argument parser for the specified subcommand.
+        """
         if subcommand is None:
             return self.parser
         # return the subcommand parser for the subcommand passed
@@ -276,14 +294,8 @@ class OTXCLI:
         """Save the configuration for the specified subcommand.
 
         The configuration is saved as a YAML file in the engine's working directory.
-
-        Args:
-            None
-
-        Returns:
-            None
         """
-        self._parser(self.subcommand).save(
+        self.get_subcommand_parser(self.subcommand).save(
             cfg=self.config.get(str(self.subcommand), self.config),
             path=Path(self.engine.work_dir) / "configs.yaml",
             overwrite=True,
