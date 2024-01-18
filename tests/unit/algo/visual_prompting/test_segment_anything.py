@@ -97,10 +97,10 @@ class TestSegmentAnything:
             assert all([isinstance(r[0], Tensor) for r in results])  # noqa: C419
 
             # check post_processed_pred_masks
-            assert results[0][0].shape == torch.Size(ori_shapes[0])
+            assert results[0][0][0].shape == torch.Size(ori_shapes[0])
 
             # check ious
-            assert results[1][0].ndim == 0
+            assert results[1][0].ndim == 2
 
     @pytest.mark.parametrize(
         ("inputs", "targets", "expected"),

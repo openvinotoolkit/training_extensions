@@ -145,11 +145,10 @@ class PackDetInputs(MMDetPackDetInputs):
         """Pack MMDet data entity into VisualPromptingDataEntity."""
         transformed = super().transform(results)
         data_samples = transformed["data_samples"]
-        img_shape, ori_shape, pad_shape, scale_factor = self.extract_metadata(data_samples)
+        image_info = self.create_image_info(src_image_info=results["__otx__"].img_info, data_samples=data_samples)
 
-        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, img_shape)
+        bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, image_info.img_shape)
         labels = data_samples.gt_instances.labels
-        image_info = self.create_image_info(0, img_shape, ori_shape, pad_shape, scale_factor)
 
         # masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
 
@@ -162,7 +161,7 @@ class PackDetInputs(MMDetPackDetInputs):
             polygons=None,  # type: ignore[arg-type]
         )
 
-    def extract_metadata(
+    def create_image_info(
         self,
         src_image_info: ImageInfo,
         data_samples: DetDataSample,

@@ -14,8 +14,8 @@ from otx.core.data.transform_libs.torchvision import (
     ResizewithLongestEdge,
     TorchVisionTransformLib,
 )
-from torchvision import tv_tensors
 from otx.core.types.image import ImageColorChannel
+from torchvision import tv_tensors
 from torchvision.transforms import v2
 
 
