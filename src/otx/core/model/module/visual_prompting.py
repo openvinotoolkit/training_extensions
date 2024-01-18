@@ -106,7 +106,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
         else:
             raise TypeError(train_loss)
-        
+
         self._log_metrics(self.train_metric, "train")
 
         return train_loss

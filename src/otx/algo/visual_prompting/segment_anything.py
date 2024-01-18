@@ -114,7 +114,7 @@ class SegmentAnything(nn.Module):
         self,
         images: Tensor,
         ori_shapes: list[Tensor],
-        bboxes: list[Tensor | None] = None,
+        bboxes: list[Tensor | None] | None = None,
         points: list[tuple[Tensor, Tensor] | None] | None = None,  # TODO(sungchul): enable point prompts # noqa: TD003
         gt_masks: list[Tensor] | None = None,
     ) -> Tensor | tuple[list[Tensor], list[Tensor]]:
@@ -142,7 +142,7 @@ class SegmentAnything(nn.Module):
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
-        for embedding, bbox in zip(image_embeddings, bboxes):
+        for embedding, bbox in zip(image_embeddings, bboxes):  # type: ignore[arg-type]
             sparse_embeddings, dense_embeddings = self.prompt_encoder(
                 points=None,  # TODO(sungchul): enable point prompts # noqa: TD003
                 boxes=bbox,
