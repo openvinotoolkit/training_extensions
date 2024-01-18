@@ -10,6 +10,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
+from openvino.model_api.models import Model
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -21,7 +22,6 @@ from otx.core.data.entity.base import (
 from otx.core.types.export import OTXExportFormat
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.config import inplace_num_classes
-from openvino.model_api.models import Model
 
 if TYPE_CHECKING:
     from pathlib import Path
