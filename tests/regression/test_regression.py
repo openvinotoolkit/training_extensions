@@ -337,3 +337,71 @@ class TestObjectDetection(BaseTest):
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
+
+class TestSemanticSegmentation(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="semantic_segmentation", name="litehrnet_18"),
+        ModelTestCase(task="semantic_segmentation", name="litehrnet_s"),
+        ModelTestCase(task="semantic_segmentation", name="litehrnet_x"),
+        ModelTestCase(task="semantic_segmentation", name="segnext_b"),
+        ModelTestCase(task="semantic_segmentation", name="segnext_s"),
+        ModelTestCase(task="semantic_segmentation", name="segnext_t"),
+        ModelTestCase(task="semantic_segmentation", name="dino_v2_seg"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [  # noqa: RUF012
+        DatasetTestCase(
+            name=f"kvasir_small_{idx}",
+            data_root=Path("kvasir_small") / f"{idx}",
+            data_format="common_semantic_segmentation_with_subset_dirs",
+            num_classes=2,
+            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+        )
+        for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name="kvasir_medium",
+            data_root="kvasir_medium",
+            data_format="common_semantic_segmentation_with_subset_dirs",
+            num_classes=2,
+            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+        ),
+        DatasetTestCase(
+            name="kvasir_large",
+            data_root="kvasir_large",
+            data_format="common_semantic_segmentation_with_subset_dirs",
+            num_classes=2,
+            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+        )
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )
