@@ -192,12 +192,8 @@ class TestSegmentAnything:
 
 class TestOTXSegmentAnything:
     @pytest.fixture()
-    def config(self) -> DictConfig:
-        return OmegaConf.load("src/otx/recipe/visual_prompting/sam_tiny_vit.yaml").model.otx_model.config
-
-    @pytest.fixture()
-    def model(self, config) -> OTXSegmentAnything:
-        return OTXSegmentAnything(num_classes=1, config=config)
+    def model(self) -> OTXSegmentAnything:
+        return OTXSegmentAnything(backbone="tiny_vit", num_classes=0)
 
     def test_create_model(self, model) -> None:
         """Test _create_model."""
