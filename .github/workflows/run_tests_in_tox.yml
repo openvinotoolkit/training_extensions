@@ -29,12 +29,13 @@ on:
         default: false
       container-image:
         type: string
-        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f3b5e4e2bc93875045a54a7f3ea29ca6a6089b33"
-        # default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-c64513e4809d6cf84e9098c5fde7cdbd94c4342d"
+        # default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f3b5e4e2bc93875045a54a7f3ea29ca6a6089b33"
+        # cuda 12.2.2
+        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-c64513e4809d6cf84e9098c5fde7cdbd94c4342d"
         # default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-946a76e3571221dd3c1420ffd76ce6de4ef9419a"
       container-options:
         type: string
-        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
+        default: "--runtime=nvidia --env NVIDIA_VISIBLE_DEVICES=all --shm-size=24g"
       task:
         type: string
         default: "undefined"
