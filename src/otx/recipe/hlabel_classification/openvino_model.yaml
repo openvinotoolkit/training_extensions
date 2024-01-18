@@ -14,7 +14,7 @@ model:
   otx_model:
     _target_: otx.core.model.entity.classification.OVHlabelClassificationModel
     config:
-      model_name: /home/kprokofi/training_extensions/test_hlabel/outputs/20240118_072630_export/openvino/openvino.xml
+      model_name: openvino.xml
       async_inference: True
       use_throughput_mode: False
       model_type: Classification

@@ -146,10 +146,16 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
     Returns:
         None
     """
-    if recipe == "instance_segmentation/openvino_model.yaml":
-        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
+    list_recipes_to_skip = [
+        "instance_segmentation/openvino_model.yaml",
+        "multilabel_classification/openvino_model.yaml",
+        "hlabel_classification/openvino_model.yaml",
+    ]
+
+    if recipe in list_recipes_to_skip:
+        # OMZ doesn't have proper model to test OV IR inference
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
-        pytest.skip("OMZ doesn't have proper model for Pytorch MaskRCNN interface.")
+        pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
     task = recipe.split("/")[0]
     model_name = recipe.split("/")[1].split(".")[0]
