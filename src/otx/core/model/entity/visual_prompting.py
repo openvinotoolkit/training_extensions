@@ -20,7 +20,5 @@ class OTXVisualPromptingModel(
 ):
     """Base class for the visual prompting models used in OTX."""
 
-    def __init__(self, config: DictConfig, num_classes: int) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
-        self.config = config
+    def __init__(self, num_classes: int = 0) -> None:
         super().__init__(num_classes=num_classes)
