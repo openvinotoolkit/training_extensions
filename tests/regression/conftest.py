@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import logging
 import platform
 import subprocess
@@ -23,19 +24,16 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--user-name",
         type=str,
-        required=True,
         help="Sign-off the user name who launched the regression tests this time, " 'e.g., `--user-name "John Doe"`.',
     )
     parser.addoption(
         "--dataset-root-dir",
         type=Path,
-        required=True,
         help="Dataset root directory path for the regression tests",
     )
     parser.addoption(
         "--mlflow-tracking-uri",
         type=str,
-        required=True,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
     parser.addoption(
@@ -46,45 +44,51 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_user_name(request: pytest.FixtureRequest) -> str:
     """User name to sign off the regression test execution.
 
     This should be given by the PyTest CLI option.
     """
-    user_name = request.config.getoption("--user-name")
+    user_name = request.config.getoption("--user-name", default=os.environ.get('USER_NAME'))
+    if user_name is None:
+        raise ValueError("Missing user name: Please provide it via the command-line option '--user-name' or set the 'USER_NAME' environment variable.")
     msg = f"user_name: {user_name}"
     log.info(msg)
     return user_name
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_dataset_root_dir(request: pytest.FixtureRequest) -> Path:
     """Dataset root directory path.
 
     This should be given by the PyTest CLI option.
     """
-    dataset_root_dir = request.config.getoption("--dataset-root-dir")
-    msg = f"dataset_root_dir: {dataset_root_dir}"
+    dataset_root_dir = request.config.getoption("--dataset-root-dir", default=os.environ.get('CI_PERFORMANCE_DATASET_ROOT_DIR'))
+    if dataset_root_dir is None:
+        raise ValueError("Missing dataset root path: Please provide it via the command-line option '--dataset-root-dir' or set the 'CI_PERFORMANCE_DATASET_ROOT_DIR' environment variable.")
+    dataset_root_path = Path(dataset_root_dir)
+    msg = f"dataset_root_path: {dataset_root_path}"
     log.info(msg)
-    return dataset_root_dir
+    return dataset_root_path
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_mlflow_tracking_uri(request: pytest.FixtureRequest) -> str:
     """MLFLow tracking server URI.
 
     This should be given by the PyTest CLI option.
     """
-    mlflow_tracking_uri = urlparse(
-        request.config.getoption("--mlflow-tracking-uri"),
-    ).geturl()
-    msg = f"fxt_mlflow_tracking_uri: {mlflow_tracking_uri}"
+    mlflow_tracking_uri = request.config.getoption("--mlflow-tracking-uri", default=os.environ.get('MLFLOW_TRACKING_SERVER_URI'))
+    if mlflow_tracking_uri is None:
+        raise ValueError("Missing mlflow tracking server uri: Please provide it via the command-line option '--mlflow-tracking-uri' or set the 'MLFLOW_TRACKING_SERVER_URI' environment variable.")
+    parsed_uri = urlparse(mlflow_tracking_uri).geturl()
+    msg = f"fxt_mlflow_tracking_uri: {parsed_uri}"
     log.info(msg)
-    return mlflow_tracking_uri
+    return parsed_uri
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_num_repeat(request: pytest.FixtureRequest) -> int:
     """The number of repetition for each test case.
 
@@ -96,7 +100,7 @@ def fxt_num_repeat(request: pytest.FixtureRequest) -> int:
     return num_repeat
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_mlflow_experiment_name(fxt_user_name) -> str:
     """MLFlow Experiment name (unique key).
 
@@ -108,7 +112,7 @@ def fxt_mlflow_experiment_name(fxt_user_name) -> str:
     return f"OTX: {__version__}, Signed-off-by: {fxt_user_name}, Date: {date}"
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_tags(fxt_user_name) -> dict[str, str]:
     """Tag fields to record the machine and user executing this regression test."""
     return {
@@ -123,7 +127,7 @@ def fxt_tags(fxt_user_name) -> dict[str, str]:
     }
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_mlflow_experiment(
     fxt_mlflow_experiment_name: str,
     fxt_mlflow_tracking_uri: str,
@@ -147,7 +151,7 @@ def fxt_mlflow_experiment(
     mlflow.set_experiment(experiment_id=exp_id)
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def fxt_recipe_dir() -> Path:
     """OTX recipe directory."""
     import otx.recipe as otx_recipe
