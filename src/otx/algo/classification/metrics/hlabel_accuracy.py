@@ -4,8 +4,10 @@
 """Module for defining hierarchical label accuracy metric."""
 
 from __future__ import annotations
+from typing import Callable, Sequence
 
 import torch
+import torch.nn as nn
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy, MultilabelAccuracy
 
@@ -63,6 +65,12 @@ class HLabelAccuracy(Metric):
         if not self.flag:
             metric.to(device)
             self.flag = True
+    
+    def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> nn.Module:
+        self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]
+        if self.num_multilabel_classes > 0:
+            self.multilabel_accuracy = self.multilabel_accuracy._apply(fn, exclude_state)
+        return self
 
     def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
         """Update state with predictions and targets."""
@@ -72,8 +80,6 @@ class HLabelAccuracy(Metric):
             target_multiclass = target[:, head_idx]
             multiclass_mask = target_multiclass > 0
 
-            # Torchmetric should be located at the same device with tensors.
-            self._metric_to_device(self.multiclass_head_accuracy[head_idx], preds.device)
             is_all_multiclass_ignored = not multiclass_mask.any()
             if not is_all_multiclass_ignored:
                 self.multiclass_head_accuracy[head_idx].update(
