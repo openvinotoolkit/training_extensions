@@ -134,10 +134,6 @@ class SegmentAnything(nn.Module):
                 Point coordinates are BxNx2 arrays of point prompts to the model.
                 Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
                 1 indicates a foreground point and 0 indicates a background point.
-            # masks (Optional[Tensor], optional): A low resolution mask input to the model, typically
-            #     coming from a previous prediction iteration. Has form Bx1xHxW, where
-            #     for SAM, H=W=256. Masks returned by a previous iteration of the
-            #     predict method do not need further transformation.
             gt_masks (List[Tensor], optional): Ground truth masks for loss calculation.
 
         Returns:

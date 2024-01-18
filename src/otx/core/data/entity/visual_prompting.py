@@ -15,7 +15,7 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from datumaro import Polygon
+    from datumaro import Polygon, Points
     from torch import LongTensor
 
 
@@ -29,6 +29,7 @@ class VisualPromptingDataEntity(OTXDataEntity):
         masks (tv_tensors.Mask): The masks of the instances.
         labels (LongTensor): The labels of the instances.
         polygons (list[Polygon]): The polygons of the instances.
+        points (list[Points]): The points of the instances.
     """
 
     @property
@@ -40,6 +41,7 @@ class VisualPromptingDataEntity(OTXDataEntity):
     masks: tv_tensors.Mask
     labels: LongTensor
     polygons: list[Polygon]
+    points: list[Points]
 
 
 @dataclass
@@ -90,6 +92,7 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
             masks=[entity.masks for entity in entities],
             labels=[entity.labels for entity in entities],
             polygons=[entity.polygons for entity in entities],
+            points=[entity.points for entity in entities],
         )
 
     def pin_memory(self) -> VisualPromptingBatchDataEntity:

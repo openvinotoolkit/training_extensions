@@ -1,0 +1,35 @@
+# @package _global_
+defaults:
+  - override /base: visual_prompting
+  - override /callbacks: visual_prompting
+  # - override /data: mmdet_visual_prompting
+  - override /data: torchvision_visual_prompting
+  - override /model: torch_visual_prompting
+data:
+  train_subset:
+    batch_size: 1
+  val_subset:
+    batch_size: 1
+  test_subset:
+    batch_size: 1
+model:
+  otx_model:
+    _target_: otx.algo.visual_prompting.segment_anything.OTXZeroShotSegmentAnything
+    backbone: tiny_vit
+    num_classes: 0 # to avoid MissingMandatoryValue error
+    freeze_image_encoder: True
+    freeze_prompt_encoder: True
+    freeze_mask_decoder: True
+    default_threshold_reference: 0.3
+    default_threshold_target: 0.65
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 0.00001
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ConstantLR
+    _partial_: true
+    factor: 1
+    total_iters: -1
+trainer:
+  max_epochs: 100
