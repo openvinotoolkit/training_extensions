@@ -171,11 +171,9 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         Returns:
             None
         """
-        if self.subcommand in REQUIRED_ARGUMENTS:
-            if self.verbose_level == 0:
-                actions = []
-            elif self.verbose_level == 1:
-                actions = [action for action in actions if action.dest in REQUIRED_ARGUMENTS[self.subcommand]]
+        actions = [] if self.verbose_level == 0 else actions
+        if self.subcommand in REQUIRED_ARGUMENTS and self.verbose_level == 1:
+            actions = [action for action in actions if action.dest in REQUIRED_ARGUMENTS[self.subcommand]]
 
         super().add_usage(usage, actions, *args, **kwargs)
 

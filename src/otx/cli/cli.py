@@ -196,7 +196,7 @@ class OTXCLI:
             )
 
             # Load default subcommand config file
-            default_config_file = Path(get_otx_root_path()) / "recipe" / "_base_" / f"{subcommand}.yaml"
+            default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
             if default_config_file.exists():
                 with Path(default_config_file).open() as f:
                     default_config = yaml.safe_load(f)
@@ -247,12 +247,8 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         model = self.get_config_value(self.config_init, "model")
-        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
-        if isinstance(optimizer_kwargs, Namespace):
-            optimizer_kwargs = namespace_to_dict(optimizer_kwargs)
-        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
-        if isinstance(scheduler_kwargs, Namespace):
-            scheduler_kwargs = namespace_to_dict(scheduler_kwargs)
+        optimizer_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "optimizer", Namespace()))
+        scheduler_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "scheduler", Namespace()))
         from otx.core.utils.instantiators import partial_instantiate_class
 
         return model, partial_instantiate_class(optimizer_kwargs), partial_instantiate_class(scheduler_kwargs)

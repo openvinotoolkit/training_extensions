@@ -8,7 +8,7 @@ import inspect
 from pathlib import Path
 
 
-def get_otx_root_path() -> str:
+def get_otx_root_path() -> Path:
     """Return the root path of the otx module.
 
     Returns:
@@ -20,6 +20,6 @@ def get_otx_root_path() -> str:
     otx_module = importlib.import_module("otx")
     if otx_module:
         file_path = inspect.getfile(otx_module)
-        return str(Path(file_path).parent)
+        return Path(file_path).parent
     msg = "Cannot found otx."
     raise ModuleNotFoundError(msg)

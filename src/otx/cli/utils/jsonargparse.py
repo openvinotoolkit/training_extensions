@@ -13,7 +13,7 @@ import docstring_parser
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace
 
 
-def get_short_docstring(component: TypeVar) -> str | None:
+def get_short_docstring(component: TypeVar) -> str:
     """Get the short description from the docstring.
 
     Args:
@@ -23,7 +23,7 @@ def get_short_docstring(component: TypeVar) -> str | None:
         Optional[str]: The short description
     """
     if component.__doc__ is None:
-        return None
+        return ""
     docstring = docstring_parser.parse(component.__doc__)
     return docstring.short_description
 
