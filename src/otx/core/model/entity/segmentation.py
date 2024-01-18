@@ -35,7 +35,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         metadata[("model_info", "task_type")] = "segmentation"
         metadata[("model_info", "return_soft_prediction")] = str(True)
         metadata[("model_info", "soft_threshold")] = str(0.5)
-        metadata[("model_info", "blur_strength")] = str(1)
+        metadata[("model_info", "blur_strength")] = str(-1)
 
         return metadata
 
@@ -60,6 +60,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self.config = config
         self.export_params = _get_export_params_from_seg_mmconfig(config)
         self.load_from = self.config.pop("load_from", None)
+        self.image_size = (544, 544)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
@@ -151,7 +152,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 512, 512)
+        self.export_params["input_size"] = (1, 3, *self.image_size)
         self.export_params["onnx_export_configuration"] = None
 
     def _create_exporter(
