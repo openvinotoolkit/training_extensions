@@ -40,7 +40,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
         metadata[("model_info", "model_type")] = "ssd"
         metadata[("model_info", "task_type")] = "detection"
-        metadata[("model_info", "confidence_threshold")] = str(0.35)  # it was able to be set in OTX 1.X
+        metadata[("model_info", "confidence_threshold")] = str(0.005)  # it was able to be set in OTX 1.X
         metadata[("model_info", "iou_threshold")] = str(0.5)
         return metadata
 

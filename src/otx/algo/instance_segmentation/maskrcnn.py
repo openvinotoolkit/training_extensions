@@ -38,5 +38,6 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
             raise ValueError("Unknown model. Setting mmdeploy is failed.")
 
         export_params["mm_model_config"] = copy(self.config)
+        export_params["mm_model_config"]["load_from"] = self.load_from
 
         return export_params

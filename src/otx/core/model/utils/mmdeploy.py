@@ -7,17 +7,15 @@ import os
 import os.path as osp
 import logging as log
 import time
-from collections import OrderedDict
 from copy import copy
 from typing import Callable
 from subprocess import CalledProcessError
 from pathlib import Path
 
 import cv2
-import torch
 import numpy as np
 import mmdeploy.apis.openvino as openvino_api
-from omegaconf import DictConfig, OmegaConf, ListConfig
+from omegaconf import DictConfig, OmegaConf
 from mmdeploy.apis import extract_model, get_predefined_partition_cfg, torch2onnx, build_task_processor
 from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
 from mmdeploy.utils import get_ir_config, get_partition_config

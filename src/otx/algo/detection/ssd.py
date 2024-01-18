@@ -134,5 +134,6 @@ class SSD(MMDetCompatibleModel):
         export_params["input_size"] = (1, 3, 864, 864)
         export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.ssd_mobilenetv2"
         export_params["mm_model_config"] = copy(self.config)
+        export_params["mm_model_config"]["load_from"] = self.load_from
 
         return export_params
