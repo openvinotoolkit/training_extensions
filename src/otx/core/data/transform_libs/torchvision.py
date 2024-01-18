@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from inspect import isclass
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Tuple, Sequence
 
 from torch import Tensor
 import torch
@@ -33,13 +33,22 @@ class PerturbBoundingBoxes(tvt_v2.Transform):
             repeated_size = torch.tensor(inpt.canvas_size).repeat(len(inpt), 2)
             std = torch.minimum(repeated_size * 0.1, torch.tensor(self.offset))
             noise = torch.normal(mean, std)
-            return (inpt + noise).clamp(mean, repeated_size)
+            return BoundingBoxes(
+                (inpt + noise).clamp(mean, repeated_size-1),
+                format=inpt.format,
+                canvas_size=inpt.canvas_size,
+                dtype=inpt.dtype)
         return inpt
 
 class ResizewithLongestEdge(tvt_v2.Resize):
     """Resize images, masks, and bounding boxes to the longest edge."""
-    def __init__(self, with_bbox: bool = False, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, size: int | Sequence[int], max_size: int | None = None, with_bbox: bool = False, *args, **kwargs):
+        if max_size is None:
+            # to resize tensors to the longest edge, use max_size
+            max_size = size
+            size -= 1
+            
+        super().__init__(size=size, max_size=max_size, *args, **kwargs)
         self.with_bbox = with_bbox
 
     def _transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
