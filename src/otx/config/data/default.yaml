@@ -3,6 +3,7 @@ data_root: ${base.data_dir}
 
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
+image_color_channel: RGB
 
 train_subset:
   subset_name: train
