@@ -6,29 +6,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import hydra
+import logging as log
 from hydra import compose, initialize
-from jsonargparse import ArgumentParser
-
+from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
-
-if TYPE_CHECKING:
-    from jsonargparse._actions import _ActionSubCommands
-
-
-def add_test_parser(subcommands_action: _ActionSubCommands) -> None:
-    """Add subparser for test command.
-
-    Args:
-        subcommands_action (_ActionSubCommands): Sub-Command in CLI.
-
-    Returns:
-        None
-    """
-    parser = ArgumentParser()
-    parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
-    subcommands_action.add_subcommand("test", parser, help="Testing subcommand for OTX")
 
 
 def otx_test(overrides: list[str]) -> None:
@@ -47,6 +29,27 @@ def otx_test(overrides: list[str]) -> None:
         configure_hydra_outputs(cfg)
 
         # test the model
-        from otx.core.engine.test import test
+        from otx.core.data.module import OTXDataModule
 
-        metric_dict, _ = test(cfg)
+        log.info(f"Instantiating datamodule <{cfg.data}>")
+        datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+
+        log.info(f"Instantiating model <{cfg.model}>")
+        model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
+        optimizer = hydra.utils.instantiate(cfg.model.optimizer)
+        scheduler = hydra.utils.instantiate(cfg.model.scheduler)
+
+        from otx.engine import Engine
+
+        trainer_kwargs = {**cfg.trainer}
+        engine = Engine(
+            task=cfg.base.task,
+            work_dir=cfg.base.output_dir,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            datamodule=datamodule,
+            checkpoint=cfg.checkpoint,
+            device=trainer_kwargs.pop("accelerator", "auto"),
+        )
+        engine.test()

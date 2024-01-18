@@ -62,6 +62,9 @@ class OTXSegmentationLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: JaccardIndex, key: str) -> None:
         results = meter.compute()
+        if results is None:
+            msg = f"{meter} has no data to compute metric or there is an error computing metric"
+            raise RuntimeError(msg)
 
         if isinstance(results, Tensor):
             if results.numel() != 1:
@@ -88,9 +91,9 @@ class OTXSegmentationLitModule(OTXLitModule):
         if not isinstance(preds, SegBatchPredEntity):
             raise TypeError(preds)
 
-        pred_list = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for prediction in pred_list:
-            self.test_metric.update(**prediction)
+        predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for prediction in predictions:
+            self.val_metric.update(**prediction)
 
     def _convert_pred_entity_to_compute_metric(
         self,
