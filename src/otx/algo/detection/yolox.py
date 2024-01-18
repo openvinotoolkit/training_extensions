@@ -36,6 +36,5 @@ class YoloX(MMDetCompatibleModel):
             export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.yolox"
 
         export_params["mm_model_config"] = copy(self.config)
-        export_params["mm_model_config"].pop("load_from")
 
         return export_params

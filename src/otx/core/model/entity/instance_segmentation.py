@@ -58,8 +58,8 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = self._get_export_parameters()
         self.load_from = self.config.pop("load_from", None)
+        self.export_params = self._get_export_parameters()
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:

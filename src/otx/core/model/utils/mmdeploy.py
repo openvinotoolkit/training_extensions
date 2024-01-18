@@ -7,12 +7,14 @@ import os
 import os.path as osp
 import logging as log
 import time
+from collections import OrderedDict
 from copy import copy
 from typing import Callable
 from subprocess import CalledProcessError
 from pathlib import Path
 
 import cv2
+import torch
 import numpy as np
 import mmdeploy.apis.openvino as openvino_api
 from omegaconf import DictConfig, OmegaConf, ListConfig
@@ -68,7 +70,7 @@ class MMdeployExporter:
             onnx_file_name,
             deploy_cfg=self._deploy_cfg,
             model_cfg=self._model_cfg,
-            model_checkpoint=self._model_cfg.get("load_from", None),
+            model_checkpoint=self._model_cfg.model.pop("load_from", None),
             device="cpu")
 
         # partition model

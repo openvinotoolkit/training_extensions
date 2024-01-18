@@ -31,14 +31,12 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         if self.model_name in ["efficientnetb2b", "r50"]:
             export_params["input_size"] = (1, 3, 1024, 1024)
             export_params["mmdeploy_config"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn"
-            export_params["mm_model_config"] = copy(self.config)
-            export_params["mm_model_config"].pop("load_from")
         elif self.model_name == "swint":
             export_params["input_size"] = (1, 3, 1344, 1344)
             export_params["mmdeploy_config"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn_swint"
-            export_params["mm_model_config"] = copy(self.config)
-            export_params["mm_model_config"].pop("load_from")
         else:
             raise ValueError("Unknown model. Setting mmdeploy is failed.")
+
+        export_params["mm_model_config"] = copy(self.config)
 
         return export_params
