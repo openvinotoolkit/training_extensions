@@ -2,8 +2,8 @@
 defaults:
   - override /base: visual_prompting
   - override /callbacks: visual_prompting
-  - override /data: mmdet_visual_prompting
-  # - override /data: torchvision_visual_prompting
+  # - override /data: mmdet_visual_prompting
+  - override /data: torchvision_visual_prompting
   - override /model: torch_visual_prompting
 data:
   train_subset:
