@@ -4,10 +4,11 @@
 """Module for defining hierarchical label accuracy metric."""
 
 from __future__ import annotations
+
 from typing import Callable, Sequence
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy, MultilabelAccuracy
 
@@ -65,11 +66,11 @@ class HLabelAccuracy(Metric):
         if not self.flag:
             metric.to(device)
             self.flag = True
-    
+
     def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> nn.Module:
-        self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]
+        self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]  # noqa: SLF001
         if self.num_multilabel_classes > 0:
-            self.multilabel_accuracy = self.multilabel_accuracy._apply(fn, exclude_state)
+            self.multilabel_accuracy = self.multilabel_accuracy._apply(fn, exclude_state)  # noqa: SLF001
         return self
 
     def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:

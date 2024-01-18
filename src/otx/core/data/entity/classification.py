@@ -195,6 +195,9 @@ class HLabelInfo:
             'Triangle': 2, 'Non-Rigid': 3, 'Circle': 4
             'Lion': 5, 'Panda': 6
         }
+        label_tree_edges: [
+            ["Rectangle", "Rigid"], ["Triangle", "Rigid"], ["Circle", "Non-Rigid"],
+        ] # NOTE, label_tree_edges format could be changed.
         empty_multiclass_head_indices: []
 
     All of the member variables should be considered for the Model API.
@@ -208,6 +211,7 @@ class HLabelInfo:
     class_to_group_idx: dict[str, tuple[int, int]]
     all_groups: list[list[str]]
     label_to_idx: dict[str, int]
+    label_tree_edges: list[list[str]]
     empty_multiclass_head_indices: list[int]
 
     @classmethod
@@ -276,6 +280,12 @@ class HLabelInfo:
             put_key_values(single_label_ctoi, class_to_idx)
             return class_to_idx
 
+        # NOTE, this information needs for the correct prediction from Model API side.
+        # However, need to check the correct format. <- TODO(sungman)
+        def get_label_tree_edges(dm_label_groups: list[LabelCategories.LabelGroup]) -> list[list[str]]:
+            """Get label tree edges information. Each edges represent [child, parent]."""
+            return [[label, label_group.name] for label_group in dm_label_groups for label in label_group.labels] 
+
         all_groups = [label_group.labels for label_group in dm_label_categories.label_groups]
 
         exclusive_group_info = get_exclusive_group_info(all_groups)
@@ -294,6 +304,7 @@ class HLabelInfo:
             class_to_group_idx=merged_class_to_idx,
             all_groups=all_groups,
             label_to_idx=dm_label_categories._indices,  # noqa: SLF001
+            label_tree_edges=get_label_tree_edges(dm_label_categories.label_groups),
             empty_multiclass_head_indices=[],  # consider the label removing case
         )
 
