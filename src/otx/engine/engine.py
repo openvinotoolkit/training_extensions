@@ -357,14 +357,12 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
-        prediction = self.trainer.predict(
+        self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
-        saliency_maps = self.trainer.model.model.explain_hook.records
-        # TODO: select, process, and save saliency maps. Should be done here?
-        return saliency_maps
+        return self.trainer.model.model.explain_hook.records
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
