@@ -28,7 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "datumaro",
+    "datumaro==1.6.0rc1",
     "omegaconf",
     "hydra-core",
     "rich",
