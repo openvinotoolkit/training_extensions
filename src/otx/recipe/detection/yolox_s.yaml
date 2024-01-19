@@ -23,13 +23,14 @@ engine:
   task: DETECTION
   device: auto
 
-callback_monitor: val/map
+callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
   gradient_clip_val: 35.0
   data:
     config:
+      image_color_channel: BGR
       train_subset:
         transforms:
           - type: LoadImageFromFile

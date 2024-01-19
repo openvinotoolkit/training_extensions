@@ -26,7 +26,7 @@ engine:
   task: DETECTION
   device: auto
 
-callback_monitor: val/map
+callback_monitor: val/map_50
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:

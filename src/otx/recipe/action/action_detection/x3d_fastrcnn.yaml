@@ -23,7 +23,7 @@ engine:
   task: ACTION_DETECTION
   device: auto
 
-callback_monitor: val/map
+callback_monitor: val/map_50
 
 data: ../../_base_/data/mmaction_base.yaml
 overrides:
