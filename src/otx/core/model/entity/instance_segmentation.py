@@ -59,7 +59,6 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
-        self.export_params = self._get_export_parameters()
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
@@ -212,11 +211,17 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         if self.need_mmdeploy() and test_pipeline is None:
             raise ValueError("Current model needs test_pipeline to export for mmdpeloy.")
 
-        self._export(output_dir, export_format, precision=precision, **self.export_params, test_pipeline=test_pipeline)
+        self._export(
+            output_dir,
+            export_format,
+            precision=precision,
+            **self._get_export_parameters(),
+            test_pipeline=test_pipeline
+        )
 
     def need_mmdeploy(self):
         """Whether mmdeploy is used when exporting a model."""
-        return self.export_params.get("mmdeploy_config") != None
+        return self._get_export_parameters().get("mmdeploy_config") != None
 
 
 class OVInstanceSegmentationModel(OVModel):

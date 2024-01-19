@@ -28,10 +28,10 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         export_params["swap_rgb"] = False
         export_params["via_onnx"] = False
 
-        if self.model_name in ["efficientnetb2b", "r50"]:
+        if self.model_name in ["maskrcnn_efficientnetb2b", "maskrcnn_r50"]:
             export_params["input_size"] = (1, 3, 1024, 1024)
             export_params["mmdeploy_config"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn"
-        elif self.model_name == "swint":
+        elif self.model_name == "maskrcnn_swint":
             export_params["input_size"] = (1, 3, 1344, 1344)
             export_params["mmdeploy_config"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn_swint"
         else:
