@@ -11,6 +11,7 @@ import torch
 from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
+from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
@@ -326,44 +327,22 @@ class Engine:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
         raise NotImplementedError
 
-    # ------------------------------------------------------------------------ #
-    # Property and setter functions provided by Engine.
-    # ------------------------------------------------------------------------ #
-
     def explain(
         self,
         checkpoint: str | Path | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        output_dir: str | Path | None = None,
+        explain_config: ExplainConfig | None = None,
         **kwargs,
-    ) -> dict:
-        """Run the explain phase of the engine.
+    ) -> list | None:
+        """Run XAI using the specified model and data.
 
         Args:
-            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
-            checkpoint (str | Path | None, optional): Path to the checkpoint file to load the model from.
-                Defaults to None.
+            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
+            output_dir (str | None, optional): Path to save saliency maps.
+            explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
-
-        Returns:
-            dict: Dictionary containing the callback metrics from the trainer.
-
-        Example:
-            >>> engine.explain(
-            ...     datamodule=OTXDataModule(),
-            ...     checkpoint=<checkpoint/path>,
-            ... )
-
-        CLI Usage:
-            1. you can pick a model.
-                ```python
-                otx explain
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str>
-                ```
-            2. If you have a ready configuration file, run it like this.
-                ```python
-                otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
-                ```
         """
         lit_module = self._build_lightning_module(
             model=self.model,
@@ -378,14 +357,18 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
-        self.trainer.test(
+        prediction = self.trainer.predict(
             model=lit_module,
-            dataloaders=datamodule,
+            datamodule=datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
-
         saliency_maps = self.trainer.model.model.explain_hook.records
+        # TODO: select, process, and save saliency maps. Should be done here?
         return saliency_maps
+
+    # ------------------------------------------------------------------------ #
+    # Property and setter functions provided by Engine.
+    # ------------------------------------------------------------------------ #
 
     @property
     def trainer(self) -> Trainer:

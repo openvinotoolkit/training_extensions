@@ -51,4 +51,4 @@ def otx_explain(overrides: list[str]) -> None:
             checkpoint=cfg.checkpoint,
             device=trainer_kwargs.pop("accelerator", "auto"),
         )
-        engine.explain()  # cfg.base.output_dir, cfg.model.explain_config
+        engine.explain(output_dir=cfg.base.output_dir, explain_config=cfg.model.explain_config)
