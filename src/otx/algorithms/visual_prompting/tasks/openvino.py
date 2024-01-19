@@ -21,8 +21,9 @@ import random
 import tempfile
 import time
 from collections import defaultdict
+from itertools import product
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
+from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Type, Union
 from zipfile import ZipFile
 
 import attr
@@ -147,7 +148,7 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
-    def pre_process(  # type: ignore
+    def pre_process(
         self, dataset_item: DatasetItemEntity, extra_processing: bool = False
     ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
@@ -201,6 +202,10 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         """Await all running infer requests if any."""
         self.model["image_encoder"].await_all()
         self.model["decoder"].await_all()
+
+    def pre_process_prompt_getter(self, *args, **kwargs) -> Any:
+        """Pre-process function of OpenVINO Zero-shot VIsual Prompting Inferencer for prompt getter."""
+        pass
 
 
 class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInferencer):
@@ -286,7 +291,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
     def pre_process(  # type: ignore
         self, dataset_item: DatasetItemEntity, extra_processing: bool = False
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Zero-shot Visual Prompting Inferencer for image encoder."""
         return self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
 
@@ -313,8 +318,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         inputs_prompt_getter = self.pre_process_prompt_getter(image_embeddings, original_size)
         total_prompts = self.forward_prompt_getter(inputs_prompt_getter)
 
-        annotations: List[Annotation] = []
+        annotations: DefaultDict = defaultdict(list)
         predicted_masks: DefaultDict = defaultdict(list)
+        used_points: DefaultDict = defaultdict(list)
         for label, (points_scores, bg_coords) in enumerate(
             zip(total_prompts["total_points_scores"], total_prompts["total_bg_coords"])
         ):
@@ -344,10 +350,12 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 }
 
                 # set annotation for eval
-                annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
-                annotations.extend(annotation)
+                annotation, hard_prediction, _ = self.post_process(prediction, metadata)
+                annotations[label].extend(annotation)
                 predicted_masks[label].append(hard_prediction)
-        return annotations
+                used_points[label].append(points_score)
+        self.__inspect_overlapping_areas(predicted_masks, used_points, annotations)
+        return sum(annotations.values(), [])
 
     def forward_prompt_getter(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Visual Prompting Inferencer."""
@@ -371,7 +379,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             elif i == 1:
                 # Cascaded Post-refinement-1
                 mask_input, masks, iou_predictions = self._postprocess_masks(
-                    logits, scores, original_size  # noqa: F821
+                    logits, scores, original_size, is_single=True  # noqa: F821
                 )
                 if masks.sum() == 0:
                     return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
@@ -388,10 +396,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
-                inputs["point_coords"] = np.concatenate(
-                    (inputs["point_coords"], np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32)),
-                    axis=1,
+                box_coords = self.model["decoder"]._apply_coords(
+                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size
                 )
+                inputs["point_coords"] = np.concatenate((inputs["point_coords"], box_coords), axis=1)
                 inputs["point_labels"] = np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1)
 
             inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})
@@ -401,28 +409,72 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
 
     def _postprocess_masks(
-        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray
+        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray, is_single: bool = False
     ) -> Tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
         high_res_masks = self.model["decoder"].resize_and_crop(logits[0].transpose(1, 2, 0), original_size)
         masks = high_res_masks > self.model["decoder"].mask_threshold
         masks = masks.transpose(2, 0, 1)[None]
 
-        # skip the first index components
-        scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+        if is_single:
+            best_idx = 0
+        else:
+            # skip the first index components
+            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
 
-        # filter zero masks
-        while len(scores[0]) > 0 and masks[0, (best_idx := np.argmax(scores[0]))].sum() == 0:
-            scores, masks, logits = map(
-                lambda x: np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1), (scores, masks, logits)
-            )
+            # filter zero masks
+            while len(scores[0]) > 0 and masks[0, (best_idx := np.argmax(scores[0]))].sum() == 0:
+                scores, masks, logits = map(
+                    lambda x: np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1), (scores, masks, logits)
+                )
 
-        if len(scores[0]) == 0:
-            # all predicted masks were zero masks, ignore them.
-            return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
+            if len(scores[0]) == 0:
+                # all predicted masks were zero masks, ignore them.
+                return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
 
-        best_idx = np.argmax(scores[0])
+            best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
+
+    def __inspect_overlapping_areas(
+        self,
+        predicted_masks: Dict[int, List[np.ndarray]],
+        used_points: Dict[int, List[np.ndarray]],
+        annotations: Dict[int, List[np.ndarray]],
+        threshold_iou: float = 0.8,
+    ):
+        def __calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
+            assert mask1.ndim == 2 and mask2.ndim == 2
+            intersection = np.logical_and(mask1, mask2).sum().item()
+            union = np.logical_or(mask1, mask2).sum().item()
+
+            # Avoid division by zero
+            if union == 0:
+                return 0.0
+            iou = intersection / union
+            return iou
+
+        for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
+            if other_label <= label:
+                continue
+
+            overlapped_label = []
+            overlapped_other_label = []
+            for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
+                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        overlapped_other_label.append(jm)
+                    else:
+                        overlapped_label.append(im)
+
+            for im in overlapped_label[::-1]:
+                masks.pop(im)
+                used_points[label].pop(im)
+                annotations[label].pop(im)
+
+            for jm in overlapped_other_label[::-1]:
+                other_masks.pop(jm)
+                used_points[other_label].pop(jm)
+                annotations[other_label].pop(jm)
 
 
 class OTXOpenVinoDataLoader:
@@ -432,28 +484,31 @@ class OTXOpenVinoDataLoader:
         self,
         dataset: Any,
         inferencer: OpenVINOVisualPromptingInferencer,
+        module_name: str,
         shuffle: bool = True,
-        is_encoder: bool = True,
         output_model: Optional[ModelEntity] = None,
     ):
         self.dataset = dataset
         self.inferencer = inferencer
+        self.module_name = module_name
         self.shuffler = None
         if shuffle:
             self.shuffler = list(range(len(dataset)))
             random.shuffle(self.shuffler)
 
-        self.is_encoder = is_encoder
         self.target_length = self.inferencer.model["image_encoder"].orig_width
-        if not self.is_encoder:
-            core = ov.Core()
-            compressed_model = core.read_model(
-                output_model.get_data("visual_prompting_image_encoder.xml"),
-                output_model.get_data("visual_prompting_image_encoder.bin"),
-            )
-            self.compressed_model = core.compile_model(
-                model=compressed_model, device_name=inferencer.model["image_encoder"].inference_adapter.device
-            )
+        if self.module_name not in ["image_encoder"]:
+            self.image_encoder = self._load_module("image_encoder", output_model)
+
+    def _load_module(self, module_name: str, output_model: ModelEntity, core=ov.Core()):
+        """Load specific module."""
+        compressed_model = core.read_model(
+            output_model.get_data(f"visual_prompting_{module_name}.xml"),
+            output_model.get_data(f"visual_prompting_{module_name}.bin"),
+        )
+        return core.compile_model(
+            model=compressed_model, device_name=self.inferencer.model[module_name].inference_adapter.device
+        )
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
@@ -465,10 +520,10 @@ class OTXOpenVinoDataLoader:
         _, _, h, w = images["images"].shape
         pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
         images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
-        if self.is_encoder:
+        if self.module_name == "image_encoder":
             return images
         else:
-            image_embeddings = self.compressed_model(images["images"])
+            image_embeddings = self.image_encoder(images["images"])
             prompt = prompts[0]  # only use the first prompt
             prompt.pop("label")
             prompt.pop("orig_size")
@@ -478,6 +533,77 @@ class OTXOpenVinoDataLoader:
 
     def __len__(self):
         """Get length of dataset."""
+        return len(self.dataset)
+
+
+class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
+    """DataLoader implementation for ZeroShotVisualPromptingOpenVINOTask."""
+
+    def __init__(
+        self,
+        dataset: Any,
+        inferencer: OpenVINOZeroShotVisualPromptingInferencer,
+        module_name: str,
+        shuffle: bool = True,
+        output_model: Optional[ModelEntity] = None,
+    ):
+        super().__init__(
+            dataset=dataset, inferencer=inferencer, module_name=module_name, shuffle=shuffle, output_model=output_model
+        )
+        if self.module_name == "decoder":
+            self.prompt_getter = self._load_module("prompt_getter", output_model)
+
+    def __getitem__(self, index: int) -> Dict[str, Any]:
+        """Get item from dataset."""
+        images: Dict[str, np.ndarray]
+        meta: Dict[str, Any]
+        if self.shuffler is not None:
+            index = self.shuffler[index]
+
+        items = self.dataset[index]
+        images, meta = self.inferencer.pre_process(items, extra_processing=True)  # type: ignore
+        original_size = np.array(meta["original_shape"][:2])
+        _, _, h, w = images["images"].shape
+        pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
+        images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
+        if self.module_name == "image_encoder":
+            return images
+        else:
+            image_embeddings = self.image_encoder(images["images"])
+            inputs_prompt_getter = self.inferencer.pre_process_prompt_getter(image_embeddings, original_size)
+            if self.module_name == "prompt_getter":
+                return inputs_prompt_getter
+
+            total_prompts = self.prompt_getter(inputs_prompt_getter)
+            # only use the first prompt
+            point_score = total_prompts["total_points_scores"][0][0]
+            bg_coords = total_prompts["total_bg_coords"][0]
+
+            x, y = point_score[:2]
+            point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
+            point_coords = self.inferencer.model["decoder"]._apply_coords(point_coords, original_size)
+            point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
+            inputs_decoder = {"point_coords": point_coords[None], "point_labels": point_labels[None]}
+            inputs_decoder.update(image_embeddings)
+            inputs_decoder.update(
+                {
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                }
+            )
+            if index % 2 == 0:
+                prediction = self.inferencer.model["decoder"].infer_sync(inputs_decoder)
+                scores, low_res_masks = prediction["iou_predictions"], prediction["low_res_masks"]
+                best_idx = scores.argmax()
+                inputs_decoder.update(
+                    {"mask_input": low_res_masks[:, [best_idx]], "has_mask_input": np.ones((1, 1), dtype=np.float32)}
+                )
+            return inputs_decoder
+
+    def __len__(self):
+        """Get length of dataset."""
+        if self.module_name == "decoder":
+            return len(self.dataset) * 2
         return len(self.dataset)
 
 
@@ -587,10 +713,10 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             raise RuntimeError("deploy failed, model is None")
 
         work_dir = os.path.dirname(demo.__file__)
-        parameters = {}
+        parameters: Dict[str, Any] = {}
         parameters["converter_type"] = f"{self.task_type}"
-        parameters["model_parameters"] = self.inferencer.configuration  # type: ignore
-        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)  # type: ignore # noqa: E501
+        parameters["model_parameters"] = self.inferencer.configuration
+        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
@@ -643,6 +769,8 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset: DatasetEntity,
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
+        module_names: List[str] = ["image_encoder", "decoder"],
+        ov_dataloader: Type[OTXOpenVinoDataLoader] = OTXOpenVinoDataLoader,
     ):
         """Optimize function of OpenVINOVisualPromptingTask."""
         logger.info("Start PTQ optimization")
@@ -654,26 +782,21 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
         dataset = dataset.get_subset(Subset.TRAINING)
 
-        for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
-            data_loader = OTXOpenVinoDataLoader(
-                dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
-            )
+        for i, module_name in enumerate(module_names, 1):
+            data_loader = ov_dataloader(dataset, self.inferencer, module_name=module_name, output_model=output_model)
             quantization_dataset = nncf.Dataset(data_loader, lambda data: data)
 
             with tempfile.TemporaryDirectory() as tempdir:
-                xml_path = os.path.join(tempdir, f"visual_prompting_{name}.xml")
-                bin_path = os.path.join(tempdir, f"visual_prompting_{name}.bin")
+                xml_path = os.path.join(tempdir, f"visual_prompting_{module_name}.xml")
+                bin_path = os.path.join(tempdir, f"visual_prompting_{module_name}.bin")
                 with open(xml_path, "wb") as f:
-                    f.write(self.model.get_data(f"visual_prompting_{name}.xml"))
+                    f.write(self.model.get_data(f"visual_prompting_{module_name}.xml"))
                 with open(bin_path, "wb") as f:
-                    f.write(self.model.get_data(f"visual_prompting_{name}.bin"))
+                    f.write(self.model.get_data(f"visual_prompting_{module_name}.bin"))
 
                 ov_model = ov.Core().read_model(xml_path, bin_path)
                 if check_if_quantized(ov_model):
                     raise RuntimeError("Model is already optimized by PTQ")
-
-            if optimization_parameters is not None:
-                optimization_parameters.update_progress(10 * i + 35 * (i - 1), None)
 
             optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
             ptq_config = ADDict()
@@ -687,16 +810,16 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             compressed_model = nncf.quantize(ov_model, quantization_dataset, **ptq_config)
 
             if optimization_parameters is not None:
-                optimization_parameters.update_progress(45 * i, None)
+                optimization_parameters.update_progress(90 // len(module_names) * i, None)
 
             with tempfile.TemporaryDirectory() as tempdir:
-                xml_path = os.path.join(tempdir, f"visual_prompting_{name}.xml")
-                bin_path = os.path.join(tempdir, f"visual_prompting_{name}.bin")
+                xml_path = os.path.join(tempdir, f"visual_prompting_{module_name}.xml")
+                bin_path = os.path.join(tempdir, f"visual_prompting_{module_name}.bin")
                 ov.serialize(compressed_model, xml_path)
                 with open(xml_path, "rb") as f:
-                    output_model.set_data(f"visual_prompting_{name}.xml", f.read())
+                    output_model.set_data(f"visual_prompting_{module_name}.xml", f.read())
                 with open(bin_path, "rb") as f:
-                    output_model.set_data(f"visual_prompting_{name}.bin", f.read())
+                    output_model.set_data(f"visual_prompting_{module_name}.bin", f.read())
 
         output_model.set_data(
             "label_schema.json",
@@ -738,4 +861,23 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
                 "decoder": self.model.get_data("visual_prompting_decoder.bin"),
             },
             num_requests=get_default_async_reqs_num(),
+        )
+
+    def optimize(
+        self,
+        optimization_type: OptimizationType,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        optimization_parameters: Optional[OptimizationParameters] = None,
+        module_names: List[str] = ["image_encoder", "prompt_getter", "decoder"],
+        ov_dataloader: Type[OTXOpenVinoDataLoader] = OTXZeroShotOpenVinoDataLoader,
+    ):
+        """Optimize function of OpenVINOZeroShotVisualPromptingTask."""
+        return super().optimize(
+            optimization_type=optimization_type,
+            dataset=dataset,
+            output_model=output_model,
+            optimization_parameters=optimization_parameters,
+            module_names=module_names,
+            ov_dataloader=ov_dataloader,
         )

@@ -23,7 +23,9 @@ from otx.algorithms.visual_prompting.tasks.openvino import (
     OpenVINOVisualPromptingInferencer,
     OpenVINOZeroShotVisualPromptingInferencer,
     OpenVINOVisualPromptingTask,
+    OpenVINOZeroShotVisualPromptingTask,
     OTXOpenVinoDataLoader,
+    OTXZeroShotOpenVinoDataLoader,
 )
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.annotation import Annotation
@@ -263,6 +265,11 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         mocker.patch.object(
             self.visual_prompting_ov_inferencer.model["decoder"], "infer_sync", return_value=infer_sync_output
         )
+        mocker.patch.object(
+            self.visual_prompting_ov_inferencer.model["decoder"],
+            "_apply_coords",
+            return_value=np.array([[[1, 1]]], dtype=np.float32),
+        )
         mocker.patch.object(self.visual_prompting_ov_inferencer, "_postprocess_masks", return_value=postprocess_output)
 
         result = self.visual_prompting_ov_inferencer.forward_decoder(
@@ -318,12 +325,10 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
 class TestOTXOpenVinoDataLoader:
     @pytest.fixture
     def load_dataloader(self, mocker):
-        def _load_dataloader(is_encoder: bool = True, output_model: Optional[ModelEntity] = None):
+        def _load_dataloader(module_name: str, output_model: Optional[ModelEntity] = None):
             dataset = generate_visual_prompting_dataset()
             dataset = dataset.get_subset(Subset.TRAINING)
-            return OTXOpenVinoDataLoader(
-                dataset, self.mocker_inferencer, is_encoder=is_encoder, output_model=output_model
-            )
+            return OTXOpenVinoDataLoader(dataset, self.mocker_inferencer, module_name, output_model=output_model)
 
         return _load_dataloader
 
@@ -334,16 +339,16 @@ class TestOTXOpenVinoDataLoader:
         self.mocker_inferencer = mocker.patch.object(OpenVINOVisualPromptingInferencer, "__init__")
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("is_encoder", [True, False])
-    def test_getitem(self, mocker, load_dataloader, is_encoder: bool):
+    @pytest.mark.parametrize("module_name", ["image_encoder", "decoder"])
+    def test_getitem(self, mocker, load_dataloader, module_name: str):
         """Test __getitem__."""
         mocker_output_model = mocker.patch("otx.api.entities.model.ModelEntity")
-        if not is_encoder:
+        if module_name == "decoder":
             mocker.patch.object(mocker_output_model, "get_data")
             self.mocker_read_model.reset_mock()
             self.mocker_compile_model.reset_mock()
 
-        dataloader = load_dataloader(is_encoder, mocker_output_model)
+        dataloader = load_dataloader(module_name, mocker_output_model)
 
         setattr(dataloader, "target_length", 8)
         mocker.patch.object(
@@ -354,7 +359,7 @@ class TestOTXOpenVinoDataLoader:
 
         results = dataloader.__getitem__(0)
 
-        if is_encoder:
+        if module_name == "image_encoder":
             assert results["images"].shape == (1, 3, 8, 8)
         else:
             self.mocker_read_model.assert_called_once()
@@ -362,6 +367,64 @@ class TestOTXOpenVinoDataLoader:
             assert "label" not in results
             assert "orig_size" not in results
             assert "image_embeddings" in results
+
+
+class TestOTXZeroShotOpenVinoDataLoader:
+    @pytest.fixture
+    def load_dataloader(self, mocker):
+        def _load_dataloader(module_name: str, output_model: Optional[ModelEntity] = None):
+            dataset = generate_visual_prompting_dataset()
+            dataset = dataset.get_subset(Subset.TRAINING)
+            return OTXZeroShotOpenVinoDataLoader(
+                dataset, self.mocker_inferencer, module_name, output_model=output_model
+            )
+
+        return _load_dataloader
+
+    @pytest.fixture(autouse=True)
+    def setup(self, mocker):
+        self.mocker_read_model = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model")
+        self.mocker_compile_model = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
+        self.mocker_inferencer = mocker.patch.object(OpenVINOZeroShotVisualPromptingTask, "__init__")
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("module_name", ["image_encoder", "prompt_getter", "decoder"])
+    def test_getitem(self, mocker, load_dataloader, module_name: str):
+        """Test __getitem__."""
+        mocker_output_model = mocker.patch("otx.api.entities.model.ModelEntity")
+        if module_name in ["prompt_getter", "decoder"]:
+            mocker.patch.object(mocker_output_model, "get_data")
+            self.mocker_read_model.reset_mock()
+            self.mocker_compile_model.reset_mock()
+
+        dataloader = load_dataloader(module_name, mocker_output_model)
+
+        setattr(dataloader, "target_length", 8)
+        mocker.patch.object(
+            dataloader.inferencer,
+            "pre_process",
+            return_value=({"images": np.zeros((1, 3, 4, 4), dtype=np.uint8)}, {"original_shape": (4, 4)}),
+        )
+        if module_name == "decoder":
+            mocker.patch.object(
+                dataloader,
+                "prompt_getter",
+                return_value={
+                    "total_points_scores": [np.array([[0, 0, 0.5]])],
+                    "total_bg_coords": [np.array([[1, 1]])],
+                },
+            )
+
+        results = dataloader.__getitem__(0)
+
+        if module_name == "image_encoder":
+            assert results["images"].shape == (1, 3, 8, 8)
+        elif module_name == "prompt_getter":
+            self.mocker_read_model.assert_called_once()
+            self.mocker_compile_model.assert_called_once()
+        else:  # decoder
+            self.mocker_read_model.call_count == 2
+            self.mocker_compile_model.call_count == 2
 
 
 class TestOpenVINOVisualPromptingTask:
@@ -483,6 +546,92 @@ class TestOpenVINOVisualPromptingTask:
         assert (
             self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.bin")
             == b"compressed_visual_prompting_image_encoder.bin"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.xml")
+            == b"compressed_visual_prompting_decoder.xml"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.bin")
+            == b"compressed_visual_prompting_decoder.bin"
+        )
+
+
+class TestOpenVINOZeroShotVisualPromptingTask:
+    @pytest.fixture
+    def otx_model(self):
+        model_configuration = ModelConfiguration(
+            configurable_parameters=ConfigurableParameters(header="header", description="description"),
+            label_schema=LabelSchemaEntity(),
+        )
+        return ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
+
+    @pytest.fixture(autouse=True)
+    def setup(self, mocker, otx_model):
+        """Load the OpenVINOZeroShotVisualPromptingTask."""
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
+        mocker.patch.object(Model, "create_model")
+        self.task_environment = init_environment()
+        visual_prompting_hparams = self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
+
+        visual_prompting_ov_inferencer = OpenVINOZeroShotVisualPromptingInferencer(
+            visual_prompting_hparams,
+            self.task_environment.label_schema,
+            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
+            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
+        )
+
+        # self.task_environment.model = mocker.patch("otx.api.entities.model.ModelEntity")
+        self.task_environment.model = otx_model
+        mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingTask, "load_inferencer", return_value=visual_prompting_ov_inferencer
+        )
+        self.visual_prompting_ov_task = OpenVINOZeroShotVisualPromptingTask(task_environment=self.task_environment)
+
+    @e2e_pytest_unit
+    def test_optimize(self, mocker):
+        """Test optimize."""
+
+        def patch_save_model(model, output_xml):
+            output_bin = output_xml.replace(".xml", ".bin")
+            with open(output_xml, "wb") as f:
+                f.write(f"compressed_{os.path.basename(output_xml)}".encode("utf-8"))
+            with open(output_bin, "wb") as f:
+                f.write(f"compressed_{os.path.basename(output_bin)}".encode("utf-8"))
+
+        dataset = generate_visual_prompting_dataset()
+        output_model = deepcopy(self.task_environment.model)
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_image_encoder.xml", b"image_encoder_xml")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_image_encoder.bin", b"image_encoder_bin")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_prompt_getter.xml", b"prompt_getter_xml")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_prompt_getter.bin", b"prompt_getter_bin")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.xml", b"decoder_xml")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model", autospec=True)
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.serialize", new=patch_save_model)
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
+        fake_quantize = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.nncf.quantize", autospec=True)
+
+        self.visual_prompting_ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
+
+        fake_quantize.assert_called()
+        assert fake_quantize.call_count == 3
+
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.xml")
+            == b"compressed_visual_prompting_image_encoder.xml"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.bin")
+            == b"compressed_visual_prompting_image_encoder.bin"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_prompt_getter.xml")
+            == b"compressed_visual_prompting_prompt_getter.xml"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_prompt_getter.bin")
+            == b"compressed_visual_prompting_prompt_getter.bin"
         )
         assert (
             self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.xml")

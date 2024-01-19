@@ -106,7 +106,6 @@ class TestToolsZeroShotVisualPrompting:
         )
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="optimize for zsl is not supported yet.")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize(self, template, tmp_dir_path):
@@ -114,17 +113,15 @@ class TestToolsZeroShotVisualPrompting:
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args, is_visual_prompting=True)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="optimize for zsl is not supported yet.")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "zero_shot_visual_prompting"
-        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "zero_shot_visual_prompting", type(self).__name__)
+        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "visual_prompting", type(self).__name__)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="optimize for zsl is not supported yet.")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "zero_shot_visual_prompting"
-        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args, is_visual_prompting=True)

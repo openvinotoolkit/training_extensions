@@ -96,7 +96,7 @@ class Decoder(SegmentationModel):
     def _get_outputs(self):
         return "low_res_masks"
 
-    def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
+    def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Preprocess prompts."""
         processed_prompts = []
         # TODO (sungchul): process points
