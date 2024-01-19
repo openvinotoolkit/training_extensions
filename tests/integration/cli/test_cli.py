@@ -64,6 +64,10 @@ DATASET = {
             "3",
         ],
     },
+    "visual_prompting": {
+        "data_root": "tests/assets/car_tree_bug",
+        "overrides": [],
+    },
 }
 
 
