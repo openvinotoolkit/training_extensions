@@ -336,7 +336,7 @@ class Engine:
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         **kwargs,
     ) -> dict:
-        """Run the testing phase of the engine.
+        """Run the explain phase of the engine.
 
         Args:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
@@ -348,7 +348,7 @@ class Engine:
             dict: Dictionary containing the callback metrics from the trainer.
 
         Example:
-            >>> engine.test(
+            >>> engine.explain(
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
@@ -356,7 +356,7 @@ class Engine:
         CLI Usage:
             1. you can pick a model.
                 ```python
-                otx test
+                otx explain
                     --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
@@ -374,6 +374,8 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        lit_module.model.register_explain_hook()
+
         self._build_trainer(**kwargs)
 
         self.trainer.test(
@@ -382,7 +384,8 @@ class Engine:
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
 
-        return self.trainer.callback_metrics
+        saliency_maps = self.trainer.model.model.explain_hook.records
+        return saliency_maps
 
     @property
     def trainer(self) -> Trainer:

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
+from otx.core.types.explain import TargetExplainGroup
 
 
 @dataclass

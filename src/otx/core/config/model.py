@@ -5,6 +5,8 @@
 
 from dataclasses import dataclass
 
+from src.otx.core.config.explain import ExplainConfig
+
 
 @dataclass
 class ModelConfig:
@@ -15,4 +17,4 @@ class ModelConfig:
     scheduler: dict
     otx_model: dict
     torch_compile: bool
-    explain_config: dict
+    explain_config: ExplainConfig

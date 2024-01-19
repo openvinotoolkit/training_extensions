@@ -16,4 +16,4 @@ otx_model:
 
 explain_config:
   target_explain_group: PREDICTIONS
-  postprocess: true
+  postprocess: false

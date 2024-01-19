@@ -63,7 +63,7 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             raise ValueError
 
         output = neck(x)
-        return head(output)
+        return head([output])
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
