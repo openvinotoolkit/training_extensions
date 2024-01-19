@@ -2,7 +2,7 @@ name: V2 Performance Test
 
 on:
   schedule:
-    - cron: "0 18 * * *" # currently run daily on 18:00 UTC; [TODO]: run weekly
+    - cron: "0 16 * * 1-5" # currently run daily on 16:00 UTC; [TODO]: run weekly
   workflow_dispatch: # run on request
 
 jobs:
