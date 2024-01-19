@@ -7,7 +7,7 @@ on:
 
 jobs:
   Performance-Test:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, dmount]
     strategy:
       fail-fast: false
       matrix:
