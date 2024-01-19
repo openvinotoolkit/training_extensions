@@ -18,10 +18,10 @@ def get_short_docstring(component: TypeVar) -> str:
     """Get the short description from the docstring.
 
     Args:
-        component (object): The component to get the docstring from
+        component (TypeVar): The component to get the docstring from
 
     Returns:
-        Optional[str]: The short description
+        str: The short description
     """
     if component.__doc__ is None:
         return ""
@@ -67,10 +67,10 @@ def update(
         key: Branch key where to set the value. Required if value is not namespace.
         only_unset: Whether to only set the value if not set in namespace.
     """
-    _dict_type = False
+    is_value_dict = False
     if isinstance(value, dict):
         # Dict -> Nested Namespace for overriding
-        _dict_type = True
+        is_value_dict = True
         value = dict_to_namespace(value)
     if not isinstance(value, (Namespace, dict)):
         if not key:
@@ -88,7 +88,7 @@ def update(
         for _key, val in value.items():
             if not only_unset or prefix + _key not in self:
                 self.update(val, prefix + _key)
-    if _dict_type and key is not None:
+    if is_value_dict and key is not None:
         # Dict or Namespace -> Dict
         self[key] = dict_to_namespace(self[key]).as_dict()
     return self

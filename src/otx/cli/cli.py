@@ -17,6 +17,9 @@ from otx import OTX_LOGO, __version__
 from otx.cli.utils import get_otx_root_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
+from otx.core.config import register_configs
+
+register_configs()
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -105,10 +108,12 @@ class OTXCLI:
 
     @staticmethod
     def engine_subcommands() -> dict[str, set[str]]:
-        """Returns a dictionary of engine subcommands and their required arguments.
+        """Returns dictionary the subcommands of engine, and whose value is the argument to be skipped in the CLI.
+
+        This allows the CLI to skip duplicate keys when creating the Engine and when running the subcommand.
 
         Returns:
-            A dictionary where the keys are the subcommands and the values are sets of required arguments.
+            A dictionary where the keys are the subcommands and the values are sets of skipped arguments.
         """
         device_kwargs = {"accelerator", "devices"}
         return {

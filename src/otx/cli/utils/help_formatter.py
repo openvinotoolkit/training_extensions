@@ -27,10 +27,14 @@ REQUIRED_ARGUMENTS = {
         "data",
         "optimizer",
         "scheduler",
-    }.union(BASE_ARGUMENTS).union(ENGINE_ARGUMENTS),
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
     "test": {
         "data",
-    }.union(BASE_ARGUMENTS).union(ENGINE_ARGUMENTS),
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
 }
 
 
@@ -141,7 +145,7 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
     a more detailed and customizable help output for OTX CLI.
 
     Attributes:
-        verbose_level : int
+        verbosity_level : int
             The level of verbosity for the help output.
         subcommand : str | None
             The subcommand to render the guide for.
@@ -156,7 +160,7 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
     """
 
     verbosity_dict = get_verbosity_subcommand()
-    verbose_level = verbosity_dict["verbosity"]
+    verbosity_level = verbosity_dict["verbosity"]
     subcommand = verbosity_dict["subcommand"]
 
     def add_usage(self, usage: str | None, actions: Iterable[argparse.Action], *args, **kwargs) -> None:
@@ -171,8 +175,8 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         Returns:
             None
         """
-        actions = [] if self.verbose_level == 0 else actions
-        if self.subcommand in REQUIRED_ARGUMENTS and self.verbose_level == 1:
+        actions = [] if self.verbosity_level == 0 else actions
+        if self.subcommand in REQUIRED_ARGUMENTS and self.verbosity_level == 1:
             actions = [action for action in actions if action.dest in REQUIRED_ARGUMENTS[self.subcommand]]
 
         super().add_usage(usage, actions, *args, **kwargs)
@@ -187,9 +191,9 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
             action (argparse.Action): The action to add to the help formatter.
         """
         if self.subcommand in REQUIRED_ARGUMENTS:
-            if self.verbose_level == 0:
+            if self.verbosity_level == 0:
                 return
-            if self.verbose_level == 1 and action.dest not in REQUIRED_ARGUMENTS[self.subcommand]:
+            if self.verbosity_level == 1 and action.dest not in REQUIRED_ARGUMENTS[self.subcommand]:
                 return
         super().add_argument(action)
 
@@ -204,15 +208,15 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         """
         with self.console.capture() as capture:
             section = self._root_section
-            _reder: RenderableType = section
-            if self.subcommand in REQUIRED_ARGUMENTS and self.verbose_level in (0, 1) and len(section.rich_items) > 1:
+            rendered_content: RenderableType = section
+            if self.subcommand in REQUIRED_ARGUMENTS and self.verbosity_level in (0, 1) and len(section.rich_items) > 1:
                 contents = render_guide(self.subcommand)
                 for content in contents:
                     self.console.print(content)
-            if self.verbose_level > 0:
+            if self.verbosity_level > 0:
                 if len(section.rich_items) > 1:
-                    _reder = Panel(section, border_style="dim", title="Arguments", title_align="left")
-                self.console.print(_reder, highlight=False, soft_wrap=True)
+                    rendered_content = Panel(section, border_style="dim", title="Arguments", title_align="left")
+                self.console.print(rendered_content, highlight=False, soft_wrap=True)
         help_msg = capture.get()
 
         if help_msg:
