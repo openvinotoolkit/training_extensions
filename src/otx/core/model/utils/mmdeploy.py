@@ -245,7 +245,7 @@ def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
     """
     deploy_cfg.ir_config.input_shape = (width, height)
     deploy_cfg.backend_config.model_inputs = [
-        MMConfig(dict(opt_shapes=MMConfig(dict(input=[-1, 3, height, width]))))
+        {"opt_shapes" : dict(input=[-1, 3, height, width])}
     ]
 
 

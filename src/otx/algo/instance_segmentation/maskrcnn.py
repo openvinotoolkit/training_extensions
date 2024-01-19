@@ -23,7 +23,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
 
     def _get_export_parameters(self) -> dict[str, Any]:
         export_params = get_mean_std_from_data_processing(self.config)
-        export_params["resize_mode"] = "standard"
+        export_params["resize_mode"] = "fit_to_window"
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
         export_params["via_onnx"] = False

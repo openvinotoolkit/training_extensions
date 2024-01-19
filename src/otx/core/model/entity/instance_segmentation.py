@@ -47,8 +47,19 @@ class OTXInstanceSegModel(
         metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
         metadata[("model_info", "model_type")] = "MaskRCNN"
         metadata[("model_info", "task_type")] = "instance_segmentation"
-        metadata[("model_info", "confidence_threshold")] = str(0.35)  # it was able to be set in OTX 1.X
+        metadata[("model_info", "confidence_threshold")] = str(0.05)  # it was able to be set in OTX 1.X
         metadata[("model_info", "iou_threshold")] = str(0.5)
+
+        # Instance segmentation needs to add empty label
+        all_labels = "otx_empty_lbl "
+        all_label_ids = "None "
+        for lbl in self.label_info.label_names:
+            all_labels += lbl.replace(" ", "_") + " "
+            all_label_ids += lbl.replace(" ", "_") + " "
+
+        metadata[("model_info", "labels")] = all_labels.strip()
+        metadata[("model_info", "label_ids")] = all_label_ids.strip()
+
         return metadata
 
 
@@ -256,7 +267,7 @@ class OVInstanceSegmentationModel(OVModel):
             )
             scores.append(torch.tensor([output.score for output in output_objects]))
             masks.append(torch.tensor([output.mask for output in output_objects]))
-            labels.append(torch.tensor([output.id for output in output_objects]))
+            labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         return InstanceSegBatchPredEntity(
             batch_size=len(outputs),
