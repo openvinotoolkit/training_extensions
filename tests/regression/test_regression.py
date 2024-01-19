@@ -470,3 +470,66 @@ class TestInstanceSegmentation(BaseTest):
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
+
+
+class TestVisualPrompting(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="visual_prompting", name="sam_tiny_vit"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [  # noqa: RUF012
+        DatasetTestCase(
+            name=f"wgisd_small_{idx}",
+            data_root=Path("wgisd_small") / f"{idx}",
+            data_format="coco",
+            num_classes=5,
+            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"},
+        )
+        for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name="coco_car_person_medium",
+            data_root="coco_car_person_medium",
+            data_format="coco",
+            num_classes=2,
+            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+        ),
+        DatasetTestCase(
+            name="vitens_coliform",
+            data_root="Vitens-Coliform-coco",
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+        )
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )
