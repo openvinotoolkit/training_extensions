@@ -89,7 +89,7 @@ class TestCustomHelpFormatter:
     @pytest.fixture()
     def fxt_parser(self) -> ArgumentParser:
         """Mock ArgumentParser."""
-        parser = ArgumentParser(formatter_class=CustomHelpFormatter)
+        parser = ArgumentParser(env_prefix="otx", formatter_class=CustomHelpFormatter)
         parser.formatter_class.subcommand = "train"
         parser.add_argument(
             "-t",
@@ -108,7 +108,7 @@ class TestCustomHelpFormatter:
         """Test verbose level 0."""
         argv = ["otx", "train", "-h"]
         assert fxt_parser.formatter_class == CustomHelpFormatter
-        fxt_parser.formatter_class.verbose_level = 0
+        fxt_parser.formatter_class.verbosity_level = 0
         with pytest.raises(SystemExit, match="0"):
             fxt_parser.parse_args(argv)
         out, _ = capfd.readouterr()
@@ -119,7 +119,7 @@ class TestCustomHelpFormatter:
         """Test verbose level 1."""
         argv = ["otx", "train", "-h", "-v"]
         assert fxt_parser.formatter_class == CustomHelpFormatter
-        fxt_parser.formatter_class.verbose_level = 1
+        fxt_parser.formatter_class.verbosity_level = 1
         with pytest.raises(SystemExit, match="0"):
             fxt_parser.parse_args(argv)
         out, _ = capfd.readouterr()
@@ -130,7 +130,7 @@ class TestCustomHelpFormatter:
         """Test verbose level 2."""
         argv = ["otx", "train", "-h", "-vv"]
         assert fxt_parser.formatter_class == CustomHelpFormatter
-        fxt_parser.formatter_class.verbose_level = 2
+        fxt_parser.formatter_class.verbosity_level = 2
         with pytest.raises(SystemExit, match="0"):
             fxt_parser.parse_args(argv)
         out, _ = capfd.readouterr()
