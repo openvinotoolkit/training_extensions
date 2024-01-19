@@ -117,7 +117,7 @@ class OTXDataModule(LightningDataModule):
     def _postprocess(self, dataset: Dataset) -> Dataset:
         """Post processing after importing dataset from Datumaro."""
         if self.task == "DETECTION":
-            invalid_ids = [(item.id, item.subset) for item in dataset if len(item.annotations) == 0]
+            invalid_ids = [(item.id, item.subset) for item in dataset.get_subset("train") if len(item.annotations) == 0]
             for invalid_id in invalid_ids:
                 dataset.remove(invalid_id[0], invalid_id[1])
 
