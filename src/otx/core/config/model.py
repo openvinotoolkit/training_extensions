@@ -15,3 +15,4 @@ class ModelConfig:
     scheduler: dict
     otx_model: dict
     torch_compile: bool
+    explain_config: dict

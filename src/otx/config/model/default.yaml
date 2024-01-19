@@ -13,3 +13,7 @@ scheduler:
 
 otx_model:
   num_classes: ???
+
+explain_config:
+  target_explain_group: PREDICTIONS
+  postprocess: true

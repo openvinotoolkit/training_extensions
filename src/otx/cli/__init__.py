@@ -57,6 +57,11 @@ class OTXCLI:
         test_parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
         parser_subcommands.add_subcommand("test", test_parser, help="Testing subcommand for OTX")
 
+        # otx explain parser
+        explain_parser = ArgumentParser()
+        explain_parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
+        parser_subcommands.add_subcommand("explain", explain_parser, help="Explaining subcommand for OTX")
+
     def run(self) -> None:
         """Run the OTX CLI."""
         subcommand = self.config["subcommand"]
@@ -72,7 +77,10 @@ class OTXCLI:
             from otx.cli.test import otx_test
 
             otx_test(**self.config["test"])
+        elif subcommand == "explain":
+            from otx.cli.explain import otx_explain
 
+            otx_explain(**self.config["explain"])
 
 def main() -> None:
     """Entry point for OTX CLI.

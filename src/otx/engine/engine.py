@@ -329,6 +329,60 @@ class Engine:
     # Property and setter functions provided by Engine.
     # ------------------------------------------------------------------------ #
 
+    def explain(
+        self,
+        checkpoint: str | Path | None = None,
+        datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        **kwargs,
+    ) -> dict:
+        """Run the testing phase of the engine.
+
+        Args:
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
+            checkpoint (str | Path | None, optional): Path to the checkpoint file to load the model from.
+                Defaults to None.
+            **kwargs: Additional keyword arguments for pl.Trainer configuration.
+
+        Returns:
+            dict: Dictionary containing the callback metrics from the trainer.
+
+        Example:
+            >>> engine.test(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ... )
+
+        CLI Usage:
+            1. you can pick a model.
+                ```python
+                otx test
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
+            2. If you have a ready configuration file, run it like this.
+                ```python
+                otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
+                ```
+        """
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
+
+        self._build_trainer(**kwargs)
+
+        self.trainer.test(
+            model=lit_module,
+            dataloaders=datamodule,
+            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
+        )
+
+        return self.trainer.callback_metrics
+
     @property
     def trainer(self) -> Trainer:
         """Returns the trainer object associated with the engine.
