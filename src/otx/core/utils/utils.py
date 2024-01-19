@@ -142,3 +142,25 @@ def get_metric_value(metric_dict: Dict[str, Any], metric_name: str) -> Optional[
     log.info(f"Retrieved metric value! <{metric_name}={metric_value}>")
 
     return metric_value
+
+def is_ckpt_from_otx_v1(ckpt: dict) -> bool:
+    """Check the checkpoint where it comes from.
+
+    Args:
+        ckpt (dict): the checkpoint file
+
+    Returns:
+        bool: True means the checkpoint comes from otx1
+    """
+    return "model" in ckpt and ckpt["VERSION"] == 1
+
+def is_ckpt_for_finetune(ckpt: dict):
+    """Check the checkpoint will be used to finetune.
+
+    Args:
+        ckpt (dict): the checkpoint file
+
+    Returns:
+        bool: True means the checkpoint will be used to finetune.
+    """
+    return "state_dict" in ckpt
