@@ -254,7 +254,6 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">bson</span> <span class="kn">import</span> <span class="n">ObjectId</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span><span class="p">,</span> <span class="n">Trainer</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="kn">import</span> <span class="n">Callback</span>
@@ -355,17 +354,19 @@
             <span class="n">output</span> <span class="o">=</span> <span class="n">batch_output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">annotations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">masks</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">hard_prediction</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">hard_prediction</span> <span class="o">=</span> <span class="n">hard_prediction</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">soft_prediction</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">masks</span><span class="p">):</span>
+                    <span class="n">hard_prediction</span> <span class="o">=</span> <span class="n">create_hard_prediction_from_soft_prediction</span><span class="p">(</span>
+                        <span class="n">soft_prediction</span><span class="o">=</span><span class="n">soft_prediction</span><span class="p">,</span> <span class="n">soft_threshold</span><span class="o">=</span><span class="mf">0.5</span>
+                    <span class="p">)</span>
 
-                <span class="c1"># TODO (sungchul): consider use_mask</span>
-                <span class="c1"># generate polygon annotations</span>
-                <span class="n">annotation</span> <span class="o">=</span> <span class="n">create_annotation_from_segmentation_map</span><span class="p">(</span>
-                    <span class="n">hard_prediction</span><span class="o">=</span><span class="n">hard_prediction</span><span class="p">,</span>
-                    <span class="n">soft_prediction</span><span class="o">=</span><span class="n">hard_prediction</span><span class="p">,</span>
-                    <span class="n">label_map</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_schema</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">label</span><span class="p">)},</span>
-                <span class="p">)</span>
-                <span class="n">annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+                    <span class="c1"># TODO (sungchul): consider use_mask</span>
+                    <span class="c1"># generate polygon annotations</span>
+                    <span class="n">annotation</span> <span class="o">=</span> <span class="n">create_annotation_from_segmentation_map</span><span class="p">(</span>
+                        <span class="n">hard_prediction</span><span class="o">=</span><span class="n">hard_prediction</span><span class="p">,</span>
+                        <span class="n">soft_prediction</span><span class="o">=</span><span class="n">soft_prediction</span><span class="p">,</span>
+                        <span class="n">label_map</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_schema</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">label</span><span class="p">)},</span>
+                    <span class="p">)</span>
+                    <span class="n">annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
 
             <span class="c1"># TODO (sungchul): consider use_mask</span>
             <span class="n">dataset_item</span><span class="o">.</span><span class="n">append_annotations</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span></div></div>

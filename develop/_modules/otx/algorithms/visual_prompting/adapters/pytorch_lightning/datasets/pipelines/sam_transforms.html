@@ -241,7 +241,7 @@
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -274,7 +274,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">apply_image</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_length</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">item</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">gt_mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">gt_mask</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]]</span>
-        <span class="n">item</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_boxes</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">])</span>
+        <span class="n">item</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_boxes</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_length</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">]:</span>
             <span class="n">item</span><span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_coords</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_length</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">item</span></div>
@@ -295,19 +295,22 @@
 
 <div class="viewcode-block" id="ResizeLongestSide.apply_coords"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.ResizeLongestSide.apply_coords">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">apply_coords</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span> <span class="n">coords</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">original_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">target_length</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expects a numpy array of length 2 in the final dimension.</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">coords</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">target_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expects a numpy array / torch tensor of length 2 in the final dimension.</span>
 
 <span class="sd">        Requires the original image size in (H, W) format.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            coords (Union[np.ndarray, Tensor]): Coordinates array.</span>
-<span class="sd">            original_size (Union[List[Any], Tensor]): Original size of image.</span>
+<span class="sd">            coords (Union[np.ndarray, Tensor]): Coordinates array/tensor.</span>
+<span class="sd">            original_size (Union[List[int], Tuple[int, int], Tensor]): Original size of image.</span>
 <span class="sd">            target_length (int): The length of the longest side of the image.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Resized coordinates.</span>
+<span class="sd">            Union[np.ndarray, Tensor]: Resized coordinates.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">old_h</span><span class="p">,</span> <span class="n">old_w</span> <span class="o">=</span> <span class="n">original_size</span>
         <span class="n">new_h</span><span class="p">,</span> <span class="n">new_w</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_preprocess_shape</span><span class="p">(</span><span class="n">original_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">target_length</span><span class="p">)</span>
@@ -319,17 +322,24 @@
         <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">new_h</span> <span class="o">/</span> <span class="n">old_h</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">coords</span></div>
 
-<div class="viewcode-block" id="ResizeLongestSide.apply_boxes"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.ResizeLongestSide.apply_boxes">[docs]</a>    <span class="k">def</span> <span class="nf">apply_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">original_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expects a numpy array shape Bx4. Requires the original image size in (H, W) format.</span>
+<div class="viewcode-block" id="ResizeLongestSide.apply_boxes"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.ResizeLongestSide.apply_boxes">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">apply_boxes</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">boxes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">original_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">target_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expects a numpy array / torch tensor shape Bx4. Requires the original image size in (H, W) format.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            boxes (np.ndarray): Boxes array.</span>
-<span class="sd">            original_size (Union[List[Any], Tensor]): Original size of image.</span>
+<span class="sd">            boxes (Union[np.ndarray, Tensor]): Boxes array/tensor.</span>
+<span class="sd">            original_size (Union[List[int], Tuple[int, int], Tensor]): Original size of image.</span>
+<span class="sd">            target_length (int): The length of the longest side of the image.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Resized boxes.</span>
+<span class="sd">            Union[np.ndarray, Tensor]: Resized boxes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">boxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_coords</span><span class="p">(</span><span class="n">boxes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">original_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_length</span><span class="p">)</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">apply_coords</span><span class="p">(</span><span class="n">boxes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">original_size</span><span class="p">,</span> <span class="n">target_length</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">boxes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ResizeLongestSide.get_preprocess_shape"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms.ResizeLongestSide.get_preprocess_shape">[docs]</a>    <span class="nd">@staticmethod</span>

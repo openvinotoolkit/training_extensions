@@ -18,6 +18,7 @@ otx.algorithms.visual\_prompting.tasks.openvino
    .. autosummary::
    
       OTXOpenVinoDataLoader
+      OTXZeroShotOpenVinoDataLoader
       OpenVINOVisualPromptingInferencer
       OpenVINOVisualPromptingTask
       OpenVINOZeroShotVisualPromptingInferencer
