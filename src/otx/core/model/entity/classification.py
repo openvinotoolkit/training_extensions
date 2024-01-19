@@ -19,6 +19,8 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.utils import get_mean_std_from_data_processing
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
@@ -26,10 +28,9 @@ from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
+    from openvino.model_api.models import Model
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
@@ -41,13 +42,8 @@ class OTXMulticlassClsModel(
 
     def _generate_model_metadata(
         self,
-        mean: tuple[float, float, float],
-        std: tuple[float, float, float],
-        resize_mode: str,
-        pad_value: int,
-        swap_rgb: bool,
     ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "Classification"
         metadata[("model_info", "task_type")] = "classification"
         metadata[("model_info", "multilabel")] = str(False)
@@ -89,6 +85,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         self.config = config
         self.export_params = get_mean_std_from_data_processing(config)
         self.load_from = config.pop("load_from", None)
+        self.image_size = (224, 224)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
@@ -164,23 +161,15 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, 224, 224)
+        self.export_params["input_size"] = (1, 3, *self.image_size)
         self.export_params["onnx_export_configuration"] = None
 
-    def export(
+    def _create_exporter(
         self,
-        output_dir: Path,
-        export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-    ) -> None:
-        """Export this model to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-            precision: Precision of the exported model.
-        """
-        self._export(output_dir, export_format, precision=precision, **self.export_params)
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        self._configure_export_parameters()
+        return OTXNativeModelExporter(**self.export_params)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -194,18 +183,13 @@ class OTXMultilabelClsModel(
 
     def _generate_model_metadata(
         self,
-        mean: tuple[float, float, float],
-        std: tuple[float, float, float],
-        resize_mode: str,
-        pad_value: int,
-        swap_rgb: bool,
     ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "Classification"
         metadata[("model_info", "task_type")] = "classification"
         metadata[("model_info", "multilabel")] = str(True)
         metadata[("model_info", "hierarchical")] = str(False)
-        metadata[("model_info", "multilabel")] = str(0.5)
+        metadata[("model_info", "confidence_threshold")] = str(0.5)
         return metadata
 
 
@@ -222,6 +206,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         self.config = config
         self.export_params = self._get_export_parameters()
         self.load_from = config.pop("load_from", None)
+        self.image_size = (224, 224)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
@@ -298,25 +283,17 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
         export_params["via_onnx"] = False
-        export_params["input_size"] = (1, 3, 224, 224)
+        export_params["input_size"] = (1, 3, *self.image_size)
         export_params["onnx_export_configuration"] = None
 
         return export_params
 
-    def export(
+    def _create_exporter(
         self,
-        output_dir: Path,
-        export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-    ) -> None:
-        """Export this model to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-            precision: Precision of the exported model.
-        """
-        self._export(output_dir, export_format, precision=precision, **self.export_params)
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        self._configure_export_parameters()
+        return OTXNativeModelExporter(**self.export_params)
 
 
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
@@ -324,18 +301,13 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
     def _generate_model_metadata(
         self,
-        mean: tuple[float, float, float],
-        std: tuple[float, float, float],
-        resize_mode: str,
-        pad_value: int,
-        swap_rgb: bool,
     ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+        metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "Classification"
         metadata[("model_info", "task_type")] = "classification"
         metadata[("model_info", "multilabel")] = str(False)
         metadata[("model_info", "hierarchical")] = str(True)
-        metadata[("model_info", "multilabel")] = str(0.5)
+        metadata[("model_info", "confidence_threshold")] = str(0.5)
         hierarchical_config: dict = {}
         hierarchical_config["cls_heads_info"] = {}
         hierarchical_config["label_tree_edges"] = []
@@ -358,6 +330,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self.config = config
         self.export_params = self._get_export_parameters()
         self.load_from = config.pop("load_from", None)
+        self.image_size = (224, 224)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
@@ -434,27 +407,17 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
         export_params["via_onnx"] = False
-        export_params["input_size"] = (1, 3, 224, 224)
+        export_params["input_size"] = (1, 3, *self.image_size)
         export_params["onnx_export_configuration"] = None
 
         return export_params
 
-    def export(
+    def _create_exporter(
         self,
-        output_dir: Path,
-        export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-        test_pipeline: list[dict] | None = None,
-    ) -> None:
-        """Export this model to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-            precision: Precision of the exported model.
-            test_pipeline: Test data pipeline. It's necessary if using mmdeploy.
-        """
-        self._export(output_dir, export_format, precision=precision, **self.export_params)
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        self._configure_export_parameters()
+        return OTXNativeModelExporter(**self.export_params)
 
 
 class OVMulticlassClassificationModel(OVModel):
@@ -482,33 +445,28 @@ class OVMulticlassClassificationModel(OVModel):
 
 
 class OVMultilabelClassificationModel(OVModel):
-    """Multilabel classification model compatible with OpenVINO IR inference.
+    """Multilabel classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX classification model compatible for OTX testing pipeline.
     """
+
+    def _create_model(self, *args) -> Model:
+        # confidence_threshold is 0.0 to return scores for all classes
+        configuration = {"multilabel": True, "confidence_threshold": 0.0}
+        return super()._create_model(configuration)
 
     def _customize_outputs(
         self,
         outputs: list[ClassificationResult],
         inputs: MultilabelClsBatchDataEntity,
     ) -> MultilabelClsBatchPredEntity:
-
-        predicted_labels = []
-        pred_scores = []
-        for out in outputs:
-            predicted_idx = []
-            unwrapped_score = torch.zeros(self.num_classes)
-            for idx, _, score in out.top_labels:
-                predicted_idx.append(idx)
-                unwrapped_score[idx] = float(score)
-            predicted_labels.append(torch.tensor(predicted_idx, dtype=torch.long))
-            pred_scores.append(unwrapped_score)
+        pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
 
         return MultilabelClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=pred_scores,
-            labels=predicted_labels,
+            labels=[],
         )

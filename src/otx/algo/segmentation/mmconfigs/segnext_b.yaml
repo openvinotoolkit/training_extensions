@@ -88,7 +88,7 @@ decode_head:
     requires_grad: true
     type: GN
   num_classes: 150
-  type: LightHamHead
+  type: CustomLightHamHead
 pretrained: null
 test_cfg:
   mode: whole
