@@ -110,6 +110,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
     - 'otx test' with the exported model
+    - compare accuracy of the exported model vs the original accuracy
 
     Args:
         recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
@@ -126,6 +127,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
             "dino_v2",
             "instance_segmentation",
             "action_classification",
+            "visual_prompting",
         ]
     ):
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
