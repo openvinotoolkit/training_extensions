@@ -102,6 +102,10 @@ class OTXNativeModelExporter(OTXModelExporter):
                 input=(openvino.runtime.PartialShape(self.input_size),),
             )
 
+        # workaround for OVC's bug: single output doesn't have a name in OV model
+        if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
+            exported_model.outputs[0].tensor.set_names({"output1"})
+
         metadata = {} if metadata is None else self._extend_model_metadata(metadata)
         exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
