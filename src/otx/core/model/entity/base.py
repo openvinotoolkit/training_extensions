@@ -73,6 +73,11 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         self._label_info = label_info
 
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -223,13 +228,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         Returns:
             Path: path to the exported model.
-        """
-        raise NotImplementedError
-
-    def register_explain_hook(self) -> None:
-        """Register explain hook.
-
-        TBD
         """
         raise NotImplementedError
 
