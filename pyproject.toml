@@ -72,7 +72,7 @@ base = [
     "timm",
     "openvino==2023.2.0",
     "openvino-dev==2023.2.0",
-    "openvino-model-api@git+https://github.com/openvinotoolkit/model_api.git@master#subdirectory=model_api/python",
+    "openvino-model==0.1.8",
     "onnx==1.13.0",
     "onnxconverter-common==1.14.0"
 ]
