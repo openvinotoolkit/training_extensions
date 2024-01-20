@@ -73,7 +73,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
         In this implementation the export is done only via standard OV/ONNX tools.
@@ -111,6 +111,8 @@ class OTXNativeModelExporter(OTXModelExporter):
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
 
+        return Path(save_path)
+
     def to_onnx(
         self,
         model: torch.nn.Module,
@@ -118,7 +120,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to ONNX format.
 
         In this implementation the export is done only via standard OV/ONNX tools.
@@ -136,3 +138,5 @@ class OTXNativeModelExporter(OTXModelExporter):
 
             onnx_model = float16.convert_float_to_float16(onnx_model)
         onnx.save(onnx_model, save_path)
+
+        return Path(save_path)

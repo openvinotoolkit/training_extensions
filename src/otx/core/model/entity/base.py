@@ -167,23 +167,28 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         output_dir: Path,
         export_format: OTXExportFormatType,
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-    ) -> None:
+    ) -> Path:
         """Export this model to the specified output directory.
 
         Args:
             output_dir (Path): directory for saving the exported model
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+        Returns:
+            Path: path to the exported model.
         """
         exporter = self._create_exporter()
         metadata = self._generate_model_metadata()
 
         if export_format == OTXExportFormatType.OPENVINO:
-            exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.ONNX:
-            exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            self._export_to_exportable_code()
+            return self._export_to_exportable_code()
+
+        msg = f"Unsupported export format: {export_format}"
+        raise ValueError(msg)
 
     def _create_exporter(
         self,
@@ -210,11 +215,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             ("model_info", "label_ids"): all_label_ids.strip(),
         }
 
-    def _export_to_exportable_code(self) -> None:
+    def _export_to_exportable_code(self) -> Path:
         """Export to exportable code format.
 
         Args:
             output_dir: Directory path to save exported binary files.
+
+        Returns:
+            Path: path to the exported model.
         """
         raise NotImplementedError
 
@@ -249,7 +257,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
-        self.num_classes = num_classes
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
