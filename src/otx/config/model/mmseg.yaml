@@ -19,5 +19,5 @@ otx_model:
 torch_compile: false
 
 export_config:
-  export_format: OPENVINO
+  export_format: EXPORTABLE_CODE
   precision: FP32
