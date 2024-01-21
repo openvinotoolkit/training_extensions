@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from typing import Callable
 
 import torch
@@ -62,9 +63,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
-        if not self.stack_images:
-            return MulticlassClsBatchDataEntity.collate_unstacked_fn
-        return MulticlassClsBatchDataEntity.collate_fn
+        return partial(MulticlassClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
 
 class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
@@ -102,9 +101,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect MultilabelClsDataEntity into MultilabelClsBatchDataEntity in data loader."""
-        if not self.stack_images:
-            return MultilabelClsBatchDataEntity.collate_unstacked_fn
-        return MultilabelClsBatchDataEntity.collate_fn
+        return partial(MultilabelClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
 
 class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
@@ -195,6 +192,4 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect HlabelClsDataEntity into HlabelClsBatchDataEntity in data loader."""
-        if not self.stack_images:
-            return HlabelClsBatchDataEntity.collate_unstacked_fn
-        return HlabelClsBatchDataEntity.collate_fn
+        return partial(HlabelClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
