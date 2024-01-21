@@ -356,7 +356,7 @@ class TestSemanticSegmentation(BaseTest):
             data_root=Path("kvasir_small") / f"{idx}",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "40"},
         )
         for idx in range(1, 4)
     ] + [
@@ -365,14 +365,14 @@ class TestSemanticSegmentation(BaseTest):
             data_root="kvasir_medium",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "40"}
         ),
         DatasetTestCase(
             name="kvasir_large",
             data_root="kvasir_large",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "40"}
         )
     ]
 
