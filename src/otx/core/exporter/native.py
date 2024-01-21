@@ -73,7 +73,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
         In this implementation the export is done only via standard OV/ONNX tools.
@@ -102,10 +102,16 @@ class OTXNativeModelExporter(OTXModelExporter):
                 input=(openvino.runtime.PartialShape(self.input_size),),
             )
 
+        # workaround for OVC's bug: single output doesn't have a name in OV model
+        if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
+            exported_model.outputs[0].tensor.set_names({"output1"})
+
         metadata = {} if metadata is None else self._extend_model_metadata(metadata)
         exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+
+        return Path(save_path)
 
     def to_onnx(
         self,
@@ -114,7 +120,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to ONNX format.
 
         In this implementation the export is done only via standard OV/ONNX tools.
@@ -132,3 +138,5 @@ class OTXNativeModelExporter(OTXModelExporter):
 
             onnx_model = float16.convert_float_to_float16(onnx_model)
         onnx.save(onnx_model, save_path)
+
+        return Path(save_path)

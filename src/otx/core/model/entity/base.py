@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 import torch
+from openvino.model_api.models import Model
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -71,6 +72,11 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             self._reset_prediction_layer(num_classes=label_info.num_classes)
 
         self._label_info = label_info
+
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes
 
     @abstractmethod
     def _create_model(self) -> nn.Module:
@@ -166,23 +172,28 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         output_dir: Path,
         export_format: OTXExportFormatType,
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-    ) -> None:
+    ) -> Path:
         """Export this model to the specified output directory.
 
         Args:
             output_dir (Path): directory for saving the exported model
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+        Returns:
+            Path: path to the exported model.
         """
         exporter = self._create_exporter()
         metadata = self._generate_model_metadata()
 
         if export_format == OTXExportFormatType.OPENVINO:
-            exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.ONNX:
-            exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            self._export_to_exportable_code()
+            return self._export_to_exportable_code()
+
+        msg = f"Unsupported export format: {export_format}"
+        raise ValueError(msg)
 
     def _create_exporter(
         self,
@@ -209,18 +220,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             ("model_info", "label_ids"): all_label_ids.strip(),
         }
 
-    def _export_to_exportable_code(self) -> None:
+    def _export_to_exportable_code(self) -> Path:
         """Export to exportable code format.
 
         Args:
             output_dir: Directory path to save exported binary files.
-        """
-        raise NotImplementedError
 
-    def register_explain_hook(self) -> None:
-        """Register explain hook.
-
-        TBD
+        Returns:
+            Path: path to the exported model.
         """
         raise NotImplementedError
 
@@ -248,7 +255,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
-        self.num_classes = num_classes
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
@@ -257,10 +263,9 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self.config = config
         super().__init__(num_classes)
 
-    def _create_model(self) -> nn.Module:
+    def _create_model(self, configuration: dict[str, Any] | None = None) -> Model:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from openvino.model_api.models import Model
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:
@@ -273,7 +278,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             plugin_config=plugin_config,
         )
 
-        return Model.create_model(model_adapter, model_type=self.model_type)
+        configuration = configuration if configuration is not None else {}
+        return Model.create_model(model_adapter, model_type=self.model_type, configuration=configuration)
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image

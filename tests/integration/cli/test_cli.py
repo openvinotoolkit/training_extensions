@@ -64,6 +64,13 @@ DATASET = {
             "model.otx_model.topk=3",
         ],
     },
+    "visual_prompting": {
+        "data_dir": "tests/assets/car_tree_bug",
+        "overrides": [
+            "~model.scheduler.mode",
+            "~model.scheduler.patience",
+        ],
+    },
 }
 
 
@@ -72,8 +79,10 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     Test OTX CLI e2e commands.
 
-    - 'otx train' with 2 epochs trainig
+    - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
+    - 'otx export' with output checkpoint from 'otx train'
+    - 'otx test' with the exported model
 
     Args:
         recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')

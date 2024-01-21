@@ -5,6 +5,7 @@
 # ruff: noqa
 
 from __future__ import annotations
+from typing import Any, Dict
 
 import hydra
 import logging as log
@@ -13,11 +14,11 @@ from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 
-def otx_test(overrides: list[str]) -> None:
+def otx_test(overrides: list[str]) -> Dict[str, Any]:
     """Main entry point for testing.
 
     :param overrides: Override List values.
-    :return: Optional[float] with optimized metric value.
+    :return: Dict[str, Any] Values of the calculated test metrics.
     """
     from otx.core.config import register_configs
 
@@ -52,4 +53,4 @@ def otx_test(overrides: list[str]) -> None:
             checkpoint=cfg.checkpoint,
             device=trainer_kwargs.pop("accelerator", "auto"),
         )
-        engine.test()
+        return engine.test()

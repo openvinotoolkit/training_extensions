@@ -1,0 +1,111 @@
+defaults:
+  - default
+  - base_inst_seg
+
+data_format: coco_instances
+include_polygons: false
+
+train_subset:
+  batch_size: 2
+  num_workers: 4
+  transform_lib_type: MMDET
+  transforms:
+    - type: LoadImageFromFile
+      backend_args: null
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: false
+    - type: PerturbBoundingBoxes
+      offset: 0 # To be applied
+    - type: Resize
+      keep_ratio: true
+      scale:
+        - 1024
+        - 1024
+    - type: Pad
+      size:
+        - 1024
+        - 1024
+    - type: Normalize
+      to_rgb: False
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+    - type: PackDetInputs
+val_subset:
+  batch_size: 1
+  num_workers: 4
+  transform_lib_type: MMDET
+  transforms:
+    - type: LoadImageFromFile
+      backend_args: null
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: false
+    - type: Resize
+      keep_ratio: true
+      scale:
+        - 1024
+        - 1024
+    - type: Pad
+      size:
+        - 1024
+        - 1024
+    - type: Normalize
+      to_rgb: False
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+    - type: PackDetInputs
+      meta_keys:
+        - img_id
+        - img_path
+        - ori_shape
+        - img_shape
+        - scale_factor
+test_subset:
+  batch_size: 1
+  num_workers: 4
+  transform_lib_type: MMDET
+  transforms:
+    - type: LoadImageFromFile
+      backend_args: null
+    - type: LoadAnnotations
+      with_bbox: true
+      with_mask: false
+    - type: Resize
+      keep_ratio: true
+      scale:
+        - 1024
+        - 1024
+    - type: Pad
+      size:
+        - 1024
+        - 1024
+    - type: Normalize
+      to_rgb: False
+      mean:
+        - 123.675
+        - 116.28
+        - 103.53
+      std:
+        - 58.395
+        - 57.12
+        - 57.375
+    - type: PackDetInputs
+      meta_keys:
+        - img_id
+        - img_path
+        - ori_shape
+        - img_shape
+        - scale_factor

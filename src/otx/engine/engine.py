@@ -38,6 +38,7 @@ LITMODULE_PER_TASK = {
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
     OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
+    OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
 }
 
 
@@ -322,7 +323,7 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, output_dir: Path, cfg: ExportConfig) -> None:
+    def export(self, output_dir: Path, cfg: ExportConfig) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
@@ -340,14 +341,14 @@ class Engine:
             loaded_checkpoint = torch.load(self.checkpoint)
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
-            self.model.export(
+            return self.model.export(
                 output_dir=output_dir,
                 export_format=cfg.export_format,
                 precision=cfg.precision,
             )
-        else:
-            msg = "To make export, checkpoint must be specified."
-            raise RuntimeError(msg)
+
+        msg = "To make export, checkpoint must be specified."
+        raise RuntimeError(msg)
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
