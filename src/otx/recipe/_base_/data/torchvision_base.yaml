@@ -23,5 +23,5 @@ config:
     transform_lib_type: TORCHVISION
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
-    batch_size: 128
+    batch_size: 1
     num_workers: 2

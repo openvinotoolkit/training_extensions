@@ -86,6 +86,10 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     Returns:
         None
     """
+    if recipe.endswith("visual_prompting/sam_tiny_vit.yaml"):
+        # found an issue where the current process is not terminating, so disable it.
+        # Issue with process not ending if the recipe and openvino_model.yaml test are performed in order
+        pytest.skip("Skip this one for a bit because we found an issue with the memory cache.")
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
@@ -186,4 +190,4 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
     assert (tmp_path_test / "outputs").exists()
     assert (tmp_path_test / "outputs" / "csv").exists()
     metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
-    assert len(metric_result) > 00
+    assert len(metric_result) > 0

@@ -39,3 +39,5 @@ overrides:
   data:
     config:
       image_color_channel: BGR
+      test_subset:
+        batch_size: 128
