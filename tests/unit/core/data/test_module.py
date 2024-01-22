@@ -80,6 +80,8 @@ class TestModule:
         cfg.test_subset.subset_name = "test"
         cfg.test_subset.num_workers = 0
         cfg.mem_cache_size = "1GB"
+        cfg.tile_config = {}
+        cfg.tile_config.enable_tiler = False
         return cfg
 
     @patch("otx.core.data.module.OTXDatasetFactory")

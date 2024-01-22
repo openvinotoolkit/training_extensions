@@ -227,7 +227,7 @@ class InstanceSegTileMerge(TileMerge):
                                 Bbox(x1, y1, w, h, label=_labels[n], id=anno_id, attributes={"score": _scores[n]}),
                             ],
                         )
-                    anno_id += 1
+                        anno_id += 1
 
                 tile_idx = tile_attr["tile_idx"]
                 tile_id = tile_attr["tile_id"]
