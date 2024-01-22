@@ -344,6 +344,8 @@ class Engine:
             explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
         """
+        import cv2
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -362,7 +364,9 @@ class Engine:
             datamodule=datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
-        return self.trainer.model.model.explain_hook.records
+        saliency_maps = self.trainer.model.model.explain_hook.records
+        cv2.imwrite(str(output_dir / "saliency_map.tiff"), saliency_maps[0][0])
+        return saliency_maps
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.

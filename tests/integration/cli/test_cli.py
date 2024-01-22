@@ -17,6 +17,11 @@ ALL_RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**
 RECIPE_OV_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/openvino_model.yaml")]
 RECIPE_LIST = set(ALL_RECIPE_LIST) - set(RECIPE_OV_LIST)
 
+RECIPE_PATH_CLS = Path(inspect.getfile(otx_module)).parent / "recipe" / "multiclass_classification"
+RECIPE_PATH_CNN = list(RECIPE_PATH_CLS.glob("**/*efficient*.yaml")) + list(RECIPE_PATH_CLS.glob("**/*mobilenet*.yaml"))
+RECIPE_LIST_XAI = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH_CNN]
+
+
 # [TODO]: This is a temporary approach.
 DATASET = {
     "multiclass_classification": {
@@ -137,6 +142,41 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     assert (tmp_path_test / "outputs").exists()
     assert (tmp_path_test / "outputs" / "otx_test.log").exists()
     assert (tmp_path_test / "outputs" / "lightning_logs").exists()
+
+
+@pytest.mark.parametrize("recipe", RECIPE_LIST_XAI)
+def test_otx_explain_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
+    """
+    Test OTX CLI explain e2e command.
+
+    Args:
+        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    task = recipe.split("/")[0]
+    model_name = recipe.split("/")[1].split(".")[0]
+
+    # otx explain
+    tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
+    command_cfg = [
+        "otx",
+        "explain",
+        f"+recipe={recipe}",
+        f"base.data_dir={DATASET[task]['data_dir']}",
+        f"base.work_dir={tmp_path_explain}",
+        f"base.output_dir={tmp_path_explain / 'outputs'}",
+        f"trainer={fxt_accelerator}",
+        *DATASET[task]["overrides"],
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_explain / "outputs").exists()
+    assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
