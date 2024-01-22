@@ -28,9 +28,13 @@ T_OTXTileBatchDataEntity = TypeVar(
 
 @dataclass
 class TileDataEntity(Generic[T_OTXDataEntity]):
-    """Data entity for tile task.
+    """Base data entity for tile task.
 
-    :param entity: A list of OTXDataEntity
+    Attributes:
+        num_tiles (int): The number of tiles.
+        entity_list (Sequence[OTXDataEntity]): A list of OTXDataEntity.
+        tile_attr_list (list[dict[str, int | str]]): The tile attributes including tile index and tile RoI information.
+        ori_img_info (ImageInfo): The image information about the original image.
     """
 
     num_tiles: int
@@ -46,9 +50,11 @@ class TileDataEntity(Generic[T_OTXDataEntity]):
 
 @dataclass
 class TileDetDataEntity(TileDataEntity):
-    """Data entity for tile task.
+    """Data entity for detection tile task.
 
-    :param entity: A list of OTXDataEntity
+    Attributes:
+        ori_bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the original image.
+        ori_labels (LongTensor): The labels of the original image.
     """
 
     ori_bboxes: tv_tensors.BoundingBoxes
@@ -62,13 +68,14 @@ class TileDetDataEntity(TileDataEntity):
 
 @dataclass
 class OTXTileBatchDataEntity(Generic[T_OTXBatchDataEntity]):
-    """Batch data entity for tile task.
+    """Base batch data entity for tile task.
 
     Attributes:
         batch_size (int): The size of the batch.
         batch_tiles (list[list[tv_tensors.Image]]): The batch of tile images.
-        batch_tile_img_infos (list[list[ImageInfo]]): The image information about the tiles.
-        batch_tile_attr_list (list[list[dict[str, int | str]]]): The tile attributes.
+        batch_tile_img_infos (list[list[ImageInfo]]): The batch of tiles image information.
+        batch_tile_attr_list (list[list[dict[str, int | str]]]):
+            The batch of tile attributes including tile index and tile RoI information.
         imgs_info (list[ImageInfo]): The image information about the original image.
     """
 
@@ -85,7 +92,12 @@ class OTXTileBatchDataEntity(Generic[T_OTXBatchDataEntity]):
 
 @dataclass
 class TileBatchDetDataEntity(OTXTileBatchDataEntity):
-    """Batch data entity for tile task."""
+    """Batch data entity for detection tile task.
+
+    Attributes:
+        bboxes (list[tv_tensors.BoundingBoxes]): The bounding boxes of the original image.
+        labels (list[LongTensor]): The labels of the original image.
+    """
 
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
@@ -146,9 +158,13 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
 
 @dataclass
 class TileInstSegDataEntity(TileDataEntity):
-    """Data entity for tile task.
+    """Data entity for instance segmentation tile task.
 
-    :param entity: A list of OTXDataEntity
+    Attributes:
+        ori_bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the original image.
+        ori_labels (LongTensor): The labels of the original image.
+        ori_masks (tv_tensors.Mask): The masks of the original image.
+        ori_polygons (list[Polygon]): The polygons of the original image.
     """
 
     ori_bboxes: tv_tensors.BoundingBoxes
@@ -164,7 +180,14 @@ class TileInstSegDataEntity(TileDataEntity):
 
 @dataclass
 class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
-    """Batch data entity for tile task."""
+    """Batch data entity for instance segmentation tile task.
+
+    Attributes:
+        bboxes (list[tv_tensors.BoundingBoxes]): The bounding boxes of the original image.
+        labels (list[LongTensor]): The labels of the original image.
+        masks (list[tv_tensors.Mask]): The masks of the original image.
+        polygons (list[list[Polygon]]): The polygons of the original image.
+    """
 
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
