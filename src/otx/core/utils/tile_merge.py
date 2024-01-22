@@ -9,8 +9,9 @@ from abc import abstractmethod
 from collections import defaultdict
 from typing import Generic
 
+import cv2
 import torch
-from datumaro import Bbox, DatasetItem, Mask
+from datumaro import Bbox, DatasetItem, Image, Mask
 from datumaro import Dataset as DmDataset
 from datumaro.plugins.tiling.merge_tile import MergeTile
 from torchvision import tv_tensors
@@ -91,14 +92,18 @@ class DetectionTileMerge(TileMerge):
         img_ids = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            for tile_attr, tile_bboxes, tile_labels, tile_scores in zip(
+            for tile_attr, tile_img, tile_img_info, tile_bboxes, tile_labels, tile_scores in zip(
                 tile_attrs,
+                tile_preds.images,
+                tile_preds.imgs_info,
                 tile_preds.bboxes,
                 tile_preds.labels,
                 tile_preds.scores,
             ):
                 keep_indices = tile_scores > self.score_thres
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
+                _tile_img = tile_img.detach().cpu().numpy()
+                _tile_img = Image.from_numpy(cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape))
                 _bboxes = tile_bboxes[keep_indices].detach().cpu().numpy()
                 _labels = tile_labels[keep_indices].detach().cpu().numpy()
                 _scores = tile_scores[keep_indices].detach().cpu().numpy()
@@ -114,10 +119,10 @@ class DetectionTileMerge(TileMerge):
 
                 tile_idx = tile_attr["tile_idx"]
                 tile_id = tile_attr["tile_id"]
-
                 if tile_id not in img_ids:
                     img_ids.append(tile_id)
                 dataset_item = DatasetItem(
+                    media=_tile_img,
                     id=tile_idx,
                     annotations=annotations,
                     attributes=tile_attr,
@@ -165,7 +170,7 @@ class DetectionTileMerge(TileMerge):
             sort_inds = sort_inds[: self.max_num_instances]
 
         return DetPredEntity(
-            image=tv_tensors.Image(torch.empty(img_info.ori_shape)),
+            image=tv_tensors.Image(merged_item.media_as(Image).data),
             img_info=img_info,
             score=pred_scores[sort_inds],
             bboxes=pred_bboxes[sort_inds],
@@ -193,8 +198,10 @@ class InstanceSegTileMerge(TileMerge):
         img_ids = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            for tile_attr, tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
+            for tile_attr, tile_img, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
                 tile_attrs,
+                tile_preds.images,
+                tile_preds.imgs_info,
                 tile_preds.bboxes,
                 tile_preds.labels,
                 tile_preds.scores,
@@ -202,6 +209,8 @@ class InstanceSegTileMerge(TileMerge):
             ):
                 keep_indices = tile_scores > self.score_thres
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
+                _tile_img = tile_img.detach().cpu().numpy()
+                _tile_img = Image.from_numpy(cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape))
                 _bboxes = tile_bboxes[keep_indices].detach().cpu().numpy()
                 _labels = tile_labels[keep_indices].detach().cpu().numpy()
                 _scores = tile_scores[keep_indices].detach().cpu().numpy()
@@ -226,6 +235,7 @@ class InstanceSegTileMerge(TileMerge):
                 if tile_id not in img_ids:
                     img_ids.append(tile_id)
                 dataset_item = DatasetItem(
+                    media=_tile_img,
                     id=tile_idx,
                     annotations=annotations,
                     attributes=tile_attr,
@@ -294,7 +304,7 @@ class InstanceSegTileMerge(TileMerge):
         pred_masks = torch.stack(pred_masks) if len(pred_masks) > 0 else torch.empty((0, *img_info.ori_shape))
 
         return InstanceSegPredEntity(
-            image=tv_tensors.Image(torch.empty(img_info.ori_shape)),
+            image=tv_tensors.Image(merged_item.media_as(Image).data),
             img_info=img_info,
             score=pred_scores,
             bboxes=pred_bboxes,
