@@ -5,6 +5,7 @@
 # ruff: noqa
 
 from __future__ import annotations
+from pathlib import Path
 
 import hydra
 import logging as log
@@ -20,7 +21,7 @@ class FakeDataModule:
         self.meta_info = None
 
 
-def otx_export(overrides: list[str]) -> None:
+def otx_export(overrides: list[str]) -> Path:
     """Main entry point for model exporting.
 
     :param overrides: Override List values.
@@ -63,4 +64,4 @@ def otx_export(overrides: list[str]) -> None:
         )
 
         log.info("Running model export")
-        engine.export(cfg.base.output_dir, cfg.model.export_config)
+        return engine.export(cfg.base.output_dir, cfg.model.export_config)

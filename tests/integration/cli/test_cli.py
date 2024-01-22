@@ -64,6 +64,13 @@ DATASET = {
             "model.otx_model.topk=3",
         ],
     },
+    "visual_prompting": {
+        "data_dir": "tests/assets/car_tree_bug",
+        "overrides": [
+            "~model.scheduler.mode",
+            "~model.scheduler.patience",
+        ],
+    },
 }
 
 

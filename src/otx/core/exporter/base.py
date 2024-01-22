@@ -29,7 +29,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
         Args:
@@ -38,6 +38,9 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
+
+        Returns:
+            Path: path to the exported model.
         """
 
     @abstractmethod
@@ -48,7 +51,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to ONNX format.
 
         Args:
@@ -57,6 +60,9 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
+
+        Returns:
+            Path: path to the exported model.
         """
 
     @staticmethod

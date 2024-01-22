@@ -6,6 +6,7 @@ defaults:
   - override /data: mmdet
   - override /model: mmdet
 data:
+  image_color_channel: BGR
   train_subset:
     batch_size: 4
     transforms:

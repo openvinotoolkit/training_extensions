@@ -73,6 +73,11 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         self._label_info = label_info
 
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -168,23 +173,28 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         export_format: OTXExportFormatType,
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         test_pipeline: list[dict] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export this model to the specified output directory.
 
         Args:
             output_dir (Path): directory for saving the exported model
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+        Returns:
+            Path: path to the exported model.
         """
         exporter = self._create_exporter()
         metadata = self._generate_model_metadata()
 
         if export_format == OTXExportFormatType.OPENVINO:
-            exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.ONNX:
-            exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            self._export_to_exportable_code()
+            return self._export_to_exportable_code()
+
+        msg = f"Unsupported export format: {export_format}"
+        raise ValueError(msg)
 
     def _create_exporter(
         self,
@@ -215,18 +225,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Whether mmdeploy is used when exporting a model."""
         return False
 
-    def _export_to_exportable_code(self) -> None:
+    def _export_to_exportable_code(self) -> Path:
         """Export to exportable code format.
 
         Args:
             output_dir: Directory path to save exported binary files.
-        """
-        raise NotImplementedError
 
-    def register_explain_hook(self) -> None:
-        """Register explain hook.
-
-        TBD
+        Returns:
+            Path: path to the exported model.
         """
         raise NotImplementedError
 
@@ -254,7 +260,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
-        self.num_classes = num_classes
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
         self.async_inference = config.pop("async_inference", False)
