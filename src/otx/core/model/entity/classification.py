@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """OTX classification model which can attach a XAI hook."""
 
     @property
@@ -76,7 +76,9 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         self.explain_hook.reset()
 
 
-class OTXMulticlassClsModel(ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):
+class OTXMulticlassClsModel(
+    ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, T_OTXTileBatchDataEntity],
+):
     """Base class for the classification models used in OTX."""
 
 
@@ -188,7 +190,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 ### It'll be integrated after H-label classification integration with more advanced design.
 
 
-class OTXMultilabelClsModel(ExplainableOTXClsModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
+class OTXMultilabelClsModel(
+    ExplainableOTXClsModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
+):
     """Multi-label classification models used in OTX."""
 
 
@@ -276,7 +280,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
 
 class OTXHlabelClsModel(
-    ExplainableOTXClsModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+    ExplainableOTXClsModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """H-label classification models used in OTX."""
 

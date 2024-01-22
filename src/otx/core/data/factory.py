@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
