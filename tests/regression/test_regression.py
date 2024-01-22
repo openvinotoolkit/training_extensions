@@ -77,12 +77,14 @@ class BaseTest:
                     "--engine.work_dir", str(test_case.output_dir),
                     "--engine.device", fxt_accelerator,
                 ]
+                deterministic = test_case.dataset.extra_overrides.pop("deterministic", "False")
                 for key, value in test_case.dataset.extra_overrides.items():
                     command_cfg.append(f"--{key}")
                     command_cfg.append(str(value))
                 train_cfg = command_cfg.copy()
                 train_cfg.extend(["--seed", str(seed)])
-                with patch("sys.argv", command_cfg):
+                train_cfg.extend(["--deterministic", deterministic])
+                with patch("sys.argv", train_cfg):
                     cli = OTXCLI()
                     train_metrics = cli.engine.trainer.callback_metrics
                     checkpoint = cli.engine.checkpoint
