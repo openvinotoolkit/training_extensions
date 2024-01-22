@@ -16,7 +16,7 @@ from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
-from otx.core.utils.tile_merge import TileMerge
+from otx.core.utils.tile_merge import DetectionTileMerge
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -39,7 +39,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         """
         tile_preds: list[DetBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
-        merger = TileMerge(inputs.imgs_info)
+        merger = DetectionTileMerge(inputs.imgs_info)
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):

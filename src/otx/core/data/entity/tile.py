@@ -6,11 +6,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, Sequence, TypeVar
 
 from otx.core.types.task import OTXTaskType
 
-from .base import ImageInfo, OTXDataEntity, T_OTXBatchDataEntity, T_OTXDataEntity
+from .base import ImageInfo, T_OTXBatchDataEntity, T_OTXDataEntity
 from .detection import DetBatchDataEntity, DetDataEntity
 from .instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 
@@ -34,7 +34,7 @@ class TileDataEntity(Generic[T_OTXDataEntity]):
     """
 
     num_tiles: int
-    entity_list: list[OTXDataEntity]
+    entity_list: Sequence[T_OTXDataEntity]
     tile_attr_list: list[dict[str, int | str]]
     ori_img_info: ImageInfo
 
