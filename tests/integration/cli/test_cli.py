@@ -149,6 +149,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
             "dino_v2",
             "instance_segmentation",
             "action_classification",
+            "visual_prompting",
         ]
     ):
         return
