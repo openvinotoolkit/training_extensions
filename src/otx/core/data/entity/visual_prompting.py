@@ -29,6 +29,7 @@ class VisualPromptingDataEntity(OTXDataEntity):
         masks (tv_tensors.Mask): The masks of the instances.
         labels (LongTensor): The labels of the instances.
         polygons (list[Polygon]): The polygons of the instances.
+        points (list[tv_tensors.TVTensor]): The points of the instances.
     """
 
     @property
@@ -36,10 +37,10 @@ class VisualPromptingDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.VISUAL_PROMPTING
 
-    bboxes: tv_tensors.BoundingBoxes
     masks: tv_tensors.Mask
-    labels: LongTensor
+    labels: list[LongTensor]
     polygons: list[Polygon]
+    prompts: list[tv_tensors.TVTensor]
 
 
 @dataclass
@@ -58,10 +59,10 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
         polygons (list[list[Polygon]]): List of polygons.
     """
 
-    bboxes: list[tv_tensors.BoundingBoxes]
     masks: list[tv_tensors.Mask]
     labels: list[LongTensor]
     polygons: list[list[Polygon]]
+    prompts: list[list[tv_tensors.TVTensor]]
 
     @property
     def task(self) -> OTXTaskType:
@@ -86,16 +87,16 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
             batch_size=batch_data.batch_size,
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
-            bboxes=[entity.bboxes for entity in entities],
             masks=[entity.masks for entity in entities],
             labels=[entity.labels for entity in entities],
             polygons=[entity.polygons for entity in entities],
+            prompts=[entity.prompts for entity in entities],
         )
 
     def pin_memory(self) -> VisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
         super().pin_memory()
-        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
+        self.prompts = [tv_tensors.wrap(prompt.pin_memory(), like=prompt) for prompt in self.prompts]
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
         return self

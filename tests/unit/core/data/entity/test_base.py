@@ -5,7 +5,10 @@
 import pytest
 import torch
 import torchvision.transforms.v2 as tvt
-from otx.core.data.entity.base import ImageType, OTXBatchDataEntity, OTXDataEntity
+from torchvision import tv_tensors
+from typing import Any
+from otx.core.data.entity.base import ImageType, OTXBatchDataEntity, OTXDataEntity, Points
+from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 
 
 class TestOTXDataEntity:
@@ -126,3 +129,25 @@ class TestImageInfo:
         cuda_img_info = fxt_torchvision_data_entity.img_info.to(device="cuda")
         # Do not lose its meta info although calling `Tensor.to(device="cuda")`
         assert fxt_torchvision_data_entity.img_info.img_shape == cuda_img_info.img_shape
+
+
+class TestPoints:
+    def test_resize(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
+        transform = tvt.Resize(size=(3, 5))
+        results = transform(fxt_visual_prompting_data_entity)
+        
+        assert isinstance(results.prompts[0], tv_tensors.BoundingBoxes)
+        assert isinstance(results.prompts[1], Points)
+        assert results.prompts[0].canvas_size == tuple(transform.size)
+        assert results.prompts[1].canvas_size == tuple(transform.size)
+        assert results.prompts[0].canvas_size == results.img_info.img_shape
+        assert results.prompts[1].canvas_size == results.img_info.img_shape
+    
+    def test_pad(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
+        transform = tvt.Pad(padding=(1, 2, 3, 4))
+        results = transform(fxt_visual_prompting_data_entity)
+        
+        assert results.prompts[0].canvas_size == results.image[0].shape
+        assert results.prompts[1].canvas_size == results.image[1].shape
+        assert torch.all(results.prompts[0] == fxt_visual_prompting_data_entity.prompts[0] + torch.tensor(transform.padding[:2]+transform.padding[:2]))
+        assert torch.all(results.prompts[1] == fxt_visual_prompting_data_entity.prompts[1] + torch.tensor(transform.padding[:2]))
