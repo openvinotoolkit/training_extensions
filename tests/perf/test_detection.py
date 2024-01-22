@@ -58,6 +58,32 @@ class TestPerfDetection:
             model_id=fxt_model_id,
             tags={"benchmark": "accuracy"},
         )
+        fxt_check_benchmark_result(
+            result,
+            key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            checks=[
+                {
+                    "name": "f-measure(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "f-measure(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "f-measure(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+            ],
+        )
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
