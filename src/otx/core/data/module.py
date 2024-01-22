@@ -118,6 +118,8 @@ class OTXDataModule(LightningDataModule):
         """Post processing after importing dataset from Datumaro."""
         if self.task == "DETECTION":
             invalid_ids = [(item.id, item.subset) for item in dataset.get_subset("train") if len(item.annotations) == 0]
+            # TODO(Jaeguk): Add data filtering for invalid bbox  # noqa: TD003
+            # TODO(Jaeguk): Delete unused labels  # noqa: TD003
             for invalid_id in invalid_ids:
                 dataset.remove(invalid_id[0], invalid_id[1])
 
