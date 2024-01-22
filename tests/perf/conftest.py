@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -7,9 +7,10 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple, Callable
 
 import mlflow
+import numpy as np
 import pandas as pd
 import pytest
 import yaml
@@ -239,7 +240,7 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path,
         output_path = request.config.getoption("--summary-csv")
         if not output_path:
             output_path = fxt_output_root / "benchmark-summary.csv"
-        all_results.to_csv(output_path, index=False)
+        all_results.to_csv(output_path)
         print(f"  -> Saved to {output_path}.")
 
         if fxt_mlflow_client is None:
@@ -257,3 +258,52 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path,
 
     if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
         shutil.rmtree(fxt_output_root)
+
+
+@pytest.fixture(scope="session")
+def fxt_benchmark_reference() -> pd.DataFrame | None:
+    """Load reference benchmark results with index."""
+    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
+    if ref is not None:
+        ref.set_index(["benchmark", "task", "data_size", "model"], inplace=True)
+    return ref
+
+
+@pytest.fixture(scope="session")
+def fxt_check_benchmark_result(fxt_benchmark_reference: pd.DataFrame | None) -> Callable:
+    """Return result checking function with reference data."""
+
+    def check_benchmark_result(result: pd.DataFrame, key: Tuple, checks: List[Dict]):
+        if fxt_benchmark_reference is None:
+            print("No benchmark references loaded. Skipping result checking.")
+            return
+
+        def get_entry(data: pd.DataFrame, key: Tuple) -> pd.Series:
+            if key in data.index:
+                return data.loc[key]
+            return None
+
+        target_entry = get_entry(fxt_benchmark_reference, key)
+        if target_entry is None:
+            print(f"No benchmark reference for {key} loaded. Skipping result checking.")
+            return
+
+        result_entry = get_entry(result, key)
+        assert result_entry is not None
+
+        def compare(name: str, op: str, margin: float):
+            if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):
+                return
+            if name not in target_entry or target_entry[name] is None or np.isnan(target_entry[name]):
+                return
+            if op == "==":
+                assert abs(result_entry[name] - target_entry[name]) < target_entry[name] * margin
+            elif op == "<":
+                assert result_entry[name] < target_entry[name] * (1.0 + margin)
+            elif op == ">":
+                assert result_entry[name] > target_entry[name] * (1.0 - margin)
+
+        for check in checks:
+            compare(**check)
+
+    return check_benchmark_result
