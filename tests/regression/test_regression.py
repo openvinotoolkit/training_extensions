@@ -238,6 +238,7 @@ class TestHlabelCls(BaseTest):
             extra_overrides={
                 "trainer.max_epochs": "20",
                 "model.otx_model.num_multiclass_heads": "3",
+                "model.otx_model.num_multilabel_classes": "0",
             },
         )
         for idx in range(1, 4)
@@ -250,6 +251,7 @@ class TestHlabelCls(BaseTest):
             extra_overrides={
                 "trainer.max_epochs": "20",
                 "model.otx_model.num_multiclass_heads": "23",
+                "model.otx_model.num_multilabel_classes": "0",
             },
         )
         
