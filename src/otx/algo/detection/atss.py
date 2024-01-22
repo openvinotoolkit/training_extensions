@@ -9,7 +9,7 @@ from copy import copy
 from typing import Literal, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
-from otx.core.model.utils import get_mean_std_from_data_processing
+from otx.core.utils.utils import get_mean_std_from_data_processing
 from otx.core.model.entity.detection import MMDetCompatibleModel
 
 

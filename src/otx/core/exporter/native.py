@@ -31,13 +31,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
     ) -> None:
-        super().__init__()
-        self.input_size = input_size
-        self.mean = mean
-        self.std = std
-        self.resize_mode = resize_mode
-        self.pad_value = pad_value
-        self.swap_rgb = swap_rgb
+        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
 

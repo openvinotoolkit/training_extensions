@@ -14,13 +14,10 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
@@ -34,7 +31,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "ssd"
         metadata[("model_info", "task_type")] = "detection"
-        metadata[("model_info", "confidence_threshold")] = str(0.005)  # it was able to be set in OTX 1.X
+        metadata[("model_info", "confidence_threshold")] = str(0.0)  # it was able to be set in OTX 1.X
         metadata[("model_info", "iou_threshold")] = str(0.5)
         return metadata
 
@@ -162,9 +159,6 @@ class MMDetCompatibleModel(OTXDetectionModel):
             bboxes=bboxes,
             labels=labels,
         )
-
-    def _get_export_parameters(self) -> dict[str, Any]:
-        raise NotImplementedError
 
     def _create_exporter(
         self,

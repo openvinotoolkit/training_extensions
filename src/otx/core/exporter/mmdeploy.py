@@ -6,25 +6,20 @@ from __future__ import annotations
 import os
 import os.path as osp
 import logging as log
-import time
 import importlib
-from copy import copy
-from typing import Callable, Any
-from subprocess import CalledProcessError
+from typing import Callable
 from pathlib import Path
 
+import onnx
 import cv2
 import torch
 import numpy as np
-import mmdeploy.apis.openvino as openvino_api
 import openvino
 from omegaconf import DictConfig, OmegaConf
 from mmdeploy.apis import extract_model, get_predefined_partition_cfg, torch2onnx, build_task_processor
-from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
-from mmdeploy.utils import get_ir_config, get_partition_config
+from mmdeploy.utils import get_partition_config
 from mmengine.config import Config as MMConfig
 
-from otx.utils import remove_model_form_weight_key
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
 from otx.core.types.export import OTXExportPrecisionType
@@ -49,18 +44,12 @@ class MMdeployExporter(OTXModelExporter):
         pad_value: int = 0,
         swap_rgb: bool = False,
     ) -> None:
-        super().__init__()
+        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
         self._model_builder = model_builder
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
         new_pipeline = [to_tuple(OmegaConf.to_container(test_pipeline[i])) for i in range(len(test_pipeline))]
         self._model_cfg = MMConfig({"model" : model_cfg, "test_pipeline" : new_pipeline})
         self._deploy_cfg = deploy_cfg if isinstance(deploy_cfg, dict) else load_mmconfig_from_pkg(deploy_cfg)
-        self.input_size = input_size
-        self.mean = mean
-        self.std = std
-        self.resize_mode = resize_mode
-        self.pad_value = pad_value
-        self.swap_rgb = swap_rgb
 
         if input_size is not None:
             patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
@@ -85,35 +74,7 @@ class MMdeployExporter(OTXModelExporter):
         Returns:
             Path: path to the exported model.
         """
-        log.info(f'torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}')
-
-        mmdep_fmt_weight = remove_model_form_weight_key(model.state_dict())
-        mmdep_fmt_weight_path = str(output_dir / "mmdeploy_fmt_model.pth")
-        torch.save(mmdep_fmt_weight, mmdep_fmt_weight_path)
-
-        input_data = self._get_input_data()
-        
-        self._register_model_builder()
-
-        onnx_file_name = base_model_name + ".onnx"
-        torch2onnx(
-            input_data,
-            output_dir,
-            onnx_file_name,
-            deploy_cfg=self._deploy_cfg,
-            model_cfg=self._model_cfg,
-            model_checkpoint=mmdep_fmt_weight_path,
-            device="cpu")
-
-        # partition model
-        partition_cfgs = get_partition_config(self._deploy_cfg)
-
-        if partition_cfgs is not None:
-            self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs, self.output_dir)
-
-        onnx_path = osp.join(output_dir, onnx_file_name)
-        log.info('torch2onnx finished.')
-        os.remove(mmdep_fmt_weight_path)
+        onnx_path = self._cvt2onnx(model, output_dir, base_model_name)
         exported_model = openvino.convert_model(
             onnx_path,
             input=(openvino.runtime.PartialShape(self.input_size),),
@@ -146,7 +107,45 @@ class MMdeployExporter(OTXModelExporter):
         Returns:
             Path: path to the exported model.
         """
-        pass
+        save_path = self._cvt2onnx(model, output_dir, base_model_name)
+
+        onnx_model = onnx.load(save_path)
+        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
+        onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
+        if precision == OTXExportPrecisionType.FP16:
+            from onnxconverter_common import float16
+
+            onnx_model = float16.convert_float_to_float16(onnx_model)
+        onnx.save(onnx_model, save_path)
+
+        return Path(save_path)
+
+
+    def _cvt2onnx(self, model: torch.nn.Module, output_dir: Path, base_model_name: str) -> str:
+        model_weight_file = str(output_dir / "mmdeploy_fmt_model.pth")
+        torch.save(model.state_dict(), model_weight_file)
+
+        self._register_model_builder()
+        onnx_file_name = base_model_name + ".onnx"
+
+        log.debug(f'mmdeploy torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}')
+        torch2onnx(
+            self._get_input_data(),
+            output_dir,
+            onnx_file_name,
+            deploy_cfg=self._deploy_cfg,
+            model_cfg=self._model_cfg,
+            model_checkpoint=model_weight_file,
+            device="cpu")
+
+        os.remove(model_weight_file)
+
+        # partition model
+        partition_cfgs = get_partition_config(self._deploy_cfg)
+        if partition_cfgs is not None:
+            self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs, output_dir)
+
+        return osp.join(output_dir, onnx_file_name)
 
     def _register_model_builder(self):
         task_processor = build_task_processor(self._model_cfg, self._deploy_cfg, "cpu")
@@ -266,7 +265,14 @@ def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
             print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
 
 
+def load_mmconfig_from_pkg(cfg: str) -> MMConfig:
+    """Load configuration from package path as MMEngine Config format.
 
-def load_mmconfig_from_pkg(cfg: str):
+    Args:
+        cfg (str): Package path of configuraiton.
+
+    Returns:
+        MMConfig: MMEngine Config.
+    """
     config_module = importlib.import_module(cfg)
     return MMConfig.fromfile(config_module.__file__)

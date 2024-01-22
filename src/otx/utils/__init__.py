@@ -3,7 +3,7 @@
 #
 """Utility files."""
 
-from .utils import get_mean_std_from_data_processing
+from .utils import remove_model_form_weight_key
 
 
-__all__ = ["get_mean_std_from_data_processing"]
+__all__ = ["remove_model_form_weight_key"]

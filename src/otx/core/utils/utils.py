@@ -23,9 +23,11 @@
 #
 # This source code is borrowed from https://github.com/ashleve/lightning-hydra-template
 
+from __future__ import annotations
+
 import warnings
 from importlib.util import find_spec
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Optional
 
 from omegaconf import DictConfig
 
@@ -87,7 +89,7 @@ def task_wrapper(task_func: Callable) -> Callable:
     :return: The wrapped task function.
     """
 
-    def wrap(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    def wrap(cfg: DictConfig) -> tuple[dict[str, Any], dict[str, Any]]:
         # execute the task
         try:
             metric_dict, object_dict = task_func(cfg=cfg)
@@ -120,7 +122,7 @@ def task_wrapper(task_func: Callable) -> Callable:
     return wrap
 
 
-def get_metric_value(metric_dict: Dict[str, Any], metric_name: str) -> Optional[float]:
+def get_metric_value(metric_dict: dict[str, Any], metric_name: str) -> Optional[float]:
     """Safely retrieves value of the metric logged in LightningModule.
 
     :param metric_dict: A dict containing metric values.
@@ -142,3 +144,10 @@ def get_metric_value(metric_dict: Dict[str, Any], metric_name: str) -> Optional[
     log.info(f"Retrieved metric value! <{metric_name}={metric_value}>")
 
     return metric_value
+
+
+def get_mean_std_from_data_processing(config: DictConfig) -> dict[str, Any]:
+    return {
+        "mean": config["data_preprocessor"]["mean"],
+        "std": config["data_preprocessor"]["std"],
+    }

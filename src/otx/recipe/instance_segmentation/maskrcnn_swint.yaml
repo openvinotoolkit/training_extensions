@@ -65,8 +65,7 @@ data:
 
 model:
   otx_model:
-    _target_: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
-    variant: swint
+    _target_: otx.algo.instance_segmentation.maskrcnn.MaskRCNNSwinT
   optimizer:
     _target_: torch.optim.AdamW
     _partial_: true

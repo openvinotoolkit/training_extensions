@@ -21,6 +21,22 @@ if TYPE_CHECKING:
 class OTXModelExporter:
     """Base class for the model exporters used in OTX."""
 
+    def __init__(
+        self,
+        input_size: tuple[int, ...],
+        mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        std: tuple[float, float, float] = (1.0, 1.0, 1.0),
+        resize_mode: str = "standard",
+        pad_value: int = 0,
+        swap_rgb: bool = False,
+    ) -> None:
+        self.input_size = input_size
+        self.mean = mean
+        self.std = std
+        self.resize_mode = resize_mode
+        self.pad_value = pad_value
+        self.swap_rgb = swap_rgb
+
     @abstractmethod
     def to_openvino(
         self,

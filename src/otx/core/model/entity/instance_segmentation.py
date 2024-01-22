@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -18,13 +17,11 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
+from otx.core.exporter.base import OTXModelExporter
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
@@ -36,18 +33,11 @@ class OTXInstanceSegModel(
 ):
     """Base class for the detection models used in OTX."""
 
-    def _generate_model_metadata(
-    self,
-    mean: tuple[float, float, float],
-    std: tuple[float, float, float],
-    resize_mode: str,
-    pad_value: int,
-    swap_rgb: bool,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+    def _generate_model_metadata(self) -> dict[tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "MaskRCNN"
         metadata[("model_info", "task_type")] = "instance_segmentation"
-        metadata[("model_info", "confidence_threshold")] = str(0.05)  # it was able to be set in OTX 1.X
+        metadata[("model_info", "confidence_threshold")] = str(0.0)  # it was able to be set in OTX 1.X
         metadata[("model_info", "iou_threshold")] = str(0.5)
 
         # Instance segmentation needs to add empty label
@@ -71,6 +61,10 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         self.config = config
         self.load_from = self.config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
+
+    @property
+    def export_params(self) -> dict[str, Any]:
+        return {}
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -201,38 +195,17 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             labels=labels,
         )
 
-    def _get_export_parameters(self) -> dict[str, Any]:
-        raise NotImplementedError
-
-    def export(
+    def _create_exporter(
         self,
-        output_dir: Path,
-        export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         test_pipeline: list[dict] | None = None,
-    ) -> None:
-        """Export this model to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-            precision: Precision of the exported model.
-            test_pipeline: Test data pipeline. It's necessary if using mmdeploy.
-        """
-        if self.need_mmdeploy() and test_pipeline is None:
-            raise ValueError("Current model needs test_pipeline to export for mmdpeloy.")
-
-        self._export(
-            output_dir,
-            export_format,
-            precision=precision,
-            **self._get_export_parameters(),
-            test_pipeline=test_pipeline
-        )
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        from otx.core.exporter.mmdeploy import MMdeployExporter 
+        return MMdeployExporter(**self.export_params, test_pipeline=test_pipeline)
 
     def need_mmdeploy(self):
         """Whether mmdeploy is used when exporting a model."""
-        return self._get_export_parameters().get("mmdeploy_config") != None
+        return self.export_params.get("mmdeploy_config") != None
 
 
 class OVInstanceSegmentationModel(OVModel):
