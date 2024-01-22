@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
@@ -26,6 +26,7 @@ class DatasetTestCase:
     data_format: str
     num_classes: int
     extra_overrides: dict
+    delete_params: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -80,6 +81,8 @@ class BaseTest:
                 ] + [
                     f"{key}={value}"
                     for key, value in test_case.dataset.extra_overrides.items()
+                ] + [
+                    param for param in test_case.dataset.delete_params
                 ]
                 metrics = otx_train(overrides)
 
@@ -501,7 +504,8 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "20"},
+            delete_params=["~model.scheduler.mode", "~model.scheduler.patience"],
         )
         for idx in range(1, 4)
     ] + [
@@ -510,14 +514,16 @@ class TestVisualPrompting(BaseTest):
             data_root="coco_car_person_medium",
             data_format="coco",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "20"},
+            delete_params=["~model.scheduler.mode", "~model.scheduler.patience"],
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root="Vitens-Coliform-coco",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "20"},
+            delete_params=["~model.scheduler.mode", "~model.scheduler.patience"],
         )
     ]
 
