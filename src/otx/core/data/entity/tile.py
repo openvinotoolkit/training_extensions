@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 
 from otx.core.types.task import OTXTaskType
 
-from .base import ImageInfo, T_OTXBatchDataEntity
+from .base import ImageInfo, OTXDataEntity, T_OTXBatchDataEntity, T_OTXDataEntity
 from .detection import DetBatchDataEntity, DetDataEntity
 from .instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 
@@ -27,15 +27,30 @@ T_OTXTileBatchDataEntity = TypeVar(
 
 
 @dataclass
-class TileDetDataEntity:
+class TileDataEntity(Generic[T_OTXDataEntity]):
     """Data entity for tile task.
 
     :param entity: A list of OTXDataEntity
     """
 
     num_tiles: int
-    entity_list: list[DetDataEntity]
+    entity_list: list[OTXDataEntity]
     tile_attr_list: list[dict[str, int | str]]
+    ori_img_info: ImageInfo
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        raise NotImplementedError
+
+
+@dataclass
+class TileDetDataEntity(TileDataEntity):
+    """Data entity for tile task.
+
+    :param entity: A list of OTXDataEntity
+    """
+
     ori_bboxes: tv_tensors.BoundingBoxes
     ori_labels: LongTensor
 
@@ -52,14 +67,16 @@ class OTXTileBatchDataEntity(Generic[T_OTXBatchDataEntity]):
     Attributes:
         batch_size (int): The size of the batch.
         batch_tiles (list[list[tv_tensors.Image]]): The batch of tile images.
-        batch_tile_infos (list[list[ImageInfo]]): The image information about the tiles.
+        batch_tile_img_infos (list[list[ImageInfo]]): The image information about the tiles.
         batch_tile_attr_list (list[list[dict[str, int | str]]]): The tile attributes.
+        imgs_info (list[ImageInfo]): The image information about the original image.
     """
 
     batch_size: int
     batch_tiles: list[list[tv_tensors.Image]]
-    batch_img_infos: list[list[ImageInfo]]
+    batch_tile_img_infos: list[list[ImageInfo]]
     batch_tile_attr_list: list[list[dict[str, int | str]]]
+    imgs_info: list[ImageInfo]
 
     def unbind(self) -> list[T_OTXBatchDataEntity]:
         """Unbind batch data entity."""
@@ -76,7 +93,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
     def unbind(self) -> list[tuple[list[dict[str, int | str]], DetBatchDataEntity]]:
         """Unbind batch data entity for detection task."""
         tiles = [tile for tiles in self.batch_tiles for tile in tiles]
-        img_infos = [img_info for img_infos in self.batch_img_infos for img_info in img_infos]
+        tile_infos = [tile_info for tile_infos in self.batch_tile_img_infos for tile_info in tile_infos]
         tile_attr_list = [tile_attr for tile_attrs in self.batch_tile_attr_list for tile_attr in tile_attrs]
 
         batch_tile_attr_list = [
@@ -87,7 +104,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
             DetBatchDataEntity(
                 batch_size=self.batch_size,
                 images=tiles[i : i + self.batch_size],
-                imgs_info=img_infos[i : i + self.batch_size],
+                imgs_info=tile_infos[i : i + self.batch_size],
                 bboxes=[[] for _ in range(self.batch_size)],
                 labels=[[] for _ in range(self.batch_size)],
             )
@@ -117,23 +134,23 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
         return TileBatchDetDataEntity(
             batch_size=batch_size,
             batch_tiles=[[entity.image for entity in tile_entity.entity_list] for tile_entity in batch_entities],
-            batch_img_infos=[[entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities],
+            batch_tile_img_infos=[
+                [entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities
+            ],
             batch_tile_attr_list=[tile_entity.tile_attr_list for tile_entity in batch_entities],
+            imgs_info=[tile_entity.ori_img_info for tile_entity in batch_entities],
             bboxes=[tile_entity.ori_bboxes for tile_entity in batch_entities],
             labels=[tile_entity.ori_labels for tile_entity in batch_entities],
         )
 
 
 @dataclass
-class TileInstSegDataEntity:
+class TileInstSegDataEntity(TileDataEntity):
     """Data entity for tile task.
 
     :param entity: A list of OTXDataEntity
     """
 
-    num_tiles: int
-    entity_list: list[InstanceSegDataEntity]
-    tile_attr_list: list[dict[str, int | str]]
     ori_bboxes: tv_tensors.BoundingBoxes
     ori_labels: LongTensor
     ori_masks: tv_tensors.Mask
@@ -157,7 +174,7 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
     def unbind(self) -> list[tuple[list[dict[str, int | str]], InstanceSegBatchDataEntity]]:
         """Unbind batch data entity for instance segmentation task."""
         tiles = [tile for tiles in self.batch_tiles for tile in tiles]
-        tile_infos = [tile_info for tile_infos in self.batch_img_infos for tile_info in tile_infos]
+        tile_infos = [tile_info for tile_infos in self.batch_tile_img_infos for tile_info in tile_infos]
         tile_attr_list = [tile_attr for tile_attrs in self.batch_tile_attr_list for tile_attr in tile_attrs]
 
         batch_tile_attr_list = [
@@ -199,8 +216,11 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
         return TileBatchInstSegDataEntity(
             batch_size=batch_size,
             batch_tiles=[[entity.image for entity in tile_entity.entity_list] for tile_entity in batch_entities],
-            batch_img_infos=[[entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities],
+            batch_tile_img_infos=[
+                [entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities
+            ],
             batch_tile_attr_list=[tile_entity.tile_attr_list for tile_entity in batch_entities],
+            imgs_info=[tile_entity.ori_img_info for tile_entity in batch_entities],
             bboxes=[tile_entity.ori_bboxes for tile_entity in batch_entities],
             labels=[tile_entity.ori_labels for tile_entity in batch_entities],
             masks=[tile_entity.ori_masks for tile_entity in batch_entities],

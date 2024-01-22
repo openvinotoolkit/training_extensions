@@ -129,7 +129,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         # https://github.com/openvinotoolkit/datumaro/pull/1194
         img_data = (
             np.asarray(PILImage.open(BytesIO(img_bytes)).convert("RGB"))
-            if (img_bytes := img.bytes) is not None
+            if isinstance(img, ImageFromFile) and (img_bytes := img.bytes) is not None
             else self._convert_to_rgb(img.data)
         )
 

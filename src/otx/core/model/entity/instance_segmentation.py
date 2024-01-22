@@ -20,7 +20,7 @@ from otx.core.data.entity.tile import TileBatchInstSegDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
-from otx.core.utils.tile_merge import merge_inst_seg_tiles
+from otx.core.utils.tile_merge import TileMerge
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -45,6 +45,7 @@ class OTXInstanceSegModel(
         """
         tile_preds: list[InstanceSegBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
+        merger = TileMerge(inputs.imgs_info)
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
@@ -52,7 +53,7 @@ class OTXInstanceSegModel(
                 raise TypeError(msg)
             tile_preds.append(output)
             tile_attrs.append(batch_tile_attrs)
-        pred_entities = merge_inst_seg_tiles(tile_preds, tile_attrs)
+        pred_entities = merger.merge(tile_preds, tile_attrs)
 
         return InstanceSegBatchPredEntity(
             batch_size=inputs.batch_size,

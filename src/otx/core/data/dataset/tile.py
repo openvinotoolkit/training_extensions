@@ -200,6 +200,11 @@ class OTXTileDetTestDataset(OTXTileDataset):
             num_tiles=len(tile_entities),
             entity_list=tile_entities,
             tile_attr_list=tile_attrs,
+            ori_img_info=ImageInfo(
+                img_idx=index,
+                img_shape=img_shape,
+                ori_shape=img_shape,
+            ),
             ori_bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
@@ -314,6 +319,11 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             num_tiles=len(tile_entities),
             entity_list=tile_entities,
             tile_attr_list=tile_attrs,
+            ori_img_info=ImageInfo(
+                img_idx=index,
+                img_shape=img_shape,
+                ori_shape=img_shape,
+            ),
             ori_bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
