@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from .base import BaseConfig
-from .data import DataModuleConfig, InstSegDataModuleConfig
+from .data import DataModuleConfig, InstSegDataModuleConfig, VisualPromptingDataModuleConfig
 from .model import ModelConfig
 from .trainer import TrainerConfig
 
@@ -117,6 +117,7 @@ def register_configs() -> None:
     cs = ConfigStore.instance()
     cs.store(name="base_config", node=TrainConfig)
     cs.store(group="data", name="base_inst_seg", node=InstSegDataModuleConfig)
+    cs.store(group="data", name="base_visual_prompting", node=VisualPromptingDataModuleConfig)
 
     OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple, replace=True)
     OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype, replace=True)

@@ -1,6 +1,6 @@
 defaults:
   - default
-  - base_inst_seg
+  - base_visual_prompting
 
 data_format: coco_instances
 include_polygons: false
