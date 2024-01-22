@@ -32,6 +32,7 @@ overrides:
     config:
       image_color_channel: BGR
       train_subset:
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
           - type: LoadAnnotations
@@ -45,8 +46,8 @@ overrides:
               - 640
           - type: RandomAffine
             scaling_ratio_range:
-              - 0.5
-              - 1.5
+              - 0.1
+              - 2.0
             border:
               - -320
               - -320
@@ -69,7 +70,7 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: false
+            keep_ratio: True
           - type: RandomFlip
             prob: 0.5
           - type: Pad
@@ -88,13 +89,17 @@ overrides:
               - img_shape
               - pad_shape
       val_subset:
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
           - type: Resize
             scale:
               - 640
               - 640
-            keep_ratio: false
+            keep_ratio: True
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
           - type: LoadAnnotations
             with_bbox: true
           - type: PackDetInputs
@@ -106,13 +111,17 @@ overrides:
               - img_shape
               - pad_shape
       test_subset:
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
           - type: Resize
             scale:
               - 640
               - 640
-            keep_ratio: false
+            keep_ratio: True
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
           - type: LoadAnnotations
             with_bbox: true
           - type: PackDetInputs

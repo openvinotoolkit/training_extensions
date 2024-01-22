@@ -44,9 +44,9 @@ overrides:
               - 512
             type: RandomResize
           - cat_max_ratio: 0.75
-            crop_size:
-              - 512
-              - 512
+            scale:
+              - 544
+              - 544
             type: RandomCrop
           - prob: 0.5
             type: RandomFlip
@@ -57,8 +57,8 @@ overrides:
           - type: LoadImageFromFile
           - keep_ratio: true
             scale:
-              - 2048
-              - 512
+              - 544
+              - 544
             type: Resize
           - reduce_zero_label: true
             type: LoadAnnotations
@@ -68,8 +68,8 @@ overrides:
           - type: LoadImageFromFile
           - keep_ratio: true
             scale:
-              - 2048
-              - 512
+              - 544
+              - 544
             type: Resize
           - reduce_zero_label: true
             type: LoadAnnotations

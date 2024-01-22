@@ -31,6 +31,7 @@ overrides:
   data:
     config:
       train_subset:
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
           - type: LoadAnnotations
@@ -69,6 +70,7 @@ overrides:
               - img_shape
               - pad_shape
       val_subset:
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
           - type: Resize
@@ -87,6 +89,7 @@ overrides:
               - img_shape
               - pad_shape
       test_subset:
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
           - type: Resize

@@ -77,11 +77,11 @@ class BaseTest:
                     "--engine.work_dir", str(test_case.output_dir),
                     "--engine.device", fxt_accelerator,
                 ]
+                for key, value in test_case.dataset.extra_overrides.items():
+                    command_cfg.append(f"--{key}")
+                    command_cfg.append(str(value))
                 train_cfg = command_cfg.copy()
                 train_cfg.extend(["--seed", str(seed)])
-                for key, value in test_case.dataset.extra_overrides.items():
-                    train_cfg.append(f"--{key}")
-                    train_cfg.append(str(value))
                 with patch("sys.argv", command_cfg):
                     cli = OTXCLI()
                     train_metrics = cli.engine.trainer.callback_metrics

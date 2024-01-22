@@ -48,6 +48,7 @@ overrides:
             prob: 0.5
           - type: PackDetInputs
       val_subset:
+        batch_size: 1
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -67,6 +68,7 @@ overrides:
               - img_shape
               - scale_factor
       test_subset:
+        batch_size: 1
         transforms:
           - type: LoadImageFromFile
             backend_args: null
