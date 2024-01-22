@@ -127,6 +127,11 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         # TODO(vinnamkim): This is a temporal approach
         # There is an upcoming Datumaro patch here for this
         # https://github.com/openvinotoolkit/datumaro/pull/1194
+
+        # TODO(Eugene): This is a temporal approach
+        # When img is an instance of RoIImageFromFile, accessing img.bytes
+        # yields the entire image instead of the RoI image.
+        # https://github.com/openvinotoolkit/datumaro/pull/1194
         img_data = (
             np.asarray(PILImage.open(BytesIO(img_bytes)).convert("RGB"))
             if isinstance(img, ImageFromFile) and (img_bytes := img.bytes) is not None
