@@ -15,7 +15,7 @@ from torch import Tensor
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.export import OTXExportFormat
-from otx.core.utils.utils import is_ckpt_for_finetune, is_ckpt_from_otx_v1
+from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -155,7 +155,7 @@ class OTXLitModule(LightningModule):
         if is_ckpt_from_otx_v1(ckpt):
             model_state_dict = ckpt["model"]["state_dict"]
             state_dict = self._load_from_prev_otx_ckpt(model_state_dict)
-        elif is_ckpt_for_finetune(ckpt):
+        elif is_ckpt_for_finetuning(ckpt):
             state_dict = ckpt["state_dict"]
         else:
             state_dict = ckpt

@@ -134,9 +134,9 @@ class OTXDetectionLitModule(OTXLitModule):
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
 
-    def _get_state_dict_from_ckpt(self, ckpt: dict) -> dict:
+    def _load_from_prev_otx_ckpt(self, ckpt: dict) -> dict:
         """Get the state_dict, supporting the backward compatibility."""
-        state_dict = super()._get_state_dict_from_ckpt(ckpt)
+        state_dict = super()._load_from_prev_otx_ckpt(ckpt)
         for key in list(state_dict.keys()):
             if key.startswith("model.model.ema_"):
                 state_dict.pop(key)

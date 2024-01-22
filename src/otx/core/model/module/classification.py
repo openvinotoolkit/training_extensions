@@ -228,7 +228,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
-
+        
         self.val_metric = HLabelAccuracy(
             num_multiclass_heads=self.num_multiclass_heads,
             num_multilabel_classes=self.num_multilabel_classes,

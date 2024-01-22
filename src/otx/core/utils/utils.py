@@ -154,7 +154,7 @@ def is_ckpt_from_otx_v1(ckpt: dict) -> bool:
     """
     return "model" in ckpt and ckpt["VERSION"] == 1
 
-def is_ckpt_for_finetune(ckpt: dict):
+def is_ckpt_for_finetuning(ckpt: dict):
     """Check the checkpoint will be used to finetune.
 
     Args:
