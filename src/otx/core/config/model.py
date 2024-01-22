@@ -5,7 +5,7 @@
 
 from dataclasses import dataclass
 
-from src.otx.core.config.explain import ExplainConfig
+from otx.core.config.explain import ExplainConfig
 
 
 @dataclass
