@@ -5,6 +5,9 @@
 
 from dataclasses import dataclass
 
+# TODO (Eugene): Consider integrating TileConfig into ModelConfig so that OVModel can fold/merge tiles.
+# https://github.com/openvinotoolkit/datumaro/pull/1194
+
 
 @dataclass
 class ModelConfig:
