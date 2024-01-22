@@ -234,10 +234,25 @@ class TestHlabelCls(BaseTest):
             name=f"hlabel_CUB_small_{idx}",
             data_root=Path("hlabel_CUB_small") / f"{idx}",
             data_format="datumaro",
-            num_classes=3,
-            extra_overrides={"trainer.max_epochs": "20"},
+            num_classes=6,
+            extra_overrides={
+                "trainer.max_epochs": "20",
+                "model.otx_model.num_multiclass_heads": "3",
+            },
         )
         for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name=f"hlabel_CUB_medium",
+            data_root=Path("hlabel_CUB_medium"),
+            data_format="datumaro",
+            num_classes=102,
+            extra_overrides={
+                "trainer.max_epochs": "20",
+                "model.otx_model.num_multiclass_heads": "23",
+            },
+        )
+        
     ]
 
     @pytest.mark.parametrize(
