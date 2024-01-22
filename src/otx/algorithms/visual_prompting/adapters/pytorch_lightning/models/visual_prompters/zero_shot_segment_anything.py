@@ -5,6 +5,7 @@
 
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
+from itertools import product
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -12,7 +13,9 @@ from omegaconf import DictConfig
 from torch import nn
 from torch.nn import functional as F
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
+    ResizeLongestSide,
+)
 from otx.api.entities.scored_label import ScoredLabel
 from otx.utils.logger import get_logger
 
@@ -391,11 +394,51 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         point_labels=point_labels,
                         original_size=original_size[0],
                     )
-                    predicted_masks[label].append(mask.detach().cpu())
+                    predicted_masks[label].append((mask * points_score[2]).detach().cpu())
                     used_points[label].append(points_score.detach().cpu())
 
+            # check overlapping area between different label masks
+            self.__inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
+
+    def __inspect_overlapping_areas(
+        self,
+        predicted_masks: Dict[int, List[torch.Tensor]],
+        used_points: Dict[int, List[torch.Tensor]],
+        threshold_iou: float = 0.8,
+    ):
+        def __calculate_mask_iou(mask1: torch.Tensor, mask2: torch.Tensor):
+            assert mask1.ndim == 2 and mask2.ndim == 2
+            intersection = torch.logical_and(mask1, mask2).sum().item()
+            union = torch.logical_or(mask1, mask2).sum().item()
+
+            # Avoid division by zero
+            if union == 0:
+                return 0.0
+            iou = intersection / union
+            return iou
+
+        for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
+            if other_label <= label:
+                continue
+
+            overlapped_label = []
+            overlapped_other_label = []
+            for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
+                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        overlapped_other_label.append(jm)
+                    else:
+                        overlapped_label.append(im)
+
+            for im in overlapped_label[::-1]:
+                masks.pop(im)
+                used_points[label].pop(im)
+
+            for jm in overlapped_other_label[::-1]:
+                other_masks.pop(jm)
+                used_points[other_label].pop(jm)
 
     def _predict_masks(
         self,
@@ -416,7 +459,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif is_cascade and i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks = self._postprocess_masks(logits, scores, original_size, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
                     return masks
 
@@ -431,15 +474,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 has_mask_input = self.has_mask_inputs[1].to(self.device)
                 coords = torch.nonzero(masks)
                 y, x = coords[:, 0], coords[:, 1]
-                point_coords = torch.cat(
-                    (
-                        point_coords,
-                        torch.tensor(
-                            [[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device
-                        ),
-                    ),
-                    dim=1,
+                box_coords = ResizeLongestSide.apply_coords(
+                    torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
+                    original_size,
+                    self.config.model.image_size,
                 )
+                point_coords = torch.cat((point_coords, box_coords), dim=1)
                 point_labels = torch.cat((point_labels, self.point_labels_box.to(self.device)), dim=1)
 
             scores, logits = self(
@@ -578,25 +618,29 @@ class ZeroShotSegmentAnything(SegmentAnything):
         logits: torch.Tensor,
         scores: torch.Tensor,
         original_size: torch.Tensor,
+        is_single: bool = False,
     ):
         """Post-process masks for cascaded post-refinements."""
         high_res_masks = self.mask_postprocessing(logits, self.config.model.image_size, original_size)
         masks = high_res_masks > self.config.model.mask_threshold
 
-        # skip the first index components
-        scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+        if is_single:
+            best_idx = 0
+        else:
+            # skip the first index components
+            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
 
-        # filter zero masks
-        while len(scores[0]) > 0 and masks[0, (best_idx := torch.argmax(scores[0]))].sum() == 0:
-            scores, masks, logits = map(
-                lambda x: torch.cat((x[:, :best_idx], x[:, best_idx + 1 :]), dim=1), (scores, masks, logits)
-            )
+            # filter zero masks
+            while len(scores[0]) > 0 and masks[0, (best_idx := torch.argmax(scores[0]))].sum() == 0:
+                scores, masks, logits = map(
+                    lambda x: torch.cat((x[:, :best_idx], x[:, best_idx + 1 :]), dim=1), (scores, masks, logits)
+                )
 
-        if len(scores[0]) == 0:
-            # all predicted masks were zero masks, ignore them.
-            return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
+            if len(scores[0]) == 0:
+                # all predicted masks were zero masks, ignore them.
+                return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
 
-        best_idx = torch.argmax(scores[0])
+            best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]
 
     def _update_value(self, target: Dict[str, Any], key: str, value: torch.Tensor) -> None:

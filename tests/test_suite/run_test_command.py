@@ -620,17 +620,21 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
-    xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
-    if task_type == "visual_prompting":
+    if "visual_prompting" == task_type:
         xml_paths = [
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
         ]
+        if "zero_shot" in str(root):
+            xml_paths.append(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_prompt_getter.xml")
+    else:
+        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
+
     for xml_path in xml_paths:
         if not os.path.exists(xml_path):
             pytest.skip(reason=f"required file is not exist - {xml_path}")
 
-    if task_type == "visual_prompting":
+    if "visual_prompting" == task_type:
         paths_to_ref_data = [
             os.path.join(
                 otx_dir,
@@ -651,6 +655,18 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
                 "compressed_decoder.yml",
             ),
         ]
+        if "zero_shot" in str(root):
+            paths_to_ref_data.append(
+                os.path.join(
+                    otx_dir,
+                    "tests",
+                    "e2e/cli",
+                    task_type,
+                    "reference",
+                    template.model_template_id,
+                    "compressed_prompt_getter.yml",
+                )
+            )
     else:
         paths_to_ref_data = [
             os.path.join(
@@ -664,10 +680,10 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
-
-    weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     if is_visual_prompting:
         weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml"
+    else:
+        weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     if not os.path.exists(weights_path):
         pytest.skip(reason=f"required file is not exist - {weights_path}")
 
