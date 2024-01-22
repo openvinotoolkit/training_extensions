@@ -139,7 +139,6 @@ class TileMerge:
             labels=torch.tensor(pred_labels),
             masks=[],
             polygons=[],
-            rles=pred_mask_rles,
         )
 
     def merge(self, batch_tile_preds: list, batch_tile_attrs: list) -> list:
@@ -191,10 +190,6 @@ class TileMerge:
                     annotations=annotations,
                     attributes=tile_attr,
                 )
-                if self.debug:
-                    # plt.imshow(tile_img)
-                    # plt.show()
-                    pass
 
                 dataset_item_to_merge[tile_id].append(dataset_item)
 
