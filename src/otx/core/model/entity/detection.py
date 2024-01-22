@@ -13,6 +13,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -29,15 +30,8 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-    def _generate_model_metadata(
-    self,
-    mean: tuple[float, float, float],
-    std: tuple[float, float, float],
-    resize_mode: str,
-    pad_value: int,
-    swap_rgb: bool,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata(mean, std, resize_mode, pad_value, swap_rgb)
+    def _generate_model_metadata(self) -> dict[tuple[str, str], Any]:
+        metadata = super()._generate_model_metadata()
         metadata[("model_info", "model_type")] = "ssd"
         metadata[("model_info", "task_type")] = "detection"
         metadata[("model_info", "confidence_threshold")] = str(0.005)  # it was able to be set in OTX 1.X
@@ -58,6 +52,10 @@ class MMDetCompatibleModel(OTXDetectionModel):
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
+
+    @property
+    def export_params(self) -> dict[str, Any]:
+        return {}
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -168,29 +166,17 @@ class MMDetCompatibleModel(OTXDetectionModel):
     def _get_export_parameters(self) -> dict[str, Any]:
         raise NotImplementedError
 
-    def export(
+    def _create_exporter(
         self,
-        output_dir: Path,
-        export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         test_pipeline: list[dict] | None = None,
-    ) -> None:
-        """Export this model to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-            precision: Precision of the exported model.
-            test_pipeline: Test data pipeline. It's necessary if using mmdeploy.
-        """
-        if self.need_mmdeploy() and test_pipeline is None:
-            raise ValueError("Current model needs test_pipeline to export for mmdpeloy.")
-
-        self._export(output_dir, export_format, precision=precision, **self._get_export_parameters(), test_pipeline=test_pipeline)
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        from otx.core.exporter.mmdeploy import MMdeployExporter 
+        return MMdeployExporter(**self.export_params, test_pipeline=test_pipeline)
 
     def need_mmdeploy(self):
         """Whether mmdeploy is used when exporting a model."""
-        return self._get_export_parameters().get("mmdeploy_config") != None
+        return self.export_params.get("mmdeploy_config") != None
 
 class OVDetectionModel(OVModel):
     """Object detection model compatible for OpenVINO IR inference.

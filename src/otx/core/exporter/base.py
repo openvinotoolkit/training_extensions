@@ -83,3 +83,28 @@ class OTXModelExporter:
             ov_model.set_rt_info(data, list(k))
 
         return ov_model
+
+    def _extend_model_metadata(self, metadata: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
+        """Extends metadata coming from model with preprocessing-specific parameters.
+
+        Model's original metadata has priority over exporter's extra metadata
+
+        Args:
+            metadata (dict[tuple[str, str], str]): _description_
+
+        Returns:
+            dict[tuple[str, str] ,str]: updated metadata
+        """
+        mean_str = " ".join(map(str, self.mean))
+        std_str = " ".join(map(str, self.std))
+
+        extra_data = {
+            ("model_info", "mean_values"): mean_str.strip(),
+            ("model_info", "scale_values"): std_str.strip(),
+            ("model_info", "resize_type"): self.resize_mode,
+            ("model_info", "pad_value"): str(self.pad_value),
+            ("model_info", "reverse_input_channels"): str(self.swap_rgb),
+        }
+        extra_data.update(metadata)
+
+        return extra_data

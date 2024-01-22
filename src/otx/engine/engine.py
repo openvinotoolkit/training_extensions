@@ -342,20 +342,11 @@ class Engine:
             loaded_checkpoint = torch.load(self.checkpoint)
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
-            test_pipeline = None
-            if self.model.need_mmdeploy():
-                test_pipeline = self.datamodule.config.test_subset.transforms
-                if hasattr(self.model, "load_from"):
-                    new_weight = remove_model_form_weight_key(loaded_checkpoint["state_dict"])
-                    new_path = str(output_dir / "mmdeploy_fmt_model.pth")
-                    torch.save(new_weight, new_path)
-                    setattr(self.model, "load_from", new_path)
-
             return self.model.export(
                 output_dir=output_dir,
                 export_format=cfg.export_format,
                 precision=cfg.precision,
-                test_pipeline=test_pipeline,
+                test_pipeline=self.datamodule.config.test_subset.transforms,
             )
 
         msg = "To make export, checkpoint must be specified."

@@ -183,7 +183,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         Returns:
             Path: path to the exported model.
         """
-        exporter = self._create_exporter()
+        if self.need_mmdeploy() and test_pipeline is None:
+            raise ValueError("Current model needs test_pipeline to export using mmdpeloy.")
+
+        exporter = self._create_exporter(test_pipeline)
         metadata = self._generate_model_metadata()
 
         if export_format == OTXExportFormatType.OPENVINO:
@@ -198,6 +201,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def _create_exporter(
         self,
+        test_pipeline: list[dict] | None = None,
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         raise NotImplementedError

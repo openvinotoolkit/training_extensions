@@ -52,10 +52,21 @@ class MMSegCompatibleModel(OTXSegmentationModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = self._get_export_parameters()
         self.load_from = self.config.pop("load_from", None)
         self.image_size = (544, 544)
         super().__init__(num_classes=num_classes)
+
+    @property
+    def export_params(self) -> dict[str, Any]:
+        export_params = get_mean_std_from_data_processing(self.config)
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = (1, 3, *self.image_size)
+        export_params["onnx_export_configuration"] = None
+
+        return export_params
 
     def _create_model(self) -> nn.Module:
         from mmengine.registry import MODELS as MMENGINE_MODELS
@@ -141,22 +152,11 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             masks=masks,
         )
 
-    def _get_export_parameters(self) -> None:
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = (1, 3, *self.image_size)
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
-
     def _create_exporter(
         self,
+        test_pipeline: list[dict] | None = None,
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        self._configure_export_parameters()
         return OTXNativeModelExporter(**self.export_params)
 
 

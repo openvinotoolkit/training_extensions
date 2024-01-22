@@ -21,15 +21,15 @@ class ATSS(MMDetCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
 
-    def _get_export_parameters(self) -> dict[str, Any]:
+    @property
+    def export_params(self) -> dict[str, Any]:
         export_params = get_mean_std_from_data_processing(self.config)
+        export_params["model_builder"] = self._create_model
+        export_params["model_cfg"] = copy(self.config)
+        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.atss"
+        export_params["input_size"] = (1, 3, 736, 992)
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = (1, 3, 736, 992)
-        export_params["mmdeploy_config"] = "otx.config.mmdeploy.detection.atss"
-        export_params["mm_model_config"] = copy(self.config)
-        export_params["mm_model_config"]["load_from"] = self.load_from
 
         return export_params
