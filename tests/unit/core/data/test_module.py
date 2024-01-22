@@ -10,6 +10,7 @@ from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
+    TilerConfig,
 )
 from otx.core.data.module import (
     OTXDataModule,
@@ -30,6 +31,8 @@ class TestModule:
         mock.val_subset.num_workers = 0
         mock.test_subset = MagicMock(spec=SubsetConfig)
         mock.test_subset.num_workers = 0
+        mock.tile_config = MagicMock(spec=TilerConfig)
+        mock.tile_config.enable_tiler = False
 
         return mock
 
