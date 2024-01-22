@@ -375,7 +375,7 @@ class OVHlabelClassificationModel(OVModel):
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
 
-        Since OV IR model consist of all required hierarchy inforamtion,
+        Since OV IR model consist of all required hierarchy information,
         this method serves as placehloder
         """
         return
