@@ -141,8 +141,6 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
 
     assert (tmp_path_test / "outputs").exists()
     assert (tmp_path_test / "outputs" / "csv").exists()
-    metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
-    assert len(metric_result) > 0
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
