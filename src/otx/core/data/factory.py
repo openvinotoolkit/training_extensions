@@ -124,4 +124,12 @@ class OTXDatasetFactory:
             from .dataset.action_detection import OTXActionDetDataset
 
             return OTXActionDetDataset(**common_kwargs)
+
+        if task == OTXTaskType.VISUAL_PROMPTING:
+            from .dataset.visual_prompting import OTXVisualPromptingDataset
+
+            # NOTE: DataModuleConfig does not have include_polygons attribute
+            include_polygons = getattr(cfg_data_module, "include_polygons", False)
+            return OTXVisualPromptingDataset(include_polygons=include_polygons, **common_kwargs)
+
         raise NotImplementedError(task)
