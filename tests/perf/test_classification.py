@@ -62,11 +62,27 @@ class TestPerfSingleLabelClassification:
             result,
             key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
-                {"name": "Accuracy(train)", "op": ">", "margin": 0.1,},
-                {"name": "Accuracy(export)", "op": ">", "margin": 0.1,},
-                {"name": "Accuracy(optimize)", "op": ">", "margin": 0.1,},
-                {"name": "epoch", "op": "<", "margin": 0.1,},
-            ]
+                {
+                    "name": "Accuracy(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
@@ -82,11 +98,27 @@ class TestPerfSingleLabelClassification:
             result,
             key=("speed", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
-                {"name": "avg_data_time", "op": "<", "margin": 0.1,},
-                {"name": "avg_iter_time", "op": "<", "margin": 0.1,},
-                {"name": "avg_time_per_image(export)", "op": "<", "margin": 0.1,},
-                {"name": "avg_time_per_image(optimize)", "op": "<", "margin": 0.1,},
-            ]
+                {
+                    "name": "avg_data_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_iter_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(export)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(optimize)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )
 
 
@@ -137,11 +169,27 @@ class TestPerfMultiLabelClassification:
             result,
             key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
-                {"name": "Accuracy(train)", "op": ">", "margin": 0.1,},
-                {"name": "Accuracy(export)", "op": ">", "margin": 0.1,},
-                {"name": "Accuracy(optimize)", "op": ">", "margin": 0.1,},
-                {"name": "epoch", "op": "<", "margin": 0.1,},
-            ]
+                {
+                    "name": "Accuracy(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
@@ -157,11 +205,27 @@ class TestPerfMultiLabelClassification:
             result,
             key=("speed", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
-                {"name": "avg_data_time", "op": "<", "margin": 0.1,},
-                {"name": "avg_iter_time", "op": "<", "margin": 0.1,},
-                {"name": "avg_time_per_image(export)", "op": "<", "margin": 0.1,},
-                {"name": "avg_time_per_image(optimize)", "op": "<", "margin": 0.1,},
-            ]
+                {
+                    "name": "avg_data_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_iter_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(export)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(optimize)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )
 
 
@@ -212,11 +276,27 @@ class TestPerfHierarchicalLabelClassification:
             result,
             key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
-                {"name": "Accuracy(train)", "op": ">", "margin": 0.1,},
-                {"name": "Accuracy(export)", "op": ">", "margin": 0.1,},
-                {"name": "Accuracy(optimize)", "op": ">", "margin": 0.1,},
-                {"name": "epoch", "op": "<", "margin": 0.1,},
-            ]
+                {
+                    "name": "Accuracy(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
@@ -232,9 +312,25 @@ class TestPerfHierarchicalLabelClassification:
             result,
             key=("speed", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
-                {"name": "avg_data_time", "op": "<", "margin": 0.1,},
-                {"name": "avg_iter_time", "op": "<", "margin": 0.1,},
-                {"name": "avg_time_per_image(export)", "op": "<", "margin": 0.1,},
-                {"name": "avg_time_per_image(optimize)", "op": "<", "margin": 0.1,},
-            ]
+                {
+                    "name": "avg_data_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_iter_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(export)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(optimize)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )

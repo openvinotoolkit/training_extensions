@@ -272,6 +272,7 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
 @pytest.fixture(scope="session")
 def fxt_check_benchmark_result(fxt_benchmark_reference: pd.DataFrame | None) -> Callable:
     """Return result checking function with reference data."""
+
     def check_benchmark_result(result: pd.DataFrame, key: Tuple, checks: List[Dict]):
         if fxt_benchmark_reference is None:
             print("No benchmark references loaded. Skipping result checking.")
