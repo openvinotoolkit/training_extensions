@@ -4,7 +4,7 @@
 """Config data type objects."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, _SpecialForm
 
 import yaml
 
@@ -90,6 +90,19 @@ def dtype_representer(dumper: yaml.Dumper | yaml.representer.SafeRepresenter, da
     return dumper.represent_str("${as_torch_dtype:" + str(data) + "}")
 
 
+def any_representer(dumper: yaml.Dumper | yaml.representer.SafeRepresenter, data: Any) -> yaml.ScalarNode:  # noqa: ANN401
+    """Representer function that converts any data to a YAML node.
+
+    Args:
+        dumper (yaml.Dumper | yaml.representer.SafeRepresenter): The YAML dumper or safe representer.
+        data (Any): The data to be represented.
+
+    Returns:
+        yaml.Node: The YAML node representing the data.
+    """
+    return dumper.represent_none(data)
+
+
 def ignore_aliases(self: yaml.representer.SafeRepresenter, data: Any) -> bool:  # noqa: ARG001, ANN401
     """Determine whether to ignore aliases in YAML representation.
 
@@ -122,6 +135,7 @@ def register_configs() -> None:
     yaml.add_representer(dtype, dtype_representer)  # For lightnig_logs
     # For jsonargparse's SafeDumper
     yaml.SafeDumper.add_representer(dtype, dtype_representer)
+    yaml.SafeDumper.add_representer(_SpecialForm, any_representer)  # typing.Any for DictConfig
     yaml.SafeDumper.ignore_aliases = ignore_aliases  # type: ignore  # noqa: PGH003
 
 

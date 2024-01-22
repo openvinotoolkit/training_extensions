@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
-from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -19,6 +18,7 @@ from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
     from torch import device, nn
 
@@ -35,8 +35,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig | dict) -> None:
-        config = DictConfig(config)
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)

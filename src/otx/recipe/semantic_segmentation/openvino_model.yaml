@@ -3,12 +3,15 @@ model:
   init_args:
     num_classes: 19
     config:
-      model_name: drn-d-38
-      decode_head:
-        num_classes: 19
-      async_inference: True
-      use_throughput_mode: True
-      model_type: "Segmentation"
+      class_path: omegaconf.dictconfig.DictConfig
+      init_args:
+        content:
+          model_name: drn-d-38
+          decode_head:
+            num_classes: 19
+          async_inference: True
+          use_throughput_mode: True
+          model_type: "Segmentation"
 
 optimizer:
   class_path: torch.optim.Adam

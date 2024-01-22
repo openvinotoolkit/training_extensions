@@ -3,10 +3,13 @@ model:
   init_args:
     num_classes: 20
     config:
-      model_name: ssd300
-      use_throughput_mode: True
-      model_type: "SSD"
-      async_inference: True
+      class_path: omegaconf.dictconfig.DictConfig
+      init_args:
+        content:
+          model_name: ssd300
+          use_throughput_mode: True
+          model_type: "SSD"
+          async_inference: True
 
 optimizer:
   class_path: torch.optim.Adam

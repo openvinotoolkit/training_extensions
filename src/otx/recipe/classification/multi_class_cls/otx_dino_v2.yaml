@@ -3,12 +3,15 @@ model:
   init_args:
     num_classes: 1000
     config:
-      backbone:
-        name: dinov2_vits14_reg
-        frozen: false
-      head:
-        in_channels: 384
-        num_classes: 1000
+      class_path: omegaconf.dictconfig.DictConfig
+      init_args:
+        content:
+          backbone:
+            name: dinov2_vits14_reg
+            frozen: false
+          head:
+            in_channels: 384
+            num_classes: 1000
 
 optimizer:
   class_path: torch.optim.AdamW

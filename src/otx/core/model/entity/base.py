@@ -10,7 +10,6 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
-from omegaconf import DictConfig
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -27,6 +26,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
+    from omegaconf import DictConfig
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -223,8 +223,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         num_classes: Number of classes this model can predict.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig | dict) -> None:
-        config = DictConfig(config)
+    def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.model_name = config.pop("model_name")
         self.model_type = config.pop("model_type")
