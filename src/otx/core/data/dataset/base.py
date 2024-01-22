@@ -55,7 +55,20 @@ class LabelInfo:
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
-    """Base OTXDataset."""
+    """Base OTXDataset.
+
+    Defines basic logic for OTX datasets.
+
+    Args:
+            dm_subset: datumaro subset of a dataset
+            transforms: transforms to apply on images
+            mem_cache_handler: handler of the images cache
+            mem_cache_img_max_size: max size of images to put in cache
+            max_refetch: maximum number of images to fetch in cache
+            image_color_channel: collor channel of images
+            stack_images: whether or not to stack images in collate function in OTXBatchData entity.
+
+    """
 
     def __init__(
         self,
