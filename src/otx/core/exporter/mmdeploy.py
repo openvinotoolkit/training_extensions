@@ -9,6 +9,7 @@ import logging as log
 import importlib
 from typing import Callable
 from pathlib import Path
+from copy import copy
 
 import onnx
 import cv2
@@ -35,7 +36,7 @@ class MMdeployExporter(OTXModelExporter):
         self,
         model_builder: Callable,
         model_cfg: DictConfig,
-        deploy_cfg: str | dict,
+        deploy_cfg: str | MMConfig,
         test_pipeline: list[DictConfig],
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
@@ -43,16 +44,25 @@ class MMdeployExporter(OTXModelExporter):
         resize_mode: str = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
+        max_num_detections: int = 0,
     ) -> None:
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
         self._model_builder = model_builder
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
         new_pipeline = [to_tuple(OmegaConf.to_container(test_pipeline[i])) for i in range(len(test_pipeline))]
         self._model_cfg = MMConfig({"model" : model_cfg, "test_pipeline" : new_pipeline})
-        self._deploy_cfg = deploy_cfg if isinstance(deploy_cfg, dict) else load_mmconfig_from_pkg(deploy_cfg)
+        self._deploy_cfg = deploy_cfg if isinstance(deploy_cfg, MMConfig) else load_mmconfig_from_pkg(deploy_cfg)
 
-        if input_size is not None:
-            patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
+        patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
+        if max_num_detections > 0:
+            self._set_max_num_detections(max_num_detections)
+
+    def _set_max_num_detections(self, max_num_detections: int):
+        log.info(f"Export max_num_detections: {max_num_detections}")
+        post_proc_cfg = self._deploy_cfg["codebase_config"]["post_processing"]
+        post_proc_cfg["max_output_boxes_per_class"] = max_num_detections
+        post_proc_cfg["keep_top_k"] = max_num_detections
+        post_proc_cfg["pre_top_k"] = max_num_detections * 10
 
     def to_openvino(
         self,
@@ -84,6 +94,7 @@ class MMdeployExporter(OTXModelExporter):
         exported_model = self._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        log.info("Coverting to OpenVINO is done.")
 
         return Path(save_path)
 
@@ -107,7 +118,8 @@ class MMdeployExporter(OTXModelExporter):
         Returns:
             Path: path to the exported model.
         """
-        save_path = self._cvt2onnx(model, output_dir, base_model_name)
+        deploy_cfg = self._prepare_onnx_cfg()
+        save_path = self._cvt2onnx(model, output_dir, base_model_name, deploy_cfg)
 
         onnx_model = onnx.load(save_path)
         metadata = {} if metadata is None else self._extend_model_metadata(metadata)
@@ -117,11 +129,24 @@ class MMdeployExporter(OTXModelExporter):
 
             onnx_model = float16.convert_float_to_float16(onnx_model)
         onnx.save(onnx_model, save_path)
+        log.info("Coverting to ONNX is done.")
 
         return Path(save_path)
 
+    def _prepare_onnx_cfg(self) -> MMConfig:
+        cfg = copy(self._deploy_cfg)
+        cfg["backend_config"] = {"type": "onnxruntime"}
+        cfg["ir_config"]["dynamic_axes"]["image"] = {0: "batch"}
 
-    def _cvt2onnx(self, model: torch.nn.Module, output_dir: Path, base_model_name: str) -> str:
+        return cfg
+
+    def _cvt2onnx(
+        self,
+        model: torch.nn.Module,
+        output_dir: Path,
+        base_model_name: str,
+        deploy_cfg: MMConfig | None = None
+    ) -> str:
         model_weight_file = str(output_dir / "mmdeploy_fmt_model.pth")
         torch.save(model.state_dict(), model_weight_file)
 
@@ -133,14 +158,14 @@ class MMdeployExporter(OTXModelExporter):
             self._get_input_data(),
             output_dir,
             onnx_file_name,
-            deploy_cfg=self._deploy_cfg,
+            deploy_cfg=self._deploy_cfg if deploy_cfg is None else deploy_cfg,
             model_cfg=self._model_cfg,
             model_checkpoint=model_weight_file,
             device="cpu")
 
         os.remove(model_weight_file)
 
-        # partition model
+        # TODO torch2onnx_partition for tiling
         partition_cfgs = get_partition_config(self._deploy_cfg)
         if partition_cfgs is not None:
             self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs, output_dir)
@@ -171,7 +196,7 @@ class MMdeployExporter(OTXModelExporter):
 
 
     def cvt_torch2onnx_partition(self, deploy_cfg, partition_cfgs, args):
-        # NOTE draft version. need for exporting tilling model.
+        # NOTE draft version. need for exporting tiling model.
         raise NotImplementedError
 
         if 'partition_cfg' in partition_cfgs:
@@ -248,7 +273,7 @@ def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
         hyper_parameters (DetectionConfig): OTX detection hyper parameters
     """
     return
-    # TODO: need to implement after tiling is implemented
+    # TODO: need to implement for tiling
 
     if hyper_parameters.tiling_parameters.enable_tiling:
         scale_ir_input = deploy_cfg.get("scale_ir_input", False)

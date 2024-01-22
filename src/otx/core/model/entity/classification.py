@@ -212,6 +212,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
     def _create_exporter(
         self,
+        test_pipeline: list[dict] | None = None,
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(**self.export_params)
@@ -333,6 +334,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
     def _create_exporter(
         self,
+        test_pipeline: list[dict] | None = None,
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(**self.export_params)
@@ -458,6 +460,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
     def _create_exporter(
         self,
+        test_pipeline: list[dict] | None = None,
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(**self.export_params)
