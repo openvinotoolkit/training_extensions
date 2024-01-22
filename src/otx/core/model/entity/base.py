@@ -190,7 +190,13 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         if export_format == OTXExportFormatType.ONNX:
             return exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            return exporter.to_exportable_code(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_exportable_code(
+                self.model,
+                output_dir,
+                self._EXPORTED_MODEL_BASE_NAME,
+                precision,
+                metadata,
+            )
 
         msg = f"Unsupported export format: {export_format}"
         raise ValueError(msg)

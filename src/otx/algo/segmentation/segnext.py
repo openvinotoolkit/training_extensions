@@ -16,7 +16,3 @@ class SegNext(MMSegCompatibleModel):
         model_name = f"segnext_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
-
-    def _configure_export_parameters(self) -> None:
-        super()._configure_export_parameters()
-        self.export_params["via_onnx"] = True

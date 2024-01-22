@@ -6,13 +6,12 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from otx.core.types.export import OTXExportPrecisionType
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import onnx
     import openvino
     import torch
@@ -66,7 +65,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
-    ) -> None:
+    ) -> Path:
         """Export to zip folder final OV IR model with runable demo.
 
         Args:
@@ -76,46 +75,56 @@ class OTXModelExporter:
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
         """
-
-        from zipfile import ZipFile
-        import os
         import io
         import json
-        from otx.core.exporter import exportable_code
+        import os
+        import tempfile
+        from zipfile import ZipFile
 
+        from otx.core.exporter.exportable_code import demo
 
-
-        work_dir = os.path.dirname(exportable_code.__file__)
+        work_dir = Path(demo.__file__).parent
         parameters = {}
-        parameters["type_of_model"] = ""
-        parameters["converter_type"] = ""
+        parameters["type_of_model"] = metadata[("model_info", "task_type")]
+        parameters["converter_type"] = metadata[("model_info", "model_type")]
         parameters["model_parameters"] = {}
+        parameters["model_parameters"]["labels"] = metadata[("model_info", "labels")]
+        parameters["model_parameters"]["labels_ids"] = metadata[("model_info", "label_ids")]
         zip_buffer = io.BytesIO()
+        temp_dir = tempfile.TemporaryDirectory()
         with ZipFile(zip_buffer, "w") as arch:
             # model files
-            path_to_model = self.to_openvino(model,
-                                            output_dir,
-                                            base_model_name,
-                                            precision,
-                                            metadata)
-            arch.writestr(os.path.join("model", "model.xml"), str(path_to_model))
-            arch.writestr(os.path.join("model", "model.bin"), str(path_to_model)[:-4] + ".bin")
+            path_to_model = self.to_openvino(model, Path(temp_dir.name), base_model_name, precision, metadata)
+            arch.write(str(path_to_model), Path("model") / "model.xml")
+            arch.write(str(path_to_model)[:-4] + ".bin", Path("model") / "model.bin")
 
             arch.writestr(
-                os.path.join("model", "config.json"),
+                str(Path("model") / "config.json"),
                 json.dumps(parameters, ensure_ascii=False, indent=4),
             )
             # python files
             arch.write(
-                os.path.join(work_dir, "requirements.txt"),
-                os.path.join("python", "requirements.txt"),
+                Path(work_dir) / "requirements.txt",
+                Path("python") / "requirements.txt",
             )
-            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
-            arch.write(os.path.join(work_dir, "README.md"), os.path.join(".", "README.md"))
-        # output_model.exportable_code = zip_buffer.getvalue()
-        with open(output_dir / "exportable_code.zip", 'wb') as f:
+            arch.write(Path(work_dir, "LICENSE"), Path("python") / "LICENSE")
+            arch.write(Path(work_dir, "demo.py"), Path("python") / "demo.py")
+            arch.write(Path(work_dir, "README.md"), Path("./") / "README.md")
+            # write demo_package
+            demo_package = Path(work_dir, "demo_package")
+            for root, _, files in os.walk(demo_package):
+                if root.endswith("__pycache__"):
+                    continue
+                for file in files:
+                    file_path = Path(root) / file
+                    archive_path = file_path.relative_to(demo_package)
+                    arch.write(file_path, Path("python") / "demo_package" / archive_path)
+        # save archive
+        output_path = output_dir / "exportable_code.zip"
+        with Path.open(output_path, "wb") as f:
             f.write(zip_buffer.getvalue())
+        temp_dir.cleanup()
+        return output_path
 
     @staticmethod
     def _embed_onnx_metadata(onnx_model: onnx.ModelProto, metadata: dict[tuple[str, str], Any]) -> onnx.ModelProto:
