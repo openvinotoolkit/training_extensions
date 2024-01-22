@@ -7,6 +7,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
 
 
@@ -47,6 +48,7 @@ class DataModuleConfig:
 
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: Optional[Tuple[int, int]] = None
+    image_color_channel: ImageColorChannel = ImageColorChannel.RGB
 
 
 @dataclass

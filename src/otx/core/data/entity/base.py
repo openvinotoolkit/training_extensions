@@ -7,17 +7,19 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
-from enum import IntEnum, auto
-from typing import Any, Dict, Generic, Iterator, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, TypeVar
 
-import numpy as np
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from torch import Tensor, stack
 from torch.utils._pytree import tree_flatten
 from torchvision import tv_tensors
 
 from otx.core.data.entity.utils import register_pytree_node
+from otx.core.types.image import ImageColorChannel, ImageType
 from otx.core.types.task import OTXTaskType
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 class ImageInfo(tv_tensors.TVTensor):
@@ -34,6 +36,7 @@ class ImageInfo(tv_tensors.TVTensor):
         normalized: If true, this image is normalized with `norm_mean` and `norm_std`
         norm_mean: Mean vector used to normalize this image
         norm_std: Standard deviation vector used to normalize this image
+        image_color_channel: Color channel type of this image, RGB or BGR.
     """
 
     img_idx: int
@@ -44,6 +47,7 @@ class ImageInfo(tv_tensors.TVTensor):
     normalized: bool = False
     norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    image_color_channel: ImageColorChannel = ImageColorChannel.RGB
 
     @classmethod
     def _wrap(
@@ -58,6 +62,7 @@ class ImageInfo(tv_tensors.TVTensor):
         normalized: bool = False,
         norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0),
+        image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
     ) -> ImageInfo:
         image_info = dummy_tensor.as_subclass(cls)
         image_info.img_idx = img_idx
@@ -68,6 +73,7 @@ class ImageInfo(tv_tensors.TVTensor):
         image_info.normalized = normalized
         image_info.norm_mean = norm_mean
         image_info.norm_std = norm_std
+        image_info.image_color_channel = image_color_channel
         return image_info
 
     def __new__(  # noqa: D102
@@ -80,6 +86,7 @@ class ImageInfo(tv_tensors.TVTensor):
         normalized: bool = False,
         norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0),
+        image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
     ) -> ImageInfo:
         return cls._wrap(
             dummy_tensor=Tensor(),
@@ -91,6 +98,7 @@ class ImageInfo(tv_tensors.TVTensor):
             normalized=normalized,
             norm_mean=norm_mean,
             norm_std=norm_std,
+            image_color_channel=image_color_channel,
         )
 
     @classmethod
@@ -122,6 +130,7 @@ class ImageInfo(tv_tensors.TVTensor):
                 normalized=image_info.normalized,
                 norm_mean=image_info.norm_mean,
                 norm_std=image_info.norm_std,
+                image_color_channel=image_info.image_color_channel,
             )
         elif isinstance(output, (tuple, list)):
             image_infos = [x for x in flat_params if isinstance(x, ImageInfo)]
@@ -136,6 +145,7 @@ class ImageInfo(tv_tensors.TVTensor):
                     normalized=image_info.normalized,
                     norm_mean=image_info.norm_mean,
                     norm_std=image_info.norm_std,
+                    image_color_channel=image_info.image_color_channel,
                 )
                 for dummy_tensor, image_info in zip(output, image_infos)
             )
@@ -254,33 +264,6 @@ def _normalize_image_info(
     image_info.norm_mean = (mean[0], mean[1], mean[2])
     image_info.norm_std = (std[0], std[1], std[2])
     return image_info
-
-
-class ImageType(IntEnum):
-    """Enum to indicate the image type in `ImageInfo` class."""
-
-    NUMPY = auto()
-    TV_IMAGE = auto()
-    NUMPY_LIST = auto()
-    TV_IMAGE_LIST = auto()
-
-    @classmethod
-    def get_image_type(
-        cls,
-        image: np.ndarray | tv_tensors.Image | list[np.ndarray] | list[tv_tensors.Image],
-    ) -> ImageType:
-        """Infer the image type from the given image object."""
-        if isinstance(image, np.ndarray):
-            return ImageType.NUMPY
-        if isinstance(image, tv_tensors.Image):
-            return ImageType.TV_IMAGE
-        if isinstance(image, list):
-            image = next(iter(image))
-            if isinstance(image, np.ndarray):
-                return ImageType.NUMPY_LIST
-            if isinstance(image, tv_tensors.Image):
-                return ImageType.TV_IMAGE_LIST
-        raise TypeError(image)
 
 
 T_OTXDataEntity = TypeVar(

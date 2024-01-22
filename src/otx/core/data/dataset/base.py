@@ -6,20 +6,21 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
+from contextlib import contextmanager
 from dataclasses import dataclass
-from io import BytesIO
-from typing import TYPE_CHECKING, Callable, Generic, List, Union
+from typing import TYPE_CHECKING, Callable, Generic, Iterator, List, Union
 
 import cv2
 import numpy as np
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.media import ImageFromFile
-from PIL import Image as PILImage
+from datumaro.util.image import _IMAGE_BACKEND, _IMAGE_BACKENDS, IMAGE_COLOR_SCALE, ImageColorScale
 from torch.utils.data import Dataset
 from torchvision.transforms.v2 import Compose
 
 from otx.core.data.entity.base import T_OTXDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
+from otx.core.types.image import ImageColorChannel
 
 if TYPE_CHECKING:
     from datumaro import DatasetSubset, Image
@@ -27,6 +28,25 @@ if TYPE_CHECKING:
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
 Transforms = Union[Compose, Callable, List[Callable]]
+
+
+@contextmanager
+def image_decode_context() -> Iterator[None]:
+    """Change Datumaro image decode context.
+
+    Use PIL Image decode because of performance issues.
+    With this context, `dm.Image.data` will return BGR numpy image tensor.
+    """
+    ori_image_backend = _IMAGE_BACKEND.get()
+    ori_image_color_scale = IMAGE_COLOR_SCALE.get()
+
+    _IMAGE_BACKEND.set(_IMAGE_BACKENDS.PIL)
+    IMAGE_COLOR_SCALE.set(ImageColorScale.COLOR)
+
+    yield
+
+    _IMAGE_BACKEND.set(ori_image_backend)
+    IMAGE_COLOR_SCALE.set(ori_image_color_scale)
 
 
 @dataclass
@@ -63,6 +83,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,
         max_refetch: int = 1000,
+        image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
     ) -> None:
         self.dm_subset = dm_subset
         self.ids = [item.id for item in dm_subset]
@@ -70,6 +91,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.mem_cache_handler = mem_cache_handler
         self.mem_cache_img_max_size = mem_cache_img_max_size
         self.max_refetch = max_refetch
+        self.image_color_channel = image_color_channel
 
         self.meta_info = LabelInfo(
             label_names=[category.name for category in self.dm_subset.categories()[AnnotationType.label]],
@@ -124,19 +146,12 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
             return img_data, img_data.shape[:2]
 
-        # TODO(vinnamkim): This is a temporal approach
-        # There is an upcoming Datumaro patch here for this
-        # https://github.com/openvinotoolkit/datumaro/pull/1194
-
-        # TODO(Eugene): This is a temporal approach
-        # When img is an instance of RoIImageFromFile, accessing img.bytes
-        # yields the entire image instead of the RoI image.
-        # https://github.com/openvinotoolkit/datumaro/pull/1194
-        img_data = (
-            np.asarray(PILImage.open(BytesIO(img_bytes)).convert("RGB"))
-            if isinstance(img, ImageFromFile) and (img_bytes := img.bytes) is not None
-            else self._convert_to_rgb(img.data)
-        )
+        with image_decode_context():
+            img_data = (
+                cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
+                if self.image_color_channel == ImageColorChannel.RGB
+                else img.data
+            )
 
         if img_data is None:
             msg = "Cannot get image data"
@@ -145,18 +160,6 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         img_data = self._cache_img(key=key, img_data=img_data)
 
         return img_data, img_data.shape[:2]
-
-    @staticmethod
-    def _convert_to_rgb(img_data: np.ndarray | None) -> np.ndarray | None:
-        """This function is required for `img.data` (not read by PIL)."""
-        if img_data is None:
-            return None
-        if img_data.shape[-1] == 4:
-            return cv2.cvtColor(img_data, cv2.COLOR_BGRA2RGB)
-        if len(img_data.shape) == 2:
-            return cv2.cvtColor(img_data, cv2.COLOR_GRAY2BGR)
-
-        return cv2.cvtColor(img_data, cv2.COLOR_BGR2RGB)
 
     def _cache_img(self, key: str | int, img_data: np.ndarray) -> np.ndarray:
         """Cache an image after resizing.

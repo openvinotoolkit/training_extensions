@@ -35,8 +35,8 @@ DATASET = {
         "data_dir": "tests/assets/hlabel_classification",
         "overrides": [
             "model.otx_model.num_classes=7",
-            "model.otx_model.config.head.num_multiclass_heads=2",
-            "model.otx_model.config.head.num_multilabel_classes=3",
+            "model.otx_model.num_multiclass_heads=2",
+            "model.otx_model.num_multilabel_classes=3",
         ],
     },
     "detection": {
@@ -61,14 +61,21 @@ DATASET = {
         "data_dir": "tests/assets/action_detection_dataset/",
         "overrides": [
             "model.otx_model.num_classes=5",
-            "+model.otx_model.config.roi_head.bbox_head.topk=3",
+            "model.otx_model.topk=3",
+        ],
+    },
+    "visual_prompting": {
+        "data_dir": "tests/assets/car_tree_bug",
+        "overrides": [
+            "~model.scheduler.mode",
+            "~model.scheduler.patience",
         ],
     },
 }
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
+def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -119,6 +126,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path) -> None:
         f"base.data_dir={DATASET[task]['data_dir']}",
         f"base.work_dir={tmp_path_test}",
         f"base.output_dir={tmp_path_test / 'outputs'}",
+        f"trainer={fxt_accelerator}",
         *DATASET[task]["overrides"],
         f"checkpoint={ckpt_files[-1]}",
     ]

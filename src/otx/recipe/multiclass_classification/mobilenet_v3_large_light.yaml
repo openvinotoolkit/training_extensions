@@ -32,41 +32,13 @@ data:
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
+        scale: 224
+        type: Resize
       - type: PackInputs
 model:
   otx_model:
-    config:
-      backbone:
-        type: OTXMobileNetV3
-      head:
-        in_channels: 960
-        loss:
-          loss_weight: 1.0
-          type: CrossEntropyLoss
-        num_classes: 1000
-        topk:
-          - 1
-          - 5
-        type: LinearClsHead
-      neck:
-        type: GlobalAveragePooling
-      data_preprocessor:
-        mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: False
-        type: ClsDataPreprocessor
-      type: ImageClassifier
+    _target_: otx.algo.classification.mobilenet_v3_large.MobileNetV3ForMulticlassCls
+    light: True
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true

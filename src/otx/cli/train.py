@@ -6,31 +6,17 @@
 
 from __future__ import annotations
 
+import logging as log
 from typing import TYPE_CHECKING, Any
-
+import hydra
 from hydra import compose, initialize
-from jsonargparse import ArgumentParser
-
+from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 
 if TYPE_CHECKING:
-    from jsonargparse._actions import _ActionSubCommands
-    from pytorch_lightning import Trainer
-
-
-def add_train_parser(subcommands_action: _ActionSubCommands) -> None:
-    """Add subparser for train command.
-
-    Args:
-        subcommands_action (_ActionSubCommands): Sub-Command in CLI.
-
-    Returns:
-        None
-    """
-    parser = ArgumentParser()
-    parser.add_argument("overrides", help="overrides values", default=[], nargs="+")
-    subcommands_action.add_subcommand("train", parser, help="Training subcommand for OTX")
+    from lightning import Callback
+    from lightning.pytorch.loggers import Logger
 
 
 def otx_train(overrides: list[str]) -> dict[str, Any]:
@@ -49,7 +35,58 @@ def otx_train(overrides: list[str]) -> dict[str, Any]:
         configure_hydra_outputs(cfg)
 
         # train the model
-        from otx.core.engine import Engine
+        from lightning import seed_everything
 
-        engine = Engine()
-        return engine.train(cfg)
+        from otx.core.data.module import OTXDataModule
+        from otx.core.utils.instantiators import (
+            instantiate_callbacks,
+            instantiate_loggers,
+        )
+
+        if cfg.seed is not None:
+            seed_everything(cfg.seed, workers=True)
+
+        log.info(f"Instantiating datamodule <{cfg.data}>")
+        datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
+        log.info(f"Instantiating model <{cfg.model}>")
+        model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
+        optimizer = hydra.utils.instantiate(cfg.model.optimizer)
+        scheduler = hydra.utils.instantiate(cfg.model.scheduler)
+
+        log.info("Instantiating callbacks...")
+        callbacks: list[Callback] = instantiate_callbacks(cfg.callbacks)
+
+        log.info("Instantiating loggers...")
+        logger: list[Logger] = instantiate_loggers(cfg.logger)
+
+        from otx.engine import Engine
+
+        trainer_kwargs = {**cfg.trainer}
+        engine = Engine(
+            task=cfg.base.task,
+            work_dir=cfg.base.output_dir,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            datamodule=datamodule,
+            checkpoint=cfg.checkpoint,
+            device=trainer_kwargs.pop("accelerator", "auto"),
+        )
+
+        train_metrics = {}
+
+        trainer_kwargs.pop("_target_", None)
+        trainer_kwargs.pop("default_root_dir", None)
+        if cfg.train:
+            train_metrics = engine.train(
+                callbacks=callbacks,
+                logger=logger,
+                resume=cfg.resume,
+                **trainer_kwargs,
+            )
+
+        test_metrics = {}
+        if cfg.test:
+            test_metrics = engine.test()
+
+        return {**train_metrics, **test_metrics}

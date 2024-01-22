@@ -6,6 +6,7 @@ defaults:
   - override /data: mmdet
   - override /model: mmdet
 data:
+  image_color_channel: BGR
   train_subset:
     batch_size: 8
     transforms:
@@ -109,52 +110,8 @@ data:
           - pad_shape
 model:
   otx_model:
-    config:
-      load_from: https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_s_8x8_300e_coco/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth
-      train_cfg:
-        assigner:
-          type: SimOTAAssigner
-          center_radius: 2.5
-      test_cfg:
-        score_thr: 0.01
-        nms:
-          type: nms
-          iou_threshold: 0.65
-        max_per_img: 100
-      type: YOLOX
-      data_preprocessor:
-        type: DetDataPreprocessor
-        mean:
-          - 0.0
-          - 0.0
-          - 0.0
-        std:
-          - 1.0
-          - 1.0
-          - 1.0
-        bgr_to_rgb: false
-        pad_size_divisor: 32
-      backbone:
-        type: CSPDarknet
-        deepen_factor: 0.33
-        widen_factor: 0.5
-        out_indices:
-          - 2
-          - 3
-          - 4
-      neck:
-        type: YOLOXPAFPN
-        in_channels:
-          - 128
-          - 256
-          - 512
-        out_channels: 128
-        num_csp_blocks: 4
-      bbox_head:
-        type: YOLOXHead
-        num_classes: 80
-        in_channels: 128
-        feat_channels: 128
+    _target_: otx.algo.detection.yolox.YoloX
+    variant: s
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
