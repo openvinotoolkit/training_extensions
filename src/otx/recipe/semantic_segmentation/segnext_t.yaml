@@ -40,13 +40,13 @@ overrides:
               - 0.5
               - 2.0
             scale:
-              - 2048
-              - 512
+              - 544
+              - 544
             type: RandomResize
           - cat_max_ratio: 0.75
-            scale:
-              - 544
-              - 544
+            crop_size:
+              - 512
+              - 512
             type: RandomCrop
           - prob: 0.5
             type: RandomFlip
