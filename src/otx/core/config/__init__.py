@@ -4,7 +4,9 @@
 """Config data type objects."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+import yaml
 
 if TYPE_CHECKING:
     from torch import dtype
@@ -75,12 +77,52 @@ def as_torch_dtype(arg: str) -> dtype:
     return mapping[key]
 
 
+def dtype_representer(dumper: yaml.Dumper | yaml.representer.SafeRepresenter, data: dtype) -> yaml.ScalarNode:
+    """Custom representer for converting dtype object to YAML sequence node.
+
+    Args:
+        dumper (yaml.Dumper): The YAML dumper object.
+        data (dtype): The dtype object to be converted.
+
+    Returns:
+        yaml.Node: The converted YAML node.
+    """
+    return dumper.represent_str("${as_torch_dtype:" + str(data) + "}")
+
+
+def ignore_aliases(self: yaml.representer.SafeRepresenter, data: Any) -> bool:  # noqa: ARG001, ANN401
+    """Determine whether to ignore aliases in YAML representation.
+
+    Args:
+        data: The data to check.
+
+    Returns:
+        bool | None: True if aliases should be ignored, None otherwise.
+    """
+    from torch import dtype
+
+    if data is None:
+        return True
+    if isinstance(data, tuple) and data == ():
+        return True
+    if isinstance(data, (str, bytes, bool, int, float, dtype)):
+        return True
+    return None
+
+
 def register_configs() -> None:
     """Register custom resolvers."""
     from omegaconf import OmegaConf
 
     OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple, replace=True)
     OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype, replace=True)
+
+    from torch import dtype
+
+    yaml.add_representer(dtype, dtype_representer)  # For lightnig_logs
+    # For jsonargparse's SafeDumper
+    yaml.SafeDumper.add_representer(dtype, dtype_representer)
+    yaml.SafeDumper.ignore_aliases = ignore_aliases  # type: ignore  # noqa: PGH003
 
 
 register_configs()

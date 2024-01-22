@@ -17,16 +17,16 @@ from otx import OTX_LOGO, __version__
 from otx.cli.utils import get_otx_root_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
-from otx.core.config import register_configs
-
-register_configs()
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
 _ENGINE_AVAILABLE = True
 try:
+    from otx.core.config import register_configs
     from otx.engine import Engine
+
+    register_configs()
 except ImportError:
     _ENGINE_AVAILABLE = False
 
@@ -55,6 +55,7 @@ class OTXCLI:
         parser = ArgumentParser(
             description="OpenVINO Training-Extension command line tool",
             env_prefix="otx",
+            parser_mode="omegaconf",
             formatter_class=CustomHelpFormatter,
         )
         parser.add_argument(
@@ -74,6 +75,7 @@ class OTXCLI:
         """
         parser = ArgumentParser(
             formatter_class=CustomHelpFormatter,
+            parser_mode="omegaconf",
             **kwargs,
         )
         parser.add_argument(
