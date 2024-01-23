@@ -8,11 +8,7 @@ task_adapt = dict(
 )
 
 custom_hooks = [
-    dict(
-        type="MeanTeacherHook",
-        epoch_momentum=0.1,
-        start_epoch=2,
-    ),
+    dict(type="MeanTeacherHook", epoch_momentum=0.1, start_epoch=2),
     dict(
         type="LazyEarlyStoppingHook",
         start=3,
@@ -23,5 +19,17 @@ custom_hooks = [
         priority=75,
     ),
 ]
+
+lr_config = dict(
+    policy="ReduceLROnPlateau",
+    metric="mAP",
+    patience=5,
+    iteration_patience=0,
+    interval=1,
+    min_lr=1e-06,
+    warmup="linear",
+    warmup_iters=200,
+    warmup_ratio=0.3333333333333333,
+)
 
 find_unused_parameters = True

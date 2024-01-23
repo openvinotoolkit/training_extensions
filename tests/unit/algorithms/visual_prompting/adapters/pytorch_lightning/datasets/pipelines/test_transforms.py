@@ -30,7 +30,7 @@ def test_collate_fn():
             "bboxes": np.array([[1, 2, 3, 4], [5, 6, 7, 8]]),
             "points": [],
             "gt_masks": [Tensor([1, 2, 3])],
-            "original_size": [],
+            "original_size": np.array([1, 3]),
             "padding": [],
             "path": [],
             "labels": [],
@@ -41,7 +41,7 @@ def test_collate_fn():
             "bboxes": np.array([[9, 10, 11, 12]]),
             "points": [],
             "gt_masks": [Tensor([4, 5, 6])],
-            "original_size": [],
+            "original_size": np.array([1, 3]),
             "padding": [],
             "path": [],
             "labels": [],
@@ -53,7 +53,7 @@ def test_collate_fn():
         "bboxes": [Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), Tensor([[9, 10, 11, 12]])],
         "points": None,
         "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
-        "original_size": [[], []],
+        "original_size": [Tensor([1, 3]), Tensor([1, 3])],
         "path": [[], []],
         "labels": [[], []],
         "padding": [[], []],
@@ -69,7 +69,8 @@ def test_collate_fn():
     assert len(results["gt_masks"]) == len(expected["gt_masks"])
     for r, e in zip(results["gt_masks"], expected["gt_masks"]):
         assert torch.all(r == e)
-    assert results["original_size"] == expected["original_size"]
+    for r, e in zip(results["original_size"], expected["original_size"]):
+        assert torch.all(r == e)
     assert results["path"] == expected["path"]
     assert results["labels"] == expected["labels"]
     assert results["padding"] == expected["padding"]

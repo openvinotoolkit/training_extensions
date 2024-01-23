@@ -26,7 +26,6 @@ from mmaction.core.evaluation.ava_utils import det2csv
 from mmaction.datasets.ava_dataset import AVADataset
 from mmaction.datasets.builder import DATASETS
 from mmaction.datasets.pipelines import Compose
-from mmaction.utils import get_root_logger
 from mmcv.utils import print_log
 
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
@@ -36,8 +35,9 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metadata import VideoMetadata
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.utils.logger import get_logger
 
-root_logger = get_root_logger()
+root_logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments, too-many-locals, super-init-not-called

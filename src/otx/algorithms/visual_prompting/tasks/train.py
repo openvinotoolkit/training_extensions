@@ -25,7 +25,6 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_lightning.loggers import CSVLogger
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import (
     OTXVisualPromptingDataModule,
 )
@@ -34,6 +33,7 @@ from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.utils.logger import get_logger
 
 from .inference import InferenceTask
 
@@ -71,7 +71,9 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         self.model = self.load_model(otx_model=self.task_environment.model)
 
-        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
+        datamodule = OTXVisualPromptingDataModule(
+            config=self.config.dataset, dataset=dataset, train_type=self.train_type
+        )
         loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
             TQDMProgressBar(),

@@ -466,7 +466,7 @@ class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=hard_prediction,
             soft_prediction=soft_prediction,
-            label_map={1: metadata["label"].label},
+            label_map={1: metadata["label"].label if isinstance(metadata["label"], ScoredLabel) else metadata["label"]},
         )
 
         return annotations

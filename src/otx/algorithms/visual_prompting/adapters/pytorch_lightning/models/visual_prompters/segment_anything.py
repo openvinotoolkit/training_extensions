@@ -10,7 +10,7 @@ reference: https://github.com/facebookresearch/segment-anything
 
 import re
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from omegaconf import DictConfig
@@ -29,6 +29,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders 
 )
 
 CKPT_PATHS = {
+    "tiny_vit": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
     "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
     "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
     "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
@@ -172,7 +173,7 @@ class SegmentAnything(LightningModule):
                     with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)
-                self.load_state_dict(state_dict)
+                self.load_state_dict(state_dict, strict=False)
 
     ##########################################################
     #     forward for inference (export/deploy/optimize)     #
@@ -333,46 +334,35 @@ class SegmentAnything(LightningModule):
 
         return masks, iou_preds
 
-    def mask_postprocessing(self, masks: Tensor, orig_size: Tensor) -> Tensor:
+    @staticmethod
+    def mask_postprocessing(masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
         """Postprocesses the predicted masks.
 
         Args:
             masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
+            input_size (int): The size of the image input to the model, in (H, W) format.
+                Used to remove padding.
             orig_size (Tensor): The original image size with shape Bx2.
 
         Returns:
             masks (Tensor): The postprocessed masks with shape Bx1xHxW.
         """
-        masks = F.interpolate(
-            masks,
-            size=(self.config.model.image_size, self.config.model.image_size),
-            mode="bilinear",
-            align_corners=False,
-        )
 
-        prepadded_size = self.resize_longest_image_size(orig_size, self.config.model.image_size).to(torch.int64)
+        def resize_longest_image_size(input_image_size: Tensor, longest_side: int) -> Tensor:
+            scale = longest_side / torch.max(input_image_size)
+            transformed_size = scale * input_image_size
+            transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
+            return transformed_size
+
+        masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
+
+        prepadded_size = resize_longest_image_size(orig_size, input_size)
         masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
 
         orig_size = orig_size.to(torch.int64)
         h, w = orig_size[0], orig_size[1]
         masks = F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
         return masks
-
-    def resize_longest_image_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
-        """Resizes the longest side of the image to the given size.
-
-        Args:
-            input_image_size (Tensor): The original image size with shape Bx2.
-            longest_side (int): The size of the longest side.
-
-        Returns:
-            transformed_size (Tensor): The transformed image size with shape Bx2.
-        """
-        input_image_size = input_image_size.to(torch.float32)
-        scale = longest_side / torch.max(input_image_size)
-        transformed_size = scale * input_image_size
-        transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
-        return transformed_size
 
     ######################################################
     #     forward for training/validation/prediction     #
@@ -551,12 +541,12 @@ class SegmentAnything(LightningModule):
 
         return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"], labels=batch["labels"])
 
+    @staticmethod
     def postprocess_masks(
-        self,
         masks: Tensor,
         input_size: Tuple[int, int],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
+        padding: Union[Tuple[int, ...], Tensor],
+        original_size: Union[Tuple[int, int], Tensor],
     ) -> Tensor:
         """Remove padding and upscale masks to the original image size.
 
@@ -564,17 +554,17 @@ class SegmentAnything(LightningModule):
             masks (Tensor): Predicted masks from the mask_decoder with (N, 1, H/downsized_ratio, W/downsized_ratio).
             input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.
                 Used to remove padding.
-            padding (tuple(int, int, int, int), optional): The padding applied to the image before input to the model,
+            padding (tuple(int, int, int, int), Tensor): The padding applied to the image before input to the model,
                 in (left, top, right, bottom) format.
-            original_size (tuple(int, int)): The original size of the image before resizing for input to the model,
-                in (H, W) format.
+            original_size (tuple(int, int), Tensor): The original size of the image before resizing
+                for input to the model, in (H, W) format.
 
         Returns:
           (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         masks = masks[..., : input_size[0] - padding[3], : input_size[1] - padding[2]]
-        masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+        masks = F.interpolate(masks, [int(o) for o in original_size], mode="bilinear", align_corners=False)
         return masks.squeeze(1)
 
     def configure_optimizers(self) -> optim:

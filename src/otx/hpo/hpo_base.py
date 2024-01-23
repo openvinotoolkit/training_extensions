@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import json
-import logging
 import tempfile
 from abc import ABC, abstractmethod
 from enum import IntEnum
@@ -23,8 +22,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from otx.hpo.search_space import SearchSpace
 from otx.hpo.utils import check_mode_input, check_positive
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class HpoBase(ABC):

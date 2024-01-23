@@ -20,7 +20,6 @@ from otx.algorithms.common.utils.callback import (
     TrainingProgressCallback,
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
@@ -56,6 +55,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -446,8 +446,8 @@ class OTXDetectionTask(OTXTask, ABC):
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
             )
         metric = MetricsHelper.compute_f_measure(output_resultset)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
         output_resultset.performance = metric.get_performance()
+        logger.info(f"F-measure after evaluation: {output_resultset.performance}")
         logger.info("Evaluation completed")
 
     def _add_predictions_to_dataset(

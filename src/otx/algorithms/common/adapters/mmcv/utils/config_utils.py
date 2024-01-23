@@ -25,8 +25,8 @@ from mmcv.utils.misc import import_modules_from_strings
 from mmcv.utils.path import check_file_exist
 
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.utils.logger import get_logger
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs

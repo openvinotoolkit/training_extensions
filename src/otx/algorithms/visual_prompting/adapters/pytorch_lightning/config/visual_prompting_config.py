@@ -20,8 +20,8 @@ from typing import Optional, Union
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -96,7 +96,13 @@ def update_visual_prompting_config(
     groups = getattr(otx_config, "groups", None)
     if groups:
         for group in groups:
-            if group in ["learning_parameters", "nncf_optimization", "pot_parameters", "postprocessing"]:
+            if group in [
+                "learning_parameters",
+                "nncf_optimization",
+                "pot_parameters",
+                "postprocessing",
+                "algo_backend",
+            ]:
                 if group in ["nncf_optimization"]:
                     # TODO (sungchul): Consider nncf_optimization
                     logger.warning(f"{group} will be implemented.")

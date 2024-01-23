@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from ..utils import get_op_name  # type: ignore[attr-defined]
 from .builder import OPS

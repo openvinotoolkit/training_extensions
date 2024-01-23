@@ -49,6 +49,11 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Run Tests
+        env:
+          MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
+          GH_CTX_REF_NAME: ${{ github.ref_name }}
+          GH_CTX_SHA: ${{ github.sha  }}
         run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }} -- ${{ inputs.tests-dir }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
@@ -56,7 +61,7 @@ jobs:
           name: ${{ inputs.artifact-prefix }}-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}
           path: |
             .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}.csv
-            .tox/tests-reg_${{ inputs.task }}_*.csv
-            .tox/tests-reg_tiling_${{ inputs.task }}_*.csv
+            .tox/tests-reg_${{ inputs.task }}*.csv
+            .tox/perf-*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}

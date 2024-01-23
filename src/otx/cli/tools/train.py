@@ -44,6 +44,7 @@ from otx.cli.utils.parser import (
 )
 from otx.cli.utils.report import get_otx_report
 from otx.core.data.adapter import get_dataset_adapter
+from otx.utils.logger import config_logger
 
 
 def get_args():
@@ -199,6 +200,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.workspace, mode=mode)
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -284,15 +286,19 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     resource_tracker = None
     if args.track_resource_usage and not is_multigpu_child_process():
-        resource_tracker = ResourceTracker(args.track_resource_usage, args.gpus)
+        resource_tracker = ResourceTracker(
+            config_manager.output_path / "resource_usage.yaml", args.track_resource_usage, args.gpus
+        )
         resource_tracker.start()
+        if exit_stack is not None:
+            exit_stack.callback(resource_tracker.stop)
 
     task.train(
         dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
     )
 
-    if resource_tracker is not None:
-        resource_tracker.stop(config_manager.output_path / "resource_usage.yaml")
+    if resource_tracker is not None and exit_stack is None:
+        resource_tracker.stop()
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))

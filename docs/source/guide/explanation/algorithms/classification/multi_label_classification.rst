@@ -28,6 +28,7 @@ Specifically, this format should be converted in our `internal representation <h
 To convert the COCO data format to our internal one, run this script in similar way:
 
 .. code-block::
+
     python convert_coco_to_multilabel.py --ann_file_path <path to .json COCO annotations> --data_root_dir <path to images folder> --output <output path to save annotations>
 
 .. note::

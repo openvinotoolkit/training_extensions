@@ -5,7 +5,9 @@
 #
 
 import os
-from typing import List, Optional, Tuple, Dict
+import torch
+import torch.nn as nn
+from typing import List, Optional, Tuple, Any
 
 import numpy as np
 
@@ -30,7 +32,10 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from tests.test_helpers import generate_random_annotated_image
 
-DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR = os.path.join("src/otx/algorithms/visual_prompting/configs", "sam_vit_b")
+DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR = {
+    "visual_prompt": os.path.join("src/otx/algorithms/visual_prompting/configs", "sam_vit_b"),
+    "zero_shot": os.path.join("src/otx/algorithms/visual_prompting/configs", "zero_shot_sam_tiny_vit"),
+}
 
 labels_names = ("rectangle", "ellipse", "triangle")
 
@@ -103,9 +108,9 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
     return DatasetEntity(items)
 
 
-def init_environment(model: Optional[ModelEntity] = None):
+def init_environment(model: Optional[ModelEntity] = None, mode: str = "visual_prompt"):
     model_template = parse_model_template(
-        os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR, "template_experimental.yaml")
+        os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR.get(mode), "template_experimental.yaml")
     )
     hyper_parameters = create(model_template.hyper_parameters.data)
     labels_schema = generate_otx_label_schema()
@@ -133,7 +138,71 @@ class MockDatasetConfig:
         self.offset_bbox: int = 0
         self.normalize = self._normalize
 
+    def get(self, value: str, default: Optional[Any] = None) -> Any:
+        return getattr(self, value, default)
+
 
 class MockConfig:
     def __init__(self, use_mask: bool = False):
         self.dataset = MockDatasetConfig(use_mask=use_mask)
+
+
+class MockImageEncoder(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.backbone = nn.Linear(1, 1)
+
+    def forward(self, *args, **kwargs):
+        return torch.ones((1, 2, 4, 4))
+
+
+class MockPromptEncoder(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.layer = nn.Linear(1, 1)
+        self.embed_dim = 4
+        self.pe_layer = None
+        self.mask_downscaling = None
+
+    def forward(self, *args, **kwargs):
+        return torch.Tensor([[1]]), torch.Tensor([[1]])
+
+    def get_dense_pe(self):
+        return torch.Tensor([[1]])
+
+
+class MockMaskDecoder(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.layer = nn.Linear(1, 1)
+        self.num_mask_tokens = 4
+        self.predict_masks = None
+
+    def forward(self, *args, **kwargs):
+        return torch.Tensor([[1]]), torch.Tensor([[1]])
+
+    def predict_mask(self, *args, **kwargs):
+        return self(*args, **kwargs)
+
+
+class MockScoredLabel:
+    def __init__(self, label: int, name: str = "background"):
+        self.name = name
+        self.id_ = label
+
+
+class MockPromptGetter(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+    def initialize(self):
+        pass
+
+    def set_default_thresholds(self, *args, **kwargs):
+        pass
+
+    def get_prompt_candidates(self, *args, **kwargs):
+        return {1: (torch.Tensor([[0, 0, 0.5]]), torch.Tensor([[1, 1]]))}
+
+    def forward(self, *args, **kwargs):
+        return torch.tensor([[[0, 0, 0.5], [1, 1, 0.7]]]), torch.tensor([[[2, 2]]])

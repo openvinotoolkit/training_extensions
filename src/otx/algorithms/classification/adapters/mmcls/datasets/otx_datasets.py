@@ -18,10 +18,10 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -264,7 +264,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
 
             confusion_matrices = []
             for cls_idx in cls_index:
-                group_labels_idx = set([cls_idx - 1])
+                group_labels_idx = set([cls_idx])
                 y_true = [int(not group_labels_idx.issubset(true_labels)) for true_labels in true_label_idx]
                 y_pred = [int(not group_labels_idx.issubset(pred_labels)) for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))

@@ -8,7 +8,7 @@ from typing import Union
 
 
 class IDataSource:
-    """Class that holds a combination of both a repo and a URL which can be used to fetch data."""
+    """Class that holds a combination of both a repo and a filename which can be used to fetch data."""
 
     @property
     @abc.abstractmethod

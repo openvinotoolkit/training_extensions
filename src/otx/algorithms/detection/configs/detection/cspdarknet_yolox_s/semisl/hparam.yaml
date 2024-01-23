@@ -1,6 +1,0 @@
-# Hyperparameters.
-hyper_parameters:
-  parameter_overrides:
-    algo_backend:
-      train_type:
-        default_value: Semisupervised

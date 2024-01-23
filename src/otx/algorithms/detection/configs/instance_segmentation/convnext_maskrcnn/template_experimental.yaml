@@ -28,7 +28,7 @@ hyper_parameters:
         default_value: 2
         auto_hpo_state: POSSIBLE
       inference_batch_size:
-        default_value: 2
+        default_value: 1
       learning_rate:
         default_value: 0.001
         auto_hpo_state: POSSIBLE
