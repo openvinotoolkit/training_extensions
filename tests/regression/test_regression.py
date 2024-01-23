@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from otx.cli.train import otx_train
+from otx.cli.cli import OTXCLI
+from unittest.mock import patch
 
 import mlflow
 
@@ -63,25 +64,36 @@ class BaseTest:
             }
             data_root = (
                 fxt_dataset_root_dir
-                / test_case.model.task
+                # / test_case.model.task
                 / test_case.dataset.data_root
             )
             with mlflow.start_run(tags=tags, run_name=run_name):
-                overrides = [
-                    f"+recipe={test_case.model.task}/{test_case.model.name}",
-                    f"model.otx_model.num_classes={test_case.dataset.num_classes}",
-                    f"data.data_root={data_root}",
-                    f"data.data_format={test_case.dataset.data_format}",
-                    f"base.output_dir={test_case.output_dir}",
-                    f"seed={seed}",
-                    f"trainer={fxt_accelerator}",
-                    "test=true",
-                    "trainer=gpu",
-                ] + [
-                    f"{key}={value}"
-                    for key, value in test_case.dataset.extra_overrides.items()
+                command_cfg = [
+                    "otx", "train",
+                    "--config", f"src/otx/recipe/{test_case.model.task}/{test_case.model.name}.yaml",
+                    "--model.num_classes", str(test_case.dataset.num_classes),
+                    "--data_root", str(data_root),
+                    "--data.config.data_format", test_case.dataset.data_format,
+                    "--engine.work_dir", str(test_case.output_dir),
+                    "--engine.device", fxt_accelerator,
                 ]
-                metrics = otx_train(overrides)
+                deterministic = test_case.dataset.extra_overrides.pop("deterministic", "False")
+                for key, value in test_case.dataset.extra_overrides.items():
+                    command_cfg.append(f"--{key}")
+                    command_cfg.append(str(value))
+                train_cfg = command_cfg.copy()
+                train_cfg.extend(["--seed", str(seed)])
+                train_cfg.extend(["--deterministic", deterministic])
+                with patch("sys.argv", train_cfg):
+                    cli = OTXCLI()
+                    train_metrics = cli.engine.trainer.callback_metrics
+                    checkpoint = cli.engine.checkpoint
+                command_cfg[1] = "test"
+                command_cfg += ["--checkpoint", checkpoint]
+                with patch("sys.argv", command_cfg):
+                    cli = OTXCLI()
+                    test_metrics = cli.engine.trainer.callback_metrics
+                metrics = {**train_metrics, **test_metrics}
 
                 # Submit metrics to MLFlow Tracker server
                 mlflow.log_metrics(metrics)
@@ -90,36 +102,36 @@ class BaseTest:
 class TestMultiClassCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="multiclass_classification", name="otx_deit_tiny"),
-        ModelTestCase(task="multiclass_classification", name="otx_dino_v2"),
-        ModelTestCase(task="multiclass_classification", name="otx_efficientnet_b0"),
-        ModelTestCase(task="multiclass_classification", name="otx_efficientnet_v2"),
-        ModelTestCase(task="multiclass_classification", name="otx_mobilenet_v3_large"),
+        ModelTestCase(task="classification/multi_class_cls", name="otx_deit_tiny"),
+        ModelTestCase(task="classification/multi_class_cls", name="otx_dino_v2"),
+        ModelTestCase(task="classification/multi_class_cls", name="otx_efficientnet_b0"),
+        ModelTestCase(task="classification/multi_class_cls", name="otx_efficientnet_v2"),
+        ModelTestCase(task="classification/multi_class_cls", name="otx_mobilenet_v3_large"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"multiclass_CUB_small_{idx}",
-            data_root=Path("multiclass_CUB_small") / f"{idx}",
+            data_root=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "20"},
+            extra_overrides={"max_epochs": "20"},
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name=f"multiclass_CUB_medium",
-            data_root=Path("multiclass_CUB_medium"),
+            data_root=Path("multiclass_classification/multiclass_CUB_medium"),
             data_format="imagenet_with_subset_dirs",
             num_classes=67,
-            extra_overrides={"trainer.max_epochs": "20"},
+            extra_overrides={"max_epochs": "20"},
         ),
         DatasetTestCase(
             name=f"multiclass_food101_large",
-            data_root=Path("multiclass_food101_large"),
+            data_root=Path("multiclass_classification/multiclass_food101_large"),
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
-            extra_overrides={"trainer.max_epochs": "20"},
+            extra_overrides={"max_epochs": "20"},
         )
     ]
 
@@ -157,35 +169,35 @@ class TestMultiClassCls(BaseTest):
 class TestMultilabelCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="multilabel_classification", name="efficientnet_b0_light"),
-        ModelTestCase(task="multilabel_classification", name="efficientnet_v2_light"),
-        ModelTestCase(task="multilabel_classification", name="mobilenet_v3_large_light"),
-        ModelTestCase(task="multilabel_classification", name="otx_deit_tiny"),
+        ModelTestCase(task="classification/multi_label_cls", name="efficientnet_b0_light"),
+        ModelTestCase(task="classification/multi_label_cls", name="efficientnet_v2_light"),
+        ModelTestCase(task="classification/multi_label_cls", name="mobilenet_v3_large_light"),
+        ModelTestCase(task="classification/multi_label_cls", name="otx_deit_tiny"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"multilabel_CUB_small_{idx}",
-            data_root=Path("multilabel_CUB_small") / f"{idx}",
+            data_root=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
             data_format="datumaro",
             num_classes=3,
-            extra_overrides={"trainer.max_epochs": "20"},
+            extra_overrides={"max_epochs": "20"},
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name=f"multilabel_CUB_medium",
-            data_root=Path("multilabel_CUB_medium"),
+            data_root=Path("multilabel_classification/multilabel_CUB_medium"),
             data_format="datumaro",
             num_classes=68,
-            extra_overrides={"trainer.max_epochs": "20"},
+            extra_overrides={"max_epochs": "20"},
         ),
         DatasetTestCase(
             name=f"multilabel_food101_large",
-            data_root=Path("multilabel_food101_large"),
+            data_root=Path("multilabel_classification/multilabel_food101_large"),
             data_format="datumaro",
             num_classes=21,
-            extra_overrides={"trainer.max_epochs": "20"},
+            extra_overrides={"max_epochs": "20"},
         )
     ]
 
@@ -223,33 +235,35 @@ class TestMultilabelCls(BaseTest):
 class TestHlabelCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="hlabel_classification", name="efficientnet_b0_light"),
-        ModelTestCase(task="hlabel_classification", name="efficientnet_v2_light"),
-        ModelTestCase(task="hlabel_classification", name="mobilenet_v3_large_light"),
-        ModelTestCase(task="hlabel_classification", name="otx_deit_tiny"),
+        ModelTestCase(task="classification/h_label_cls", name="efficientnet_b0_light"),
+        ModelTestCase(task="classification/h_label_cls", name="efficientnet_v2_light"),
+        ModelTestCase(task="classification/h_label_cls", name="mobilenet_v3_large_light"),
+        ModelTestCase(task="classification/h_label_cls", name="otx_deit_tiny"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"hlabel_CUB_small_{idx}",
-            data_root=Path("hlabel_CUB_small") / f"{idx}",
+            data_root=Path("hlabel_classification/hlabel_CUB_small") / f"{idx}",
             data_format="datumaro",
             num_classes=6,
             extra_overrides={
-                "trainer.max_epochs": "20",
-                "model.otx_model.num_multiclass_heads": "3",
+                "max_epochs": "20",
+                "model.num_multiclass_heads": "3",
+                "model.num_multilabel_classes": "0",
             },
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name=f"hlabel_CUB_medium",
-            data_root=Path("hlabel_CUB_medium"),
+            data_root=Path("hlabel_classification/hlabel_CUB_medium"),
             data_format="datumaro",
             num_classes=102,
             extra_overrides={
-                "trainer.max_epochs": "20",
-                "model.otx_model.num_multiclass_heads": "23",
+                "max_epochs": "20",
+                "model.num_multiclass_heads": "23",
+                "model.num_multilabel_classes": "0",
             },
         )
         
@@ -285,6 +299,7 @@ class TestHlabelCls(BaseTest):
             tmpdir=tmpdir,
         )
 
+
 class TestObjectDetection(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
@@ -300,26 +315,26 @@ class TestObjectDetection(BaseTest):
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"pothole_small_{idx}",
-            data_root=Path("pothole_small") / f"{idx}",
+            data_root=Path("detection/pothole_small") / f"{idx}",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"max_epochs": "40", "deterministic": "True"},
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name="pothole_medium",
-            data_root="pothole_medium",
+            data_root=Path("detection/pothole_medium"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "40", "deterministic": "True"}
         ),
         DatasetTestCase(
             name="vitens_large",
-            data_root="vitens_large",
+            data_root=Path("detection/vitens_large"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "40", "deterministic": "True"}
         )
     ]
 
@@ -362,32 +377,32 @@ class TestSemanticSegmentation(BaseTest):
         ModelTestCase(task="semantic_segmentation", name="segnext_b"),
         ModelTestCase(task="semantic_segmentation", name="segnext_s"),
         ModelTestCase(task="semantic_segmentation", name="segnext_t"),
-        ModelTestCase(task="semantic_segmentation", name="dino_v2_seg"),
+        ModelTestCase(task="semantic_segmentation", name="dino_v2"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"kvasir_small_{idx}",
-            data_root=Path("kvasir_small") / f"{idx}",
+            data_root=Path("semantic_seg/kvasir_small") / f"{idx}",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"max_epochs": "40"},
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name="kvasir_medium",
-            data_root="kvasir_medium",
+            data_root=Path("semantic_seg/kvasir_medium"),
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "40"}
         ),
         DatasetTestCase(
             name="kvasir_large",
-            data_root="kvasir_large",
+            data_root=Path("semantic_seg/kvasir_large"),
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "40"}
         )
     ]
 
@@ -421,7 +436,6 @@ class TestSemanticSegmentation(BaseTest):
             tmpdir=tmpdir,
         )
 
-
 class TestInstanceSegmentation(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
@@ -433,26 +447,26 @@ class TestInstanceSegmentation(BaseTest):
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"wgisd_small_{idx}",
-            data_root=Path("wgisd_small") / f"{idx}",
+            data_root=Path("instance_seg/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"},
+            extra_overrides={"max_epochs": "20", "deterministic": "True"},
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name="coco_car_person_medium",
-            data_root="coco_car_person_medium",
+            data_root=Path("instance_seg/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "20", "deterministic": "True"}
         ),
         DatasetTestCase(
             name="vitens_coliform",
-            data_root="Vitens-Coliform-coco",
+            data_root=Path("instance_seg/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "20", "deterministic": "True"}
         )
     ]
 
@@ -496,26 +510,26 @@ class TestVisualPrompting(BaseTest):
     DATASET_TEST_CASES = [  # noqa: RUF012
         DatasetTestCase(
             name=f"wgisd_small_{idx}",
-            data_root=Path("wgisd_small") / f"{idx}",
+            data_root=Path("visual_prompting/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"},
+            extra_overrides={"max_epochs": "20", "deterministic": "True"},
         )
         for idx in range(1, 4)
     ] + [
         DatasetTestCase(
             name="coco_car_person_medium",
-            data_root="coco_car_person_medium",
+            data_root=Path("visual_prompting/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "20", "deterministic": "True"}
         ),
         DatasetTestCase(
             name="vitens_coliform",
-            data_root="Vitens-Coliform-coco",
+            data_root=Path("visual_prompting/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"max_epochs": "20", "deterministic": "True"}
         )
     ]
 

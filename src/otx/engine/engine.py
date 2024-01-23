@@ -319,7 +319,7 @@ class Engine:
         return self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
+            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
             return_predictions=return_predictions,
         )
 
@@ -349,7 +349,8 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
-            self._trainer = Trainer(**self._cache.args)
+            kwargs = self._cache.args
+            self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 
     @property

@@ -1,0 +1,27 @@
+task: MULTI_CLASS_CLS
+config:
+  mem_cache_size: 1GB
+  mem_cache_img_max_size: null
+  image_color_channel: RGB
+  data_format: imagenet_with_subset_dirs
+  train_subset:
+    subset_name: train
+    transform_lib_type: TORCHVISION
+    transforms:
+      - class_path: torchvision.transforms.v2.ToImage
+    batch_size: 1
+    num_workers: 2
+  val_subset:
+    subset_name: val
+    transform_lib_type: TORCHVISION
+    transforms:
+      - class_path: torchvision.transforms.v2.ToImage
+    batch_size: 1
+    num_workers: 2
+  test_subset:
+    subset_name: test
+    transform_lib_type: TORCHVISION
+    transforms:
+      - class_path: torchvision.transforms.v2.ToImage
+    batch_size: 1
+    num_workers: 2

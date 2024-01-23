@@ -20,6 +20,8 @@ from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -29,9 +31,9 @@ class OTXLitModule(LightningModule):
     def __init__(
         self,
         otx_model: OTXModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__()
 
