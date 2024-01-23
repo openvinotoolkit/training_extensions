@@ -70,8 +70,9 @@ class TestModule:
 
     @pytest.fixture()
     def fxt_real_tv_cls_config(self) -> DictConfig:
-        cfg_path = files("otx") / "config" / "data" / "torchvision_cls.yaml"
+        cfg_path = files("otx") / "recipe" / "_base_" / "data" / "torchvision_base.yaml"
         cfg = OmegaConf.load(cfg_path)
+        cfg = cfg.config
         cfg.data_root = "."
         cfg.train_subset.subset_name = "train"
         cfg.train_subset.num_workers = 0

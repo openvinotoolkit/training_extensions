@@ -1,65 +1,85 @@
-# @package _global_
-defaults:
-  - override /base: detection
-  - override /callbacks: detection
-  - override /data: mmdet
-  - override /model: mmdet
-recipe: detection/atss_r50_fpn
-data:
-  train_subset:
-    batch_size: 2
-    transforms:
-      - backend_args: null
-        type: LoadImageFromFile
-      - type: LoadAnnotations
-        with_bbox: true
-      - keep_ratio: true
-        scale:
-          - 1333
-          - 800
-        type: Resize
-      - prob: 0.5
-        type: RandomFlip
-      - type: PackDetInputs
-  val_subset:
-    batch_size: 1
-    transforms:
-      - backend_args: null
-        type: LoadImageFromFile
-      - keep_ratio: true
-        scale:
-          - 1333
-          - 800
-        type: Resize
-      - type: LoadAnnotations
-        with_bbox: true
-      - meta_keys:
-          - img_id
-          - img_path
-          - ori_shape
-          - img_shape
-          - scale_factor
-        type: PackDetInputs
-  test_subset:
-    batch_size: 1
-    transforms:
-      - backend_args: null
-        type: LoadImageFromFile
-      - keep_ratio: true
-        scale:
-          - 1333
-          - 800
-        type: Resize
-      - type: LoadAnnotations
-        with_bbox: true
-      - meta_keys:
-          - img_id
-          - img_path
-          - ori_shape
-          - img_shape
-          - scale_factor
-        type: PackDetInputs
 model:
-  otx_model:
-    _target_: otx.algo.detection.atss.ATSS
+  class_path: otx.algo.detection.atss.ATSS
+  init_args:
+    num_classes: 1000
     variant: r50_fpn
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 1e-3
+    weight_decay: 0.0
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: DETECTION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+
+overrides:
+  gradient_clip_val: 35.0
+  data:
+    config:
+      train_subset:
+        batch_size: 2
+        transforms:
+          - backend_args: null
+            type: LoadImageFromFile
+          - type: LoadAnnotations
+            with_bbox: true
+          - keep_ratio: true
+            scale:
+              - 1333
+              - 800
+            type: Resize
+          - prob: 0.5
+            type: RandomFlip
+          - type: PackDetInputs
+      val_subset:
+        batch_size: 1
+        transforms:
+          - backend_args: null
+            type: LoadImageFromFile
+          - keep_ratio: true
+            scale:
+              - 1333
+              - 800
+            type: Resize
+          - type: LoadAnnotations
+            with_bbox: true
+          - meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
+            type: PackDetInputs
+      test_subset:
+        batch_size: 1
+        transforms:
+          - backend_args: null
+            type: LoadImageFromFile
+          - keep_ratio: true
+            scale:
+              - 1333
+              - 800
+            type: Resize
+          - type: LoadAnnotations
+            with_bbox: true
+          - meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
+            type: PackDetInputs
