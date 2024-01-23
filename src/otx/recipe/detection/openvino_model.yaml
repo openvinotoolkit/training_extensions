@@ -1,21 +1,42 @@
-# @package _global_
-defaults:
-  - override /base: detection
-  - override /callbacks: detection
-  - override /data: openvino
-  - override /model: mmdet
-
-data:
-  data_format: coco_instances
-  test_subset:
-    batch_size: 64
-
 model:
-  otx_model:
-    _target_: otx.core.model.entity.detection.OVDetectionModel
-    config:
-      model_name: ssd300
-      use_throughput_mode: True
-      model_type: "SSD"
-      async_inference: True
+  class_path: otx.core.model.entity.detection.OVDetectionModel
+  init_args:
     num_classes: 20
+    config:
+      class_path: omegaconf.dictconfig.DictConfig
+      init_args:
+        content:
+          model_name: ssd300
+          use_throughput_mode: True
+          model_type: "SSD"
+          async_inference: True
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 1e-3
+    weight_decay: 0.0
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: DETECTION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: DETECTION
+    config:
+      image_color_channel: BGR
+      data_format: coco_instances
+      test_subset:
+        batch_size: 64
