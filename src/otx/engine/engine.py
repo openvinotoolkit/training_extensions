@@ -350,7 +350,7 @@ class Engine:
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
             kwargs = self._cache.args
-            self._trainer = Trainer(**kwargs)
+            self._trainer = Trainer(profiler="simple", **kwargs)
             self.work_dir = self._trainer.default_root_dir
 
     @property
