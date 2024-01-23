@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Iterable
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.utils import remove_model_form_weight_key
 from otx.core.config.device import DeviceConfig
 from otx.core.config.export import ExportConfig
 from otx.core.data.module import OTXDataModule

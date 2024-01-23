@@ -147,6 +147,14 @@ def get_metric_value(metric_dict: dict[str, Any], metric_name: str) -> Optional[
 
 
 def get_mean_std_from_data_processing(config: DictConfig) -> dict[str, Any]:
+    """Get mean and std value from data_processing.
+
+    Args:
+        config (DictConfig): MM framework model config.
+
+    Returns:
+        dict[str, Any]: Dictionary with mean and std value.
+    """
     return {
         "mean": config["data_preprocessor"]["mean"],
         "std": config["data_preprocessor"]["std"],

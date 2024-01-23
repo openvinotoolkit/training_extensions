@@ -132,6 +132,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
     @property
     def export_params(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
         export_params = get_mean_std_from_data_processing(self.config)
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0
@@ -254,6 +255,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
     @property
     def export_params(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
         export_params = get_mean_std_from_data_processing(self.config)
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0
@@ -380,6 +382,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
     @property
     def export_params(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
         export_params = get_mean_std_from_data_processing(self.config)
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0

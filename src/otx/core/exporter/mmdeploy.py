@@ -29,7 +29,7 @@ from otx.core.types.export import OTXExportPrecisionType
 
 
 class MMdeployExporter(OTXModelExporter):
-    """_summary_
+    """Exporter that uses mmdeploy and OpenVINO conversion tools.
 
     Args:
         model_builder (Callable): A function to build a model.
