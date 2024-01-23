@@ -129,6 +129,8 @@ class OTXDatasetFactory:
 
             # NOTE: DataModuleConfig does not have include_polygons attribute
             include_polygons = getattr(cfg_data_module, "include_polygons", False)
-            return OTXVisualPromptingDataset(include_polygons=include_polygons, **common_kwargs)
+            use_bbox = getattr(cfg_data_module, "use_bbox", False)
+            use_point = getattr(cfg_data_module, "use_point", False)
+            return OTXVisualPromptingDataset(include_polygons=include_polygons, use_bbox=use_bbox, use_point=use_point, **common_kwargs)
 
         raise NotImplementedError(task)
