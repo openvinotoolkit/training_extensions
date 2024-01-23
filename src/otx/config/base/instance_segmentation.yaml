@@ -1,4 +1,0 @@
-defaults:
-  - default
-
-task: INSTANCE_SEGMENTATION

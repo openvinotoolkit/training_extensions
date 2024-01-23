@@ -206,7 +206,8 @@ class Engine:
             fit_kwargs["ckpt_path"] = self.checkpoint
         elif self.checkpoint is not None:
             loaded_checkpoint = torch.load(self.checkpoint)
-            lit_module.load_state_dict(loaded_checkpoint["state_dict"])
+            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
+            lit_module.load_state_dict(loaded_checkpoint)
 
         self.trainer.fit(
             model=lit_module,
@@ -372,7 +373,8 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
-            self._trainer = Trainer(**self._cache.args)
+            kwargs = self._cache.args
+            self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 
     @property
