@@ -42,7 +42,7 @@ class TestOTXSegmentationModule:
     def model(self, mocker, fxt_seg_data_entity) -> OTXSegmentationLitModule:
         # define otx model
         otx_model = mocker.MagicMock(spec=MMSegCompatibleModel)
-        otx_model.config = {"decode_head": {"num_classes": 2}}
+        otx_model.num_classes = 2
         # define lightning model
         model = OTXSegmentationLitModule(otx_model, MagicMock, MagicMock, False)
         model.model.return_value = fxt_seg_data_entity[1]
