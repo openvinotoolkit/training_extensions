@@ -79,13 +79,13 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
     Defines basic logic for OTX datasets.
 
     Args:
-            dm_subset: datumaro subset of a dataset
-            transforms: transforms to apply on images
-            mem_cache_handler: handler of the images cache
-            mem_cache_img_max_size: max size of images to put in cache
-            max_refetch: maximum number of images to fetch in cache
-            image_color_channel: collor channel of images
-            stack_images: whether or not to stack images in collate function in OTXBatchData entity.
+        dm_subset: Datumaro subset of a dataset
+        transforms: Transforms to apply on images
+        mem_cache_handler: Handler of the images cache
+        mem_cache_img_max_size: Max size of images to put in cache
+        max_refetch: Maximum number of images to fetch in cache
+        image_color_channel: Color channel of images
+        stack_images: Whether or not to stack images in collate function in OTXBatchData entity.
 
     """
 
