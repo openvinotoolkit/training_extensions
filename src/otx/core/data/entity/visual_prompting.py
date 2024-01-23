@@ -100,8 +100,8 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
     def pin_memory(self) -> VisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
         super().pin_memory()
-        self.points = [tv_tensors.wrap(point.pin_memory(), like=point) for point in self.points]
-        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
+        self.points = [tv_tensors.wrap(point.pin_memory(), like=point) if point is not None else point for point in self.points]
+        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) if bbox is not None else bbox for bbox in self.bboxes]
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
         return self

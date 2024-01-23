@@ -65,6 +65,11 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         for annotation in item.annotations:
             if isinstance(annotation, Polygon):
                 mask = polygon_to_bitmap([annotation], *img_shape)[0]
+                mask_points = np.nonzero(mask)
+                if len(mask_points[0]) == 0:
+                    # skip very small region
+                    continue
+
                 if self.include_polygons:
                     gt_polygons.append(annotation)
                 else:
@@ -86,10 +91,9 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     # get point
                     if self.dm_subset.name == "train":
                         # get random point from the mask
-                        mask_points = np.nonzero(mask)
                         idx_chosen = np.random.permutation(len(mask_points[0]))[0]
                         point = Points(
-                            (mask_points[0][idx_chosen], mask_points[1][idx_chosen]),
+                            (mask_points[1][idx_chosen], mask_points[0][idx_chosen]),
                             canvas_size=img_shape,
                             dtype=torch.float32)
                     else:
