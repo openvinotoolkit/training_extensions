@@ -348,7 +348,8 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
-            self._trainer = Trainer(**self._cache.args)
+            kwargs = self._cache.args
+            self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 
     @property

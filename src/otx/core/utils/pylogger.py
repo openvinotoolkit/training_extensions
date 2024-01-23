@@ -1,3 +1,5 @@
+"""Pylogger for OTX logger."""
+
 # MIT License
 
 # Copyright (c) 2023 Intel Corporation
