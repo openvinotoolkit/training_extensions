@@ -59,7 +59,7 @@ neck:
   num_outs: 5
   relu_before_extra_convs: true
 bbox_head:
-  type: ATSSHead
+  type: CustomATSSHead
   num_classes: 2
   in_channels: 256
   stacked_convs: 4
