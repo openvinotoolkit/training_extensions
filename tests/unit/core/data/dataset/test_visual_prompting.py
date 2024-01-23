@@ -30,7 +30,6 @@ class TestOTXVisualPromptingDataset:
         dataset = OTXVisualPromptingDataset(
             fxt_dm_dataset.subsets()[subset],
             fxt_tvt_transforms,
-            include_polygons=False,
             use_bbox=use_bbox,
             use_point=use_point
         )

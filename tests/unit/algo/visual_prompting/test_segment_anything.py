@@ -7,6 +7,7 @@ import pytest
 import torch
 from otx.algo.visual_prompting.segment_anything import OTXSegmentAnything, SegmentAnything
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
+from otx.core.data.entity.base import Points
 from torch import Tensor
 from torchvision import tv_tensors
 
@@ -72,15 +73,18 @@ class TestSegmentAnything:
         segment_anything = SegmentAnything(backbone="tiny_vit")
         segment_anything.training = training
 
-        images = torch.zeros((1, 3, 1024, 1024), dtype=torch.float32)
-        bboxes = [torch.tensor([[0, 0, 10, 10]], dtype=torch.float32)]
-        gt_masks = [torch.zeros((1, *os)) for os in ori_shapes] if training else None
+        images = tv_tensors.Image(torch.zeros((1, 3, 1024, 1024), dtype=torch.float32))
+        bboxes = [tv_tensors.BoundingBoxes(torch.tensor([[0, 0, 10, 10]]), format="xyxy", canvas_size=(1024, 1024), dtype=torch.float32)]
+        points = [Points(torch.tensor([[5, 5]]), canvas_size=(1024, 1024), dtype=torch.float32)]
+        labels = [torch.as_tensor([1, 1])]
+        gt_masks = [torch.zeros((2, *os)) for os in ori_shapes] if training else None
 
         results = segment_anything(
             images=images,
             ori_shapes=ori_shapes,
             bboxes=bboxes,
-            points=None,  # TODO(sungchul): enable point prompts # noqa: TD003
+            points=points,
+            labels=labels,
             gt_masks=gt_masks,
         )
 
@@ -100,6 +104,9 @@ class TestSegmentAnything:
 
             # check ious
             assert results[1][0].ndim == 2
+            
+            # check labels
+            assert torch.all(results[2][0] == labels[0])
 
     @pytest.mark.parametrize(
         ("inputs", "targets", "expected"),
@@ -205,22 +212,32 @@ class TestOTXSegmentAnything:
         """Test _customize_inputs."""
         output_data = model._customize_inputs(fxt_vpm_data_entity[2])
         assert output_data is not None
+        assert isinstance(output_data["ori_shapes"][0], Tensor)
         assert output_data["images"].shape[-2:] == torch.Size(output_data["ori_shapes"][0])
+        assert isinstance(output_data["images"], tv_tensors.Image)
         assert output_data["gt_masks"][0].shape[-2:] == torch.Size(output_data["ori_shapes"][0])
+        assert isinstance(output_data["bboxes"][0], tv_tensors.BoundingBoxes)
+        assert isinstance(output_data["points"][0], tuple)
+        assert isinstance(output_data["points"][0][0], Points)
+        assert isinstance(output_data["points"][0][1], Tensor)
+        assert isinstance(output_data["labels"][0], Tensor)
 
     def test_customize_outputs(self, model, fxt_vpm_data_entity) -> None:
         """Test _customize_outputs."""
+        # training
         outputs = {"loss": torch.tensor(1.0)}
         result = model._customize_outputs(outputs, fxt_vpm_data_entity[2])
         assert isinstance(result, dict)
         assert "loss" in result
 
+        # inference
         model.training = False
-        outputs = (torch.tensor([1]), torch.tensor([1]))
+        outputs = (torch.tensor([1]), torch.tensor([1]), torch.tensor([1]))
         result = model._customize_outputs(outputs, fxt_vpm_data_entity[2])
         assert isinstance(result, VisualPromptingBatchPredEntity)
         assert result.masks[0].data == outputs[0]
         assert result.scores[0] == outputs[1]
+        assert result.labels[0] == outputs[2]
 
     def test_inspect_prompts(self, model) -> None:
         """Test _inspect_prompts."""
