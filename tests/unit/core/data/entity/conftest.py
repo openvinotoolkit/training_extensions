@@ -36,8 +36,6 @@ def fxt_visual_prompting_data_entity() -> VisualPromptingDataEntity:
         masks=tv_tensors.Mask(torch.ones(10, 10)),
         labels=[LongTensor([1]), LongTensor([2])],
         polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-        prompts=[
-            tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 5, 5]), format="xyxy", canvas_size=(10, 10)),
-            Points(data=torch.Tensor([7, 7]), canvas_size=(10, 10)),
-        ],
+        bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 5, 5]), format="xyxy", canvas_size=(10, 10)),
+        points=Points(data=torch.Tensor([7, 7]), canvas_size=(10, 10)),
     )

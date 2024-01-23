@@ -50,11 +50,11 @@ class TestOTXVisualPromptingDataset:
         assert isinstance(entity.labels, Tensor)
         assert hasattr(entity, "polygons")
         assert isinstance(entity.polygons, list)
-        assert hasattr(entity, "prompts")
-        assert isinstance(entity.prompts, list)
+        assert hasattr(entity, "bboxes")
+        assert hasattr(entity, "points")
         
         if not use_point:
-            assert isinstance(entity.prompts[0], BoundingBoxes)
-
+            assert isinstance(entity.bboxes, BoundingBoxes)
+            
         if not use_bbox and use_point:
-            assert isinstance(entity.prompts[0], Points)
+            assert isinstance(entity.points, Points)

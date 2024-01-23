@@ -20,10 +20,8 @@ class TestVisualPromptingDataEntity:
             masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
             labels=[LongTensor([1]), LongTensor([2])],
             polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-            prompts=[
-                tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
-                Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
-            ],
+            bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+            points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
         )
         assert data_entity.task == OTXTaskType.VISUAL_PROMPTING
     
@@ -37,10 +35,8 @@ class TestVisualPromptingBatchDataEntity:
                 masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
                 labels=[LongTensor([1]), LongTensor([2])],
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-                prompts=[
-                    tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xyxy", canvas_size=(224, 224)),
-                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
-                ],
+                bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
             ),
             VisualPromptingDataEntity(
                 image=tv_tensors.Image(torch.randn(3, 224, 224)),
@@ -48,10 +44,8 @@ class TestVisualPromptingBatchDataEntity:
                 masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
                 labels=[LongTensor([1]), LongTensor([2])],
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-                prompts=[
-                    tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xyxy", canvas_size=(224, 224)),
-                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
-                ],
+                bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
             ),
             VisualPromptingDataEntity(
                 image=tv_tensors.Image(torch.randn(3, 224, 224)),
@@ -59,10 +53,8 @@ class TestVisualPromptingBatchDataEntity:
                 masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
                 labels=[LongTensor([1]), LongTensor([2])],
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-                prompts=[
-                    tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xyxy", canvas_size=(224, 224)),
-                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
-                ],
+                bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
             )
         ]
 

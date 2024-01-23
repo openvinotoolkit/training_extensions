@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Callable
 
 import numpy as np
+from collections import defaultdict
 import torch
 from datumaro import DatasetSubset, Image, Polygon
 from torchvision import tv_tensors
@@ -58,7 +59,8 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
-        gt_prompts, gt_masks, gt_polygons, gt_labels = [], [], [], []
+        gt_bboxes, gt_points, gt_masks, gt_polygons = [], [], [], []
+        gt_labels = defaultdict(list)
 
         for annotation in item.annotations:
             if isinstance(annotation, Polygon):
@@ -70,35 +72,42 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
 
                 if np.random.rand() < self.prob:
                     # get bbox
-                    prompt = tv_tensors.BoundingBoxes(
+                    bbox = tv_tensors.BoundingBoxes(
                         annotation.get_bbox(),
                         format=tv_tensors.BoundingBoxFormat.XYWH,
                         canvas_size=img_shape,
                         dtype=torch.float32)
-                    prompt = F._meta.convert_bounding_box_format(
-                        prompt,
+                    bbox = F._meta.convert_bounding_box_format(
+                        bbox,
                         new_format=tv_tensors.BoundingBoxFormat.XYXY)
+                    gt_bboxes.append(bbox)
+                    gt_labels["bboxes"].append(annotation.label)
                 else:
                     # get point
                     if self.dm_subset.name == "train":
                         # get random point from the mask
                         mask_points = np.nonzero(mask)
                         idx_chosen = np.random.permutation(len(mask_points[0]))[0]
-                        prompt = Points(
+                        point = Points(
                             (mask_points[0][idx_chosen], mask_points[1][idx_chosen]),
                             canvas_size=img_shape,
                             dtype=torch.float32)
                     else:
                         # get center point
-                        prompt = Points(
+                        point = Points(
                             np.array(annotation.get_points()).mean(axis=0),
                             canvas_size=img_shape,
                             dtype=torch.float32)
-                gt_prompts.append(prompt)
-                gt_labels.append(annotation.label)
+                    gt_points.append(point)
+                    gt_labels["points"].append(annotation.label)
         
-        assert len(gt_prompts) > 0, "#prompts should be greater than 0."
+        assert len(gt_bboxes) > 0 or len(gt_points) > 0, \
+            "At least one of both #bounding box and #point prompts must be greater than 0."
 
+        bboxes = tv_tensors.wrap(torch.cat(gt_bboxes, dim=0), like=gt_bboxes[0]) if len(gt_bboxes) > 0 else None
+        points = tv_tensors.wrap(torch.stack(gt_points, dim=0), like=gt_points[0]) if len(gt_points) > 0 else None
+        labels = torch.as_tensor(gt_labels.get("points", []) + gt_labels.get("bboxes", []), dtype=torch.int64)
+        
         # set entity without masks to avoid resizing masks
         entity = VisualPromptingDataEntity(
             image=img_data,
@@ -108,9 +117,10 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                 ori_shape=img_shape,
             ),
             masks=None,
-            labels=torch.as_tensor(gt_labels, dtype=torch.int64),
+            labels=labels,
             polygons=gt_polygons,
-            prompts=gt_prompts
+            points=points,
+            bboxes=bboxes,
         )
         transformed_entity = self._apply_transforms(entity)
 

@@ -136,22 +136,17 @@ class TestPoints:
         transform = tvt.Resize(size=(3, 5))
         results = transform(fxt_visual_prompting_data_entity)
         
-        assert isinstance(results.prompts[0], tv_tensors.BoundingBoxes)
-        assert isinstance(results.prompts[1], Points)
-        assert results.prompts[0].canvas_size == tuple(transform.size)
-        assert results.prompts[1].canvas_size == tuple(transform.size)
-        assert results.prompts[0].canvas_size == results.img_info.img_shape
-        assert results.prompts[1].canvas_size == results.img_info.img_shape
+        assert isinstance(results.points, Points)
+        assert results.points.canvas_size == tuple(transform.size)
+        assert results.points.canvas_size == results.img_info.img_shape
         
-        assert str(results.prompts[1]) == "Points([3.5000, 2.1000], canvas_size=(3, 5))"
+        assert str(results.points) == "Points([3.5000, 2.1000], canvas_size=(3, 5))"
     
     def test_pad(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
         transform = tvt.Pad(padding=(1, 2, 3, 4))
         results = transform(fxt_visual_prompting_data_entity)
         
-        assert results.prompts[0].canvas_size == results.image[0].shape
-        assert results.prompts[1].canvas_size == results.image[1].shape
-        assert torch.all(results.prompts[0] == fxt_visual_prompting_data_entity.prompts[0] + torch.tensor(transform.padding[:2]+transform.padding[:2]))
-        assert torch.all(results.prompts[1] == fxt_visual_prompting_data_entity.prompts[1] + torch.tensor(transform.padding[:2]))
+        assert results.points.canvas_size == results.image[1].shape
+        assert torch.all(results.points == fxt_visual_prompting_data_entity.points + torch.tensor(transform.padding[:2]))
         
-        assert str(results.prompts[1]) == "Points([8., 9.], canvas_size=(16, 14))"
+        assert str(results.points) == "Points([8., 9.], canvas_size=(16, 14))"
