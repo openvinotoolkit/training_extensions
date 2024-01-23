@@ -23,9 +23,9 @@ from otx.core.data.entity.classification import (
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.utils import get_mean_std_from_data_processing
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor

@@ -244,6 +244,7 @@ exclude = [
     "node_modules",
     "venv",
     "tests/assets",
+    "src/otx/config/mmdeploy/",
 
     # it will be cleaned up later
     "src/otx/core/engine/utils/*",

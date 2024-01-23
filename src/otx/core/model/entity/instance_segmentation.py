@@ -16,8 +16,8 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
-from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
@@ -201,10 +201,14 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         test_pipeline: list[dict] | None = None,
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        from otx.core.exporter.mmdeploy import MMdeployExporter 
+        if test_pipeline is None:
+            raise RuntimeError("test_pipeline is necessary for mmdeploy.")
+
+        from otx.core.exporter.mmdeploy import MMdeployExporter
+
         return MMdeployExporter(**self.export_params, test_pipeline=test_pipeline)
 
-    def need_mmdeploy(self):
+    def need_mmdeploy(self) -> bool:
         """Whether mmdeploy is used when exporting a model."""
         return self.export_params.get("mmdeploy_config") != None
 

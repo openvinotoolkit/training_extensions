@@ -5,13 +5,13 @@
 
 from __future__ import annotations
 
-from copy import deepcopy, copy
-from typing import TYPE_CHECKING, Literal, Any
+from copy import copy, deepcopy
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
-from otx.core.utils.utils import get_mean_std_from_data_processing
 from otx.core.model.entity.detection import MMDetCompatibleModel
 from otx.core.utils.build import build_mm_model, modify_num_classes
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     import torch

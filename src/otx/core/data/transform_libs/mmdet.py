@@ -32,7 +32,10 @@ if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
 
 TRANSFORMS = Registry(  # to make mmdeploy use mmdet pipeline module
-    'transform', scope='otx', parent=MMDET_TRANSFORMS, locations=['otx.core.data.transform_libs.mmdet']
+    "transform",
+    scope="otx",
+    parent=MMDET_TRANSFORMS,
+    locations=["otx.core.data.transform_libs.mmdet"],
 )
 
 

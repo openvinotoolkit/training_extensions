@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import onnx
 import openvino
@@ -25,7 +25,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        resize_mode: str = "standard",
+        resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
         via_onnx: bool = False,

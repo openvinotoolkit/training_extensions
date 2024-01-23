@@ -28,11 +28,11 @@ ir_config = dict(
             2: "height",
             3: "width",
         },
-    }
+    },
 )
 
 codebase_config = dict(
     post_processing=dict(
         export_postprocess_mask=False,
-    )
+    ),
 )

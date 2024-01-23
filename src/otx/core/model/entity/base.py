@@ -225,7 +225,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             ("model_info", "label_ids"): all_label_ids.strip(),
         }
 
-    def need_mmdeploy(self):
+    def need_mmdeploy(self) -> bool:
         """Whether mmdeploy is used when exporting a model."""
         return False
 
