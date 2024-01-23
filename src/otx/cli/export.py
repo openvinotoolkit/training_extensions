@@ -14,13 +14,6 @@ from otx.core.model.entity.base import OTXModel
 from otx.cli.utils.hydra import configure_hydra_outputs
 
 
-class FakeDataModule:
-    def __init__(self, config = None, task = None):
-        self.config = config
-        self.task = task
-        self.meta_info = None
-
-
 def otx_export(overrides: list[str]) -> Path:
     """Main entry point for model exporting.
 

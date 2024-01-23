@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""YOLOX model implementations."""
+"""YOLOX tiny model implementations."""
 
 from __future__ import annotations
 
