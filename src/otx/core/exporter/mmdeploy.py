@@ -108,6 +108,7 @@ class MMdeployExporter(OTXModelExporter):
         exported_model = self._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        os.remove(onnx_path)
         log.info("Coverting to OpenVINO is done.")
 
         return Path(save_path)
