@@ -36,13 +36,10 @@ def otx_export(overrides: list[str]) -> Path:
         configure_hydra_outputs(cfg)
 
         # export the model
-        # from otx.core.data.module import OTXDataModule
+        from otx.core.data.module import OTXDataModule
 
-        # log.info(f"Instantiating datamodule <{cfg.data}>")
-        # datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
-
-        # TODO this is workaround to prevent otx custom datapipeline module from being registered. Need to fix.
-        datamodule = FakeDataModule(task=cfg.base.task, config=cfg.data)
+        log.info(f"Instantiating datamodule <{cfg.data}>")
+        datamodule = OTXDataModule(task=cfg.base.task, config=cfg.data)
 
         log.info(f"Instantiating model <{cfg.model}>")
         model: OTXModel = hydra.utils.instantiate(cfg.model.otx_model)
