@@ -21,6 +21,35 @@ from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     import numpy as np
+    
+    
+def custom_wrap(wrappee, *, like, **kwargs):
+    """Add `Points` in tv_tensors.wrap.
+    
+    If `like` is 
+        - tv_tensors.BoundingBoxes : the `format` and `canvas_size` of `like` are assigned to `wrappee`
+        - Points : the `canvas_size` of `like` is assigned to `wrappee`
+    Unless, they are passed as `kwargs`.
+
+    Args:
+        wrappee (Tensor): The tensor to convert.
+        like (tv_tensors.TVTensor): The reference. `wrappee` will be converted into the same subclass as `like`.
+        kwargs: Can contain "format" and "canvas_size" if `like` is a tv_tensor.BoundingBoxes,
+            or "canvas_size" if `like` is a `Points`. Ignored otherwise.
+    """
+    if isinstance(like, tv_tensors.BoundingBoxes):
+        return tv_tensors.BoundingBoxes._wrap(
+            wrappee,
+            format=kwargs.get("format", like.format),
+            canvas_size=kwargs.get("canvas_size", like.canvas_size),
+        )
+    elif isinstance(like, Points):
+        return Points._wrap(wrappee, canvas_size=kwargs.get("canvas_size", like.canvas_size))
+    else:
+        return wrappee.as_subclass(type(like))
+    
+    
+tv_tensors.wrap = custom_wrap
 
 
 class ImageInfo(tv_tensors.TVTensor):
@@ -268,16 +297,16 @@ def _normalize_image_info(
 
 
 class Points(tv_tensors.TVTensor):
-    """:class:`torch.Tensor` subclass for points.
+    """`torch.Tensor` subclass for points.
     
     Attributes:
-        data: Any data that can be turned into a tensor with :func:`torch.as_tensor`.
+        data: Any data that can be turned into a tensor with `torch.as_tensor`.
         canvas_size (two-tuple of ints): Height and width of the corresponding image or video.
-        dtype (torch.dtype, optional): Desired data type of the point. If omitted, will be inferred from ``data``.
-        device (torch.device, optional): Desired device of the point. If omitted and ``data`` is a
-            :class:`torch.Tensor`, the device is taken from it. Otherwise, the point is constructed on the CPU.
+        dtype (torch.dtype, optional): Desired data type of the point. If omitted, will be inferred from `data`.
+        device (torch.device, optional): Desired device of the point. If omitted and `data` is a
+            `torch.Tensor`, the device is taken from it. Otherwise, the point is constructed on the CPU.
         requires_grad (bool, optional): Whether autograd should record operations on the point. If omitted and
-            ``data`` is a :class:`torch.Tensor`, the value is taken from it. Otherwise, defaults to ``False``.
+            `data` is a `torch.Tensor`, the value is taken from it. Otherwise, defaults to `False`.
     """
     
     canvas_size: tuple[int, int]
@@ -346,7 +375,7 @@ def _resize_points_dispatch(
     output, canvas_size = resize_points(
         inpt.as_subclass(torch.Tensor), inpt.canvas_size, size, max_size=max_size
     )
-    return Points(output, canvas_size=canvas_size)
+    return tv_tensors.wrap(output, like=inpt, canvas_size=canvas_size)
     
     
 def pad_points(
@@ -382,7 +411,7 @@ def _pad_bounding_boxes_dispatch(
         padding=padding,
         padding_mode=padding_mode,
     )
-    return Points(output, canvas_size=canvas_size)
+    return tv_tensors.wrap(output, like=inpt, canvas_size=canvas_size)
 
 
 T_OTXDataEntity = TypeVar(
