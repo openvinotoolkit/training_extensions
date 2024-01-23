@@ -320,7 +320,7 @@ class Engine:
         return self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else checkpoint,
+            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
             return_predictions=return_predictions,
         )
 
