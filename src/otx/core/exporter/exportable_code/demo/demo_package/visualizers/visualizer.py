@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Optional
 import cv2
 import numpy as np
 from ..streamer import BaseStreamer
+from openvino.model_api.performance_metrics import put_highlighted_text
 
 
 class BaseVisualizer:
@@ -113,6 +114,7 @@ class ClassificationVisualizer(BaseVisualizer):
         image: np.ndarray,
         predictions: list,
         meta: Optional[dict] = None,
+        output_transform: Optional[list] = None
     ) -> np.ndarray:
         """Draw annotations on the image.
 
@@ -123,8 +125,28 @@ class ClassificationVisualizer(BaseVisualizer):
         Returns:
             Output image with annotations.
         """
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        for label in predictions:
-            image = cv2.putText(image, label)
+        frame = output_transform.resize(frame)
+        class_label = ""
+        if predictions:
+            class_label = predictions[0][1]
+        font_scale = 0.7
+        label_height = cv2.getTextSize(class_label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][1]
+        initial_labels_pos =  frame.shape[0] - label_height * (int(1.5 * len(predictions)) + 1)
 
-        return image
+        if (initial_labels_pos < 0):
+            initial_labels_pos = label_height
+            log.warning('Too much labels to display on this frame, some will be omitted')
+        offset_y = initial_labels_pos
+
+        header = "Label:     Score:"
+        label_width = cv2.getTextSize(header, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
+        put_highlighted_text(frame, header, (frame.shape[1] - label_width, offset_y),
+            cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
+
+        for idx, class_label, score in predictions:
+            label = '{}. {}    {:.2f}'.format(idx, class_label, score)
+            label_width = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
+            offset_y += int(label_height * 1.5)
+            predictions(frame, label, (frame.shape[1] - label_width, offset_y),
+                cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
+        return frame
