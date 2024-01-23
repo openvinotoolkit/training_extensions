@@ -67,7 +67,7 @@ rpn_head:
       - 1.0
       - 1.0
   loss_cls:
-    type: CrossEntropyLoss
+    type: CrossSigmoidFocalLoss
     use_sigmoid: true
     loss_weight: 1.0
   loss_bbox:

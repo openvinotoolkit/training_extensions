@@ -73,8 +73,8 @@ class CrossSigmoidFocalLoss(nn.Module):
 
     def __init__(
         self,
+        use_background: bool = False,
         use_sigmoid: bool = True,
-        num_classes: int | None = None,
         gamma: float = 2.0,
         alpha: float = 0.25,
         reduction: str = "mean",
@@ -85,7 +85,7 @@ class CrossSigmoidFocalLoss(nn.Module):
         self.loss_weight = loss_weight
         self.gamma = gamma
         self.alpha = alpha
-        self.num_classes = num_classes
+        self.use_background = use_background
         self.use_sigmoid = use_sigmoid
 
         self.cls_criterion = cross_sigmoid_focal_loss
@@ -106,11 +106,12 @@ class CrossSigmoidFocalLoss(nn.Module):
             msg = f"{reduction_override} is not in (None, none, mean, sum)"
             raise ValueError(msg)
         reduction = reduction_override if reduction_override else self.reduction
+        num_classes = pred.shape[-1] if not self.use_background else pred.shape[-1] - 1
         return self.loss_weight * self.cls_criterion(
             pred,
             targets,
             weight=weight,
-            num_classes=self.num_classes,
+            num_classes=num_classes,
             alpha=self.alpha,
             gamma=self.gamma,
             reduction=reduction,

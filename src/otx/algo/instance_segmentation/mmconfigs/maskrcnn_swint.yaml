@@ -148,7 +148,7 @@ rpn_head:
     type: L1Loss
   loss_cls:
     loss_weight: 1.0
-    type: CrossEntropyLoss
+    type: CrossSigmoidFocalLoss
     use_sigmoid: true
   type: RPNHead
 test_cfg:

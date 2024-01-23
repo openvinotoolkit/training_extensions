@@ -60,7 +60,7 @@ roi_head:
       type: "L1Loss"
     loss_cls:
       loss_weight: 1.0
-      type: "CrossEntropyLoss"
+      type: "CrossSigmoidFocalLoss"
       use_sigmoid: false
     num_classes: 5
     reg_class_agnostic: false

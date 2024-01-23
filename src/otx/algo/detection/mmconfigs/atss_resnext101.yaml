@@ -89,7 +89,7 @@ bbox_head:
       - 0.2
       - 0.2
   loss_cls:
-    type: FocalLoss
+    type: CrossSigmoidFocalLoss
     use_sigmoid: true
     gamma: 2.0
     alpha: 0.25
