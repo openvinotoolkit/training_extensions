@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
-from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -51,6 +50,8 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
 
     def register_explain_hook(self) -> None:
         """Register explain hook at the model backbone output."""
+        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+
         self.explain_hook = ReciproCAMHook.create_and_register_hook(
             self.backbone,
             self.head_forward_fn,

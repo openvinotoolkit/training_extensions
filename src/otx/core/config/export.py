@@ -13,5 +13,5 @@ from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 class ExportConfig:
     """DTO for export configuration."""
 
-    export_format: OTXExportFormatType
-    precision: OTXExportPrecisionType
+    export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO
+    precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32

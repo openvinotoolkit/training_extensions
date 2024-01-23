@@ -1,0 +1,56 @@
+max_epochs: 10
+min_epochs: 1
+callbacks:
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+      monitor: null
+      mode: max
+      patience: 100
+      check_on_train_epoch_end: false
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      dirpath: null
+      monitor: null
+      mode: max
+      save_top_k: 1
+      save_last: true
+      auto_insert_metric_name: false
+      filename: "checkpoints/epoch_{epoch:03d}"
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: false
+      on_epoch: true
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+    init_args:
+      logging_interval: epoch
+      log_momentum: true
+  - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+    init_args:
+      max_interval: 5
+      decay: -0.025
+logger:
+  - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger
+    init_args:
+      save_dir: ""
+      name: "csv/"
+      prefix: ""
+  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: "tensorboard/"
+      log_graph: false
+      default_hp_metric: true
+      prefix: ""
+deterministic: false
+seed: null
+precision: 16
+check_val_every_n_epoch: 1
+gradient_clip_val: null

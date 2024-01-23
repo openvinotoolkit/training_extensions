@@ -1,0 +1,39 @@
+model:
+  class_path: otx.core.model.entity.segmentation.OVSegmentationModel
+  init_args:
+    num_classes: 19
+    config:
+      class_path: omegaconf.dictconfig.DictConfig
+      init_args:
+        content:
+          model_name: drn-d-38
+          decode_head:
+            num_classes: 19
+          async_inference: True
+          use_throughput_mode: True
+          model_type: "Segmentation"
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 1e-3
+    weight_decay: 0.0
+
+scheduler:
+  class_path: torch.optim.lr_scheduler.PolynomialLR
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
+
+callback_monitor: val/mIoU
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: SEMANTIC_SEGMENTATION
+    config:
+      image_color_channel: BGR
+      data_format: common_semantic_segmentation_with_subset_dirs
+      test_subset:
+        batch_size: 64

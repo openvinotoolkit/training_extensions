@@ -1,122 +1,134 @@
-# @package _global_
-defaults:
-  - override /trainer: default
-  - override /base: detection
-  - override /callbacks: detection
-  - override /data: mmdet
-  - override /model: mmdet
-data:
-  image_color_channel: BGR
-  train_subset:
-    batch_size: 8
-    transforms:
-      - type: LoadImageFromFile
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: CachedMosaic
-        random_pop: false
-        pad_val: 114.0
-        max_cached_images: 20
-        img_scale:
-          - 640
-          - 640
-      - type: RandomAffine
-        scaling_ratio_range:
-          - 0.1
-          - 2.0
-        border:
-          - -320
-          - -320
-      - type: CachedMixUp
-        img_scale:
-          - 640
-          - 640
-        ratio_range:
-          - 1.0
-          - 1.0
-        prob: 0.5
-        random_pop: false
-        pad_val:
-          - 114
-          - 114
-          - 114
-        max_cached_images: 10
-      - type: YOLOXHSVRandomAug
-      - type: Resize
-        scale:
-          - 640
-          - 640
-        keep_ratio: true
-      - type: RandomFlip
-        prob: 0.5
-      - type: Pad
-        pad_to_square: true
-        pad_val: 114
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - flip_direction
-          - scale_factor
-          - gt_ann_ids
-          - flip
-          - ignored_labels
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
-  val_subset:
-    batch_size: 8
-    transforms:
-      - type: LoadImageFromFile
-      - type: Resize
-        scale:
-          - 640
-          - 640
-        keep_ratio: True
-      - type: Pad
-        pad_to_square: true
-        pad_val: 114
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - scale_factor
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
-  test_subset:
-    batch_size: 8
-    transforms:
-      - type: LoadImageFromFile
-      - type: Resize
-        scale:
-          - 640
-          - 640
-        keep_ratio: True
-      - type: Pad
-        pad_to_square: true
-        pad_val: 114
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - scale_factor
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
 model:
-  otx_model:
-    _target_: otx.algo.detection.yolox.YoloX
+  class_path: otx.algo.detection.yolox.YoloX
+  init_args:
+    num_classes: 80
     variant: l
-  optimizer:
-    _target_: torch.optim.SGD
-    _partial_: true
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
     lr: 0.001
-    weight_decay: 0.0001
     momentum: 0.9
-trainer:
+    weight_decay: 0.0001
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: DETECTION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
   gradient_clip_val: 35.0
+  data:
+    config:
+      image_color_channel: BGR
+      train_subset:
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: CachedMosaic
+            random_pop: false
+            pad_val: 114.0
+            max_cached_images: 20
+            img_scale:
+              - 640
+              - 640
+          - type: RandomAffine
+            scaling_ratio_range:
+              - 0.1
+              - 2.0
+            border:
+              - -320
+              - -320
+          - type: CachedMixUp
+            img_scale:
+              - 640
+              - 640
+            ratio_range:
+              - 1.0
+              - 1.0
+            prob: 0.5
+            random_pop: false
+            pad_val:
+              - 114
+              - 114
+              - 114
+            max_cached_images: 10
+          - type: YOLOXHSVRandomAug
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: RandomFlip
+            prob: 0.5
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - flip_direction
+              - scale_factor
+              - gt_ann_ids
+              - flip
+              - ignored_labels
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
+      val_subset:
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - scale_factor
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
+      test_subset:
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - scale_factor
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape

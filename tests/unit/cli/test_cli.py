@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 
 import pytest
-from otx.cli import OTXCLI
+from otx.cli import OTXCLI, main
 
 
 class TestOTXCLI:
@@ -19,6 +19,15 @@ class TestOTXCLI:
         with mocker.patch.object(sys, "argv", argv) and pytest.raises(SystemExit, match="0"):
             OTXCLI()
 
+    def test_main(self, mocker) -> None:
+        argv = ["otx"]
+        with mocker.patch.object(sys, "argv", argv) and pytest.raises(SystemExit, match="2"):
+            main()
+
+        argv = ["otx", "-h"]
+        with mocker.patch.object(sys, "argv", argv) and pytest.raises(SystemExit, match="0"):
+            main()
+
     @pytest.fixture()
     def fxt_train_help_command(self, monkeypatch) -> None:
         argv = ["otx", "train", "-h"]
@@ -29,30 +38,66 @@ class TestOTXCLI:
         with pytest.raises(SystemExit, match="0"):
             OTXCLI()
 
+    def test_init_parser(self, mocker) -> None:
+        mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
+        cli = OTXCLI()
+        parser = cli.init_parser()
+        assert parser.__class__.__name__ == "ArgumentParser"
+        argument_list = [action.dest for action in parser._actions]
+        expected_argument = ["help", "version"]
+        assert argument_list == expected_argument
+
+    def test_subcommand_parser(self, mocker) -> None:
+        mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
+        cli = OTXCLI()
+        parser = cli.subcommand_parser()
+        assert parser.__class__.__name__ == "ArgumentParser"
+        argument_list = [action.dest for action in parser._actions]
+        expected_argument = ["help", "verbose", "config", "print_config", "data_root", "task", "callback_monitor"]
+        assert sorted(argument_list) == sorted(expected_argument)
+
+    def test_add_subcommands(self, mocker) -> None:
+        mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
+        cli = OTXCLI()
+        cli.parser = cli.init_parser()
+        cli._subcommand_method_arguments = {}
+        cli.add_subcommands()
+        assert cli._subcommand_method_arguments.keys() == cli.engine_subcommands().keys()
+
     @pytest.fixture()
     def fxt_train_command(self, monkeypatch, tmpdir) -> list[str]:
         argv = [
             "otx",
             "train",
-            "+recipe=multiclass_classification/otx_mobilenet_v3_large",
-            "checkpoint=my_checkpoint",
-            f"base.output_dir={tmpdir}",
+            "--config",
+            "src/otx/recipe/detection/atss_mobilenetv2.yaml",
+            "--data_root",
+            "tests/assets/car_tree_bug",
+            "--model.num_classes",
+            "3",
+            "--engine.work_dir",
+            str(tmpdir),
         ]
         monkeypatch.setattr("sys.argv", argv)
         return argv
 
-    def test_train_command(self, fxt_train_command, mocker, tmpdir) -> None:
-        if int(sys.version_info[1]) < 9:
-            pytest.skip("Hydra fails to create default config in python < 3.9")
-
-        # Test that main function runs with help -> return 0
-        mock_otx_train = mocker.patch("otx.cli.train.otx_train")
+    def test_instantiate_classes(self, fxt_train_command, mocker) -> None:
+        mock_run = mocker.patch("otx.cli.OTXCLI.run")
         cli = OTXCLI()
+        assert mock_run.call_count == 1
+        cli.instantiate_classes()
 
-        assert cli.config["subcommand"] == "train"
-        assert "overrides" in cli.config["train"]
-        assert cli.config["train"]["overrides"] == fxt_train_command[2:]
+        from otx.core.model.entity.base import OTXModel
 
-        assert mock_otx_train.call_count == 1
-        assert "overrides" in mock_otx_train.call_args.kwargs
-        assert mock_otx_train.call_args.kwargs["overrides"] == fxt_train_command[2:]
+        assert isinstance(cli.model, OTXModel)
+
+        from otx.core.data.module import OTXDataModule
+
+        assert isinstance(cli.datamodule, OTXDataModule)
+
+        from otx.engine import Engine
+
+        assert isinstance(cli.engine, Engine)
+
+        assert cli.datamodule == cli.engine.datamodule
+        assert cli.model == cli.engine.model
