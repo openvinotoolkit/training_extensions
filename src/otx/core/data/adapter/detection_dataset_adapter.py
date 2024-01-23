@@ -37,8 +37,11 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     assert isinstance(image, Image)
                     shapes = []
                     for ann in datumaro_item.annotations:
-                        if self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION):
-                            if ann.type == DatumAnnotationType.polygon and self._is_normal_polygon(ann):
+                        if (
+                            self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
+                            and ann.type == DatumAnnotationType.polygon
+                        ):
+                            if self._is_normal_polygon(ann, image.width, image.height):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
                             elif ann.type == DatumAnnotationType.ellipse:
                                 shapes.append(self._get_ellipse_entity(ann, image.width, image.height))

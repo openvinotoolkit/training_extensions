@@ -2,7 +2,7 @@
 # OpenVINO Requirements.                                                      #
 nncf==2.7.0
 onnx==1.13.0
-openvino-model-api==0.1.7
+openvino-model-api==0.1.8
 openvino==2023.2.0
 openvino-dev==2023.2.0
 openvino-telemetry==2023.2.*

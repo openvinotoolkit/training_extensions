@@ -110,8 +110,8 @@ class TestNormalize:
     @pytest.mark.parametrize(
         "mean,std,to_rgb,expected",
         [
-            ([1.0 for _ in range(3)], [1.0 for _ in range(3)], True, np.array([[[1.0, 0.0, -1.0]]], dtype=np.float32)),
-            ([1.0 for _ in range(3)], [1.0 for _ in range(3)], False, np.array([[[-1.0, 0.0, 1.0]]], dtype=np.float32)),
+            ([[[1.0, 1.0, 1.0]]], [[[1.0, 1.0, 1.0]]], True, np.array([[[1.0, 0.0, -1.0]]], dtype=np.float32)),
+            ([[[1.0, 1.0, 1.0]]], [[[1.0, 1.0, 1.0]]], False, np.array([[[-1.0, 0.0, 1.0]]], dtype=np.float32)),
         ],
     )
     def test_call(self, mean: List[float], std: List[float], to_rgb: bool, expected: np.array) -> None:

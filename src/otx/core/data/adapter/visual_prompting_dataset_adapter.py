@@ -53,7 +53,7 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                     for ann in datumaro_item.annotations:
                         if ann.type == DatumAnnotationType.polygon:
                             # save polygons as-is, they will be converted to masks.
-                            if self._is_normal_polygon(ann):
+                            if self._is_normal_polygon(ann, image.width, image.height):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
 
                         if ann.type == DatumAnnotationType.mask:

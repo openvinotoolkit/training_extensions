@@ -380,7 +380,7 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         assert predictions.pred_mask is not None
         assert predictions.anomaly_map is not None
         annotations = create_annotation_from_segmentation_map(
-            predictions.pred_mask, predictions.anomaly_map, self.label_map
+            predictions.pred_mask, predictions.anomaly_map / 255.0, self.label_map
         )
         if len(annotations) == 0:
             # TODO: add confidence to this label
