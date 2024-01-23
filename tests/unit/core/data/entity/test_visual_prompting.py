@@ -3,13 +3,13 @@
 """Unit tests of visual prompting data entity."""
 
 
-from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity, VisualPromptingBatchDataEntity
-from torchvision import tv_tensors
 import torch
-from otx.core.data.entity.base import ImageInfo, Points
 from datumaro import Polygon
-from torch import LongTensor
+from otx.core.data.entity.base import ImageInfo, Points
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingDataEntity
 from otx.core.types.task import OTXTaskType
+from torch import LongTensor
+from torchvision import tv_tensors
 
 
 class TestVisualPromptingDataEntity:
@@ -24,8 +24,8 @@ class TestVisualPromptingDataEntity:
             points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
         )
         assert data_entity.task == OTXTaskType.VISUAL_PROMPTING
-    
-    
+
+
 class TestVisualPromptingBatchDataEntity:
     def test_collate_fn(self) -> None:
         data_entities = [
@@ -35,7 +35,11 @@ class TestVisualPromptingBatchDataEntity:
                 masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
                 labels=[LongTensor([1]), LongTensor([2])],
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-                bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                bboxes=tv_tensors.BoundingBoxes(
+                    data=torch.Tensor([0, 0, 50, 50]),
+                    format="xywh",
+                    canvas_size=(224, 224),
+                ),
                 points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
             ),
             VisualPromptingDataEntity(
@@ -44,7 +48,11 @@ class TestVisualPromptingBatchDataEntity:
                 masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
                 labels=[LongTensor([1]), LongTensor([2])],
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-                bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                bboxes=tv_tensors.BoundingBoxes(
+                    data=torch.Tensor([0, 0, 50, 50]),
+                    format="xywh",
+                    canvas_size=(224, 224),
+                ),
                 points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
             ),
             VisualPromptingDataEntity(
@@ -53,12 +61,15 @@ class TestVisualPromptingBatchDataEntity:
                 masks=tv_tensors.Mask(torch.randint(low=0, high=1, size=(224, 224))),
                 labels=[LongTensor([1]), LongTensor([2])],
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
-                bboxes=tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
+                bboxes=tv_tensors.BoundingBoxes(
+                    data=torch.Tensor([0, 0, 50, 50]),
+                    format="xywh",
+                    canvas_size=(224, 224),
+                ),
                 points=Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
-            )
+            ),
         ]
 
         data_batch = VisualPromptingBatchDataEntity.collate_fn(data_entities)
         assert len(data_batch.imgs_info) == len(data_batch.images)
         assert data_batch.task == OTXTaskType.VISUAL_PROMPTING
-    

@@ -45,8 +45,8 @@ class InstSegDataModuleConfig(DataModuleConfig):
     """DTO for instance segmentation data module configuration."""
 
     include_polygons: bool = True
-    
-    
+
+
 @dataclass
 class VisualPromptingDataModuleConfig(DataModuleConfig):
     """DTO for visual prompting data module configuration."""

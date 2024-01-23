@@ -3,12 +3,12 @@
 """Fixtures for unit tests of data entities."""
 
 import numpy as np
-from torch import LongTensor
-from datumaro import Polygon
 import pytest
 import torch
+from datumaro import Polygon
 from otx.core.data.entity.base import ImageInfo, OTXDataEntity, Points
 from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
+from torch import LongTensor
 from torchvision import tv_tensors
 
 
@@ -26,8 +26,8 @@ def fxt_torchvision_data_entity() -> OTXDataEntity:
         tv_tensors.Image(torch.randn(3, 10, 10)),
         ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10)),
     )
-    
-    
+
+
 @pytest.fixture()
 def fxt_visual_prompting_data_entity() -> VisualPromptingDataEntity:
     return VisualPromptingDataEntity(

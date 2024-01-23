@@ -12,7 +12,6 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
-from collections import defaultdict
 
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
@@ -131,7 +130,8 @@ class SegmentAnything(nn.Module):
         Args:
             images (tv_tensors.Image): Images with shape (B, C, H, W).
             ori_shapes (List[Tensor]): List of original shapes per image.
-            bboxes (List[tv_tensors.BoundingBoxes], optional): A Nx4 array given a box prompt to the model, in XYXY format.
+            bboxes (List[tv_tensors.BoundingBoxes], optional): A Nx4 array given a box prompt to the model,
+                in XYXY format.
             points (List[Tuple[Points, Tensor]], optional): Point coordinates and labels to embed.
                 Point coordinates are BxNx2 arrays of point prompts to the model.
                 Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
@@ -163,11 +163,11 @@ class SegmentAnything(nn.Module):
                     image_pe=self.prompt_encoder.get_dense_pe(),
                     sparse_prompt_embeddings=sparse_embeddings,
                     dense_prompt_embeddings=dense_embeddings,
-                    multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better.
+                    multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better. # noqa: E501
                 )
                 low_res_masks.append(_low_res_masks)
                 iou_predictions.append(_iou_predictions)
-            
+
             pred_masks.append(torch.cat(low_res_masks, dim=0))
             ious.append(torch.cat(iou_predictions, dim=0))
 
@@ -311,7 +311,12 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
             "gt_masks": inputs.masks,
             "bboxes": self._inspect_prompts(inputs.bboxes),
-            "points": [(tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device)) if point is not None else None for point in self._inspect_prompts(inputs.points)],
+            "points": [
+                (tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device))
+                if point is not None
+                else None
+                for point in self._inspect_prompts(inputs.points)
+            ],
             "labels": inputs.labels,
         }
 
@@ -343,7 +348,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             bboxes=[],
             labels=labels,
         )
-        
+
     def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:
         """Inspect if given prompts are empty.
 

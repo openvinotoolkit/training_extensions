@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 import logging as log
+from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -19,7 +19,7 @@ from mmdet.registry import TRANSFORMS
 from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo, Points
+from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
@@ -36,10 +36,11 @@ if TYPE_CHECKING:
 @TRANSFORMS.register_module(force=True)
 class LoadAnnotations(MMDetLoadAnnotations):
     """Class to override MMDet LoadAnnotations."""
+
     def __init__(self, with_point: bool = False, **kwargs):
         super().__init__(**kwargs)
         if with_point:
-            # TODO(sungchul): add point prompts in mmx
+            # TODO(sungchul): add point prompts in mmx # noqa: TD003
             log.info("with_point for mmx is not supported yet, changed to False.")
             with_point = False
         self.with_point = with_point
@@ -60,7 +61,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
             otx_data_entity,
             (DetDataEntity, InstanceSegDataEntity, VisualPromptingDataEntity),
         ):
-            gt_bboxes_labels = otx_data_entity.labels.numpy()
+            gt_bboxes_labels = otx_data_entity.labels.numpy()  # type: ignore[union-attr]
             results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
         if self.with_mask and isinstance(otx_data_entity, (InstanceSegDataEntity, VisualPromptingDataEntity)):
@@ -68,7 +69,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
             gt_masks = self._generate_gt_masks(otx_data_entity, height, width)
             results["gt_masks"] = gt_masks
         if self.with_point and isinstance(otx_data_entity, (VisualPromptingDataEntity)):
-            # TODO(sungchul): add point prompts in mmx
+            # TODO(sungchul): add point prompts in mmx # noqa: TD003
             # gt_points = otx_data_entity.points.numpy()
             # results["gt_points"] = gt_points
             pass
@@ -167,7 +168,7 @@ class PackDetInputs(MMDetPackDetInputs):
             image=tv_tensors.Image(transformed.get("inputs")),
             img_info=image_info,
             bboxes=bboxes,
-            points=None,
+            points=None,  # type: ignore[arg-type]
             masks=None,
             labels=labels,
             polygons=None,  # type: ignore[arg-type]

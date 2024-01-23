@@ -62,17 +62,22 @@ class TestPackDetInputs:
                         format=tv_tensors.BoundingBoxFormat.XYXY,
                         canvas_size=(1024, 1024),
                     ),
-                    points=None, # TODO(sungchul): add point prompts in mmx
+                    points=None,  # TODO(sungchul): add point prompts in mmx # noqa: TD003
                     masks=None,
                     labels=LongTensor([1]),
                     polygons=None,
                 ),
-                False, # TODO(sungchul): add point prompts in mmx
+                False,  # TODO(sungchul): add point prompts in mmx # noqa: TD003
                 torch.Size([3, 1024, 1024]),
             ),
         ],
     )
-    def test_transform(self, data_entity: DetDataEntity | VisualPromptingDataEntity, with_point: bool, expected: torch.Size) -> None:
+    def test_transform(
+        self,
+        data_entity: DetDataEntity | VisualPromptingDataEntity,
+        with_point: bool,
+        expected: torch.Size,
+    ) -> None:
         transform = PackDetInputs()
         data_entity = LoadAnnotations(with_point=with_point).transform(LoadImageFromFile().transform(data_entity))
 

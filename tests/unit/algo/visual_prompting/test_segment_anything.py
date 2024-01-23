@@ -6,8 +6,8 @@ from __future__ import annotations
 import pytest
 import torch
 from otx.algo.visual_prompting.segment_anything import OTXSegmentAnything, SegmentAnything
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
 from otx.core.data.entity.base import Points
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
 from torch import Tensor
 from torchvision import tv_tensors
 
@@ -74,7 +74,14 @@ class TestSegmentAnything:
         segment_anything.training = training
 
         images = tv_tensors.Image(torch.zeros((1, 3, 1024, 1024), dtype=torch.float32))
-        bboxes = [tv_tensors.BoundingBoxes(torch.tensor([[0, 0, 10, 10]]), format="xyxy", canvas_size=(1024, 1024), dtype=torch.float32)]
+        bboxes = [
+            tv_tensors.BoundingBoxes(
+                torch.tensor([[0, 0, 10, 10]]),
+                format="xyxy",
+                canvas_size=(1024, 1024),
+                dtype=torch.float32,
+            ),
+        ]
         points = [Points(torch.tensor([[5, 5]]), canvas_size=(1024, 1024), dtype=torch.float32)]
         labels = [torch.as_tensor([1, 1])]
         gt_masks = [torch.zeros((2, *os)) for os in ori_shapes] if training else None
@@ -104,7 +111,7 @@ class TestSegmentAnything:
 
             # check ious
             assert results[1][0].ndim == 2
-            
+
             # check labels
             assert torch.all(results[2][0] == labels[0])
 

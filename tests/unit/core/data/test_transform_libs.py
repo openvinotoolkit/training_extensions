@@ -8,12 +8,12 @@ from typing import Any
 import pytest
 import torch
 from omegaconf import OmegaConf
+from otx.core.data.entity.base import Points
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
     TorchVisionTransformLib,
 )
-from otx.core.data.entity.base import Points
 from otx.core.types.image import ImageColorChannel
 from torchvision import tv_tensors
 from torchvision.transforms import v2
@@ -72,7 +72,7 @@ class TestPadtoSquare:
         results = transform(inpt.clone(), None)
 
         assert torch.all(results[0] == inpt)
-        
+
         inpt = Points(
             [[1, 1], [3, 3]],
             canvas_size=(5, 3),
