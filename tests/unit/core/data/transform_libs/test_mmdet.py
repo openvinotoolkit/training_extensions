@@ -50,6 +50,7 @@ class TestPackDetInputs:
                     ),
                     labels=LongTensor([1]),
                 ),
+                False,
                 torch.Size([3, 224, 224]),
             ),
             (
@@ -57,21 +58,23 @@ class TestPackDetInputs:
                     image=np.ndarray((1024, 1024, 3)),
                     img_info=ImageInfo(img_idx=0, img_shape=(1024, 1024), ori_shape=(1024, 1024)),
                     bboxes=tv_tensors.BoundingBoxes(
-                        data=torch.Tensor([0, 0, 50, 50]),
+                        data=torch.Tensor([[0, 0, 50, 50]]),
                         format=tv_tensors.BoundingBoxFormat.XYXY,
                         canvas_size=(1024, 1024),
                     ),
+                    points=None, # TODO(sungchul): add point prompts in mmx
                     masks=None,
                     labels=LongTensor([1]),
                     polygons=None,
                 ),
+                False, # TODO(sungchul): add point prompts in mmx
                 torch.Size([3, 1024, 1024]),
             ),
         ],
     )
-    def test_transform(self, data_entity: DetDataEntity | VisualPromptingDataEntity, expected: torch.Size) -> None:
+    def test_transform(self, data_entity: DetDataEntity | VisualPromptingDataEntity, with_point: bool, expected: torch.Size) -> None:
         transform = PackDetInputs()
-        data_entity = LoadAnnotations().transform(LoadImageFromFile().transform(data_entity))
+        data_entity = LoadAnnotations(with_point=with_point).transform(LoadImageFromFile().transform(data_entity))
 
         results = transform.transform(data_entity)
 
