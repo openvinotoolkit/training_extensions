@@ -2,16 +2,10 @@ model:
   class_path: otx.core.model.entity.segmentation.OVSegmentationModel
   init_args:
     num_classes: 19
-    config:
-      class_path: omegaconf.dictconfig.DictConfig
-      init_args:
-        content:
-          model_name: drn-d-38
-          decode_head:
-            num_classes: 19
-          async_inference: True
-          use_throughput_mode: True
-          model_type: "Segmentation"
+    model_name: drn-d-38
+    async_inference: True
+    use_throughput_mode: True
+    model_type: "Segmentation"
 
 optimizer:
   class_path: torch.optim.Adam

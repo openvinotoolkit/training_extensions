@@ -1,0 +1,40 @@
+# @package _global_
+model:
+  class_path: otx.core.model.entity.classification.OVHlabelClassificationModel
+  init_args:
+    model_name: openvino.xml
+    async_inference: True
+    use_throughput_mode: False
+    model_type: Classification
+    num_classes: 7
+    num_multiclass_heads: 0
+    num_multilabel_classes: 0
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 1e-3
+    weight_decay: 0.0
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.5
+    patience: 1
+    monitor: train/loss
+
+engine:
+  task: MULTI_CLASS_CLS
+  device: auto
+
+callback_monitor: val/accuracy
+
+data: ../../_base_/data/torchvision_base.yaml
+
+overrides:
+  data:
+    config:
+      image_color_channel: BGR
+      test_subset:
+        batch_size: 128
