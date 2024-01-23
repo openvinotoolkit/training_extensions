@@ -4,6 +4,8 @@ defaults:
 
 data_format: coco_instances
 include_polygons: false
+use_bbox: ???
+use_point: ???
 
 train_subset:
   batch_size: 2
