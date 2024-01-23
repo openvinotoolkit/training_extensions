@@ -3,7 +3,6 @@ defaults:
   - base_visual_prompting
 
 data_format: coco_instances
-include_polygons: false
 use_bbox: ???
 use_point: ???
 

@@ -48,8 +48,8 @@ class InstSegDataModuleConfig(DataModuleConfig):
     
     
 @dataclass
-class VisualPromptingDataModuleConfig(InstSegDataModuleConfig):
-    """DTO for instance segmentation data module configuration."""
+class VisualPromptingDataModuleConfig(DataModuleConfig):
+    """DTO for visual prompting data module configuration."""
 
     use_bbox: bool = True
     use_point: bool = False

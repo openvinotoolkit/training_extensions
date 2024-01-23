@@ -27,8 +27,6 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
     Args:
         dm_subset (DatasetSubset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
-        include_polygons (bool): Flag indicating whether to include polygons in the dataset.
-            If set to False, polygons will be converted to bitmaps, and bitmaps will be used for training.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
@@ -36,13 +34,11 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         self,
         dm_subset: DatasetSubset,
         transforms: Transforms,
-        include_polygons: bool,
         use_bbox: bool = True,
         use_point: bool = False,
         **kwargs
     ) -> None:
         super().__init__(dm_subset, transforms, **kwargs)
-        self.include_polygons = include_polygons
         if not use_bbox and not use_point:
             # if both are False, use bbox as default
             use_bbox = True
@@ -59,7 +55,9 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
-        gt_bboxes, gt_points, gt_masks, gt_polygons = [], [], [], []
+        gt_bboxes, gt_points = [], []
+        gt_masks = defaultdict(list)
+        gt_polygons = defaultdict(list)
         gt_labels = defaultdict(list)
 
         for annotation in item.annotations:
@@ -69,11 +67,6 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                 if len(mask_points[0]) == 0:
                     # skip very small region
                     continue
-
-                if self.include_polygons:
-                    gt_polygons.append(annotation)
-                else:
-                    gt_masks.append(mask)
 
                 if np.random.rand() < self.prob:
                     # get bbox
@@ -87,6 +80,8 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                         new_format=tv_tensors.BoundingBoxFormat.XYXY)
                     gt_bboxes.append(bbox)
                     gt_labels["bboxes"].append(annotation.label)
+                    gt_masks["bboxes"].append(mask)
+                    gt_polygons["bboxes"].append(annotation)
                 else:
                     # get point
                     if self.dm_subset.name == "train":
@@ -104,6 +99,8 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                             dtype=torch.float32)
                     gt_points.append(point)
                     gt_labels["points"].append(annotation.label)
+                    gt_masks["points"].append(mask)
+                    gt_polygons["points"].append(annotation)
         
         assert len(gt_bboxes) > 0 or len(gt_points) > 0, \
             "At least one of both #bounding box and #point prompts must be greater than 0."
@@ -111,6 +108,8 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         bboxes = tv_tensors.wrap(torch.cat(gt_bboxes, dim=0), like=gt_bboxes[0]) if len(gt_bboxes) > 0 else None
         points = tv_tensors.wrap(torch.stack(gt_points, dim=0), like=gt_points[0]) if len(gt_points) > 0 else None
         labels = torch.as_tensor(gt_labels.get("points", []) + gt_labels.get("bboxes", []), dtype=torch.int64)
+        masks = tv_tensors.Mask(np.stack(gt_masks.get("points", []) + gt_masks.get("bboxes", []), axis=0), dtype=torch.uint8)
+        polygons = gt_polygons.get("points", []) + gt_polygons.get("bboxes", [])
         
         # set entity without masks to avoid resizing masks
         entity = VisualPromptingDataEntity(
@@ -122,15 +121,14 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
             ),
             masks=None,
             labels=labels,
-            polygons=gt_polygons,
+            polygons=polygons,
             points=points,
             bboxes=bboxes,
         )
         transformed_entity = self._apply_transforms(entity)
 
         # insert masks to transformed_entity
-        masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)
-        transformed_entity.masks = tv_tensors.Mask(masks, dtype=torch.uint8)  # type: ignore[union-attr]
+        transformed_entity.masks = masks
         return transformed_entity
 
     @property
