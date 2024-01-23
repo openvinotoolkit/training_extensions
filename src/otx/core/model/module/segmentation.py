@@ -135,3 +135,11 @@ class OTXSegmentationLitModule(OTXLitModule):
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
+
+    def _load_from_prev_otx_ckpt(self, ckpt: dict) -> dict:
+        """Get the state_dict, supporting the backward compatibility."""
+        state_dict = super()._load_from_prev_otx_ckpt(ckpt)
+        for key in list(state_dict.keys()):
+            if "ham.bases" in key or "decode_head.aggregator.projects" in key:
+                state_dict.pop(key)
+        return state_dict

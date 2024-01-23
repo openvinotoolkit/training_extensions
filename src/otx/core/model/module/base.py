@@ -15,6 +15,7 @@ from torch import Tensor
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.export import OTXExportFormat
+from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -135,12 +136,32 @@ class OTXLitModule(LightningModule):
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
-    def load_state_dict(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
+    def _load_from_prev_otx_ckpt(self, state_dict: dict[str, Any]) -> dict[str, Any]:
+        """Attach the model.model prefix to load without problem."""
+        msg = "Trying to load the model checkpoint created by OTX 1.X. it will be converted to OTX2.0 format."
+        warnings.warn(msg, stacklevel=1)
+        for key in list(state_dict.keys()):
+            value = state_dict.pop(key)
+            new_key = "model.model." + key
+            state_dict[new_key] = value
+        return state_dict
+
+    def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
+
+        It successfully loads the checkpoint from OTX v1.x and for finetune and for resume.
 
         If checkpoint's meta_info and OTXLitModule's meta_info are different,
         load_state_pre_hook for smart weight loading will be registered.
         """
+        if is_ckpt_from_otx_v1(ckpt):
+            model_state_dict = ckpt["model"]["state_dict"]
+            state_dict = self._load_from_prev_otx_ckpt(model_state_dict)
+        elif is_ckpt_for_finetuning(ckpt):
+            state_dict = ckpt["state_dict"]
+        else:
+            state_dict = ckpt
+
         ckpt_meta_info = state_dict.pop("meta_info", None)
 
         if ckpt_meta_info and self.meta_info is None:
