@@ -12,10 +12,11 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
+from collections import defaultdict
 
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
 from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 
@@ -118,27 +119,25 @@ class SegmentAnything(nn.Module):
 
     def forward(
         self,
-        images: Tensor,
+        images: tv_tensors.Image,
         ori_shapes: list[Tensor],
-        bboxes: list[Tensor | None] | None = None,
-        points: list[tuple[Tensor, Tensor] | None] | None = None,  # TODO(sungchul): enable point prompts # noqa: TD003
-        gt_masks: list[Tensor] | None = None,
+        bboxes: list[tv_tensors.BoundingBoxes | None],
+        points: list[tuple[Points, Tensor] | None],
+        labels: list[Tensor],
+        gt_masks: list[tv_tensors.Mask] | None = None,
     ) -> Tensor | tuple[list[Tensor], list[Tensor]]:
         """Forward method for SAM training/validation/prediction.
 
         Args:
-            images (Tensor): Images with shape (B, C, H, W).
+            images (tv_tensors.Image): Images with shape (B, C, H, W).
             ori_shapes (List[Tensor]): List of original shapes per image.
-            bboxes (List[Tensor], optional): A Nx4 array given a box prompt to the model, in XYXY format.
-            points (List[Tuple[Tensor, Tensor]], optional): Point coordinates and labels to embed.
+            bboxes (List[tv_tensors.BoundingBoxes], optional): A Nx4 array given a box prompt to the model, in XYXY format.
+            points (List[Tuple[Points, Tensor]], optional): Point coordinates and labels to embed.
                 Point coordinates are BxNx2 arrays of point prompts to the model.
                 Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
                 1 indicates a foreground point and 0 indicates a background point.
-            # masks (Optional[Tensor], optional): A low resolution mask input to the model, typically
-            #     coming from a previous prediction iteration. Has form Bx1xHxW, where
-            #     for SAM, H=W=256. Masks returned by a previous iteration of the
-            #     predict method do not need further transformation.
-            gt_masks (List[Tensor], optional): Ground truth masks for loss calculation.
+            labels (List[Tensor]): List of labels stacked in the order, points and bounding boxes.
+            gt_masks (List[tv_tensors.Mask], optional): Ground truth masks for loss calculation.
 
         Returns:
             (Tensor): Calculated loss values.
@@ -148,23 +147,29 @@ class SegmentAnything(nn.Module):
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
-        for embedding, bbox in zip(image_embeddings, bboxes):  # type: ignore[arg-type]
-            sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                points=None,  # TODO(sungchul): enable point prompts # noqa: TD003
-                boxes=bbox,
-                masks=None,
-            )
+        for idx, embedding in enumerate(image_embeddings):
+            low_res_masks, iou_predictions = [], []
+            for prompt in [points[idx], bboxes[idx]]:
+                if prompt is None:
+                    continue
 
-            low_res_masks, iou_predictions = self.mask_decoder(
-                image_embeddings=embedding.unsqueeze(0),
-                image_pe=self.prompt_encoder.get_dense_pe(),
-                sparse_prompt_embeddings=sparse_embeddings,
-                dense_prompt_embeddings=dense_embeddings,
-                multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better.
-            )
-
-            pred_masks.append(low_res_masks)
-            ious.append(iou_predictions)
+                sparse_embeddings, dense_embeddings = self.prompt_encoder(
+                    points=prompt if isinstance(prompt[0], Points) else None,
+                    boxes=prompt if isinstance(prompt, tv_tensors.BoundingBoxes) else None,
+                    masks=None,
+                )
+                _low_res_masks, _iou_predictions = self.mask_decoder(
+                    image_embeddings=embedding.unsqueeze(0),
+                    image_pe=self.prompt_encoder.get_dense_pe(),
+                    sparse_prompt_embeddings=sparse_embeddings,
+                    dense_prompt_embeddings=dense_embeddings,
+                    multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better.
+                )
+                low_res_masks.append(_low_res_masks)
+                iou_predictions.append(_iou_predictions)
+            
+            pred_masks.append(torch.cat(low_res_masks, dim=0))
+            ious.append(torch.cat(iou_predictions, dim=0))
 
         if self.training:
             loss_dice = 0.0
@@ -192,7 +197,7 @@ class SegmentAnything(nn.Module):
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
-        return post_processed_pred_masks, ious
+        return post_processed_pred_masks, ious, labels
 
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
@@ -300,13 +305,14 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
 
     def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:
         """Customize the inputs for the model."""
-        images = torch.stack(inputs.images, dim=0).to(dtype=torch.float32)
+        images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
         return {
             "images": images,
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
-            "bboxes": self._inspect_prompts(inputs.bboxes),
-            # "points": self.inspect_prompts(inputs.points), # TODO(sungchul): enable point prompts # noqa: TD003
             "gt_masks": inputs.masks,
+            "bboxes": self._inspect_prompts(inputs.bboxes),
+            "points": [(tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device)) if point is not None else None for point in self._inspect_prompts(inputs.points)],
+            "labels": inputs.labels,
         }
 
     def _customize_outputs(
@@ -320,25 +326,27 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
 
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = inputs.labels
-        for mask, score in zip(*outputs):
+        labels: list[torch.LongTensor] = []
+        for mask, score, label in zip(*outputs):
             masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
             scores.append(score)
+            labels.append(label)
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
-            bboxes=[],
             masks=masks,
             polygons=[],
+            points=[],
+            bboxes=[],
             labels=labels,
         )
-
-    def _inspect_prompts(self, prompts: list[tv_tensors.BoundingBoxes]) -> list[tv_tensors.BoundingBoxes | None]:
+        
+    def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:
         """Inspect if given prompts are empty.
 
         If there are empty prompts (shape=0), they will be converted to None.
         """
-        return [p if p.shape[0] > 0 else None for p in prompts]
+        return [None if p is None else None if p.shape[0] == 0 else p for p in prompts]
