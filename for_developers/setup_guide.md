@@ -2,6 +2,23 @@
 
 ## Installation
 
+### With Conda
+
+```console
+# Create venv from conda
+conda create -n otx-v2 python=3.11
+conda activate otx-v2
+
+# Install PyTorch and TorchVision
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+
+# Install otx with core requirements
+pip install -e .
+
+# otx install (install mmX)
+otx install -v
+```
+
 ### With PIP & 'otx install'
 
 ```console
