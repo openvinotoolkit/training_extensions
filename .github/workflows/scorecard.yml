@@ -6,13 +6,14 @@ name: Scorecard supply-chain security
 on:
   # For Branch-Protection check. Only the default branch is supported. See
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
-  branch_protection_rule:
+  # branch_protection_rule:
   # To guarantee Maintained check is occasionally updated. See
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
   schedule:
     - cron: "0 18 * * 6"
   push:
     branches: ["develop"]
+  workflow_dispatch: # run on request (no need for PR)
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -37,7 +38,7 @@ jobs:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@v2
+        uses: ossf/scorecard-action@v4
         with:
           results_file: results.sarif
           results_format: sarif
