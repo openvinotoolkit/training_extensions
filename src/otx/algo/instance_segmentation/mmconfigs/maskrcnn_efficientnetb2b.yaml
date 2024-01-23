@@ -74,7 +74,7 @@ rpn_head:
     type: L1Loss
     loss_weight: 1.0
 roi_head:
-  type: StandardRoIHead
+  type: CustomRoIHead
   bbox_roi_extractor:
     type: SingleRoIExtractor
     roi_layer:
@@ -88,7 +88,7 @@ roi_head:
       - 16
       - 32
   bbox_head:
-    type: Shared2FCBBoxHead
+    type: CustomConvFCBBoxHead
     in_channels: 80
     fc_out_channels: 1024
     roi_feat_size: 7

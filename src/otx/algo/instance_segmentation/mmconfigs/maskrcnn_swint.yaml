@@ -78,7 +78,7 @@ roi_head:
     num_classes: 80
     reg_class_agnostic: false
     roi_feat_size: 7
-    type: Shared2FCBBoxHead
+    type: CustomConvFCBBoxHead
   bbox_roi_extractor:
     featmap_strides:
       - 4
@@ -113,7 +113,7 @@ roi_head:
       sampling_ratio: 0
       type: RoIAlign
     type: SingleRoIExtractor
-  type: StandardRoIHead
+  type: CustomRoIHead
 rpn_head:
   anchor_generator:
     ratios:
