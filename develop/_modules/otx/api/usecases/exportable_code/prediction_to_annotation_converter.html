@@ -617,7 +617,7 @@
         <span class="k">assert</span> <span class="n">predictions</span><span class="o">.</span><span class="n">pred_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">assert</span> <span class="n">predictions</span><span class="o">.</span><span class="n">anomaly_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">annotations</span> <span class="o">=</span> <span class="n">create_annotation_from_segmentation_map</span><span class="p">(</span>
-            <span class="n">predictions</span><span class="o">.</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">predictions</span><span class="o">.</span><span class="n">anomaly_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_map</span>
+            <span class="n">predictions</span><span class="o">.</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">predictions</span><span class="o">.</span><span class="n">anomaly_map</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_map</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># TODO: add confidence to this label</span>
