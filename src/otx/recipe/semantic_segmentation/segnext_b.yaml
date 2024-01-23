@@ -7,7 +7,7 @@ model:
 optimizer:
   class_path: torch.optim.AdamW
   init_args:
-    lr: 0.000006
+    lr: 0.00006
     betas:
       - 0.9
       - 0.999
