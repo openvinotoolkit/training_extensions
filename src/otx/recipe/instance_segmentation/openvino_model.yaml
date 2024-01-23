@@ -31,7 +31,7 @@ overrides:
   data:
     task: INSTANCE_SEGMENTATION
     config:
-      image_color_channel: BGR
+      image_color_channel: RGB
       data_format: coco_instances
       test_subset:
         batch_size: 2

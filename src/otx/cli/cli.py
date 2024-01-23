@@ -155,12 +155,12 @@ class OTXCLI:
             sub_parser.link_arguments("data_root", "engine.data_root")
 
             # Model Settings
-            from otx.core.model.entity.base import OTXModel
+            from otx.core.model.entity.base import OTXModel, OVModel
 
             model_kwargs: dict[str, Any] = {"fail_untyped": False}
 
             sub_parser.add_subclass_arguments(
-                OTXModel,
+                (OTXModel, OVModel),
                 "model",
                 required=False,
                 **model_kwargs,

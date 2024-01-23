@@ -227,9 +227,9 @@ class OVModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         num_classes: int,
         model_name: str,
         model_type: str,
-        async_inference: bool,
-        max_num_requests: int,
-        use_throughput_mode: bool,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
     ) -> None:
         super().__init__()
         self.model_name = model_name

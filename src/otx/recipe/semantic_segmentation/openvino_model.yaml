@@ -27,7 +27,7 @@ overrides:
   data:
     task: SEMANTIC_SEGMENTATION
     config:
-      image_color_channel: BGR
+      image_color_channel: RGB
       data_format: common_semantic_segmentation_with_subset_dirs
       test_subset:
         batch_size: 64
