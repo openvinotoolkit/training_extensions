@@ -1,189 +1,108 @@
-# @package _global_
-defaults:
-  - override /trainer: default
-  - override /base: detection
-  - override /callbacks: detection
-  - override /data: mmdet
-  - override /model: mmdet
-data:
-  tile_config:
-    enable_tiler: true
-    grid_size:
-      - 2
-      - 2
-  train_subset:
-    batch_size: 8
-    transforms:
-      - type: LoadImageFromFile
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: MinIoURandomCrop
-        min_ious:
-          - 0.1
-          - 0.3
-          - 0.5
-          - 0.7
-          - 0.9
-        min_crop_size: 0.3
-      - type: Resize
-        scale:
-          - 992
-          - 736
-        keep_ratio: false
-      - type: RandomFlip
-        prob: 0.5
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - flip_direction
-          - scale_factor
-          - gt_ann_ids
-          - flip
-          - ignored_labels
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
-  val_subset:
-    batch_size: 8
-    transforms:
-      - type: LoadImageFromFile
-      - type: Resize
-        scale:
-          - 992
-          - 736
-        keep_ratio: false
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - scale_factor
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
-  test_subset:
-    batch_size: 8
-    transforms:
-      - type: LoadImageFromFile
-      - type: Resize
-        scale:
-          - 992
-          - 736
-        keep_ratio: false
-      - type: LoadAnnotations
-        with_bbox: true
-      - type: PackDetInputs
-        meta_keys:
-          - ori_filename
-          - scale_factor
-          - ori_shape
-          - filename
-          - img_shape
-          - pad_shape
 model:
-  otx_model:
-    config:
-      load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth
-      train_cfg:
-        assigner:
-          type: ATSSAssigner
-          topk: 9
-        allowed_border: -1
-        pos_weight: -1
-        debug: false
-      test_cfg:
-        nms_pre: 1000
-        min_bbox_size: 0
-        score_thr: 0.05
-        nms:
-          type: nms
-          iou_threshold: 0.6
-        max_per_img: 100
-      backbone:
-        type: mobilenetv2_w1
-        out_indices:
-          - 2
-          - 3
-          - 4
-          - 5
-        frozen_stages: -1
-        norm_eval: false
-        pretrained: true
-      data_preprocessor:
-        type: DetDataPreprocessor
-        mean:
-          - 0
-          - 0
-          - 0
-        std:
-          - 255
-          - 255
-          - 255
-        bgr_to_rgb: false
-        pad_size_divisor: 32
-      type: ATSS
-      neck:
-        type: FPN
-        in_channels:
-          - 24
-          - 32
-          - 96
-          - 320
-        out_channels: 64
-        start_level: 1
-        add_extra_convs: on_output
-        num_outs: 5
-        relu_before_extra_convs: true
-      bbox_head:
-        type: ATSSHead
-        num_classes: 2
-        in_channels: 64
-        stacked_convs: 4
-        feat_channels: 64
-        anchor_generator:
-          type: AnchorGenerator
-          ratios:
-            - 1.0
-          octave_base_scale: 8
-          scales_per_octave: 1
-          strides:
-            - 8
-            - 16
-            - 32
-            - 64
-            - 128
-        bbox_coder:
-          type: DeltaXYWHBBoxCoder
-          target_means:
-            - 0.0
-            - 0.0
-            - 0.0
-            - 0.0
-          target_stds:
-            - 0.1
-            - 0.1
-            - 0.2
-            - 0.2
-        loss_cls:
-          type: FocalLoss
-          use_sigmoid: true
-          gamma: 2.0
-          alpha: 0.25
-          loss_weight: 1.0
-        loss_bbox:
-          type: GIoULoss
-          loss_weight: 2.0
-        loss_centerness:
-          type: CrossEntropyLoss
-          use_sigmoid: true
-          loss_weight: 1.0
-  optimizer:
-    _target_: torch.optim.SGD
-    _partial_: true
+  class_path: otx.algo.detection.atss.ATSS
+  init_args:
+    num_classes: 1000
+    variant: mobilenetv2
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
     lr: 0.004
-    weight_decay: 0.0001
     momentum: 0.9
-trainer:
+    weight_decay: 0.0001
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: DETECTION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
   gradient_clip_val: 35.0
+  data:
+    config:
+      tile_config:
+        enable_tiler: true
+        grid_size:
+        - 2
+        - 2
+      train_subset:
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: MinIoURandomCrop
+            min_ious:
+              - 0.1
+              - 0.3
+              - 0.5
+              - 0.7
+              - 0.9
+            min_crop_size: 0.3
+          - type: Resize
+            scale:
+              - 992
+              - 736
+            keep_ratio: false
+          - type: RandomFlip
+            prob: 0.5
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - flip_direction
+              - scale_factor
+              - gt_ann_ids
+              - flip
+              - ignored_labels
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
+      val_subset:
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+          - type: Resize
+            scale:
+              - 992
+              - 736
+            keep_ratio: false
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - scale_factor
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
+      test_subset:
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+          - type: Resize
+            scale:
+              - 992
+              - 736
+            keep_ratio: false
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - scale_factor
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
