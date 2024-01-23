@@ -1,6 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Class definition for mmdeploy exporter used in OTX."""
+
 from __future__ import annotations
 
 import os
@@ -30,7 +32,20 @@ class MMdeployExporter(OTXModelExporter):
     """_summary_
 
     Args:
-        input_size: height, width
+        model_builder (Callable): A function to build a model.
+        model_cfg (DictConfig): Model config for mm framework.
+        deploy_cfg (str | MMConfig): Deployment config module path or MMEngine Config object.
+        test_pipeline (list[DictConfig]): A pipeline for test dataset.
+        input_size (tuple[int, ...]): Input shape.
+        mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
+        std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
+        resize_mode (Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"], optional):
+            A resize type for model preprocess. "standard" resizes iamges without keeping ratio.
+            "fit_to_window" resizes images while keeping ratio.
+            "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
+        pad_value (int, optional): Padding value. Defaults to 0.
+        swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
+        max_num_detections (int, optional): Maximum number of detections per image. Defaults to 0.
     """
     def __init__(
         self,
@@ -253,8 +268,9 @@ def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
     ```
 
     Args:
-        cfg (Config): Config object containing test pipeline and other configurations.
-        deploy_cfg (DeployConfig): DeployConfig object containing backend configuration.
+        deploy_cfg (MMConfig): Config object containing test pipeline and other configurations.
+        width (int): Width of image.
+        height (int): Height of image.
 
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
@@ -269,11 +285,11 @@ def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
     """Patch IR scale factor inplace from hyper parameters to deploy config.
 
     Args:
-        deploy_cfg (ConfigDict): mmcv deploy config
-        hyper_parameters (DetectionConfig): OTX detection hyper parameters
+        deploy_cfg (ConfigDict): mmcv deploy config.
+        hyper_parameters (DetectionConfig): OTX detection hyper parameters>
     """
-    return
     # TODO: need to implement for tiling
+    raise NotImplementedError
 
     if hyper_parameters.tiling_parameters.enable_tiling:
         scale_ir_input = deploy_cfg.get("scale_ir_input", False)

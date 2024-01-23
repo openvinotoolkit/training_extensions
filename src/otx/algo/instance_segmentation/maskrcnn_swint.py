@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""ATSS model implementations."""
+"""MaskRCNNSwinT model implementations."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from otx.core.model.entity.instance_segmentation import MMDetInstanceSegCompatib
 
 
 class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
-    """MaskRCNN Model."""
+    """MaskRCNNSwinT Model."""
 
     def __init__(self, num_classes: int) -> None:
         config = read_mmconfig(model_name="maskrcnn_swint")
@@ -22,6 +22,7 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
 
     @property
     def export_params(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
         export_params = get_mean_std_from_data_processing(self.config)
         export_params["model_builder"] = self._create_model
         export_params["model_cfg"] = copy(self.config)

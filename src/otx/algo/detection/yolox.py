@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """YOLOX model implementations."""
@@ -23,6 +23,7 @@ class YoloX(MMDetCompatibleModel):
 
     @property
     def export_params(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
         export_params = get_mean_std_from_data_processing(self.config)
         export_params["model_builder"] = self._create_model
         export_params["model_cfg"] = copy(self.config)

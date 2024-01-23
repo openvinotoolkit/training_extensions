@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.core.types.export import OTXExportPrecisionType
 
@@ -19,14 +19,26 @@ if TYPE_CHECKING:
 
 
 class OTXModelExporter:
-    """Base class for the model exporters used in OTX."""
+    """Base class for the model exporters used in OTX.
+
+    Args:
+        input_size (tuple[int, ...]): Input shape.
+        mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
+        std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
+        resize_mode (Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"], optional):
+            A resize type for model preprocess. "standard" resizes iamges without keeping ratio.
+            "fit_to_window" resizes images while keeping ratio.
+            "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
+        pad_value (int, optional): Padding value. Defaults to 0.
+        swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
+    """
 
     def __init__(
         self,
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        resize_mode: str = "standard",
+        resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
     ) -> None:
