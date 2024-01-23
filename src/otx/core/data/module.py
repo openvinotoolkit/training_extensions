@@ -23,7 +23,7 @@ from otx.core.types.task import OTXTaskType
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
 
-    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
+    from otx.core.config.data import DataModuleConfig
     from otx.core.data.dataset.base import OTXDataset
 
 
@@ -33,7 +33,7 @@ class OTXDataModule(LightningDataModule):
     def __init__(
         self,
         task: OTXTaskType,
-        config: DataModuleConfig | InstSegDataModuleConfig,
+        config: DataModuleConfig,
     ) -> None:
         """Constructor."""
         super().__init__()
