@@ -16,6 +16,7 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchPredEntity,
 )
 from otx.core.model.entity.classification import OTXMulticlassClsModel
+from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -66,6 +67,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
+        config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         super().__init__(num_classes=num_classes)  # create the model
 
