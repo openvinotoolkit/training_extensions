@@ -2,7 +2,7 @@
 
 _base_ = ["./base_detection.py"]
 
-onnx_config = dict(
+ir_config = dict(
     output_names=[
         "boxes",
         "labels",

@@ -14,7 +14,6 @@ from pathlib import Path
 from copy import copy
 
 import onnx
-import cv2
 import torch
 import numpy as np
 import openvino
@@ -243,7 +242,7 @@ def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
         width (int): Width of image.
         height (int): Height of image.
     """
-    deploy_cfg.onnx_config.input_shape = (width, height)
+    deploy_cfg.ir_config.input_shape = (width, height)
 
 
 def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
@@ -263,7 +262,7 @@ def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
             ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
             ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
             ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
-            deploy_cfg.onnx_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
+            deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
             print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
 
 

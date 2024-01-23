@@ -1,6 +1,6 @@
 """Detection models base deploy config."""
 
-onnx_config = dict(
+ir_config = dict(
     type="onnx",
     export_params=True,
     keep_initializers_as_inputs=False,
