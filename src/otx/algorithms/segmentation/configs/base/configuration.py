@@ -35,8 +35,6 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import Models
-
 # pylint: disable=invalid-name
 
 
@@ -51,15 +49,6 @@ class SegmentationConfig(BaseConfig):
     class __LearningParameters(BaseConfig.BaseLearningParameters):
         header = string_attribute("Learning Parameters")
         description = header
-
-        learning_rate_fixed_iters = configurable_integer(
-            default_value=100,
-            min_value=0,
-            max_value=5000,
-            header="Number of iterations for fixed learning rate",
-            description="",
-            affects_outcome_of=ModelLifecycle.TRAINING,
-        )
 
         learning_rate_schedule = selectable(
             default_value=LearningRateSchedule.COSINE,
@@ -76,7 +65,7 @@ class SegmentationConfig(BaseConfig):
 
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
-        header = string_attribute("Parameters for the MPA algo-backend")
+        header = string_attribute("Parameters for the OTX algo-backend")
         description = header
 
     @attrs
@@ -84,13 +73,6 @@ class SegmentationConfig(BaseConfig):
         header = string_attribute("Postprocessing")
         description = header
 
-        class_name = selectable(
-            default_value=Models.BlurSegmentation,
-            header="Model class for inference",
-            description="Model classes with defined pre- and postprocessing",
-            editable=False,
-            visible_in_ui=True,
-        )
         blur_strength = configurable_integer(
             header="Blur strength",
             description="With a higher value, the segmentation output will be smoother, but less accurate.",

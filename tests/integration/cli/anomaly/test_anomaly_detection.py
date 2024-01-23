@@ -11,7 +11,6 @@ from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
-    generate_model_template_testing,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
@@ -19,6 +18,7 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 args = {

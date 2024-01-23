@@ -10,6 +10,7 @@ import pytest
 from openvino.model_api.models import Model
 
 import otx.algorithms.classification.adapters.openvino.task
+from openvino.model_api.models.utils import ClassificationResult
 from otx.algorithms.classification.adapters.openvino.task import (
     ClassificationOpenVINOInferencer,
     ClassificationOpenVINOTask,
@@ -59,55 +60,18 @@ class TestOpenVINOClassificationInferencer:
         mocker.patch("otx.algorithms.classification.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
-        model_path = "otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models.OTXClassification"
-        self.cls_ov_inferencer.model = mocker.patch(model_path, autospec=True)
+        model_path = "openvino.model_api.models.classification.ClassificationModel"
+        self.cls_ov_inferencer.model = mocker.patch(
+            model_path, autospec=True, return_value=ClassificationResult([], np.array(0), np.array(0), np.array(0))
+        )
         self.fake_input = np.random.rand(3, 224, 224)
-
-    @e2e_pytest_unit
-    def test_pre_process(self):
-        self.cls_ov_inferencer.model.preprocess.return_value = {"foo": "bar"}
-        returned_value = self.cls_ov_inferencer.pre_process(self.fake_input)
-
-        assert returned_value == {"foo": "bar"}
-
-    @e2e_pytest_unit
-    def test_post_process(self):
-        fake_feature_vector = np.random.rand(1, 100)
-        fake_logits = np.random.rand(1, 2)
-        fake_prediction = {
-            "logits": fake_logits,
-            "feature_vector": fake_feature_vector,
-            "saliency_map": self.fake_input,
-        }
-        fake_metadata = {"original_shape": (254, 320, 3), "resized_shape": (224, 224, 3)}
-        self.cls_ov_inferencer.model.postprocess.return_value = [[0, 0.87], [1, 0.13]]
-        returned_value = self.cls_ov_inferencer.post_process(fake_prediction, fake_metadata)
-
-        assert len(returned_value.annotations[0].get_labels()) > 0
-        assert len(returned_value.annotations[0].get_labels()) == len(self.label_schema.get_labels(include_empty=False))
 
     @e2e_pytest_unit
     def test_predict(self, mocker):
         fake_output = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=[])
-        mock_pre_process = mocker.patch.object(ClassificationOpenVINOInferencer, "pre_process", return_value=("", ""))
-        mock_forward = mocker.patch.object(ClassificationOpenVINOInferencer, "forward")
-        self.cls_ov_inferencer.model.postprocess_aux_outputs.return_value = ("", "", "", "")
-        mock_post_process = mocker.patch.object(
-            ClassificationOpenVINOInferencer, "post_process", return_value=fake_output
-        )
         returned_value = self.cls_ov_inferencer.predict(self.fake_input)
 
-        mock_pre_process.assert_called_once()
-        mock_forward.assert_called_once()
-        mock_post_process.assert_called_once()
-        assert returned_value == (fake_output, "", "", "", "")
-
-    @e2e_pytest_unit
-    def test_forward(self):
-        fake_output = {"logits": np.random.rand(1, 2)}
-        self.cls_ov_inferencer.model.infer_sync.return_value = fake_output
-        returned_value = self.cls_ov_inferencer.forward({"image": self.fake_input})
-        assert returned_value == fake_output
+        assert returned_value[0] == ClassificationResult([], np.array(0), np.array(0), np.array(0))
 
 
 class TestOpenVINOClassificationTask:
@@ -133,13 +97,22 @@ class TestOpenVINOClassificationTask:
         ]
         self.fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
         self.fake_input = mocker.MagicMock()
+        self.fake_hierarchical_info = {
+            "cls_heads_info": {
+                "num_multiclass_heads": 2,
+                "head_idx_to_logits_range": {"0": (0, 1), "1": (1, 2)},
+                "all_groups": [["a"], ["b"]],
+                "label_to_idx": {"a": 0, "b": 1},
+                "num_multilabel_classes": 0,
+            }
+        }
 
     @e2e_pytest_unit
     def test_infer(self, mocker):
         mock_predict = mocker.patch.object(
             ClassificationOpenVINOInferencer,
             "predict",
-            return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_input, self.fake_input, self.fake_input),
+            return_value=(ClassificationResult([], np.array(0), np.array(0), np.array(0)), self.fake_ann_scene),
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
         updated_dataset = self.cls_ov_task.infer(
@@ -151,11 +124,30 @@ class TestOpenVINOClassificationTask:
             assert updated.annotation_scene.contains_any(self.labels)
 
     @e2e_pytest_unit
+    def test_infer_w_features_hierarhicallabel(self, mocker):
+        mock_predict = mocker.patch.object(
+            ClassificationOpenVINOInferencer,
+            "predict",
+            return_value=(
+                ClassificationResult([], np.empty((2, 2, 2)), np.array([0, 1]), np.array([0, 1])),
+                self.fake_ann_scene,
+            ),
+        )
+        mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
+        self.cls_ov_task.inferencer.model.hierarchical_info = self.fake_hierarchical_info
+        updated_dataset = self.cls_ov_task.infer(
+            self.dataset, InferenceParameters(enable_async_inference=False, is_evaluation=False)
+        )
+        mock_predict.assert_called()
+        for updated in updated_dataset:
+            assert updated.annotation_scene.contains_any(self.labels)
+
+    @e2e_pytest_unit
     def test_infer_async(self, mocker):
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
 
         def fake_enqueue_prediciton(obj, x, idx, result_handler):
-            result_handler(idx, self.fake_ann_scene, (x, None, None, 0))
+            result_handler(idx, self.fake_ann_scene, (x, x, x))
 
         mock_enqueue = mocker.patch.object(
             ClassificationOpenVINOInferencer, "enqueue_prediction", fake_enqueue_prediciton
@@ -175,14 +167,27 @@ class TestOpenVINOClassificationTask:
             ClassificationOpenVINOInferencer,
             "predict",
             return_value=(
+                ClassificationResult([], self.fake_silency_map, np.array([0, 1]), np.array([0, 1])),
                 self.fake_ann_scene,
-                np.array([0, 1]),
-                self.fake_silency_map,
-                self.fake_input,
-                self.fake_input,
             ),
         )
         self.cls_ov_task.inferencer.model.hierarchical = False
+        updpated_dataset = self.cls_ov_task.explain(self.dataset)
+
+        assert updpated_dataset is not None
+        assert updpated_dataset.get_labels() == self.dataset.get_labels()
+
+    @e2e_pytest_unit
+    def test_explain_hierarhicallabel(self, mocker):
+        mocker.patch.object(
+            ClassificationOpenVINOInferencer,
+            "predict",
+            return_value=(
+                ClassificationResult([], np.empty((2, 2, 2)), np.array([0, 1]), np.array([0, 1])),
+                self.fake_ann_scene,
+            ),
+        )
+        self.cls_ov_task.inferencer.model.hierarchical_info = self.fake_hierarchical_info
         updpated_dataset = self.cls_ov_task.explain(self.dataset)
 
         assert updpated_dataset is not None

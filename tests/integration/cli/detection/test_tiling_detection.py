@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for object detection with OTX CLI"""
+"""Tests for OTX Class-Incremental Learning for object detection with OTX CLI"""
 # Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -74,7 +74,7 @@ class TestTilingDetectionCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_det"
-        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True, check_ir_meta=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

@@ -5,15 +5,9 @@
 #
 
 from .inference import (
-    AsyncOpenVINOTask,
-    BaseInferencer,
-    BaseOpenVINOInferencer,
     IInferencer,
 )
 
 __all__ = [
-    "AsyncOpenVINOTask",
-    "BaseInferencer",
-    "BaseOpenVINOInferencer",
     "IInferencer",
 ]

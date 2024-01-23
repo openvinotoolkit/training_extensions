@@ -20,6 +20,8 @@ from collections import deque
 import cv2
 import numpy as np
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.image import Image
@@ -33,6 +35,7 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 
@@ -64,7 +67,12 @@ def get_args():
         "This options applies to result visualisation only.",
     )
     parser.add_argument("--loop", action="store_true", help="Enable reading the input in a loop.")
-    parser.add_argument("--delay", type=int, default=3, help="Frame visualization time in ms.")
+    parser.add_argument(
+        "--delay",
+        type=int,
+        default=3,
+        help="Frame visualization time in ms. Negative delay value disables visualization",
+    )
     parser.add_argument(
         "--display-perf",
         action="store_true",
@@ -80,7 +88,7 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 

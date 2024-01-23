@@ -1,4 +1,4 @@
-_base_ = ["./train.py", "../_base_/data/coco_inst_seg.py", "../_base_/models/detectors/detector.py"]
+_base_ = ["./train.py", "../_base_/models/detectors/detector.py"]
 
 task = "instance-segmentation"
 
@@ -7,7 +7,7 @@ evaluation = dict(
 )
 
 task_adapt = dict(
-    type="mpa",
+    type="default_task_adapt",
     op="REPLACE",
     efficient_mode=False,
 )
@@ -22,4 +22,3 @@ adaptive_validation_interval = dict(
     enable_adaptive_interval_hook=True,
     enable_eval_before_run=True,
 )
-adaptive_ema = dict(epoch_momentum=0.4)

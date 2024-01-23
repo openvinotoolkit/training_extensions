@@ -1,11 +1,12 @@
-"""Tests for MPA Class-Incremental Learning for instance segmentation with OTX CLI"""
-# Copyright (C) 2022-2023 Intel Corporation
+"""Tests for OTX Class-Incremental Learning for instance segmentation with OTX CLI"""
+# Copyright (C) 2022-2023-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
 import os
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -107,7 +108,7 @@ class TestTilingInstanceSegmentationCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
-        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True, check_ir_meta=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -159,5 +160,8 @@ class TestTilingInstanceSegmentationCLI:
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
-
+        if torch.__version__.startswith("2.") and template.name.startswith("MaskRCNN"):
+            pytest.skip(
+                reason="Issue#2451: Torch2.0 CUDA runtime error during NNCF optimization of ROIAlign MMCV kernel for MaskRCNN"
+            )
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)

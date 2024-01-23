@@ -24,6 +24,28 @@ learning_parameters:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
     auto_hpo_state: NOT_POSSIBLE
+  inference_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 1
+    description: The number of samples seen in each iteration of inference.
+      Increasing this value improves inference time and may make the inference more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Inference batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1
+    visible_in_ui: true
+    warning:
+      Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
@@ -49,7 +71,10 @@ learning_parameters:
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
     default_value: 100
-    description: ""
+    description:
+      In this periods of initial training iterations, the model will be trained in low learning rate,
+      which will be increased incrementally up to the expected learning rate setting.
+      This warm-up phase is known to be helpful to stabilize training, thus result in better performance.
     editable: true
     header: Number of iterations for learning rate warmup
     max_value: 10000
@@ -61,23 +86,6 @@ learning_parameters:
       rules: []
       type: UI_RULES
     value: 100
-    visible_in_ui: true
-    warning: null
-  num_checkpoints:
-    affects_outcome_of: NONE
-    default_value: 5
-    description: ""
-    editable: true
-    header: Number of checkpoints that is done during the single training round
-    max_value: 100
-    min_value: 1
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 5
     visible_in_ui: true
     warning: null
   num_iters:
@@ -235,6 +243,34 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
+  input_size:
+    affects_outcome_of: INFERENCE
+    default_value: Default
+    description:
+      The input size of the given model could be configured to one of the predefined resolutions.
+      Reduced training and inference time could be expected by using smaller input size.
+      In Auto mode, the input size is automatically determined based on dataset statistics.
+      Defaults to per-model default resolution.
+    editable: true
+    enum_name: InputSizePreset
+    header: Configure model input size.
+    options:
+      DEFAULT: "Default"
+      AUTO: "Auto"
+      _256x256: "256x256"
+      _384x384: "384x384"
+      _512x512: "512x512"
+      _768x768: "768x768"
+      _1024x1024: "1024x1024"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Default
+    visible_in_ui: false
+    warning: Modifying input size may decrease model performance.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -335,7 +371,7 @@ algo_backend:
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
-    default_value: 0
+    default_value: 1000000000
     description: Size of memory pool for caching decoded data to load data faster (bytes).
     editable: true
     header: Size of memory pool
@@ -418,7 +454,7 @@ pot_parameters:
     description: Number of data samples used for post-training optimization
     editable: True
     header: Number of data samples
-    max_value: 9223372036854775807
+    max_value: 100000
     min_value: 1
     type: INTEGER
     ui_rules:
@@ -435,7 +471,7 @@ pot_parameters:
     description: Number of requests during statistics collection
     editable: true
     header: Number of requests
-    max_value: 9223372036854775807
+    max_value: 100000
     min_value: 0
     type: INTEGER
     ui_rules:

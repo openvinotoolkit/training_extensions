@@ -1,7 +1,7 @@
 """Registry Class for otx.core.ov."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from typing import Any, Dict, Optional
 

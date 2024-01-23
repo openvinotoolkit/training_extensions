@@ -1,18 +1,7 @@
 """NNCF Task for OTX Classification."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the 'License');
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an 'AS IS' BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from functools import partial
 from typing import List, Optional
@@ -23,7 +12,6 @@ from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
     build_nncf_classifier,
 )
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
-from otx.algorithms.classification.adapters.mmcls.utils import patch_evaluation
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -50,16 +38,16 @@ class ClassificationNNCFTask(NNCFBaseTask, MMClassificationTask):  # pylint: dis
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
 
-    def _init_task(self, export: bool = False):  # noqa
-        super(NNCFBaseTask, self)._init_task(export)
-        # Patch Evaluation Metric for nncf_config
-        options_for_patch_evaluation = {"task": "normal"}
-        if self._multilabel:
-            options_for_patch_evaluation["task"] = "multilabel"
-        elif self._hierarchical:
-            options_for_patch_evaluation["task"] = "hierarchical"
-        patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)
+    def configure(
+        self,
+        training=True,
+        ir_options=None,
+        export=False,
+    ):
+        """Configure configs for nncf task."""
+        super(NNCFBaseTask, self).configure(training, ir_options, export)
         self._prepare_optimize(export)
+        return self._config
 
     def _prepare_optimize(self, export=False):
         super()._prepare_optimize()
@@ -122,3 +110,6 @@ class ClassificationNNCFTask(NNCFBaseTask, MMClassificationTask):  # pylint: dis
             output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
 
         return output, best_acc
+
+    def _save_model_post_hook(self, modelinfo):
+        modelinfo["input_size"] = self._input_size

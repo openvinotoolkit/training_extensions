@@ -22,7 +22,7 @@ from otx.api.configuration.enums.model_lifecycle import ModelLifecycle
 class DetectionConfig(BaseConfig):
     """Configurations of OTX Detection."""
 
-    header = string_attribute("Configuration for an object detection task of MPA")
+    header = string_attribute("Configuration for an object detection task of OTX")
     description = header
 
     @attrs
@@ -62,7 +62,7 @@ class DetectionConfig(BaseConfig):
 
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
-        header = string_attribute("Parameters for the MPA algo-backend")
+        header = string_attribute("Parameters for the OTX algo-backend")
         description = header
 
         enable_noisy_label_detection = configurable_boolean(

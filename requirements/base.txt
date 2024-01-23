@@ -11,3 +11,4 @@ bayesian-optimization==1.4.*
 tensorboard==2.15.*; python_version >= '3.9'
 tensorboard==2.14.*; python_version < '3.9'
 multiprocess==0.70.*
+pynvml==11.*

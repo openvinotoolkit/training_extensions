@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 import multiprocessing as mp
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -28,6 +28,7 @@ from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
 
 from otx.api.entities.label import Domain
+from otx.api.utils.time_utils import timeit
 
 
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
@@ -122,12 +123,13 @@ def sanitize_coordinates(bbox: np.ndarray, height: int, width: int, padding=1) -
     return np.array([x1, y1, x2, y2])
 
 
-def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.ndarray:
+def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, iou_thr: float) -> np.ndarray:
     """Compute the intersection over union between the detected masks and ground truth masks.
 
     Args:
         det (Tuple[np.ndarray, BitmapMasks]): detected bboxes and masks
         gt_masks (PolygonMasks): ground truth masks
+        iou_thr (float): IoU threshold
 
     Note:
         It first compute IoU between bounding boxes, then compute IoU between masks
@@ -143,9 +145,11 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
     gt_bboxes = gt_masks.get_bboxes()
     img_h, img_w = gt_masks.height, gt_masks.width
     ious = bbox_overlaps(det_bboxes, gt_bboxes, mode="iou")
+    ious[ious < iou_thr] = 0.0
     if not ious.any():
         return ious
-    for coord in np.argwhere(ious > 0):
+    # NOTE: further speed optimization (vectorization) could be done here
+    for coord in np.argwhere(ious):
         m, n = coord
         det_bbox, det_mask = sanitize_coordinates(det_bboxes[m], img_h, img_w), det_masks[m]
         gt_bbox, gt_mask = sanitize_coordinates(gt_bboxes[n], img_h, img_w), gt_masks[n]
@@ -154,6 +158,7 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
         min_y1 = min(det_bbox[1], gt_bbox[1])
         max_x2 = max(det_bbox[2], gt_bbox[2])
         max_y2 = max(det_bbox[3], gt_bbox[3])
+
         det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
         det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
         det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
@@ -169,7 +174,7 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
 
 
 def tpfpmiou_func(  # pylint: disable=too-many-locals
-    det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, cls_scores, iou_thr=0.5
+    det: Tuple[np.ndarray, Union[BitmapMasks, List]], gt_masks: PolygonMasks, cls_scores, iou_thr=0.5
 ):
     """Compute tp, fp, miou for each image.
 
@@ -195,7 +200,7 @@ def tpfpmiou_func(  # pylint: disable=too-many-locals
     if num_dets == 0:
         return tp, fp, 0.0
 
-    ious = mask_iou(det, gt_masks)  # (M, N)
+    ious = mask_iou(det, gt_masks, iou_thr)  # (M, N)
 
     # for each det, the max iou with all gts
     ious_max = ious.max(axis=1)
@@ -357,6 +362,7 @@ class Evaluator:
 
         return metrics["mAP"], eval_results
 
+    @timeit
     def evaluate(self, results, logger, iou_thr, scale_ranges):
         """Evaluate detection results.
 

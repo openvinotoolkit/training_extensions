@@ -1,11 +1,14 @@
 """MobileNet-V3-Small for hierarchical config."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
 # pylint: disable=invalid-name
 
 _base_ = ["../../../../recipes/stages/classification/incremental.yaml", "../base/models/mobilenet_v3.py"]
 
 model = dict(
-    type="SAMImageClassifier",
+    type="CustomImageClassifier",
     task="classification",
     head=dict(
         type="CustomHierarchicalNonLinearClsHead",
