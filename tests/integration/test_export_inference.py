@@ -98,6 +98,8 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "segmentation": "test/mIoU",
     "multilabel_classification": "test/accuracy",
     "multiclass_classification": "test/accuracy",
+    "detection" : "test/map_50",
+    "instance_segmentation" : "test/map_50",
 }
 
 
@@ -123,10 +125,10 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
         task_name in recipe
         for task_name in [
             "hlabel_classification",
-            "detection",
             "dino_v2",
             "instance_segmentation",
             "action_classification",
+            "action_detection",
             "visual_prompting",
         ]
     ):
