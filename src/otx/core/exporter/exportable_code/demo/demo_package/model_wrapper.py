@@ -12,10 +12,22 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 from .utils import get_model_path, get_parameters
+from enum import Enum
 
 
-class TaskType:
-    pass
+class TaskType(str, Enum):
+    """OTX task type definition."""
+
+    MULTI_CLASS_CLS = "MULTI_CLASS_CLS"
+    MULTI_LABEL_CLS = "MULTI_LABEL_CLS"
+    H_LABEL_CLS = "H_LABEL_CLS"
+    DETECTION = "DETECTION"
+    INSTANCE_SEGMENTATION = "INSTANCE_SEGMENTATION"
+    DETECTION_SEMI_SL = "DETECTION_SEMI_SL"
+    SEGMENTATION = "SEGMENTATION"
+    ACTION_CLASSIFICATION = "ACTION_CLASSIFICATION"
+    ACTION_DETECTION = "ACTION_DETECTION"
+    VISUAL_PROMPTING = "VISUAL_PROMPTING"
 
 
 class ModelWrapper:
@@ -38,7 +50,7 @@ class ModelWrapper:
             self.parameters = get_parameters(model_dir / "config.json")
 
         self._labels = self.parameters["model_parameters"]["labels"]
-        self._task_type = TaskType[self.parameters["converter_type"]]
+        self._task_type = TaskType[self.parameters["converter_type"].upper()]
 
         self.segm = bool(
             self._task_type is TaskType.INSTANCE_SEGMENTATION,

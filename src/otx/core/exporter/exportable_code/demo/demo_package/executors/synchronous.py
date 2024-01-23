@@ -4,14 +4,12 @@
 #
 
 import time
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 from ..streamer import get_streamer
 from ..visualizers import dump_frames
-
-if TYPE_CHECKING:
-    from ..model_wrapper import ModelWrapper
-    from ..visualizers import BaseVisualizer
+from ..model_wrapper import ModelWrapper
+from ..visualizers import BaseVisualizer
 
 
 class SyncExecutor:
@@ -37,7 +35,7 @@ class SyncExecutor:
             predictions, frame_meta = self.model(frame)
             output = self.visualizer.draw(frame, predictions, frame_meta)
             self.visualizer.show(output)
-            if self.visualizer.output:
+            if output is not None:
                 saved_frames.append(output)
             if self.visualizer.is_quit():
                 break

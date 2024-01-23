@@ -8,7 +8,12 @@ from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
 # pylint: disable=no-name-in-module, import-error
-from .demo_package import AsyncExecutor, ModelWrapper, SyncExecutor, create_visualizer
+from demo_package import (
+    AsyncExecutor,
+    SyncExecutor,
+    create_visualizer,
+    ModelWrapper
+)
 
 
 def build_argparser():
@@ -31,7 +36,7 @@ def build_argparser():
     )
     args.add_argument(
         "-m",
-        "--models",
+        "--model",
         help="Optional. Path to directory with trained model and configuration file. "
         "If you provide several models you will start the task chain pipeline with "
         "the provided models in the order in which they were specified. Default value "
@@ -71,7 +76,7 @@ def build_argparser():
     )
     args.add_argument(
         "--output",
-        default=None,
+        default="./outputs/model_visualization",
         type=str,
         help="Optional. Output path to save input data with predictions.",
     )
@@ -81,7 +86,7 @@ def build_argparser():
 
 EXECUTORS = {
     "sync": SyncExecutor,
-    "async": AsyncExecutor,
+    "async": AsyncExecutor
 }
 
 
@@ -93,7 +98,7 @@ def main():
         raise ValueError("--loop and --output cannot be both specified")
 
     # create models
-    model = ModelWrapper(args.model, device=args.device)
+    model = ModelWrapper(args.model[0], device=args.device)
     inferencer = EXECUTORS[args.inference_type]
 
     # create visualizer

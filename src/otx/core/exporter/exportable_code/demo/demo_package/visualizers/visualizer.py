@@ -9,9 +9,7 @@ from typing import TYPE_CHECKING, Optional
 
 import cv2
 import numpy as np
-
-if TYPE_CHECKING:
-    from ..streamer import BaseStreamer
+from ..streamer import BaseStreamer
 
 
 class BaseVisualizer:
@@ -22,7 +20,7 @@ class BaseVisualizer:
         window_name: Optional[str] = None,
         no_show: bool = False,
         delay: Optional[int] = None,
-        output: Optional[str] = None,
+        output: Optional[str] = "./outputs/model_visualization",
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
 

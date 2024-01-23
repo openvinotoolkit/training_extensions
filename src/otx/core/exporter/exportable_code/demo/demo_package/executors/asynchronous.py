@@ -11,10 +11,8 @@ from openvino.model_api.pipelines import AsyncPipeline
 
 from ..streamer import get_streamer
 from ..visualizers import dump_frames
-
-if TYPE_CHECKING:
-    from ..model_wrapper import ModelWrapper
-    from ..visualizers import BaseVisualizer
+from ..model_wrapper import ModelWrapper
+from ..visualizers import BaseVisualizer
 
 
 class AsyncExecutor:
