@@ -13,6 +13,7 @@ from otx.core.data.transform_libs.torchvision import (
     PerturbBoundingBoxes,
     TorchVisionTransformLib,
 )
+from otx.core.data.entity.base import Points
 from otx.core.types.image import ImageColorChannel
 from torchvision import tv_tensors
 from torchvision.transforms import v2
@@ -65,6 +66,15 @@ class TestPadtoSquare:
         inpt = tv_tensors.BoundingBoxes(
             [[1, 1, 3, 3]],
             format=tv_tensors.BoundingBoxFormat.XYXY,
+            canvas_size=(5, 3),
+            dtype=torch.float32,
+        )
+        results = transform(inpt.clone(), None)
+
+        assert torch.all(results[0] == inpt)
+        
+        inpt = Points(
+            [[1, 1], [3, 3]],
             canvas_size=(5, 3),
             dtype=torch.float32,
         )
