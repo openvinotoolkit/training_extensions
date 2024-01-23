@@ -17,8 +17,6 @@ from otx.core.model.entity.base import OTXModel
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo

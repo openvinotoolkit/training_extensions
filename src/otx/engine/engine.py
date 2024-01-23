@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
@@ -20,8 +21,6 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
@@ -324,13 +323,17 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, output_dir: Path, cfg: ExportConfig) -> Path:
+    def export(self, checkpoint: str | Path | None = None, export_config: ExportConfig | None = None, **kwargs) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
             output_dir (Path): Directory path to save exported binary files.
         """
-        if self.checkpoint is not None:
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        if export_config is None:
+            export_config = ExportConfig()
+
+        if ckpt_path is not None:
             self.model.eval()
             lit_module = self._build_lightning_module(
                 model=self.model,
@@ -339,13 +342,13 @@ class Engine:
             )
             lit_module.meta_info = self.datamodule.meta_info
 
-            loaded_checkpoint = torch.load(self.checkpoint)
+            loaded_checkpoint = torch.load(ckpt_path)
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
             return self.model.export(
-                output_dir=output_dir,
-                export_format=cfg.export_format,
-                precision=cfg.precision,
+                output_dir=Path(self.work_dir),
+                export_format=export_config.export_format,
+                precision=export_config.precision,
             )
 
         msg = "To make export, checkpoint must be specified."
