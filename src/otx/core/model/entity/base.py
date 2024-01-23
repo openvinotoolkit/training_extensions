@@ -184,7 +184,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             Path: path to the exported model.
         """
         if self.need_mmdeploy() and test_pipeline is None:
-            raise ValueError("Current model needs test_pipeline to export using mmdpeloy.")
+            msg = "Current model needs test_pipeline to export using mmdpeloy."
+            raise ValueError(msg)
 
         exporter = self._create_exporter(test_pipeline)
         metadata = self._generate_model_metadata()

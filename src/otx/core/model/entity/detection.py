@@ -167,7 +167,8 @@ class MMDetCompatibleModel(OTXDetectionModel):
     ) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if test_pipeline is None:
-            raise RuntimeError("test_pipeline is necessary for mmdeploy.")
+            msg = "test_pipeline is necessary for mmdeploy."
+            raise ValueError(msg)
 
         from otx.core.exporter.mmdeploy import MMdeployExporter
 
@@ -175,7 +176,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
 
     def need_mmdeploy(self) -> bool:
         """Whether mmdeploy is used when exporting a model."""
-        return self.export_params.get("mmdeploy_config") != None
+        return self.export_params.get("mmdeploy_config") is not None
 
 
 class OVDetectionModel(OVModel):

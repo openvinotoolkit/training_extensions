@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import importlib
 import logging as log
-import os
-import os.path as osp
 from copy import copy
 from pathlib import Path
 from typing import Callable, Literal
@@ -17,7 +15,7 @@ import numpy as np
 import onnx
 import openvino
 import torch
-from mmdeploy.apis import build_task_processor, extract_model, get_predefined_partition_cfg, torch2onnx
+from mmdeploy.apis import build_task_processor, torch2onnx
 from mmdeploy.utils import get_partition_config
 from mmengine.config import Config as MMConfig
 from omegaconf import DictConfig, OmegaConf
@@ -72,7 +70,7 @@ class MMdeployExporter(OTXModelExporter):
         if max_num_detections > 0:
             self._set_max_num_detections(max_num_detections)
 
-    def _set_max_num_detections(self, max_num_detections: int):
+    def _set_max_num_detections(self, max_num_detections: int) -> None:
         log.info(f"Export max_num_detections: {max_num_detections}")
         post_proc_cfg = self._deploy_cfg["codebase_config"]["post_processing"]
         post_proc_cfg["max_output_boxes_per_class"] = max_num_detections
@@ -101,7 +99,7 @@ class MMdeployExporter(OTXModelExporter):
         """
         onnx_path = self._cvt2onnx(model, output_dir, base_model_name)
         exported_model = openvino.convert_model(
-            onnx_path,
+            str(onnx_path),
             input=(openvino.runtime.PartialShape(self.input_size),),
         )
 
@@ -109,7 +107,7 @@ class MMdeployExporter(OTXModelExporter):
         exported_model = self._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
-        os.remove(onnx_path)
+        onnx_path.unlink()
         log.info("Coverting to OpenVINO is done.")
 
         return Path(save_path)
@@ -137,17 +135,17 @@ class MMdeployExporter(OTXModelExporter):
         deploy_cfg = self._prepare_onnx_cfg()
         save_path = self._cvt2onnx(model, output_dir, base_model_name, deploy_cfg)
 
-        onnx_model = onnx.load(save_path)
+        onnx_model = onnx.load(str(save_path))
         metadata = {} if metadata is None else self._extend_model_metadata(metadata)
         onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
         if precision == OTXExportPrecisionType.FP16:
             from onnxconverter_common import float16
 
             onnx_model = float16.convert_float_to_float16(onnx_model)
-        onnx.save(onnx_model, save_path)
+        onnx.save(onnx_model, str(save_path))
         log.info("Coverting to ONNX is done.")
 
-        return Path(save_path)
+        return save_path
 
     def _prepare_onnx_cfg(self) -> MMConfig:
         cfg = copy(self._deploy_cfg)
@@ -160,8 +158,8 @@ class MMdeployExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str,
         deploy_cfg: MMConfig | None = None,
-    ) -> str:
-        model_weight_file = str(output_dir / "mmdeploy_fmt_model.pth")
+    ) -> Path:
+        model_weight_file = output_dir / "mmdeploy_fmt_model.pth"
         torch.save(model.state_dict(), model_weight_file)
 
         self._register_model_builder()
@@ -170,57 +168,57 @@ class MMdeployExporter(OTXModelExporter):
         log.debug(f"mmdeploy torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}")
         torch2onnx(
             np.zeros((128, 128, 3), dtype=np.uint8),
-            output_dir,
+            str(output_dir),
             onnx_file_name,
             deploy_cfg=self._deploy_cfg if deploy_cfg is None else deploy_cfg,
             model_cfg=self._model_cfg,
-            model_checkpoint=model_weight_file,
+            model_checkpoint=str(model_weight_file),
             device="cpu",
         )
 
-        os.remove(model_weight_file)
+        model_weight_file.unlink()
 
-        # TODO torch2onnx_partition for tiling
         partition_cfgs = get_partition_config(self._deploy_cfg)
         if partition_cfgs is not None:
-            self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs, output_dir)
+            self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs)
 
-        return osp.join(output_dir, onnx_file_name)
+        return output_dir / onnx_file_name
 
     def _register_model_builder(self) -> None:
         task_processor = build_task_processor(self._model_cfg, self._deploy_cfg, "cpu")
 
-        def helper(*args, **kwargs):
+        def helper(*args, **kwargs) -> torch.nn.Module:
             return mmdeploy_init_model_helper(*args, **kwargs, model_builder=self._model_builder)
 
         task_processor.__class__.init_pytorch_model = helper
 
-    def cvt_torch2onnx_partition(self, deploy_cfg, partition_cfgs, args) -> None:
-        raise NotImplementedError  # TODO need for exporting tiling model.
+    def cvt_torch2onnx_partition(self, deploy_cfg: MMConfig, partition_cfgs: MMConfig) -> None:
+        """Partition onnx conversion."""
+        raise NotImplementedError  # NOTE need for exporting tiling model.
 
-        if "partition_cfg" in partition_cfgs:
-            partition_cfgs = partition_cfgs.get("partition_cfg", None)
-        else:
-            assert "type" in partition_cfgs
-            partition_cfgs = get_predefined_partition_cfg(deploy_cfg, partition_cfgs["type"])
+        # if "partition_cfg" in partition_cfgs:
+        #     partition_cfgs = partition_cfgs.get("partition_cfg", None)
+        # else:
+        #     assert "type" in partition_cfgs
+        #     partition_cfgs = get_predefined_partition_cfg(deploy_cfg, partition_cfgs["type"])
 
-        origin_ir_file = osp.join(args.work_dir, save_file)
-        for partition_cfg in partition_cfgs:
-            save_file = partition_cfg["save_file"]
-            save_path = osp.join(args.work_dir, save_file)
-            start = partition_cfg["start"]
-            end = partition_cfg["end"]
-            dynamic_axes = partition_cfg.get("dynamic_axes", None)
+        # origin_ir_file = osp.join(args.work_dir, save_file)
+        # for partition_cfg in partition_cfgs:
+        #     save_file = partition_cfg["save_file"]
+        #     save_path = osp.join(args.work_dir, save_file)
+        #     start = partition_cfg["start"]
+        #     end = partition_cfg["end"]
+        #     dynamic_axes = partition_cfg.get("dynamic_axes", None)
 
-            extract_model(origin_ir_file, start, end, dynamic_axes=dynamic_axes, save_file=save_path)
+        #     extract_model(origin_ir_file, start, end, dynamic_axes=dynamic_axes, save_file=save_path)
 
 
-def mmdeploy_init_model_helper(*args, **kwargs):
+def mmdeploy_init_model_helper(*_, **kwargs) -> torch.nn.Module:
     """Helper function for initializing a model for inference using the 'mmdeploy' library."""
     model_builder = kwargs.pop("model_builder")
     model = model_builder()
 
-    # TODO: Need to investigate it why
+    # NOTE: Need to investigate it why
     # NNCF compressed model lost trace context from time to time with no reason
     # even with 'torch.no_grad()'. Explicitly setting 'requires_grad' to'False'
     # makes things easier.
@@ -230,7 +228,7 @@ def mmdeploy_init_model_helper(*args, **kwargs):
     return model
 
 
-def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
+def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int) -> None:
     """Update backend configuration with input shape information.
 
     Args:
@@ -241,25 +239,25 @@ def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
     deploy_cfg.ir_config.input_shape = (width, height)
 
 
-def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
+def patch_ir_scale_factor(deploy_cfg: MMConfig, hyper_parameters) -> None:  # noqa: ANN001, ARG001
     """Patch IR scale factor inplace from hyper parameters to deploy config.
 
     Args:
         deploy_cfg (ConfigDict): mmcv deploy config.
         hyper_parameters (DetectionConfig): OTX detection hyper parameters>
     """
-    raise NotImplementedError  # TODO: need to implement for tiling
+    raise NotImplementedError  # NOTE need to implement for tiling
 
-    if hyper_parameters.tiling_parameters.enable_tiling:
-        scale_ir_input = deploy_cfg.get("scale_ir_input", False)
-        if scale_ir_input:
-            tile_ir_scale_factor = hyper_parameters.tiling_parameters.tile_ir_scale_factor
-            log.info(f"Apply OpenVINO IR scale factor: {tile_ir_scale_factor}")
-            ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
-            ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
-            ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
-            deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
-            print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
+    # if hyper_parameters.tiling_parameters.enable_tiling:
+    #     scale_ir_input = deploy_cfg.get("scale_ir_input", False)
+    #     if scale_ir_input:
+    #         tile_ir_scale_factor = hyper_parameters.tiling_parameters.tile_ir_scale_factor
+    #         log.info(f"Apply OpenVINO IR scale factor: {tile_ir_scale_factor}")
+    #         ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
+    #         ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
+    #         ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
+    #         deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
+    #         print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
 
 
 def load_mmconfig_from_pkg(cfg: str) -> MMConfig:
