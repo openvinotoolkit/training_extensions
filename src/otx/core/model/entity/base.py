@@ -10,9 +10,12 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
+import openvino
+import torch
 from openvino.model_api.models import Model
 from torch import nn
 
+import nncf
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -38,6 +41,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     """
 
     _EXPORTED_MODEL_BASE_NAME = "exported_model"
+    _OPTIMIZED_MODEL_BASE_NAME = "optimized_model"
 
     def __init__(self, num_classes: int) -> None:
         super().__init__()
@@ -201,6 +205,21 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         msg = f"Unsupported export format: {export_format}"
         raise ValueError(msg)
 
+    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+        """_summary_
+
+        Args:
+            output_dir (Path): _description_
+            data_module (OTXDataModule): _description_
+
+        Raises:
+            NotImplementedError: _description_
+
+        Returns:
+            Path: _description_
+        """
+        raise NotImplementedError
+
     def _create_exporter(
         self,
     ) -> OTXModelExporter:
@@ -329,3 +348,41 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             outputs = [self.model(im) for im in numpy_inputs]
 
         return self._customize_outputs(outputs, inputs)
+
+    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+        output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
+
+        def check_if_quantized(model: openvino.Model) -> bool:
+            """Checks if OpenVINO model is already quantized."""
+            nodes = model.get_ops()
+            return any(op.get_type_name() == "FakeQuantize" for op in nodes)
+
+        ov_model = openvino.Core().read_model(self.model_name)
+
+        if check_if_quantized(ov_model):
+            msg = "Model is already optimized by PTQ"
+            raise RuntimeError(msg)
+
+        def transform_fn(data_batch: T_OTXBatchDataEntity):
+            np_data = self._customize_inputs(data_batch)
+            image = np_data["inputs"][0]
+            resized_image = self.model.resize(image, (self.model.w, self.model.h))
+            resized_image = self.model.input_transform(resized_image)
+            resized_image = self.model._change_layout(resized_image)
+            return resized_image
+
+        train_dataset = data_module.train_dataloader()
+        assert train_dataset.batch_size == 1
+
+        quantization_dataset = nncf.Dataset(train_dataset, transform_fn)
+        ptq_config = {}
+
+        compressed_model = nncf.quantize(
+            ov_model,
+            quantization_dataset,
+            **ptq_config,
+        )
+
+        openvino.save_model(compressed_model, output_model_path)
+
+        return output_model_path

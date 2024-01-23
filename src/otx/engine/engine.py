@@ -359,6 +359,17 @@ class Engine:
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
 
+    def optimize_post_train(self, output_dir: Path) -> Path:
+        """Applies PTQ to the underlying models (now works only for OV models).
+
+        Args:
+            output_dir (Path): Directory path to save optimized model.
+
+        Returns:
+            Path: path to the optimized model.
+        """
+        return self.model.optimize(output_dir, self.datamodule)
+
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
     # ------------------------------------------------------------------------ #
