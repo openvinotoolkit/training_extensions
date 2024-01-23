@@ -1,10 +1,8 @@
 """MMDeploy config of YOLOX models except YOLOX_tiny for Detection Task."""
-# Copyright (C) 2023 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
 
-_base_ = ["../base/base_detection_dynamic.py"]
+_base_ = ["../base/base_detection.py"]
 
-ir_config = dict(
+onnx_config = dict(
     output_names=["boxes", "labels"],
 )
 

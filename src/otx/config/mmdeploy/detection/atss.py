@@ -1,8 +1,8 @@
 """MMDeploy config of ATSS model for Detection Task."""
 
-_base_ = ["../base/base_detection_dynamic.py"]
+_base_ = ["../base/base_detection.py"]
 
-ir_config = dict(
+onnx_config = dict(
     output_names=["boxes", "labels"],
 )
 

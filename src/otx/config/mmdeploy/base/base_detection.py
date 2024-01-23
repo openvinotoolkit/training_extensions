@@ -1,6 +1,6 @@
-"""Detection models static deploy config."""
+"""Detection models base deploy config."""
 
-ir_config = dict(
+onnx_config = dict(
     type="onnx",
     export_params=True,
     keep_initializers_as_inputs=False,
@@ -13,6 +13,21 @@ ir_config = dict(
     # optimizing onnx graph mess up NNCF graph at some point
     # where we need to look into
     optimize=False,
+    dynamic_axes={
+        "image": {
+            0: "batch",
+            2: "height",
+            3: "width",
+        },
+        "boxes": {
+            0: "batch",
+            1: "num_dets",
+        },
+        "labels": {
+            0: "batch",
+            1: "num_dets",
+        },
+    },
 )
 
 codebase_config = dict(
@@ -33,9 +48,4 @@ codebase_config = dict(
 backend_config = dict(
     type="openvino",
     mo_options=None,
-)
-
-input_data = dict(
-    shape=(128, 128, 3),
-    file_path=None,
 )

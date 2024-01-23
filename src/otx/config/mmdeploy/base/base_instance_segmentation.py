@@ -1,12 +1,16 @@
-"""Instance segmentation models dynamic deploy config."""
+"""Instance segmentation models based deploy config."""
 
-_base_ = ["./base_instance_segmentation_static.py"]
+_base_ = ["./base_detection.py"]
 
-ir_config = dict(
+onnx_config = dict(
+    output_names=[
+        "boxes",
+        "labels",
+        "masks",
+    ],
     dynamic_axes={
         "image": {
             0: "batch",
-            1: "channel",
             2: "height",
             3: "width",
         },
@@ -25,4 +29,10 @@ ir_config = dict(
             3: "width",
         },
     }
+)
+
+codebase_config = dict(
+    post_processing=dict(
+        export_postprocess_mask=False,
+    )
 )

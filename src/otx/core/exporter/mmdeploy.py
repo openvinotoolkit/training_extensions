@@ -151,8 +151,6 @@ class MMdeployExporter(OTXModelExporter):
     def _prepare_onnx_cfg(self) -> MMConfig:
         cfg = copy(self._deploy_cfg)
         cfg["backend_config"] = {"type": "onnxruntime"}
-        cfg["ir_config"]["dynamic_axes"]["image"] = {0: "batch"}
-
         return cfg
 
     def _cvt2onnx(
@@ -170,7 +168,7 @@ class MMdeployExporter(OTXModelExporter):
 
         log.debug(f'mmdeploy torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}')
         torch2onnx(
-            self._get_input_data(),
+            np.zeros((128, 128, 3), dtype=np.uint8),
             output_dir,
             onnx_file_name,
             deploy_cfg=self._deploy_cfg if deploy_cfg is None else deploy_cfg,
@@ -195,24 +193,8 @@ class MMdeployExporter(OTXModelExporter):
 
         task_processor.__class__.init_pytorch_model = helper
 
-    def _get_input_data(self):
-        input_data_cfg = self._deploy_cfg.get("input_data", None)
-
-        if input_data_cfg is None:
-            input_data = np.zeros((128, 128, 3), dtype=np.uint8)
-        elif input_data_cfg.get("file_path") is not None:
-            input_data = cv2.imread(input_data_cfg.get("file_path"))
-            # image assumed to be RGB format under OTX
-            input_data = cv2.cvtColor(input_data, cv2.COLOR_BGR2RGB)
-        else:
-            input_data = np.zeros(input_data_cfg["shape"], dtype=np.uint8)
-
-        return input_data
-
-
     def cvt_torch2onnx_partition(self, deploy_cfg, partition_cfgs, args):
-        # NOTE draft version. need for exporting tiling model.
-        raise NotImplementedError
+        raise NotImplementedError  # TODO need for exporting tiling model.
 
         if 'partition_cfg' in partition_cfgs:
             partition_cfgs = partition_cfgs.get('partition_cfg', None)
@@ -256,29 +238,12 @@ def mmdeploy_init_model_helper(*args, **kwargs):
 def patch_input_shape(deploy_cfg: MMConfig, width: int, height: int):
     """Update backend configuration with input shape information.
 
-    This function retrieves the input size from `cfg.data.test.pipeline`,
-    then sets the input shape for the backend model in `deploy_cfg`
-
-    ```
-    {
-        "opt_shapes": {
-            "input": [1, 3, *size]
-        }
-    }
-    ```
-
     Args:
         deploy_cfg (MMConfig): Config object containing test pipeline and other configurations.
         width (int): Width of image.
         height (int): Height of image.
-
-    Returns:
-        None: This function updates the input `deploy_cfg` object directly.
     """
-    deploy_cfg.ir_config.input_shape = (width, height)
-    deploy_cfg.backend_config.model_inputs = [
-        {"opt_shapes" : dict(input=[-1, 3, height, width])}
-    ]
+    deploy_cfg.onnx_config.input_shape = (width, height)
 
 
 def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
@@ -288,8 +253,7 @@ def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
         deploy_cfg (ConfigDict): mmcv deploy config.
         hyper_parameters (DetectionConfig): OTX detection hyper parameters>
     """
-    # TODO: need to implement for tiling
-    raise NotImplementedError
+    raise NotImplementedError  # TODO: need to implement for tiling
 
     if hyper_parameters.tiling_parameters.enable_tiling:
         scale_ir_input = deploy_cfg.get("scale_ir_input", False)
@@ -299,10 +263,7 @@ def patch_ir_scale_factor(deploy_cfg, hyper_parameters):
             ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
             ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
             ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
-            deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
-            deploy_cfg.backend_config.model_inputs = [
-                ConfigDict(opt_shapes=ConfigDict(input=[1, 3, ir_input_shape[2], ir_input_shape[3]]))
-            ]
+            deploy_cfg.onnx_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
             print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
 
 
