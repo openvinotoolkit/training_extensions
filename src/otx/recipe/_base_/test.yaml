@@ -1,0 +1,26 @@
+callbacks:
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+    init_args:
+      refresh_rate: 1
+      leave: false
+  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
+    init_args:
+      prog_bar: true
+      on_step: false
+      on_epoch: true
+  - class_path: lightning.pytorch.callbacks.RichModelSummary
+    init_args:
+      max_depth: 1
+logger:
+  - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger
+    init_args:
+      save_dir: ""
+      name: "csv/"
+      prefix: ""
+  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: "tensorboard/"
+      log_graph: false
+      default_hp_metric: true
+      prefix: ""

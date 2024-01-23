@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging as log
+from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
@@ -17,6 +18,9 @@ from otx.core.data.entity.detection import (
 from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.model.module.base import OTXLitModule
 
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
 
 class OTXDetectionLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX detection task."""
@@ -24,11 +28,16 @@ class OTXDetectionLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXDetectionModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
 
         self.val_metric = MeanAveragePrecision()
         self.test_metric = MeanAveragePrecision()
@@ -133,3 +142,11 @@ class OTXDetectionLitModule(OTXLitModule):
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
+
+    def _load_from_prev_otx_ckpt(self, ckpt: dict) -> dict:
+        """Get the state_dict, supporting the backward compatibility."""
+        state_dict = super()._load_from_prev_otx_ckpt(ckpt)
+        for key in list(state_dict.keys()):
+            if key.startswith("model.model.ema_"):
+                state_dict.pop(key)
+        return state_dict

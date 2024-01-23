@@ -1,0 +1,30 @@
+model:
+  class_path: otx.algo.segmentation.litehrnet.LiteHRNet
+  init_args:
+    num_classes: 2
+    variant: x
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 0.001
+    betas:
+      - 0.9
+      - 0.999
+    weight_decay: 0.0
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
+
+callback_monitor: val/mIoU
+
+data: ../_base_/data/mmseg_base.yaml

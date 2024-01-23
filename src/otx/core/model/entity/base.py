@@ -211,7 +211,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         raise NotImplementedError
 
 
-class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+class OVModel(Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
@@ -224,17 +224,16 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         num_classes: Number of classes this model can predict.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
-        self.model_name = config.pop("model_name")
-        self.model_type = config.pop("model_type")
-        self.async_inference = config.pop("async_inference", False)
-        self.num_requests = config.pop("max_num_requests", get_default_num_async_infer_requests())
-        self.use_throughput_mode = config.pop("use_throughput_mode", False)
-        self.config = config
-        super().__init__(num_classes)
+    def __init__(self, num_classes: int, model_name: str, model_type: str, async_inference: bool, max_num_requests: int, use_throughput_mode: bool) -> None:
+        super().__init__()
+        self.model_name = model_name
+        self.model_type = model_type
+        self.async_inference = async_inference
+        self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
+        self.use_throughput_mode = use_throughput_mode
+        self._label_info = LabelInfo.from_num_classes(num_classes)
 
-    def _create_model(self, configuration: dict[str, Any] | None = None) -> Model:
+    def _create_model(self, model_api_configuration: dict[str, Any] | None = None) -> Model:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
@@ -249,8 +248,18 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             plugin_config=plugin_config,
         )
 
-        configuration = configuration if configuration is not None else {}
-        return Model.create_model(model_adapter, model_type=self.model_type, configuration=configuration)
+        model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
+        return Model.create_model(model_adapter, model_type=self.model_type, configuration=model_api_configuration)
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get this model label information."""
+        return self._label_info
+
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image

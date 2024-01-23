@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
-from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -50,6 +49,8 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
 
     def register_explain_hook(self) -> None:
         """Register explain hook at the model backbone output."""
+        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+
         self.explain_hook = ReciproCAMHook.create_and_register_hook(
             self.backbone,
             self.head_forward_fn,
@@ -407,14 +408,14 @@ class OVHlabelClassificationModel(OVModel):
 
     def __init__(
         self,
-        num_classes: int,
-        config: DictConfig,
-        num_multiclass_heads: int,
-        num_multilabel_classes: int,
+        *args,
+        num_multiclass_heads: int = 1,
+        num_multilabel_classes: int = 0,
+        **kwargs,
     ) -> None:
-        config.num_multiclass_heads = num_multiclass_heads
-        config.num_multilabel_classes = num_multilabel_classes
-        super().__init__(num_classes, config)
+        self.num_multiclass_heads = num_multiclass_heads
+        self.num_multilabel_classes = num_multilabel_classes
+        super().__init__(*args, **kwargs)
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
@@ -426,8 +427,8 @@ class OVHlabelClassificationModel(OVModel):
 
     def _create_model(self, *args) -> Model:
         # confidence_threshold is 0.0 to return scores for all multilabel classes
-        configuration = {"hierarchical": True, "confidence_threshold": 0.0}
-        return super()._create_model(configuration)
+        model_api_configuration = {"hierarchical": True, "confidence_threshold": 0.0}
+        return super()._create_model(model_api_configuration)
 
     def _customize_outputs(
         self,
@@ -455,8 +456,8 @@ class OVMultilabelClassificationModel(OVModel):
 
     def _create_model(self, *args) -> Model:
         # confidence_threshold is 0.0 to return scores for all classes
-        configuration = {"multilabel": True, "confidence_threshold": 0.0}
-        return super()._create_model(configuration)
+        model_api_configuration = {"multilabel": True, "confidence_threshold": 0.0}
+        return super()._create_model(model_api_configuration)
 
     def _customize_outputs(
         self,
