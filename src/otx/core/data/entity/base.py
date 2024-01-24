@@ -37,6 +37,7 @@ class ImageInfo(tv_tensors.TVTensor):
         norm_mean: Mean vector used to normalize this image
         norm_std: Standard deviation vector used to normalize this image
         image_color_channel: Color channel type of this image, RGB or BGR.
+        ignored_labels: Label that should be ignored in this image. Default to None.
     """
 
     img_idx: int
@@ -48,6 +49,7 @@ class ImageInfo(tv_tensors.TVTensor):
     norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0)
     image_color_channel: ImageColorChannel = ImageColorChannel.RGB
+    ignored_labels: list[int] | None = None
 
     @classmethod
     def _wrap(

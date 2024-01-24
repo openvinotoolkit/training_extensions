@@ -112,7 +112,7 @@ class ClassIncrementalMixin:
         valid_label_mask = []
         for i, meta in enumerate(img_metas):
             mask = torch.Tensor([1 for _ in range(num_classes)])
-            if "ignored_labels" in meta and len(meta["ignored_labels"]) > 0:
+            if "ignored_labels" in meta and meta["ignored_labels"]:
                 mask[meta["ignored_labels"]] = 0
                 if use_bg:
                     mask[self.num_classes] = 0  # type: ignore[attr-defined]
