@@ -14,6 +14,7 @@ from torch import Tensor
 
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
+    OTXBatchLossEntity,
     OTXBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel
@@ -209,6 +210,6 @@ class OTXLitModule(LightningModule):
         """
         self.model.export(output_dir, export_format)
 
-    def forward(self, *args, **kwargs) -> OTXBatchPredEntity:
+    def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward pass."""
         return self.model.forward(*args, **kwargs)
