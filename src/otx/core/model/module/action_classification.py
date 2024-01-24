@@ -37,7 +37,7 @@ class OTXActionClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        num_classes = otx_model.config.get("cls_head", {}).get("num_classes", None)
+        num_classes = otx_model.num_classes
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
         self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
 

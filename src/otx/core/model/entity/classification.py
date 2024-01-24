@@ -21,6 +21,7 @@ from otx.core.data.entity.classification import (
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -32,8 +33,10 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
+    from otx.core.data.entity.classification import HLabelInfo
 
-class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+
+class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """OTX classification model which can attach a XAI hook."""
 
     @property
@@ -80,7 +83,9 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         self.explain_hook.reset()
 
 
-class OTXMulticlassClsModel(ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):
+class OTXMulticlassClsModel(
+    ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, T_OTXTileBatchDataEntity],
+):
     """Base class for the classification models used in OTX."""
 
     def _generate_model_metadata(
@@ -226,7 +231,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 ### It'll be integrated after H-label classification integration with more advanced design.
 
 
-class OTXMultilabelClsModel(ExplainableOTXClsModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
+class OTXMultilabelClsModel(
+    ExplainableOTXClsModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
+):
     """Multi-label classification models used in OTX."""
 
     def _generate_model_metadata(
@@ -342,7 +349,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
 
 class OTXHlabelClsModel(
-    ExplainableOTXClsModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+    ExplainableOTXClsModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """H-label classification models used in OTX."""
 
@@ -384,6 +391,14 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
+
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
+        """Set hierarchical information in model head.
+
+        Args:
+            hierarchical_info: the label information represents the hierarchy.
+        """
+        self.model.head.set_hlabel_info(hierarchical_info)
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -488,6 +503,54 @@ class OVMulticlassClassificationModel(OVModel):
         )
 
 
+class OVHlabelClassificationModel(OVModel):
+    """Hierarchical classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def __init__(
+        self,
+        *args,
+        num_multiclass_heads: int = 1,
+        num_multilabel_classes: int = 0,
+        **kwargs,
+    ) -> None:
+        self.num_multiclass_heads = num_multiclass_heads
+        self.num_multilabel_classes = num_multilabel_classes
+        super().__init__(*args, **kwargs)
+
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
+        """Set hierarchical information in model head.
+
+        Since OV IR model consist of all required hierarchy information,
+        this method serves as placehloder
+        """
+        return
+
+    def _create_model(self, *args) -> Model:
+        # confidence_threshold is 0.0 to return scores for all multilabel classes
+        model_api_configuration = {"hierarchical": True, "confidence_threshold": 0.0}
+        return super()._create_model(model_api_configuration)
+
+    def _customize_outputs(
+        self,
+        outputs: list[ClassificationResult],
+        inputs: HlabelClsBatchDataEntity,
+    ) -> HlabelClsBatchPredEntity:
+        pred_labels = [torch.tensor([label[0] for label in out.top_labels], dtype=torch.long) for out in outputs]
+        pred_scores = [torch.tensor([label[2] for label in out.top_labels]) for out in outputs]
+
+        return HlabelClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=pred_scores,
+            labels=pred_labels,
+        )
+
+
 class OVMultilabelClassificationModel(OVModel):
     """Multilabel classification model compatible for OpenVINO IR inference.
 
@@ -497,8 +560,8 @@ class OVMultilabelClassificationModel(OVModel):
 
     def _create_model(self, *args) -> Model:
         # confidence_threshold is 0.0 to return scores for all classes
-        configuration = {"multilabel": True, "confidence_threshold": 0.0}
-        return super()._create_model(configuration)
+        model_api_configuration = {"multilabel": True, "confidence_threshold": 0.0}
+        return super()._create_model(model_api_configuration)
 
     def _customize_outputs(
         self,

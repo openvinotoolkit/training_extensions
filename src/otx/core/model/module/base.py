@@ -27,6 +27,7 @@ class OTXLitModule(LightningModule):
 
     def __init__(
         self,
+        *,
         otx_model: OTXModel,
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),

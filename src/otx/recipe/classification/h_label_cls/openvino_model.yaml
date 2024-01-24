@@ -1,11 +1,14 @@
+# @package _global_
 model:
-  class_path: otx.core.model.entity.classification.OVMulticlassClassificationModel
+  class_path: otx.core.model.entity.classification.OVHlabelClassificationModel
   init_args:
-    num_classes: 1000
-    model_name: efficientnet-b0-pytorch
+    model_name: openvino.xml
     async_inference: True
     use_throughput_mode: False
     model_type: Classification
+    num_classes: 7
+    num_multiclass_heads: 0
+    num_multilabel_classes: 0
 
 optimizer:
   class_path: torch.optim.Adam

@@ -13,6 +13,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -24,9 +25,8 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
-    """Base class for the segmentation models used in OTX."""
-
+class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
+    """Base class for the detection models used in OTX."""
     def _generate_model_metadata(
         self,
     ) -> dict[tuple[str, str], Any]:
