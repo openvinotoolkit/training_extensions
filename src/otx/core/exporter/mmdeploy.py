@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import importlib
 import logging as log
+from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
 from typing import Callable, Literal
@@ -20,6 +21,7 @@ from mmdeploy.utils import get_partition_config
 from mmengine.config import Config as MMConfig
 from omegaconf import DictConfig, OmegaConf
 
+from mmengine.registry.default_scope import DefaultScope
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportPrecisionType
 from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
@@ -159,28 +161,28 @@ class MMdeployExporter(OTXModelExporter):
         base_model_name: str,
         deploy_cfg: MMConfig | None = None,
     ) -> Path:
+        onnx_file_name = base_model_name + ".onnx"
         model_weight_file = output_dir / "mmdeploy_fmt_model.pth"
         torch.save(model.state_dict(), model_weight_file)
 
-        self._register_model_builder()
-        onnx_file_name = base_model_name + ".onnx"
-
         log.debug(f"mmdeploy torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}")
-        torch2onnx(
-            np.zeros((128, 128, 3), dtype=np.uint8),
-            str(output_dir),
-            onnx_file_name,
-            deploy_cfg=self._deploy_cfg if deploy_cfg is None else deploy_cfg,
-            model_cfg=self._model_cfg,
-            model_checkpoint=str(model_weight_file),
-            device="cpu",
-        )
+        with use_temporary_default_scope():
+            self._register_model_builder()
+            torch2onnx(
+                np.zeros((128, 128, 3), dtype=np.uint8),
+                str(output_dir),
+                onnx_file_name,
+                deploy_cfg=self._deploy_cfg if deploy_cfg is None else deploy_cfg,
+                model_cfg=self._model_cfg,
+                model_checkpoint=str(model_weight_file),
+                device="cpu",
+            )
+
+            partition_cfgs = get_partition_config(self._deploy_cfg)
+            if partition_cfgs is not None:
+                self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs)
 
         model_weight_file.unlink()
-
-        partition_cfgs = get_partition_config(self._deploy_cfg)
-        if partition_cfgs is not None:
-            self.cvt_torch2onnx_partition(self._deploy_cfg, partition_cfgs)
 
         return output_dir / onnx_file_name
 
@@ -271,3 +273,18 @@ def load_mmconfig_from_pkg(cfg: str) -> MMConfig:
     """
     config_module = importlib.import_module(cfg)
     return MMConfig.fromfile(config_module.__file__)
+
+
+@contextmanager
+def use_temporary_default_scope() -> None:
+    """Use temporary mm registry scope. After block is exited, DefaultScope is reverted as before entering block.
+    
+    DefaultScope is registered when executing mmdeploy. It doesn't make a problem normally but when making
+    a new mm model after mmdeploy is done, it can be problematic because registry tries to find a object from default
+    scope. This context manager is useful for that case.
+    """
+    try:
+        ori_instance_dict = copy(DefaultScope._instance_dict)
+        yield
+    finally:
+        DefaultScope._instance_dict = ori_instance_dict
