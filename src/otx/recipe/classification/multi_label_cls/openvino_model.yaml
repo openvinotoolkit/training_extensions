@@ -22,8 +22,8 @@ scheduler:
     monitor: train/loss
 
 engine:
-  task: MULTI_CLASS_CLS
-  device: auto
+  task: MULTI_LABEL_CLS
+  device: cpu
 
 callback_monitor: val/accuracy
 
@@ -31,6 +31,7 @@ data: ../../_base_/data/torchvision_base.yaml
 
 overrides:
   data:
+    task: MULTI_LABEL_CLS
     config:
       image_color_channel: RGB
       test_subset:
