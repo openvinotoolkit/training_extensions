@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
@@ -26,6 +26,7 @@ class DatasetTestCase:
     data_format: str
     num_classes: int
     extra_overrides: dict
+    delete_params: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -80,6 +81,8 @@ class BaseTest:
                 ] + [
                     f"{key}={value}"
                     for key, value in test_case.dataset.extra_overrides.items()
+                ] + [
+                    param for param in test_case.dataset.delete_params
                 ]
                 metrics = otx_train(overrides)
 
@@ -234,10 +237,27 @@ class TestHlabelCls(BaseTest):
             name=f"hlabel_CUB_small_{idx}",
             data_root=Path("hlabel_CUB_small") / f"{idx}",
             data_format="datumaro",
-            num_classes=3,
-            extra_overrides={"trainer.max_epochs": "20"},
+            num_classes=6,
+            extra_overrides={
+                "trainer.max_epochs": "20",
+                "model.otx_model.num_multiclass_heads": "3",
+                "model.otx_model.num_multilabel_classes": "0",
+            },
         )
         for idx in range(1, 4)
+    ] + [
+        DatasetTestCase(
+            name=f"hlabel_CUB_medium",
+            data_root=Path("hlabel_CUB_medium"),
+            data_format="datumaro",
+            num_classes=102,
+            extra_overrides={
+                "trainer.max_epochs": "20",
+                "model.otx_model.num_multiclass_heads": "23",
+                "model.otx_model.num_multilabel_classes": "0",
+            },
+        )
+        
     ]
 
     @pytest.mark.parametrize(
@@ -341,13 +361,13 @@ class TestObjectDetection(BaseTest):
 class TestSemanticSegmentation(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="semantic_segmentation", name="litehrnet_18"),
-        ModelTestCase(task="semantic_segmentation", name="litehrnet_s"),
-        ModelTestCase(task="semantic_segmentation", name="litehrnet_x"),
-        ModelTestCase(task="semantic_segmentation", name="segnext_b"),
-        ModelTestCase(task="semantic_segmentation", name="segnext_s"),
-        ModelTestCase(task="semantic_segmentation", name="segnext_t"),
-        ModelTestCase(task="semantic_segmentation", name="dino_v2_seg"),
+        ModelTestCase(task="segmentation", name="litehrnet_18"),
+        ModelTestCase(task="segmentation", name="litehrnet_s"),
+        ModelTestCase(task="segmentation", name="litehrnet_x"),
+        ModelTestCase(task="segmentation", name="segnext_b"),
+        ModelTestCase(task="segmentation", name="segnext_s"),
+        ModelTestCase(task="segmentation", name="segnext_t"),
+        ModelTestCase(task="segmentation", name="dino_v2_seg"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -356,7 +376,7 @@ class TestSemanticSegmentation(BaseTest):
             data_root=Path("kvasir_small") / f"{idx}",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "40"},
         )
         for idx in range(1, 4)
     ] + [
@@ -365,14 +385,14 @@ class TestSemanticSegmentation(BaseTest):
             data_root="kvasir_medium",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "40"}
         ),
         DatasetTestCase(
             name="kvasir_large",
             data_root="kvasir_large",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "40", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "40"}
         )
     ]
 
@@ -484,7 +504,8 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"},
+            extra_overrides={"trainer.max_epochs": "20"},
+            delete_params=["~model.scheduler.mode", "~model.scheduler.patience"],
         )
         for idx in range(1, 4)
     ] + [
@@ -493,14 +514,16 @@ class TestVisualPrompting(BaseTest):
             data_root="coco_car_person_medium",
             data_format="coco",
             num_classes=2,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "20"},
+            delete_params=["~model.scheduler.mode", "~model.scheduler.patience"],
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root="Vitens-Coliform-coco",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"trainer.max_epochs": "20", "trainer.deterministic": "True"}
+            extra_overrides={"trainer.max_epochs": "20"},
+            delete_params=["~model.scheduler.mode", "~model.scheduler.patience"],
         )
     ]
 
