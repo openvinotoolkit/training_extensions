@@ -4,8 +4,8 @@ import torch
 from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 
 
-def test_reciprocam():
-    def cls_head_forward_fn(_):
+def test_reciprocam() -> None:
+    def cls_head_forward_fn(_) -> None:
         return torch.zeros((25, 2))
 
     num_classes = 2

@@ -206,5 +206,6 @@ class OTXLitModule(LightningModule):
         """
         self.model.export(output_dir, export_format)
 
-    def forward(self, *args: Any, **kwargs: Any) -> Any:
+    def forward(self, *args, **kwargs):
+        """Model forward pass."""
         return self.model.forward(*args, **kwargs)
