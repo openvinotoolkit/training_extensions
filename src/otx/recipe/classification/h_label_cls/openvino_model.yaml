@@ -25,7 +25,7 @@ scheduler:
     monitor: train/loss
 
 engine:
-  task: MULTI_CLASS_CLS
+  task: H_LABEL_CLS
   device: auto
 
 callback_monitor: val/accuracy
@@ -36,5 +36,6 @@ overrides:
   data:
     config:
       image_color_channel: RGB
+      data_format: datumaro
       test_subset:
         batch_size: 128
