@@ -1,21 +1,41 @@
-# @package _global_
-defaults:
-  - override /base: instance_segmentation
-  - override /callbacks: instance_segmentation
-  - override /data: openvino
-  - override /model: mmdet_inst_seg
-
-data:
-  data_format: coco_instances
-  test_subset:
-    batch_size: 2
-
 model:
-  otx_model:
-    _target_: otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel
-    config:
-      model_name: /home/kprokofi/training_extensions/otx-workspace-INSTANCE_SEGMENTATION/outputs/20240109_072818_export/openvino/openvino.xml
-      model_type: MaskRCNN
-      async_inference: True
-      use_throughput_mode: True
+  class_path: otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel
+  init_args:
     num_classes: 80
+    config:
+      class_path: omegaconf.dictconfig.DictConfig
+      init_args:
+        content:
+          model_name: /home/kprokofi/training_extensions/otx-workspace-INSTANCE_SEGMENTATION/outputs/20240109_072818_export/openvino/openvino.xml
+          model_type: MaskRCNN
+          async_inference: True
+          use_throughput_mode: True
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.01
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      image_color_channel: BGR
+      data_format: coco_instances
+      test_subset:
+        batch_size: 2

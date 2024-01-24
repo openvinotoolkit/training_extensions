@@ -1,0 +1,32 @@
+model:
+  class_path: otx.algo.classification.efficientnet_b0.EfficientNetB0ForHLabelCls
+  init_args:
+    num_classes: 1000
+    num_multiclass_heads: 0
+    num_multilabel_classes: 0
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.0049
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.5
+    patience: 1
+    monitor: train/loss
+
+engine:
+  task: H_LABEL_CLS
+  device: auto
+
+callback_monitor: val/accuracy
+
+data: ../../_base_/data/mmpretrain_base.yaml
+overrides:
+  data:
+    task: H_LABEL_CLS
+    config:
+      data_format: datumaro

@@ -8,9 +8,9 @@ from __future__ import annotations
 from inspect import isclass
 from typing import TYPE_CHECKING, Any
 
-import hydra
 import torch
 import torchvision.transforms.v2 as tvt_v2
+from lightning.pytorch.cli import instantiate_class
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
@@ -116,7 +116,7 @@ class TorchVisionTransformLib:
 
         transforms = []
         for cfg in config.transforms:
-            transform = hydra.utils.instantiate(cfg)
+            transform = instantiate_class(args=(), init=cfg)
             if type(transform) not in availables:
                 msg = f"transform={transform} is not a valid TorchVision V2 transform"
                 raise ValueError(msg)
