@@ -10,6 +10,7 @@ from omegaconf import DictConfig
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
+    TilerConfig,
 )
 from otx.core.data.module import OTXDataModule
 from otx.core.types.task import OTXTaskType
@@ -54,6 +55,7 @@ def fxt_datamodule(fxt_asset_dir, fxt_mmcv_det_transform_config) -> OTXDataModul
             transform_lib_type="MMDET",
             transforms=fxt_mmcv_det_transform_config,
         ),
+        tile_config=TilerConfig(),
     )
     datamodule = OTXDataModule(
         task=OTXTaskType.DETECTION,

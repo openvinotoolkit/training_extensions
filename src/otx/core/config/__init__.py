@@ -4,45 +4,12 @@
 """Config data type objects."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, _SpecialForm
 
-from .base import BaseConfig
-from .data import DataModuleConfig, InstSegDataModuleConfig, VisualPromptingDataModuleConfig
-from .model import ModelConfig
-from .trainer import TrainerConfig
+import yaml
 
 if TYPE_CHECKING:
     from torch import dtype
-
-
-@dataclass
-class TrainConfig:
-    """DTO for training.
-
-    Attributes:
-        seed: If set it with an integer value, e.g. `seed=1`,
-            Lightning derives unique seeds across all dataloader workers and processes
-            for torch, numpy and stdlib random number generators.
-        checkpoint: The path to the checkpoint file. e.g. `checkpoint=outputs/checkpoints/epoch_000.ckpt`
-            Path/URL of the checkpoint from which training is resumed.
-            If there is no checkpoint file at the path, an exception is raised.
-    """
-
-    base: BaseConfig
-    callbacks: dict
-    data: DataModuleConfig
-    trainer: TrainerConfig
-    model: ModelConfig
-    logger: dict
-    recipe: Optional[str]
-    debug: Optional[str]
-    train: bool
-    test: bool
-    resume: bool = False
-
-    seed: Optional[int] = None
-    checkpoint: Optional[str] = None
 
 
 def as_int_tuple(*args) -> tuple[int, ...]:
@@ -66,9 +33,10 @@ def as_torch_dtype(arg: str) -> dtype:
 
             ```yaml
             transforms:
-              - _target_: torchvision.transforms.v2.ToDtype
-                dtype: ${as_torch_dtype:torch.float32}
-                scale: True
+                - class_path: torchvision.transforms.v2.ToDtype
+                  init_args:
+                    dtype: ${as_torch_dtype:torch.float32}
+                    scale: True
             ```
     """
     import torch
@@ -109,18 +77,66 @@ def as_torch_dtype(arg: str) -> dtype:
     return mapping[key]
 
 
-def register_configs() -> None:
-    """Register DTO as default and custom resolvers to hydra."""
-    from hydra.core.config_store import ConfigStore
-    from omegaconf import OmegaConf
+def dtype_representer(dumper: yaml.Dumper | yaml.representer.SafeRepresenter, data: dtype) -> yaml.ScalarNode:
+    """Custom representer for converting dtype object to YAML sequence node.
 
-    cs = ConfigStore.instance()
-    cs.store(name="base_config", node=TrainConfig)
-    cs.store(group="data", name="base_inst_seg", node=InstSegDataModuleConfig)
-    cs.store(group="data", name="base_visual_prompting", node=VisualPromptingDataModuleConfig)
+    Args:
+        dumper (yaml.Dumper): The YAML dumper object.
+        data (dtype): The dtype object to be converted.
+
+    Returns:
+        yaml.Node: The converted YAML node.
+    """
+    return dumper.represent_str("${as_torch_dtype:" + str(data) + "}")
+
+
+def any_representer(dumper: yaml.Dumper | yaml.representer.SafeRepresenter, data: Any) -> yaml.ScalarNode:  # noqa: ANN401
+    """Representer function that converts any data to a YAML node.
+
+    Args:
+        dumper (yaml.Dumper | yaml.representer.SafeRepresenter): The YAML dumper or safe representer.
+        data (Any): The data to be represented.
+
+    Returns:
+        yaml.Node: The YAML node representing the data.
+    """
+    return dumper.represent_none(data)
+
+
+def ignore_aliases(self: yaml.representer.SafeRepresenter, data: Any) -> bool:  # noqa: ARG001, ANN401
+    """Determine whether to ignore aliases in YAML representation.
+
+    Args:
+        data: The data to check.
+
+    Returns:
+        bool | None: True if aliases should be ignored, None otherwise.
+    """
+    from torch import dtype
+
+    if data is None:
+        return True
+    if isinstance(data, tuple) and data == ():
+        return True
+    if isinstance(data, (str, bytes, bool, int, float, dtype)):
+        return True
+    return None
+
+
+def register_configs() -> None:
+    """Register custom resolvers."""
+    from omegaconf import OmegaConf
 
     OmegaConf.register_new_resolver("as_int_tuple", as_int_tuple, replace=True)
     OmegaConf.register_new_resolver("as_torch_dtype", as_torch_dtype, replace=True)
+
+    from torch import dtype
+
+    yaml.add_representer(dtype, dtype_representer)  # For lightnig_logs
+    # For jsonargparse's SafeDumper
+    yaml.SafeDumper.add_representer(dtype, dtype_representer)
+    yaml.SafeDumper.add_representer(_SpecialForm, any_representer)  # typing.Any for DictConfig
+    yaml.SafeDumper.ignore_aliases = ignore_aliases  # type: ignore  # noqa: PGH003
 
 
 register_configs()

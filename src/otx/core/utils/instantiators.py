@@ -1,81 +1,89 @@
-# MIT License
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
-# Copyright (c) 2023 Intel Corporation
-# Copyright (c) 2021 ashleve
+"""Instantiator functions for OTX engine components."""
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+from __future__ import annotations
 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+from functools import partial
+from typing import TYPE_CHECKING
 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-# This source code is borrowed from https://github.com/ashleve/lightning-hydra-template
-
-from typing import List
-
-import hydra
-from lightning import Callback
-from lightning.pytorch.loggers import Logger
-from omegaconf import DictConfig
+from lightning.pytorch.cli import instantiate_class
 
 from . import pylogger
+
+if TYPE_CHECKING:
+    from lightning import Callback
+    from lightning.pytorch.loggers import Logger
+
 
 log = pylogger.get_pylogger(__name__)
 
 
-def instantiate_callbacks(callbacks_cfg: DictConfig) -> List[Callback]:
-    """Instantiates callbacks from config.
+def instantiate_callbacks(callbacks_cfg: list) -> list[Callback]:
+    """Instantiate a list of callbacks based on the provided configuration.
 
-    :param callbacks_cfg: A DictConfig object containing callback configurations.
-    :return: A list of instantiated callbacks.
+    Args:
+        callbacks_cfg (list): A list of callback configurations.
+
+    Returns:
+        list[Callback]: A list of instantiated callbacks.
     """
-    callbacks: List[Callback] = []
+    callbacks: list[Callback] = []
 
     if not callbacks_cfg:
         log.warning("No callback configs found! Skipping..")
         return callbacks
 
-    if not isinstance(callbacks_cfg, DictConfig):
-        raise TypeError("Callbacks config must be a DictConfig!")
-
-    for _, cb_conf in callbacks_cfg.items():
-        if isinstance(cb_conf, DictConfig) and "_target_" in cb_conf:
-            log.info(f"Instantiating callback <{cb_conf._target_}>")
-            callbacks.append(hydra.utils.instantiate(cb_conf))
+    for cb_conf in callbacks_cfg:
+        if isinstance(cb_conf, dict) and "class_path" in cb_conf:
+            log.info(f"Instantiating callback <{cb_conf['class_path']}>")
+            callbacks.append(instantiate_class(args=(), init=cb_conf))
 
     return callbacks
 
 
-def instantiate_loggers(logger_cfg: DictConfig) -> List[Logger]:
-    """Instantiates loggers from config.
+def instantiate_loggers(logger_cfg: list | None) -> list[Logger]:
+    """Instantiate loggers based on the provided logger configuration.
 
-    :param logger_cfg: A DictConfig object containing logger configurations.
-    :return: A list of instantiated loggers.
+    Args:
+        logger_cfg (list | None): The logger configuration.
+
+    Returns:
+        list[Logger]: The list of instantiated loggers.
     """
-    logger: List[Logger] = []
+    logger: list[Logger] = []
 
     if not logger_cfg:
         log.warning("No logger configs found! Skipping...")
         return logger
 
-    if not isinstance(logger_cfg, DictConfig):
-        raise TypeError("Logger config must be a DictConfig!")
-
-    for _, lg_conf in logger_cfg.items():
-        if isinstance(lg_conf, DictConfig) and "_target_" in lg_conf:
-            log.info(f"Instantiating logger <{lg_conf._target_}>")
-            logger.append(hydra.utils.instantiate(lg_conf))
+    for lg_conf in logger_cfg:
+        if isinstance(lg_conf, dict) and "class_path" in lg_conf:
+            log.info(f"Instantiating logger <{lg_conf['class_path']}>")
+            logger.append(instantiate_class(args=(), init=lg_conf))
 
     return logger
+
+
+def partial_instantiate_class(init: dict | None) -> partial | None:
+    """Partially instantiates a class with the given initialization arguments.
+
+    Copy from lightning.pytorch.cli.instantiate_class and modify it to use partial.
+
+    Args:
+        init (dict): A dictionary containing the initialization arguments.
+            It should have the following keys:
+            - "init_args" (dict): A dictionary of keyword arguments to be passed to the class constructor.
+            - "class_path" (str): The fully qualified path of the class to be instantiated.
+
+    Returns:
+        partial: A partial object representing the partially instantiated class.
+    """
+    if not init:
+        return None
+    kwargs = init.get("init_args", {})
+    class_module, class_name = init["class_path"].rsplit(".", 1)
+    module = __import__(class_module, fromlist=[class_name])
+    args_class = getattr(module, class_name)
+    return partial(args_class, **kwargs)

@@ -13,6 +13,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 
 from otx.core.data.dataset.base import LabelInfo
+from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
@@ -23,7 +24,7 @@ from otx.core.types.task import OTXTaskType
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
 
-    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig
+    from otx.core.config.data import DataModuleConfig
     from otx.core.data.dataset.base import OTXDataset
 
 
@@ -33,7 +34,7 @@ class OTXDataModule(LightningDataModule):
     def __init__(
         self,
         task: OTXTaskType,
-        config: DataModuleConfig | InstSegDataModuleConfig,
+        config: DataModuleConfig,
     ) -> None:
         """Constructor."""
         super().__init__()
@@ -73,14 +74,21 @@ class OTXDataModule(LightningDataModule):
             if name not in config_mapping:
                 continue
 
-                log.warning(f"{name} is not available. Skip it")
-            self.subsets[name] = OTXDatasetFactory.create(
+            dataset = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset,
                 mem_cache_handler=mem_cache_handler,
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,
             )
+
+            if config.tile_config.enable_tiler:
+                dataset = OTXTileDatasetFactory.create(
+                    task=self.task,
+                    dataset=dataset,
+                    tile_config=config.tile_config,
+                )
+            self.subsets[name] = dataset
 
             meta_infos += [self.subsets[name].meta_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
