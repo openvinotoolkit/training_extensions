@@ -335,6 +335,7 @@ class Engine:
 
         if ckpt_path is not None:
             self.model.eval()
+            self.model.label_info = self.datamodule.meta_info
             lit_module = self._build_lightning_module(
                 model=self.model,
                 optimizer=self.optimizer,
