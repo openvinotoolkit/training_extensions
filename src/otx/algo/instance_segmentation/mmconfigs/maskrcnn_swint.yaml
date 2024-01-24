@@ -150,6 +150,7 @@ rpn_head:
     loss_weight: 1.0
     type: CrossSigmoidFocalLoss
     use_sigmoid: true
+    use_background: true
   type: RPNHead
 test_cfg:
   rcnn:

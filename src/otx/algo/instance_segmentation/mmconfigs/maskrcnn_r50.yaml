@@ -62,6 +62,7 @@ roi_head:
       loss_weight: 1.0
       type: "CrossSigmoidFocalLoss"
       use_sigmoid: false
+      use_background: true
     num_classes: 5
     reg_class_agnostic: false
     roi_feat_size: 7

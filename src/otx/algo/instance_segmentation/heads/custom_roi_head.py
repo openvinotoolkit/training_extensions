@@ -265,7 +265,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
                     label_weights,
                     avg_factor=avg_factor,
                     reduction_override=reduction_override,
-                    use_bg=True,
                     valid_label_mask=valid_label_mask,
                 )
             else:

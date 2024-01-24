@@ -68,6 +68,7 @@ rpn_head:
       - 1.0
   loss_cls:
     type: CrossSigmoidFocalLoss
+    use_background: true
     use_sigmoid: true
     loss_weight: 1.0
   loss_bbox:
