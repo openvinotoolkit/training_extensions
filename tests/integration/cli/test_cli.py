@@ -169,13 +169,17 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         command_cfg = [
             "otx",
             "export",
-            f"+recipe={recipe}",
-            f"base.data_dir={DATASET[task]['data_dir']}",
-            f"base.work_dir={tmp_path_test}",
-            f"base.output_dir={tmp_path_test / 'outputs'}",
+            "--config",
+            recipe,
+            "--data_root",
+            DATASET[task]["data_root"],
+            "--engine.work_dir",
+            str(tmp_path_test / "outputs"),
             *DATASET[task]["overrides"],
-            f"checkpoint={ckpt_files[-1]}",
-            f"model.export_config.export_format={fmt}",
+            "--checkpoint",
+            str(ckpt_files[-1]),
+            "--export_config.export_format",
+            f"{fmt}",
         ]
 
         with patch("sys.argv", command_cfg):
@@ -185,27 +189,34 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
+    task = recipe.split("/")[-2]
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    task = recipe.split("/")[0]
-    export_test_recipe = f"{task}/openvino_model.yaml"
+    if "_cls" in recipe:
+        export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
+    else:
+        export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
     exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
 
     command_cfg = [
         "otx",
         "test",
-        f"+recipe={export_test_recipe}",
-        f"base.data_dir={DATASET[task]['data_dir']}",
-        f"base.work_dir={tmp_path_test}",
-        f"base.output_dir={tmp_path_test / 'outputs'}",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
         *DATASET[task]["overrides"],
-        f"model.otx_model.config.model_name={exported_model_path}",
+        "--model.init_args.config.content.model_name",
+        exported_model_path,
     ]
 
     with patch("sys.argv", command_cfg):
         main()
 
     assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "otx_test.log").exists()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
