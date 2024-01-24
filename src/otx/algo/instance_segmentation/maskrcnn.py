@@ -6,6 +6,7 @@
 from typing import Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.instance_segmentation import MMDetInstanceSegCompatibleModel
 
 
@@ -16,3 +17,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         model_name = f"maskrcnn_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
+
+    def load_from_otx_v1_ckpt(self, state_dict, add_prefix: str="model.model."):
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_iseg_ckpt(state_dict, add_prefix) 

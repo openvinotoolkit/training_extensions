@@ -9,6 +9,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.detection import MMDetCompatibleModel
 from otx.core.utils.build import build_mm_model, modify_num_classes
 
@@ -123,3 +124,7 @@ class SSD(MMDetCompatibleModel):
 
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
+
+    def load_from_otx_v1_ckpt(self, state_dict, add_prefix: str="model.model."):
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix) 
