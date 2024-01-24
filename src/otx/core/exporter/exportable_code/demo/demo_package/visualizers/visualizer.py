@@ -159,29 +159,13 @@ class ClassificationVisualizer(BaseVisualizer):
 
 
 class SemanticSegmentationVisualizer(BaseVisualizer):
-    def __init__(self, *args, colors_path=None, **kwargs):
+    def __init__(self, *args, labels, **kwargs):
         super().__init__(*args, **kwargs)
-        if colors_path:
-            self.color_palette = self.get_palette_from_file(colors_path)
-            log.debug('The palette is loaded from {}'.format(colors_path))
-        else:
-            pascal_palette_path = Path(__file__).resolve().parents[3] /\
-                'data/palettes/pascal_voc_21cl_colors.txt'
-            self.color_palette = self.get_palette_from_file(pascal_palette_path)
-            log.debug('The PASCAL VOC palette is used')
-        log.debug('Get {} colors'.format(len(self.color_palette)))
+        self.color_palette = ColorPalette(len(labels)).to_numpy_array()
         self.color_map = self.create_color_map()
 
-    def get_palette_from_file(self, colors_path):
-        with open(colors_path, 'r') as file:
-            colors = []
-            for line in file.readlines():
-                values = line[line.index('(')+1:line.index(')')].split(',')
-                colors.append([int(v.strip()) for v in values])
-            return colors
-
     def create_color_map(self):
-        classes = np.array(self.color_palette, dtype=np.uint8)[:, ::-1] # RGB to BGR
+        classes = self.color_palette[:, ::-1] # RGB to BGR
         color_map = np.zeros((256, 1, 3), dtype=np.uint8)
         classes_num = len(classes)
         color_map[:classes_num, 0, :] = classes
@@ -190,13 +174,16 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
 
     def apply_color_map(self, input):
         input_3d = cv2.merge([input, input, input])
-        return cv2.LUT(input_3d, self.color_map)
+        return cv2.LUT(input_3d.astype(np.uint8), self.color_map)
 
-    def draw(self, frame, masks, only_masks=False,  meta: Optional[dict] = None,
+    def parse_segmentation_outputs(self, masks):
+        return masks.resultImage
+
+    def draw(self, frame, masks, meta: Optional[dict] = None,
         output_transform: Optional[list] = None):
+        masks = self.parse_segmentation_outputs(masks)
         output = self.apply_color_map(masks)
-        if not only_masks:
-            output = cv2.addWeighted(frame, 0.5, output, 0.5, 0)
+        output = cv2.addWeighted(frame, 0.5, output, 0.5, 0)
         return output
 
 

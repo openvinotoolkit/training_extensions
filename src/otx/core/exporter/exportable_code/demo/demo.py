@@ -102,7 +102,7 @@ def main():
     inferencer = EXECUTORS[args.inference_type]
 
     # create visualizer
-    visualizer = create_visualizer(model.task_type, no_show=args.no_show, output=args.output)
+    visualizer = create_visualizer(model.task_type, model.labels, no_show=args.no_show, output=args.output)
 
     # create inferencer and run
     demo = inferencer(model, visualizer)

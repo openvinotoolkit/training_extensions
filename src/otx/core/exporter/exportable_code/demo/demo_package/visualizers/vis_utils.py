@@ -107,6 +107,9 @@ class ColorPalette:
         distances = [cls.dist(o, color_candidate) for o in colors_set]
         return np.min(distances)
 
+    def to_numpy_array(self):
+        return np.array(self.palette)
+
     @staticmethod
     def hsv2rgb(h, s, v):
         return tuple(round(c * 255) for c in colorsys.hsv_to_rgb(h, s, v))

@@ -49,7 +49,7 @@ class ModelWrapper:
         except RuntimeError:
             self.parameters = get_parameters(model_dir / "config.json")
 
-        self._labels = self.parameters["model_parameters"]["labels"]
+        self._labels = self.parameters["model_parameters"]["labels"].split()
         self._task_type = TaskType[self.parameters["converter_type"].upper()]
 
         self.segm = bool(
@@ -68,7 +68,6 @@ class ModelWrapper:
             self.model_parameters,
             preload=True,
         )
-
         self.tiler = self.setup_tiler(model_dir, device)
 
     def setup_tiler(self, model_dir, device) -> Optional[Union[DetectionTiler, InstanceSegmentationTiler]]:

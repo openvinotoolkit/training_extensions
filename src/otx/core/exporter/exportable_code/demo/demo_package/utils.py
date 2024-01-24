@@ -35,18 +35,18 @@ def get_parameters(path: Optional[Path]) -> Dict:
     return parameters
 
 
-def create_visualizer(task_type: str, no_show: bool = False, output: Optional[str] = None):
+def create_visualizer(task_type: str, labels: list, no_show: bool = False, output: Optional[str] = None):
     """Create visualizer according to kind of task."""
 
     # TODO: use anomaly-specific visualizer for anomaly tasks
-    if task_type == "Classification":
+    if task_type == "CLASSIFICATION":
         return ClassificationVisualizer(window_name="Result", no_show=no_show, output=output)
-    elif task_type == "Segmentation":
-        return SemanticSegmentationVisualizer(window_name="Result", no_show=no_show, output=output)
-    elif task_type == "Instance_segmentation":
-        return InstanceSegmentationVisualizer(window_name="Result", no_show=no_show, output=output)
-    elif task_type == "Instance_segmentation":
-        return ObjectDetectionVisualizer(window_name="Result", no_show=no_show, output=output)
+    elif task_type == "SEGMENTATION":
+        return SemanticSegmentationVisualizer(window_name="Result", labels=labels, no_show=no_show, output=output)
+    elif task_type == "INSTANCE_SEGMENTATION":
+        return InstanceSegmentationVisualizer(window_name="Result", labels=labels, no_show=no_show, output=output)
+    elif task_type == "DETECTION":
+        return ObjectDetectionVisualizer(window_name="Result", labels=labels, no_show=no_show, output=output)
     else:
         # TODO: add task specific visualizers when implemented
         return FakeVisualizer(window_name="Result", no_show=no_show, output=output)
