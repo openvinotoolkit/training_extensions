@@ -12,7 +12,7 @@ from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
@@ -75,7 +75,7 @@ class Engine:
         task: OTXTaskType | None = None,
         work_dir: str | Path = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
-        model: OTXModel | OVModel | str | None = None,
+        model: OTXModel | str | None = None,
         optimizer: OptimizerCallable | None = None,
         scheduler: LRSchedulerCallable | None = None,
         checkpoint: str | None = None,
@@ -89,7 +89,7 @@ class Engine:
             task (OTXTaskType | None, optional): The type of OTX task. Defaults to None.
             work_dir (str | Path, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
-            model (OTXModel | OVModel | str | None, optional): The model for the engine. Defaults to None.
+            model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
             optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
             scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
                 Defaults to None.
@@ -108,14 +108,14 @@ class Engine:
         )
 
         # [TODO] harimkang: It will be updated in next PR.
-        if not isinstance(model, (OTXModel, OVModel)) or datamodule is None or optimizer is None or scheduler is None:
+        if not isinstance(model, OTXModel) or datamodule is None or optimizer is None or scheduler is None:
             msg = "Auto-Configuration is not implemented yet."
             raise NotImplementedError(msg)
         self.datamodule: OTXDataModule = datamodule
         self.task = self.datamodule.task
 
         self._trainer: Trainer | None = None
-        self._model: OTXModel | OVModel = model
+        self._model: OTXModel = model
         self.optimizer: OptimizerCallable = optimizer
         self.scheduler: LRSchedulerCallable = scheduler
 
@@ -363,7 +363,7 @@ class Engine:
         return self._cache.args
 
     @property
-    def model(self) -> OTXModel | OVModel:
+    def model(self) -> OTXModel:
         """Returns the model object associated with the engine.
 
         Returns:
@@ -372,11 +372,11 @@ class Engine:
         return self._model
 
     @model.setter
-    def model(self, model: OTXModel | OVModel | str) -> None:
+    def model(self, model: OTXModel | str) -> None:
         """Sets the model for the engine.
 
         Args:
-            model (OTXModel | OVModel): The model to be set.
+            model (OTXModel): The model to be set.
 
         Returns:
             None
@@ -390,14 +390,14 @@ class Engine:
 
     def _build_lightning_module(
         self,
-        model: OTXModel | OVModel,
+        model: OTXModel,
         optimizer: OptimizerCallable,
         scheduler: LRSchedulerCallable,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
         Args:
-            model (OTXModel | OVModel): The OTXModel/OVModel instance.
+            model (OTXModel): The OTXModel instance.
             optimizer (OptimizerCallable): The optimizer callable.
             scheduler (LRSchedulerCallable): The learning rate scheduler callable.
 

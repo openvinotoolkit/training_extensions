@@ -209,7 +209,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         raise NotImplementedError
 
 
-class OVModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
@@ -231,14 +231,12 @@ class OVModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
     ) -> None:
-        super().__init__()
         self.model_name = model_name
         self.model_type = model_type
         self.async_inference = async_inference
         self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
         self.use_throughput_mode = use_throughput_mode
-        self._label_info = LabelInfo.from_num_classes(num_classes)
-        self.model = self._create_model()
+        super().__init__(num_classes)
 
     def _create_model(self, model_api_configuration: dict[str, Any] | None = None) -> Model:
         """Create a OV model with help of Model API."""

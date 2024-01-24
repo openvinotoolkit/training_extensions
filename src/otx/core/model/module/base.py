@@ -13,7 +13,7 @@ from lightning import LightningModule
 from torch import Tensor
 
 from otx.core.data.entity.base import OTXBatchDataEntity
-from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.model.entity.base import OTXModel
 from otx.core.types.export import OTXExportFormat
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
@@ -30,7 +30,7 @@ class OTXLitModule(LightningModule):
 
     def __init__(
         self,
-        otx_model: OTXModel | OVModel,
+        otx_model: OTXModel,
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
