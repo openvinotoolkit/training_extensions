@@ -61,5 +61,4 @@ data:
         type: PackDetInputs
 model:
   otx_model:
-    _target_: otx.algo.detection.atss.ATSS
-    variant: r50_fpn
+    _target_: otx.algo.detection.atss.ATSSR50FPN
