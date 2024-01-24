@@ -149,7 +149,6 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         task_name in recipe
         for task_name in [
             "h_label_cls",
-            "multi_label_cls",
             "detection",
             "dino_v2",
             "instance_segmentation",
@@ -206,7 +205,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         "--engine.device",
         fxt_accelerator,
         *DATASET[task]["overrides"],
-        "--model.init_args.config.content.model_name",
+        "--model.model_name",
         exported_model_path,
     ]
 
