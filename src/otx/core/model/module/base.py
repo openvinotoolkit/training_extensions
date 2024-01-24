@@ -136,11 +136,6 @@ class OTXLitModule(LightningModule):
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
-    def _load_from_otx_v1_ckpt(self, state_dict: dict[str, Any]) -> dict[str, Any]:
-        """Attach the model.model prefix to load without problem."""
-        msg = "Trying to load the model checkpoint created by OTX 1.X. But there is no model checkpoint conversion implementation for this model."
-        raise NotImplementedError(msg)
-
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
 
@@ -151,7 +146,9 @@ class OTXLitModule(LightningModule):
         """
         if is_ckpt_from_otx_v1(ckpt):
             model_state_dict = ckpt["model"]["state_dict"]
-            state_dict = self._load_from_otx_v1_ckpt(model_state_dict)
+            msg = "The checkpoint comes from OTXv1, checkpoint keys will be updated automatically."
+            warnings.warn(msg, stacklevel=2)
+            state_dict = self.model.load_from_otx_v1_ckpt(model_state_dict)
         elif is_ckpt_for_finetuning(ckpt):
             state_dict = ckpt["state_dict"]
         else:

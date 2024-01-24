@@ -109,10 +109,6 @@ class OTXActionClsLitModule(OTXLitModule):
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 
-    def _load_from_otx_v1_ckpt(self, ckpt: dict) -> dict:
-        """Get the state_dict, supporting the backward compatibility."""
-        return self.model.load_from_otx_v1_ckpt(ckpt)
-     
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
