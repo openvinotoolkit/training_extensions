@@ -205,3 +205,6 @@ class OTXLitModule(LightningModule):
             export_format: Format in which this `OTXModel` is exported.
         """
         self.model.export(output_dir, export_format)
+
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        return self.model.forward(*args, **kwargs)
