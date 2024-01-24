@@ -65,6 +65,7 @@ class ImageInfo(tv_tensors.TVTensor):
         norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
+        ignored_labels: list | None = None,
     ) -> ImageInfo:
         image_info = dummy_tensor.as_subclass(cls)
         image_info.img_idx = img_idx
@@ -76,6 +77,7 @@ class ImageInfo(tv_tensors.TVTensor):
         image_info.norm_mean = norm_mean
         image_info.norm_std = norm_std
         image_info.image_color_channel = image_color_channel
+        image_info.ignored_labels = ignored_labels
         return image_info
 
     def __new__(  # noqa: D102
@@ -89,6 +91,7 @@ class ImageInfo(tv_tensors.TVTensor):
         norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
+        ignored_labels: list | None = None,
     ) -> ImageInfo:
         return cls._wrap(
             dummy_tensor=Tensor(),
@@ -101,6 +104,7 @@ class ImageInfo(tv_tensors.TVTensor):
             norm_mean=norm_mean,
             norm_std=norm_std,
             image_color_channel=image_color_channel,
+            ignored_labels=ignored_labels,
         )
 
     @classmethod
@@ -133,6 +137,7 @@ class ImageInfo(tv_tensors.TVTensor):
                 norm_mean=image_info.norm_mean,
                 norm_std=image_info.norm_std,
                 image_color_channel=image_info.image_color_channel,
+                ignored_labels=image_info.ignored_labels,
             )
         elif isinstance(output, (tuple, list)):
             image_infos = [x for x in flat_params if isinstance(x, ImageInfo)]
@@ -148,6 +153,7 @@ class ImageInfo(tv_tensors.TVTensor):
                     norm_mean=image_info.norm_mean,
                     norm_std=image_info.norm_std,
                     image_color_channel=image_info.image_color_channel,
+                    ignored_labels=image_info.ignored_labels,
                 )
                 for dummy_tensor, image_info in zip(output, image_infos)
             )

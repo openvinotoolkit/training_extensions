@@ -24,6 +24,7 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
     def _get_item_impl(self, index: int) -> DetDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
+        ignored_labels: list | None = None  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         bbox_anns = [ann for ann in item.annotations if isinstance(ann, Bbox)]
@@ -41,6 +42,7 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
                 img_shape=img_shape,
                 ori_shape=img_shape,
                 image_color_channel=self.image_color_channel,
+                ignored_labels=ignored_labels,
             ),
             bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
