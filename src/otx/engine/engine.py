@@ -332,7 +332,6 @@ class Engine:
         self,
         checkpoint: str | Path | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
-        output_dir: str | Path | None = None,
         explain_config: ExplainConfig | None = None,
         **kwargs,
     ) -> list | None:
@@ -341,11 +340,25 @@ class Engine:
         Args:
             checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
-            output_dir (str | None, optional): Path to save saliency maps.
             explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
+
+        Returns:
+            list: Saliency maps.
+
+        Example:
+            >>> engine.explain(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ...     explain_config=ExplainConfig(),
+            ... )
         """
+        from pathlib import Path
         import cv2
+
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        if explain_config is None:
+            explain_config = ExplainConfig()
 
         lit_module = self._build_lightning_module(
             model=self.model,
@@ -363,10 +376,10 @@ class Engine:
         self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
+            ckpt_path=ckpt_path,
         )
         saliency_maps = self.trainer.model.model.explain_hook.records
-        cv2.imwrite(str(output_dir / "saliency_map.tiff"), saliency_maps[0][0])
+        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
         return saliency_maps
 
     # ------------------------------------------------------------------------ #

@@ -13,5 +13,5 @@ from otx.core.types.explain import TargetExplainGroup
 class ExplainConfig:
     """DTO for explain configuration."""
 
-    target_explain_group: TargetExplainGroup
-    postprocess: bool
+    target_explain_group: TargetExplainGroup = TargetExplainGroup.ALL
+    postprocess: bool = False
