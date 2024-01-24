@@ -13,6 +13,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 
 from otx.core.data.dataset.base import LabelInfo
+from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
@@ -74,13 +75,21 @@ class OTXDataModule(LightningDataModule):
                 log.warning(f"{name} is not available. Skip it")
                 continue
 
-            self.subsets[name] = OTXDatasetFactory.create(
+            dataset = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset,
                 mem_cache_handler=mem_cache_handler,
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,
             )
+
+            if config.tile_config.enable_tiler:
+                dataset = OTXTileDatasetFactory.create(
+                    task=self.task,
+                    dataset=dataset,
+                    tile_config=config.tile_config,
+                )
+            self.subsets[name] = dataset
 
             meta_infos += [self.subsets[name].meta_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
