@@ -127,9 +127,8 @@ class OTXDatasetFactory:
         if task == OTXTaskType.VISUAL_PROMPTING:
             from .dataset.visual_prompting import OTXVisualPromptingDataset
 
-            # NOTE: DataModuleConfig does not have include_polygons attribute
-            use_bbox = getattr(cfg_data_module, "use_bbox", False)
-            use_point = getattr(cfg_data_module, "use_point", False)
+            use_bbox = getattr(cfg_data_module.vpm_config, "use_bbox", False)
+            use_point = getattr(cfg_data_module.vpm_config, "use_point", False)
             return OTXVisualPromptingDataset(use_bbox=use_bbox, use_point=use_point, **common_kwargs)
 
         raise NotImplementedError(task)

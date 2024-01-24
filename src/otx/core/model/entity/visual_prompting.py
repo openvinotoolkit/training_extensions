@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity
 from otx.core.model.entity.base import OTXModel
 
 
@@ -20,7 +20,7 @@ class OTXVisualPromptingModel(
         
         
 class OTXZeroShotVisualPromptingModel(
-    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity],
+    OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """Base class for the zero-shot visual prompting models used in OTX."""
 
