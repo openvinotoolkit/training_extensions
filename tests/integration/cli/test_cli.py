@@ -203,7 +203,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         "--engine.work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
-        fxt_accelerator,
+        "cpu",
         *DATASET[task]["overrides"],
         "--model.model_name",
         exported_model_path,
