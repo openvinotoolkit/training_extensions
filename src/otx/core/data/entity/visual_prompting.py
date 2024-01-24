@@ -15,7 +15,7 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from datumaro import Polygon, Points
+    from datumaro import Polygon
     from torch import LongTensor
 
 

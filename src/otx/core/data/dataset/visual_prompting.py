@@ -13,6 +13,7 @@ import torch
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from datumaro import DatasetSubset, Image, Polygon
 from torchvision import tv_tensors
+from collections import defaultdict
 
 from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingDataEntity

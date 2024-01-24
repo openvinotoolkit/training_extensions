@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging as log
 from copy import deepcopy
-from typing import Tuple, Any
+from typing import Tuple, Any, Dict, List, DefaultDict
 
 import torch
 from torch import nn
@@ -448,10 +448,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def _preprocess_prompts(
         self,
-        bboxes: Optional[torch.Tensor] = None,
-        points: Optional[torch.Tensor] = None,
-        annotations: Optional[torch.Tensor] = None,
-        labels: Optional[torch.Tensor] = None,
+        bboxes: torch.Tensor | None = None,
+        points: torch.Tensor | None = None,
+        annotations: torch.Tensor | None = None,
+        labels: torch.Tensor | None = None,
     ) -> Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]:
         """Preprocess prompts.
 
