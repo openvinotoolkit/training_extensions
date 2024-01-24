@@ -6,6 +6,8 @@ defaults:
   - override /data: torchvision_visual_prompting
   - override /model: torch_visual_prompting
 data:
+  use_bbox: True
+  use_point: False
   train_subset:
     batch_size: 2
   val_subset:

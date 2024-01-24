@@ -14,6 +14,8 @@ import torchvision.transforms.v2 as tvt_v2
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
+from otx.core.data.entity.base import Points
+
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
 
@@ -43,7 +45,7 @@ class PadtoSquare(tvt_v2.Transform):
     """Pad skewed image to square with zero padding."""
 
     def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:  # noqa: ANN401
-        if isinstance(inpt, tv_tensors.BoundingBoxes):
+        if isinstance(inpt, (tv_tensors.BoundingBoxes, Points)):
             h, w = inpt.canvas_size
         elif isinstance(inpt, tv_tensors.Image):
             _, h, w = inpt.shape
