@@ -103,7 +103,7 @@ data:
           - pad_shape
 model:
   otx_model:
-    _target_: otx.algo.detection.yolox_tiny.YoloXTiny
+    _target_: otx.algo.detection.yolox.YoloXTiny
   optimizer:
     _target_: torch.optim.SGD
     _partial_: true
