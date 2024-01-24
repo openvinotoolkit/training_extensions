@@ -354,6 +354,7 @@ class Engine:
             ... )
         """
         from pathlib import Path
+
         import cv2
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
