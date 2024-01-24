@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
@@ -18,8 +19,9 @@ from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
+from .auto_configurator import AutoConfigurator
+
 if TYPE_CHECKING:
-    from pathlib import Path
 
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -106,18 +108,31 @@ class Engine:
             devices=self.device.devices,
             **kwargs,
         )
+        self._auto_configurator = AutoConfigurator(
+            data_root=data_root,
+            task=task,
+            model_name=None if isinstance(model, OTXModel) else model,
+        )
 
-        # [TODO] harimkang: It will be updated in next PR.
-        if not isinstance(model, OTXModel) or datamodule is None or optimizer is None or scheduler is None:
-            msg = "Auto-Configuration is not implemented yet."
-            raise NotImplementedError(msg)
-        self.datamodule: OTXDataModule = datamodule
+        self.datamodule: OTXDataModule = (
+            datamodule if datamodule is not None else self._auto_configurator.get_datamodule()
+        )
         self.task = self.datamodule.task
 
         self._trainer: Trainer | None = None
-        self._model: OTXModel = model
-        self.optimizer: OptimizerCallable = optimizer
-        self.scheduler: LRSchedulerCallable = scheduler
+        self._model: OTXModel = (
+            model
+            if isinstance(model, OTXModel)
+            else self._auto_configurator.get_model(
+                num_classes=self.datamodule.meta_info.num_classes,
+            )
+        )
+        self.optimizer: OptimizerCallable = (
+            optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
+        )
+        self.scheduler: LRSchedulerCallable = (
+            scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
+        )
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -375,16 +390,13 @@ class Engine:
         """Sets the model for the engine.
 
         Args:
-            model (OTXModel): The model to be set.
+            model (OTXModel | str): The model to be set.
 
         Returns:
             None
         """
         if isinstance(model, str):
-            # [TODO] harimkang: It will be updated in next PR.
-            msg = "Auto-Configuration is not implemented yet."
-            raise NotImplementedError(msg)
-            # model = self._auto_configurator.get_model(model)
+            model = self._auto_configurator.get_model(model, self.datamodule.meta_info.num_classes)
         self._model = model
 
     def _build_lightning_module(

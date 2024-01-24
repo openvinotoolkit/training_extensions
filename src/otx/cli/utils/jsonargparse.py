@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Iterator, TypeVar
 
 import docstring_parser
-from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace
+from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace, namespace_to_dict
 
 
 def get_short_docstring(component: TypeVar) -> str:
@@ -150,3 +150,19 @@ def patch_update_configs() -> Iterator[None]:
     finally:
         Namespace.update = original_update
         ActionConfigFile.apply_config = original_apply_config
+
+
+def get_configuration(config_path: str | Path) -> dict:
+    """Get the configuration from the given path.
+
+    Args:
+        config_path (str | Path): The path to the configuration file.
+
+    Returns:
+        dict: The configuration dictionary.
+    """
+    from otx.cli.cli import OTXCLI
+    with patch_update_configs():
+        parser = OTXCLI.engine_subcommand_parser()
+        args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)
+    return namespace_to_dict(args)
