@@ -18,11 +18,6 @@ RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if 
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
-RECIPE_PATH_CLS = Path(inspect.getfile(otx_module)).parent / "recipe" / "multiclass_classification"
-RECIPE_PATH_CNN = list(RECIPE_PATH_CLS.glob("**/*efficient*.yaml")) + list(RECIPE_PATH_CLS.glob("**/*mobilenet*.yaml"))
-RECIPE_LIST_XAI = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH_CNN]
-
-
 # [TODO]: This is a temporary approach.
 DATASET = {
     "multi_class_cls": {
@@ -152,7 +147,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     assert (tmp_path_test / "outputs" / "csv").exists()
 
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST_XAI)
+@pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_explain_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     Test OTX CLI explain e2e command.
@@ -164,19 +159,28 @@ def test_otx_explain_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> N
     Returns:
         None
     """
-    task = recipe.split("/")[0]
-    model_name = recipe.split("/")[1].split(".")[0]
+    task = recipe.split("/")[-2]
+    model_name = recipe.split("/")[-1].split(".")[0]
+
+    if "_cls" not in task:
+        pytest.skip("Supported only for classification tast.")
+
+    if "deit" in model_name or "dino" in model_name:
+        pytest.skip("Supported only for CNN models.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
     command_cfg = [
         "otx",
         "explain",
-        f"+recipe={recipe}",
-        f"base.data_dir={DATASET[task]['data_dir']}",
-        f"base.work_dir={tmp_path_explain}",
-        f"base.output_dir={tmp_path_explain / 'outputs'}",
-        f"trainer={fxt_accelerator}",
+        "--config",
+        recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_explain / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
         *DATASET[task]["overrides"],
     ]
 
