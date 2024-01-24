@@ -74,7 +74,20 @@ class LabelInfo:
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
-    """Base OTXDataset."""
+    """Base OTXDataset.
+
+    Defines basic logic for OTX datasets.
+
+    Args:
+        dm_subset: Datumaro subset of a dataset
+        transforms: Transforms to apply on images
+        mem_cache_handler: Handler of the images cache
+        mem_cache_img_max_size: Max size of images to put in cache
+        max_refetch: Maximum number of images to fetch in cache
+        image_color_channel: Color channel of images
+        stack_images: Whether or not to stack images in collate function in OTXBatchData entity.
+
+    """
 
     def __init__(
         self,
@@ -84,6 +97,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         mem_cache_img_max_size: tuple[int, int] | None = None,
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
+        stack_images: bool = True,
     ) -> None:
         self.dm_subset = dm_subset
         self.ids = [item.id for item in dm_subset]
@@ -92,6 +106,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.mem_cache_img_max_size = mem_cache_img_max_size
         self.max_refetch = max_refetch
         self.image_color_channel = image_color_channel
+        self.stack_images = stack_images
 
         self.meta_info = LabelInfo(
             label_names=[category.name for category in self.dm_subset.categories()[AnnotationType.label]],

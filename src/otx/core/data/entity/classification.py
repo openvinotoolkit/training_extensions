@@ -65,12 +65,16 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
     def collate_fn(
         cls,
         entities: list[MulticlassClsDataEntity],
+        stack_images: bool = True,
     ) -> MulticlassClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch_data = super().collate_fn(entities)
+        batch_images = (
+            tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)) if stack_images else batch_data.images
+        )
         return MulticlassClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_data.images,
+            images=batch_images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
@@ -126,12 +130,16 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
     def collate_fn(
         cls,
         entities: list[MultilabelClsDataEntity],
+        stack_images: bool = True,
     ) -> MultilabelClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch_data = super().collate_fn(entities)
+        batch_images = (
+            tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)) if stack_images else batch_data.images
+        )
         return MultilabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_data.images,
+            images=batch_images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
@@ -355,12 +363,16 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
     def collate_fn(
         cls,
         entities: list[HlabelClsDataEntity],
+        stack_images: bool = True,
     ) -> HlabelClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch_data = super().collate_fn(entities)
+        batch_images = (
+            tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)) if stack_images else batch_data.images
+        )
         return HlabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)),
+            images=batch_images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
