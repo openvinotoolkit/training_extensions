@@ -324,10 +324,15 @@ class Engine:
         )
 
     def export(self, checkpoint: str | Path | None = None, export_config: ExportConfig | None = None, **kwargs) -> Path:
-        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
+        """
+        Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
-            output_dir (Path): Directory path to save exported binary files.
+            checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
+            export_config (ExportConfig | None, optional): Config that allows to set export format and precision. Defaults to None.
+
+        Returns:
+            Path: Path to the exported model.
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if export_config is None:
