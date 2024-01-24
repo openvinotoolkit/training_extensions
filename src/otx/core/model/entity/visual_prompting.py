@@ -5,12 +5,13 @@
 
 from __future__ import annotations
 
+from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
 from otx.core.model.entity.base import OTXModel
 
 
 class OTXVisualPromptingModel(
-    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity],
+    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """Base class for the visual prompting models used in OTX."""
 
