@@ -16,3 +16,12 @@ class OTXVisualPromptingModel(
 
     def __init__(self, num_classes: int = 0) -> None:
         super().__init__(num_classes=num_classes)
+        
+        
+class OTXZeroShotVisualPromptingModel(
+    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity],
+):
+    """Base class for the zero-shot visual prompting models used in OTX."""
+
+    def __init__(self, num_classes: int = 0) -> None:
+        super().__init__(num_classes=num_classes)

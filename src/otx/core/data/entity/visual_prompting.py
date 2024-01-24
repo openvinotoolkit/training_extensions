@@ -114,3 +114,85 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
 @dataclass
 class VisualPromptingBatchPredEntity(VisualPromptingBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for visual prompting task."""
+
+
+@register_pytree_node
+@dataclass
+class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
+    """Data entity for zero-shot visual prompting task.
+
+    Attributes:
+        masks (tv_tensors.Mask): The masks of the instances.
+        labels (LongTensor): The labels of the instances.
+        polygons (list[Polygon]): The polygons of the instances.
+        prompts (list[tv_tensors.TVTensor]): The prompts of the instances.
+    """
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING
+
+    masks: tv_tensors.Mask
+    labels: list[LongTensor]
+    polygons: list[Polygon]
+    prompts: list[tv_tensors.TVTensor]
+    
+    
+@dataclass
+class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPromptingDataEntity]):
+    """Data entity for zero-shot visual prompting task.
+
+    Attributes:
+        masks (list[tv_tensors.Mask]): List of masks.
+        labels (list[LongTensor]): List of labels.
+        polygons (list[list[Polygon]]): List of polygons.
+        prompts (list[list[tv_tensors.BoundingBoxes]]): List of prompts.
+    """
+
+    masks: list[tv_tensors.Mask]
+    labels: list[LongTensor]
+    polygons: list[list[Polygon]]
+    prompts: list[list[tv_tensors.TVTensor]]
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING
+
+    @classmethod
+    def collate_fn(
+        cls,
+        entities: list[ZeroShotVisualPromptingDataEntity],
+    ) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
+
+        Args:
+            entities (list[ZeroShotVisualPromptingDataEntity]): List of ZeroShotVisualPromptingDataEntity objects.
+
+        Returns:
+            ZeroShotVisualPromptingBatchDataEntity: The collated batch data entity.
+        """
+        batch_data = super().collate_fn(entities)
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size=batch_data.batch_size,
+            images=batch_data.images,
+            imgs_info=batch_data.imgs_info,
+            masks=[entity.masks for entity in entities],
+            labels=[entity.labels for entity in entities],
+            polygons=[entity.polygons for entity in entities],
+            prompts=[entity.prompts for entity in entities],
+        )
+
+    def pin_memory(self) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Pin memory for member tensor variables."""
+        super().pin_memory()
+        self.prompts = [[tv_tensors.wrap(prompt.pin_memory(), like=prompt) if prompt is not None else prompt for prompt in prompts] for prompts in self.prompts]
+        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
+        self.labels = [label.pin_memory() for label in self.labels]
+        return self
+
+
+@dataclass
+class ZeroShotVisualPromptingBatchPredEntity(ZeroShotVisualPromptingBatchDataEntity, OTXBatchPredEntity):
+    """Data entity to represent model output predictions for zero-shot visual prompting task."""
