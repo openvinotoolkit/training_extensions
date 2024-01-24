@@ -152,11 +152,12 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     if any(
         task_name in recipe
         for task_name in [
-            "hlabel_classification",
+            "h_label_cls",
+            "multi_label_cls",
             "detection",
             "dino_v2",
             "instance_segmentation",
-            "action_classification",
+            "action",
             "visual_prompting",
         ]
     ):
