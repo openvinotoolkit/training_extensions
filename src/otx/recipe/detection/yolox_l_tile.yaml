@@ -37,13 +37,6 @@ overrides:
           - type: LoadImageFromFile
           - type: LoadAnnotations
             with_bbox: true
-          - type: RandomAffine
-            scaling_ratio_range:
-              - 0.5
-              - 1.5
-            border:
-              - -320
-              - -320
           - type: YOLOXHSVRandomAug
           - type: Resize
             scale:
