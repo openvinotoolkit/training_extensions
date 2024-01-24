@@ -513,7 +513,7 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"max_epochs": "20", "deterministic": "True"},
+            extra_overrides={"max_epochs": "20"},
         )
         for idx in range(1, 4)
     ] + [
@@ -522,14 +522,14 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={"max_epochs": "20", "deterministic": "True"}
+            extra_overrides={"max_epochs": "20"}
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root=Path("visual_prompting/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"max_epochs": "20", "deterministic": "True"}
+            extra_overrides={"max_epochs": "20"}
         )
     ]
 
