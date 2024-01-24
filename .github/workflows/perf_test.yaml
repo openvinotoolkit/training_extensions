@@ -1,0 +1,31 @@
+name: V2 Performance Test
+
+on:
+  schedule:
+    - cron: "0 16 * * 1-5" # currently run daily on 16:00 UTC; [TODO]: run weekly
+  workflow_dispatch: # run on request
+
+jobs:
+  Performance-Test:
+    runs-on: [self-hosted, linux, x64, dmount]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.10"
+            tox-env: "py310"
+    name: Performance-Test-Py${{ matrix.python-version }}
+    concurrency:
+      group: ${{ github.workflow }}-Performance-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Run Performance Test
+        run: tox -vv -e performance-test -- --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }} --user-name ${{ vars.USER_NAME }} --dataset-root-dir /home/validation/data/v2

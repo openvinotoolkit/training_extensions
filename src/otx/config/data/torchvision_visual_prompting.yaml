@@ -11,11 +11,8 @@ train_subset:
   num_workers: 0
   transform_lib_type: TORCHVISION
   transforms:
-    # - _target_: otx.core.data.transform_libs.torchvision.PerturbBoundingBoxes
-    #   offset: 20
-    - _target_: torchvision.transforms.v2.Resize
-      size: 1023
-      max_size: 1024
+    - _target_: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+      size: 1024
     - _target_: otx.core.data.transform_libs.torchvision.PadtoSquare
     - _target_: torchvision.transforms.v2.ToDtype
       dtype: ${as_torch_dtype:torch.float32}
@@ -28,9 +25,8 @@ val_subset:
   num_workers: 0
   transform_lib_type: TORCHVISION
   transforms:
-    - _target_: torchvision.transforms.v2.Resize
-      size: 1023
-      max_size: 1024
+    - _target_: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+      size: 1024
     - _target_: otx.core.data.transform_libs.torchvision.PadtoSquare
     - _target_: torchvision.transforms.v2.ToDtype
       dtype: ${as_torch_dtype:torch.float32}
@@ -43,9 +39,8 @@ test_subset:
   num_workers: 0
   transform_lib_type: TORCHVISION
   transforms:
-    - _target_: torchvision.transforms.v2.Resize
-      size: 1023
-      max_size: 1024
+    - _target_: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+      size: 1024
     - _target_: otx.core.data.transform_libs.torchvision.PadtoSquare
     - _target_: torchvision.transforms.v2.ToDtype
       dtype: ${as_torch_dtype:torch.float32}
