@@ -35,3 +35,4 @@ overrides:
       image_color_channel: RGB
       test_subset:
         batch_size: 128
+      data_format: datumaro
