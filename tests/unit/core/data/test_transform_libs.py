@@ -11,6 +11,7 @@ from omegaconf import OmegaConf
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
+    ResizetoLongestEdge,
     TorchVisionTransformLib,
 )
 from otx.core.types.image import ImageColorChannel
@@ -47,7 +48,7 @@ class TestPadtoSquare:
 
         # height > width
         inpt = tv_tensors.Image(torch.ones((1, 5, 3)))
-        results = transform(inpt, None)
+        results = transform(inpt, transform._get_params([inpt]))
 
         assert isinstance(results, tuple)
         assert results[0].shape == torch.Size((1, 5, 5))
@@ -55,7 +56,7 @@ class TestPadtoSquare:
 
         # height < width
         inpt = tv_tensors.Image(torch.ones((1, 3, 5)))
-        results = transform(inpt, None)
+        results = transform(inpt, transform._get_params([inpt]))
 
         assert isinstance(results, tuple)
         assert results[0].shape == torch.Size((1, 5, 5))
@@ -68,9 +69,38 @@ class TestPadtoSquare:
             canvas_size=(5, 3),
             dtype=torch.float32,
         )
-        results = transform(inpt.clone(), None)
+        results = transform(inpt.clone(), transform._get_params([inpt]))
 
         assert torch.all(results[0] == inpt)
+
+
+class TestResizetoLongestEdge:
+    def test_transform(self) -> None:
+        transform = ResizetoLongestEdge(size=10)
+
+        # height > width
+        inpt = tv_tensors.Image(torch.ones((1, 5, 3)))
+        results = transform(inpt, transform._get_params([inpt]))
+
+        assert isinstance(results, tuple)
+        assert results[0].shape == torch.Size((1, 10, 6))
+        assert results[1]["target_size"] == (10, 6)
+
+        # height < width
+        inpt = tv_tensors.Image(torch.ones((1, 3, 5)))
+        results = transform(inpt, transform._get_params([inpt]))
+
+        assert isinstance(results, tuple)
+        assert results[0].shape == torch.Size((1, 6, 10))
+        assert results[1]["target_size"] == (6, 10)
+
+        # square
+        inpt = tv_tensors.Image(torch.ones((1, 5, 5)))
+        results = transform(inpt, transform._get_params([inpt]))
+
+        assert isinstance(results, tuple)
+        assert results[0].shape == torch.Size((1, 10, 10))
+        assert results[1]["target_size"] == (10, 10)
 
 
 class TestTorchVisionTransformLib:
