@@ -142,7 +142,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         return self._apply_transforms(entity)
 
-    def _convert_label_to_hlabel_format(self, label_anns: list[Label]) -> list[int]:
+    def _convert_label_to_hlabel_format(self, label_anns: list[Label], ignored_labels: list | None = None) -> list[int]:
         """Convert format of the label to the h-label.
 
         It converts the label format to h-label format.
@@ -169,9 +169,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         num_multiclass_heads = self.meta_info.hlabel_info.num_multiclass_heads
         num_multilabel_classes = self.meta_info.hlabel_info.num_multilabel_classes
 
-        # NOTE: currently ignored labels are not considered yet.
-        ignored_labels: list = []
-
         class_indices = [0] * (num_multiclass_heads + num_multilabel_classes)
         for i in range(num_multiclass_heads):
             class_indices[i] = -1
@@ -182,7 +179,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
-            elif ann.label not in ignored_labels:
+            elif ignored_labels is not None and ann.label not in ignored_labels:
                 class_indices[num_multiclass_heads + in_group_idx] = 1
             else:
                 class_indices[num_multiclass_heads + in_group_idx] = -1

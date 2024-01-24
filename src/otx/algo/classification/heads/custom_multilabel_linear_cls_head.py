@@ -85,10 +85,22 @@ class CustomMultiLabelLinearClsHead(MultiLabelLinearClsHead):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        img_metas = [data_sample.metainfo for data_sample in data_samples]
+        valid_label_mask = self.get_valid_label_mask(img_metas)
         cls_score = self(feats) * self.scale
-        losses = super()._get_loss(cls_score, data_samples, **kwargs)
+        losses = super()._get_loss(cls_score, data_samples, valid_label_mask=valid_label_mask, **kwargs)
         losses["loss"] = losses["loss"] / self.scale
         return losses
+
+    def get_valid_label_mask(self, img_metas: list[dict]) -> list[torch.Tensor]:
+        """Get valid label mask using ignored_label."""
+        valid_label_mask = []
+        for meta in img_metas:
+            mask = torch.Tensor([1 for _ in range(self.num_classes)])
+            if "ignored_labels" in meta and meta["ignored_labels"]:
+                mask[meta["ignored_labels"]] = 0
+            valid_label_mask.append(mask)
+        return torch.stack(valid_label_mask, dim=0)
 
 
 class AnglularLinear(nn.Module):
