@@ -25,8 +25,7 @@ class CustomNMF2D(NMF2D):
 
         # (B, C, H, W) -> (B * S, D, N)
         scale = channels // self.S
-        N = height * width
-        x = x.view(batch * self.S, scale, N)
+        x = x.view(batch * self.S, scale, height * width)
 
         # (S, D, R) -> (B * S, D, R)
         if self.training:
@@ -43,9 +42,8 @@ class CustomNMF2D(NMF2D):
         x = torch.bmm(bases, coef.transpose(1, 2))
 
         # (B * S, D, N) -> (B, C, H, W)
-        x = x.view(batch, channels, height, width)
+        return x.view(batch, channels, height, width)
 
-        return x
 
 @MODELS.register_module()
 class CustomLightHamHead(LightHamHead):
