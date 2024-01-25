@@ -86,10 +86,6 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     Returns:
         None
     """
-    if recipe.endswith("visual_prompting/sam_tiny_vit.yaml"):
-        # found an issue where the current process is not terminating, so disable it.
-        # Issue with process not ending if the recipe and openvino_model.yaml test are performed in order
-        pytest.skip("Skip this one for a bit because we found an issue with the memory cache.")
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
@@ -164,10 +160,10 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if task == "instance_segmentation":
+    if task in ["multi_label_cls", "instance_segmentation", "h_label_cls"]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
-        pytest.skip("OMZ doesn't have proper model for Pytorch MaskRCNN interface.")
+        pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"

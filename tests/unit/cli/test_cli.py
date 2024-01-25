@@ -53,7 +53,16 @@ class TestOTXCLI:
         parser = cli.subcommand_parser()
         assert parser.__class__.__name__ == "ArgumentParser"
         argument_list = [action.dest for action in parser._actions]
-        expected_argument = ["help", "verbose", "config", "print_config", "data_root", "task", "callback_monitor"]
+        expected_argument = [
+            "help",
+            "verbose",
+            "config",
+            "print_config",
+            "data_root",
+            "task",
+            "seed",
+            "callback_monitor",
+        ]
         assert sorted(argument_list) == sorted(expected_argument)
 
     def test_add_subcommands(self, mocker) -> None:
