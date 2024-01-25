@@ -5,68 +5,72 @@
 import importlib
 import inspect
 import logging
+import re
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
-from otx.cli.export import otx_export
-from otx.cli.test import otx_test
-from otx.cli.train import otx_train
+from otx.cli import main
 
 log = logging.getLogger(__name__)
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
 RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
-ALL_RECIPE_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/*.yaml")]
-RECIPE_OV_LIST = [str(_.relative_to(RECIPE_PATH)) for _ in RECIPE_PATH.glob("**/openvino_model.yaml")]
-RECIPE_LIST = set(ALL_RECIPE_LIST) - set(RECIPE_OV_LIST)
+RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in p.parts]
+RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
+RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
+
 
 # [TODO]: This is a temporary approach.
 DATASET = {
-    "multiclass_classification": {
-        "data_dir": "tests/assets/classification_dataset",
-        "overrides": [
-            "model.otx_model.num_classes=2",
-        ],
+    "multi_class_cls": {
+        "data_root": "tests/assets/classification_dataset",
+        "overrides": ["--model.num_classes", "2"],
     },
-    "multilabel_classification": {
-        "data_dir": "tests/assets/multilabel_classification",
-        "overrides": [
-            "model.otx_model.num_classes=2",
-        ],
+    "multi_label_cls": {
+        "data_root": "tests/assets/multilabel_classification",
+        "overrides": ["--model.num_classes", "2"],
     },
-    "hlabel_classification": {
-        "data_dir": "tests/assets/hlabel_classification",
+    "h_label_cls": {
+        "data_root": "tests/assets/hlabel_classification",
         "overrides": [
-            "model.otx_model.num_classes=7",
-            "model.otx_model.num_multiclass_heads=2",
-            "model.otx_model.num_multilabel_classes=3",
+            "--model.num_classes",
+            "7",
+            "--model.num_multiclass_heads",
+            "2",
+            "--model.num_multilabel_classes",
+            "3",
         ],
     },
     "detection": {
-        "data_dir": "tests/assets/car_tree_bug",
-        "overrides": ["model.otx_model.num_classes=3"],
+        "data_root": "tests/assets/car_tree_bug",
+        "overrides": ["--model.num_classes", "3"],
     },
     "instance_segmentation": {
-        "data_dir": "tests/assets/car_tree_bug",
-        "overrides": [
-            "model.otx_model.num_classes=3",
-        ],
+        "data_root": "tests/assets/car_tree_bug",
+        "overrides": ["--model.num_classes", "3"],
     },
-    "segmentation": {
-        "data_dir": "tests/assets/common_semantic_segmentation_dataset/supervised",
-        "overrides": ["model.otx_model.num_classes=2"],
+    "semantic_segmentation": {
+        "data_root": "tests/assets/common_semantic_segmentation_dataset/supervised",
+        "overrides": ["--model.num_classes", "2"],
     },
     "action_classification": {
-        "data_dir": "tests/assets/action_classification_dataset/",
-        "overrides": ["model.otx_model.num_classes=2"],
+        "data_root": "tests/assets/action_classification_dataset/",
+        "overrides": ["--model.num_classes", "2"],
     },
     "action_detection": {
-        "data_dir": "tests/assets/action_detection_dataset/",
+        "data_root": "tests/assets/action_detection_dataset/",
         "overrides": [
-            "model.otx_model.num_classes=5",
-            "model.otx_model.topk=3",
+            "--model.num_classes",
+            "5",
+            "--model.topk",
+            "3",
         ],
+    },
+    "visual_prompting": {
+        "data_root": "tests/assets/car_tree_bug",
+        "overrides": [],
     },
 }
 
@@ -95,14 +99,20 @@ def fxt_local_seed() -> int:
 
 
 TASK_NAME_TO_MAIN_METRIC_NAME = {
-    "segmentation": "test/mIoU",
-    "multilabel_classification": "test/accuracy",
-    "multiclass_classification": "test/accuracy",
+    "semantic_segmentation": "test/mIoU",
+    "multi_label_cls": "test/accuracy",
+    "multi_class_cls": "test/accuracy",
 }
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerator: str) -> None:
+def test_otx_export_infer(
+    recipe: str,
+    tmp_path: Path,
+    fxt_local_seed: int,
+    fxt_accelerator: str,
+    capfd: "pytest.CaptureFixture",
+) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -119,40 +129,37 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
     Returns:
         None
     """
-    if any(
-        task_name in recipe
-        for task_name in [
-            "hlabel_classification",
-            "detection",
-            "dino_v2",
-            "instance_segmentation",
-            "action_classification",
-            "visual_prompting",
-        ]
-    ):
+    task = recipe.split("/")[-2]
+
+    if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
-    task = recipe.split("/")[0]
-    model_name = recipe.split("/")[1].split(".")[0]
+    model_name = recipe.split("/")[-1].split(".")[0]
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
-        f"+recipe={recipe}",
-        f"base.data_dir={DATASET[task]['data_dir']}",
-        f"base.work_dir={tmp_path_train}",
-        f"base.output_dir={tmp_path_train / 'outputs'}",
-        "+debug=intg_test",
-        f"seed={fxt_local_seed}",
+        "otx",
+        "train",
+        "--config",
+        recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_train / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
+        "--max_epochs",
+        "2",
+        "--seed",
+        f"{fxt_local_seed}",
+        "--deterministic",
+        "True",
         *DATASET[task]["overrides"],
     ]
-    otx_train(command_cfg)
 
-    assert (tmp_path_train / "outputs").exists()
-    assert (tmp_path_train / "outputs" / "otx_train.log").exists()
-    assert (tmp_path_train / "outputs" / "csv").exists()
-    assert (tmp_path_train / "outputs").exists()
-    assert (tmp_path_train / "outputs" / "checkpoints").exists()
+    with patch("sys.argv", command_cfg):
+        main()
 
     ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
@@ -160,21 +167,23 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
     # 2) otx test
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
-        f"+recipe={recipe}",
-        f"base.data_dir={DATASET[task]['data_dir']}",
-        f"base.work_dir={tmp_path_test}",
-        f"base.output_dir={tmp_path_test / 'outputs'}",
-        f"seed={fxt_local_seed}",
-        f"trainer={fxt_accelerator}",
+        "otx",
+        "test",
+        "--config",
+        recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
         *DATASET[task]["overrides"],
-        f"checkpoint={ckpt_files[-1]}",
+        "--checkpoint",
+        str(ckpt_files[-1]),
     ]
 
-    torch_acc = otx_test(command_cfg)[TASK_NAME_TO_MAIN_METRIC_NAME[task]]
-
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "otx_test.log").exists()
-    assert (tmp_path_test / "outputs" / "lightning_logs").exists()
+    with patch("sys.argv", command_cfg):
+        main()
 
     # 3) otx export
     format_to_ext = {"OPENVINO": "xml"}  # [TODO](@Vlad): extend to "ONNX": "onnx"
@@ -182,36 +191,61 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for fmt in format_to_ext:
         command_cfg = [
-            f"+recipe={recipe}",
-            f"base.data_dir={DATASET[task]['data_dir']}",
-            f"base.work_dir={tmp_path_test}",
-            f"base.output_dir={tmp_path_test / 'outputs'}",
+            "otx",
+            "export",
+            "--config",
+            recipe,
+            "--data_root",
+            DATASET[task]["data_root"],
+            "--engine.work_dir",
+            str(tmp_path_test / "outputs"),
             *DATASET[task]["overrides"],
-            f"checkpoint={ckpt_files[-1]}",
-            f"model.export_config.export_format={fmt}",
+            "--checkpoint",
+            str(ckpt_files[-1]),
+            "--export_config.export_format",
+            f"{fmt}",
         ]
 
-        otx_export(command_cfg)
+        with patch("sys.argv", command_cfg):
+            main()
 
         assert (tmp_path_test / "outputs").exists()
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
+    task = recipe.split("/")[-2]
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    task = recipe.split("/")[0]
-    export_test_recipe = f"{task}/openvino_model.yaml"
+    if "_cls" in recipe:
+        export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
+    else:
+        export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
     exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
 
     command_cfg = [
-        f"+recipe={export_test_recipe}",
-        f"base.data_dir={DATASET[task]['data_dir']}",
-        f"base.work_dir={tmp_path_test}",
-        f"base.output_dir={tmp_path_test / 'outputs'}",
+        "otx",
+        "test",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        "cpu",
         *DATASET[task]["overrides"],
-        f"model.otx_model.config.model_name={exported_model_path}",
+        "--model.model_name",
+        exported_model_path,
     ]
 
-    ov_acc = otx_test(command_cfg)[TASK_NAME_TO_MAIN_METRIC_NAME[task]]
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+
+    out, _ = capfd.readouterr()
+    assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
+    torch_acc, ov_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
+    torch_acc, ov_acc = float(torch_acc), float(ov_acc)
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)

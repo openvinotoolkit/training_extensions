@@ -43,12 +43,13 @@ def to_list(dict_: dict) -> dict:
 
 
 def convert_conf_to_mmconfig_dict(
-    cfg: DictConfig,
+    cfg: DictConfig | dict,
     to: Literal["tuple", "list"] = "tuple",
 ) -> MMConfig:
     """Convert OTX format config object to MMEngine config object."""
     from mmengine.config import Config as MMConfig
 
+    cfg = cfg if isinstance(cfg, DictConfig) else OmegaConf.create(cfg)
     dict_cfg = OmegaConf.to_container(cfg)
 
     if to == "tuple":

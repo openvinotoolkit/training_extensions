@@ -15,7 +15,7 @@ from .dataset.base import OTXDataset, Transforms
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
 
-    from otx.core.config.data import DataModuleConfig, InstSegDataModuleConfig, SubsetConfig
+    from otx.core.config.data import DataModuleConfig, SubsetConfig
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
 
@@ -71,7 +71,7 @@ class OTXDatasetFactory:
         dm_subset: DatasetSubset,
         mem_cache_handler: MemCacheHandlerBase,
         cfg_subset: SubsetConfig,
-        cfg_data_module: DataModuleConfig | InstSegDataModuleConfig,
+        cfg_data_module: DataModuleConfig,
     ) -> OTXDataset:
         """Create OTXDataset."""
         transforms = TransformLibFactory.generate(cfg_subset)
@@ -81,6 +81,7 @@ class OTXDatasetFactory:
             "mem_cache_handler": mem_cache_handler,
             "mem_cache_img_max_size": cfg_data_module.mem_cache_img_max_size,
             "image_color_channel": cfg_data_module.image_color_channel,
+            "stack_images": cfg_data_module.stack_images,
         }
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset

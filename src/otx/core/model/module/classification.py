@@ -25,6 +25,8 @@ from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlas
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -34,12 +36,17 @@ class OTXMulticlassClsLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXMulticlassClsModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        num_classes = otx_model.config.get("head", {}).get("num_classes", None)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
+        num_classes = otx_model.num_classes
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
         self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
 
@@ -123,12 +130,17 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXMultilabelClsModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        self.num_labels = otx_model.config.get("head", {}).get("num_classes", None)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
+        self.num_labels = otx_model.num_classes
 
         self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
         self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
@@ -207,11 +219,16 @@ class OTXHlabelClsLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXHlabelClsModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
@@ -221,7 +238,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.hlabel_info = self.meta_info.hlabel_info
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
-        self.model.model.head.set_hlabel_info(self.hlabel_info)
+        self.model.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
         self.num_labels = len(self.meta_info.label_names)

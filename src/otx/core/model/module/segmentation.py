@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging as log
+from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
@@ -17,6 +18,9 @@ from otx.core.data.entity.segmentation import (
 from otx.core.model.entity.segmentation import OTXSegmentationModel
 from otx.core.model.module.base import OTXLitModule
 
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
 
 class OTXSegmentationLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX segmentation task."""
@@ -24,12 +28,17 @@ class OTXSegmentationLitModule(OTXLitModule):
     def __init__(
         self,
         otx_model: OTXSegmentationModel,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.LRScheduler,
         torch_compile: bool,
+        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
-        super().__init__(otx_model, optimizer, scheduler, torch_compile)
-        num_classes = otx_model.config.get("decode_head", {}).get("num_classes", None)
+        super().__init__(
+            otx_model=otx_model,
+            torch_compile=torch_compile,
+            optimizer=optimizer,
+            scheduler=scheduler,
+        )
+        num_classes = otx_model.num_classes
         if num_classes is None:
             msg = """JaccardIndex metric cannot be used with num_classes = None.
             Please, specify number of classes in config."""
@@ -126,3 +135,11 @@ class OTXSegmentationLitModule(OTXLitModule):
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
+
+    def _load_from_prev_otx_ckpt(self, ckpt: dict) -> dict:
+        """Get the state_dict, supporting the backward compatibility."""
+        state_dict = super()._load_from_prev_otx_ckpt(ckpt)
+        for key in list(state_dict.keys()):
+            if "ham.bases" in key or "decode_head.aggregator.projects" in key:
+                state_dict.pop(key)
+        return state_dict

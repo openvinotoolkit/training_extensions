@@ -25,6 +25,15 @@ class SubsetConfig:
 
 
 @dataclass
+class TilerConfig:
+    """DTO for tiler configuration."""
+
+    enable_tiler: bool = False
+    grid_size: Tuple[int, int] = (2, 2)
+    overlap: float = 0.0
+
+
+@dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
 
@@ -35,13 +44,11 @@ class DataModuleConfig:
     val_subset: SubsetConfig
     test_subset: SubsetConfig
 
+    tile_config: TilerConfig
+
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: Optional[Tuple[int, int]] = None
     image_color_channel: ImageColorChannel = ImageColorChannel.RGB
+    stack_images: bool = True
 
-
-@dataclass
-class InstSegDataModuleConfig(DataModuleConfig):
-    """DTO for instance segmentation data module configuration."""
-
-    include_polygons: bool = True
+    include_polygons: bool = False

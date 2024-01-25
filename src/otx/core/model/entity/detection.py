@@ -13,9 +13,11 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.tile_merge import DetectionTileMerge
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -24,7 +26,7 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
+class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
     """Base class for the detection models used in OTX."""
 
     def _generate_model_metadata(self) -> dict[tuple[str, str], Any]:
@@ -34,6 +36,36 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         metadata[("model_info", "confidence_threshold")] = str(0.0)  # it was able to be set in OTX 1.X
         metadata[("model_info", "iou_threshold")] = str(0.5)
         return metadata
+
+    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
+        """Unpack detection tiles.
+
+        Args:
+            inputs (TileBatchDetDataEntity): Tile batch data entity.
+
+        Returns:
+            DetBatchPredEntity: Merged detection prediction.
+        """
+        tile_preds: list[DetBatchPredEntity] = []
+        tile_attrs: list[list[dict[str, int | str]]] = []
+        merger = DetectionTileMerge(inputs.imgs_info)
+        for batch_tile_attrs, batch_tile_input in inputs.unbind():
+            output = self.forward(batch_tile_input)
+            if isinstance(output, OTXBatchLossEntity):
+                msg = "Loss output is not supported for tile merging"
+                raise TypeError(msg)
+            tile_preds.append(output)
+            tile_attrs.append(batch_tile_attrs)
+        pred_entities = merger.merge(tile_preds, tile_attrs)
+
+        return DetBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[pred_entity.image for pred_entity in pred_entities],
+            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
+            scores=[pred_entity.score for pred_entity in pred_entities],
+            bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
+            labels=[pred_entity.labels for pred_entity in pred_entities],
+        )
 
 
 class MMDetCompatibleModel(OTXDetectionModel):

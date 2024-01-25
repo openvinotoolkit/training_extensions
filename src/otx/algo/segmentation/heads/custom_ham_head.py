@@ -17,15 +17,22 @@ class CustomNMF2D(NMF2D):
     def __init__(self, ham_channels: int = 512, **kwargs):
         super().__init__(kwargs)
         bases = f.normalize(torch.rand((self.S, ham_channels // self.S, self.R)))
-        self.bases = torch.nn.parameter.Parameter(bases)
+        self.bases = torch.nn.parameter.Parameter(bases, requires_grad=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward Function."""
         batch, channels, height, width = x.shape
 
-        features_size = height * width
-        x = x.view(batch * self.S, channels // self.S, features_size)
-        bases = self.bases.repeat(batch, 1, 1)
+        # (B, C, H, W) -> (B * S, D, N)
+        scale = channels // self.S
+        x = x.view(batch * self.S, scale, height * width)
+
+        # (S, D, R) -> (B * S, D, R)
+        if self.training:
+            bases = self._build_bases(batch, self.S, scale, self.R, device=x.device)
+        else:
+            bases = self.bases.repeat(batch, 1, 1)
+
         bases, coef = self.local_inference(x, bases)
 
         # (B * S, N, R)

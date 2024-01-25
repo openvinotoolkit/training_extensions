@@ -17,9 +17,11 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchPredEntity,
 )
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.data.entity.tile import TileBatchInstSegDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.tile_merge import InstanceSegTileMerge
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -29,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class OTXInstanceSegModel(
-    OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
+    OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, TileBatchInstSegDataEntity],
 ):
     """Base class for the detection models used in OTX."""
 
@@ -51,6 +53,38 @@ class OTXInstanceSegModel(
         metadata[("model_info", "label_ids")] = all_label_ids.strip()
 
         return metadata
+
+    def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
+        """Unpack instance segmentation tiles.
+
+        Args:
+            inputs (TileBatchInstSegDataEntity): Tile batch data entity.
+
+        Returns:
+            InstanceSegBatchPredEntity: Merged instance segmentation prediction.
+        """
+        tile_preds: list[InstanceSegBatchPredEntity] = []
+        tile_attrs: list[list[dict[str, int | str]]] = []
+        merger = InstanceSegTileMerge(inputs.imgs_info)
+        for batch_tile_attrs, batch_tile_input in inputs.unbind():
+            output = self.forward(batch_tile_input)
+            if isinstance(output, OTXBatchLossEntity):
+                msg = "Loss output is not supported for tile merging"
+                raise TypeError(msg)
+            tile_preds.append(output)
+            tile_attrs.append(batch_tile_attrs)
+        pred_entities = merger.merge(tile_preds, tile_attrs)
+
+        return InstanceSegBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[pred_entity.image for pred_entity in pred_entities],
+            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
+            scores=[pred_entity.score for pred_entity in pred_entities],
+            bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
+            labels=[pred_entity.labels for pred_entity in pred_entities],
+            masks=[pred_entity.masks for pred_entity in pred_entities],
+            polygons=[pred_entity.polygons for pred_entity in pred_entities],
+        )
 
 
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):

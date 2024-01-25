@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
@@ -20,8 +21,6 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
@@ -206,7 +205,8 @@ class Engine:
             fit_kwargs["ckpt_path"] = self.checkpoint
         elif self.checkpoint is not None:
             loaded_checkpoint = torch.load(self.checkpoint)
-            lit_module.load_state_dict(loaded_checkpoint["state_dict"])
+            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
+            lit_module.load_state_dict(loaded_checkpoint)
 
         self.trainer.fit(
             model=lit_module,
@@ -323,14 +323,24 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, output_dir: Path, cfg: ExportConfig) -> Path:
+    def export(self, checkpoint: str | Path | None = None, export_config: ExportConfig | None = None, **kwargs) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
-            output_dir (Path): Directory path to save exported binary files.
+            checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
+            export_config (ExportConfig | None, optional): Config that allows to set export
+            format and precision. Defaults to None.
+
+        Returns:
+            Path: Path to the exported model.
         """
-        if self.checkpoint is not None:
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        if export_config is None:
+            export_config = ExportConfig()
+
+        if ckpt_path is not None:
             self.model.eval()
+            # self.model.label_info = self.datamodule.meta_info this doesn't work for some models yet
             lit_module = self._build_lightning_module(
                 model=self.model,
                 optimizer=self.optimizer,
@@ -338,13 +348,13 @@ class Engine:
             )
             lit_module.meta_info = self.datamodule.meta_info
 
-            loaded_checkpoint = torch.load(self.checkpoint)
+            loaded_checkpoint = torch.load(ckpt_path)
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
             return self.model.export(
-                output_dir=output_dir,
-                export_format=cfg.export_format,
-                precision=cfg.precision,
+                output_dir=Path(self.work_dir),
+                export_format=export_config.export_format,
+                precision=export_config.precision,
                 test_pipeline=self.datamodule.config.test_subset.transforms,
             )
 
@@ -373,7 +383,8 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
-            self._trainer = Trainer(**self._cache.args)
+            kwargs = self._cache.args
+            self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 
     @property

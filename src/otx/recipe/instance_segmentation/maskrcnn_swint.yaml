@@ -1,73 +1,87 @@
-# @package _global_
-defaults:
-  - override /base: instance_segmentation
-  - override /callbacks: instance_segmentation
-  - override /data: mmdet_inst_seg
-  - override /model: mmdet_inst_seg
-
-data:
-  train_subset:
-    batch_size: 4
-    transforms:
-      - type: LoadImageFromFile
-        backend_args: null
-      - type: LoadAnnotations
-        with_bbox: true
-        with_mask: true
-      - type: Resize
-        keep_ratio: true
-        scale:
-          - 1344
-          - 1344
-      - type: RandomFlip
-        prob: 0.5
-      - type: PackDetInputs
-  val_subset:
-    batch_size: 1
-    transforms:
-      - type: LoadImageFromFile
-        backend_args: null
-      - type: Resize
-        keep_ratio: true
-        scale:
-          - 1344
-          - 1344
-      - type: LoadAnnotations
-        with_bbox: true
-        with_mask: true
-      - type: PackDetInputs
-        meta_keys:
-          - img_id
-          - img_path
-          - ori_shape
-          - img_shape
-          - scale_factor
-  test_subset:
-    batch_size: 1
-    transforms:
-      - type: LoadImageFromFile
-        backend_args: null
-      - type: Resize
-        keep_ratio: true
-        scale:
-          - 1344
-          - 1344
-      - type: LoadAnnotations
-        with_bbox: true
-        with_mask: true
-      - type: PackDetInputs
-        meta_keys:
-          - img_id
-          - img_path
-          - ori_shape
-          - img_shape
-          - scale_factor
-
 model:
-  otx_model:
-    _target_: otx.algo.instance_segmentation.maskrcnn.MaskRCNNSwinT
-  optimizer:
-    _target_: torch.optim.AdamW
-    _partial_: true
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNSwinT
+  init_args:
+    num_classes: 80
+
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
     lr: 0.0001
     weight_decay: 0.05
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 10
+    monitor: train/loss
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      include_polygons: true
+      train_subset:
+        batch_size: 4
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: Resize
+            keep_ratio: true
+            scale:
+              - 1344
+              - 1344
+          - type: RandomFlip
+            prob: 0.5
+          - type: PackDetInputs
+      val_subset:
+        batch_size: 1
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            keep_ratio: true
+            scale:
+              - 1344
+              - 1344
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
+      test_subset:
+        batch_size: 1
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            keep_ratio: true
+            scale:
+              - 1344
+              - 1344
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor

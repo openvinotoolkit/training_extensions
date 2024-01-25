@@ -1,7 +1,8 @@
 defaults:
   - default
 
-image_color_channel: RGB
+image_color_channel: BGR
+stack_images: False
 
 train_subset:
   transform_lib_type: TORCHVISION
