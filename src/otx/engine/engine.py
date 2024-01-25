@@ -261,12 +261,17 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        # NOTE, trainer.test takes only lightning based checkpoint.
+        # So, it can't take the OTX1.x checkpoint.
+        if self.checkpoint is not None:
+            loaded_checkpoint = torch.load(self.checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
+
         self._build_trainer(**kwargs)
 
         self.trainer.test(
             model=lit_module,
             dataloaders=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
 
         return self.trainer.callback_metrics

@@ -9,6 +9,14 @@ class OTXv1Helper:
     """Helper class to support the backward compatibility of OTX v1."""
 
     @staticmethod
+    def load_common_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
+        """Load the OTX1.x model checkpoints that don't need special handling."""
+        for key in list(state_dict.keys()):
+            val = state_dict.pop(key)
+            state_dict[add_prefix + key] = val
+        return state_dict
+
+    @staticmethod
     def load_cls_effnet_b0_ckpt(state_dict: dict, label_type: str, add_prefix: str = "") -> dict:
         """Load the OTX1.x efficientnet b0 classification checkpoints."""
         for key in list(state_dict.keys()):
@@ -57,6 +65,11 @@ class OTXv1Helper:
         return state_dict
 
     @staticmethod
+    def load_cls_deit_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
+        """Load the OTX1.x deit-tiny classification checkpoints."""
+        return OTXv1Helper.load_common_ckpt(state_dict, add_prefix)
+
+    @staticmethod
     def load_det_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
         """Load the OTX1.x detection model checkpoints."""
         for key in list(state_dict.keys()):
@@ -91,7 +104,4 @@ class OTXv1Helper:
     @staticmethod
     def load_action_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
         """Load the OTX1.x action cls/det model checkpoints."""
-        for key in list(state_dict.keys()):
-            val = state_dict.pop(key)
-            state_dict[add_prefix + key] = val
-        return state_dict
+        return OTXv1Helper.load_common_ckpt(state_dict, add_prefix)
