@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
@@ -20,8 +21,6 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
@@ -353,8 +352,6 @@ class Engine:
             ...     explain_config=ExplainConfig(),
             ... )
         """
-        from pathlib import Path
-
         import cv2
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -379,7 +376,9 @@ class Engine:
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
+        # Optimize for memory <- TODO(negvet)
         saliency_maps = self.trainer.model.model.explain_hook.records
+        # Temporary saving saliency map for image 0, class 0 (for tests)
         cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
         return saliency_maps
 

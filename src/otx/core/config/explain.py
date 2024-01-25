@@ -11,7 +11,7 @@ from otx.core.types.explain import TargetExplainGroup
 
 @dataclass
 class ExplainConfig:
-    """DTO for explain configuration."""
+    """Data Transfer Object (DTO) for explain configuration."""
 
     target_explain_group: TargetExplainGroup = TargetExplainGroup.ALL
     postprocess: bool = False
