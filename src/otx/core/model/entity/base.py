@@ -264,36 +264,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=model_api_configuration)
 
-    @property
-    def label_info(self) -> LabelInfo:
-        """Get this model label information."""
-        return self._label_info
-
-    @label_info.setter
-    def label_info(self, label_info: LabelInfo | list[str]) -> None:
-        """Set this model label information."""
-        if isinstance(label_info, list):
-            label_info = LabelInfo(label_names=label_info)
-
-        self._label_info = label_info
-
-    @property
-    def num_classes(self) -> int:
-        """Returns model's number of classes. Can be redefined at the model's level."""
-        return self.label_info.num_classes
-
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image
         images = [np.transpose(im.numpy(), (1, 2, 0)) for im in entity.images]
         return {"inputs": images}
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for you model."""
-        raise NotImplementedError
 
     def forward(
         self,

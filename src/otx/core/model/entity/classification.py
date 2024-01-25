@@ -380,7 +380,9 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         )
 
 
-class OVMulticlassClassificationModel(OVModel):
+class OVMulticlassClassificationModel(
+    OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+):
     """Classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -404,7 +406,9 @@ class OVMulticlassClassificationModel(OVModel):
         )
 
 
-class OVHlabelClassificationModel(OVModel):
+class OVHlabelClassificationModel(
+    OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+):
     """Hierarchical classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -452,7 +456,9 @@ class OVHlabelClassificationModel(OVModel):
         )
 
 
-class OVMultilabelClassificationModel(OVModel):
+class OVMultilabelClassificationModel(
+    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+):
     """Multilabel classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
