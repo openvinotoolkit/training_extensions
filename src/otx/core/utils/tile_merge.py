@@ -10,10 +10,8 @@ from collections import defaultdict
 from typing import Generic
 
 import cv2
+import numpy as np
 import torch
-from datumaro import Bbox, DatasetItem, Image, Mask
-from datumaro import Dataset as DmDataset
-from datumaro.plugins.tiling.merge_tile import MergeTile
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo, T_OTXDataEntity
@@ -36,32 +34,23 @@ class TileMerge(Generic[T_OTXDataEntity]):
     def __init__(
         self,
         img_infos: list[ImageInfo],
-        score_thres: float = 0.1,
+        score_thres: float = 0.25,
         max_num_instances: int = 100,
     ) -> None:
         self.img_infos = img_infos
         self.score_thres = score_thres
         self.max_num_instances = max_num_instances
 
-    def merge_dataset_items(self, dataset_items: list[DatasetItem]) -> DatasetItem:
-        """Merge dataset items into one single dataset item.
+    @abstractmethod
+    def merge_entities(self, img_info: ImageInfo, entities: list[T_OTXDataEntity]) -> T_OTXDataEntity:
+        """Merge tile predictions to one single prediction.
 
         Args:
-            dataset_items (list[DatasetItem]): List of tile dataset items.
+            img_info (ImageInfo): Image information about the original image before tiling.
+            entities (list[T_OTXDataEntity]): List of tile prediction entities.
 
         Returns:
-            DatasetItem: Merged dataset item.
-        """
-        dataset = DmDataset.from_iterable(dataset_items)
-        return dataset.transform(MergeTile).get(next(iter(dataset)).id)
-
-    @abstractmethod
-    def create_pred_entity(self, img_info: ImageInfo, merged_item: DatasetItem) -> T_OTXDataEntity:
-        """Create merged prediction entity from merged dataset item.
-
-        Args:
-            img_info (ImageInfo): Image information.
-            merged_item (DatasetItem): Merged dataset item.
+            T_OTXDataEntity: Merged prediction entity.
         """
         raise NotImplementedError
 
@@ -87,8 +76,7 @@ class DetectionTileMerge(TileMerge):
             batch_tile_attrs (list): detection tile attributes.
 
         """
-        dataset_item_to_merge = defaultdict(list)
-        anno_id = 0
+        entities_to_merge = defaultdict(list)
         img_ids = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
@@ -103,78 +91,82 @@ class DetectionTileMerge(TileMerge):
                 keep_indices = tile_scores > self.score_thres
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
                 _tile_img = tile_img.detach().cpu().numpy()
-                _tile_img = Image.from_numpy(cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape))
-                _bboxes = tile_bboxes[keep_indices].detach().cpu().numpy()
-                _labels = tile_labels[keep_indices].detach().cpu().numpy()
-                _scores = tile_scores[keep_indices].detach().cpu().numpy()
-                annotations = []
+                _tile_img = cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape)
+                _bboxes = tile_bboxes[keep_indices]
+                _labels = tile_labels[keep_indices]
+                _scores = tile_scores[keep_indices]
 
-                for n in range(len(_bboxes)):
-                    x1, y1, x2, y2 = _bboxes[n]
-                    w, h = x2 - x1, y2 - y1
-                    annotations.append(
-                        Bbox(x1, y1, w, h, label=_labels[n], id=anno_id, attributes={"score": _scores[n]}),
-                    )
-                    anno_id += 1
+                offset_x, offset_y, _, _ = tile_attr["roi"]
+                _bboxes[:, 0::2] += offset_x
+                _bboxes[:, 1::2] += offset_y
 
-                tile_idx = tile_attr["tile_idx"]
                 tile_id = tile_attr["tile_id"]
                 if tile_id not in img_ids:
                     img_ids.append(tile_id)
-                dataset_item = DatasetItem(
-                    media=_tile_img,
-                    id=tile_idx,
-                    annotations=annotations,
-                    attributes=tile_attr,
-                )
+                tile_img_info.padding = tile_attr["roi"]
 
-                dataset_item_to_merge[tile_id].append(dataset_item)
+                entities_to_merge[tile_id].append(
+                    DetPredEntity(
+                        image=_tile_img,
+                        img_info=tile_img_info,
+                        bboxes=_bboxes,
+                        labels=_labels,
+                        score=_scores,
+                    ),
+                )
 
         predictions = []
         for img_id, image_info in zip(img_ids, self.img_infos):
-            merged_item = self.merge_dataset_items(dataset_item_to_merge[img_id])
-            predictions.append(self.create_pred_entity(image_info, merged_item))
+            predictions.append(self.merge_entities(image_info, entities_to_merge[img_id]))
         return predictions
 
-    def create_pred_entity(self, img_info: ImageInfo, merged_item: DatasetItem) -> DetPredEntity:
-        """Create merged detection prediction entity from merged datumaro dataset item.
+    def merge_entities(self, img_info: ImageInfo, entities: list[DetPredEntity]) -> DetPredEntity:
+        """Merge tile predictions to one single prediction.
 
         Args:
-            img_info (ImageInfo): Image information.
-            merged_item (DatasetItem): Merged dataset item.
+            img_info (ImageInfo): Image information about the original image before tiling.
+            entities (list[DetPredEntity]): List of tile prediction entities.
 
         Returns:
-            DetPredEntity: Merged detection prediction.
+            DetPredEntity: Merged prediction entity.
         """
-        device = img_info.device
-        pred_bboxes, pred_labels, pred_scores = [], [], []
-        for anno in merged_item.annotations:
-            if isinstance(anno, Bbox):
-                pred_bboxes.append(anno.points)
-                pred_labels.append(anno.label)
-                pred_scores.append(float(anno.attributes["score"]))
+        bboxes: list | torch.Tensor = []
+        labels: list | torch.Tensor = []
+        scores: list | torch.Tensor = []
+        img_size = img_info.ori_shape
+        full_img = np.zeros((*img_size, 3))
+        for tile_entity in entities:
+            num_preds = len(tile_entity.bboxes)
+            tile_img = tile_entity.image
+            tile_img_info = tile_entity.img_info
+            x1, y1, w, h = tile_img_info.padding
+            full_img[y1 : y1 + h, x1 : x1 + w] = tile_img
+            if num_preds > 0:
+                bboxes.extend(tile_entity.bboxes)
+                labels.extend(tile_entity.labels)
+                scores.extend(tile_entity.score)
 
-        if len(pred_bboxes) == 0:
-            pred_bboxes = torch.empty((0, 4))
+        bboxes = torch.stack(bboxes) if len(bboxes) > 0 else torch.empty((0, 4), device=img_info.device)
+        labels = torch.stack(labels) if len(labels) > 0 else torch.empty((0,), device=img_info.device)
+        scores = torch.stack(scores) if len(scores) > 0 else torch.empty((0,), device=img_info.device)
 
-        pred_scores = torch.tensor(pred_scores, device=device)
-        pred_bboxes = tv_tensors.BoundingBoxes(
-            pred_bboxes,
-            format="XYXY",
-            canvas_size=img_info.ori_shape,
-            device=device,
-        )
-        pred_labels = torch.tensor(pred_labels, device=device)
-        sort_inds = torch.argsort(pred_scores, descending=True)
+        sort_inds = torch.argsort(scores, descending=True)
         if len(sort_inds) > self.max_num_instances:
             sort_inds = sort_inds[: self.max_num_instances]
+        bboxes = bboxes[sort_inds]
+        labels = labels[sort_inds]
+        scores = scores[sort_inds]
 
         return DetPredEntity(
-            image=tv_tensors.Image(merged_item.media_as(Image).data),
+            image=full_img,
             img_info=img_info,
-            score=pred_scores[sort_inds],
-            bboxes=pred_bboxes[sort_inds],
-            labels=pred_labels[sort_inds],
+            score=scores,
+            bboxes=tv_tensors.BoundingBoxes(
+                bboxes,
+                canvas_size=img_size,
+                format="XYXY",
+            ),
+            labels=labels,
         )
 
 
@@ -193,8 +185,7 @@ class InstanceSegTileMerge(TileMerge):
             batch_tile_attrs (list): instance-seg tile attributes.
 
         """
-        dataset_item_to_merge = defaultdict(list)
-        anno_id = 0
+        entities_to_merge = defaultdict(list)
         img_ids = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
@@ -210,105 +201,91 @@ class InstanceSegTileMerge(TileMerge):
                 keep_indices = tile_scores > self.score_thres
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
                 _tile_img = tile_img.detach().cpu().numpy()
-                _tile_img = Image.from_numpy(cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape))
-                _bboxes = tile_bboxes[keep_indices].detach().cpu().numpy()
-                _labels = tile_labels[keep_indices].detach().cpu().numpy()
-                _scores = tile_scores[keep_indices].detach().cpu().numpy()
-                _masks = tile_masks[keep_indices].detach().cpu().numpy()
-                annotations = []
+                _tile_img = cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape)
+                _bboxes = tile_bboxes[keep_indices]
+                _labels = tile_labels[keep_indices]
+                _scores = tile_scores[keep_indices]
+                _masks = tile_masks[keep_indices]
 
-                for n in range(len(_bboxes)):
-                    x1, y1, x2, y2 = _bboxes[n]
-                    w, h = x2 - x1, y2 - y1
-                    if _masks[n].sum() > 0:
-                        annotations.extend(
-                            [
-                                Mask(_masks[n], label=_labels[n], id=anno_id, attributes={"score": _scores[n]}),
-                                Bbox(x1, y1, w, h, label=_labels[n], id=anno_id, attributes={"score": _scores[n]}),
-                            ],
-                        )
-                        anno_id += 1
+                offset_x, offset_y, _, _ = tile_attr["roi"]
+                _bboxes[:, 0::2] += offset_x
+                _bboxes[:, 1::2] += offset_y
 
-                tile_idx = tile_attr["tile_idx"]
                 tile_id = tile_attr["tile_id"]
-
                 if tile_id not in img_ids:
                     img_ids.append(tile_id)
-                dataset_item = DatasetItem(
-                    media=_tile_img,
-                    id=tile_idx,
-                    annotations=annotations,
-                    attributes=tile_attr,
-                )
+                tile_img_info.padding = tile_attr["roi"]
 
-                dataset_item_to_merge[tile_id].append(dataset_item)
+                entities_to_merge[tile_id].append(
+                    InstanceSegPredEntity(
+                        image=_tile_img,
+                        img_info=tile_img_info,
+                        bboxes=_bboxes,
+                        labels=_labels,
+                        score=_scores,
+                        masks=_masks.to_sparse(),
+                        polygons=[],
+                    ),
+                )
 
         predictions = []
         for img_id, image_info in zip(img_ids, self.img_infos):
-            merged_item = self.merge_dataset_items(dataset_item_to_merge[img_id])
-            predictions.append(self.create_pred_entity(image_info, merged_item))
+            predictions.append(self.merge_entities(image_info, entities_to_merge[img_id]))
         return predictions
 
-    def create_pred_entity(self, img_info: ImageInfo, merged_item: DatasetItem) -> InstanceSegPredEntity:
-        """Create merged inst-seg prediction entity from merged datumaro dataset item.
+    def merge_entities(self, img_info: ImageInfo, entities: list[InstanceSegPredEntity]) -> InstanceSegPredEntity:
+        """Merge tile predictions to one single prediction.
 
         Args:
-            img_info (ImageInfo): Image information.
-            merged_item (DatasetItem): Merged dataset item.
+            img_info (ImageInfo): Image information about the original image before tiling.
+            entities (list[InstanceSegPredEntity]): List of tile prediction entities.
 
         Returns:
-            DetPredEntity: Merged detection prediction.
+            InstanceSegPredEntity: Merged prediction entity.
         """
         device = img_info.device
-        pred_bboxes, pred_labels, pred_scores, pred_masks = [], [], [], []
-        pred_masks_by_label = {}
-        for anno in merged_item.annotations:
-            if isinstance(anno, Bbox) and anno.get_area() > 0:
-                pred_bboxes.append(anno.points)
-                pred_labels.append(anno.label)
-                pred_scores.append(float(anno.attributes["score"]))
-            if isinstance(anno, Mask):
-                # NOTE: Datumaro tile merge does not give mask instances.
-                # It merges mask instances to one mask.
-                pred_masks_by_label[anno.label] = anno.image
+        bboxes = torch.tensor([], device=device)
+        labels = torch.tensor([], device=device)
+        scores = torch.tensor([], device=device)
+        masks = []
+        img_size = img_info.ori_shape
+        full_img = np.zeros((*img_size, 3))
+        for tile_entity in entities:
+            num_preds = len(tile_entity.bboxes)
+            tile_img = tile_entity.image
+            tile_img_info = tile_entity.img_info
+            x1, y1, w, h = tile_img_info.padding
+            full_img[y1 : y1 + h, x1 : x1 + w] = tile_img
+            if num_preds > 0:
+                bboxes = torch.cat((bboxes, tile_entity.bboxes), dim=0)
+                labels = torch.cat((labels, tile_entity.labels), dim=0)
+                scores = torch.cat((scores, tile_entity.score), dim=0)
+                sparse_masks_indices = tile_entity.masks.indices()
+                masks_value = tile_entity.masks.values()
+                if len(sparse_masks_indices):
+                    sparse_masks_indices[1] += tile_img_info.padding[1]
+                    sparse_masks_indices[2] += tile_img_info.padding[0]
+                masks.extend(
+                    torch.sparse_coo_tensor(sparse_masks_indices, masks_value, (num_preds, *img_size)),
+                )
 
-        if len(pred_bboxes) == 0:
-            pred_bboxes = torch.empty((0, 4))
-
-        pred_scores = torch.tensor(pred_scores, device=device)
-        pred_bboxes = tv_tensors.BoundingBoxes(
-            pred_bboxes,
-            format="XYXY",
-            canvas_size=img_info.ori_shape,
-            device=device,
-        )
-        pred_labels = torch.tensor(pred_labels, device=device)
-        sort_inds = torch.argsort(pred_scores, descending=True)
+        sort_inds = torch.argsort(scores, descending=True)
         if len(sort_inds) > self.max_num_instances:
             sort_inds = sort_inds[: self.max_num_instances]
-
-        pred_scores = pred_scores[sort_inds]
-        pred_bboxes = pred_bboxes[sort_inds]
-        pred_labels = pred_labels[sort_inds]
-
-        for pred_box, pred_label in zip(pred_bboxes, pred_labels):
-            x1, y1, x2, y2 = (int(value) for value in pred_box)
-            pred_label_mask = pred_masks_by_label[int(pred_label)]
-            # TODO (Eugene): Performance issue here if there are too many mask instances.
-            # Ideally to optimize memory and speed we should convert it to RLE
-            # or save the crop pred_mask[y1:y2, x1:x2]
-            # https://github.com/openvinotoolkit/datumaro/pull/1194
-            bitmask = torch.zeros(pred_label_mask.shape, dtype=bool, device=device)
-            bitmask[y1:y2, x1:x2] = torch.tensor(pred_label_mask[y1:y2, x1:x2])
-            pred_masks.append(bitmask)
-        pred_masks = torch.stack(pred_masks) if len(pred_masks) > 0 else torch.empty((0, *img_info.ori_shape))
-
+        bboxes = bboxes[sort_inds]
+        labels = labels[sort_inds]
+        scores = scores[sort_inds]
+        masks = torch.stack([masks[idx] for idx in sort_inds]).to_dense() if len(masks) > 0 else []
         return InstanceSegPredEntity(
-            image=tv_tensors.Image(merged_item.media_as(Image).data),
+            image=full_img,
             img_info=img_info,
-            score=pred_scores,
-            bboxes=pred_bboxes,
-            labels=pred_labels,
-            masks=pred_masks,
+            score=scores,
+            bboxes=tv_tensors.BoundingBoxes(
+                bboxes,
+                canvas_size=img_size,
+                format="XYXY",
+            ),
+            labels=labels,
+            masks=masks,
             polygons=[],
         )
