@@ -7,8 +7,6 @@ import inspect
 import logging
 import re
 from pathlib import Path
-
-import pytest
 from unittest.mock import patch
 
 import pytest
@@ -108,7 +106,13 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_export_infer(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerator: str, capfd: "pytest.CaptureFixture") -> None:
+def test_otx_export_infer(
+    recipe: str,
+    tmp_path: Path,
+    fxt_local_seed: int,
+    fxt_accelerator: str,
+    capfd: "pytest.CaptureFixture",
+) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -127,7 +131,7 @@ def test_otx_export_infer(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_
     """
     task = recipe.split("/")[-2]
 
-    if not task in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
+    if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
     model_name = recipe.split("/")[-1].split(".")[0]
@@ -206,7 +210,6 @@ def test_otx_export_infer(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_
         assert (tmp_path_test / "outputs").exists()
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
-
     # 4) infer of the exported models
     task = recipe.split("/")[-2]
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
@@ -239,7 +242,7 @@ def test_otx_export_infer(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_
 
     out, _ = capfd.readouterr()
     assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
-    torch_acc, ov_acc = tuple(re.findall(f"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
+    torch_acc, ov_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
     torch_acc, ov_acc = float(torch_acc), float(ov_acc)
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
