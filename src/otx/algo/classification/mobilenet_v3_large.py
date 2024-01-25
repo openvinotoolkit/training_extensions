@@ -3,6 +3,8 @@
 #
 """MobileNetV3 model implementation."""
 
+from typing import Any
+
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.classification import (
     MMPretrainHlabelClsModel,
@@ -20,9 +22,13 @@ class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
         config.head.num_multilabel_classes = num_multilabel_classes
         super().__init__(num_classes=num_classes, config=config)
 
-    def _configure_export_parameters(self) -> None:
-        super()._configure_export_parameters()
-        self.export_params["via_onnx"] = True
+    @property
+    def export_params(self) -> dict[str, Any]:
+        """Parameters for an  exporter."""
+        export_params = super().export_params
+        export_params["via_onnx"] = True
+
+        return export_params
 
 
 class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
@@ -33,9 +39,13 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
         super().__init__(num_classes=num_classes, config=config)
 
-    def _configure_export_parameters(self) -> None:
-        super()._configure_export_parameters()
-        self.export_params["via_onnx"] = True
+    @property
+    def export_params(self) -> dict[str, Any]:
+        """Parameters for an  exporter."""
+        export_params = super().export_params
+        export_params["via_onnx"] = True
+
+        return export_params
 
 
 class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
@@ -45,6 +55,10 @@ class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
         config = read_mmconfig("mobilenet_v3_large_light", subdir_name="multilabel_classification")
         super().__init__(num_classes=num_classes, config=config)
 
-    def _configure_export_parameters(self) -> None:
-        super()._configure_export_parameters()
-        self.export_params["via_onnx"] = True
+    @property
+    def export_params(self) -> dict[str, Any]:
+        """Parameters for an  exporter."""
+        export_params = super().export_params
+        export_params["via_onnx"] = True
+
+        return export_params

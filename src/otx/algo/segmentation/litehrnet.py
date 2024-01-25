@@ -3,7 +3,7 @@
 #
 """LiteHRNet model implementations."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from torch.onnx import OperatorExportTypes
 
@@ -19,8 +19,12 @@ class LiteHRNet(MMSegCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
 
-    def _configure_export_parameters(self) -> None:
-        super()._configure_export_parameters()
-        self.export_params["onnx_export_configuration"] = {
+    @property
+    def export_params(self) -> dict[str, Any]:
+        """Parameters for an  exporter."""
+        export_params = super().export_params
+        export_params["onnx_export_configuration"] = {
             "operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK,
         }
+
+        return export_params
