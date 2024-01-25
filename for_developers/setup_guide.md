@@ -2,6 +2,11 @@
 
 ## Installation
 
+### Requirements
+
+CUDA > 11.8
+torchvision >0.16
+
 ### With Conda
 
 ```console
@@ -19,6 +24,12 @@ pip install -e .
 otx install -v
 ```
 
+In case of the error: `File "setup.py" not found. Directory cannot be installed in editable mode:`, uprade pip:
+
+```
+pip install --upgrade pip
+```
+
 ### With PIP & 'otx install'
 
 ```console
@@ -31,6 +42,9 @@ pip install -e .
 
 # OTX --help
 otx --help
+
+# Upgrade pip
+pip install --upgrade pip
 
 # Install torch & lightning base on user environments
 otx install -v
@@ -68,7 +82,7 @@ Please see [requirements-lock.txt](requirements-lock.txt). This is what I got af
 - Do test with the existing model checkpoint
 
   ```console
-  otx test ... checkpoint=<checkpoint-path>
+  otx test ... --checkpoint=<checkpoint-path>
   ```
 
   `--deterministic True` might affect to the model performance. Please see [this link](https://lightning.ai/docs/pytorch/stable/common/trainer.html#deterministic). Therefore, it is not recommended to turn on this option for the model performance comparison.
