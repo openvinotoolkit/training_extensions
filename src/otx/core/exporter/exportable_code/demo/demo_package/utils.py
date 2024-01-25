@@ -14,7 +14,7 @@ def get_model_path(path: Optional[Path]) -> Path:
     """Get path to model."""
     model_path = path
     if model_path is None:
-        model_path = Path(__file__).parent / "model.xml"
+        model_path = Path(__file__).parent / "openvino.xml"
     if not model_path.exists():
         raise IOError("The path to the model was not found.")
 

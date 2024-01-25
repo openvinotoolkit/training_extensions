@@ -48,8 +48,7 @@ class ModelWrapper:
             self.parameters = json.loads(config_data)
         except RuntimeError:
             self.parameters = get_parameters(model_dir / "config.json")
-
-        self._labels = self.parameters["model_parameters"]["labels"].split()
+        self._labels = self.parameters["model_parameters"]["labels"]
         self._task_type = TaskType[self.parameters["converter_type"].upper()]
 
         self.segm = bool(

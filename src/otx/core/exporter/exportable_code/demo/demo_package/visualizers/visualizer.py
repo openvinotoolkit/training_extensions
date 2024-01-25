@@ -188,6 +188,12 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
 
 
 class ObjectDetectionVisualizer(BaseVisualizer):
+
+    def __init__(self, *args, labels, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.labels = labels
+        self.color_palette = ColorPalette(len(labels))
+
     def draw(
         self,
         frame: np.ndarray,
@@ -197,15 +203,12 @@ class ObjectDetectionVisualizer(BaseVisualizer):
     ) -> np.ndarray:
         if output_transform is not None:
             frame = output_transform.resize(frame)
-        labels = meta["labels"]
-        palette = meta["palette"]
-        palette = ColorPalette(len(labels))
 
-        for detection in predictions:
+        for detection in predictions.objects:
             class_id = int(detection.id)
-            color = palette[class_id]
-            det_label = labels[class_id] if labels and len(labels) >= class_id else '#{}'.format(class_id)
-            xmin, ymin, xmax, ymax = detection.get_coords()
+            color = self.color_palette[class_id]
+            det_label = self.color_palette[class_id] if self.labels and len(self.labels) >= class_id else '#{}'.format(class_id)
+            xmin, ymin, xmax, ymax = detection.xmin,  detection.ymin,  detection.xmax,  detection.ymax
             if output_transform:
                 xmin, ymin, xmax, ymax = output_transform.scale([xmin, ymin, xmax, ymax])
             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
