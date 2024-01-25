@@ -417,14 +417,28 @@ class OVHlabelClassificationModel(
 
     def __init__(
         self,
-        *args,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
         num_multiclass_heads: int = 1,
         num_multilabel_classes: int = 0,
-        **kwargs,
     ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+        self.model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
@@ -433,11 +447,6 @@ class OVHlabelClassificationModel(
         this method serves as placehloder
         """
         return
-
-    def _create_model(self, *args) -> Model:
-        # confidence_threshold is 0.0 to return scores for all multilabel classes
-        model_api_configuration = {"hierarchical": True, "confidence_threshold": 0.0}
-        return super()._create_model(model_api_configuration)
 
     def _customize_outputs(
         self,
@@ -465,10 +474,26 @@ class OVMultilabelClassificationModel(
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
-    def _create_model(self, *args) -> Model:
-        # confidence_threshold is 0.0 to return scores for all classes
-        model_api_configuration = {"multilabel": True, "confidence_threshold": 0.0}
-        return super()._create_model(model_api_configuration)
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+        self.model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
 
     def _customize_outputs(
         self,
