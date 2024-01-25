@@ -222,6 +222,10 @@ class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
         """Skip training_step unused in zero-shot visual prompting."""
         self.model(inputs)
         
+    def test_step(self, inputs: ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Skip test_step unused in zero-shot visual prompting."""
+        self.model(inputs)
+        
     def state_dict(self) -> dict[str, Any]:
         """Return state dictionary of model entity with reference features, masks, and used indices.
 
@@ -235,3 +239,13 @@ class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
             "model.model.used_indices": self.model.model.used_indices,
         })
         return state_dict
+    
+    def load_state_dict(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
+        """Load state dictionary from checkpoint state dictionary."""
+        ckpt_meta_info = state_dict.pop("meta_info", None)
+        
+        setattr(self.model.model, "reference_feats", state_dict.pop("model.model.reference_feats"))
+        setattr(self.model.model, "reference_masks", state_dict.pop("model.model.reference_masks"))
+        setattr(self.model.model, "used_indices", state_dict.pop("model.model.used_indices"))
+        return super().load_state_dict(state_dict, *args, **kwargs)
+        
