@@ -15,7 +15,7 @@ from otx.core.data.entity.detection import (
     DetBatchDataEntity,
     DetBatchPredEntity,
 )
-from otx.core.model.entity.detection import OTXDetectionModel
+from otx.core.model.entity.detection import ExplainableOTXDetModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class OTXDetectionLitModule(OTXLitModule):
 
     def __init__(
         self,
-        otx_model: OTXDetectionModel,
+        otx_model: ExplainableOTXDetModel,
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,

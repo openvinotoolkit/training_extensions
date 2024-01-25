@@ -5,11 +5,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List
 
 import torch
 from torchvision import tv_tensors
 
+from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.model.entity.base import OTXModel, OVModel
@@ -23,11 +24,64 @@ if TYPE_CHECKING:
     from torch import device, nn
 
 
-class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
-    """Base class for the detection models used in OTX."""
+class ExplainableOTXDetModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
+    """OTX detection model which can attach a XAI hook."""
+
+    def register_explain_hook(self) -> None:
+        """Register explain hook at the model backbone output."""
+        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+
+        # SSD-like heads also have background class
+        background_class = isinstance(self.model.bbox_head, CustomSSDHead)
+        self.explain_hook = DetClassProbabilityMapHook.create_and_register_hook(
+            self.backbone,
+            self.cls_head_forward_fn,
+            num_classes=self.num_classes + background_class,
+            num_anchors=self.get_num_anchors()
+        )
+
+    @property
+    def backbone(self) -> nn.Module:
+        """Returns model's backbone. Can be redefined at the model's level."""
+        if backbone := getattr(self.model, "backbone", None):
+            return backbone
+        raise ValueError
+
+    @torch.no_grad()
+    def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
+        """Performs model's neck and head forward. Can be redefined at the model's level."""
+        if (head := getattr(self.model, "bbox_head", None)) is None:
+            raise ValueError
+
+        if (neck := getattr(self.model, "neck", None)) is not None:
+            x = neck(x)
+      
+        head_out = head(x)
+        cls_scores = head_out[0]
+        return cls_scores
+
+    def get_num_anchors(self) -> List[int]:
+        anchor_generator = getattr(self.model.bbox_head, "prior_generator", None)
+        if anchor_generator is not None:
+            if hasattr(anchor_generator, "num_base_anchors"):
+                num_anchors = anchor_generator.num_base_anchors
+            else:
+                num_anchors = anchor_generator.num_base_priors
+        else:
+            num_anchors = [1] * 10
+        return num_anchors
+
+    def remove_explain_hook_handle(self) -> None:
+        """Removes explain hook from the model."""
+        if self.explain_hook.handle is not None:
+            self.explain_hook.handle.remove()
+
+    def reset_explain_hook(self) -> None:
+        """Clear all history of explain records."""
+        self.explain_hook.reset()
 
 
-class MMDetCompatibleModel(OTXDetectionModel):
+class MMDetCompatibleModel(ExplainableOTXDetModel):
     """Detection model compatible for MMDet.
 
     It can consume MMDet model configuration translated into OTX configuration
