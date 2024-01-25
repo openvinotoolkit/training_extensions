@@ -445,7 +445,9 @@ class OVHlabelClassificationModel(
         Since OV IR model consist of all required hierarchy information,
         this method serves as placehloder
         """
-        return
+        if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
+            msg = "OpenVINO IR model should have hierarchical config embeded in rt_info of the model"
+            raise ValueError(msg)
 
     def _customize_outputs(
         self,
