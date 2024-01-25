@@ -106,7 +106,7 @@ class TestResizetoLongestEdge:
 
 
 class TestTorchVisionTransformLib:
-    @pytest.fixture(params=[True, False], ids=["from_dict", "from_obj"])
+    @pytest.fixture(params=["from_dict", "from_obj"])
     def fxt_config(self, request) -> list[dict[str, Any]]:
         # >>> transforms = v2.Compose([
         # >>>     v2.RandomResizedCrop(size=(224, 224), antialias=True),
@@ -134,14 +134,13 @@ class TestTorchVisionTransformLib:
                 std: [0.229, 0.224, 0.225]
         """
         created = OmegaConf.create(cfg)
-        if request.param:
-            return created
-
-        return SubsetConfig(
-            batch_size=1,
-            subset_name="dummy",
-            transforms=[instantiate_class(args=(), init=transform) for transform in created.transforms],
-        )
+        if request.param == "from_obj":
+            return SubsetConfig(
+                batch_size=1,
+                subset_name="dummy",
+                transforms=[instantiate_class(args=(), init=transform) for transform in created.transforms],
+            )
+        return created
 
     def test_transform(
         self,

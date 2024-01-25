@@ -117,7 +117,7 @@ class TorchVisionTransformLib:
 
         transforms = []
         for cfg_transform in config.transforms:
-            if isinstance(cfg_transform, dict | DictConfig):
+            if isinstance(cfg_transform, (DictConfig, dict)):
                 transform = instantiate_class(args=(), init=cfg_transform)
             elif isinstance(cfg_transform, tvt_v2.Transform):
                 transform = cfg_transform
