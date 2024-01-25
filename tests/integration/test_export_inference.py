@@ -153,6 +153,8 @@ def test_otx_export_infer(
         "2",
         "--seed",
         f"{fxt_local_seed}",
+        "--deterministic",
+        "True",
         *DATASET[task]["overrides"],
     ]
 
