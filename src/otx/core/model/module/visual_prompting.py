@@ -211,3 +211,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
+
+
+class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
+    def configure_optimizers(self) -> None:
+        """Skip configure_optimizers unused in zero-shot visual prompting."""
+        pass
