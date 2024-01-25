@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 import openvino
-import torch
 from openvino.model_api.models import Model
 from torch import nn
 
@@ -208,17 +207,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         raise ValueError(msg)
 
     def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
-        """_summary_
+        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
 
         Args:
-            output_dir (Path): _description_
-            data_module (OTXDataModule): _description_
-
-        Raises:
-            NotImplementedError: _description_
+            output_dir (Path): working directory to save the optimized model.
+            data_module (OTXDataModule): dataset to for calibration of quantized layers.
 
         Returns:
-            Path: _description_
+            Path: path to the resulting optimized OpenVINO model.
         """
         raise NotImplementedError
 
@@ -352,6 +348,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         return self._customize_outputs(outputs, inputs)
 
     def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+        """Runs NNCF quantization."""
         output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
 
         def check_if_quantized(model: openvino.Model) -> bool:
@@ -365,21 +362,22 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             msg = "Model is already optimized by PTQ"
             raise RuntimeError(msg)
 
-        def transform_fn(data_batch: T_OTXBatchDataEntity):
+        def transform_fn(data_batch: T_OTXBatchDataEntity) -> np.array:
             np_data = self._customize_inputs(data_batch)
             image = np_data["inputs"][0]
             resized_image = self.model.resize(image, (self.model.w, self.model.h))
             resized_image = self.model.input_transform(resized_image)
-            resized_image = self.model._change_layout(resized_image)
-            return resized_image
+            return self.model._change_layout(resized_image)  # noqa: SLF001
 
         train_dataset = data_module.train_dataloader()
-        assert train_dataset.batch_size == 1
+        if train_dataset.batch_size != 1:
+            msg = "Optimization pipeline supports only batch size 1."
+            raise RuntimeError(msg)
 
-        quantization_dataset = nncf.Dataset(train_dataset, transform_fn)
-        ptq_config = {}
+        quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
+        ptq_config: dict = {}
 
-        compressed_model = nncf.quantize(
+        compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
             quantization_dataset,
             **ptq_config,
