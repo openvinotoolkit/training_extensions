@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
-    from lightning.pytorch.utilities.types import EVAL_DATALOADERS
+    from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
 
@@ -359,16 +359,16 @@ class Engine:
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
 
-    def optimize_post_train(self, output_dir: Path) -> Path:
+    def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None, **kwargs) -> Path:
         """Applies PTQ to the underlying models (now works only for OV models).
 
         Args:
-            output_dir (Path): Directory path to save optimized model.
+            datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
 
         Returns:
             Path: path to the optimized model.
         """
-        return self.model.optimize(output_dir, self.datamodule)
+        return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
