@@ -115,8 +115,77 @@ class SegmentAnything(nn.Module):
                 f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
             )
+            
+    def forward(self, mode: str, *args, **kwargs):
+        if mode == "finetuning":
+            return self.forward_train(*args, **kwargs)
+        else:
+            return self.forward_inference(*args, **kwargs)
+            
+    @torch.no_grad()
+    def forward_inference(
+        self,
+        image_embeddings: Tensor,
+        point_coords: Tensor,
+        point_labels: Tensor,
+        mask_input: Tensor,
+        has_mask_input: Tensor,
+        # orig_size: Tensor,
+    ):
+        """Forward method for SAM inference (export/deploy).
 
-    def forward(
+        Args:
+            image_embeddings (Tensor): The image embedding with a batch index of length 1.
+                If it is a zero tensor, the image embedding will be computed from the image.
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs.
+                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+                This input has 1x1 shape due to supporting openvino input layout.
+            orig_size (Tensor): The size of the input image in (H,W) format, before any transformation.
+                This input has 1x2 shape due to supporting openvino input layout.
+        """
+        sparse_embedding = self._embed_points(point_coords, point_labels)
+        dense_embedding = self._embed_masks(mask_input, has_mask_input)
+
+        masks, scores = self.mask_decoder.predict_masks(
+            image_embeddings=image_embeddings,
+            image_pe=self.prompt_encoder.get_dense_pe(),
+            sparse_prompt_embeddings=sparse_embedding,
+            dense_prompt_embeddings=dense_embedding,
+        )
+
+        if self.config.model.use_stability_score:
+            scores = self.calculate_stability_score(
+                masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
+            )
+
+        if self.config.model.return_single_mask:
+            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
+
+        return scores, masks
+        # TODO (sungchul): apply inner postprocessing
+        # upscaled_masks = self.mask_postprocessing(masks, orig_size[0])
+
+        # if self.config.model.return_extra_metrics:
+        #     stability_scores = self.calculate_stability_score(
+        #         upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
+        #     )
+        #     areas = (upscaled_masks > self.config.model.mask_threshold).sum(-1).sum(-1)
+        #     return upscaled_masks, scores, stability_scores, areas, masks
+
+        # return upscaled_masks, scores, masks
+
+    def forward_train(
         self,
         images: tv_tensors.Image,
         ori_shapes: list[Tensor],
@@ -307,6 +376,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         """Customize the inputs for the model."""
         images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
         return {
+            "mode": "finetuning",
             "images": images,
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
             "gt_masks": inputs.masks,
