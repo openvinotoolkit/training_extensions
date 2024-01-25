@@ -106,14 +106,17 @@ class TestResizetoLongestEdge:
 
 
 class TestTorchVisionTransformLib:
-    @pytest.fixture(params=["from_dict", "from_obj"])
+    @pytest.fixture(params=["from_dict", "from_list", "from_compose"])
     def fxt_config(self, request) -> list[dict[str, Any]]:
-        # >>> transforms = v2.Compose([
-        # >>>     v2.RandomResizedCrop(size=(224, 224), antialias=True),
-        # >>>     v2.RandomHorizontalFlip(p=0.5),
-        # >>>     v2.ToDtype(torch.float32, scale=True),
-        # >>>     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        # >>> ])
+        if request.param == "from_compose":
+            return v2.Compose(
+                [
+                    v2.RandomResizedCrop(size=(224, 224), antialias=True),
+                    v2.RandomHorizontalFlip(p=0.5),
+                    v2.ToDtype(torch.float32, scale=True),
+                    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                ],
+            )
         prefix = "torchvision.transforms.v2"
         cfg = f"""
         transforms:

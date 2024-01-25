@@ -113,26 +113,29 @@ class TorchVisionTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> Compose:
         """Generate TorchVision transforms from the configuration."""
-        availables = set(cls.list_available_transforms())
+        if isinstance(config.transforms, tvt_v2.Compose):
+            return config.transforms
 
         transforms = []
         for cfg_transform in config.transforms:
-            if isinstance(cfg_transform, (DictConfig, dict)):
-                transform = instantiate_class(args=(), init=cfg_transform)
-            elif isinstance(cfg_transform, tvt_v2.Transform):
-                transform = cfg_transform
-            else:
-                msg = (
-                    "TorchVisionTransformLib accepts only two types "
-                    "for config.transforms: dict | tvt_v2.Transform. "
-                    f"However, its type is {type(transform)}."
-                )
-                raise TypeError(msg)
-
-            if type(transform) not in availables:
-                msg = f"transform={transform} is not a valid TorchVision V2 transform"
-                raise ValueError(msg)
-
+            transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
         return tvt_v2.Compose(transforms)
+
+    @classmethod
+    def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:
+        if isinstance(cfg_transform, (DictConfig, dict)):
+            transform = instantiate_class(args=(), init=cfg_transform)
+
+        elif isinstance(cfg_transform, tvt_v2.Transform):
+            transform = cfg_transform
+        else:
+            msg = (
+                "TorchVisionTransformLib accepts only three types "
+                "for config.transforms: DictConfig | dict | tvt_v2.Transform. "
+                f"However, its type is {type(cfg_transform)}."
+            )
+            raise TypeError(msg)
+
+        return transform
