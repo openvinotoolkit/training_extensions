@@ -124,7 +124,7 @@ class OTXCLI:
         """
         device_kwargs = {"accelerator", "devices"}
         return {
-            "train": device_kwargs,
+            "train": {"seed"}.union(device_kwargs),
             "test": {"datamodule"}.union(device_kwargs),
             "predict": {"datamodule"}.union(device_kwargs),
             "export": device_kwargs,
