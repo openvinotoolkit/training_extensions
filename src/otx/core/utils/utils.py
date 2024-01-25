@@ -5,9 +5,10 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from omegaconf import DictConfig
+if TYPE_CHECKING:
+    from omegaconf import DictConfig
 
 
 def is_ckpt_from_otx_v1(ckpt: dict) -> bool:
@@ -32,6 +33,7 @@ def is_ckpt_for_finetuning(ckpt: dict) -> bool:
         bool: True means the checkpoint will be used to finetune.
     """
     return "state_dict" in ckpt
+
 
 def get_mean_std_from_data_processing(config: DictConfig) -> dict[str, Any]:
     """Get mean and std value from data_processing.

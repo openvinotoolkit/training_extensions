@@ -10,7 +10,7 @@ import logging as log
 from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
-from typing import Callable, Literal
+from typing import TYPE_CHECKING, Callable, Iterator, Literal
 
 import numpy as np
 import onnx
@@ -19,12 +19,14 @@ import torch
 from mmdeploy.apis import build_task_processor, torch2onnx
 from mmdeploy.utils import get_partition_config
 from mmengine.config import Config as MMConfig
-from omegaconf import DictConfig, OmegaConf
-
 from mmengine.registry.default_scope import DefaultScope
+
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportPrecisionType
-from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
+
+if TYPE_CHECKING:
+    from omegaconf import DictConfig
 
 
 class MMdeployExporter(OTXModelExporter):
@@ -275,15 +277,15 @@ def load_mmconfig_from_pkg(cfg: str) -> MMConfig:
 
 
 @contextmanager
-def use_temporary_default_scope() -> None:
+def use_temporary_default_scope() -> Iterator[None]:
     """Use temporary mm registry scope. After block is exited, DefaultScope is reverted as before entering block.
-    
+
     DefaultScope is registered when executing mmdeploy. It doesn't make a problem normally but when making
     a new mm model after mmdeploy is done, it can be problematic because registry tries to find a object from default
     scope. This context manager is useful for that case.
     """
     try:
-        ori_instance_dict = copy(DefaultScope._instance_dict)
+        ori_instance_dict = copy(DefaultScope._instance_dict)  # noqa: SLF001
         yield
     finally:
-        DefaultScope._instance_dict = ori_instance_dict
+        DefaultScope._instance_dict = ori_instance_dict  # noqa: SLF001
