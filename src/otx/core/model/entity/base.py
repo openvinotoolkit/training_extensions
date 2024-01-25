@@ -7,10 +7,11 @@ from __future__ import annotations
 
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple
 
 import numpy as np
 import openvino
+from attr import dataclass
 from openvino.model_api.models import Model
 from torch import nn
 
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
+    from torch.utils.data import DataLoader
 
     from otx.core.data.module import OTXDataModule
 
@@ -41,8 +43,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         num_classes: Number of classes this model can predict.
     """
 
-    _EXPORTED_MODEL_BASE_NAME = "exported_model"
-    _OPTIMIZED_MODEL_BASE_NAME = "optimized_model"
+    _EXPORTED_MODEL_BASE_NAME: str = "exported_model"
+    _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
+    _OPTIMIZE_DATASET_SIZE_LIMIT: int = 300
 
     def __init__(self, num_classes: int) -> None:
         super().__init__()
@@ -370,11 +373,28 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             return self.model._change_layout(resized_image)  # noqa: SLF001
 
         train_dataset = data_module.train_dataloader()
+
+        @dataclass
+        class OptimizeDatasetWrapper(Iterable):
+            """Restricts the length of the underlying dataset."""
+
+            dataset: DataLoader
+            max_size: int
+
+            def __len__(self):
+                return min(self.max_size, len(self.dataset))
+
+            def __iter__(self) -> Iterator:
+                return self.dataset.__iter__()
+
         if train_dataset.batch_size != 1:
             msg = "Optimization pipeline supports only batch size 1."
             raise RuntimeError(msg)
 
-        quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
+        quantization_dataset = nncf.Dataset(  # type: ignore[attr-defined]
+            OptimizeDatasetWrapper(train_dataset, self._OPTIMIZE_DATASET_SIZE_LIMIT),
+            transform_fn,
+        )
         ptq_config: dict = {}
 
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
