@@ -101,7 +101,7 @@ def fxt_local_seed() -> int:
 
 
 TASK_NAME_TO_MAIN_METRIC_NAME = {
-    "segmentation": "test/mIoU",
+    "semantic_segmentation": "test/mIoU",
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
 }
