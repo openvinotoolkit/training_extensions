@@ -126,7 +126,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         )
 
 
-class OVSegmentationModel(OVModel):
+class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Semantic segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
