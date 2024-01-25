@@ -53,6 +53,7 @@ class SegmentAnything(nn.Module):
 
         self.mask_threshold = mask_threshold
         self.image_size = image_size
+        self.embed_dim = embed_dim
 
         self.image_encoder = SAMImageEncoder(backbone=backbone)
         self.prompt_encoder = SAMPromptEncoder(
@@ -117,6 +118,7 @@ class SegmentAnything(nn.Module):
             )
             
     def forward(self, mode: str, *args, **kwargs):
+        assert mode in ["finetuning", "learn", "infer"]
         if mode == "finetuning":
             return self.forward_train(*args, **kwargs)
         else:
@@ -164,13 +166,13 @@ class SegmentAnything(nn.Module):
             dense_prompt_embeddings=dense_embedding,
         )
 
-        if self.config.model.use_stability_score:
-            scores = self.calculate_stability_score(
-                masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
-            )
+        # if self.config.model.use_stability_score:
+        #     scores = self.calculate_stability_score(
+        #         masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
+        #     )
 
-        if self.config.model.return_single_mask:
-            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
+        # if self.config.model.return_single_mask:
+        #     masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
 
         return scores, masks
         # TODO (sungchul): apply inner postprocessing
@@ -267,6 +269,54 @@ class SegmentAnything(nn.Module):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
         return post_processed_pred_masks, ious, labels
+    
+    def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
+        """Embed sparse input prompts.
+
+        Args:
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs. Boxes are encoded using two points,
+                one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+
+        Returns:
+            point_embedding (Tensor): The embedded sparse input prompts.
+        """
+        point_coords = point_coords + 0.5
+        point_coords = point_coords / self.image_size
+        point_embedding = self.prompt_encoder.pe_layer._pe_encoding(point_coords)
+        point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
+
+        point_embedding = point_embedding * (point_labels != -1)
+        point_embedding = point_embedding + self.prompt_encoder.not_a_point_embed.weight * (point_labels == -1)
+
+        for i in range(self.prompt_encoder.num_point_embeddings):
+            point_embedding = point_embedding + self.prompt_encoder.point_embeddings[i].weight * (point_labels == i)
+
+        return point_embedding
+
+    def _embed_masks(self, input_mask: Tensor, has_mask_input: Tensor) -> Tensor:
+        """Embed the mask input.
+
+        Args:
+            input_mask (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+
+        Returns:
+            mask_embedding (Tensor): The embedded mask input.
+        """
+        mask_embedding = has_mask_input * self.prompt_encoder.mask_downscaling(input_mask)
+        mask_embedding = mask_embedding + (1 - has_mask_input) * self.prompt_encoder.no_mask_embed.weight.reshape(
+            1, -1, 1, 1
+        )
+        return mask_embedding
 
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
