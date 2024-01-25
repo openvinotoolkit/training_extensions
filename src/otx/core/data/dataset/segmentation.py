@@ -24,6 +24,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
+        ignored_labels: list | None = None  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         # create 2D class mask. We use np.sum() since Datumaro returns 3D masks (one for each class)
@@ -40,6 +41,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 img_shape=img_shape,
                 ori_shape=img_shape,
                 image_color_channel=self.image_color_channel,
+                ignored_labels=ignored_labels,
             ),
             gt_seg_map=tv_tensors.Mask(
                 torch.as_tensor(mask_anns, dtype=torch.long),
