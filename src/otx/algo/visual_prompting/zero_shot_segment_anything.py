@@ -693,5 +693,3 @@ class OTXZeroShotSegmentAnything(OTXSegmentAnything):
             processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(processed_prompts)
         return total_processed_prompts
-            
-        

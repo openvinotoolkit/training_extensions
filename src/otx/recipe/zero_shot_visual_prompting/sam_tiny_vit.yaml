@@ -13,7 +13,7 @@ engine:
   task: ZERO_SHOT_VISUAL_PROMPTING
   device: auto
 
-callback_monitor: val/Dice
+callback_monitor: step
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor
@@ -15,7 +15,7 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity
 from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
@@ -217,3 +217,21 @@ class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
     def configure_optimizers(self) -> None:
         """Skip configure_optimizers unused in zero-shot visual prompting."""
         pass
+    
+    def training_step(self, inputs: ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> Tensor:
+        """Skip training_step unused in zero-shot visual prompting."""
+        self.model(inputs)
+        
+    def state_dict(self) -> dict[str, Any]:
+        """Return state dictionary of model entity with reference features, masks, and used indices.
+
+        Returns:
+            A dictionary containing datamodule state.
+        """
+        state_dict = super().state_dict()
+        state_dict.update({
+            "model.model.reference_feats": self.model.model.reference_feats,
+            "model.model.reference_masks": self.model.model.reference_masks,
+            "model.model.used_indices": self.model.model.used_indices,
+        })
+        return state_dict
