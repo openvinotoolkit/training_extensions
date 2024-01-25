@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
+    from otx.core.data.entity.classification import HLabelInfo
+
 
 class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """OTX classification model which can attach a XAI hook."""
@@ -305,6 +307,14 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self.classification_layers = classification_layers
         return model
 
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
+        """Set hierarchical information in model head.
+
+        Args:
+            hierarchical_info: the label information represents the hierarchy.
+        """
+        self.model.head.set_hlabel_info(hierarchical_info)
+
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
 
@@ -369,7 +379,9 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         )
 
 
-class OVMulticlassClassificationModel(OVModel):
+class OVMulticlassClassificationModel(
+    OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+):
     """Classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -390,4 +402,111 @@ class OVMulticlassClassificationModel(OVModel):
             imgs_info=inputs.imgs_info,
             scores=pred_scores,
             labels=pred_labels,
+        )
+
+
+class OVHlabelClassificationModel(
+    OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+):
+    """Hierarchical classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+        num_multiclass_heads: int = 1,
+        num_multilabel_classes: int = 0,
+    ) -> None:
+        self.num_multiclass_heads = num_multiclass_heads
+        self.num_multilabel_classes = num_multilabel_classes
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+        self.model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
+
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
+        """Set hierarchical information in model head.
+
+        Since OV IR model consist of all required hierarchy information,
+        this method serves as placehloder
+        """
+        if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
+            msg = "OpenVINO IR model should have hierarchical config embeded in rt_info of the model"
+            raise ValueError(msg)
+
+    def _customize_outputs(
+        self,
+        outputs: list[ClassificationResult],
+        inputs: HlabelClsBatchDataEntity,
+    ) -> HlabelClsBatchPredEntity:
+        pred_labels = [torch.tensor([label[0] for label in out.top_labels], dtype=torch.long) for out in outputs]
+        pred_scores = [torch.tensor([label[2] for label in out.top_labels]) for out in outputs]
+
+        return HlabelClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=pred_scores,
+            labels=pred_labels,
+        )
+
+
+class OVMultilabelClassificationModel(
+    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+):
+    """Multilabel classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+        self.model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
+
+    def _customize_outputs(
+        self,
+        outputs: list[ClassificationResult],
+        inputs: MultilabelClsBatchDataEntity,
+    ) -> MultilabelClsBatchPredEntity:
+        pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
+
+        return MultilabelClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=pred_scores,
+            labels=[],
         )

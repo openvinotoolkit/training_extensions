@@ -57,8 +57,7 @@ class TestOVModel:
 
     @pytest.fixture()
     def model(self) -> OVModel:
-        config = {"model_name": "efficientnet-b0-pytorch", "model_type": "Classification"}
-        return OVModel(num_classes=2, config=config)
+        return OVModel(num_classes=2, model_name="efficientnet-b0-pytorch", model_type="Classification")
 
     def test_customize_inputs(self, model, input_batch) -> None:
         inputs = model._customize_inputs(input_batch)

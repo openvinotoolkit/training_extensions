@@ -180,7 +180,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
         )
 
 
-class OVDetectionModel(OVModel):
+class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Object detection model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository

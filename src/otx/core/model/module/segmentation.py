@@ -38,7 +38,7 @@ class OTXSegmentationLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        num_classes = otx_model.config.get("decode_head", {}).get("num_classes", None)
+        num_classes = otx_model.num_classes
         if num_classes is None:
             msg = """JaccardIndex metric cannot be used with num_classes = None.
             Please, specify number of classes in config."""
