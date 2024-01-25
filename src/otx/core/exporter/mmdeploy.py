@@ -23,7 +23,7 @@ from mmengine.registry.default_scope import DefaultScope
 
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportPrecisionType
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -66,7 +66,7 @@ class MMdeployExporter(OTXModelExporter):
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
         self._model_builder = model_builder
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
-        self._model_cfg = MMConfig({"model": model_cfg, "test_pipeline": test_pipeline})
+        self._model_cfg = MMConfig({"model": model_cfg, "test_pipeline": list(map(to_tuple, test_pipeline))})
         self._deploy_cfg = deploy_cfg if isinstance(deploy_cfg, MMConfig) else load_mmconfig_from_pkg(deploy_cfg)
 
         patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
