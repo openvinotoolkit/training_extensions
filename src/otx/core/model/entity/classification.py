@@ -26,7 +26,6 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
-    from openvino.model_api.models import Model
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
