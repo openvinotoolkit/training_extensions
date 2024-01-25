@@ -346,9 +346,8 @@ class Engine:
                 optimizer=self.optimizer,
                 scheduler=self.scheduler,
             )
-            lit_module.meta_info = self.datamodule.meta_info
-
             loaded_checkpoint = torch.load(ckpt_path)
+            lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
             return self.model.export(
