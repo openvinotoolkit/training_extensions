@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 import torchvision.transforms.v2 as tvt_v2
 from lightning.pytorch.cli import instantiate_class
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
@@ -115,8 +116,19 @@ class TorchVisionTransformLib:
         availables = set(cls.list_available_transforms())
 
         transforms = []
-        for cfg in config.transforms:
-            transform = instantiate_class(args=(), init=cfg)
+        for cfg_transform in config.transforms:
+            if isinstance(cfg_transform, dict | DictConfig):
+                transform = instantiate_class(args=(), init=cfg_transform)
+            elif isinstance(cfg_transform, tvt_v2.Transform):
+                transform = cfg_transform
+            else:
+                msg = (
+                    "TorchVisionTransformLib accepts only two types "
+                    "for config.transforms: dict | tvt_v2.Transform. "
+                    f"However, its type is {type(transform)}."
+                )
+                raise TypeError(msg)
+
             if type(transform) not in availables:
                 msg = f"transform={transform} is not a valid TorchVision V2 transform"
                 raise ValueError(msg)

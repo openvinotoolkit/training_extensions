@@ -7,7 +7,9 @@ from typing import Any
 
 import pytest
 import torch
+from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
+from otx.core.config.data import SubsetConfig
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
@@ -104,8 +106,8 @@ class TestResizetoLongestEdge:
 
 
 class TestTorchVisionTransformLib:
-    @pytest.fixture()
-    def fxt_config(self) -> list[dict[str, Any]]:
+    @pytest.fixture(params=[True, False], ids=["from_dict", "from_obj"])
+    def fxt_config(self, request) -> list[dict[str, Any]]:
         # >>> transforms = v2.Compose([
         # >>>     v2.RandomResizedCrop(size=(224, 224), antialias=True),
         # >>>     v2.RandomHorizontalFlip(p=0.5),
@@ -131,7 +133,15 @@ class TestTorchVisionTransformLib:
                 mean: [0.485, 0.456, 0.406]
                 std: [0.229, 0.224, 0.225]
         """
-        return OmegaConf.create(cfg)
+        created = OmegaConf.create(cfg)
+        if request.param:
+            return created
+
+        return SubsetConfig(
+            batch_size=1,
+            subset_name="dummy",
+            transforms=[instantiate_class(args=(), init=transform) for transform in created.transforms],
+        )
 
     def test_transform(
         self,
