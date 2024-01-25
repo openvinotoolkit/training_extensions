@@ -182,6 +182,22 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
         self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
         
+        self.initialize_reference_info()
+        
+    def initialize_reference_info(self) -> None:
+        """Initialize reference information."""
+        self.reference_feats: Tensor = None
+        self.reference_masks: list[Tensor] = None
+        self.used_indices: DefaultDict[int, list[int]] = None
+        
+    def check_reference_info_is_empty(self) -> None:
+        """Check if reference information is empty."""
+        return (
+            self.reference_feats is None and
+            self.reference_masks is None and
+            self.used_indices is None
+        )
+        
     @torch.no_grad()
     def learn(
         self,
@@ -189,7 +205,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         processed_prompts: list[dict[LongTensor, list[tv_tensors.TVTensor]]],
         ori_shapes: list[Tensor],
         return_outputs: bool = False,
-    ) -> None:
+        is_init_ref_info: bool = True,
+    ) -> tuple[Tensor, list[Tensor], defaultdict[int, list[int]]] | None:
         """Get reference features.
 
         Using given images, get reference features.
@@ -201,18 +218,24 @@ class ZeroShotSegmentAnything(SegmentAnything):
             processed_prompts (dict[LongTensor, list[tv_tensors.TVTensor]]): The class-wise prompts
                 processed at _preprocess_prompts.
             ori_shapes (List[Tensor]): List of original shapes per image.
-            return_outputs (bool): Whether return reference features and prompts.
-                If True, `learn` operation will output reference features and prompts.
-                If False, `learn` operation will insert reference features and prompts to save them with the model.
+            return_outputs (bool): Whether return reference features and masks.
+                If True, `learn` operation will output reference features and masks.
+                If False, `learn` operation will insert reference features and masks to save them with the model.
                 Defaults to False.
+            is_init_ref_info (bool): Whether initialize reference features and masks
         """
         assert len(images) == 1, "Only single batch is supported."
 
         # initialize tensors to contain reference features and prompts
         largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
-        self.reference_feats = torch.zeros(len(images), largest_label + 1, 1, self.embed_dim)
-        self.reference_masks = [torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes]
-        self.used_indices = defaultdict(list)
+        if self.check_reference_info_is_empty() or is_init_ref_info:
+            self.reference_feats = torch.zeros(len(images), largest_label + 1, 1, self.embed_dim)
+            self.reference_masks = [torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes]
+            self.used_indices = defaultdict(list)
+        else:
+            # TODO(sungchul): expand axis if there are new labels
+            return
+
         for batch, (image, prompts, ori_shape) in enumerate(zip(images, processed_prompts, ori_shapes)):
             image_embedding = self.image_encoder(image)
             processed_embedding = image_embedding.squeeze().permute(1, 2, 0)
@@ -266,15 +289,15 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     @torch.no_grad()
     def infer(
-        self, images: Tensor, original_size: Tensor
+        self, images: tv_tensors.Image, ori_shapes: Tensor
     ) -> List[List[DefaultDict[int, List[Tensor]]]]:
         """Zero-shot inference with reference features.
 
         Get target results by using reference features and target images' features.
 
         Args:
-            images (Tensor): Given images for target results.
-            original_size (Tensor): Original image size.
+            images (tv_tensors.Image): Given images for target results.
+            ori_shapes (Tensor): Original image size.
 
         Returns:
             (List[List[DefaultDict[int, List[Tensor]]]]): Target results.
@@ -292,7 +315,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             image_embeddings = self.image_encoder(images)
 
             total_points_scores, total_bg_coords = self.prompt_getter(
-                image_embeddings=image_embeddings, original_size=original_size
+                image_embeddings=image_embeddings, original_size=ori_shapes
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
