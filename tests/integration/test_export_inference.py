@@ -244,12 +244,56 @@ def test_otx_export_infer(
 
     assert (tmp_path_test / "outputs").exists()
 
+    command_cfg = [
+        "otx",
+        "optimize",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        "cpu",
+        *DATASET[task]["overrides"],
+        "--model.model_name",
+        exported_model_path,
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+    exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
+
+    command_cfg = [
+        "otx",
+        "test",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        "cpu",
+        *DATASET[task]["overrides"],
+        "--model.model_name",
+        exported_model_path,
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+
     out, _ = capfd.readouterr()
     assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
-    torch_acc, ov_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
-    torch_acc, ov_acc = float(torch_acc), float(ov_acc)
+    torch_acc, ov_acc, ptq_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
+    torch_acc, ov_acc, ptq_acc = float(torch_acc), float(ov_acc), float(ptq_acc)
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
+    _check_relative_metric_diff(ov_acc, ptq_acc, 0.2)
