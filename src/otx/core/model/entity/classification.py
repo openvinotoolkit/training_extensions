@@ -585,6 +585,8 @@ class OVMultilabelClassificationModel(
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
     ) -> None:
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
         super().__init__(
             num_classes,
             model_name,
@@ -594,7 +596,6 @@ class OVMultilabelClassificationModel(
             use_throughput_mode,
             model_api_configuration,
         )
-        self.model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
 
     def _customize_outputs(
         self,
