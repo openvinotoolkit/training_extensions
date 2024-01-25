@@ -8,22 +8,8 @@ from typing import Any
 
 
 class OTXv1Helper:
-    @classmethod 
-    def load_cls_effnet_v2_ckpt(cls, state_dict: dict[str, Any], label_type: str, add_prefix: str = "") -> dict[str, Any]:
-        """Load the OTX1.x efficientnet v2 classification checkpoints."""
-        for key in list(state_dict.keys()):
-            val = state_dict.pop(key)
-            if key.startswith("model.classifier."):
-                key = key.replace("model.classifier", "head.fc")
-                if not label_type == "hierarchical":
-                    val = val.t()
-                elif key.startswith("model"):
-                    key = "backbone." + key
-            state_dict[add_prefix + key] = val
-        return state_dict 
-        
-    @classmethod
-    def load_cls_effnet_b0_ckpt(cls, state_dict: dict[str, Any], label_type: str, add_prefix: str = "") -> dict[str, Any]:
+    @staticmethod
+    def load_cls_effnet_b0_ckpt(state_dict: dict[str, Any], label_type: str, add_prefix: str = "") -> dict[str, Any]:
         """Load the OTX1.x efficientnet b0 classification checkpoints."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
@@ -33,12 +19,26 @@ class OTXv1Helper:
                 key = key.replace("output", "head")
                 if not label_type == "hlabel":
                     key = key.replace("asl", "fc")
-                val = val.t()
+                    val = val.t()
             state_dict[add_prefix + key] = val
         return state_dict 
 
-    @classmethod
-    def load_cls_mobilenet_v3_ckpt(cls, state_dict: dict[str, Any], label_type: str, add_prefix: str = "") -> dict[str, Any]:
+    @staticmethod 
+    def load_cls_effnet_v2_ckpt(state_dict: dict[str, Any], label_type: str, add_prefix: str = "") -> dict[str, Any]:
+        """Load the OTX1.x efficientnet v2 classification checkpoints."""
+        for key in list(state_dict.keys()):
+            val = state_dict.pop(key)
+            if key.startswith("model.classifier."):
+                key = key.replace("model.classifier", "head.fc")
+                if not label_type == "hlabel":
+                    val = val.t()
+            elif key.startswith("model"):
+                key = "backbone." + key
+            state_dict[add_prefix + key] = val
+        return state_dict 
+        
+    @staticmethod
+    def load_cls_mobilenet_v3_ckpt(state_dict: dict[str, Any], label_type: str, add_prefix: str = "") -> dict[str, Any]:
         """Load the OTX1.x mobilenet v3 classification checkpoints."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
@@ -56,8 +56,8 @@ class OTXv1Helper:
             state_dict[add_prefix + key] = val
         return state_dict
 
-    @classmethod
-    def load_det_ckpt(cls, state_dict: dict[str, Any], add_prefix: str = "") -> dict[str, Any]:
+    @staticmethod
+    def load_det_ckpt(state_dict: dict[str, Any], add_prefix: str = "") -> dict[str, Any]:
         """Load the OTX1.x detection model checkpoints."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
@@ -65,8 +65,13 @@ class OTXv1Helper:
                 state_dict[add_prefix + key] = val
         return state_dict 
     
-    @classmethod
-    def load_seg_segnext_ckpt(cls, state_dict: dict[str, Any], add_prefix: str = ""):
+    @staticmethod
+    def load_iseg_ckpt(state_dict: dict[str, Any], add_prefix: str = "") -> dict[str, Any]:
+        """Load the instance segmentation model checkpoints."""
+        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
+    
+    @staticmethod
+    def load_seg_segnext_ckpt(state_dict: dict[str, Any], add_prefix: str = ""):
         """Load the OTX1.x segnext segmentation checkpoints."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
@@ -74,8 +79,8 @@ class OTXv1Helper:
                 state_dict[add_prefix + key] = val
         return state_dict
     
-    @classmethod
-    def load_seg_lite_hrnet_ckpt(cls, state_dict: dict[str, Any], add_prefix: str = ""):
+    @staticmethod
+    def load_seg_lite_hrnet_ckpt(state_dict: dict[str, Any], add_prefix: str = ""):
         """Load the OTX1.x lite hrnet segmentation checkpoints."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
@@ -83,14 +88,9 @@ class OTXv1Helper:
                 state_dict[add_prefix + key] = val
         return state_dict
     
-    @classmethod
-    def load_iseg_ckpt(cls, state_dict: dict[str, Any], add_prefix: str = "") -> dict[str, Any]:
-        """Load the instance segmentation model checkpoints."""
-        return cls.load_det_ckpt(state_dict, add_prefix)
-    
-    @classmethod
-    def load_action_ckpt(cls, state_dict: dict[str, Any], add_prefix: str = "") -> dict[str, Any]:
-        """Load the action cls/det model checkpoints."""
+    @staticmethod
+    def load_action_ckpt(state_dict: dict[str, Any], add_prefix: str = "") -> dict[str, Any]:
+        """Load the OTX1.x action cls/det model checkpoints."""
         for key in list(state_dict.keys()) :
             val = state_dict.pop(key)
             state_dict[add_prefix + key] = val
