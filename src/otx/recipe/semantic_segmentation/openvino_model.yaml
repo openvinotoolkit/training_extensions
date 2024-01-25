@@ -18,7 +18,7 @@ scheduler:
 
 engine:
   task: SEMANTIC_SEGMENTATION
-  device: auto
+  device: cpu
 
 callback_monitor: val/mIoU
 
