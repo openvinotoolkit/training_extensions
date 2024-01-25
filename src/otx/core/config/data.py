@@ -8,13 +8,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
-
-if TYPE_CHECKING:
-    from torchvision.transforms.v2 import Compose, Transform
 
 
 @dataclass
@@ -22,16 +19,16 @@ class SubsetConfig:
     """DTO for dataset subset configuration.
 
     Attributes:
-        batch_size: Batch size produced.
-        subset_name: Datumaro Dataset's subset name for this subset config.
+        batch_size (int): Batch size produced.
+        subset_name (str): Datumaro Dataset's subset name for this subset config.
             It can differ from the actual usage (e.g., 'val' for the validation subset config).
-        transforms: List of actually used transforms.
+        transforms (list[dict[str, Any] | Transform] | Compose): List of actually used transforms.
             It accepts a list of `torchvision.transforms.v2.*` Python objects
             or `torchvision.transforms.v2.Compose` for `TransformLibType.TORCHVISION`.
             Otherwise, it takes a Python dictionary that fits the configuration style used in mmcv
             (`TransformLibType.MMCV`, `TransformLibType.MMPRETRAIN`, ...).
-        transform_lib_type: Transform library type used by this subset.
-        num_workers: Number of workers for the dataloader of this subset.
+        transform_lib_type (TransformLibType): Transform library type used by this subset.
+        num_workers (int): Number of workers for the dataloader of this subset.
 
     Example:
         ```python
@@ -55,7 +52,9 @@ class SubsetConfig:
     batch_size: int
     subset_name: str
 
-    transforms: list[dict[str, Any] | Transform] | Compose
+    # TODO (vinnamki): Revisit data configuration objects to support a union type in structured config # noqa: TD003
+    # Omegaconf does not allow to have a union type, https://github.com/omry/omegaconf/issues/144
+    transforms: list[dict[str, Any]]
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
