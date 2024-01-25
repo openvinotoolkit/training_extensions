@@ -34,7 +34,7 @@ class MMdeployExporter(OTXModelExporter):
         model_builder (Callable): A function to build a model.
         model_cfg (DictConfig): Model config for mm framework.
         deploy_cfg (str | MMConfig): Deployment config module path or MMEngine Config object.
-        test_pipeline (list[DictConfig]): A pipeline for test dataset.
+        test_pipeline (list[dict]): A pipeline for test dataset.
         input_size (tuple[int, ...]): Input shape.
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
@@ -52,7 +52,7 @@ class MMdeployExporter(OTXModelExporter):
         model_builder: Callable,
         model_cfg: DictConfig,
         deploy_cfg: str | MMConfig,
-        test_pipeline: list[DictConfig],
+        test_pipeline: list[dict],
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
@@ -64,8 +64,7 @@ class MMdeployExporter(OTXModelExporter):
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
         self._model_builder = model_builder
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
-        new_pipeline = [to_tuple(OmegaConf.to_container(test_pipeline[i])) for i in range(len(test_pipeline))]
-        self._model_cfg = MMConfig({"model": model_cfg, "test_pipeline": new_pipeline})
+        self._model_cfg = MMConfig({"model": model_cfg, "test_pipeline": test_pipeline})
         self._deploy_cfg = deploy_cfg if isinstance(deploy_cfg, MMConfig) else load_mmconfig_from_pkg(deploy_cfg)
 
         patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
