@@ -18,6 +18,7 @@ callback_monitor: step
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 1
+  limit_val_batches: 0
   data:
     task: ZERO_SHOT_VISUAL_PROMPTING
     config:

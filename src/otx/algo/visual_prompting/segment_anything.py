@@ -383,7 +383,8 @@ class SegmentAnything(nn.Module):
         union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection
         return intersection / (union + epsilon)
 
-    def postprocess_masks(self, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
+    @classmethod
+    def postprocess_masks(cls, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
         """Postprocess the predicted masks.
 
         Args:
@@ -397,7 +398,7 @@ class SegmentAnything(nn.Module):
         """
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
-        prepadded_size = self.get_prepadded_size(orig_size, input_size)
+        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)
         masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
 
         orig_size = orig_size.to(torch.int64)

@@ -109,7 +109,7 @@ class Engine:
         )
 
         # [TODO] harimkang: It will be updated in next PR.
-        if not isinstance(model, OTXModel) or datamodule is None or optimizer is None or scheduler is None:
+        if not isinstance(model, OTXModel) or datamodule is None:
             msg = "Auto-Configuration is not implemented yet."
             raise NotImplementedError(msg)
         self.datamodule: OTXDataModule = datamodule

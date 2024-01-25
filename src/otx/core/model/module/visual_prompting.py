@@ -40,7 +40,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-
+        self.set_metrics()
+        
+    def set_metrics(self):
         self.train_metric = MetricCollection(
             {
                 "loss": MeanMetric(),
@@ -185,11 +187,11 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
         return {"preds": pred_info, "target": target_info}
 
-    def _inference_step(self, metric: MetricCollection, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+    def _inference_step(self, metric: MetricCollection, inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> None:
         """Perform a single inference step on a batch of data from the inference set."""
         preds = self.model(inputs)
 
-        if not isinstance(preds, VisualPromptingBatchPredEntity):
+        if not isinstance(preds, (VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchPredEntity)):
             raise TypeError(preds)
 
         converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
@@ -213,7 +215,25 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         return "train/loss"
 
 
-class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
+class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
+    def set_metrics(self) -> None:
+        self.test_metric = MetricCollection(
+            {
+                "IoU": BinaryJaccardIndex(),
+                "F1": BinaryF1Score(),
+                "Dice": Dice(),
+                "mAP": MeanAveragePrecision(iou_type="segm"),
+            },
+        )
+        
+    def on_validation_epoch_start(self) -> None:
+        """Skip on_validation_epoch_start unused in zero-shot visual prompting."""
+        pass
+
+    def on_validation_epoch_end(self) -> None:
+        """Skip on_validation_epoch_end unused in zero-shot visual prompting."""
+    pass
+    
     def configure_optimizers(self) -> None:
         """Skip configure_optimizers unused in zero-shot visual prompting."""
         pass
@@ -221,17 +241,38 @@ class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
     def training_step(self, inputs: ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> Tensor:
         """Skip training_step unused in zero-shot visual prompting."""
         self.model(inputs)
-        
-    def test_step(self, inputs: ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> None:
-        """Skip test_step unused in zero-shot visual prompting."""
-        self.model(inputs)
+
+    def validation_step(self, inputs: ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Skip validation_step unused in zero-shot visual prompting."""
+        pass
+    
+    def _inference_step(self, metric: MetricCollection, inputs: ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single inference step on a batch of data from the inference set."""
+        preds = self.model(inputs)
+
+        if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
+            raise TypeError(preds)
+
+        converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for _name, _metric in metric.items():
+            if _name == "mAP":
+                # MeanAveragePrecision
+                _preds = [
+                    {
+                        k: v > 0.5 if k == "masks" else 
+                        v.to(self.device) if k == "labels" else 
+                        v for k, v in ett.items()
+                    } for ett in converted_entities["preds"]
+                ]
+                _target = converted_entities["target"]
+                _metric.update(preds=_preds, target=_target)
+            elif _name in ["IoU", "F1", "Dice"]:
+                # BinaryJaccardIndex, BinaryF1Score, Dice
+                for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                    _metric.update(cvt_preds["masks"].sum(dim=0).clamp(0, 1), cvt_target["masks"].sum(dim=0).clamp(0, 1))
         
     def state_dict(self) -> dict[str, Any]:
-        """Return state dictionary of model entity with reference features, masks, and used indices.
-
-        Returns:
-            A dictionary containing datamodule state.
-        """
+        """Return state dictionary of model entity with reference features, masks, and used indices."""
         state_dict = super().state_dict()
         state_dict.update({
             "model.model.reference_feats": self.model.model.reference_feats,
@@ -244,8 +285,8 @@ class OTXZeroShotVisualPromptingLitModule(OTXLitModule):
         """Load state dictionary from checkpoint state dictionary."""
         ckpt_meta_info = state_dict.pop("meta_info", None)
         
-        setattr(self.model.model, "reference_feats", state_dict.pop("model.model.reference_feats"))
-        setattr(self.model.model, "reference_masks", state_dict.pop("model.model.reference_masks"))
+        setattr(self.model.model, "reference_feats", state_dict.pop("model.model.reference_feats").to(self.device))
+        setattr(self.model.model, "reference_masks", [m.to(self.device) for m in state_dict.pop("model.model.reference_masks")])
         setattr(self.model.model, "used_indices", state_dict.pop("model.model.used_indices"))
         return super().load_state_dict(state_dict, *args, **kwargs)
         
