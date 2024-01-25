@@ -32,6 +32,8 @@ if TYPE_CHECKING:
 
     import torch
 
+    from otx.core.data.module import OTXDataModule
+
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """Base class for the models used in OTX.
@@ -272,7 +274,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     Intermidiate Representation (IR) models. OVModel can create and validate
     OpenVINO IR model directly from provided path locally or from
     OpenVINO OMZ repository. (Only PyTorch models are supported).
-    OVModel supports synchoronous as well as asynchronous inference type.
+    OVModel supports synchronous as well as asynchronous inference type.
 
     Args:
         num_classes: Number of classes this model can predict.
