@@ -4,7 +4,7 @@
 """Class definition for classification lightning module used in OTX."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
@@ -48,7 +48,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         )
         num_classes = otx_model.config.get("head", {}).get("num_classes", None)
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        #self.test_metric = Accuracy(task="multiclass", num_classes=num_classes) 
+        self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -117,10 +117,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
-    
-    def _load_from_prev_otx_ckpt(self, ckpt: dict[str, Any]) -> dict[str, Any]:
-        """Get the state_dict, supporting the backward compatibility."""
-        return self.model.convert_previous_otx_ckpt(ckpt, add_prefix="model.model.")
 
     @property
     def lr_scheduler_monitor_key(self) -> str:
@@ -210,16 +206,11 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
-    
-    def _load_from_prev_otx_ckpt(self, ckpt: dict[str, Any]) -> dict[str, Any]:
-        """Get the state_dict, supporting the backward compatibility."""
-        return self.model.convert_previous_otx_ckpt(ckpt, add_prefix="model.model.")
 
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
-    
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -333,7 +324,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.test_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
-    
+
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""

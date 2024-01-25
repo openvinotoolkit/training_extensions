@@ -17,6 +17,6 @@ class X3DFastRCNN(MMActionCompatibleModel):
         config.roi_head.bbox_head.topk = topk
         super().__init__(num_classes=num_classes, config=config)
 
-    def load_from_otx_v1_ckpt(self, state_dict, add_prefix: str="model.model."):
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
-        return OTXv1Helper.load_action_ckpt(state_dict, add_prefix) 
+        return OTXv1Helper.load_action_ckpt(state_dict, add_prefix)

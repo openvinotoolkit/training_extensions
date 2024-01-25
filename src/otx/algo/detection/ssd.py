@@ -125,6 +125,6 @@ class SSD(MMDetCompatibleModel):
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
 
-    def load_from_otx_v1_ckpt(self, state_dict, add_prefix: str="model.model."):
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
-        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix) 
+        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
