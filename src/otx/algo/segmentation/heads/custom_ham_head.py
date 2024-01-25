@@ -25,8 +25,7 @@ class CustomNMF2D(NMF2D):
 
         # (B, C, H, W) -> (B * S, D, N)
         scale = channels // self.S
-        N = height * width
-        x = x.view(batch * self.S, scale, N)
+        x = x.view(batch * self.S, scale, height * width)
 
         # (S, D, R) -> (B * S, D, R)
         if self.training:

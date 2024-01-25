@@ -19,13 +19,14 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
+from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
-from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.utils.build import get_default_num_async_infer_requests
 
 if TYPE_CHECKING:
     from pathlib import Path
+
     import torch
 
 

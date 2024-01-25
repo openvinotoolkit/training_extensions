@@ -21,7 +21,6 @@ class LiteHRNet(MMSegCompatibleModel):
 
     def _configure_export_parameters(self) -> None:
         super()._configure_export_parameters()
-        self.export_params["via_onnx"] = True
         self.export_params["onnx_export_configuration"] = {
             "operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK,
         }
