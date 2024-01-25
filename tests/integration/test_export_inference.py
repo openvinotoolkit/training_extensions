@@ -127,7 +127,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerat
     """
     task = recipe.split("/")[-2]
 
-    if not task in TASK_NAME_TO_MAIN_METRIC_NAME:
+    if not task in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
     model_name = recipe.split("/")[-1].split(".")[0]
