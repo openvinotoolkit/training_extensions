@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .visualizers import ClassificationVisualizer, FakeVisualizer, ObjectDetectionVisualizer, InstanceSegmentationVisualizer, SemanticSegmentationVisualizer
+from .visualizers import ClassificationVisualizer, ObjectDetectionVisualizer, InstanceSegmentationVisualizer, SemanticSegmentationVisualizer
 
 
 def get_model_path(path: Optional[Path]) -> Path:
@@ -38,7 +38,6 @@ def get_parameters(path: Optional[Path]) -> Dict:
 def create_visualizer(task_type: str, labels: list, no_show: bool = False, output: Optional[str] = None):
     """Create visualizer according to kind of task."""
 
-    # TODO: use anomaly-specific visualizer for anomaly tasks
     if task_type == "CLASSIFICATION":
         return ClassificationVisualizer(window_name="Result", no_show=no_show, output=output)
     elif task_type == "SEGMENTATION":
@@ -48,5 +47,5 @@ def create_visualizer(task_type: str, labels: list, no_show: bool = False, outpu
     elif task_type == "DETECTION":
         return ObjectDetectionVisualizer(window_name="Result", labels=labels, no_show=no_show, output=output)
     else:
-        # TODO: add task specific visualizers when implemented
-        return FakeVisualizer(window_name="Result", no_show=no_show, output=output)
+        msg = "Visualizer for f{task_type} is not implemented"
+        raise NotImplementedError(msg)

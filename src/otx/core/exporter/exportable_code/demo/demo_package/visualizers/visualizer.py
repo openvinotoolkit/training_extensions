@@ -12,12 +12,11 @@ import cv2
 import numpy as np
 from ..streamer import BaseStreamer
 from openvino.model_api.performance_metrics import put_highlighted_text
-from pathlib import Path
 from .vis_utils import ColorPalette
 
 
 class BaseVisualizer:
-    """Interface for converter."""
+    """Base clss for visualizators."""
 
     def __init__(
         self,
@@ -84,27 +83,6 @@ class BaseVisualizer:
                 time.sleep(orig_frame_time - elapsed_time)
 
 
-class FakeVisualizer(BaseVisualizer):
-    def draw(
-        self,
-        frame: np.ndarray,
-        predictions: list,
-        meta: dict,
-        output_transform: Optional[list] = None
-    ) -> np.ndarray:
-        """Immitate drawing annotations.
-
-        Args:
-            image: Input image
-            annotation: Annotations to be drawn on the input image
-            metadata: Metadata is needed to render
-
-        Returns:
-            Output same image without any annotations.
-        """
-        return frame
-
-
 class ClassificationVisualizer(BaseVisualizer):
     """Visualize the predicted classification labels by drawing the annotations on the input image.
 
@@ -121,7 +99,7 @@ class ClassificationVisualizer(BaseVisualizer):
         meta: Optional[dict] = None,
         output_transform: Optional[list] = None
     ) -> np.ndarray:
-        """Draw annotations on the image.
+        """Draw classification annotations on the image.
 
         Args:
             image: Input image
@@ -132,9 +110,9 @@ class ClassificationVisualizer(BaseVisualizer):
         """
         if output_transform is not None:
             frame = output_transform.resize(frame)
-        class_label = ""
-        if predictions:
-            class_label = predictions[0][1]
+
+        predictions = predictions.top_labels
+        class_label = predictions[0][1]
         font_scale = 0.7
         label_height = cv2.getTextSize(class_label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][1]
         initial_labels_pos =  frame.shape[0] - label_height * (int(1.5 * len(predictions)) + 1)
@@ -153,18 +131,25 @@ class ClassificationVisualizer(BaseVisualizer):
             label = '{}. {}    {:.2f}'.format(idx, class_label, score)
             label_width = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
             offset_y += int(label_height * 1.5)
-            predictions(frame, label, (frame.shape[1] - label_width, offset_y),
+            put_highlighted_text(frame, label, (frame.shape[1] - label_width, offset_y),
                 cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
         return frame
 
 
 class SemanticSegmentationVisualizer(BaseVisualizer):
+    """Visualize the predicted segmentation labels by drawing the annotations on the input image.
+
+    Example:
+        >>> masks = inference_model.predict(frame)
+        >>> output = visualizer.draw(frame, masks)
+        >>> visualizer.show(output)
+    """
     def __init__(self, *args, labels, **kwargs):
         super().__init__(*args, **kwargs)
         self.color_palette = ColorPalette(len(labels)).to_numpy_array()
-        self.color_map = self.create_color_map()
+        self.color_map = self._create_color_map()
 
-    def create_color_map(self):
+    def _create_color_map(self):
         classes = self.color_palette[:, ::-1] # RGB to BGR
         color_map = np.zeros((256, 1, 3), dtype=np.uint8)
         classes_num = len(classes)
@@ -172,17 +157,23 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
         color_map[classes_num:, 0, :] = np.random.uniform(0, 255, size=(256-classes_num, 3))
         return color_map
 
-    def apply_color_map(self, input):
+    def _apply_color_map(self, input: np.array):
         input_3d = cv2.merge([input, input, input])
         return cv2.LUT(input_3d.astype(np.uint8), self.color_map)
 
-    def parse_segmentation_outputs(self, masks):
-        return masks.resultImage
-
     def draw(self, frame, masks, meta: Optional[dict] = None,
         output_transform: Optional[list] = None):
-        masks = self.parse_segmentation_outputs(masks)
-        output = self.apply_color_map(masks)
+        """Draw segmentation annotations on the image.
+
+        Args:
+            image: Input image
+            annotation: Annotations to be drawn on the input image
+
+        Returns:
+            Output image with annotations.
+        """
+        masks = masks.resultImage
+        output = self._apply_color_map(masks)
         output = cv2.addWeighted(frame, 0.5, output, 0.5, 0)
         return output
 
@@ -201,6 +192,15 @@ class ObjectDetectionVisualizer(BaseVisualizer):
         meta: Optional[dict] = None,
         output_transform: Optional[list] = None
     ) -> np.ndarray:
+        """Draw instance segmentation annotations on the image.
+
+        Args:
+            image: Input image
+            annotation: Annotations to be drawn on the input image
+
+        Returns:
+            Output image with annotations.
+        """
         if output_transform is not None:
             frame = output_transform.resize(frame)
 
@@ -218,27 +218,36 @@ class ObjectDetectionVisualizer(BaseVisualizer):
         return frame
 
 
-class InstanceSegmentationVisualizer:
-    def __init__(self, *args, labels=None, show_boxes=False, show_scores=False, **kwargs):
+class InstanceSegmentationVisualizer(BaseVisualizer):
+    def __init__(self, *args, labels=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.labels = labels
         colors_num = len(labels) if labels else 80
-        self.show_boxes = show_boxes
-        self.show_scores = show_scores
+        self.show_boxes = False
+        self.show_scores = True
         self.palette = ColorPalette(colors_num)
 
-    def draw(self, image, boxes, classes, scores, masks=None, ids=None, texts=None):
-        result = image.copy()
+    def draw(self,
+        frame: np.ndarray,
+        predictions: list,
+        meta: Optional[dict] = None,
+        output_transform: Optional[list] = None):
 
-        if masks is not None:
-            result = self.overlay_masks(result, masks, ids)
-        if self.show_boxes:
-            result = self.overlay_boxes(result, boxes, classes)
+        if output_transform is not None:
+            frame = output_transform.resize(frame)
 
-        result = self.overlay_labels(result, boxes, classes, scores, texts)
+        result = frame.copy()
+        output_objects = predictions.segmentedObjects
+        bboxes = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
+        scores = [output.score for output in output_objects]
+        masks = [output.mask for output in output_objects]
+        label_names = [output.str_label for output in output_objects]
+
+        result = self._overlay_masks(result, masks, None)
+        result = self._overlay_labels(result, bboxes, label_names, scores, None)
         return result
 
-    def overlay_masks(self, image, masks, ids=None):
+    def _overlay_masks(self, image, masks, ids=None):
         segments_image = image.copy()
         aggregated_mask = np.zeros(image.shape[:2], dtype=np.uint8)
         aggregated_colored_mask = np.zeros(image.shape, dtype=np.uint8)
@@ -261,7 +270,7 @@ class InstanceSegmentationVisualizer:
         cv2.drawContours(image, all_contours, -1, (0, 0, 0))
         return image
 
-    def overlay_boxes(self, image, boxes, classes):
+    def _overlay_boxes(self, image, boxes, classes):
         for box, class_id in zip(boxes, classes):
             color = self.palette[class_id]
             box = box.astype(int)
@@ -269,18 +278,11 @@ class InstanceSegmentationVisualizer:
             image = cv2.rectangle(image, top_left, bottom_right, color, 2)
         return image
 
-    def overlay_labels(self, image, boxes, classes, scores, texts=None):
-        if texts:
-            labels = texts
-        elif self.labels:
-            labels = (self.labels[class_id] for class_id in classes)
-        else:
-            raise RuntimeError('InstanceSegmentationVisualizer must contain either labels or texts to display')
+    def _overlay_labels(self, image, boxes, classes, scores, texts=None):
         template = '{}: {:.2f}' if self.show_scores else '{}'
 
-        for box, score, label in zip(boxes, scores, labels):
+        for box, score, label in zip(boxes, scores, classes):
             text = template.format(label, score)
             textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
-            position = ((box[:2] + box[2:] - textsize) / 2).astype(np.int32)
-            cv2.putText(image, text, position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            cv2.putText(image, text, (box[0], box[1] + int(textsize[0] / 3)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         return image
