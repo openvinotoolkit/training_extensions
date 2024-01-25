@@ -1,35 +1,78 @@
-# @package _global_
-defaults:
-  - override /base: visual_prompting
-  - override /callbacks: visual_prompting
-  # - override /data: mmdet_visual_prompting
-  - override /data: torchvision_visual_prompting
-  - override /model: torch_visual_prompting
-data:
-  train_subset:
-    batch_size: 1
-  val_subset:
-    batch_size: 1
-  test_subset:
-    batch_size: 1
 model:
-  otx_model:
-    _target_: otx.algo.visual_prompting.segment_anything.OTXZeroShotSegmentAnything
+  class_path: otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything
+  init_args:
     backbone: tiny_vit
-    num_classes: 0 # to avoid MissingMandatoryValue error
+    num_classes: 0
     freeze_image_encoder: True
     freeze_prompt_encoder: True
     freeze_mask_decoder: True
     default_threshold_reference: 0.3
     default_threshold_target: 0.65
-  optimizer:
-    _target_: torch.optim.Adam
-    _partial_: true
-    lr: 0.00001
-  scheduler:
-    _target_: torch.optim.lr_scheduler.ConstantLR
-    _partial_: true
-    factor: 1
-    total_iters: -1
-trainer:
-  max_epochs: 100
+
+engine:
+  task: ZERO_SHOT_VISUAL_PROMPTING
+  device: auto
+
+callback_monitor: val/Dice
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  max_epochs: 1
+  data:
+    task: ZERO_SHOT_VISUAL_PROMPTING
+    config:
+      data_format: coco_instances
+      vpm_config:
+        use_bbox: True
+        use_point: False
+      train_subset:
+        batch_size: 1
+        num_workers: 4
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+            init_args:
+              size: 1024
+              antialias: True
+          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+          - class_path: torchvision.transforms.v2.ToDtype
+            init_args:
+              dtype: ${as_torch_dtype:torch.float32}
+              scale: False
+          - class_path: torchvision.transforms.v2.Normalize
+            init_args:
+              mean: [123.675, 116.28, 103.53]
+              std: [58.395, 57.12, 57.375]
+      val_subset:
+        batch_size: 1
+        num_workers: 4
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+            init_args:
+              size: 1024
+              antialias: True
+          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+          - class_path: torchvision.transforms.v2.ToDtype
+            init_args:
+              dtype: ${as_torch_dtype:torch.float32}
+              scale: False
+          - class_path: torchvision.transforms.v2.Normalize
+            init_args:
+              mean: [123.675, 116.28, 103.53]
+              std: [58.395, 57.12, 57.375]
+      test_subset:
+        batch_size: 1
+        num_workers: 4
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+            init_args:
+              size: 1024
+              antialias: True
+          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+          - class_path: torchvision.transforms.v2.ToDtype
+            init_args:
+              dtype: ${as_torch_dtype:torch.float32}
+              scale: False
+          - class_path: torchvision.transforms.v2.Normalize
+            init_args:
+              mean: [123.675, 116.28, 103.53]
+              std: [58.395, 57.12, 57.375]

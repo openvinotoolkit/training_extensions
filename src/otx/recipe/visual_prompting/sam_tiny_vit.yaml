@@ -3,9 +3,9 @@ model:
   init_args:
     backbone: tiny_vit
     num_classes: 0
-    freeze_image_encoder: true
-    freeze_prompt_encoder: true
-    freeze_mask_decoder: false
+    freeze_image_encoder: True
+    freeze_prompt_encoder: True
+    freeze_mask_decoder: False
 
 optimizer:
   class_path: torch.optim.Adam
