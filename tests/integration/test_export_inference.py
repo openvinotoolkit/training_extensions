@@ -108,7 +108,7 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerator: str, capfd: "pytest.CaptureFixture") -> None:
+def test_otx_export_infer(recipe: str, tmp_path: Path, fxt_local_seed: int, fxt_accelerator: str, capfd: "pytest.CaptureFixture") -> None:
     """
     Test OTX CLI e2e commands.
 
