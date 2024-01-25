@@ -102,6 +102,11 @@ class OTXCLI:
             help="Task Type.",
         )
         parser.add_argument(
+            "--seed",
+            type=int,
+            help="Sets seed for pseudo-random number generators in: pytorch, numpy, python.random.",
+        )
+        parser.add_argument(
             "--callback_monitor",
             type=str,
             help="The metric to monitor the model performance during training callbacks.",
@@ -307,6 +312,19 @@ class OTXCLI:
             skip_check=True,
         )
 
+    def set_seed(self) -> None:
+        """Set the random seed for reproducibility.
+
+        This method retrieves the seed value from the argparser and uses it to set the random seed.
+        If a seed value is provided, it will be used to set the random seed using the
+        `seed_everything` function from the `lightning` module.
+        """
+        seed = self.get_config_value(self.config, "seed", None)
+        if seed is not None:
+            from lightning import seed_everything
+
+            seed_everything(seed, workers=True)
+
     def run(self) -> None:
         """Executes the specified subcommand.
 
@@ -319,6 +337,7 @@ class OTXCLI:
 
             otx_install(**self.config["install"])
         elif self.subcommand in self.engine_subcommands():
+            self.set_seed()
             self.instantiate_classes()
             fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)

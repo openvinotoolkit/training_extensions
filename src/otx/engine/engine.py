@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
-from lightning import Trainer, seed_everything
+from lightning import Trainer
 
 from otx.core.config.device import DeviceConfig
 from otx.core.data.module import OTXDataModule
@@ -126,7 +126,6 @@ class Engine:
     def train(
         self,
         max_epochs: int = 10,
-        seed: int | None = None,
         deterministic: bool = False,
         precision: _PRECISION_INPUT | None = "32",
         val_check_interval: int | float | None = None,
@@ -139,7 +138,6 @@ class Engine:
 
         Args:
             max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
-            seed (int | None, optional): The random seed. Defaults to None.
             deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
             precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
             val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.
@@ -154,7 +152,6 @@ class Engine:
         Example:
             >>> engine.train(
             ...     max_epochs=3,
-            ...     seed=1234,
             ...     deterministic=False,
             ...     precision="32",
             ... )
@@ -187,9 +184,6 @@ class Engine:
             scheduler=self.scheduler,
         )
         lit_module.meta_info = self.datamodule.meta_info
-
-        if seed is not None:
-            seed_everything(seed, workers=True)
 
         self._build_trainer(
             logger=logger,
