@@ -5,7 +5,7 @@ import time
 
 
 # @pytest.mark.skip(reason="only for the debugging")
-def test_memory_bound():
+def test_memory_bound4():
     print(psutil.virtual_memory())
     alloc = []
     alloc_unit = "0123456789" * 1024 * 1024 * 10  # 100m
