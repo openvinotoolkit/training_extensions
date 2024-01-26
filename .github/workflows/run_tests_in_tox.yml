@@ -33,7 +33,7 @@ on:
         # default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-a1271804dc2eb393aa8d8bc99695a9acff4c91e3"
         # cuda 12.1.0
         #default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-236cea24e166a66b75828e92b70c8bdf6ade45f1"
-        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-750d918cf9d28902d255db6c8ead7593763da74f"
+        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e"
       container-options:
         type: string
         default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
