@@ -121,6 +121,8 @@ class Engine:
         self.optimizer: OptimizerCallable = optimizer
         self.scheduler: LRSchedulerCallable = scheduler
 
+    _EXPORTED_MODEL_BASE_NAME = "exported_model"
+
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
     # ------------------------------------------------------------------------ #
@@ -377,6 +379,7 @@ class Engine:
 
             return self.model.export(
                 output_dir=Path(self.work_dir),
+                base_name=self._EXPORTED_MODEL_BASE_NAME,
                 export_format=export_format,
                 precision=export_precision,
             )

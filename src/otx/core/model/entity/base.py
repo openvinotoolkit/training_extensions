@@ -38,8 +38,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         num_classes: Number of classes this model can predict.
     """
 
-    _EXPORTED_MODEL_BASE_NAME = "exported_model"
-
     def __init__(self, num_classes: int) -> None:
         super().__init__()
 
@@ -177,6 +175,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     def export(
         self,
         output_dir: Path,
+        base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
     ) -> Path:
@@ -184,6 +183,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
 
         Args:
             output_dir (Path): directory for saving the exported model
+            base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
         Returns:
@@ -193,9 +193,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         metadata = self._generate_model_metadata()
 
         if export_format == OTXExportFormatType.OPENVINO:
-            return exporter.to_openvino(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_openvino(self.model, output_dir, base_name, precision, metadata)
         if export_format == OTXExportFormatType.ONNX:
-            return exporter.to_onnx(self.model, output_dir, self._EXPORTED_MODEL_BASE_NAME, precision, metadata)
+            return exporter.to_onnx(self.model, output_dir, base_name, precision, metadata)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
             return self._export_to_exportable_code()
 
