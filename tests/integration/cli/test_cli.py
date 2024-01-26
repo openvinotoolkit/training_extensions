@@ -70,7 +70,7 @@ DATASET = {
     },
     "zero_shot_visual_prompting": {
         "data_root": "tests/assets/car_tree_bug",
-        "overrides": [],
+        "overrides": ["--max_epochs", "1"],
     },
 }
 
