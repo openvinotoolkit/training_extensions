@@ -84,8 +84,8 @@ class MemCacheHandlerBase:
         self._mem_size = mem_size
         self._init_data_structs(mem_size)
 
-    def _init_data_structs(self, mem_size: int) -> None:
-        self._arr = (ct.c_uint8 * mem_size)()
+    def _init_data_structs(self) -> None:
+        self._arr_ = None
         self._cur_page = ct.c_size_t(0)
         self._cache_addr: (
             dict[Any, tuple[Any, ...]]
@@ -102,9 +102,15 @@ class MemCacheHandlerBase:
         return len(self._cache_addr)
 
     @property
+    def _arr(self):
+        if self._arr_ == None:
+            self._arr_ = (ct.c_uint8 * self._mem_size)()
+        return self._arr_
+
+    @property
     def mem_size(self) -> int:
         """Get the reserved memory pool size (bytes)."""
-        return len(self._arr)
+        return self._mem_size
 
     def get(self, key: Any) -> tuple[np.ndarray | None, dict | None]:  # noqa: ANN401
         """Try to look up the cached item with the given key.
@@ -229,14 +235,49 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
     Use if PyTorch's DataLoader.num_workers > 0.
     """
 
-    def _init_data_structs(self, mem_size: int) -> None:
-        self._arr = mp.Array(ct.c_uint8, mem_size, lock=False)
-        self._cur_page = mp.Value(ct.c_size_t, 0, lock=False)
+    def _init_data_structs(self) -> None:
+        self._arr_ = None
+        self._cur_page_ = None
+        self._manager_ = None
+        self._cache_addr_ = None
+        self._lock_ = None
+        self._freeze_ = None
 
-        self._manager = mp.Manager()
-        self._cache_addr: DictProxy = self._manager.dict()
-        self._lock = mp.Lock()
-        self._freeze = mp.Value(ct.c_bool, False, lock=False)
+    @property
+    def _arr(self):
+        if self._arr_ is None:
+            self._arr_ = mp.Array(ct.c_uint8, self._mem_size, lock=False)
+        return self._arr_
+
+    @property
+    def _cur_page(self):
+        if self._cur_page_ is None:
+            self._cur_page_ = mp.Value(ct.c_size_t, 0, lock=False)
+        return self._cur_page_
+
+    @property
+    def _manager(self):
+        if self._manager_ is None:
+            self._manager_ = mp.Manager()
+        return self._manager_
+
+    @property
+    def _cache_addr(self):
+        if self._cache_addr_ is None:
+            self._cache_addr_: DictProxy = self._manager.dict()
+        return self._cache_addr_
+
+    @property
+    def _lock(self):
+        if self._lock_ is None:
+            self._lock_ = mp.Lock()
+        return self._lock_
+
+    @property
+    def _freeze(self):
+        if self._freeze_ is None:
+            self._freeze_ = mp.Value(ct.c_bool, False, lock=False)
+        return  self._freeze_
 
     def shutdown(self) -> None:
         """Shutdown mem caching handler.
