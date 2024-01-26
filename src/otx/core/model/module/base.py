@@ -103,9 +103,17 @@ class OTXLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
         """
-        optimizer = self.hparams.optimizer(params=self.parameters())
+        optimizer = (
+            self.hparams.optimizer(params=self.parameters())
+            if callable(self.hparams.optimizer)
+            else self.hparams.optimizer
+        )
         if self.hparams.scheduler is not None:
-            scheduler = self.hparams.scheduler(optimizer=optimizer)
+            scheduler = (
+                self.hparams.scheduler(optimizer=optimizer)
+                if callable(self.hparams.scheduler)
+                else self.hparams.scheduler
+            )
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
