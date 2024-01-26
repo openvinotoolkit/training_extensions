@@ -428,6 +428,11 @@ def _pad_bounding_boxes_dispatch(
     return tv_tensors.wrap(output, like=inpt, canvas_size=canvas_size)
 
 
+@F.register_kernel(functional=F.get_size, tv_tensor_cls=Points)
+def get_size_points(point: Points) -> list[int]:
+    return list(point.canvas_size)
+
+
 T_OTXDataEntity = TypeVar(
     "T_OTXDataEntity",
     bound="OTXDataEntity",

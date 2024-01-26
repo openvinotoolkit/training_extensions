@@ -13,13 +13,39 @@ import torchvision.transforms.v2 as tvt_v2
 from lightning.pytorch.cli import instantiate_class
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
-
+import PIL.Image
 from otx.core.data.entity.base import Points
+from torchvision._utils import sequence_to_str
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
 
     from otx.core.config.data import SubsetConfig
+    
+    
+def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:
+    sizes = {
+        tuple(F.get_size(inpt))
+        for inpt in flat_inputs
+        if tvt_v2._utils.check_type(
+            inpt,
+            (
+                F.is_pure_tensor,
+                tv_tensors.Image,
+                PIL.Image.Image,
+                tv_tensors.Video,
+                tv_tensors.Mask,
+                tv_tensors.BoundingBoxes,
+                Points
+            ),
+        )
+    }
+    if not sizes:
+        raise TypeError("No image, video, mask, bounding box, or point was found in the sample")
+    elif len(sizes) > 1:
+        raise ValueError(f"Found multiple HxW dimensions in the sample: {sequence_to_str(sorted(sizes))}")
+    h, w = sizes.pop()
+    return h, w
 
 
 class PerturbBoundingBoxes(tvt_v2.Transform):
@@ -45,7 +71,7 @@ class PadtoSquare(tvt_v2.Transform):
     """Pad skewed image to square with zero padding."""
 
     def _get_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
-        height, width = tvt_v2._utils.query_size(flat_inputs)  # noqa: SLF001
+        height, width = custom_query_size(flat_inputs)  # noqa: SLF001
         max_dim = max(width, height)
         pad_w = max_dim - width
         pad_h = max_dim - height

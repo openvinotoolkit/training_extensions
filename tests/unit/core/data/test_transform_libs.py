@@ -79,7 +79,7 @@ class TestPadtoSquare:
             canvas_size=(5, 3),
             dtype=torch.float32,
         )
-        results = transform(inpt.clone(), None)
+        results = transform(inpt.clone(), transform._get_params([inpt]))
 
         assert torch.all(results[0] == inpt)
 
