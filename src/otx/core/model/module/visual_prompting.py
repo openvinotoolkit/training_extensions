@@ -260,7 +260,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                 _preds = [
                     {
                         k: v > 0.5 if k == "masks" else 
-                        v.to(self.device) if k == "labels" else 
+                        v.squeeze(1).to(self.device) if k == "labels" else 
                         v for k, v in ett.items()
                     } for ett in converted_entities["preds"]
                 ]
