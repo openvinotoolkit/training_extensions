@@ -1,8 +1,8 @@
 model:
-  class_path: otx.core.model.entity.classification.OVMulticlassClassificationModel
+  class_path: otx.core.model.entity.classification.OVMultilabelClassificationModel
   init_args:
     num_classes: 1000
-    model_name: efficientnet-b0-pytorch
+    model_name: openvino.xml
     async_inference: True
     use_throughput_mode: False
     model_type: Classification
@@ -22,7 +22,7 @@ scheduler:
     monitor: train/loss
 
 engine:
-  task: MULTI_CLASS_CLS
+  task: MULTI_LABEL_CLS
   device: cpu
 
 callback_monitor: val/accuracy
@@ -31,8 +31,9 @@ data: ../../_base_/data/torchvision_base.yaml
 
 overrides:
   data:
-    task: MULTI_CLASS_CLS
+    task: MULTI_LABEL_CLS
     config:
       image_color_channel: RGB
+      data_format: datumaro
       test_subset:
         batch_size: 128

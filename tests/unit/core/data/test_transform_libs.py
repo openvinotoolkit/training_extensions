@@ -7,10 +7,13 @@ from typing import Any
 
 import pytest
 import torch
+from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
+from otx.core.config.data import SubsetConfig
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
+    ResizetoLongestEdge,
     TorchVisionTransformLib,
 )
 from otx.core.types.image import ImageColorChannel
@@ -47,7 +50,7 @@ class TestPadtoSquare:
 
         # height > width
         inpt = tv_tensors.Image(torch.ones((1, 5, 3)))
-        results = transform(inpt, None)
+        results = transform(inpt, transform._get_params([inpt]))
 
         assert isinstance(results, tuple)
         assert results[0].shape == torch.Size((1, 5, 5))
@@ -55,7 +58,7 @@ class TestPadtoSquare:
 
         # height < width
         inpt = tv_tensors.Image(torch.ones((1, 3, 5)))
-        results = transform(inpt, None)
+        results = transform(inpt, transform._get_params([inpt]))
 
         assert isinstance(results, tuple)
         assert results[0].shape == torch.Size((1, 5, 5))
@@ -68,20 +71,52 @@ class TestPadtoSquare:
             canvas_size=(5, 3),
             dtype=torch.float32,
         )
-        results = transform(inpt.clone(), None)
+        results = transform(inpt.clone(), transform._get_params([inpt]))
 
         assert torch.all(results[0] == inpt)
 
 
+class TestResizetoLongestEdge:
+    def test_transform(self) -> None:
+        transform = ResizetoLongestEdge(size=10)
+
+        # height > width
+        inpt = tv_tensors.Image(torch.ones((1, 5, 3)))
+        results = transform(inpt, transform._get_params([inpt]))
+
+        assert isinstance(results, tuple)
+        assert results[0].shape == torch.Size((1, 10, 6))
+        assert results[1]["target_size"] == (10, 6)
+
+        # height < width
+        inpt = tv_tensors.Image(torch.ones((1, 3, 5)))
+        results = transform(inpt, transform._get_params([inpt]))
+
+        assert isinstance(results, tuple)
+        assert results[0].shape == torch.Size((1, 6, 10))
+        assert results[1]["target_size"] == (6, 10)
+
+        # square
+        inpt = tv_tensors.Image(torch.ones((1, 5, 5)))
+        results = transform(inpt, transform._get_params([inpt]))
+
+        assert isinstance(results, tuple)
+        assert results[0].shape == torch.Size((1, 10, 10))
+        assert results[1]["target_size"] == (10, 10)
+
+
 class TestTorchVisionTransformLib:
-    @pytest.fixture()
-    def fxt_config(self) -> list[dict[str, Any]]:
-        # >>> transforms = v2.Compose([
-        # >>>     v2.RandomResizedCrop(size=(224, 224), antialias=True),
-        # >>>     v2.RandomHorizontalFlip(p=0.5),
-        # >>>     v2.ToDtype(torch.float32, scale=True),
-        # >>>     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        # >>> ])
+    @pytest.fixture(params=["from_dict", "from_list", "from_compose"])
+    def fxt_config(self, request) -> list[dict[str, Any]]:
+        if request.param == "from_compose":
+            return v2.Compose(
+                [
+                    v2.RandomResizedCrop(size=(224, 224), antialias=True),
+                    v2.RandomHorizontalFlip(p=0.5),
+                    v2.ToDtype(torch.float32, scale=True),
+                    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                ],
+            )
         prefix = "torchvision.transforms.v2"
         cfg = f"""
         transforms:
@@ -101,7 +136,14 @@ class TestTorchVisionTransformLib:
                 mean: [0.485, 0.456, 0.406]
                 std: [0.229, 0.224, 0.225]
         """
-        return OmegaConf.create(cfg)
+        created = OmegaConf.create(cfg)
+        if request.param == "from_obj":
+            return SubsetConfig(
+                batch_size=1,
+                subset_name="dummy",
+                transforms=[instantiate_class(args=(), init=transform) for transform in created.transforms],
+            )
+        return created
 
     def test_transform(
         self,
