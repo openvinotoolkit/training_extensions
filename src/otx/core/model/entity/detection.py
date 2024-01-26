@@ -116,7 +116,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         self.explain_hook.reset()
 
 
-class MMDetCompatibleModel([ExplainableOTXDetModel, OTXDetectionModel]):
+class MMDetCompatibleModel(ExplainableOTXDetModel):
     """Detection model compatible for MMDet.
 
     It can consume MMDet model configuration translated into OTX configuration
