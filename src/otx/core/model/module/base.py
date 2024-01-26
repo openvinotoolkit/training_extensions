@@ -110,7 +110,7 @@ class OTXLitModule(LightningModule):
         )
         if self.hparams.scheduler is not None:
             scheduler = (
-                self.hparams.scheduler(params=self.parameters())
+                self.hparams.scheduler(optimizer=optimizer)
                 if callable(self.hparams.scheduler)
                 else self.hparams.scheduler
             )
