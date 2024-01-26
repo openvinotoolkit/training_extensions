@@ -21,7 +21,8 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 
 if TYPE_CHECKING:
@@ -177,7 +178,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         self,
         output_dir: Path,
         export_format: OTXExportFormatType,
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
     ) -> Path:
         """Export this model to the specified output directory.
 

@@ -14,10 +14,3 @@ class OTXExportFormatType(str, Enum):
     ONNX = "ONNX"
     OPENVINO = "OPENVINO"
     EXPORTABLE_CODE = "EXPORTABLE_CODE"
-
-
-class OTXExportPrecisionType(str, Enum):
-    """OTX export precision type definition."""
-
-    FP16 = "FP16"
-    FP32 = "FP32"

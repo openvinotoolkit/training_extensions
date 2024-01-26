@@ -17,7 +17,8 @@ from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
-from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
@@ -333,7 +334,7 @@ class Engine:
         self,
         checkpoint: str | Path | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
-        export_precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
     ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 

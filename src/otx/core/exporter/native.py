@@ -14,7 +14,7 @@ import openvino
 import torch
 
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportPrecisionType
+from otx.core.types.precision import OTXPrecisionType
 
 
 class OTXNativeModelExporter(OTXModelExporter):
@@ -71,7 +71,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
@@ -88,7 +88,7 @@ class OTXNativeModelExporter(OTXModelExporter):
                     model,
                     tmp_dir,
                     base_model_name,
-                    OTXExportPrecisionType.FP32,
+                    OTXPrecisionType.FP32,
                     None,
                 )
                 exported_model = openvino.convert_model(
@@ -110,7 +110,7 @@ class OTXNativeModelExporter(OTXModelExporter):
             self._extend_model_metadata(metadata)
             exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
-        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
 
         return Path(save_path)
 
@@ -119,7 +119,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to ONNX format.
@@ -134,7 +134,7 @@ class OTXNativeModelExporter(OTXModelExporter):
 
         onnx_model = onnx.load(save_path)
         onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
-        if precision == OTXExportPrecisionType.FP16:
+        if precision == OTXPrecisionType.FP16:
             from onnxconverter_common import float16
 
             onnx_model = float16.convert_float_to_float16(onnx_model)
