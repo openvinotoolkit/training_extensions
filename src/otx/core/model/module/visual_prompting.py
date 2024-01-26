@@ -292,6 +292,18 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                     for ett in converted_entities["preds"]
                 ]
                 _target = converted_entities["target"]
+                
+                # match #_preds and #_target
+                if len(_preds) > len(_target):
+                    # interpolate _target
+                    num_diff = len(_preds) - len(_target)
+                    for i in range(num_diff):
+                        _target.append(_target[i])
+                elif len(_preds) < len(_target):
+                    num_diff = len(_target) - len(_preds)
+                    for i in range(num_diff):
+                        _preds.append(_preds[i])
+                    
                 _metric.update(preds=_preds, target=_target)
             elif _name in ["IoU", "F1", "Dice"]:
                 # BinaryJaccardIndex, BinaryF1Score, Dice
