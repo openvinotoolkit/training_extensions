@@ -294,7 +294,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         reference_feats: Tensor,
         used_indices: dict[int, list[Tensor]],
         ori_shapes: Tensor
-    ) -> List[List[DefaultDict[int, List[Tensor]]]]:
+    ) -> list[list[defaultdict[int, list[Tensor]]]]:
         """Zero-shot inference with reference features.
 
         Get target results by using reference features and target images' features.
@@ -306,10 +306,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             ori_shapes (Tensor): Original image size.
 
         Returns:
-            (List[List[DefaultDict[int, List[Tensor]]]]): Target results.
-                Lists wrapping results is following this order:
-                    1. Target images
-                    2. Tuple of predicted masks and used points gotten by point selection
+            (list[list[defaultdict[int, list[Tensor]]]]): List of predicted masks and used points.
         """
         assert len(images) == 1, "Only single batch is supported."
 
@@ -419,7 +416,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif is_cascade and i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks = self._postprocess_masks(logits, scores, ori_shape, is_single=True)  # noqa: F821
+                mask_input, masks = self._decide_cascade_results(masks, logits, scores, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
                     return masks
 
@@ -427,7 +424,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif is_cascade and i == 2:
                 # Cascaded Post-refinement-2
-                mask_input, masks = self._postprocess_masks(logits, scores, ori_shape)  # noqa: F821
+                mask_input, masks = self._decide_cascade_results(masks, logits, scores)  # noqa: F821
                 if masks.sum() == 0:
                     return masks
 
@@ -438,16 +435,18 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 point_coords = torch.cat((point_coords, box_coords), dim=1)
                 point_labels = torch.cat((point_labels, self.point_labels_box.to(point_labels.device)), dim=1)
 
-            scores, logits = self(
+            high_res_masks, scores, logits = self(
                 mode=mode,
                 image_embeddings=image_embedding,
                 point_coords=point_coords,
                 point_labels=point_labels,
                 mask_input=mask_input,
                 has_mask_input=has_mask_input,
+                ori_shape=ori_shape,
             )
+            masks = high_res_masks > self.mask_threshold
 
-        _, masks = self._postprocess_masks(logits, scores, ori_shape)
+        _, masks = self._decide_cascade_results(masks, logits, scores)
         return masks
     
     def _preprocess_coords(
@@ -523,17 +522,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
         x = F.pad(x, (0, padw, 0, padh))
         return x
 
-    def _postprocess_masks(
+    def _decide_cascade_results(
         self,
+        masks: Tensor,
         logits: Tensor,
         scores: Tensor,
-        ori_shape: Tensor,
         is_single: bool = False,
     ):
         """Post-process masks for cascaded post-refinements."""
-        high_res_masks = self.postprocess_masks(logits, self.image_size, ori_shape)
-        masks = high_res_masks > self.mask_threshold
-
         if is_single:
             best_idx = 0
         else:

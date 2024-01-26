@@ -8,6 +8,11 @@ model:
     freeze_mask_decoder: True
     default_threshold_reference: 0.3
     default_threshold_target: 0.65
+    # options
+    use_stability_score: False
+    return_single_mask: False
+    return_extra_metrics: False
+    stability_score_offset: 1.
 
 engine:
   task: ZERO_SHOT_VISUAL_PROMPTING

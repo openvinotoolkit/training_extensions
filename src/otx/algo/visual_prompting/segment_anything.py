@@ -46,6 +46,10 @@ class SegmentAnything(nn.Module):
         freeze_image_encoder: bool = True,
         freeze_prompt_encoder: bool = True,
         freeze_mask_decoder: bool = False,
+        use_stability_score: bool = False,
+        return_single_mask: bool = False,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.,
     ) -> None:
         super().__init__()
         if transformer_cfg is None:
@@ -54,6 +58,10 @@ class SegmentAnything(nn.Module):
         self.mask_threshold = mask_threshold
         self.image_size = image_size
         self.embed_dim = embed_dim
+        self.use_stability_score = use_stability_score
+        self.return_single_mask = return_single_mask
+        self.return_extra_metrics = return_extra_metrics
+        self.stability_score_offset = stability_score_offset
 
         self.image_encoder = SAMImageEncoder(backbone=backbone)
         self.prompt_encoder = SAMPromptEncoder(
@@ -132,7 +140,7 @@ class SegmentAnything(nn.Module):
         point_labels: Tensor,
         mask_input: Tensor,
         has_mask_input: Tensor,
-        # orig_size: Tensor,
+        ori_shape: Tensor,
     ):
         """Forward method for SAM inference (export/deploy).
 
@@ -153,7 +161,7 @@ class SegmentAnything(nn.Module):
             has_mask_input (Tensor): An indicator for the mask input.
                 1 indicates a mask input, 0 indicates no mask input.
                 This input has 1x1 shape due to supporting openvino input layout.
-            orig_size (Tensor): The size of the input image in (H,W) format, before any transformation.
+            ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
                 This input has 1x2 shape due to supporting openvino input layout.
         """
         sparse_embedding = self._embed_points(point_coords, point_labels)
@@ -166,26 +174,24 @@ class SegmentAnything(nn.Module):
             dense_prompt_embeddings=dense_embedding,
         )
 
-        # if self.config.model.use_stability_score:
-        #     scores = self.calculate_stability_score(
-        #         masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
-        #     )
+        if self.use_stability_score:
+            scores = self.calculate_stability_score(
+                masks, self.mask_threshold, self.stability_score_offset
+            )
 
-        # if self.config.model.return_single_mask:
-        #     masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
+        if self.return_single_mask:
+            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
 
-        return scores, masks
-        # TODO (sungchul): apply inner postprocessing
-        # upscaled_masks = self.mask_postprocessing(masks, orig_size[0])
+        upscaled_masks = self.postprocess_masks(masks, self.image_size, ori_shape)
 
-        # if self.config.model.return_extra_metrics:
-        #     stability_scores = self.calculate_stability_score(
-        #         upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
-        #     )
-        #     areas = (upscaled_masks > self.config.model.mask_threshold).sum(-1).sum(-1)
-        #     return upscaled_masks, scores, stability_scores, areas, masks
+        if self.return_extra_metrics:
+            stability_scores = self.calculate_stability_score(
+                upscaled_masks, self.mask_threshold, self.stability_score_offset
+            )
+            areas = (upscaled_masks > self.mask_threshold).sum(-1).sum(-1)
+            return upscaled_masks, scores, stability_scores, areas, masks
 
-        # return upscaled_masks, scores, masks
+        return upscaled_masks, scores, masks
 
     def forward_train(
         self,
@@ -410,6 +416,50 @@ class SegmentAnything(nn.Module):
         scale = longest_side / torch.max(input_image_size)
         transformed_size = scale * input_image_size
         return torch.floor(transformed_size + 0.5).to(torch.int64)
+    
+    def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
+        """Computes the stability score for a batch of masks.
+
+        The stability score is the IoU between the binary masks obtained
+        by thresholding the predicted mask logits at high and low values.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape BxHxW.
+            mask_threshold (float): The threshold used to binarize the masks.
+            threshold_offset (float, optional): The offset used to compute the stability score.
+
+        Returns:
+            stability_scores (Tensor): The stability scores for the batch of masks.
+        """
+        # One mask is always contained inside the other.
+        # Save memory by preventing unnecessary cast to torch.int64
+        intersections = (
+            (masks > (mask_threshold + threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        )
+        unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        return intersections / unions
+    
+    def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> tuple[Tensor, Tensor]:
+        """Selects the best mask from a batch of masks.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape BxMxHxW.
+            iou_preds (Tensor): A batch of predicted IoU scores with shape BxM.
+            num_points (int): The number of points in the input.
+
+        Returns:
+            masks (Tensor): The selected masks with shape Bx1xHxW.
+            iou_preds (Tensor): The selected IoU scores with shape Bx1.
+        """
+        # Determine if we should return the multiclick mask or not from the number of points.
+        # The reweighting is used to avoid control flow.
+        score_reweight = torch.tensor([[1000] + [0] * (self.mask_decoder.num_mask_tokens - 1)]).to(iou_preds.device)
+        score = iou_preds + (num_points - 2.5) * score_reweight
+        best_idx = torch.argmax(score, dim=1)
+        masks = masks[torch.arange(masks.shape[0]), best_idx, :, :].unsqueeze(1)
+        iou_preds = iou_preds[torch.arange(masks.shape[0]), best_idx].unsqueeze(1)
+
+        return masks, iou_preds
 
 
 class OTXSegmentAnything(OTXVisualPromptingModel):
