@@ -162,6 +162,7 @@ def get_configuration(config_path: str | Path) -> dict:
         dict: The configuration dictionary.
     """
     from otx.cli.cli import OTXCLI
+
     with patch_update_configs():
         parser = OTXCLI.engine_subcommand_parser()
         args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)

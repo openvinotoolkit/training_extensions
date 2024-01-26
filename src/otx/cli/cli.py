@@ -6,8 +6,9 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 import yaml
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
@@ -99,7 +100,7 @@ class OTXCLI:
         )
         parser.add_argument(
             "--data_root",
-            type=str,
+            type=Optional[str],
             help="Path to dataset root.",
         )
         parser.add_argument(
@@ -194,7 +195,8 @@ class OTXCLI:
             # If environment is not configured to use Engine, do not add a subcommand for Engine.
             return
         for subcommand in self.engine_subcommands():
-            sub_parser = self.engine_subcommand_parser()
+            parser_kwargs = self._set_default_config_from_auto_configurator()
+            sub_parser = self.engine_subcommand_parser(**parser_kwargs)
 
             sub_parser.link_arguments("data_root", "engine.data_root")
             sub_parser.link_arguments("data_root", "data.config.data_root")
@@ -225,6 +227,23 @@ class OTXCLI:
             self._subcommand_method_arguments[subcommand] = added_arguments
             self._subcommand_parsers[subcommand] = sub_parser
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)
+
+    def _set_default_config_from_auto_configurator(self) -> dict:
+        parser_kwargs = {}
+        data_root = None
+        task = None
+        if "--data_root" in sys.argv:
+            data_root = sys.argv[sys.argv.index("--data_root") + 1]
+        if "--task" in sys.argv:
+            task = sys.argv[sys.argv.index("--task") + 1]
+        enable_auto_config = data_root is not None and "--config" not in sys.argv
+        if enable_auto_config:
+            from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
+
+            auto_configurator = AutoConfigurator(data_root=data_root, task=task)
+            config_file_path = DEFAULT_CONFIG_PER_TASK[auto_configurator.task]
+            parser_kwargs["default_config_files"] = [config_file_path]
+        return parser_kwargs
 
     def _set_extension_subcommands_parser(self, parser_subcommands: _ActionSubCommands) -> None:
         from otx.cli.install import add_install_parser

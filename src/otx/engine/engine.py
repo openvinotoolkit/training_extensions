@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
@@ -19,9 +18,10 @@ from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .auto_configurator import AutoConfigurator
+from .utils.auto_configurator import AutoConfigurator
 
 if TYPE_CHECKING:
+    from pathlib import Path
 
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -114,17 +114,17 @@ class Engine:
             model_name=None if isinstance(model, OTXModel) else model,
         )
 
-        self.datamodule: OTXDataModule = (
+        self._datamodule: OTXDataModule | None = (
             datamodule if datamodule is not None else self._auto_configurator.get_datamodule()
         )
-        self.task = self.datamodule.task
+        self.task = task if task is not None else self._auto_configurator.task
 
         self._trainer: Trainer | None = None
         self._model: OTXModel = (
             model
             if isinstance(model, OTXModel)
             else self._auto_configurator.get_model(
-                num_classes=self.datamodule.meta_info.num_classes,
+                meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
         self.optimizer: OptimizerCallable = (
@@ -397,8 +397,20 @@ class Engine:
             None
         """
         if isinstance(model, str):
-            model = self._auto_configurator.get_model(model, self.datamodule.meta_info.num_classes)
+            model = self._auto_configurator.get_model(model, meta_info=self.datamodule.meta_info)
         self._model = model
+
+    @property
+    def datamodule(self) -> OTXDataModule:
+        """Returns the datamodule object associated with the engine.
+
+        Returns:
+            OTXDataModule: The OTXDataModule object.
+        """
+        if self._datamodule is None:
+            msg = "Please include the `data_root` or `datamodule` when creating the Engine."
+            raise RuntimeError(msg)
+        return self._datamodule
 
     def _build_lightning_module(
         self,
