@@ -1,4 +1,4 @@
- # Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 from __future__ import annotations
@@ -9,8 +9,8 @@ import pytest
 import torch
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
-from otx.core.data.entity.base import Points
 from otx.core.config.data import SubsetConfig
+from otx.core.data.entity.base import Points
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
