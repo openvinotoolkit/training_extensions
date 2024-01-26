@@ -90,7 +90,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for you model."""
+        """Customize OTX output batch data entity if needed for model."""
         raise NotImplementedError
 
     def forward(
@@ -303,7 +303,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for you model."""
+        """Customize OTX output batch data entity if needed for model."""
         raise NotImplementedError
 
     def forward(

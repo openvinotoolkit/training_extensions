@@ -13,7 +13,6 @@ from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
-from otx.core.config.export import ExportConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
@@ -330,8 +329,12 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, checkpoint: str | Path | None = None, export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
-               export_precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32) -> Path:
+    def export(
+        self,
+        checkpoint: str | Path | None = None,
+        export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
+        export_precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+    ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
