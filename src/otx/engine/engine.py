@@ -344,6 +344,21 @@ class Engine:
 
         Returns:
             Path: Path to the exported model.
+
+        Example:
+            >>> engine.export(
+            ...     checkpoint=<checkpoint/path>,
+            ...     export_format=OTXExportFormatType.OPENVINO,
+            ...     export_precision=OTXExportPrecisionType.FP32,
+            ... )
+
+        CLI Usage:
+            1. To export a model, run
+                ```python
+                otx export
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
 
