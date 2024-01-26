@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import logging
 import warnings
-from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -104,15 +103,17 @@ class OTXLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
         """
-        if isinstance(self.hparams.optimizer, partial):
-            optimizer = self.hparams.optimizer(params=self.parameters())
-        else:
-            optimizer = self.hparams.optimizer
+        optimizer = (
+            self.hparams.optimizer(params=self.parameters())
+            if callable(self.hparams.optimizer)
+            else self.hparams.optimizer
+        )
         if self.hparams.scheduler is not None:
-            if isinstance(self.hparams.scheduler, partial):
-                scheduler = self.hparams.scheduler(optimizer=optimizer)
-            else:
-                scheduler = self.hparams.scheduler
+            scheduler = (
+                self.hparams.scheduler(params=self.parameters())
+                if callable(self.hparams.scheduler)
+                else self.hparams.scheduler
+            )
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
