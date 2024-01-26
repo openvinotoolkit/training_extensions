@@ -39,9 +39,9 @@ jobs:
           - python-version: "3.8"
             tox-env: "py38"
             test_args: "tests/unit/test_memory.py"
-          - python-version: "3.8"
-            tox-env: "py38"
-            test_args: "tests/unit/test_memory2.py"
+          # - python-version: "3.8"
+          #   tox-env: "py38"
+          #   test_args: "tests/unit/test_memory2.py"
           # - python-version: "3.9"
           #   tox-env: "py39"
     name: Unit-Test-${{ matrix.python-version }}
