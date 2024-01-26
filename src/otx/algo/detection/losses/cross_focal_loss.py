@@ -8,7 +8,6 @@ from __future__ import annotations
 import torch
 import torch.nn.functional as F  # noqa: N812
 from mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
-from mmdet.models.losses.varifocal_loss import varifocal_loss
 from mmdet.registry import MODELS
 from torch import Tensor, nn
 
@@ -17,37 +16,25 @@ def cross_sigmoid_focal_loss(
     inputs: Tensor,
     targets: Tensor,
     weight: Tensor | None = None,
-    num_classes: int | None = None,
     alpha: float = 0.25,
     gamma: float = 2.0,
     reduction: str = "mean",
     avg_factor: float | None = None,
-    use_vfl: float = False,
     valid_label_mask: Tensor | None = None,
 ) -> Tensor:
     """Cross Focal Loss for ignore labels.
 
     Args:
         inputs: inputs Tensor (N * C).
-        targets: targets Tensor (N), if use_vfl, then Tensor (N * C).
+        targets: targets Tensor (N).
         weight: weight Tensor (N), consists of (binarized label schema * weight).
-        num_classes: number of classes for training.
         alpha: focal loss alpha.
         gamma: focal loss gamma.
         reduction: default = mean.
         avg_factor: average factors.
-        use_vfl: check use vfl.
         valid_label_mask: ignore label mask.
     """
-    cross_mask = inputs.new_ones(inputs.shape, dtype=torch.int8)
-    if valid_label_mask is not None:
-        neg_mask = targets.sum(axis=1) == 0 if use_vfl else targets == num_classes
-        neg_idx = neg_mask.nonzero(as_tuple=True)[0]
-        cross_mask[neg_idx] = valid_label_mask[neg_idx].type(torch.int8)
-
-    if use_vfl:
-        calculate_loss_func = varifocal_loss
-    elif torch.cuda.is_available() and inputs.is_cuda:
+    if torch.cuda.is_available() and inputs.is_cuda:
         calculate_loss_func = sigmoid_focal_loss
     else:
         inputs_size = inputs.size(1)
@@ -55,10 +42,17 @@ def cross_sigmoid_focal_loss(
         targets = targets[:, :inputs_size]
         calculate_loss_func = py_sigmoid_focal_loss
 
-    loss = (
-        calculate_loss_func(inputs, targets, weight=weight, gamma=gamma, alpha=alpha, reduction="none", avg_factor=None)
-        * cross_mask
+    loss = calculate_loss_func(
+        inputs,
+        targets,
+        weight=weight,
+        gamma=gamma,
+        alpha=alpha,
+        reduction="none",
+        avg_factor=None,
     )
+
+    loss = loss * valid_label_mask if valid_label_mask is not None else loss
 
     if reduction == "mean":
         loss = loss.mean() if avg_factor is None else loss.sum() / avg_factor
@@ -73,7 +67,6 @@ class CrossSigmoidFocalLoss(nn.Module):
 
     def __init__(
         self,
-        use_background: bool = False,
         use_sigmoid: bool = True,
         gamma: float = 2.0,
         alpha: float = 0.25,
@@ -85,7 +78,6 @@ class CrossSigmoidFocalLoss(nn.Module):
         self.loss_weight = loss_weight
         self.gamma = gamma
         self.alpha = alpha
-        self.use_background = use_background
         self.use_sigmoid = use_sigmoid
 
         self.cls_criterion = cross_sigmoid_focal_loss
@@ -97,7 +89,6 @@ class CrossSigmoidFocalLoss(nn.Module):
         weight: Tensor | None = None,
         reduction_override: str | None = None,
         avg_factor: float | None = None,
-        use_vfl: bool = False,
         valid_label_mask: Tensor | None = None,
         **kwargs,
     ) -> Tensor:
@@ -106,17 +97,14 @@ class CrossSigmoidFocalLoss(nn.Module):
             msg = f"{reduction_override} is not in (None, none, mean, sum)"
             raise ValueError(msg)
         reduction = reduction_override if reduction_override else self.reduction
-        num_classes = pred.shape[-1] if not self.use_background else pred.shape[-1] - 1
         return self.loss_weight * self.cls_criterion(
             pred,
             targets,
             weight=weight,
-            num_classes=num_classes,
             alpha=self.alpha,
             gamma=self.gamma,
             reduction=reduction,
             avg_factor=avg_factor,
-            use_vfl=use_vfl,
             valid_label_mask=valid_label_mask,
         )
 

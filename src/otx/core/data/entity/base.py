@@ -49,7 +49,7 @@ class ImageInfo(tv_tensors.TVTensor):
     norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0)
     image_color_channel: ImageColorChannel = ImageColorChannel.RGB
-    ignored_labels: list[int] | None = None
+    ignored_labels: list[int]
 
     @classmethod
     def _wrap(
@@ -65,7 +65,7 @@ class ImageInfo(tv_tensors.TVTensor):
         norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
-        ignored_labels: list | None = None,
+        ignored_labels: list[int] | None = None,
     ) -> ImageInfo:
         image_info = dummy_tensor.as_subclass(cls)
         image_info.img_idx = img_idx
@@ -77,7 +77,7 @@ class ImageInfo(tv_tensors.TVTensor):
         image_info.norm_mean = norm_mean
         image_info.norm_std = norm_std
         image_info.image_color_channel = image_color_channel
-        image_info.ignored_labels = ignored_labels
+        image_info.ignored_labels = ignored_labels if ignored_labels else []
         return image_info
 
     def __new__(  # noqa: D102
@@ -91,7 +91,7 @@ class ImageInfo(tv_tensors.TVTensor):
         norm_mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         norm_std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
-        ignored_labels: list | None = None,
+        ignored_labels: list[int] | None = None,
     ) -> ImageInfo:
         return cls._wrap(
             dummy_tensor=Tensor(),

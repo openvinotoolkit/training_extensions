@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 @MODELS.register_module()
 class CustomRoIHead(StandardRoIHead):
-    """CustomROIHead class for OTX."""
+    """CustomRoIHead class for OTX."""
 
     def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: list[DetDataSample]) -> dict:
         """Perform forward propagation and loss calculation of the detection roi on the features.

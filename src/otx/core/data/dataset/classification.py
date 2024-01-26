@@ -76,7 +76,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     def _get_item_impl(self, index: int) -> MultilabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        ignored_labels: list | None = None  # This should be assigned form item
+        ignored_labels: list[int] = []  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
@@ -96,10 +96,10 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
 
         return self._apply_transforms(entity)
 
-    def _convert_to_onehot(self, labels: torch.tensor, ignored_labels: list | None) -> torch.tensor:
+    def _convert_to_onehot(self, labels: torch.tensor, ignored_labels: list[int]) -> torch.tensor:
         """Convert label to one-hot vector format."""
         onehot = functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
-        if ignored_labels is not None:
+        if ignored_labels:
             for ignore_label in ignored_labels:
                 onehot[ignore_label] = -1
         return onehot
@@ -130,11 +130,11 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
     def _get_item_impl(self, index: int) -> HlabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        ignored_labels: list | None = None  # This should be assigned form item
+        ignored_labels: list[int] = []  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
-        hlabel_labels = self._convert_label_to_hlabel_format(label_anns)
+        hlabel_labels = self._convert_label_to_hlabel_format(label_anns, ignored_labels)
 
         entity = HlabelClsDataEntity(
             image=img_data,
@@ -150,7 +150,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         return self._apply_transforms(entity)
 
-    def _convert_label_to_hlabel_format(self, label_anns: list[Label], ignored_labels: list | None = None) -> list[int]:
+    def _convert_label_to_hlabel_format(self, label_anns: list[Label], ignored_labels: list[int]) -> list[int]:
         """Convert format of the label to the h-label.
 
         It converts the label format to h-label format.
@@ -187,7 +187,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
-            elif ignored_labels is None or ann.label not in ignored_labels:
+            elif not ignored_labels or ann.label not in ignored_labels:
                 class_indices[num_multiclass_heads + in_group_idx] = 1
             else:
                 class_indices[num_multiclass_heads + in_group_idx] = -1
