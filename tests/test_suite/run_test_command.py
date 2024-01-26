@@ -147,7 +147,8 @@ def otx_train_testing(template, root, otx_dir, args, deterministic=True):
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth")
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/models/label_schema.json")
-    assert os.path.exists(f"{template_work_dir}/resource_usage.yaml")
+    if "--track-resource-usage" in args:
+        assert os.path.exists(f"{template_work_dir}/resource_usage.yaml")
 
 
 def otx_resume_testing(template, root, otx_dir, args):
