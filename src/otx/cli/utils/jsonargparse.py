@@ -137,7 +137,11 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg[dest].append(cfg_path)
 
 
-# For Auto-Configuration CLI
+# [FIXME] harimkang: have to see if there's a better way to do it. (For now, Added 2 lines to existing function)
+# The thing called `overrides` is only available in OTXCLI via `apply_config`.
+# Currently, default_config_files in jsonargparse is loading the default config file without using the ActionConfigFile,
+# and it's not updating the overrides properly in the process.
+# So this function patches to allow configs to come in via `default_config_files` with `overrides` applied.
 def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) -> Namespace:
     """Returns a namespace with all default values.
 

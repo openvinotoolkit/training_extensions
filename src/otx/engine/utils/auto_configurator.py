@@ -104,13 +104,26 @@ def get_num_classes_from_meta_info(task: OTXTaskType, meta_info: LabelInfo) -> i
 
 
 class AutoConfigurator:
-    """Class responsible for auto configuration of data and model in OTX.
+    """This Class is used to configure the OTXDataModule, OTXModel, Optimizer, and Scheduler with OTX Default.
 
     Args:
         data_root (str | Path | None, optional): The root directory for data storage. Defaults to None.
         task (OTXTaskType | None, optional): The current task. Defaults to None.
         model_name (str | None, optional): Name of the model to use as the default.
             If None, the default model will be used. Defaults to None.
+
+    Example:
+        The following examples show how to use the AutoConfigurator class.
+
+        >>> auto_configurator = AutoConfigurator(
+        ...     data_root=<dataset/path>,
+        ...     task=<OTXTaskType>,
+        ... )
+
+        # If task is None, the task will be configured based on the data root.
+        >>> auto_configurator = AutoConfigurator(
+        ...     data_root=<dataset/path>,
+        ... )
     """
 
     def __init__(
@@ -209,6 +222,20 @@ class AutoConfigurator:
 
         Returns:
             OTXModel: The instantiated OTXModel instance.
+
+        Example:
+            The following examples show how to get the OTXModel class.
+
+            # If model_name is None, the default model will be used from task.
+            >>> auto_configurator.get_model(
+            ...     meta_info=<LabelInfo>,
+            ... )
+
+            # If model_name is str, the default config file is changed.
+            >>> auto_configurator.get_model(
+            ...     model_name=<model_name, str>,
+            ...     meta_info=<LabelInfo>,
+            ... )
         """
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
