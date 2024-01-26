@@ -46,7 +46,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        num_classes = otx_model.config.get("head", {}).get("num_classes", None)
+        num_classes = otx_model.num_classes
         self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
         self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
 
@@ -140,7 +140,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        self.num_labels = otx_model.config.get("head", {}).get("num_classes", None)
+        self.num_labels = otx_model.num_classes
 
         self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
         self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
@@ -238,7 +238,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.hlabel_info = self.meta_info.hlabel_info
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
-        self.model.model.head.set_hlabel_info(self.hlabel_info)
+        self.model.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
         self.num_labels = len(self.meta_info.label_names)

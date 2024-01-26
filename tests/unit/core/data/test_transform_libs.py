@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+ # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 from __future__ import annotations
@@ -7,8 +7,10 @@ from typing import Any
 
 import pytest
 import torch
+from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
 from otx.core.data.entity.base import Points
+from otx.core.config.data import SubsetConfig
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
@@ -114,14 +116,17 @@ class TestResizetoLongestEdge:
 
 
 class TestTorchVisionTransformLib:
-    @pytest.fixture()
-    def fxt_config(self) -> list[dict[str, Any]]:
-        # >>> transforms = v2.Compose([
-        # >>>     v2.RandomResizedCrop(size=(224, 224), antialias=True),
-        # >>>     v2.RandomHorizontalFlip(p=0.5),
-        # >>>     v2.ToDtype(torch.float32, scale=True),
-        # >>>     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        # >>> ])
+    @pytest.fixture(params=["from_dict", "from_list", "from_compose"])
+    def fxt_config(self, request) -> list[dict[str, Any]]:
+        if request.param == "from_compose":
+            return v2.Compose(
+                [
+                    v2.RandomResizedCrop(size=(224, 224), antialias=True),
+                    v2.RandomHorizontalFlip(p=0.5),
+                    v2.ToDtype(torch.float32, scale=True),
+                    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                ],
+            )
         prefix = "torchvision.transforms.v2"
         cfg = f"""
         transforms:
@@ -141,7 +146,14 @@ class TestTorchVisionTransformLib:
                 mean: [0.485, 0.456, 0.406]
                 std: [0.229, 0.224, 0.225]
         """
-        return OmegaConf.create(cfg)
+        created = OmegaConf.create(cfg)
+        if request.param == "from_obj":
+            return SubsetConfig(
+                batch_size=1,
+                subset_name="dummy",
+                transforms=[instantiate_class(args=(), init=transform) for transform in created.transforms],
+            )
+        return created
 
     def test_transform(
         self,

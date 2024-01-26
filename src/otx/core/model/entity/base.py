@@ -10,6 +10,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
+from openvino.model_api.models import Model
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -21,13 +22,11 @@ from otx.core.data.entity.base import (
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.types.export import OTXExportFormat
 from otx.core.utils.build import get_default_num_async_infer_requests
-from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
-    from omegaconf import DictConfig
 
 
 class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
@@ -231,20 +230,27 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         num_classes: Number of classes this model can predict.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
-        self.model_name = config.pop("model_name")
-        self.model_type = config.pop("model_type")
-        self.async_inference = config.pop("async_inference", False)
-        self.num_requests = config.pop("max_num_requests", get_default_num_async_infer_requests())
-        self.use_throughput_mode = config.pop("use_throughput_mode", False)
-        self.config = config
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        self.model_name = model_name
+        self.model_type = model_type
+        self.async_inference = async_inference
+        self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
+        self.use_throughput_mode = use_throughput_mode
+        self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
         super().__init__(num_classes)
 
-    def _create_model(self) -> nn.Module:
+    def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from openvino.model_api.models import Model
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:
@@ -257,7 +263,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             plugin_config=plugin_config,
         )
 
-        return Model.create_model(model_adapter, model_type=self.model_type)
+        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image

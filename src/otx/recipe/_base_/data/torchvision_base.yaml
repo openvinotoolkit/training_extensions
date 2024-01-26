@@ -3,6 +3,7 @@ config:
   mem_cache_size: 1GB
   mem_cache_img_max_size: null
   image_color_channel: RGB
+  stack_images: False
   data_format: imagenet_with_subset_dirs
   train_subset:
     subset_name: train

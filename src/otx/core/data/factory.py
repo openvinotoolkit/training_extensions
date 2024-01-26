@@ -81,6 +81,7 @@ class OTXDatasetFactory:
             "mem_cache_handler": mem_cache_handler,
             "mem_cache_img_max_size": cfg_data_module.mem_cache_img_max_size,
             "image_color_channel": cfg_data_module.image_color_channel,
+            "stack_images": cfg_data_module.stack_images,
         }
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
