@@ -187,11 +187,11 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
         return {"preds": pred_info, "target": target_info}
 
-    def _inference_step(self, metric: MetricCollection, inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity, batch_idx: int) -> None:
+    def _inference_step(self, metric: MetricCollection, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
         """Perform a single inference step on a batch of data from the inference set."""
         preds = self.model(inputs)
 
-        if not isinstance(preds, (VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchPredEntity)):
+        if not isinstance(preds, VisualPromptingBatchPredEntity):
             raise TypeError(preds)
 
         converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
