@@ -5,7 +5,7 @@
 ### Requirements
 
 CUDA > 11.8
-torchvision >0.16
+torchvision > 0.16
 
 ### With Conda
 

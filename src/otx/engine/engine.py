@@ -268,7 +268,6 @@ class Engine:
             dataloaders=datamodule,
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
-        saliency_maps = self.trainer.model.model.explain_hook.records
 
         return self.trainer.callback_metrics
 
