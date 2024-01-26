@@ -35,7 +35,7 @@ except ImportError:
 class OTXCLI:
     """OTX CLI entrypoint."""
 
-    def __init__(self, run: bool = True) -> None:
+    def __init__(self) -> None:
         """Initialize OTX CLI."""
         self.console = Console()
         self._subcommand_method_arguments: dict[str, list[str]] = {}
@@ -45,9 +45,7 @@ class OTXCLI:
             self.config = self.parser.parse_args(_skip_check=True)
 
         self.subcommand = self.config["subcommand"]
-
-        if run:
-            self.run()
+        self.run()
 
     def init_parser(self) -> ArgumentParser:
         """Initialize the argument parser for the OTX CLI.
