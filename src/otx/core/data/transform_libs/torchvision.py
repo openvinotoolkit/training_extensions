@@ -48,6 +48,9 @@ def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:
     return h, w
 
 
+tvt_v2._utils.query_size = custom_query_size
+
+
 class PerturbBoundingBoxes(tvt_v2.Transform):
     """Perturb bounding boxes with random offset value."""
 
@@ -71,7 +74,7 @@ class PadtoSquare(tvt_v2.Transform):
     """Pad skewed image to square with zero padding."""
 
     def _get_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
-        height, width = custom_query_size(flat_inputs)  # noqa: SLF001
+        height, width = tvt_v2._utils.query_size(flat_inputs)  # noqa: SLF001
         max_dim = max(width, height)
         pad_w = max_dim - width
         pad_h = max_dim - height
