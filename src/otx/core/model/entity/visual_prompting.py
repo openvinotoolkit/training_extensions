@@ -6,7 +6,12 @@
 from __future__ import annotations
 
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity
+from otx.core.data.entity.visual_prompting import (
+    VisualPromptingBatchDataEntity,
+    VisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingBatchDataEntity,
+    ZeroShotVisualPromptingBatchPredEntity,
+)
 from otx.core.model.entity.base import OTXModel
 
 
@@ -17,8 +22,8 @@ class OTXVisualPromptingModel(
 
     def __init__(self, num_classes: int = 0) -> None:
         super().__init__(num_classes=num_classes)
-        
-        
+
+
 class OTXZeroShotVisualPromptingModel(
     OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
 ):

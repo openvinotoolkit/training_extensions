@@ -31,8 +31,8 @@ class TilerConfig:
     enable_tiler: bool = False
     grid_size: Tuple[int, int] = (2, 2)
     overlap: float = 0.0
-    
-    
+
+
 @dataclass
 class VisualPromptingConfig:
     """DTO for visual prompting data module configuration."""
@@ -58,5 +58,5 @@ class DataModuleConfig:
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: Optional[Tuple[int, int]] = None
     image_color_channel: ImageColorChannel = ImageColorChannel.RGB
-    
+
     include_polygons: bool = False

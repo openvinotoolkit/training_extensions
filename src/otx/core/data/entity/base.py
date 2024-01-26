@@ -430,6 +430,7 @@ def _pad_bounding_boxes_dispatch(
 
 @F.register_kernel(functional=F.get_size, tv_tensor_cls=Points)
 def get_size_points(point: Points) -> list[int]:
+    """Get size of points."""
     return list(point.canvas_size)
 
 

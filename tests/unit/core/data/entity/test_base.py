@@ -6,7 +6,7 @@
 import pytest
 import torch
 import torchvision.transforms.v2 as tvt
-import torchvision.transforms.v2.functional as F
+import torchvision.transforms.v2.functional as F  # noqa: N812
 from otx.core.data.entity.base import ImageType, OTXBatchDataEntity, OTXDataEntity, Points
 from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 
@@ -152,8 +152,8 @@ class TestPoints:
         )
 
         assert str(results.points) == "Points([8., 9.], canvas_size=(16, 14))"
-        
-    def test_get_size(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity):
+
+    def test_get_size(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
         results = F.get_size(fxt_visual_prompting_data_entity.points)
 
         assert results == [10, 10]

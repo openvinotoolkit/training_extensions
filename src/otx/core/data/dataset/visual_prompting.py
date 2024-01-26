@@ -11,12 +11,21 @@ from typing import Callable
 import numpy as np
 import torch
 import torchvision.transforms.v2.functional as F  # noqa: N812
-from datumaro import DatasetSubset, Image, Polygon, Mask, Bbox, Points
+from datumaro import Bbox as dmBbox
+from datumaro import DatasetSubset
+from datumaro import Image as dmImage
+from datumaro import Mask as dmMask
+from datumaro import Points as dmPoints
+from datumaro import Polygon as dmPolygon
 from torchvision import tv_tensors
-from collections import defaultdict
 
 from otx.core.data.entity.base import ImageInfo, Points
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingDataEntity, ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingDataEntity
+from otx.core.data.entity.visual_prompting import (
+    VisualPromptingBatchDataEntity,
+    VisualPromptingDataEntity,
+    ZeroShotVisualPromptingBatchDataEntity,
+    ZeroShotVisualPromptingDataEntity,
+)
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .base import OTXDataset, Transforms
@@ -53,7 +62,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
 
     def _get_item_impl(self, index: int) -> VisualPromptingDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
-        img = item.media_as(Image)
+        img = item.media_as(dmImage)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         gt_bboxes, gt_points = [], []
@@ -62,7 +71,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         gt_labels = defaultdict(list)
 
         for annotation in item.annotations:
-            if isinstance(annotation, Polygon):
+            if isinstance(annotation, dmPolygon):
                 mask = polygon_to_bitmap([annotation], *img_shape)[0]
                 mask_points = np.nonzero(mask)
                 if len(mask_points[0]) == 0:
@@ -174,12 +183,12 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
 
     def _get_item_impl(self, index: int) -> ZeroShotVisualPromptingDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
-        img = item.media_as(Image)
+        img = item.media_as(dmImage)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         gt_prompts, gt_masks, gt_polygons, gt_labels = [], [], [], []
         for annotation in item.annotations:
-            if isinstance(annotation, Polygon):
+            if isinstance(annotation, dmPolygon):
                 # generate prompts from polygon
                 mask = polygon_to_bitmap([annotation], *img_shape)[0]
                 mask_points = np.nonzero(mask)
@@ -209,16 +218,12 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                 gt_labels.append(annotation.label)
                 gt_masks.append(mask)
                 gt_polygons.append(annotation)
-            
-            # TODO(sungchul): for mask, bounding box, and point annotation
-            elif isinstance(annotation, Mask):
-                pass
-            elif isinstance(annotation, Bbox):
-                pass
-            elif isinstance(annotation, Points):
+
+            # TODO(sungchul): for mask, bounding box, and point annotation # noqa: TD003
+            elif isinstance(annotation, (dmBbox, dmMask, dmPoints)):
                 pass
 
-        assert len(gt_prompts) > 0, "#prompts must be greater than 0."
+        assert len(gt_prompts) > 0, "#prompts must be greater than 0."  # noqa: S101
 
         labels = torch.as_tensor(gt_labels, dtype=torch.int64)
         masks = tv_tensors.Mask(np.stack(gt_masks, axis=0), dtype=torch.uint8)

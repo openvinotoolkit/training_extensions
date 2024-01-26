@@ -6,7 +6,12 @@
 import torch
 from datumaro import Polygon
 from otx.core.data.entity.base import ImageInfo, Points
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingDataEntity, ZeroShotVisualPromptingDataEntity, ZeroShotVisualPromptingBatchDataEntity
+from otx.core.data.entity.visual_prompting import (
+    VisualPromptingBatchDataEntity,
+    VisualPromptingDataEntity,
+    ZeroShotVisualPromptingBatchDataEntity,
+    ZeroShotVisualPromptingDataEntity,
+)
 from otx.core.types.task import OTXTaskType
 from torch import LongTensor
 from torchvision import tv_tensors
@@ -73,8 +78,8 @@ class TestVisualPromptingBatchDataEntity:
         data_batch = VisualPromptingBatchDataEntity.collate_fn(data_entities)
         assert len(data_batch.imgs_info) == len(data_batch.images)
         assert data_batch.task == OTXTaskType.VISUAL_PROMPTING
-        
-        
+
+
 class TestZeroShotVisualPromptingDataEntity:
     def test_task(self) -> None:
         data_entity = ZeroShotVisualPromptingDataEntity(
@@ -85,7 +90,7 @@ class TestZeroShotVisualPromptingDataEntity:
             polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
             prompts=[
                 tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
-                Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224))
+                Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
             ],
         )
         assert data_entity.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING
@@ -102,7 +107,7 @@ class TestZeroShotVisualPromptingBatchDataEntity:
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
                 prompts=[
                     tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
-                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224))
+                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
                 ],
             ),
             ZeroShotVisualPromptingDataEntity(
@@ -113,7 +118,7 @@ class TestZeroShotVisualPromptingBatchDataEntity:
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
                 prompts=[
                     tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
-                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224))
+                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
                 ],
             ),
             ZeroShotVisualPromptingDataEntity(
@@ -124,7 +129,7 @@ class TestZeroShotVisualPromptingBatchDataEntity:
                 polygons=[Polygon(points=[1, 1, 2, 2, 3, 3, 4, 4])],
                 prompts=[
                     tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 50, 50]), format="xywh", canvas_size=(224, 224)),
-                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224))
+                    Points(data=torch.Tensor([100, 100]), canvas_size=(224, 224)),
                 ],
             ),
         ]

@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import pytest
+import torch
+from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -12,13 +14,13 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingDataEntity,
 )
-from otx.core.data.entity.base import ImageInfo, Points
 from torchvision import tv_tensors
-import torch
 
 
 @pytest.fixture(scope="session")
-def fxt_vpm_data_entity() -> tuple[VisualPromptingDataEntity, VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]:
+def fxt_vpm_data_entity() -> (
+    tuple[VisualPromptingDataEntity, VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]
+):
     img_size = (1024, 1024)
     fake_image = tv_tensors.Image(torch.rand(img_size))
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
@@ -68,7 +70,13 @@ def fxt_vpm_data_entity() -> tuple[VisualPromptingDataEntity, VisualPromptingBat
 
 
 @pytest.fixture(scope="session")
-def fxt_zero_shot_vpm_data_entity() -> tuple[ZeroShotVisualPromptingDataEntity, ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity]:
+def fxt_zero_shot_vpm_data_entity() -> (
+    tuple[
+        ZeroShotVisualPromptingDataEntity,
+        ZeroShotVisualPromptingBatchDataEntity,
+        ZeroShotVisualPromptingBatchPredEntity,
+    ]
+):
     img_size = (1024, 1024)
     fake_image = tv_tensors.Image(torch.rand(img_size))
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)

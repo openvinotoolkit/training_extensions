@@ -49,7 +49,7 @@ class SegmentAnything(nn.Module):
         use_stability_score: bool = False,
         return_single_mask: bool = False,
         return_extra_metrics: bool = False,
-        stability_score_offset: float = 1.,
+        stability_score_offset: float = 1.0,
     ) -> None:
         super().__init__()
         if transformer_cfg is None:
@@ -124,14 +124,14 @@ class SegmentAnything(nn.Module):
                 f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
             )
-            
-    def forward(self, mode: str, *args, **kwargs):
-        assert mode in ["finetuning", "learn", "infer"]
+
+    def forward(self, mode: str, *args, **kwargs) -> Any:  # noqa: ANN401
+        """Forward method for visual prompting task."""
+        assert mode in ["finetuning", "learn", "infer"]  # noqa: S101
         if mode == "finetuning":
             return self.forward_train(*args, **kwargs)
-        else:
-            return self.forward_inference(*args, **kwargs)
-            
+        return self.forward_inference(*args, **kwargs)
+
     @torch.no_grad()
     def forward_inference(
         self,
@@ -141,7 +141,7 @@ class SegmentAnything(nn.Module):
         mask_input: Tensor,
         has_mask_input: Tensor,
         ori_shape: Tensor,
-    ):
+    ) -> tuple[Tensor, ...]:
         """Forward method for SAM inference (export/deploy).
 
         Args:
@@ -176,7 +176,9 @@ class SegmentAnything(nn.Module):
 
         if self.use_stability_score:
             scores = self.calculate_stability_score(
-                masks, self.mask_threshold, self.stability_score_offset
+                masks,
+                self.mask_threshold,
+                self.stability_score_offset,
             )
 
         if self.return_single_mask:
@@ -186,7 +188,9 @@ class SegmentAnything(nn.Module):
 
         if self.return_extra_metrics:
             stability_scores = self.calculate_stability_score(
-                upscaled_masks, self.mask_threshold, self.stability_score_offset
+                upscaled_masks,
+                self.mask_threshold,
+                self.stability_score_offset,
             )
             areas = (upscaled_masks > self.mask_threshold).sum(-1).sum(-1)
             return upscaled_masks, scores, stability_scores, areas, masks
@@ -275,7 +279,7 @@ class SegmentAnything(nn.Module):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
         return post_processed_pred_masks, ious, labels
-    
+
     def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
         """Embed sparse input prompts.
 
@@ -295,7 +299,7 @@ class SegmentAnything(nn.Module):
         """
         point_coords = point_coords + 0.5
         point_coords = point_coords / self.image_size
-        point_embedding = self.prompt_encoder.pe_layer._pe_encoding(point_coords)
+        point_embedding = self.prompt_encoder.pe_layer._pe_encoding(point_coords)  # noqa: SLF001
         point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
 
         point_embedding = point_embedding * (point_labels != -1)
@@ -319,10 +323,12 @@ class SegmentAnything(nn.Module):
             mask_embedding (Tensor): The embedded mask input.
         """
         mask_embedding = has_mask_input * self.prompt_encoder.mask_downscaling(input_mask)
-        mask_embedding = mask_embedding + (1 - has_mask_input) * self.prompt_encoder.no_mask_embed.weight.reshape(
-            1, -1, 1, 1
+        return mask_embedding + (1 - has_mask_input) * self.prompt_encoder.no_mask_embed.weight.reshape(
+            1,
+            -1,
+            1,
+            1,
         )
-        return mask_embedding
 
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
@@ -404,7 +410,7 @@ class SegmentAnything(nn.Module):
         """
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
-        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)
+        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
         masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
 
         orig_size = orig_size.to(torch.int64)
@@ -416,7 +422,7 @@ class SegmentAnything(nn.Module):
         scale = longest_side / torch.max(input_image_size)
         transformed_size = scale * input_image_size
         return torch.floor(transformed_size + 0.5).to(torch.int64)
-    
+
     def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
         """Computes the stability score for a batch of masks.
 
@@ -438,7 +444,7 @@ class SegmentAnything(nn.Module):
         )
         unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
         return intersections / unions
-    
+
     def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> tuple[Tensor, Tensor]:
         """Selects the best mask from a batch of masks.
 

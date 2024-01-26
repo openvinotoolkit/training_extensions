@@ -130,7 +130,7 @@ class OTXDatasetFactory:
             use_bbox = getattr(cfg_data_module.vpm_config, "use_bbox", False)
             use_point = getattr(cfg_data_module.vpm_config, "use_point", False)
             return OTXVisualPromptingDataset(use_bbox=use_bbox, use_point=use_point, **common_kwargs)
-        
+
         if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
             from .dataset.visual_prompting import OTXZeroShotVisualPromptingDataset
 

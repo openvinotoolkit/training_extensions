@@ -109,7 +109,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         assert hasattr(entity, "prompts")
 
         if not use_point:
-            assert all([isinstance(p, BoundingBoxes) for p in entity.prompts])
+            assert all([isinstance(p, BoundingBoxes) for p in entity.prompts])  # noqa: C419
 
         if not use_bbox and use_point:
-            assert all([isinstance(p, Points) for p in entity.prompts])
+            assert all([isinstance(p, Points) for p in entity.prompts])  # noqa: C419

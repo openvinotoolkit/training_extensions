@@ -137,8 +137,8 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
     labels: list[LongTensor]
     polygons: list[Polygon]
     prompts: list[tv_tensors.TVTensor]
-    
-    
+
+
 @dataclass
 class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPromptingDataEntity]):
     """Data entity for zero-shot visual prompting task.
@@ -147,7 +147,7 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
         masks (list[tv_tensors.Mask]): List of masks.
         labels (list[LongTensor]): List of labels.
         polygons (list[list[Polygon]]): List of polygons.
-        prompts (list[list[tv_tensors.BoundingBoxes]]): List of prompts.
+        prompts (list[list[tv_tensors.TVTensor]]): List of prompts.
     """
 
     masks: list[tv_tensors.Mask]
@@ -187,7 +187,10 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
     def pin_memory(self) -> ZeroShotVisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
         super().pin_memory()
-        self.prompts = [[tv_tensors.wrap(prompt.pin_memory(), like=prompt) if prompt is not None else prompt for prompt in prompts] for prompts in self.prompts]
+        self.prompts = [
+            [tv_tensors.wrap(prompt.pin_memory(), like=prompt) if prompt is not None else prompt for prompt in prompts]
+            for prompts in self.prompts
+        ]
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
         return self
@@ -196,3 +199,5 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
 @dataclass
 class ZeroShotVisualPromptingBatchPredEntity(ZeroShotVisualPromptingBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for zero-shot visual prompting task."""
+
+    prompts: list[Points]  # type: ignore[assignment]

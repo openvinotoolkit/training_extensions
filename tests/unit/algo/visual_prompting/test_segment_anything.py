@@ -6,12 +6,10 @@ from __future__ import annotations
 import pytest
 import torch
 from otx.algo.visual_prompting.segment_anything import OTXSegmentAnything, SegmentAnything
-from otx.algo.visual_prompting.encoders.sam_prompt_encoder import PositionEmbeddingRandom
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
-from torch import Tensor, nn
+from torch import Tensor
 from torchvision import tv_tensors
-from unittest.mock import MagicMock
 
 
 class TestSegmentAnything:
@@ -58,7 +56,7 @@ class TestSegmentAnything:
 
         for param in segment_anything.mask_decoder.parameters():
             assert param.requires_grad == (freeze_mask_decoder is False)
-            
+
     @pytest.mark.parametrize(
         "ori_shape",
         [
@@ -68,18 +66,18 @@ class TestSegmentAnything:
             torch.tensor([1280, 1536]),
         ],
     )
-    def test_forward_inference(self, mocker, ori_shape: Tensor):
+    def test_forward_inference(self, mocker, ori_shape: Tensor) -> None:
         """Test forward_inference."""
         mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
         segment_anything = SegmentAnything(backbone="tiny_vit")
         segment_anything.training = False
-        
+
         image_embeddings = torch.zeros(1, 256, 64, 64, dtype=torch.float32)
         point_coords = torch.tensor([[[0, 0], [10, 10]]], dtype=torch.float32)
         point_labels = torch.tensor([[2, 3]], dtype=torch.float32)
         mask_input = torch.zeros(1, 1, 256, 256, dtype=torch.float32)
         has_mask_inputs = torch.tensor([[0.0]])
-        
+
         results = segment_anything.forward_inference(
             image_embeddings=image_embeddings,
             point_coords=point_coords,
@@ -88,7 +86,7 @@ class TestSegmentAnything:
             has_mask_input=has_mask_inputs[0],
             ori_shape=ori_shape,
         )
-        
+
         assert results[0].shape[2:] == torch.Size(ori_shape)
 
     @pytest.mark.parametrize("training", [True, False])
@@ -148,9 +146,9 @@ class TestSegmentAnything:
 
             # check labels
             assert torch.all(results[2][0] == labels[0])
-            
+
     @pytest.mark.parametrize(
-        "point_coords,point_labels,expected",
+        ("point_coords", "point_labels", "expected"),
         [
             (Tensor([[[1, 1]]]), Tensor([[1]]), (1, 1, 256)),
             (Tensor([[[1, 1], [2, 2]]]), Tensor([[2, 3]]), (1, 2, 256)),
@@ -166,7 +164,7 @@ class TestSegmentAnything:
         assert results.shape == expected
 
     @pytest.mark.parametrize(
-        "masks_input,has_mask_input,expected",
+        ("masks_input", "has_mask_input", "expected"),
         [
             (torch.randn(1, 1, 4, 4, dtype=torch.float), torch.tensor([1], dtype=torch.float), (1, 256, 1, 1)),
         ],
@@ -266,9 +264,9 @@ class TestSegmentAnything:
         results = segment_anything.get_prepadded_size(input_image_size, longest_side)
 
         assert torch.all(results == expected)
-        
+
     @pytest.mark.parametrize(
-        "masks,expected",
+        ("masks", "expected"),
         [
             (Tensor([[[-2, -2], [2, 2]]]), 1),
             (Tensor([[[-2, -2], [1, 1]]]), 0),
