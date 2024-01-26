@@ -137,19 +137,86 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg[dest].append(cfg_path)
 
 
+# For Auto-Configuration CLI
+def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) -> Namespace:
+    """Returns a namespace with all default values.
+
+    Args:
+        skip_check: Whether to skip check if configuration is valid.
+
+    Returns:
+        An object with all default values as attributes.
+    """
+    import argparse
+
+    from jsonargparse._actions import _ActionPrintConfig, filter_default_actions
+    from jsonargparse._common import parser_context
+    from jsonargparse._namespace import recreate_branches
+    from jsonargparse._parameter_resolvers import UnknownDefault
+    from jsonargparse._typehints import ActionTypeHint
+    from jsonargparse._util import argument_error, change_to_path_dir
+
+    cfg = Namespace()
+    for action in filter_default_actions(self._actions):
+        if (
+            action.default != argparse.SUPPRESS
+            and action.dest != argparse.SUPPRESS
+            and not isinstance(action.default, UnknownDefault)
+        ):
+            cfg[action.dest] = recreate_branches(action.default)
+
+    self._logger.debug("Loaded parser defaults: %s", cfg)
+
+    default_config_files = self._get_default_config_files()
+    for key, default_config_file in default_config_files:
+        with change_to_path_dir(default_config_file), parser_context(parent_parser=self):
+            cfg_file = self._load_config_parser_mode(default_config_file.get_content(), key=key)
+            cfg = self.merge_config(cfg_file, cfg)
+            if "overrides" in cfg:
+                cfg.__dict__.update(cfg.__dict__.pop("overrides", {}))
+            try:
+                with _ActionPrintConfig.skip_print_config():
+                    cfg = self._parse_common(
+                        cfg=cfg,
+                        env=False,
+                        defaults=False,
+                        with_meta=None,
+                        skip_check=skip_check,
+                        skip_required=True,
+                    )
+            except (TypeError, KeyError, argparse.ArgumentError) as ex:
+                msg = f'Problem in default config file "{default_config_file}": {ex.args[0]}'
+                raise argument_error(msg) from ex
+        meta = cfg.get("__default_config__")
+        if isinstance(meta, list):
+            meta.append(default_config_file)
+        elif isinstance(meta, Path):
+            cfg["__default_config__"] = [meta, default_config_file]
+        else:
+            cfg["__default_config__"] = default_config_file
+        self._logger.debug("Parsed default configuration from path: %s", default_config_file)
+
+    ActionTypeHint.add_sub_defaults(self, cfg)
+
+    return cfg
+
+
 @contextmanager
 def patch_update_configs() -> Iterator[None]:
     """Patch the update and apply_config methods of the given namespace and action_config_file objects."""
     original_update = Namespace.update
     original_apply_config = ActionConfigFile.apply_config
+    original_get_defaults = ArgumentParser.get_defaults
 
     try:
         Namespace.update = update
         ActionConfigFile.apply_config = apply_config
+        ArgumentParser.get_defaults = get_defaults_with_overrides
         yield
     finally:
         Namespace.update = original_update
         ActionConfigFile.apply_config = original_apply_config
+        ArgumentParser.get_defaults = original_get_defaults
 
 
 def get_configuration(config_path: str | Path) -> dict:
