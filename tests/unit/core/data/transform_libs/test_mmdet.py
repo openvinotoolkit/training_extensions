@@ -37,7 +37,7 @@ class TestLoadAnnotations:
 
 class TestPackDetInputs:
     @pytest.mark.parametrize(
-        ("data_entity", "expected"),
+        ("data_entity", "with_point", "expected"),
         [
             (
                 DetDataEntity(
