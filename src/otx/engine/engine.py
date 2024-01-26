@@ -5,12 +5,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
 from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
+from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
@@ -19,8 +21,6 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
@@ -261,12 +261,17 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        # NOTE, trainer.test takes only lightning based checkpoint.
+        # So, it can't take the OTX1.x checkpoint.
+        if self.checkpoint is not None:
+            loaded_checkpoint = torch.load(self.checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
+
         self._build_trainer(**kwargs)
 
         self.trainer.test(
             model=lit_module,
             dataloaders=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
 
         return self.trainer.callback_metrics
@@ -326,6 +331,61 @@ class Engine:
     def export(self, *args, **kwargs) -> None:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
         raise NotImplementedError
+
+    def explain(
+        self,
+        checkpoint: str | Path | None = None,
+        datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        explain_config: ExplainConfig | None = None,
+        **kwargs,
+    ) -> list | None:
+        """Run XAI using the specified model and data.
+
+        Args:
+            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
+            explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
+            **kwargs: Additional keyword arguments for pl.Trainer configuration.
+
+        Returns:
+            list: Saliency maps.
+
+        Example:
+            >>> engine.explain(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ...     explain_config=ExplainConfig(),
+            ... )
+        """
+        import cv2
+
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        if explain_config is None:
+            explain_config = ExplainConfig()
+
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
+
+        lit_module.model.register_explain_hook()
+
+        self._build_trainer(**kwargs)
+
+        self.trainer.predict(
+            model=lit_module,
+            datamodule=datamodule,
+            ckpt_path=ckpt_path,
+        )
+        # Optimize for memory <- TODO(negvet)
+        saliency_maps = self.trainer.model.model.explain_hook.records
+        # Temporary saving saliency map for image 0, class 0 (for tests)
+        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
+        return saliency_maps
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
