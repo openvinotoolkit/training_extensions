@@ -131,7 +131,7 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
-            cfg.__dict__.update(overrides.__dict__)
+            cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
@@ -176,8 +176,9 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
         with change_to_path_dir(default_config_file), parser_context(parent_parser=self):
             cfg_file = self._load_config_parser_mode(default_config_file.get_content(), key=key)
             cfg = self.merge_config(cfg_file, cfg)
-            if "overrides" in cfg:
-                cfg.__dict__.update(cfg.__dict__.pop("overrides", {}))
+            overrides = cfg.__dict__.pop("overrides", None)
+            if overrides is not None:
+                cfg.update(overrides)
             try:
                 with _ActionPrintConfig.skip_print_config():
                     cfg = self._parse_common(
