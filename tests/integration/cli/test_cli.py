@@ -79,7 +79,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported model
+    - 'otx test' with the exported to ONNX/IR model
 
     Args:
         recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
@@ -174,7 +174,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
             *DATASET[task]["overrides"],
             "--checkpoint",
             str(ckpt_files[-1]),
-            "--export_config.export_format",
+            "--export_format",
             f"{fmt}",
         ]
 

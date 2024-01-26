@@ -12,12 +12,13 @@ import torch
 from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
-from otx.core.config.export import ExportConfig
 from otx.core.config.explain import ExplainConfig
+from otx.core.config.export import ExportConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
+from otx.core.types.export import OTXExportFormatType, OTXExportPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
@@ -329,7 +330,8 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, checkpoint: str | Path | None = None, export_config: ExportConfig | None = None, **kwargs) -> Path:
+    def export(self, checkpoint: str | Path | None = None, export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
+               export_precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
@@ -341,8 +343,6 @@ class Engine:
             Path: Path to the exported model.
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-        if export_config is None:
-            export_config = ExportConfig()
 
         if ckpt_path is not None:
             self.model.eval()
@@ -358,8 +358,8 @@ class Engine:
 
             return self.model.export(
                 output_dir=Path(self.work_dir),
-                export_format=export_config.export_format,
-                precision=export_config.precision,
+                export_format=export_format,
+                precision=export_precision,
             )
 
         msg = "To make export, checkpoint must be specified."

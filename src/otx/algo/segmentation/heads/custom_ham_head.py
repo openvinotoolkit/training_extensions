@@ -46,8 +46,7 @@ class CustomLightHamHead(LightHamHead):
 
     Args:
         ham_channels (int): input channels for Hamburger.
-            Defaults: 512.
-        ham_kwargs (int): kwagrs for Ham. Defaults: dict().
+        ham_kwargs (dict): kwagrs for Ham.
     """
 
     def __init__(self, ham_channels: int, ham_kwargs: dict, **kwargs):
