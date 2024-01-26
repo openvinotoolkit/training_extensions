@@ -657,6 +657,8 @@ class OTXZeroShotSegmentAnything(OTXSegmentAnything):
         labels: list[LongTensor] = []
         for predicted_masks, used_points in outputs:
             for label, predicted_mask in predicted_masks.items():
+                if len(predicted_mask) == 0:
+                    continue
                 masks.append(tv_tensors.Mask(torch.stack(predicted_mask, dim=0), dtype=torch.float32))
                 prompts.append(
                     Points(
