@@ -131,7 +131,7 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
-            cfg.__dict__.update(overrides)
+            cfg.__dict__.update(overrides.__dict__)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
