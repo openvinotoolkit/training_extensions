@@ -260,7 +260,6 @@ class Engine:
         if datamodule is None:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
-        lit_module.model.register_explain_hook()
 
         self._build_trainer(**kwargs)
 
@@ -270,9 +269,6 @@ class Engine:
             ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
         saliency_maps = self.trainer.model.model.explain_hook.records
-
-        import cv2
-        cv2.imwrite(f"{self.work_dir}/sal_map2.jpg", saliency_maps[0][0])
 
         return self.trainer.callback_metrics
 

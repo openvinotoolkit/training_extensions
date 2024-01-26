@@ -5,12 +5,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torchvision import tv_tensors
 
-from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
@@ -59,11 +58,13 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             labels=[pred_entity.labels for pred_entity in pred_entities],
         )
 
+
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI hook."""
 
     def register_explain_hook(self) -> None:
         """Register explain hook at the model backbone output."""
+        from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
         from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
 
         # SSD-like heads also have background class
@@ -72,7 +73,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             self.backbone,
             self.cls_head_forward_fn,
             num_classes=self.num_classes + background_class,
-            num_anchors=self.get_num_anchors()
+            num_anchors=self.get_num_anchors(),
         )
 
     @property
@@ -84,18 +85,22 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     @torch.no_grad()
     def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward. Can be redefined at the model's level."""
+        """Performs model's neck and head forward and returns cls scores.
+
+        This can be redefined at the model's level.
+        """
         if (head := getattr(self.model, "bbox_head", None)) is None:
             raise ValueError
 
         if (neck := getattr(self.model, "neck", None)) is not None:
             x = neck(x)
-      
-        head_out = head(x)
-        cls_scores = head_out[0]
-        return cls_scores
 
-    def get_num_anchors(self) -> List[int]:
+        head_out = head(x)
+        # Return the first output form detection head: classification scores
+        return head_out[0]
+
+    def get_num_anchors(self) -> list[int]:
+        """Gets the anchor configuration from model."""
         anchor_generator = getattr(self.model.bbox_head, "prior_generator", None)
         if anchor_generator is not None:
             if hasattr(anchor_generator, "num_base_anchors"):

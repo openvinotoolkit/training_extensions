@@ -5,11 +5,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Sequence, List
+from typing import TYPE_CHECKING, Callable, Sequence
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 if TYPE_CHECKING:
     from torch.utils.hooks import RemovableHandle
@@ -187,10 +186,10 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         self,
         cls_head_forward_fn: Callable,
         num_classes: int,
-        num_anchors: List[int],
+        num_anchors: list[int],
         normalize: bool = True,
-        use_cls_softmax: bool = True
-    )-> None:
+        use_cls_softmax: bool = True,
+    ) -> None:
         super().__init__(normalize)
         self._cls_head_forward_fn = cls_head_forward_fn
         # SSD-like heads also have background class
@@ -205,7 +204,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         backbone: torch.nn.Module,
         cls_head_forward_fn: Callable,
         num_classes: int,
-        num_anchors: List[int]
+        num_anchors: list[int],
     ) -> BaseRecordingForwardHook:
         """Create this object and register it to the module forward hook."""
         hook = cls(
@@ -217,19 +216,19 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         return hook
 
     def func(
-            self, 
-            feature_map: torch.Tensor | Sequence[torch.Tensor],
-            _: int = -1
-        ) -> torch.Tensor:
+        self,
+        feature_map: torch.Tensor | Sequence[torch.Tensor],
+        _: int = -1,
+    ) -> torch.Tensor:
         """Generate the saliency map from raw classification head output, then normalizing to (0, 255).
 
         Args:
-            feature_map (Union[torch.Tensor, List[torch.Tensor]]): Feature maps from backbone/FPN or classification scores from cls_head.
+            feature_map (Union[torch.Tensor, List[torch.Tensor]]): Feature maps from backbone/FPN or
+            classification scores from cls_head.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-
         cls_scores = self._cls_head_forward_fn(feature_map)
 
         middle_idx = len(cls_scores) // 2
@@ -240,15 +239,18 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
             cls_scores_anchorless = []
             for scale_idx, cls_scores_per_scale in enumerate(cls_scores):
                 cls_scores_anchor_grouped = cls_scores_per_scale[batch_idx].reshape(
-                    self._num_anchors[scale_idx], (self._num_classes), *cls_scores_per_scale.shape[-2:]
+                    self._num_anchors[scale_idx],
+                    (self._num_classes),
+                    *cls_scores_per_scale.shape[-2:],
                 )
                 cls_scores_out, _ = cls_scores_anchor_grouped.max(dim=0)
                 cls_scores_anchorless.append(cls_scores_out.unsqueeze(0))
-            cls_scores_anchorless_resized = []
-            for cls_scores_anchorless_per_level in cls_scores_anchorless:
-                cls_scores_anchorless_resized.append(
-                    F.interpolate(cls_scores_anchorless_per_level, (height, width), mode="bilinear")
-                )
+
+            cls_scores_anchorless_resized = [
+                torch.nn.functional.interpolate(cls_scores_anchorless_per_level, (height, width), mode="bilinear")
+                for cls_scores_anchorless_per_level in cls_scores_anchorless
+            ]
+
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
 
         # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
@@ -260,6 +262,4 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
             saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, -1))
             saliency_maps = self._normalize_map(saliency_maps)
 
-        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, height, width))
-
-        return saliency_maps
+        return saliency_maps.reshape((batch_size, self._num_classes, height, width))
