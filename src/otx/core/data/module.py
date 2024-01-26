@@ -157,6 +157,21 @@ class OTXDataModule(LightningDataModule):
             persistent_workers=config.num_workers > 0,
         )
 
+    def predict_dataloader(self) -> DataLoader:
+        """Get test dataloader."""
+        config = self.config.test_subset
+        dataset = self._get_dataset(config.subset_name)
+
+        return DataLoader(
+            dataset=dataset,
+            batch_size=config.batch_size,
+            shuffle=False,
+            num_workers=config.num_workers,
+            pin_memory=True,
+            collate_fn=dataset.collate_fn,
+            persistent_workers=config.num_workers > 0,
+        )
+
     def setup(self, stage: str) -> None:
         """Setup for each stage."""
 
