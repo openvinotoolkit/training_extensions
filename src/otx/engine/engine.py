@@ -349,7 +349,6 @@ class Engine:
 
         if ckpt_path is not None:
             self.model.eval()
-            # self.model.label_info = self.datamodule.meta_info this doesn't work for some models yet
             lit_module = self._build_lightning_module(
                 model=self.model,
                 optimizer=self.optimizer,
@@ -357,6 +356,7 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
+            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
             return self.model.export(
