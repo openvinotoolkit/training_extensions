@@ -136,8 +136,10 @@ class CustomHierarchicalClsHead(BaseModule):
             head_gt = head_gt[valid_mask]
             if len(head_gt) > 0:
                 img_metas = [data_sample.metainfo for data_sample in data_samples]
-                valid_label_mask = self.get_valid_label_mask(img_metas)
                 head_logits = head_logits[valid_mask]
+                valid_label_mask = self.get_valid_label_mask(img_metas).to(head_logits.device)
+                valid_label_mask = valid_label_mask[:, self.hlabel_info.num_single_label_classes :]
+                valid_label_mask = valid_label_mask[valid_mask]
                 losses["loss"] += self.multilabel_loss(head_logits, head_gt, valid_label_mask=valid_label_mask)
 
         return losses
@@ -209,7 +211,7 @@ class CustomHierarchicalClsHead(BaseModule):
 
         return data_samples
 
-    def get_valid_label_mask(self, img_metas: list[dict]) -> list[torch.Tensor]:
+    def get_valid_label_mask(self, img_metas: list[dict]) -> torch.Tensor:
         """Get valid label mask using ignored_label."""
         valid_label_mask = []
         for meta in img_metas:

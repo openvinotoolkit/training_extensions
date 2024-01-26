@@ -91,14 +91,18 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
                 image_color_channel=self.image_color_channel,
                 ignored_labels=ignored_labels,
             ),
-            labels=self._convert_to_onehot(labels),
+            labels=self._convert_to_onehot(labels, ignored_labels),
         )
 
         return self._apply_transforms(entity)
 
-    def _convert_to_onehot(self, labels: torch.tensor) -> torch.tensor:
+    def _convert_to_onehot(self, labels: torch.tensor, ignored_labels: list | None) -> torch.tensor:
         """Convert label to one-hot vector format."""
-        return functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
+        onehot = functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
+        if ignored_labels is not None:
+            for ignore_label in ignored_labels:
+                onehot[ignore_label] = -1
+        return onehot
 
     @property
     def collate_fn(self) -> Callable:
@@ -183,7 +187,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
-            elif ignored_labels is not None and ann.label not in ignored_labels:
+            elif ignored_labels is None or ann.label not in ignored_labels:
                 class_indices[num_multiclass_heads + in_group_idx] = 1
             else:
                 class_indices[num_multiclass_heads + in_group_idx] = -1

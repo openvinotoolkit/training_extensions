@@ -118,14 +118,14 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
             dict[str, Tensor]: a dictionary of loss components
         """
         img_metas = [data_sample.metainfo for data_sample in data_samples]
-        valid_label_mask = self.get_valid_label_mask(img_metas)
         cls_score = self(feats) * self.scale
+        valid_label_mask = self.get_valid_label_mask(img_metas).to(cls_score.device)
 
         losses = super()._get_loss(cls_score, data_samples, valid_label_mask=valid_label_mask, **kwargs)
         losses["loss"] = losses["loss"] / self.scale
         return losses
 
-    def get_valid_label_mask(self, img_metas: list[dict]) -> list[torch.Tensor]:
+    def get_valid_label_mask(self, img_metas: list[dict]) -> torch.Tensor:
         """Get valid label mask using ignored_label."""
         valid_label_mask = []
         for meta in img_metas:

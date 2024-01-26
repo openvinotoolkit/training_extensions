@@ -70,7 +70,7 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             invalid_labels = (valid_label_mask[i] == 0).nonzero(as_tuple=False)
 
             for inv_l in invalid_labels:
-                label[i] = torch.where(label[i] == inv_l.item(), ignore_index, label[i])
+                cls_score = torch.cat((cls_score[:, :inv_l], cls_score[:, inv_l + 1 :]), dim=1)
 
         losses = F.cross_entropy(cls_score, label, reduction="none", ignore_index=ignore_index)
 
