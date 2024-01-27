@@ -70,7 +70,7 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             raise ValueError
 
         output = neck(x)
-        return head(output)
+        return head([output])
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
@@ -527,6 +527,8 @@ class OVHlabelClassificationModel(
     ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
         super().__init__(
             num_classes,
             model_name,
@@ -536,7 +538,6 @@ class OVHlabelClassificationModel(
             use_throughput_mode,
             model_api_configuration,
         )
-        self.model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.

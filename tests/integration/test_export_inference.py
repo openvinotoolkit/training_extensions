@@ -119,7 +119,7 @@ def test_otx_export_infer(
     - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported model
+    - 'otx test' with the exported to ONNX/IR model model
     - compare accuracy of the exported model vs the original accuracy
 
     Args:
@@ -204,7 +204,7 @@ def test_otx_export_infer(
             *DATASET[task]["overrides"],
             "--checkpoint",
             str(ckpt_files[-1]),
-            "--export_config.export_format",
+            "--export_format",
             f"{fmt}",
         ]
 

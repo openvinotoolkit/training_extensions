@@ -12,11 +12,13 @@ import torch
 from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
-from otx.core.config.export import ExportConfig
+from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
@@ -118,6 +120,8 @@ class Engine:
         self._model: OTXModel = model
         self.optimizer: OptimizerCallable = optimizer
         self.scheduler: LRSchedulerCallable = scheduler
+
+    _EXPORTED_MODEL_BASE_NAME = "exported_model"
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -261,12 +265,17 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        # NOTE, trainer.test takes only lightning based checkpoint.
+        # So, it can't take the OTX1.x checkpoint.
+        if self.checkpoint is not None:
+            loaded_checkpoint = torch.load(self.checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
+
         self._build_trainer(**kwargs)
 
         self.trainer.test(
             model=lit_module,
             dataloaders=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
 
         return self.trainer.callback_metrics
@@ -323,7 +332,12 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, checkpoint: str | Path | None = None, export_config: ExportConfig | None = None, **kwargs) -> Path:
+    def export(
+        self,
+        checkpoint: str | Path | None = None,
+        export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
+        export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
@@ -333,14 +347,26 @@ class Engine:
 
         Returns:
             Path: Path to the exported model.
+
+        Example:
+            >>> engine.export(
+            ...     checkpoint=<checkpoint/path>,
+            ...     export_format=OTXExportFormatType.OPENVINO,
+            ...     export_precision=OTXExportPrecisionType.FP32,
+            ... )
+
+        CLI Usage:
+            1. To export a model, run
+                ```python
+                otx export
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-        if export_config is None:
-            export_config = ExportConfig()
 
         if ckpt_path is not None:
             self.model.eval()
-            # self.model.label_info = self.datamodule.meta_info this doesn't work for some models yet
             lit_module = self._build_lightning_module(
                 model=self.model,
                 optimizer=self.optimizer,
@@ -348,12 +374,14 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
+            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
             lit_module.load_state_dict(loaded_checkpoint["state_dict"])
 
             return self.model.export(
                 output_dir=Path(self.work_dir),
-                export_format=export_config.export_format,
-                precision=export_config.precision,
+                base_name=self._EXPORTED_MODEL_BASE_NAME,
+                export_format=export_format,
+                precision=export_precision,
             )
 
         msg = "To make export, checkpoint must be specified."
@@ -369,6 +397,61 @@ class Engine:
             Path: path to the optimized model.
         """
         return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
+
+    def explain(
+        self,
+        checkpoint: str | Path | None = None,
+        datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        explain_config: ExplainConfig | None = None,
+        **kwargs,
+    ) -> list | None:
+        """Run XAI using the specified model and data.
+
+        Args:
+            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
+            explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
+            **kwargs: Additional keyword arguments for pl.Trainer configuration.
+
+        Returns:
+            list: Saliency maps.
+
+        Example:
+            >>> engine.explain(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ...     explain_config=ExplainConfig(),
+            ... )
+        """
+        import cv2
+
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        if explain_config is None:
+            explain_config = ExplainConfig()
+
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
+
+        lit_module.model.register_explain_hook()
+
+        self._build_trainer(**kwargs)
+
+        self.trainer.predict(
+            model=lit_module,
+            datamodule=datamodule,
+            ckpt_path=ckpt_path,
+        )
+        # Optimize for memory <- TODO(negvet)
+        saliency_maps = self.trainer.model.model.explain_hook.records
+        # Temporary saving saliency map for image 0, class 0 (for tests)
+        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
+        return saliency_maps
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.

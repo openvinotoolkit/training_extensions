@@ -129,6 +129,7 @@ class OTXCLI:
             "predict": {"datamodule"}.union(device_kwargs),
             "export": device_kwargs,
             "optimize": {"datamodule"}.union(device_kwargs),
+            "explain": {"datamodule"}.union(device_kwargs),
         }
 
     def add_subcommands(self) -> None:
