@@ -119,7 +119,7 @@ def test_otx_export_infer(
     - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported model
+    - 'otx test' with the exported to ONNX/IR model model
     - compare accuracy of the exported model vs the original accuracy
 
     Args:
@@ -134,7 +134,9 @@ def test_otx_export_infer(
     if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
+    # litehrnet_* models don't support deterministic mode
     model_name = recipe.split("/")[-1].split(".")[0]
+    deterministic_flag = "False" if "litehrnet" in recipe else "True"
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -154,7 +156,7 @@ def test_otx_export_infer(
         "--seed",
         f"{fxt_local_seed}",
         "--deterministic",
-        "True",
+        deterministic_flag,
         *DATASET[task]["overrides"],
     ]
 
@@ -202,7 +204,7 @@ def test_otx_export_infer(
             *DATASET[task]["overrides"],
             "--checkpoint",
             str(ckpt_files[-1]),
-            "--export_config.export_format",
+            "--export_format",
             f"{fmt}",
         ]
 

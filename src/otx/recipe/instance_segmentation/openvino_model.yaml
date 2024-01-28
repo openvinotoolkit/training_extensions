@@ -22,7 +22,7 @@ scheduler:
 
 engine:
   task: INSTANCE_SEGMENTATION
-  device: auto
+  device: cpu
 
 callback_monitor: val/map_50
 

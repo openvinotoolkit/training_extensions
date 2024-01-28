@@ -8,7 +8,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from otx.core.types.export import OTXExportPrecisionType
+from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -27,7 +27,7 @@ class OTXModelExporter:
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
@@ -49,7 +49,7 @@ class OTXModelExporter:
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to ONNX format.

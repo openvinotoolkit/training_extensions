@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """MobileNetV3 model implementation."""
-
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.classification import (
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
@@ -24,6 +24,10 @@ class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
         super()._configure_export_parameters()
         self.export_params["via_onnx"] = True
 
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "hlabel", add_prefix)
+
 
 class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
     """MobileNetV3 Model for multi-label classification task."""
@@ -37,6 +41,10 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
         super()._configure_export_parameters()
         self.export_params["via_onnx"] = True
 
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "multiclass", add_prefix)
+
 
 class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
     """MobileNetV3 Model for multi-class classification task."""
@@ -48,3 +56,7 @@ class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
     def _configure_export_parameters(self) -> None:
         super()._configure_export_parameters()
         self.export_params["via_onnx"] = True
+
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "multilabel", add_prefix)

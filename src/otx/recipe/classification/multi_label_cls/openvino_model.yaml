@@ -34,6 +34,6 @@ overrides:
     task: MULTI_LABEL_CLS
     config:
       image_color_channel: RGB
+      data_format: datumaro
       test_subset:
         batch_size: 128
-      data_format: datumaro

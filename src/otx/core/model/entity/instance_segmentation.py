@@ -206,7 +206,9 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         )
 
 
-class OVInstanceSegmentationModel(OVModel):
+class OVInstanceSegmentationModel(
+    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
+):
     """Instance segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository

@@ -29,7 +29,6 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
-    from openvino.model_api.models import Model
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
@@ -71,7 +70,7 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             raise ValueError
 
         output = neck(x)
-        return head(output)
+        return head([output])
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
@@ -479,7 +478,9 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         return OTXNativeModelExporter(**self.export_params)
 
 
-class OVMulticlassClassificationModel(OVModel):
+class OVMulticlassClassificationModel(
+    OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+):
     """Classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -503,7 +504,9 @@ class OVMulticlassClassificationModel(OVModel):
         )
 
 
-class OVHlabelClassificationModel(OVModel):
+class OVHlabelClassificationModel(
+    OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+):
     """Hierarchical classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -512,14 +515,29 @@ class OVHlabelClassificationModel(OVModel):
 
     def __init__(
         self,
-        *args,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
         num_multiclass_heads: int = 1,
         num_multilabel_classes: int = 0,
-        **kwargs,
     ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
-        super().__init__(*args, **kwargs)
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
@@ -527,12 +545,9 @@ class OVHlabelClassificationModel(OVModel):
         Since OV IR model consist of all required hierarchy information,
         this method serves as placehloder
         """
-        return
-
-    def _create_model(self, *args) -> Model:
-        # confidence_threshold is 0.0 to return scores for all multilabel classes
-        model_api_configuration = {"hierarchical": True, "confidence_threshold": 0.0}
-        return super()._create_model(model_api_configuration)
+        if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
+            msg = "OpenVINO IR model should have hierarchical config embedded in rt_info of the model"
+            raise ValueError(msg)
 
     def _customize_outputs(
         self,
@@ -551,17 +566,36 @@ class OVHlabelClassificationModel(OVModel):
         )
 
 
-class OVMultilabelClassificationModel(OVModel):
+class OVMultilabelClassificationModel(
+    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+):
     """Multilabel classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
-    def _create_model(self, *args) -> Model:
-        # confidence_threshold is 0.0 to return scores for all classes
-        model_api_configuration = {"multilabel": True, "confidence_threshold": 0.0}
-        return super()._create_model(model_api_configuration)
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
 
     def _customize_outputs(
         self,

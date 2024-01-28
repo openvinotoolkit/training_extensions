@@ -8,6 +8,7 @@ from typing import Literal
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
 
 
@@ -24,3 +25,7 @@ class LiteHRNet(MMSegCompatibleModel):
         self.export_params["onnx_export_configuration"] = {
             "operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK,
         }
+
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_seg_lite_hrnet_ckpt(state_dict, add_prefix)
