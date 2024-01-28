@@ -11,8 +11,8 @@ from pathlib import Path
 from demo_package import AsyncExecutor, ModelWrapper, SyncExecutor, create_visualizer
 
 
-def build_argparser():
-    """Parses command line arguments."""
+def build_argparser() -> ArgumentParser:
+    """Returns an ArgumentParser for parsing command line arguments."""
     parser = ArgumentParser(add_help=False)
     args = parser.add_argument_group("Options")
     args.add_argument(
@@ -85,12 +85,13 @@ EXECUTORS = {
 }
 
 
-def main():
+def main() -> int:
     """Main function that is used to run demo."""
     args = build_argparser().parse_args()
 
     if args.loop and args.output:
-        raise ValueError("--loop and --output cannot be both specified")
+        msg = "--loop and --output cannot be both specified"
+        raise ValueError(msg)
 
     # create models
     model = ModelWrapper(args.model[0], device=args.device)
@@ -103,6 +104,8 @@ def main():
     demo = inferencer(model, visualizer)
     demo.run(args.input, args.loop and not args.no_show)
 
+    return 0
+
 
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(main())

@@ -8,8 +8,6 @@ from .streamer import (
     CameraStreamer,
     DirStreamer,
     ImageStreamer,
-    InvalidInput,
-    OpenError,
     ThreadedStreamer,
     VideoStreamer,
     get_streamer,
@@ -21,8 +19,6 @@ __all__ = [
     "ImageStreamer",
     "ThreadedStreamer",
     "VideoStreamer",
-    "InvalidInput",
-    "OpenError",
     "BaseStreamer",
     "get_streamer",
 ]

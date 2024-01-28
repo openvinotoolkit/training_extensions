@@ -63,7 +63,7 @@ class OTXModelExporter:
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to zip folder final OV IR model with runable demo.
@@ -84,12 +84,14 @@ class OTXModelExporter:
         from otx.core.exporter.exportable_code import demo
 
         work_dir = Path(demo.__file__).parent
-        parameters = {}
-        parameters["type_of_model"] = metadata[("model_info", "task_type")]
-        parameters["converter_type"] = metadata[("model_info", "model_type")]
-        parameters["model_parameters"] = {}
-        parameters["model_parameters"]["labels"] = metadata[("model_info", "labels")]
-        parameters["model_parameters"]["labels_ids"] = metadata[("model_info", "label_ids")]
+        parameters: dict[str, Any] = {}
+        if metadata is not None:
+            parameters["type_of_model"] = metadata.get(("model_info", "task_type"), "")
+            parameters["converter_type"] = metadata.get(("model_info", "model_type"), "")
+            parameters["model_parameters"] = {
+                "labels": metadata.get(("model_info", "labels"), ""),
+                "labels_ids": metadata.get(("model_info", "label_ids"), ""),
+            }
         zip_buffer = io.BytesIO()
         temp_dir = tempfile.TemporaryDirectory()
         with ZipFile(zip_buffer, "w") as arch:

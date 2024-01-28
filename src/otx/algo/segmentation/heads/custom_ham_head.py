@@ -42,9 +42,7 @@ class CustomNMF2D(NMF2D):
         x = torch.bmm(bases, coef.transpose(1, 2))
 
         # (B * S, D, N) -> (B, C, H, W)
-        x = x.view(batch, channels, height, width)
-
-        return x
+        return x.view(batch, channels, height, width)
 
 
 @MODELS.register_module()

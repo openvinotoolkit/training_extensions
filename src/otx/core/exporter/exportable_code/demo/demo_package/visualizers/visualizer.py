@@ -6,10 +6,16 @@
 
 import logging as log
 import time
-from typing import Optional
+from typing import List, NamedTuple, Optional
 
 import cv2
 import numpy as np
+from openvino.model_api.models.utils import (
+    ClassificationResult,
+    DetectionResult,
+    InstanceSegmentationResult,
+    SegmentedObject,
+)
 from openvino.model_api.performance_metrics import put_highlighted_text
 
 from ..streamer import BaseStreamer
@@ -17,15 +23,26 @@ from .vis_utils import ColorPalette
 
 
 class BaseVisualizer:
-    """Base clss for visualizators."""
+    """Base class for visualizators."""
 
     def __init__(
         self,
         window_name: Optional[str] = None,
         no_show: bool = False,
         delay: Optional[int] = None,
-        output: Optional[str] = "./outputs/model_visualization",
+        output: str = "./outputs",
     ) -> None:
+        """Base class for visualizators.
+
+        Args:
+            window_name (Optional[str]): The name of the window. Defaults to None.
+            no_show (bool): Flag to indicate whether to show the window. Defaults to False.
+            delay (Optional[int]): The delay in seconds. Defaults to None.
+            output (Optional[str]): The output directory. Defaults to "./outputs".
+
+        Returns:
+            None
+        """
         self.window_name = "Window" if window_name is None else window_name
 
         self.delay = delay
@@ -36,17 +53,14 @@ class BaseVisualizer:
 
     def draw(
         self,
-        image: np.ndarray,
-        predictions: list,
-        meta: dict,
-        output_transform: Optional[list] = None,
+        frame: np.ndarray,
+        predictions: NamedTuple,
     ) -> np.ndarray:
         """Draw annotations on the image.
 
         Args:
-            image: Input image
-            annotation: Annotations to be drawn on the input image
-            metadata: Metadata is needed to render
+            frame: Input image
+            predictions: Annotations to be drawn on the input image
 
         Returns:
             Output image with annotations.
@@ -69,7 +83,7 @@ class BaseVisualizer:
 
         return ord("q") == cv2.waitKey(self.delay)
 
-    def video_delay(self, elapsed_time: float, streamer: BaseStreamer):
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer) -> None:
         """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
 
         Args:
@@ -79,7 +93,8 @@ class BaseVisualizer:
         if self.no_show:
             return
         if "VIDEO" in str(streamer.get_type()):
-            orig_frame_time = 1 / streamer.fps()
+            fps_num = streamer.fps()
+            orig_frame_time = 1 / fps_num
             if elapsed_time < orig_frame_time:
                 time.sleep(orig_frame_time - elapsed_time)
 
@@ -96,9 +111,7 @@ class ClassificationVisualizer(BaseVisualizer):
     def draw(
         self,
         frame: np.ndarray,
-        predictions: list,
-        meta: Optional[dict] = None,
-        output_transform: Optional[list] = None,
+        predictions: ClassificationResult,
     ) -> np.ndarray:
         """Draw classification annotations on the image.
 
@@ -109,9 +122,6 @@ class ClassificationVisualizer(BaseVisualizer):
         Returns:
             Output image with annotations.
         """
-        if output_transform is not None:
-            frame = output_transform.resize(frame)
-
         predictions = predictions.top_labels
         class_label = predictions[0][1]
         font_scale = 0.7
@@ -160,12 +170,33 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
         >>> visualizer.show(output)
     """
 
-    def __init__(self, *args, labels, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        labels: List[str],
+        window_name: Optional[str] = None,
+        no_show: bool = False,
+        delay: Optional[int] = None,
+        output: str = "./outputs",
+    ) -> None:
+        """Semantic segmentation visualizer.
+
+        Draws the segmentation masks on the input image.
+
+        Parameters:
+            labels (List[str]): List of labels.
+            window_name (Optional[str]): Name of the window (default is None).
+            no_show (bool): Flag indicating whether to show the window (default is False).
+            delay (Optional[int]): Delay in milliseconds (default is None).
+            output (Optional[str]): Output path (default is "./outputs").
+
+        Returns:
+            None
+        """
+        super().__init__(window_name, no_show, delay, output)
         self.color_palette = ColorPalette(len(labels)).to_numpy_array()
         self.color_map = self._create_color_map()
 
-    def _create_color_map(self):
+    def _create_color_map(self) -> np.ndarray:
         classes = self.color_palette[:, ::-1]  # RGB to BGR
         color_map = np.zeros((256, 1, 3), dtype=np.uint8)
         classes_num = len(classes)
@@ -173,16 +204,16 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
         color_map[classes_num:, 0, :] = np.random.uniform(0, 255, size=(256 - classes_num, 3))
         return color_map
 
-    def _apply_color_map(self, input: np.array):
+    def _apply_color_map(self, input: np.ndarray) -> np.ndarray:
         input_3d = cv2.merge([input, input, input])
         return cv2.LUT(input_3d.astype(np.uint8), self.color_map)
 
-    def draw(self, frame, masks, meta: Optional[dict] = None, output_transform: Optional[list] = None):
+    def draw(self, frame: np.ndarray, masks: SegmentedObject) -> np.ndarray:
         """Draw segmentation annotations on the image.
 
         Args:
-            image: Input image
-            annotation: Annotations to be drawn on the input image
+            frame: Input image
+            masks: Mask annotations to be drawn on the input image
 
         Returns:
             Output image with annotations.
@@ -194,17 +225,36 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
 
 
 class ObjectDetectionVisualizer(BaseVisualizer):
-    def __init__(self, *args, labels, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        labels: List[str],
+        window_name: Optional[str] = None,
+        no_show: bool = False,
+        delay: Optional[int] = None,
+        output: str = "./outputs",
+    ) -> None:
+        """Object detection visualizer.
+
+        Draws the object detection annotations on the input image.
+
+        Parameters:
+            labels (List[str]): The list of labels.
+            window_name (Optional[str]): The name of the window. Defaults to None.
+            no_show (bool): Flag to control whether to show the window. Defaults to False.
+            delay (Optional[int]): The delay in milliseconds. Defaults to None.
+            output (Optional[str]): The output directory. Defaults to "./outputs".
+
+        Returns:
+            None
+        """
+        super().__init__(window_name, no_show, delay, output)
         self.labels = labels
         self.color_palette = ColorPalette(len(labels))
 
     def draw(
         self,
         frame: np.ndarray,
-        predictions: list,
-        meta: Optional[dict] = None,
-        output_transform: Optional[list] = None,
+        predictions: DetectionResult,
     ) -> np.ndarray:
         """Draw instance segmentation annotations on the image.
 
@@ -215,16 +265,11 @@ class ObjectDetectionVisualizer(BaseVisualizer):
         Returns:
             Output image with annotations.
         """
-        if output_transform is not None:
-            frame = output_transform.resize(frame)
-
         for detection in predictions.objects:
             class_id = int(detection.id)
             color = self.color_palette[class_id]
             det_label = self.color_palette[class_id] if self.labels and len(self.labels) >= class_id else f"#{class_id}"
             xmin, ymin, xmax, ymax = detection.xmin, detection.ymin, detection.xmax, detection.ymax
-            if output_transform:
-                xmin, ymin, xmax, ymax = output_transform.scale([xmin, ymin, xmax, ymax])
             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
             cv2.putText(
                 frame,
@@ -240,8 +285,29 @@ class ObjectDetectionVisualizer(BaseVisualizer):
 
 
 class InstanceSegmentationVisualizer(BaseVisualizer):
-    def __init__(self, *args, labels=None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        labels: List[str],
+        window_name: Optional[str] = None,
+        no_show: bool = False,
+        delay: Optional[int] = None,
+        output: str = "./outputs",
+    ) -> None:
+        """Instance segmentation visualizer.
+
+        Draws the instance segmentation annotations on the input image.
+
+        Args:
+            labels (List[str]): The list of labels.
+            window_name (Optional[str]): The name of the window. Defaults to None.
+            no_show (bool): A flag to indicate whether to show the window. Defaults to False.
+            delay (Optional[int]): The delay in milliseconds. Defaults to None.
+            output (Optional[str]): The path to the output directory. Defaults to "./outputs".
+
+        Returns:
+            None
+        """
+        super().__init__(window_name, no_show, delay, output)
         self.labels = labels
         colors_num = len(labels) if labels else 80
         self.show_boxes = False
@@ -251,13 +317,17 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
     def draw(
         self,
         frame: np.ndarray,
-        predictions: list,
-        meta: Optional[dict] = None,
-        output_transform: Optional[list] = None,
-    ):
-        if output_transform is not None:
-            frame = output_transform.resize(frame)
+        predictions: InstanceSegmentationResult,
+    ) -> np.ndarray:
+        """Draw the instance segmentation results on the input frame.
 
+        Args:
+            frame: np.ndarray - The input frame on which to draw the instance segmentation results.
+            predictions: InstanceSegmentationResult - The instance segmentation results to be drawn.
+
+        Returns:
+            np.ndarray - The input frame with the instance segmentation results drawn on it.
+        """
         result = frame.copy()
         output_objects = predictions.segmentedObjects
         bboxes = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
@@ -265,11 +335,11 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         masks = [output.mask for output in output_objects]
         label_names = [output.str_label for output in output_objects]
 
-        result = self._overlay_masks(result, masks, None)
-        result = self._overlay_labels(result, bboxes, label_names, scores, None)
+        result = self._overlay_masks(result, masks)
+        result = self._overlay_labels(result, bboxes, label_names, scores)
         return result
 
-    def _overlay_masks(self, image, masks, ids=None):
+    def _overlay_masks(self, image: np.ndarray, masks: List[np.ndarray]) -> np.ndarray:
         segments_image = image.copy()
         aggregated_mask = np.zeros(image.shape[:2], dtype=np.uint8)
         aggregated_colored_mask = np.zeros(image.shape, dtype=np.uint8)
@@ -280,7 +350,7 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
             if contours:
                 all_contours.append(contours[0])
 
-            mask_color = self.palette[i if ids is None else ids[i]]
+            mask_color = self.palette[i]
             cv2.bitwise_or(aggregated_mask, mask, dst=aggregated_mask)
             cv2.bitwise_or(aggregated_colored_mask, mask_color, dst=aggregated_colored_mask, mask=mask)
 
@@ -292,7 +362,7 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         cv2.drawContours(image, all_contours, -1, (0, 0, 0))
         return image
 
-    def _overlay_boxes(self, image, boxes, classes):
+    def _overlay_boxes(self, image: np.ndarray, boxes: List[np.ndarray], classes: List[int]) -> np.ndarray:
         for box, class_id in zip(boxes, classes):
             color = self.palette[class_id]
             box = box.astype(int)
@@ -300,7 +370,13 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
             image = cv2.rectangle(image, top_left, bottom_right, color, 2)
         return image
 
-    def _overlay_labels(self, image, boxes, classes, scores, texts=None):
+    def _overlay_labels(
+        self,
+        image: np.ndarray,
+        boxes: List[np.ndarray],
+        classes: List[str],
+        scores: List[float],
+    ) -> np.ndarray:
         template = "{}: {:.2f}" if self.show_scores else "{}"
 
         for box, score, label in zip(boxes, scores, classes):

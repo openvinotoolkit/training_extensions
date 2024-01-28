@@ -3,15 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import time
-from typing import Any, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from openvino.model_api.pipelines import AsyncPipeline
 
-from ..model_wrapper import ModelWrapper
-from ..streamer import get_streamer
-from ..visualizers import BaseVisualizer, dump_frames
+if TYPE_CHECKING:
+    from demo_package.model_wrapper import ModelWrapper
+
+from demo_package.streamer import get_streamer
+from demo_package.visualizers import BaseVisualizer, dump_frames
 
 
 class AsyncExecutor:
@@ -27,7 +31,7 @@ class AsyncExecutor:
         self.visualizer = visualizer
         self.async_pipeline = AsyncPipeline(self.model.core_model)
 
-    def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
+    def run(self, input_stream: int | str, loop: bool = False) -> None:
         """Async inference for input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
         next_frame_id = 0
@@ -54,9 +58,9 @@ class AsyncExecutor:
             self.async_pipeline.submit_data(frame, next_frame_id, {"frame": frame})
             next_frame_id += 1
         self.async_pipeline.await_all()
-        for next_frame_id_to_show in range(next_frame_id_to_show, next_frame_id):
+        for next_id in range(next_frame_id_to_show, next_frame_id):
             start_time = time.perf_counter()
-            results = self.async_pipeline.get_result(next_frame_id_to_show)
+            results = self.async_pipeline.get_result(next_id)
             output = self.render_result(results)
             self.visualizer.show(output)
             if self.visualizer.output:
@@ -65,7 +69,7 @@ class AsyncExecutor:
             self.visualizer.video_delay(time.perf_counter() - start_time, streamer)
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
 
-    def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
+    def render_result(self, results: tuple[Any, dict]) -> np.ndarray:
         """Render for results of inference."""
         predictions, frame_meta = results
         if self.model.task_type == "Detection":
@@ -75,5 +79,4 @@ class AsyncExecutor:
             )
             predictions.shape = len(predictions), 6
         current_frame = frame_meta["frame"]
-        output = self.visualizer.draw(current_frame, predictions, frame_meta)
-        return output
+        return self.visualizer.draw(current_frame, predictions)

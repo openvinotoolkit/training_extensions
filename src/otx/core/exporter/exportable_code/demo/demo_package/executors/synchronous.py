@@ -3,12 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import time
-from typing import Union
+from __future__ import annotations
 
-from ..model_wrapper import ModelWrapper
-from ..streamer import get_streamer
-from ..visualizers import BaseVisualizer, dump_frames
+import time
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from demo_package.model_wrapper import ModelWrapper
+    from demo_package.visualizers import BaseVisualizer
+
+from demo_package.streamer import get_streamer
+from demo_package.visualizers import dump_frames
 
 
 class SyncExecutor:
@@ -23,7 +28,7 @@ class SyncExecutor:
         self.model = model
         self.visualizer = visualizer
 
-    def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
+    def run(self, input_stream: int | str, loop: bool = False) -> None:
         """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
         saved_frames = []
@@ -31,8 +36,8 @@ class SyncExecutor:
         for frame in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
             start_time = time.perf_counter()
-            predictions, frame_meta = self.model(frame)
-            output = self.visualizer.draw(frame, predictions, frame_meta)
+            predictions, _ = self.model(frame)
+            output = self.visualizer.draw(frame, predictions)
             self.visualizer.show(output)
             if output is not None:
                 saved_frames.append(output)

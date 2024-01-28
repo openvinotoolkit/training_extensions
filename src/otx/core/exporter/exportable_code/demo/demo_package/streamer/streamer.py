@@ -4,32 +4,22 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import abc
+import contextlib
 import multiprocessing
 import os
 import queue
 import sys
 from enum import Enum
-from typing import Iterator, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, Iterator
+
+if TYPE_CHECKING:
+    import numpy as np
 
 import cv2
-import numpy as np
-
-
-class InvalidInput(Exception):
-    """Exception for wrong input format."""
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-        self.message = message
-
-
-class OpenError(Exception):
-    """Exception for error opening reader."""
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-        self.message = message
 
 
 class MediaType(Enum):
@@ -62,7 +52,7 @@ class BaseStreamer(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def fps(self):
+    def fps(self) -> float:
         """Returns a frequency of getting images from source."""
         raise NotImplementedError
 
@@ -110,11 +100,9 @@ class ThreadedStreamer(BaseStreamer):
         process.start()
 
         try:
-            while process.is_alive() or not buffer.empty():
-                try:
+            with contextlib.suppress(queue.Empty):
+                while process.is_alive() or not buffer.empty():
                     yield buffer.get(timeout=0.1)
-                except queue.Empty:
-                    pass
         except GeneratorExit:
             process.terminate()
         finally:
@@ -151,7 +139,8 @@ class VideoStreamer(BaseStreamer):
         self.cap = cv2.VideoCapture()
         status = self.cap.open(input_path)
         if not status:
-            raise InvalidInput(f"Can't open the video from {input_path}")
+            msg = f"Can't open the video from {input_path}"
+            raise RuntimeError(msg)
 
     def __iter__(self) -> Iterator[np.ndarray]:
         """Iterates over frames of the video.
@@ -162,13 +151,12 @@ class VideoStreamer(BaseStreamer):
             status, image = self.cap.read()
             if status:
                 yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            elif self.loop:
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
             else:
-                if self.loop:
-                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                else:
-                    break
+                break
 
-    def fps(self):
+    def fps(self) -> float:
         """Returns a frequency of getting images from source."""
         return self.cap.get(cv2.CAP_PROP_FPS)
 
@@ -195,8 +183,9 @@ class CameraStreamer(BaseStreamer):
         self.media_type = MediaType.CAMERA
         try:
             self.stream = cv2.VideoCapture(int(camera_device))
-        except ValueError as error:
-            raise InvalidInput(f"Can't find the camera {camera_device}") from error
+        except ValueError as err:
+            msg = f"Can't find the camera {camera_device}"
+            raise ValueError(msg) from err
 
     def __iter__(self) -> Iterator[np.ndarray]:
         """Read video and yield the frame.
@@ -238,11 +227,13 @@ class ImageStreamer(BaseStreamer):
     def __init__(self, input_path: str, loop: bool = False) -> None:
         self.loop = loop
         self.media_type = MediaType.IMAGE
-        if not os.path.isfile(input_path):
-            raise InvalidInput(f"Can't find the image by {input_path}")
+        if not Path(input_path).is_file():
+            msg = f"Can't find the image by {input_path}"
+            raise RuntimeError(msg)
         self.image = cv2.imread(input_path, cv2.IMREAD_COLOR)
         if self.image is None:
-            raise OpenError(f"Can't open the image from {input_path}")
+            msg = f"Can't open the image from {input_path}"
+            raise RuntimeError(msg)
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
     def __iter__(self) -> Iterator[np.ndarray]:
@@ -274,19 +265,22 @@ class DirStreamer(BaseStreamer):
     def __init__(self, input_path: str, loop: bool = False) -> None:
         self.loop = loop
         self.media_type = MediaType.DIR
-        self.dir = input_path
-        if not os.path.isdir(self.dir):
-            raise InvalidInput(f"Can't find the dir by {input_path}")
+        self.dir = Path(input_path)
+        if not self.dir.is_dir():
+            msg = f"Can't find the dir by {input_path}"
+            raise RuntimeError(msg)
         self.names = sorted(os.listdir(self.dir))
         if not self.names:
-            raise OpenError(f"The dir {input_path} is empty")
+            msg = f"The dir {input_path} is empty"
+            raise RuntimeError(msg)
         self.file_id = 0
         for name in self.names:
-            filename = os.path.join(self.dir, name)
+            filename = self.dir / name
             image = cv2.imread(str(filename), cv2.IMREAD_COLOR)
             if image is not None:
                 return
-        raise OpenError(f"Can't read the first image from {input_path}")
+        msg = f"Can't read the first image from {input_path}"
+        raise RuntimeError(msg)
 
     def __iter__(self) -> Iterator[np.ndarray]:
         """Iterates over the images in a directory.
@@ -294,7 +288,7 @@ class DirStreamer(BaseStreamer):
         If self.loop is True, it reiterates again from the first image in the directory.
         """
         while self.file_id < len(self.names):
-            filename = os.path.join(self.dir, self.names[self.file_id])
+            filename = self.dir / self.names[self.file_id]
             image = cv2.imread(str(filename), cv2.IMREAD_COLOR)
             if self.file_id < len(self.names) - 1:
                 self.file_id = self.file_id + 1
@@ -309,7 +303,7 @@ class DirStreamer(BaseStreamer):
 
 
 def get_streamer(
-    input_stream: Union[int, str] = 0,
+    input_stream: int | str = 0,
     loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:
@@ -332,14 +326,14 @@ def get_streamer(
             if threaded:
                 streamer = ThreadedStreamer(streamer)
             return streamer
-        except (InvalidInput, OpenError) as error:
+        except RuntimeError as error:
             errors.append(error)
     try:
         streamer = CameraStreamer(input_stream)  # type: ignore
         if threaded:
             streamer = ThreadedStreamer(streamer)
         return streamer
-    except (InvalidInput, OpenError) as error:
+    except RuntimeError as error:
         errors.append(error)
 
     if errors:
