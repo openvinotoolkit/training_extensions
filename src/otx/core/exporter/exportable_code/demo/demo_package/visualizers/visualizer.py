@@ -4,22 +4,26 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import logging as log
 import time
-from typing import List, NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple
 
 import cv2
 import numpy as np
-from openvino.model_api.models.utils import (
-    ClassificationResult,
-    DetectionResult,
-    InstanceSegmentationResult,
-    SegmentedObject,
-)
 from openvino.model_api.performance_metrics import put_highlighted_text
 
-from ..streamer import BaseStreamer
 from .vis_utils import ColorPalette
+
+if TYPE_CHECKING:
+    from demo_package.streamer import BaseStreamer
+    from openvino.model_api.models.utils import (
+        ClassificationResult,
+        DetectionResult,
+        InstanceSegmentationResult,
+        SegmentedObject,
+    )
 
 
 class BaseVisualizer:
@@ -27,18 +31,18 @@ class BaseVisualizer:
 
     def __init__(
         self,
-        window_name: Optional[str] = None,
+        window_name: str | None = None,
         no_show: bool = False,
-        delay: Optional[int] = None,
+        delay: int | None = None,
         output: str = "./outputs",
     ) -> None:
         """Base class for visualizators.
 
         Args:
-            window_name (Optional[str]): The name of the window. Defaults to None.
+            window_name (str]): The name of the window. Defaults to None.
             no_show (bool): Flag to indicate whether to show the window. Defaults to False.
-            delay (Optional[int]): The delay in seconds. Defaults to None.
-            output (Optional[str]): The output directory. Defaults to "./outputs".
+            delay (int]): The delay in seconds. Defaults to None.
+            output (str]): The output directory. Defaults to "./outputs".
 
         Returns:
             None
@@ -172,10 +176,10 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
 
     def __init__(
         self,
-        labels: List[str],
-        window_name: Optional[str] = None,
+        labels: list[str],
+        window_name: str | None = None,
         no_show: bool = False,
-        delay: Optional[int] = None,
+        delay: int | None = None,
         output: str = "./outputs",
     ) -> None:
         """Semantic segmentation visualizer.
@@ -184,10 +188,10 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
 
         Parameters:
             labels (List[str]): List of labels.
-            window_name (Optional[str]): Name of the window (default is None).
+            window_name (str | None): Name of the window (default is None).
             no_show (bool): Flag indicating whether to show the window (default is False).
-            delay (Optional[int]): Delay in milliseconds (default is None).
-            output (Optional[str]): Output path (default is "./outputs").
+            delay (int | None): Delay in milliseconds (default is None).
+            output (str): Output path (default is "./outputs").
 
         Returns:
             None
@@ -201,11 +205,11 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
         color_map = np.zeros((256, 1, 3), dtype=np.uint8)
         classes_num = len(classes)
         color_map[:classes_num, 0, :] = classes
-        color_map[classes_num:, 0, :] = np.random.uniform(0, 255, size=(256 - classes_num, 3))
+        color_map[classes_num:, 0, :] = np.random.uniform(0, 255, size=(256 - classes_num, 3))  # noqa: NPY002
         return color_map
 
-    def _apply_color_map(self, input: np.ndarray) -> np.ndarray:
-        input_3d = cv2.merge([input, input, input])
+    def _apply_color_map(self, input_2d_mask: np.ndarray) -> np.ndarray:
+        input_3d = cv2.merge([input_2d_mask, input_2d_mask, input_2d_mask])
         return cv2.LUT(input_3d.astype(np.uint8), self.color_map)
 
     def draw(self, frame: np.ndarray, masks: SegmentedObject) -> np.ndarray:
@@ -220,17 +224,18 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
         """
         masks = masks.resultImage
         output = self._apply_color_map(masks)
-        output = cv2.addWeighted(frame, 0.5, output, 0.5, 0)
-        return output
+        return cv2.addWeighted(frame, 0.5, output, 0.5, 0)
 
 
 class ObjectDetectionVisualizer(BaseVisualizer):
+    """Visualizes object detection annotations on an input image."""
+
     def __init__(
         self,
-        labels: List[str],
-        window_name: Optional[str] = None,
+        labels: list[str],
+        window_name: str | None = None,
         no_show: bool = False,
-        delay: Optional[int] = None,
+        delay: int | None = None,
         output: str = "./outputs",
     ) -> None:
         """Object detection visualizer.
@@ -239,10 +244,10 @@ class ObjectDetectionVisualizer(BaseVisualizer):
 
         Parameters:
             labels (List[str]): The list of labels.
-            window_name (Optional[str]): The name of the window. Defaults to None.
+            window_name (str | None): The name of the window. Defaults to None.
             no_show (bool): Flag to control whether to show the window. Defaults to False.
-            delay (Optional[int]): The delay in milliseconds. Defaults to None.
-            output (Optional[str]): The output directory. Defaults to "./outputs".
+            delay (int | None): The delay in milliseconds. Defaults to None.
+            output (str): The output directory. Defaults to "./outputs".
 
         Returns:
             None
@@ -285,12 +290,14 @@ class ObjectDetectionVisualizer(BaseVisualizer):
 
 
 class InstanceSegmentationVisualizer(BaseVisualizer):
+    """Visualizes Instance Segmentation annotations on an input image."""
+
     def __init__(
         self,
-        labels: List[str],
-        window_name: Optional[str] = None,
+        labels: list[str],
+        window_name: str | None = None,
         no_show: bool = False,
-        delay: Optional[int] = None,
+        delay: int | None = None,
         output: str = "./outputs",
     ) -> None:
         """Instance segmentation visualizer.
@@ -299,10 +306,10 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
 
         Args:
             labels (List[str]): The list of labels.
-            window_name (Optional[str]): The name of the window. Defaults to None.
+            window_name (str]): The name of the window. Defaults to None.
             no_show (bool): A flag to indicate whether to show the window. Defaults to False.
-            delay (Optional[int]): The delay in milliseconds. Defaults to None.
-            output (Optional[str]): The path to the output directory. Defaults to "./outputs".
+            delay (int]): The delay in milliseconds. Defaults to None.
+            output (str]): The path to the output directory. Defaults to "./outputs".
 
         Returns:
             None
@@ -336,10 +343,9 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         label_names = [output.str_label for output in output_objects]
 
         result = self._overlay_masks(result, masks)
-        result = self._overlay_labels(result, bboxes, label_names, scores)
-        return result
+        return self._overlay_labels(result, bboxes, label_names, scores)
 
-    def _overlay_masks(self, image: np.ndarray, masks: List[np.ndarray]) -> np.ndarray:
+    def _overlay_masks(self, image: np.ndarray, masks: list[np.ndarray]) -> np.ndarray:
         segments_image = image.copy()
         aggregated_mask = np.zeros(image.shape[:2], dtype=np.uint8)
         aggregated_colored_mask = np.zeros(image.shape, dtype=np.uint8)
@@ -362,10 +368,9 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         cv2.drawContours(image, all_contours, -1, (0, 0, 0))
         return image
 
-    def _overlay_boxes(self, image: np.ndarray, boxes: List[np.ndarray], classes: List[int]) -> np.ndarray:
+    def _overlay_boxes(self, image: np.ndarray, boxes: list[np.ndarray], classes: list[int]) -> np.ndarray:
         for box, class_id in zip(boxes, classes):
             color = self.palette[class_id]
-            box = box.astype(int)
             top_left, bottom_right = box[:2], box[2:]
             image = cv2.rectangle(image, top_left, bottom_right, color, 2)
         return image
@@ -373,9 +378,9 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
     def _overlay_labels(
         self,
         image: np.ndarray,
-        boxes: List[np.ndarray],
-        classes: List[str],
-        scores: List[float],
+        boxes: list[np.ndarray],
+        classes: list[str],
+        scores: list[float],
     ) -> np.ndarray:
         template = "{}: {:.2f}" if self.show_scores else "{}"
 

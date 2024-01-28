@@ -35,6 +35,16 @@ class BaseStreamer(metaclass=abc.ABCMeta):
     """Base Streamer interface to implement Image, Video and Camera streamers."""
 
     @abc.abstractmethod
+    def __init__(self, input_path: str, loop: bool = False) -> None:
+        """Initialize the streamer object.
+
+        Args:
+            input_path (str): path to the input stream
+            loop (bool, optional): whether to loop the stream or not. Defaults to False.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def __iter__(self) -> Iterator[np.ndarray]:
         """Iterate through the streamer object that is a Python Generator object.
 
@@ -179,7 +189,7 @@ class CameraStreamer(BaseStreamer):
         ...         break
     """
 
-    def __init__(self, camera_device: int = 0) -> None:
+    def __init__(self, camera_device: str = "0") -> None:
         self.media_type = MediaType.CAMERA
         try:
             self.stream = cv2.VideoCapture(int(camera_device))
@@ -303,40 +313,35 @@ class DirStreamer(BaseStreamer):
 
 
 def get_streamer(
-    input_stream: int | str = 0,
+    input_stream: str,
     loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:
     """Get streamer object based on the file path or camera device index provided.
 
     Args:
-        input_stream (Union[int, str]): Path to file or directory or index for camera.
+        input_stream (str): Path to file or directory or index for camera.
         loop (bool): Enable reading the input in a loop. Defaults to False.
         threaded (bool): Run streaming on a separate thread. Threaded streaming option. Defaults to False.
 
     Returns:
         BaseStreamer: Streamer object.
     """
-    # errors: Dict = {InvalidInput: [], OpenError: []}
-    errors = []
-    streamer: BaseStreamer
-    for reader in (ImageStreamer, DirStreamer, VideoStreamer):
+    errors: list[Exception] = []
+    streamer_types = (ImageStreamer, DirStreamer, VideoStreamer)
+    for reader in streamer_types:
         try:
-            streamer = reader(input_stream, loop)  # type: ignore
-            if threaded:
-                streamer = ThreadedStreamer(streamer)
-            return streamer
-        except RuntimeError as error:
+            streamer = reader(input_stream, loop)  # type: ignore [abstract]
+            return ThreadedStreamer(streamer) if threaded else streamer
+        except RuntimeError as error:  # noqa: PERF203
             errors.append(error)
     try:
-        streamer = CameraStreamer(input_stream)  # type: ignore
-        if threaded:
-            streamer = ThreadedStreamer(streamer)
-        return streamer
+        streamer = CameraStreamer(input_stream)
+        return ThreadedStreamer(streamer) if threaded else streamer
     except RuntimeError as error:
         errors.append(error)
 
     if errors:
-        raise Exception(errors)
+        raise RuntimeError(errors)
 
     sys.exit(1)

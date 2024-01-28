@@ -10,7 +10,7 @@ from setuptools import find_packages, setup
 
 SETUP_DIR = Path(__file__).resolve().parent
 
-with open(SETUP_DIR / "requirements.txt", encoding="utf8") as f:
+with Path.open(SETUP_DIR / "requirements.txt", encoding="utf8") as f:
     required = f.read().splitlines()
 
 packages = find_packages(str(SETUP_DIR))
