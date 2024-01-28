@@ -79,7 +79,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported model
+    - 'otx test' with the exported to ONNX/IR model
 
     Args:
         recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
@@ -174,7 +174,7 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
             *DATASET[task]["overrides"],
             "--checkpoint",
             str(ckpt_files[-1]),
-            "--export_config.export_format",
+            "--export_format",
             f"{fmt}",
         ]
 
@@ -213,6 +213,50 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         main()
 
     assert (tmp_path_test / "outputs").exists()
+
+
+@pytest.mark.parametrize("recipe", RECIPE_LIST)
+def test_otx_explain_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
+    """
+    Test OTX CLI explain e2e command.
+
+    Args:
+        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    task = recipe.split("/")[-2]
+    model_name = recipe.split("/")[-1].split(".")[0]
+
+    if "_cls" not in task:
+        pytest.skip("Supported only for classification tast.")
+
+    if "deit" in model_name or "dino" in model_name:
+        pytest.skip("Supported only for CNN models.")
+
+    # otx explain
+    tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
+    command_cfg = [
+        "otx",
+        "explain",
+        "--config",
+        recipe,
+        "--data_root",
+        DATASET[task]["data_root"],
+        "--engine.work_dir",
+        str(tmp_path_explain / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
+        *DATASET[task]["overrides"],
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_explain / "outputs").exists()
+    assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)

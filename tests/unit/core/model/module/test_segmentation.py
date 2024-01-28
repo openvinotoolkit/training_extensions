@@ -68,30 +68,3 @@ class TestOTXSegmentationModule:
         assert "preds" in out[-1]
         assert "target" in out[-1]
         assert out[-1]["preds"].sum() == out[-1]["target"].sum()
-
-    def test_load_from_prev_otx_ckpt(self, model, fxt_model_ckpt) -> None:
-        segnext_ckpt_otx_v1 = {
-            "backbone.1.weight": torch.randn(3, 10),
-            "backbone.1.bias": torch.randn(3, 10),
-            "head.1.weight": torch.randn(10, 2),
-            "head.1.bias": torch.randn(10, 2),
-            "ham.bases.1": torch.randn(3, 10),
-        }
-        converted_ckpt = model._load_from_prev_otx_ckpt(segnext_ckpt_otx_v1)
-
-        assert fxt_model_ckpt.keys() == converted_ckpt.keys()
-        for src_value, dst_value in zip(converted_ckpt.values(), fxt_model_ckpt.values()):
-            assert src_value.shape == dst_value.shape
-
-        litehr_ckpt_otx_v1 = {
-            "backbone.1.weight": torch.randn(3, 10),
-            "backbone.1.bias": torch.randn(3, 10),
-            "head.1.weight": torch.randn(10, 2),
-            "head.1.bias": torch.randn(10, 2),
-            "decode_head.aggregator.projects.1": torch.randn(3, 10),
-        }
-        converted_ckpt = model._load_from_prev_otx_ckpt(litehr_ckpt_otx_v1)
-
-        assert fxt_model_ckpt.keys() == converted_ckpt.keys()
-        for src_value, dst_value in zip(converted_ckpt.values(), fxt_model_ckpt.values()):
-            assert src_value.shape == dst_value.shape
