@@ -6,10 +6,9 @@
 import time
 from typing import Union
 
-from ..streamer import get_streamer
-from ..visualizers import dump_frames
 from ..model_wrapper import ModelWrapper
-from ..visualizers import BaseVisualizer
+from ..streamer import get_streamer
+from ..visualizers import BaseVisualizer, dump_frames
 
 
 class SyncExecutor:

@@ -3,13 +3,13 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import colorsys
+import random
 from pathlib import Path
 from typing import Union
 
 import cv2
 import numpy as np
-import random
-import colorsys
 
 
 def get_actmap(
@@ -80,15 +80,16 @@ def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], ca
 class ColorPalette:
     def __init__(self, n, rng=None):
         if n == 0:
-            raise ValueError('ColorPalette accepts only the positive number of colors')
+            raise ValueError("ColorPalette accepts only the positive number of colors")
         if rng is None:
             rng = random.Random(0xACE)  # nosec B311  # disable random check
 
         candidates_num = 100
         hsv_colors = [(1.0, 1.0, 1.0)]
         for _ in range(1, n):
-            colors_candidates = [(rng.random(), rng.uniform(0.8, 1.0), rng.uniform(0.5, 1.0))
-                                 for _ in range(candidates_num)]
+            colors_candidates = [
+                (rng.random(), rng.uniform(0.8, 1.0), rng.uniform(0.5, 1.0)) for _ in range(candidates_num)
+            ]
             min_distances = [self.min_distance(hsv_colors, c) for c in colors_candidates]
             arg_max = np.argmax(min_distances)
             hsv_colors.append(colors_candidates[arg_max])

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+from enum import Enum
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 
@@ -12,7 +13,6 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 from .utils import get_model_path, get_parameters
-from enum import Enum
 
 
 class TaskType(str, Enum):

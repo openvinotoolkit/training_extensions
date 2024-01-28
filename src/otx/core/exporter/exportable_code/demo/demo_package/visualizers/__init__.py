@@ -4,6 +4,19 @@
 #
 
 from .vis_utils import dump_frames
-from .visualizer import BaseVisualizer, ClassificationVisualizer, SemanticSegmentationVisualizer, InstanceSegmentationVisualizer, ObjectDetectionVisualizer
+from .visualizer import (
+    BaseVisualizer,
+    ClassificationVisualizer,
+    InstanceSegmentationVisualizer,
+    ObjectDetectionVisualizer,
+    SemanticSegmentationVisualizer,
+)
 
-__all__ = ["BaseVisualizer", "dump_frames", "ClassificationVisualizer", "SemanticSegmentationVisualizer", "InstanceSegmentationVisualizer", "ObjectDetectionVisualizer"]
+__all__ = [
+    "BaseVisualizer",
+    "dump_frames",
+    "ClassificationVisualizer",
+    "SemanticSegmentationVisualizer",
+    "InstanceSegmentationVisualizer",
+    "ObjectDetectionVisualizer",
+]

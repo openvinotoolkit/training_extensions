@@ -46,6 +46,7 @@ class CustomNMF2D(NMF2D):
 
         return x
 
+
 @MODELS.register_module()
 class CustomLightHamHead(LightHamHead):
     """SegNeXt decode head.

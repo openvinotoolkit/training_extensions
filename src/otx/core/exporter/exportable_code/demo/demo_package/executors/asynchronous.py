@@ -4,15 +4,14 @@
 #
 
 import time
-from typing import TYPE_CHECKING, Any, Tuple, Union
+from typing import Any, Tuple, Union
 
 import numpy as np
 from openvino.model_api.pipelines import AsyncPipeline
 
-from ..streamer import get_streamer
-from ..visualizers import dump_frames
 from ..model_wrapper import ModelWrapper
-from ..visualizers import BaseVisualizer
+from ..streamer import get_streamer
+from ..visualizers import BaseVisualizer, dump_frames
 
 
 class AsyncExecutor:

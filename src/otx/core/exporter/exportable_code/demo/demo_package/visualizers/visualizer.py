@@ -4,14 +4,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import logging as log
 import time
 from typing import Optional
-import logging as log
 
 import cv2
 import numpy as np
-from ..streamer import BaseStreamer
 from openvino.model_api.performance_metrics import put_highlighted_text
+
+from ..streamer import BaseStreamer
 from .vis_utils import ColorPalette
 
 
@@ -38,7 +39,7 @@ class BaseVisualizer:
         image: np.ndarray,
         predictions: list,
         meta: dict,
-        output_transform: Optional[list] = None
+        output_transform: Optional[list] = None,
     ) -> np.ndarray:
         """Draw annotations on the image.
 
@@ -97,7 +98,7 @@ class ClassificationVisualizer(BaseVisualizer):
         frame: np.ndarray,
         predictions: list,
         meta: Optional[dict] = None,
-        output_transform: Optional[list] = None
+        output_transform: Optional[list] = None,
     ) -> np.ndarray:
         """Draw classification annotations on the image.
 
@@ -115,24 +116,38 @@ class ClassificationVisualizer(BaseVisualizer):
         class_label = predictions[0][1]
         font_scale = 0.7
         label_height = cv2.getTextSize(class_label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][1]
-        initial_labels_pos =  frame.shape[0] - label_height * (int(1.5 * len(predictions)) + 1)
+        initial_labels_pos = frame.shape[0] - label_height * (int(1.5 * len(predictions)) + 1)
 
-        if (initial_labels_pos < 0):
+        if initial_labels_pos < 0:
             initial_labels_pos = label_height
-            log.warning('Too much labels to display on this frame, some will be omitted')
+            log.warning("Too much labels to display on this frame, some will be omitted")
         offset_y = initial_labels_pos
 
         header = "Label:     Score:"
         label_width = cv2.getTextSize(header, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
-        put_highlighted_text(frame, header, (frame.shape[1] - label_width, offset_y),
-            cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
+        put_highlighted_text(
+            frame,
+            header,
+            (frame.shape[1] - label_width, offset_y),
+            cv2.FONT_HERSHEY_COMPLEX,
+            font_scale,
+            (255, 0, 0),
+            2,
+        )
 
         for idx, class_label, score in predictions:
-            label = '{}. {}    {:.2f}'.format(idx, class_label, score)
+            label = f"{idx}. {class_label}    {score:.2f}"
             label_width = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
             offset_y += int(label_height * 1.5)
-            put_highlighted_text(frame, label, (frame.shape[1] - label_width, offset_y),
-                cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
+            put_highlighted_text(
+                frame,
+                label,
+                (frame.shape[1] - label_width, offset_y),
+                cv2.FONT_HERSHEY_COMPLEX,
+                font_scale,
+                (255, 0, 0),
+                2,
+            )
         return frame
 
 
@@ -144,25 +159,25 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
         >>> output = visualizer.draw(frame, masks)
         >>> visualizer.show(output)
     """
+
     def __init__(self, *args, labels, **kwargs):
         super().__init__(*args, **kwargs)
         self.color_palette = ColorPalette(len(labels)).to_numpy_array()
         self.color_map = self._create_color_map()
 
     def _create_color_map(self):
-        classes = self.color_palette[:, ::-1] # RGB to BGR
+        classes = self.color_palette[:, ::-1]  # RGB to BGR
         color_map = np.zeros((256, 1, 3), dtype=np.uint8)
         classes_num = len(classes)
         color_map[:classes_num, 0, :] = classes
-        color_map[classes_num:, 0, :] = np.random.uniform(0, 255, size=(256-classes_num, 3))
+        color_map[classes_num:, 0, :] = np.random.uniform(0, 255, size=(256 - classes_num, 3))
         return color_map
 
     def _apply_color_map(self, input: np.array):
         input_3d = cv2.merge([input, input, input])
         return cv2.LUT(input_3d.astype(np.uint8), self.color_map)
 
-    def draw(self, frame, masks, meta: Optional[dict] = None,
-        output_transform: Optional[list] = None):
+    def draw(self, frame, masks, meta: Optional[dict] = None, output_transform: Optional[list] = None):
         """Draw segmentation annotations on the image.
 
         Args:
@@ -179,7 +194,6 @@ class SemanticSegmentationVisualizer(BaseVisualizer):
 
 
 class ObjectDetectionVisualizer(BaseVisualizer):
-
     def __init__(self, *args, labels, **kwargs):
         super().__init__(*args, **kwargs)
         self.labels = labels
@@ -190,7 +204,7 @@ class ObjectDetectionVisualizer(BaseVisualizer):
         frame: np.ndarray,
         predictions: list,
         meta: Optional[dict] = None,
-        output_transform: Optional[list] = None
+        output_transform: Optional[list] = None,
     ) -> np.ndarray:
         """Draw instance segmentation annotations on the image.
 
@@ -207,13 +221,20 @@ class ObjectDetectionVisualizer(BaseVisualizer):
         for detection in predictions.objects:
             class_id = int(detection.id)
             color = self.color_palette[class_id]
-            det_label = self.color_palette[class_id] if self.labels and len(self.labels) >= class_id else '#{}'.format(class_id)
-            xmin, ymin, xmax, ymax = detection.xmin,  detection.ymin,  detection.xmax,  detection.ymax
+            det_label = self.color_palette[class_id] if self.labels and len(self.labels) >= class_id else f"#{class_id}"
+            xmin, ymin, xmax, ymax = detection.xmin, detection.ymin, detection.xmax, detection.ymax
             if output_transform:
                 xmin, ymin, xmax, ymax = output_transform.scale([xmin, ymin, xmax, ymax])
             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
-            cv2.putText(frame, '{} {:.1%}'.format(det_label, detection.score),
-                        (xmin, ymin - 7), cv2.FONT_HERSHEY_COMPLEX, 0.6, color, 1)
+            cv2.putText(
+                frame,
+                f"{det_label} {detection.score:.1%}",
+                (xmin, ymin - 7),
+                cv2.FONT_HERSHEY_COMPLEX,
+                0.6,
+                color,
+                1,
+            )
 
         return frame
 
@@ -227,12 +248,13 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         self.show_scores = True
         self.palette = ColorPalette(colors_num)
 
-    def draw(self,
+    def draw(
+        self,
         frame: np.ndarray,
         predictions: list,
         meta: Optional[dict] = None,
-        output_transform: Optional[list] = None):
-
+        output_transform: Optional[list] = None,
+    ):
         if output_transform is not None:
             frame = output_transform.resize(frame)
 
@@ -279,10 +301,18 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         return image
 
     def _overlay_labels(self, image, boxes, classes, scores, texts=None):
-        template = '{}: {:.2f}' if self.show_scores else '{}'
+        template = "{}: {:.2f}" if self.show_scores else "{}"
 
         for box, score, label in zip(boxes, scores, classes):
             text = template.format(label, score)
             textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
-            cv2.putText(image, text, (box[0], box[1] + int(textsize[0] / 3)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            cv2.putText(
+                image,
+                text,
+                (box[0], box[1] + int(textsize[0] / 3)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 255, 255),
+                1,
+            )
         return image

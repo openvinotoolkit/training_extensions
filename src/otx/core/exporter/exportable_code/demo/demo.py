@@ -8,12 +8,7 @@ from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
 # pylint: disable=no-name-in-module, import-error
-from demo_package import (
-    AsyncExecutor,
-    SyncExecutor,
-    create_visualizer,
-    ModelWrapper
-)
+from demo_package import AsyncExecutor, ModelWrapper, SyncExecutor, create_visualizer
 
 
 def build_argparser():
@@ -86,7 +81,7 @@ def build_argparser():
 
 EXECUTORS = {
     "sync": SyncExecutor,
-    "async": AsyncExecutor
+    "async": AsyncExecutor,
 }
 
 
