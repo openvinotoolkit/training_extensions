@@ -49,6 +49,8 @@ def test_otx_cli_auto_configuration(
     Returns:
         None
     """
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     tmp_path_train = tmp_path / f"otx_auto_train_{task}"
     command_cfg = [
         "otx",
