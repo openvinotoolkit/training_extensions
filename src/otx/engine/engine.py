@@ -263,7 +263,7 @@ class Engine:
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
-        checkpoint = checkpoint if checkpoint is None else self.checkpoint
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         if checkpoint is not None:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
