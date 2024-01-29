@@ -242,9 +242,10 @@ class OTXCLI:
             task = sys.argv[sys.argv.index("--task") + 1]
         enable_auto_config = data_root is not None and "--config" not in sys.argv
         if enable_auto_config:
+            from otx.core.types.task import OTXTaskType
             from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
-            auto_configurator = AutoConfigurator(data_root=data_root, task=task)
+            auto_configurator = AutoConfigurator(data_root=data_root, task=OTXTaskType(task))
             config_file_path = DEFAULT_CONFIG_PER_TASK[auto_configurator.task]
             parser_kwargs["default_config_files"] = [config_file_path]
         return parser_kwargs
