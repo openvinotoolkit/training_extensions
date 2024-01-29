@@ -48,6 +48,7 @@ TASK_PER_DATA_FORMAT = {
     "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS],
     "datumaro": [OTXTaskType.MULTI_LABEL_CLS],
     "coco_instances": [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.VISUAL_PROMPTING],
+    "coco": [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.VISUAL_PROMPTING],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "ava": [OTXTaskType.ACTION_DETECTION],
