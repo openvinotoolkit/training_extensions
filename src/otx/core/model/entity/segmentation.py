@@ -76,6 +76,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_sem_seg=PixelData(
                     data=masks,
