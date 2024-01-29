@@ -144,7 +144,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         key = img.path if isinstance(img, ImageFromFile) else id(img)
 
         if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
-            return img_data, img_data.shape[:2]
+            return img_data.astype(np.float32), img_data.shape[:2]
 
         with image_decode_context():
             img_data = (
@@ -159,7 +159,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
         img_data = self._cache_img(key=key, img_data=img_data.astype(np.uint8))
 
-        return img_data, img_data.shape[:2]
+        return img_data.astype(np.float32), img_data.shape[:2]
 
     def _cache_img(self, key: str | int, img_data: np.ndarray) -> np.ndarray:
         """Cache an image after resizing.
