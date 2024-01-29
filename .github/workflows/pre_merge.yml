@@ -54,10 +54,10 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
-      runs-on: "['otx-gpu-v100-1']"
+      runs-on: "['otx-gpu-t4-1']"
       custom-container: true
   Coverage:
-    runs-on: [otx-gpu-v100-1]
+    runs-on: [otx-gpu-t4-1]
     container:
       image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
       options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=10g"
@@ -142,5 +142,5 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "intg-test-results"
-      runs-on: "['otx-gpu-v100-1']"
+      runs-on: "['otx-gpu-t4-1']"
       custom-container: true
