@@ -333,9 +333,10 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             ori_polygons=gt_polygons,
         )
 
-    def _convert_entity(self, dataset_item: DatasetItem) -> InstanceSegDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> InstanceSegDataEntity:
         """Convert a tile dataset item to InstanceSegDataEntity."""
-        tile_img = dataset_item.media_as(Image).data
+        x1, y1, w, h = dataset_item.attributes["roi"]
+        tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
             img_idx=dataset_item.attributes["id"],

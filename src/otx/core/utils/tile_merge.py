@@ -9,8 +9,6 @@ from abc import abstractmethod
 from collections import defaultdict
 from typing import Generic
 
-import cv2
-import numpy as np
 import torch
 from torchvision import tv_tensors
 
@@ -181,19 +179,16 @@ class InstanceSegTileMerge(TileMerge):
         img_ids = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            for tile_attr, tile_img, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
+            for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
                 tile_attrs,
-                tile_preds.images,
                 tile_preds.imgs_info,
                 tile_preds.bboxes,
                 tile_preds.labels,
                 tile_preds.scores,
                 tile_preds.masks,
             ):
-                keep_indices = tile_scores > self.score_thres
+                keep_indices = (tile_scores > self.score_thres) & (tile_masks.sum((1, 2)) > 0)
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
-                _tile_img = tile_img.detach().cpu().numpy()
-                _tile_img = cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape)
                 _bboxes = tile_bboxes[keep_indices]
                 _labels = tile_labels[keep_indices]
                 _scores = tile_scores[keep_indices]
@@ -210,7 +205,7 @@ class InstanceSegTileMerge(TileMerge):
 
                 entities_to_merge[tile_id].append(
                     InstanceSegPredEntity(
-                        image=_tile_img,
+                        image=torch.empty(tile_img_info.ori_shape),
                         img_info=tile_img_info,
                         bboxes=_bboxes,
                         labels=_labels,
@@ -235,41 +230,44 @@ class InstanceSegTileMerge(TileMerge):
         Returns:
             InstanceSegPredEntity: Merged prediction entity.
         """
-        device = img_info.device
-        bboxes = torch.tensor([], device=device)
-        labels = torch.tensor([], device=device)
-        scores = torch.tensor([], device=device)
-        masks = []
+        bboxes: list | torch.Tensor = []
+        labels: list | torch.Tensor = []
+        scores: list | torch.Tensor = []
+        masks: list | torch.Tensor = []
         img_size = img_info.ori_shape
-        full_img = np.zeros((*img_size, 3))
         for tile_entity in entities:
             num_preds = len(tile_entity.bboxes)
-            tile_img = tile_entity.image
-            tile_img_info = tile_entity.img_info
-            x1, y1, w, h = tile_img_info.padding
-            full_img[y1 : y1 + h, x1 : x1 + w] = tile_img
             if num_preds > 0:
-                bboxes = torch.cat((bboxes, tile_entity.bboxes), dim=0)
-                labels = torch.cat((labels, tile_entity.labels), dim=0)
-                scores = torch.cat((scores, tile_entity.score), dim=0)
-                sparse_masks_indices = tile_entity.masks.indices()
-                masks_value = tile_entity.masks.values()
-                if len(sparse_masks_indices):
-                    sparse_masks_indices[1] += tile_img_info.padding[1]
-                    sparse_masks_indices[2] += tile_img_info.padding[0]
+                bboxes.extend(tile_entity.bboxes)
+                labels.extend(tile_entity.labels)
+                scores.extend(tile_entity.score)
+
+                offset_x, offset_y, _, _ = tile_entity.img_info.padding
+                mask_indices = tile_entity.masks.indices()
+                mask_values = tile_entity.masks.values()
+                mask_indices[1] += offset_y
+                mask_indices[2] += offset_x
                 masks.extend(
-                    torch.sparse_coo_tensor(sparse_masks_indices, masks_value, (num_preds, *img_size)),
+                    torch.sparse_coo_tensor(mask_indices, mask_values, (num_preds, *img_size)),
                 )
+
+        bboxes = torch.stack(bboxes) if len(bboxes) > 0 else torch.empty((0, 4), device=img_info.device)
+        labels = torch.stack(labels) if len(labels) > 0 else torch.empty((0,), device=img_info.device)
+        scores = torch.stack(scores) if len(scores) > 0 else torch.empty((0,), device=img_info.device)
 
         sort_inds = torch.argsort(scores, descending=True)
         if len(sort_inds) > self.max_num_instances:
             sort_inds = sort_inds[: self.max_num_instances]
+
         bboxes = bboxes[sort_inds]
         labels = labels[sort_inds]
         scores = scores[sort_inds]
-        masks = torch.stack([masks[idx] for idx in sort_inds]).to_dense() if len(masks) > 0 else []
+        masks = (
+            torch.stack([masks[idx] for idx in sort_inds]).to_dense() if len(masks) > 0 else torch.empty((0, *img_size))
+        )
+
         return InstanceSegPredEntity(
-            image=full_img,
+            image=torch.empty(img_size),
             img_info=img_info,
             score=scores,
             bboxes=tv_tensors.BoundingBoxes(
@@ -278,6 +276,6 @@ class InstanceSegTileMerge(TileMerge):
                 format="XYXY",
             ),
             labels=labels,
-            masks=masks,
+            masks=tv_tensors.Mask(masks, dtype=bool),
             polygons=[],
         )
