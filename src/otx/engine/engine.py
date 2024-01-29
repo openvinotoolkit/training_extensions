@@ -1,16 +1,18 @@
 """Module for OTX engine components."""
 
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 import torch
 from lightning import Trainer, seed_everything
 
 from otx.core.config.device import DeviceConfig
+from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
@@ -18,9 +20,9 @@ from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-if TYPE_CHECKING:
-    from pathlib import Path
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
+if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
@@ -71,29 +73,29 @@ class Engine:
     def __init__(
         self,
         *,
-        data_root: str | Path | None = None,
+        data_root: PathLike | None = None,
         task: OTXTaskType | None = None,
-        work_dir: str | Path = "./otx-workspace",
+        work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
         optimizer: OptimizerCallable | None = None,
         scheduler: LRSchedulerCallable | None = None,
-        checkpoint: str | None = None,
+        checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
     ):
         """Initializes the OTX Engine.
 
         Args:
-            data_root (str | Path | None, optional): Root directory for the data. Defaults to None.
+            data_root (PathLike | None, optional): Root directory for the data. Defaults to None.
             task (OTXTaskType | None, optional): The type of OTX task. Defaults to None.
-            work_dir (str | Path, optional): Working directory for the engine. Defaults to "./otx-workspace".
+            work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
             optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
             scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
                 Defaults to None.
-            checkpoint (str | None, optional): Path to the checkpoint file. Defaults to None.
+            checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
@@ -106,18 +108,31 @@ class Engine:
             devices=self.device.devices,
             **kwargs,
         )
+        self._auto_configurator = AutoConfigurator(
+            data_root=data_root,
+            task=datamodule.task if datamodule is not None else task,
+            model_name=None if isinstance(model, OTXModel) else model,
+        )
 
-        # [TODO] harimkang: It will be updated in next PR.
-        if not isinstance(model, OTXModel) or datamodule is None or optimizer is None or scheduler is None:
-            msg = "Auto-Configuration is not implemented yet."
-            raise NotImplementedError(msg)
-        self.datamodule: OTXDataModule = datamodule
-        self.task = self.datamodule.task
+        self._datamodule: OTXDataModule | None = (
+            datamodule if datamodule is not None else self._auto_configurator.get_datamodule()
+        )
+        self.task = task if task is not None else self._auto_configurator.task
 
         self._trainer: Trainer | None = None
-        self._model: OTXModel = model
-        self.optimizer: OptimizerCallable = optimizer
-        self.scheduler: LRSchedulerCallable = scheduler
+        self._model: OTXModel = (
+            model
+            if isinstance(model, OTXModel)
+            else self._auto_configurator.get_model(
+                meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
+            )
+        )
+        self.optimizer: OptimizerCallable = (
+            optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
+        )
+        self.scheduler: LRSchedulerCallable = (
+            scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
+        )
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -219,7 +234,7 @@ class Engine:
 
     def test(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         **kwargs,
     ) -> dict:
@@ -227,7 +242,7 @@ class Engine:
 
         Args:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
-            checkpoint (str | Path | None, optional): Path to the checkpoint file to load the model from.
+            checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
@@ -261,19 +276,25 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        # NOTE, trainer.test takes only lightning based checkpoint.
+        # So, it can't take the OTX1.x checkpoint.
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        if checkpoint is not None:
+            loaded_checkpoint = torch.load(checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
+
         self._build_trainer(**kwargs)
 
         self.trainer.test(
             model=lit_module,
             dataloaders=datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
         )
 
         return self.trainer.callback_metrics
 
     def predict(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         return_predictions: bool | None = None,
         **kwargs,
@@ -282,7 +303,7 @@ class Engine:
 
         Args:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
-            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             return_predictions (bool | None, optional): Whether to return the predictions or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
@@ -326,6 +347,61 @@ class Engine:
     def export(self, *args, **kwargs) -> None:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
         raise NotImplementedError
+
+    def explain(
+        self,
+        checkpoint: PathLike | None = None,
+        datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        explain_config: ExplainConfig | None = None,
+        **kwargs,
+    ) -> list | None:
+        """Run XAI using the specified model and data.
+
+        Args:
+            checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
+            explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
+            **kwargs: Additional keyword arguments for pl.Trainer configuration.
+
+        Returns:
+            list: Saliency maps.
+
+        Example:
+            >>> engine.explain(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ...     explain_config=ExplainConfig(),
+            ... )
+        """
+        import cv2
+
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        if explain_config is None:
+            explain_config = ExplainConfig()
+
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
+
+        lit_module.model.register_explain_hook()
+
+        self._build_trainer(**kwargs)
+
+        self.trainer.predict(
+            model=lit_module,
+            datamodule=datamodule,
+            ckpt_path=ckpt_path,
+        )
+        # Optimize for memory <- TODO(negvet)
+        saliency_maps = self.trainer.model.model.explain_hook.records
+        # Temporary saving saliency map for image 0, class 0 (for tests)
+        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
+        return saliency_maps
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
@@ -376,17 +452,26 @@ class Engine:
         """Sets the model for the engine.
 
         Args:
-            model (OTXModel): The model to be set.
+            model (OTXModel | str): The model to be set.
 
         Returns:
             None
         """
         if isinstance(model, str):
-            # [TODO] harimkang: It will be updated in next PR.
-            msg = "Auto-Configuration is not implemented yet."
-            raise NotImplementedError(msg)
-            # model = self._auto_configurator.get_model(model)
+            model = self._auto_configurator.get_model(model, meta_info=self.datamodule.meta_info)
         self._model = model
+
+    @property
+    def datamodule(self) -> OTXDataModule:
+        """Returns the datamodule object associated with the engine.
+
+        Returns:
+            OTXDataModule: The OTXDataModule object.
+        """
+        if self._datamodule is None:
+            msg = "Please include the `data_root` or `datamodule` when creating the Engine."
+            raise RuntimeError(msg)
+        return self._datamodule
 
     def _build_lightning_module(
         self,

@@ -67,7 +67,7 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             raise ValueError
 
         output = neck(x)
-        return head(output)
+        return head([output])
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
@@ -232,6 +232,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_score=labels,
             )
@@ -329,6 +330,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_label=labels,
             )

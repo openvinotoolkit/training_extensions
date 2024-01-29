@@ -6,6 +6,7 @@ import numpy as np
 import torch
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.classification import (
     ExplainableOTXClsModel,
     MMPretrainHlabelClsModel,
@@ -73,6 +74,10 @@ class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):
         config.head.num_multilabel_classes = num_multilabel_classes
         super().__init__(num_classes=num_classes, config=config)
 
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
+
 
 class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
     """DeitTiny Model for multi-label classification task."""
@@ -81,6 +86,10 @@ class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
         config = read_mmconfig("deit_tiny", subdir_name="multiclass_classification")
         super().__init__(num_classes=num_classes, config=config)
 
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
+
 
 class DeitTinyForMultilabelCls(ExplainableDeit, MMPretrainMultilabelClsModel):
     """DeitTiny Model for multi-class classification task."""
@@ -88,3 +97,7 @@ class DeitTinyForMultilabelCls(ExplainableDeit, MMPretrainMultilabelClsModel):
     def __init__(self, num_classes: int) -> None:
         config = read_mmconfig("deit_tiny", subdir_name="multilabel_classification")
         super().__init__(num_classes=num_classes, config=config)
+
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
