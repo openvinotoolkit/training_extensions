@@ -88,8 +88,8 @@ class DataModuleConfig:
     val_subset: SubsetConfig
     test_subset: SubsetConfig
 
-    tile_config: TilerConfig = TilerConfig()
-    vpm_config: VisualPromptingConfig = VisualPromptingConfig()
+    tile_config: TilerConfig = TilerConfig()  # noqa: RUF009
+    vpm_config: VisualPromptingConfig = VisualPromptingConfig()  # noqa: RUF009
 
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: Optional[tuple[int, int]] = None

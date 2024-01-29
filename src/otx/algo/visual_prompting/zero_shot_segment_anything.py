@@ -21,12 +21,12 @@ from otx.algo.visual_prompting.segment_anything import (
     DEFAULT_CONFIG_SEGMENT_ANYTHING,
     SegmentAnything,
 )
-from otx.core.model.entity.visual_prompting import OTXZeroShotVisualPromptingModel
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
+from otx.core.model.entity.visual_prompting import OTXZeroShotVisualPromptingModel
 
 
 class PromptGetter(nn.Module):
@@ -229,15 +229,21 @@ class ZeroShotSegmentAnything(SegmentAnything):
         reference_feats: Tensor = None
         reference_masks: list[Tensor] | None = None
         used_indices: defaultdict[int, list[int]] | None = None
-        self.reference_info = nn.ParameterDict({
-            "reference_feats": reference_feats,
-            "reference_masks": reference_masks,
-            "used_indices": used_indices,
-        })
+        self.reference_info = nn.ParameterDict(
+            {
+                "reference_feats": reference_feats,
+                "reference_masks": reference_masks,
+                "used_indices": used_indices,
+            },
+        )
 
     def check_reference_info_is_empty(self) -> bool:
         """Check if reference information is empty."""
-        return self.reference_info["reference_feats"] is None and self.reference_info["reference_masks"] is None and self.reference_info["used_indices"] is None
+        return (
+            self.reference_info["reference_feats"] is None
+            and self.reference_info["reference_masks"] is None
+            and self.reference_info["used_indices"] is None
+        )
 
     @torch.no_grad()
     def learn(
@@ -271,7 +277,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
         if self.check_reference_info_is_empty() or is_init_ref_info:
             largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
             self.reference_info["reference_feats"] = torch.zeros(len(images), largest_label + 1, 1, self.embed_dim)
-            self.reference_info["reference_masks"] = [torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes]
+            self.reference_info["reference_masks"] = [
+                torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes
+            ]
             self.reference_info["used_indices"] = defaultdict(list)
         else:
             # TODO(sungchul): expand axis if there are new labels # noqa: TD003
@@ -613,7 +621,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
-    
+
     def __init__(self, backbone: Literal["tiny_vit"], num_classes: int = 0, **kwargs):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
         super().__init__(num_classes=num_classes)

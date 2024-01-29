@@ -116,7 +116,7 @@ class TestTinyViTBlock:
             input_resolution=(6, 6),
             num_heads=1,
             window_size=2,
-            mlp_ratio=1.,
+            mlp_ratio=1.0,
         )
 
     def test_forward(self, tiny_vit_block) -> None:
@@ -149,7 +149,7 @@ class TestBasicLayer:
 
     def test_extra_repr(self, basic_layer) -> None:
         """Test extra_repr."""
-        assert f"dim=4, input_resolution=(6, 6), depth=1" == basic_layer.extra_repr()
+        assert basic_layer.extra_repr() == "dim=4, input_resolution=(6, 6), depth=1"
 
 
 class TestTinyViT:
