@@ -80,9 +80,8 @@ class DetectionTileMerge(TileMerge):
         img_ids = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            for tile_attr, tile_img, tile_img_info, tile_bboxes, tile_labels, tile_scores in zip(
+            for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores in zip(
                 tile_attrs,
-                tile_preds.images,
                 tile_preds.imgs_info,
                 tile_preds.bboxes,
                 tile_preds.labels,
@@ -90,8 +89,6 @@ class DetectionTileMerge(TileMerge):
             ):
                 keep_indices = tile_scores > self.score_thres
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
-                _tile_img = tile_img.detach().cpu().numpy()
-                _tile_img = cv2.resize(_tile_img.transpose(1, 2, 0), tile_img_info.ori_shape)
                 _bboxes = tile_bboxes[keep_indices]
                 _labels = tile_labels[keep_indices]
                 _scores = tile_scores[keep_indices]
@@ -107,7 +104,7 @@ class DetectionTileMerge(TileMerge):
 
                 entities_to_merge[tile_id].append(
                     DetPredEntity(
-                        image=_tile_img,
+                        image=torch.empty(tile_img_info.ori_shape),
                         img_info=tile_img_info,
                         bboxes=_bboxes,
                         labels=_labels,
@@ -134,13 +131,8 @@ class DetectionTileMerge(TileMerge):
         labels: list | torch.Tensor = []
         scores: list | torch.Tensor = []
         img_size = img_info.ori_shape
-        full_img = np.zeros((*img_size, 3))
         for tile_entity in entities:
             num_preds = len(tile_entity.bboxes)
-            tile_img = tile_entity.image
-            tile_img_info = tile_entity.img_info
-            x1, y1, w, h = tile_img_info.padding
-            full_img[y1 : y1 + h, x1 : x1 + w] = tile_img
             if num_preds > 0:
                 bboxes.extend(tile_entity.bboxes)
                 labels.extend(tile_entity.labels)
@@ -158,7 +150,7 @@ class DetectionTileMerge(TileMerge):
         scores = scores[sort_inds]
 
         return DetPredEntity(
-            image=full_img,
+            image=torch.empty(img_size),
             img_info=img_info,
             score=scores,
             bboxes=tv_tensors.BoundingBoxes(

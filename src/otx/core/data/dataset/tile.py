@@ -175,26 +175,10 @@ class OTXTileDetTestDataset(OTXTileDataset):
             if len(bbox_anns) > 0
             else np.zeros((0, 4), dtype=np.float32)
         )
+        labels = torch.as_tensor([ann.label for ann in bbox_anns])
 
         # NOTE: transform could only be applied to DmDataset and not directly to DatasetItem
-        tile_ds = DmDataset.from_iterable([item])
-        tile_ds = tile_ds.transform(
-            Tile,
-            grid_size=self.tile_config.grid_size,
-            overlap=(self.tile_config.overlap, self.tile_config.overlap),
-            threshold_drop_ann=0.5,
-        )
-        tile_entities: list[DetDataEntity] = []
-        tile_attrs: list[dict] = []
-        for tile in tile_ds:
-            tile_entity = self._convert_entity(tile)
-            # apply the same transforms as the original dataset
-            transformed_tile = self._apply_transforms(tile_entity)
-            if transformed_tile is None:
-                msg = "Transformed tile is None"
-                raise RuntimeError(msg)
-            tile_entities.append(transformed_tile)
-            tile_attrs.append(tile.attributes)
+        tile_entities, tile_attrs = self.get_tiles(img_data, item)
 
         return TileDetDataEntity(
             num_tiles=len(tile_entities),
@@ -210,12 +194,34 @@ class OTXTileDetTestDataset(OTXTileDataset):
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            ori_labels=torch.as_tensor([ann.label for ann in bbox_anns]),
+            ori_labels=labels,
         )
 
-    def _convert_entity(self, dataset_item: DatasetItem) -> DetDataEntity:
+    def get_tiles(self, image: np.ndarray, item: DatasetItem) -> tuple[list[DetDataEntity], list[dict]]:
+        tile_ds = DmDataset.from_iterable([item])
+        tile_ds = tile_ds.transform(
+            Tile,
+            grid_size=self.tile_config.grid_size,
+            overlap=(self.tile_config.overlap, self.tile_config.overlap),
+            threshold_drop_ann=0.5,
+        )
+        tile_entities: list[DetDataEntity] = []
+        tile_attrs: list[dict] = []
+        for tile in tile_ds:
+            tile_entity = self._convert_entity(image, tile)
+            # apply the same transforms as the original dataset
+            transformed_tile = self._apply_transforms(tile_entity)
+            if transformed_tile is None:
+                msg = "Transformed tile is None"
+                raise RuntimeError(msg)
+            tile_entities.append(transformed_tile)
+            tile_attrs.append(tile.attributes)
+        return tile_entities, tile_attrs
+
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> DetDataEntity:
         """Convert a tile datumaro dataset item to DetDataEntity."""
-        tile_img = dataset_item.media_as(Image).data
+        x1, y1, w, h = dataset_item.attributes["roi"]
+        tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
             img_idx=dataset_item.attributes["id"],

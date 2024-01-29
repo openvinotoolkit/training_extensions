@@ -32,6 +32,7 @@ overrides:
     config:
       image_color_channel: BGR
       train_subset:
+        num_workers: 4
         batch_size: 8
         transforms:
           - type: LoadImageFromFile
@@ -61,6 +62,7 @@ overrides:
               - img_shape
               - pad_shape
       val_subset:
+        num_workers: 4
         batch_size: 8
         transforms:
           - type: LoadImageFromFile
@@ -83,6 +85,7 @@ overrides:
               - img_shape
               - pad_shape
       test_subset:
+        num_workers: 4
         batch_size: 8
         transforms:
           - type: LoadImageFromFile
