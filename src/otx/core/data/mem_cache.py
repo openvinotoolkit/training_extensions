@@ -80,6 +80,7 @@ class MemCacheHandlerBase:
     """
 
     def __init__(self, mem_size: int):
+        self._mem_size = mem_size
         self._init_data_structs(mem_size)
 
     def _init_data_structs(self, mem_size: int) -> None:
@@ -189,6 +190,9 @@ class MemCacheHandlerBase:
             f"uses {self._cur_page.value} / {self.mem_size} ({perc:.1f}%) memory pool and "
             f"store {len(self)} items."
         )
+
+    def __reduce__(self):
+        return (self.__class__, (self._mem_size, ))
 
     @property
     def frozen(self) -> bool:

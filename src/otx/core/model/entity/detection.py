@@ -74,27 +74,9 @@ class MMDetCompatibleModel(OTXDetectionModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        from mmdet.models.data_preprocessors import (
-            DetDataPreprocessor as _DetDataPreprocessor,
-        )
-        from mmdet.registry import MODELS
-        from mmengine.registry import MODELS as MMENGINE_MODELS
-
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MMENGINE_MODELS.register_module(force=True)
-        class DetDataPreprocessor(_DetDataPreprocessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
-
-        self.classification_layers = get_classification_layers(self.config, MODELS, "model.")
-        return build_mm_model(self.config, MODELS, self.load_from)
+        from .utils.mmdet import create_model
+        model, self.classification_layers = create_model(self.config, self.load_from)
+        return model
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample

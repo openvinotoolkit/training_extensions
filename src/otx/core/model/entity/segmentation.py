@@ -42,25 +42,9 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        from mmengine.registry import MODELS as MMENGINE_MODELS
-        from mmseg.models.data_preprocessor import SegDataPreProcessor as _SegDataPreProcessor
-        from mmseg.registry import MODELS
-
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MMENGINE_MODELS.register_module(force=True)
-        class SegDataPreProcessor(_SegDataPreProcessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
-
-        self.classification_layers = get_classification_layers(self.config, MODELS, "model.")
-        return build_mm_model(self.config, MODELS, self.load_from)
+        from .utils.mmseg import create_model
+        model, self.classification_layers = create_model(self.config, self.load_from)
+        return model
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         from mmengine.structures import PixelData
