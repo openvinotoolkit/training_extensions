@@ -41,10 +41,16 @@ Please see [requirements-lock.txt](requirements-lock.txt). This is what I got af
 
 ## Launch training with demo template
 
-- Launch detection task ATSS-R50-FPN template
+- Auto-Configuration from dataset & task (Default Model: ATSS-MobilenetV2)
 
   ```console
-  otx train --config src/otx/recipe/detection/atss_r50_fpn.yaml --data_root tests/assets/car_tree_bug --model.num_classes=3 --max_epochs=50 --check_val_every_n_epoch=10 --engine.device gpu --engine.work_dir ./otx-workspace
+  otx train --data_root tests/assets/car_tree_bug --model.num_classes 3 --engine.device gpu --engine.work_dir ./otx-workspace
+  ```
+
+- Launch detection task ATSS-MobilenetV2 template
+
+  ```console
+  otx train --config src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root tests/assets/car_tree_bug --model.num_classes 3 --max_epochs 50 --check_val_every_n_epoch 10 --engine.device gpu --engine.work_dir ./otx-workspace
   ```
 
 - Change subset names, e.g., "train" -> "train_16" (for training)
@@ -56,7 +62,7 @@ Please see [requirements-lock.txt](requirements-lock.txt). This is what I got af
 - Do train with the existing model checkpoint for resume
 
   ```console
-  otx train ... --checkpoint <checkpoint-path>
+  otx train ... --engine.checkpoint <checkpoint-path>
   ```
 
 - Do experiment with deterministic operations and the fixed seed
@@ -68,7 +74,7 @@ Please see [requirements-lock.txt](requirements-lock.txt). This is what I got af
 - Do test with the existing model checkpoint
 
   ```console
-  otx test ... checkpoint=<checkpoint-path>
+  otx test ... --checkpoint=<checkpoint-path>
   ```
 
   `--deterministic True` might affect to the model performance. Please see [this link](https://lightning.ai/docs/pytorch/stable/common/trainer.html#deterministic). Therefore, it is not recommended to turn on this option for the model performance comparison.

@@ -125,7 +125,13 @@ def test_otx_e2e(
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_explain_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
+def test_otx_explain_e2e(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+) -> None:
     """
     Test OTX CLI explain e2e command.
 
@@ -153,12 +159,12 @@ def test_otx_explain_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> N
         "--config",
         recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
         fxt_accelerator,
-        *DATASET[task]["overrides"],
+        *fxt_cli_override_command_per_task[task],
     ]
 
     with patch("sys.argv", command_cfg):

@@ -1,6 +1,6 @@
 """Auto-Configurator class & util functions for OTX Auto-Configuration."""
 
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -17,7 +17,7 @@ from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.types.task import OTXTaskType
-from otx.core.utils import get_otx_root_path
+from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
