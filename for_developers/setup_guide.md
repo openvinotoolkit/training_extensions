@@ -36,7 +36,7 @@ pip install --upgrade pip
 
 ```console
 # Create venv
-python3.10 -m venv venv
+python -m venv venv
 source venv/bin/activate
 
 # Install this package
