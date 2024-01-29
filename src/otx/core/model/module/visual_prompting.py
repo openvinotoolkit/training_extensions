@@ -74,6 +74,10 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             },
         )
 
+    def on_train_epoch_start(self) -> None:
+        """Callback triggered when the train epoch starts."""
+        self.train_metric.reset()
+
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
         self.val_metric.reset()
@@ -81,6 +85,11 @@ class OTXVisualPromptingLitModule(OTXLitModule):
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
         self.test_metric.reset()
+
+    def on_train_epoch_end(self) -> None:
+        """Callback triggered when the train epoch ends."""
+        self._log_metrics(self.train_metric, "train")
+        self.train_metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
