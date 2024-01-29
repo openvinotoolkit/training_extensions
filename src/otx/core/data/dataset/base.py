@@ -157,7 +157,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
             msg = "Cannot get image data"
             raise RuntimeError(msg)
 
-        img_data = self._cache_img(key=key, img_data=img_data)
+        img_data = self._cache_img(key=key, img_data=img_data.astype(np.uint8))
 
         return img_data, img_data.shape[:2]
 
