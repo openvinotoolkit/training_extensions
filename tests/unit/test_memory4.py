@@ -1,10 +1,10 @@
 import psutil
 import time
 
-# import pytest
+import pytest
 
 
-# @pytest.mark.skip(reason="only for the debugging")
+@pytest.mark.skip(reason="only for the debugging")
 def test_memory_bound4():
     print(psutil.virtual_memory())
     alloc = []
