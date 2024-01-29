@@ -20,7 +20,7 @@ from torch import nn
 
 
 class TestConv2d_BN:  # noqa: N801
-    def setup(self) -> None:
+    def setup_method(self) -> None:
         self.conv2d_bn = Conv2d_BN(a=1, b=1)
 
     def test_init(self) -> None:
@@ -107,7 +107,7 @@ class TestAttention:
 
 
 class TestTinyViTBlock:
-    def setup(self) -> None:
+    def setup_method(self) -> None:
         self.dim = 4
         self.input_resolution = (6, 6)
         self.num_heads = 1
@@ -131,7 +131,7 @@ class TestTinyViTBlock:
 
 
 class TestBasicLayer:
-    def setup(self) -> None:
+    def setup_method(self) -> None:
         self.dim = 4
         self.input_resolution = (6, 6)
         self.depth = 1
@@ -160,7 +160,7 @@ class TestBasicLayer:
 
 
 class TestTinyViT:
-    def setup(self) -> None:
+    def setup_method(self) -> None:
         self.tiny_vit = TinyViT(
             img_size=1024,
             embed_dims=[64, 128, 160, 320],
