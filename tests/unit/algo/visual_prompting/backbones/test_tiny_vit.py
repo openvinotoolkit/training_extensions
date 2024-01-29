@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 from otx.algo.visual_prompting.backbones.tiny_vit import (
     Attention,
@@ -20,6 +21,7 @@ from torch import nn
 
 
 class TestConv2d_BN:  # noqa: N801
+    @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.conv2d_bn = Conv2d_BN(a=1, b=1)
 
@@ -107,6 +109,7 @@ class TestAttention:
 
 
 class TestTinyViTBlock:
+    @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.dim = 4
         self.input_resolution = (6, 6)
@@ -131,6 +134,7 @@ class TestTinyViTBlock:
 
 
 class TestBasicLayer:
+    @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.dim = 4
         self.input_resolution = (6, 6)
@@ -160,6 +164,7 @@ class TestBasicLayer:
 
 
 class TestTinyViT:
+    @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.tiny_vit = TinyViT(
             img_size=1024,
