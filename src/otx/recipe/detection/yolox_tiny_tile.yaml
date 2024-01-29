@@ -30,6 +30,11 @@ overrides:
   gradient_clip_val: 35.0
   data:
     config:
+      tile_config:
+        enable_tiler: true
+        grid_size:
+          - 2
+          - 2
       train_subset:
         num_workers: 4
         batch_size: 8

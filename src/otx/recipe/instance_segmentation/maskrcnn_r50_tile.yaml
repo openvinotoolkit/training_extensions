@@ -1,15 +1,15 @@
 model:
-  class_path: otx.algo.detection.yolox.YoloX
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
   init_args:
     num_classes: 80
-    variant: l
+    variant: r50
 
 optimizer:
   class_path: torch.optim.SGD
   init_args:
-    lr: 0.001
+    lr: 0.007
     momentum: 0.9
-    weight_decay: 0.0001
+    weight_decay: 0.001
 
 scheduler:
   class_path: lightning.pytorch.cli.ReduceLROnPlateau
@@ -20,95 +20,78 @@ scheduler:
     monitor: train/loss
 
 engine:
-  task: DETECTION
+  task: INSTANCE_SEGMENTATION
   device: auto
 
 callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
-  gradient_clip_val: 35.0
   data:
+    task: INSTANCE_SEGMENTATION
     config:
       tile_config:
         enable_tiler: true
         grid_size:
           - 2
           - 2
-      image_color_channel: BGR
+      include_polygons: true
       train_subset:
         num_workers: 4
-        batch_size: 8
+        batch_size: 4
         transforms:
           - type: LoadImageFromFile
+            backend_args: null
           - type: LoadAnnotations
             with_bbox: true
-          - type: YOLOXHSVRandomAug
+            with_mask: true
           - type: Resize
+            keep_ratio: true
             scale:
               - 640
               - 640
-            keep_ratio: true
           - type: RandomFlip
             prob: 0.5
-          - type: Pad
-            pad_to_square: true
-            pad_val: 114
           - type: PackDetInputs
-            meta_keys:
-              - ori_filename
-              - flip_direction
-              - scale_factor
-              - gt_ann_ids
-              - flip
-              - ignored_labels
-              - ori_shape
-              - filename
-              - img_shape
-              - pad_shape
       val_subset:
         num_workers: 4
-        batch_size: 8
+        batch_size: 1
         transforms:
           - type: LoadImageFromFile
+            backend_args: null
           - type: Resize
+            keep_ratio: true
             scale:
               - 640
               - 640
-            keep_ratio: true
-          - type: Pad
-            pad_to_square: true
-            pad_val: 114
           - type: LoadAnnotations
             with_bbox: true
+            with_mask: true
           - type: PackDetInputs
             meta_keys:
-              - ori_filename
-              - scale_factor
+              - img_id
+              - img_path
               - ori_shape
-              - filename
               - img_shape
-              - pad_shape
+              - scale_factor
       test_subset:
         num_workers: 4
-        batch_size: 8
+        batch_size: 1
         transforms:
           - type: LoadImageFromFile
+            backend_args: null
           - type: Resize
+            keep_ratio: true
             scale:
               - 640
               - 640
-            keep_ratio: true
-          - type: Pad
-            pad_to_square: true
-            pad_val: 114
           - type: LoadAnnotations
             with_bbox: true
+            with_mask: true
           - type: PackDetInputs
             meta_keys:
-              - ori_filename
-              - scale_factor
+              - img_id
+              - img_path
               - ori_shape
-              - filename
               - img_shape
-              - pad_shape
+              - scale_factor
