@@ -253,6 +253,12 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
             },
         )
 
+    def on_train_epoch_start(self) -> None:
+        """Skip on_train_epoch_start unused in zero-shot visual prompting."""
+
+    def on_train_epoch_end(self) -> None:
+        """Skip on_train_epoch_end unused in zero-shot visual prompting."""
+
     def on_validation_epoch_start(self) -> None:
         """Skip on_validation_epoch_start unused in zero-shot visual prompting."""
 
