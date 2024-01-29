@@ -13,14 +13,13 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
-    from torch import device, nn
+    from torch import nn
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
@@ -43,6 +42,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
 
     def _create_model(self) -> nn.Module:
         from .utils.mmseg import create_model
+
         model, self.classification_layers = create_model(self.config, self.load_from)
         return model
 

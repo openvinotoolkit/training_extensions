@@ -14,7 +14,6 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
-    from torch import device, nn
+    from torch import nn
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
@@ -75,6 +74,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
 
     def _create_model(self) -> nn.Module:
         from .utils.mmdet import create_model
+
         model, self.classification_layers = create_model(self.config, self.load_from)
         return model
 

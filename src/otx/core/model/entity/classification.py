@@ -100,6 +100,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
+
         model, self.classification_layers = create_model(self.config, self.load_from)
         return model
 
@@ -193,6 +194,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
+
         model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
@@ -284,6 +286,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
+
         model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model

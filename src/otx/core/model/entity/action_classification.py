@@ -14,12 +14,11 @@ from otx.core.data.entity.action_classification import (
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.model.entity.base import OTXModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
-    from torch import device, nn
+    from torch import nn
 
 
 class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, T_OTXTileBatchDataEntity]):
@@ -42,6 +41,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
 
     def _create_model(self) -> nn.Module:
         from .utils.mmaction import create_model
+
         model, self.classification_layers = create_model(self.config, self.load_from)
         return model
 
