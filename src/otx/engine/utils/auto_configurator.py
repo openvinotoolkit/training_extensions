@@ -7,8 +7,9 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
@@ -22,9 +23,11 @@ from otx.core.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from typing_extensions import TypeAlias
 
     from otx.core.model.entity.base import OTXModel
 
+PathLike: TypeAlias = Union[str, Path, os.PathLike]
 
 logger = logging.getLogger()
 RECIPE_PATH = get_otx_root_path() / "recipe"
@@ -50,11 +53,11 @@ TASK_PER_DATA_FORMAT = {
 }
 
 
-def configure_task(data_root: str | Path | None) -> OTXTaskType | None:
+def configure_task(data_root: PathLike | None) -> OTXTaskType | None:
     """Configures the task based on the given data root.
 
     Args:
-        data_root (str | Path | None): The root directory of the data.
+        data_root (PathLike | None): The root directory of the data.
 
     Returns:
         OTXTaskType | None: The configured task type, or None if data_root is None.
@@ -107,7 +110,7 @@ class AutoConfigurator:
     """This Class is used to configure the OTXDataModule, OTXModel, Optimizer, and Scheduler with OTX Default.
 
     Args:
-        data_root (str | Path | None, optional): The root directory for data storage. Defaults to None.
+        data_root (PathLike | None, optional): The root directory for data storage. Defaults to None.
         task (OTXTaskType | None, optional): The current task. Defaults to None.
         model_name (str | None, optional): Name of the model to use as the default.
             If None, the default model will be used. Defaults to None.
@@ -128,7 +131,7 @@ class AutoConfigurator:
 
     def __init__(
         self,
-        data_root: str | Path | None = None,
+        data_root: PathLike | None = None,
         task: str | None = None,
         model_name: str | None = None,
     ) -> None:

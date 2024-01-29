@@ -20,7 +20,7 @@ from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -73,29 +73,29 @@ class Engine:
     def __init__(
         self,
         *,
-        data_root: str | Path | None = None,
+        data_root: PathLike | None = None,
         task: OTXTaskType | None = None,
-        work_dir: str | Path = "./otx-workspace",
+        work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
         optimizer: OptimizerCallable | None = None,
         scheduler: LRSchedulerCallable | None = None,
-        checkpoint: str | None = None,
+        checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
     ):
         """Initializes the OTX Engine.
 
         Args:
-            data_root (str | Path | None, optional): Root directory for the data. Defaults to None.
+            data_root (PathLike | None, optional): Root directory for the data. Defaults to None.
             task (OTXTaskType | None, optional): The type of OTX task. Defaults to None.
-            work_dir (str | Path, optional): Working directory for the engine. Defaults to "./otx-workspace".
+            work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
             optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
             scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
                 Defaults to None.
-            checkpoint (str | None, optional): Path to the checkpoint file. Defaults to None.
+            checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
