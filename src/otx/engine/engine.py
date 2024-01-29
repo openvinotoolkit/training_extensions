@@ -387,7 +387,7 @@ class Engine:
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
 
-    def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None, **kwargs) -> Path:
+    def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None) -> Path:
         """Applies PTQ to the underlying models (now works only for OV models).
 
         Args:
@@ -395,6 +395,13 @@ class Engine:
 
         Returns:
             Path: path to the optimized model.
+
+        Example:
+            >>> engine.optimize(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ...     explain_config=ExplainConfig(),
+            ... )
         """
         return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
 
