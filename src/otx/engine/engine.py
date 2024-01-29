@@ -110,7 +110,7 @@ class Engine:
         )
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
-            task=task,
+            task=datamodule.task if datamodule is not None else task,
             model_name=None if isinstance(model, OTXModel) else model,
         )
 
