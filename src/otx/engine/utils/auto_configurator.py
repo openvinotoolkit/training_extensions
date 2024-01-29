@@ -54,20 +54,18 @@ TASK_PER_DATA_FORMAT = {
 }
 
 
-def configure_task(data_root: PathLike | None) -> OTXTaskType | None:
+def configure_task(data_root: PathLike) -> OTXTaskType:
     """Configures the task based on the given data root.
 
     Args:
-        data_root (PathLike | None): The root directory of the data.
+        data_root (PathLike): The root directory of the data.
 
     Returns:
-        OTXTaskType | None: The configured task type, or None if data_root is None.
+        OTXTaskType: The configured task type, or None if data_root is None.
 
     Raises:
         ValueError: If the data format is not supported.
     """
-    if data_root is None:
-        return None
     data_root = Path(data_root).resolve()
 
     data_format = datumaro.Environment().detect_dataset(str(data_root))
@@ -133,11 +131,11 @@ class AutoConfigurator:
     def __init__(
         self,
         data_root: PathLike | None = None,
-        task: str | None = None,
+        task: OTXTaskType | None = None,
         model_name: str | None = None,
     ) -> None:
         self.data_root = data_root
-        self._task = OTXTaskType(task) if task is not None else configure_task(data_root)
+        self._task = task
         self._config: dict | None = None
         self.model_name: str | None = model_name
 
@@ -151,10 +149,13 @@ class AutoConfigurator:
         Returns:
             OTXTaskType: The current task.
         """
-        if self._task is None:
-            msg = "There are no ready task"
-            raise RuntimeError(msg)
-        return self._task
+        if self._task is not None:
+            return self._task
+        if self.data_root is not None:
+            self._task = configure_task(self.data_root)
+            return self._task
+        msg = "There are no ready task"
+        raise RuntimeError(msg)
 
     @property
     def config(self) -> dict:
