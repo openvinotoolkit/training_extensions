@@ -42,6 +42,8 @@ class OTXv1Helper:
                     val = val.t()
             elif key.startswith("model"):
                 new_key = "backbone." + key
+            else:
+                new_key = key
             state_dict[add_prefix + new_key] = val
         return state_dict
 
