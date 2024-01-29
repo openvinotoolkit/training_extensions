@@ -4,8 +4,10 @@
 
 ### Requirements
 
-CUDA > 11.8
-torchvision > 0.16
+CUDA >= 11.8
+torchvision >= 0.16
+python >= 3.9
+pip >= 23.3.2
 
 ### With Conda
 
@@ -34,7 +36,7 @@ pip install --upgrade pip
 
 ```console
 # Create venv
-python -m venv venv
+python3.10 -m venv venv
 source venv/bin/activate
 
 # Install this package
