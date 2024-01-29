@@ -1,7 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import torch
-
 from otx.algo.hooks.recording_forward_hook import (
     ReciproCAMHook,
     ViTReciproCAMHook,
