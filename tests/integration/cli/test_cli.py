@@ -88,6 +88,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
