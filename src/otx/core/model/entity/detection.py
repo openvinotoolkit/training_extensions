@@ -101,14 +101,14 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""
-        if anchor_generator := getattr(self.model.bbox_head, "prior_generator", None):  
-            return (  
-                 anchor_generator.num_base_anchors 
-                 if hasattr(anchor_generator, "num_base_anchors")  
-                 else anchor_generator.num_base_priors  
-            )  
+        if anchor_generator := getattr(self.model.bbox_head, "prior_generator", None):
+            return (
+                anchor_generator.num_base_anchors
+                if hasattr(anchor_generator, "num_base_anchors")
+                else anchor_generator.num_base_priors
+            )
 
-        return [1] * 10 
+        return [1] * 10
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
