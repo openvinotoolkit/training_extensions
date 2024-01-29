@@ -33,23 +33,18 @@ class OTXZeroShotVisualPromptingModel(
     def __init__(self, num_classes: int = 0) -> None:
         super().__init__(num_classes=num_classes)
         
-    def state_dict(self) -> dict[str, Any]:
+        self._register_load_state_dict_pre_hook(self.load_state_dict_pre_hook)
+        
+    def state_dict(self, *args, destination=None, prefix='', keep_vars=False) -> dict[str, Any]:
         """Return state dictionary of model entity with reference features, masks, and used indices."""
-        state_dict = super().state_dict()
-        state_dict.update(
-            {
-                "model.model.reference_feats": self.model.model.reference_feats,
-                "model.model.reference_masks": self.model.model.reference_masks,
-                "model.model.used_indices": self.model.model.used_indices,
-            },
-        )
-        return state_dict
+        super().state_dict(*args, destination=destination, prefix=prefix, keep_vars=keep_vars)
+        
+        # to save reference_info instead of reference_feats only
+        destination.pop(prefix + "model.reference_info.reference_feats")
+        destination.update({prefix + "model.reference_info": self.model.reference_info})
+        return destination
     
-    def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
-        """Load state dictionary from checkpoint state dictionary."""
-        ckpt_meta_info = ckpt.pop("meta_info", None)  # noqa: F841
-
-        self.model.model.reference_feats = ckpt.pop("model.model.reference_feats").to(self.device)
-        self.model.model.reference_masks = [m.to(self.device) for m in ckpt.pop("model.model.reference_masks")]
-        self.model.model.used_indices = ckpt.pop("model.model.used_indices")
-        return super().load_state_dict(ckpt, *args, **kwargs)
+    def load_state_dict_pre_hook(self, state_dict: dict[str, Any], prefix: str = "", *args, **kwargs) -> None:
+        """Load reference info manually."""
+        self.model.reference_info = state_dict.get(prefix + "model.reference_info", self.model.reference_info)
+        state_dict[prefix + "model.reference_info.reference_feats"] = self.model.reference_info["reference_feats"]

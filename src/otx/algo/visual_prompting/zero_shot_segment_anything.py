@@ -9,7 +9,7 @@ import logging as log
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
-from typing import Any
+from typing import Any, Literal
 
 import torch
 from datumaro import Polygon as dmPolygon
@@ -19,9 +19,9 @@ from torchvision import tv_tensors
 
 from otx.algo.visual_prompting.segment_anything import (
     DEFAULT_CONFIG_SEGMENT_ANYTHING,
-    OTXSegmentAnything,
     SegmentAnything,
 )
+from otx.core.model.entity.visual_prompting import OTXZeroShotVisualPromptingModel
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
@@ -226,13 +226,18 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
-        self.reference_feats: Tensor = None
-        self.reference_masks: list[Tensor] | None = None
-        self.used_indices: defaultdict[int, list[int]] | None = None
+        reference_feats: Tensor = None
+        reference_masks: list[Tensor] | None = None
+        used_indices: defaultdict[int, list[int]] | None = None
+        self.reference_info = nn.ParameterDict({
+            "reference_feats": reference_feats,
+            "reference_masks": reference_masks,
+            "used_indices": used_indices,
+        })
 
     def check_reference_info_is_empty(self) -> bool:
         """Check if reference information is empty."""
-        return self.reference_feats is None and self.reference_masks is None and self.used_indices is None
+        return self.reference_info["reference_feats"] is None and self.reference_info["reference_masks"] is None and self.reference_info["used_indices"] is None
 
     @torch.no_grad()
     def learn(
@@ -265,9 +270,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
         # initialize tensors to contain reference features and prompts
         if self.check_reference_info_is_empty() or is_init_ref_info:
             largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
-            self.reference_feats = torch.zeros(len(images), largest_label + 1, 1, self.embed_dim)
-            self.reference_masks = [torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes]
-            self.used_indices = defaultdict(list)
+            self.reference_info["reference_feats"] = torch.zeros(len(images), largest_label + 1, 1, self.embed_dim)
+            self.reference_info["reference_masks"] = [torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes]
+            self.reference_info["used_indices"] = defaultdict(list)
         else:
             # TODO(sungchul): expand axis if there are new labels # noqa: TD003
             # TODO(sungchul): consider who to handle multiple reference features, currently replace it # noqa: TD003
@@ -327,12 +332,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     )
                     default_threshold_reference -= 0.05
 
-                self.reference_feats[batch][label] = ref_feat.detach().cpu()
-                self.reference_masks[batch][label] = ref_mask.detach().cpu()
-                self.used_indices[batch].append(label)
+                self.reference_info["reference_feats"][batch][label] = ref_feat.detach().cpu()
+                self.reference_info["reference_masks"][batch][label] = ref_mask.detach().cpu()
+                self.reference_info["used_indices"][batch].append(label)
 
         if return_outputs:
-            return self.reference_feats, self.reference_masks, self.used_indices
+            return self.reference_info
         return None
 
     @torch.no_grad()
@@ -606,8 +611,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
         return logits[:, best_idx], masks[0, best_idx]
 
 
-class OTXZeroShotSegmentAnything(OTXSegmentAnything):
+class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
+    
+    def __init__(self, backbone: Literal["tiny_vit"], num_classes: int = 0, **kwargs):
+        self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
+        super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -637,8 +646,8 @@ class OTXZeroShotSegmentAnything(OTXSegmentAnything):
         # infer
         return {
             "images": [tv_tensors.wrap(image.unsqueeze(0), like=image) for image in inputs.images],
-            "reference_feats": self.model.reference_feats,
-            "used_indices": self.model.used_indices,
+            "reference_feats": self.model.reference_info["reference_feats"],
+            "used_indices": self.model.reference_info["used_indices"],
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
         }
 

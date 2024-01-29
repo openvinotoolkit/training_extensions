@@ -219,10 +219,10 @@ class TestZeroShotSegmentAnything:
 
         zero_shot_segment_anything.learn(images=images, processed_prompts=processed_prompts, ori_shapes=ori_shapes)
 
-        assert zero_shot_segment_anything.reference_feats.shape == torch.Size((1, 1, 1, 256))
-        assert len(zero_shot_segment_anything.reference_masks) == 1
-        assert zero_shot_segment_anything.reference_masks[0].shape == torch.Size((1, 1024, 1024))
-        assert zero_shot_segment_anything.used_indices[0][0] == 0
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 1, 256))
+        assert len(zero_shot_segment_anything.reference_info["reference_masks"]) == 1
+        assert zero_shot_segment_anything.reference_info["reference_masks"][0].shape == torch.Size((1, 1024, 1024))
+        assert zero_shot_segment_anything.reference_info["used_indices"][0][0] == 0
 
     def test_infer(self, mocker, build_zero_shot_segment_anything) -> None:
         """Test infer."""
@@ -288,8 +288,8 @@ class TestOTXZeroShotSegmentAnything:
     def test_customize_inputs_infer(self, model: OTXZeroShotSegmentAnything, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_inputs with training=False."""
         model.training = False
-        model.model.reference_feats = torch.rand(1, 1, 1, 256)
-        model.model.used_indices = {0: [0]}
+        model.model.reference_info["reference_feats"] = torch.rand(1, 1, 1, 256)
+        model.model.reference_info["used_indices"] = {0: [0]}
         output_data = model._customize_inputs(fxt_zero_shot_vpm_data_entity[1])
 
         assert output_data is not None
@@ -297,8 +297,8 @@ class TestOTXZeroShotSegmentAnything:
         assert output_data["images"][0].shape[-2:] == torch.Size(output_data["ori_shapes"][0])
         assert isinstance(output_data["ori_shapes"][0], Tensor)
         assert "reference_feats" in output_data
-        assert torch.all(output_data["reference_feats"] == model.model.reference_feats)
-        assert output_data["used_indices"] == model.model.used_indices
+        assert torch.all(output_data["reference_feats"] == model.model.reference_info["reference_feats"])
+        assert output_data["used_indices"] == model.model.reference_info["used_indices"]
 
     def test_customize_outputs(self, model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_outputs."""
