@@ -234,7 +234,7 @@ class Engine:
 
     def test(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         **kwargs,
     ) -> dict:
@@ -242,7 +242,7 @@ class Engine:
 
         Args:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
-            checkpoint (str | Path | None, optional): Path to the checkpoint file to load the model from.
+            checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
@@ -294,7 +294,7 @@ class Engine:
 
     def predict(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         return_predictions: bool | None = None,
         **kwargs,
@@ -303,7 +303,7 @@ class Engine:
 
         Args:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
-            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             return_predictions (bool | None, optional): Whether to return the predictions or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
@@ -350,7 +350,7 @@ class Engine:
 
     def explain(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         explain_config: ExplainConfig | None = None,
         **kwargs,
@@ -358,7 +358,7 @@ class Engine:
         """Run XAI using the specified model and data.
 
         Args:
-            checkpoint (str | Path | None, optional): The path to the checkpoint file to load the model from.
+            checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
