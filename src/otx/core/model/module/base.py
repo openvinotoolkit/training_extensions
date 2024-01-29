@@ -149,18 +149,7 @@ class OTXLitModule(LightningModule):
             model_state_dict = ckpt["model"]["state_dict"]
             msg = "The checkpoint comes from OTXv1, checkpoint keys will be updated automatically."
             warnings.warn(msg, stacklevel=2)
-            # for (src_k, src_v), (dst_k, dst_v) in zip(model_state_dict.items(), self.model.state_dict().items()):
-            #     print(src_k, src_v.shape)
-            #     print(dst_k, dst_v.shape)
-            #     print()
-            # breakpoint()
             state_dict = self.model.load_from_otx_v1_ckpt(model_state_dict)
-            for (src_k, src_v), (tmp_k, tmp_v), (dst_k, dst_v) in zip(model_state_dict.items(), state_dict.items(), self.model.state_dict().items()):
-                print("Original ckpt: ", src_k, src_v.shape)
-                print("Converted ckpt: ", tmp_k, tmp_v.shape)
-                print("Model: ", dst_k, dst_v.shape)
-                print()
-            breakpoint()
         elif is_ckpt_for_finetuning(ckpt):
             state_dict = ckpt["state_dict"]
         else:
