@@ -27,6 +27,8 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
+from jsonargparse import ArgumentParser
+from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -398,6 +400,169 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             transform_fn,
         )
         ptq_config: dict = {}
+
+        from nncf import IgnoredScope
+        from nncf.common.quantization.structs import QuantizationPreset
+        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
+        from nncf.quantization.range_estimator import (
+            AggregatorType,
+            RangeEstimatorParameters,
+            StatisticsCollectorParameters,
+            StatisticsType,
+        )
+        """class_path: lightning.pytorch.callbacks.EarlyStopping
+            init_args:
+            monitor: null
+            mode: max
+            patience: 100
+            check_on_train_epoch_end: false"""
+
+        advanced_parameters = AdvancedQuantizationParameters(
+            activations_range_estimator_params=RangeEstimatorParameters(
+                min=StatisticsCollectorParameters(
+                    statistics_type=StatisticsType.QUANTILE, aggregator_type=AggregatorType.MIN, quantile_outlier_prob=1e-4
+                ),
+                max=StatisticsCollectorParameters(
+                    statistics_type=StatisticsType.QUANTILE, aggregator_type=AggregatorType.MAX, quantile_outlier_prob=1e-4
+                ),
+            ),
+        )
+
+        init_dict = {"class_path": "nncf.quantization.advanced_parameters.AdvancedQuantizationParameters",
+        "init_args": {
+            "activations_range_estimator_params": {
+                "min": {
+                    "statistics_type": {"class_path": "nncf.quantization.range_estimator.StatisticsType.QUANTILE"},
+                    "aggregator_type": {"class_path": "nncf.quantization.range_estimator.AggregatorType.MIN"},
+                    "quantile_outlier_prob": 1e-4
+                },
+                "max": {
+                    "statistics_type": {"class_path": "nncf.quantization.range_estimator.StatisticsType.QUANTILE"},
+                    "aggregator_type": {"class_path": "nncf.quantization.range_estimator.AggregatorType.MAX"},
+                    "quantile_outlier_prob": 1e-4
+                }
+                        }
+                    }
+                }
+
+        test_string = '''advanced_parameters:
+                            activations_range_estimator_params:
+                                min:
+                                    statistics_type: QUANTILE
+                                    aggregator_type: MIN
+                                    quantile_outlier_prob: 1e-4
+                                max:
+                                    statistics_type: QUANTILE
+                                    aggregator_type: MAX
+                                    quantile_outlier_prob: 1e-4
+                    '''
+        test_dict = {"advanced_parameters": {"activations_range_estimator_params": {"min": {"statistics_type": "QUANTILE", "aggregator_type": "MIN", "quantile_outlier_prob": 1e-4},
+                                                                                    "max": {"statistics_type": "QUANTILE", "aggregator_type": "MAX", "quantile_outlier_prob": 1e-4}}}}
+        argparser = ArgumentParser()
+        argparser.add_class_arguments(AdvancedQuantizationParameters, "advanced_parameters")
+        config_from_string = argparser.parse_object(test_string)
+        config_from_dict = argparser.parse_string(test_dict)
+        ptq_config = argparser.instantiate_classes(cfg=config, instantiate_groups=True)
+
+        breakpoint()
+        # from omegaconf import OmegaConf
+        # init_cfg_2 = OmegaConf.create(init_cfg_2)
+        preset = QuantizationPreset.MIXED
+        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
+        AdvancedQuantizationParameters()
+        ignored_scope = IgnoredScope(
+            patterns=["/backbone/*"],
+            names=[
+                "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage0/stage0.0/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage0/stage0.0/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage0/stage0.0/Add_1",
+                "/backbone/stage0/stage0.1/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage0/stage0.1/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage0/stage0.1/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage0/stage0.1/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage0/stage0.1/Add_1",
+                "/backbone/stage1/stage1.0/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.0/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.0/layers/layers.0/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.0/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.0/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.0/Add_1",
+                "/backbone/stage1/stage1.0/layers/layers.1/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.0/Add_2",
+                "/backbone/stage1/stage1.0/Add_5",
+                "/backbone/stage1/stage1.1/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.1/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.1/layers/layers.0/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.1/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.1/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.1/Add_1",
+                "/backbone/stage1/stage1.1/layers/layers.1/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.1/Add_2",
+                "/backbone/stage1/stage1.1/Add_5",
+                "/backbone/stage1/stage1.2/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.2/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.2/layers/layers.0/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.2/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.2/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.2/Add_1",
+                "/backbone/stage1/stage1.2/layers/layers.1/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.2/Add_2",
+                "/backbone/stage1/stage1.2/Add_5",
+                "/backbone/stage1/stage1.3/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.3/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.3/layers/layers.0/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage1/stage1.3/Add_1",
+                "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_2",
+                "/backbone/stage1/stage1.3/Add_2",
+                "/backbone/stage1/stage1.3/Add_5",
+                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul_2",
+                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul_3",
+                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage2/stage2.0/Add_1",
+                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul_2",
+                "/backbone/stage2/stage2.0/Add_2",
+                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul_3",
+                "/backbone/stage2/stage2.0/Add_3",
+                "/backbone/stage2/stage2.0/Add_6",
+                "/backbone/stage2/stage2.0/Add_7",
+                "/backbone/stage2/stage2.0/Add_11",
+                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul",
+                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul_1",
+                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul_2",
+                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul_3",
+                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul",
+                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul_1",
+                "/backbone/stage2/stage2.1/Add_1",
+                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul_2",
+                "/backbone/stage2/stage2.1/Add_2",
+                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul_3",
+                "/backbone/stage2/stage2.1/Add_3",
+                "/backbone/stage2/stage2.1/Add_6",
+                "/backbone/stage2/stage2.1/Add_7",
+                "/backbone/stage2/stage2.1/Add_11",
+                "/aggregator/Add",
+                "/aggregator/Add_1",
+                "/aggregator/Add_2",
+                "/backbone/stage2/stage2.1/Add",
+            ],
+        )
+
+        ptq_string = ""
+        argparser = ArgumentParser()
+        argparser.add_class_arguments(AdvancedQuantizationParameters, "advanced_parameters")
+
+        breakpoint()
+        config = argparser.parse_string(init_cfg_2)
+        config = argparser.parse_object(init_cfg_2)
+        ptq_config = argparser.instantiate_classes(cfg=config, instantiate_groups=True)
+        breakpoint()
 
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
