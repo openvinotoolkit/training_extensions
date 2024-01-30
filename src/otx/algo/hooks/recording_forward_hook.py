@@ -296,7 +296,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         max_detections_per_img: int = 300,
     ) -> None:
         super().__init__(normalize)
-        self._cls_head_forward_fn = cls_head_forward_fn
+        self.cls_head_forward_fn = cls_head_forward_fn
         # SSD-like heads also have background class
         self._num_classes = num_classes
         # self._num_anchors = num_anchors
@@ -312,15 +312,15 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
     def create_and_register_hook(
         cls,
         backbone: torch.nn.Module,
-        head_forward_fn: Callable,
+        cls_head_forward_fn: Callable,
         num_classes: int,
-        optimize_gap: bool,
+        # optimize_gap: bool,
     ) -> BaseRecordingForwardHook:
         """Create this object and register it to the module forward hook."""
         hook = cls(
-            head_forward_fn,
+            cls_head_forward_fn,
             num_classes=num_classes,
-            optimize_gap=optimize_gap,
+            # optimize_gap=optimize_gap,
         )
         hook.handle = backbone.register_forward_hook(hook.recording_forward)
         return hook

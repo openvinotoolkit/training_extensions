@@ -93,15 +93,36 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         """Performs model's neck and head forward and returns cls scores.
         This can be redefined at the model's level.
         """
-        if (head := getattr(self.model, "bbox_head", None)) is None:
-            raise ValueError
+        # if (head := getattr(self.model, "bbox_head", None)) is None:
+        #     raise ValueError
 
         if (neck := getattr(self.model, "neck", None)) is not None:
             x = neck(x)
 
-        head_out = head(x)
-        # Return the first output form detection head: classification scores
-        return head_out[0]
+        # head_out = head(x)
+        roi_head = self.model.roi_head
+        rpn_head = self.model.rpn_head
+
+        batch_size = x[0].shape[0]
+        self.input_img_shape = (30, 30)
+        img_metas = [
+            {
+                "scale_factor": [1, 1, 1, 1],  # dummy scale_factor, not used
+                "img_shape": self.input_img_shape,
+            }
+        ]
+        img_metas *= batch_size
+        # proposals = self._module.rpn_head.simple_test_rpn(x, img_metas)
+        test_cfg = roi_head.test_cfg
+        self.max_detections_per_img = 300
+
+        test_cfg["max_per_img"] = self.max_detections_per_img
+        test_cfg["nms"]["iou_threshold"] = 1
+        test_cfg["nms"]["max_num"] = self.max_detections_per_img
+
+        labels, boxes = rpn_head(x)
+        boxes, labels = roi_head(x, img_metas, proposals, test_cfg)
+        return boxes, labels
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""
@@ -124,7 +145,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.explain_hook.reset()
 
 
-class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
+class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
