@@ -65,10 +65,7 @@ jobs:
       - name: Run unit test
         run: tox -vv -e unit-test
   Integration-Test:
-    runs-on: [otx-gpu-t4-1]
-    container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
-      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
+    runs-on: [self-hosted, linux, x64, dev]
     needs: Unit-Test
     strategy:
       fail-fast: false
