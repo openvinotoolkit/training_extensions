@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import torch
 from mmcv.cnn import build_activation_layer, build_norm_layer
@@ -18,8 +18,8 @@ from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 if TYPE_CHECKING:
-    from mmengine.config import Config, ConfigDict
     from mmdet.registry import Registry
+    from mmengine.config import Config, ConfigDict
 
 # ruff: noqa: SLF001
 
@@ -101,15 +101,15 @@ def init_weights(self: nn.Module, pretrained: bool = True) -> None:
 ori_build_func = MODELS.build_func
 
 
-def _pytorchcv_model_reduce(self) -> Any:
+def _pytorchcv_model_reduce(self) -> nn.Module:  # noqa: ANN001
     return (_build_model_including_pytorchcv, (self.otx_cfg,))
 
 
 def _build_model_including_pytorchcv(
     cfg: dict | ConfigDict | Config,
     registry: Registry = MODELS,
-    default_args: dict | ConfigDict | Config | None = None
-) -> Any:
+    default_args: dict | ConfigDict | Config | None = None,
+) -> nn.Module:
     """Try to build model from mmdet first and build from pytorchcv."""
     try:
         model = ori_build_func(cfg, registry, default_args)
@@ -129,7 +129,7 @@ def _build_model_including_pytorchcv(
 
 
 def _build_pytorchcv_model(
-    type: str,
+    type: str,  # noqa: A002
     out_indices: list[int],
     frozen_stages: int = 0,
     norm_eval: bool = False,
@@ -137,7 +137,7 @@ def _build_pytorchcv_model(
     activation_cfg: dict | None = None,
     norm_cfg: dict | None = None,
     **kwargs,
-) -> None:
+) -> nn.Module:
     """Build pytorchcv model."""
     models_cache_root = kwargs.get("root", Path.home() / ".torch" / "models")
     is_pretrained = kwargs.get("pretrained", False)
@@ -174,5 +174,6 @@ def _build_pytorchcv_model(
         )
 
     return model
+
 
 MODELS.build_func = _build_model_including_pytorchcv
