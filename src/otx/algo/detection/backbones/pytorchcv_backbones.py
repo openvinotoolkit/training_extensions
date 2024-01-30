@@ -97,55 +97,82 @@ def init_weights(self: nn.Module, pretrained: bool = True) -> None:
             distributed.barrier()
             download_model(net=self, model_name=self.model_name, local_model_store_dir_path=self.models_cache_root)
 
+
 ori_build_func = MODELS.build_func
 
-def torchcv_model_reduce(self) -> Any:
-    return (build_model_including_torchcv, (self.otx_cfg,))
 
-def build_model_including_torchcv(cfg: dict | ConfigDict | Config, registry: Registry = MODELS, *args, **kwargs) -> Any:
+def _pytorchcv_model_reduce(self) -> Any:
+    return (_build_model_including_pytorchcv, (self.otx_cfg,))
+
+
+def _build_model_including_pytorchcv(
+    cfg: dict | ConfigDict | Config,
+    registry: Registry = MODELS,
+    default_args: dict | ConfigDict | Config | None = None
+) -> Any:
+    """Try to build model from mmdet first and build from pytorchcv."""
     try:
-        model = ori_build_func(cfg, registry, *args, **kwargs)
-    except KeyError:  # build from torchcv
-        model_name = cfg.get('type')
-        models_cache_root = kwargs.get("root", Path.home() / ".torch" / "models")
-        is_pretrained = kwargs.get("pretrained", False)
+        model = ori_build_func(cfg, registry, default_args)
+    except KeyError:  # build from pytorchcv
+        args = cfg.copy()
+        if default_args is not None:
+            for name, value in default_args.items():
+                args.setdefault(name, value)
 
-        print(f"Init model {model_name}, pretrained={is_pretrained}, models cache {models_cache_root}")
+        model = _build_pytorchcv_model(**args)
 
-        model = _models[model_name](*args, **kwargs)
-
-        if activation_cfg := cfg.get("activation_cfg"):
-            model = replace_activation(model, activation_cfg)
-        if norm_cfg := cfg.get("norm_cfg"):
-            model = replace_norm(model, norm_cfg)
-
-        model.out_indices = cfg["out_indices"]
-        model.frozen_stages = cfg.get("frozen_stages", 0)
-        model.norm_eval = cfg.get("norm_eval", False)
-        model.verbose = cfg.get("verbose", False)
-        model.model_name = model_name
-        model.models_cache_root = models_cache_root
-        model.otx_cfg = cfg
-
-        if hasattr(model, "features") and isinstance(model.features, nn.Sequential):
-            # Save original forward, just in case.
-            model.forward_single_output = model.forward
-            model.forward = multioutput_forward.__get__(model)
-            model.init_weights = init_weights.__get__(model)
-            model.train = train.__get__(model)
-
-            model.output = None
-            for i, _ in enumerate(model.features):
-                if i > max(model.out_indices):
-                    model.features[i] = None
-        else:
-            print(
-                "Failed to automatically wrap backbone network. "
-                f"Object of type {model.__class__} has no valid attribute called "
-                "'features'.",
-            )
-        model.__class__.__reduce__ = torchcv_model_reduce.__get__(model)
+        # support pickle
+        model.otx_cfg = args
+        model.__class__.__reduce__ = _pytorchcv_model_reduce.__get__(model, model.__class__)
 
     return model
 
-MODELS.build_func = build_model_including_torchcv
+
+def _build_pytorchcv_model(
+    type: str,
+    out_indices: list[int],
+    frozen_stages: int = 0,
+    norm_eval: bool = False,
+    verbose: bool = False,
+    activation_cfg: dict | None = None,
+    norm_cfg: dict | None = None,
+    **kwargs,
+) -> None:
+    """Build pytorchcv model."""
+    models_cache_root = kwargs.get("root", Path.home() / ".torch" / "models")
+    is_pretrained = kwargs.get("pretrained", False)
+    print(
+        f"Init model {type}, pretrained={is_pretrained}, models cache {models_cache_root}",
+    )
+    model = _models[type](**kwargs)
+    if activation_cfg:
+        model = replace_activation(model, activation_cfg)
+    if norm_cfg:
+        model = replace_norm(model, norm_cfg)
+    model.out_indices = out_indices
+    model.frozen_stages = frozen_stages
+    model.norm_eval = norm_eval
+    model.verbose = verbose
+    model.model_name = type
+    model.models_cache_root = models_cache_root
+    if hasattr(model, "features") and isinstance(model.features, nn.Sequential):
+        # Save original forward, just in case.
+        model.forward_single_output = model.forward
+        model.forward = multioutput_forward.__get__(model)
+        model.init_weights = init_weights.__get__(model)
+        model.train = train.__get__(model)
+
+        model.output = None
+        for i, _ in enumerate(model.features):
+            if i > max(out_indices):
+                model.features[i] = None
+    else:
+        print(
+            "Failed to automatically wrap backbone network. "
+            f"Object of type {model.__class__} has no valid attribute called "
+            "'features'.",
+        )
+
+    return model
+
+MODELS.build_func = _build_model_including_pytorchcv
