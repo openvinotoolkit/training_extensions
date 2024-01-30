@@ -2,6 +2,13 @@
 
 ## Installation
 
+### Requirements
+
+CUDA >= 11.8
+torchvision >= 0.16
+python >= 3.9
+pip >= 23.3.2
+
 ### With Conda
 
 ```console
@@ -19,6 +26,12 @@ pip install -e .
 otx install -v
 ```
 
+In case of the error: `File "setup.py" not found. Directory cannot be installed in editable mode:`, uprade pip:
+
+```
+pip install --upgrade pip
+```
+
 ### With PIP & 'otx install'
 
 ```console
@@ -31,6 +44,9 @@ pip install -e .
 
 # OTX --help
 otx --help
+
+# Upgrade pip
+pip install --upgrade pip
 
 # Install torch & lightning base on user environments
 otx install -v

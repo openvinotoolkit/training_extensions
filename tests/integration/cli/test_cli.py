@@ -148,8 +148,8 @@ def test_otx_explain_e2e(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "_cls" not in task:
-        pytest.skip("Supported only for classification tast.")
+    if ("_cls" not in task) and (task != "detection"):
+        pytest.skip("Supported only for classification and detection task.")
 
     if "deit" in model_name or "dino" in model_name:
         pytest.skip("Supported only for CNN models.")
