@@ -189,43 +189,42 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        exporter = self._create_exporter()
-        metadata = self._generate_model_metadata()
+        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
 
-        if export_format == OTXExportFormatType.OPENVINO:
-            return exporter.to_openvino(self.model, output_dir, base_name, precision, metadata)
-        if export_format == OTXExportFormatType.ONNX:
-            return exporter.to_onnx(self.model, output_dir, base_name, precision, metadata)
-        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            return self._export_to_exportable_code()
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        msg = (
+            "To export this OTXModel, you should implement an appropriate exporter for it. "
+            "You can try to reuse ones provided in `otx.core.exporter.*`."
+        )
+        raise NotImplementedError(msg)
 
-        msg = f"Unsupported export format: {export_format}"
-        raise ValueError(msg)
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation.
 
-    def _create_exporter(
-        self,
-    ) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        raise NotImplementedError
-
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], str]:
-        """Generates model-specific metadata, which will be embedded into exported model.
+        To export OTXModel, you should define an appropriate parameters."
+        "This is used in the constructor of `self._exporter`. "
+        "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
+        "Please refer to `otx.core.exporter.*` for detailed examples."
 
         Returns:
-            dict[tuple[str, str], str]: metadata
+            dict[str, Any]: parameters of exporter.
         """
+        parameters = {}
+
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
             all_labels += lbl.replace(" ", "_") + " "
             all_label_ids += lbl.replace(" ", "_") + " "
 
-        return {
+        parameters["metadata"] = {
             ("model_info", "labels"): all_labels.strip(),
             ("model_info", "label_ids"): all_label_ids.strip(),
         }
+
+        return parameters
 
     def _export_to_exportable_code(self) -> Path:
         """Export to exportable code format.
