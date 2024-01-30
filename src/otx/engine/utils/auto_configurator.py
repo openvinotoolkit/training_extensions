@@ -251,21 +251,21 @@ class AutoConfigurator:
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
-    def get_optimizer(self) -> OptimizerCallable:
+    def get_optimizer(self) -> OptimizerCallable | None:
         """Returns the optimizer callable based on the configuration.
 
         Returns:
-            OptimizerCallable: The optimizer callable.
+            OptimizerCallable | None: The optimizer callable.
         """
         optimizer_config = self.config.get("optimizer", None)
         logger.warning(f"Set Default Optimizer: {optimizer_config}")
         return partial_instantiate_class(init=optimizer_config)
 
-    def get_scheduler(self) -> LRSchedulerCallable:
+    def get_scheduler(self) -> LRSchedulerCallable | None:
         """Returns the instantiated scheduler based on the configuration.
 
         Returns:
-            LRSchedulerCallable: The instantiated scheduler.
+            LRSchedulerCallable | None: The instantiated scheduler.
         """
         scheduler_config = self.config.get("scheduler", None)
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
