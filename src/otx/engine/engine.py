@@ -209,35 +209,9 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
-        val_check_interval = 1
-
-        def make_mem_cache_handler():
-            from otx.core.data.mem_cache import (
-                MemCacheHandlerSingleton,
-                parse_mem_cache_size_to_int,
-            )
-
-            config_mapping = {
-                self.datamodule.config.train_subset.subset_name: self.datamodule.config.train_subset,
-                self.datamodule.config.val_subset.subset_name: self.datamodule.config.val_subset,
-                self.datamodule.config.test_subset.subset_name: self.datamodule.config.test_subset,
-            }
-            
-            mem_size = parse_mem_cache_size_to_int(self.datamodule.config.mem_cache_size)
-            mem_cache_mode = (
-                "singleprocessing"
-                if all(config.num_workers == 0 for config in config_mapping.values())
-                else "multiprocessing"
-            )
-            return MemCacheHandlerSingleton.create(
-                mode=mem_cache_mode,
-                mem_size=mem_size,
-            )
-
+        # is_hpo = False
         if is_hpo:  # HPO
-            # for dataset in self.datamodule.subsets.values():
-            #     dataset.mem_cache_handler = None
-
+            kwargs["check_val_every_n_epoch"] = 1
             hpo_algo = get_hpo_algo(
                 self.work_dir,
                 max_epochs,
@@ -273,13 +247,6 @@ class Engine:
             if isinstance(callback, AdaptiveTrainScheduling):
                 callback.max_interval =1
         
-        # mem_cache_handler = make_mem_cache_handler()
-        # for dataset in self.datamodule.subsets.values():
-        #     if dataset.mem_cache_handler is None:
-        #         dataset.mem_cache_handler = mem_cache_handler
-
-        # self.datamodule.set_mem_cache_handler()
-                
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -767,15 +734,76 @@ class Engine:
 
 
 def get_hpo_algo(save_path, max_epoch, train_dataset_size, val_dataset_size):
+    # # cls
+    # args = {
+    #     "search_space": {
+    #         "lr" : {
+    #             "param_type" : "qloguniform",
+    #             "range" : [0.00098, 0.0245, 0.00001],
+    #         },
+    #         "bs" : {
+    #             "param_type" : "qloguniform",
+    #             "range" : [42, 96, 2],
+    #         },
+    #     },
+    #     "save_path": str(save_path),
+    #     "maximum_resource": None,
+    #     "minimum_resource": None,
+    #     "mode": "max",
+    #     "num_workers": 1,
+    #     "num_full_iterations": max_epoch,
+    #     "full_dataset_size": train_dataset_size,
+    #     "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
+    #     "metric": "val/accuracy",
+    #     "expected_time_ratio": 4,
+    #     "prior_hyper_parameters": {
+    #         "lr" : 0.0049,
+    #         "bs" : 64,
+    #     },
+    #     "asynchronous_bracket": True,
+    #     "asynchronous_sha": torch.cuda.device_count() != 1,
+    # }
+
+    # for det
+    # args = {
+    #     "search_space": {
+    #         "lr" : {
+    #             "param_type" : "qloguniform",
+    #             "range" : [0.0004, 0.04, 0.0001],
+    #         },
+    #         "bs" : {
+    #             "param_type" : "qloguniform",
+    #             "range" : [4, 16, 2],
+    #         },
+    #     },
+    #     "save_path": str(save_path),
+    #     "maximum_resource": None,
+    #     "minimum_resource": None,
+    #     "mode": "max",
+    #     "num_workers": 1,
+    #     "num_full_iterations": max_epoch,
+    #     "full_dataset_size": train_dataset_size,
+    #     "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
+    #     "metric": "val/map_50",
+    #     "expected_time_ratio": 4,
+    #     "prior_hyper_parameters": {
+    #         "lr" : 0.004,
+    #         "bs" : 8,
+    #     },
+    #     "asynchronous_bracket": True,
+    #     "asynchronous_sha": torch.cuda.device_count() != 1,
+    # }
+
+    # seg
     args = {
         "search_space": {
             "lr" : {
                 "param_type" : "qloguniform",
-                "range" : [0.00098, 0.0245, 0.00001],
+                "range" : [0.0001, 0.01, 0.0001],
             },
             "bs" : {
                 "param_type" : "qloguniform",
-                "range" : [42, 96, 2],
+                "range" : [4, 16, 2],
             },
         },
         "save_path": str(save_path),
@@ -786,15 +814,45 @@ def get_hpo_algo(save_path, max_epoch, train_dataset_size, val_dataset_size):
         "num_full_iterations": max_epoch,
         "full_dataset_size": train_dataset_size,
         "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
-        "metric": "val/accuracy",
+        "metric": "val/mIoU",
         "expected_time_ratio": 4,
         "prior_hyper_parameters": {
-            "lr" : 0.0049,
-            "bs" : 64,
+            "lr" : 0.001,
+            "bs" : 8,
         },
         "asynchronous_bracket": True,
         "asynchronous_sha": torch.cuda.device_count() != 1,
     }
+
+    # act
+    # args = {
+    #     "search_space": {
+    #         "lr" : {
+    #             "param_type" : "qloguniform",
+    #             "range" : [0.0001, 0.01, 0.0001],
+    #         },
+    #         "bs" : {
+    #             "param_type" : "qloguniform",
+    #             "range" : [4, 16, 2],
+    #         },
+    #     },
+    #     "save_path": str(save_path),
+    #     "maximum_resource": None,
+    #     "minimum_resource": None,
+    #     "mode": "max",
+    #     "num_workers": 1,
+    #     "num_full_iterations": max_epoch,
+    #     "full_dataset_size": train_dataset_size,
+    #     "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
+    #     "metric": "accuracy",
+    #     "expected_time_ratio": 4,
+    #     "prior_hyper_parameters": {
+    #         "lr" : 0.004,
+    #         "bs" : 8,
+    #     },
+    #     "asynchronous_bracket": True,
+    #     "asynchronous_sha": torch.cuda.device_count() != 1,
+    # }
 
     return HyperBand(**args)
 
@@ -810,7 +868,7 @@ def run_hpo_trial(
     engine.optimizer.keywords["lr"] = hp_config["configuration"]["lr"]
     engine.datamodule.config.train_subset.batch_size = hp_config["configuration"]["bs"]
 
-    hpo_callback = HPOCallback(report_func, "val/accuracy")
+    hpo_callback = HPOCallback(report_func, "val/mIoU")
     if isinstance(callbacks, list):
         callbacks.append(hpo_callback)
     elif isinstance(callbacks, Callback):
