@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Iterable
 import torch
 from lightning import Trainer, seed_everything
 
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
@@ -20,7 +21,7 @@ from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike
+from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -403,6 +404,61 @@ class Engine:
         # Temporary saving saliency map for image 0, class 0 (for tests)
         cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
         return saliency_maps
+
+    @classmethod
+    def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
+        """Builds the engine from a configuration file.
+
+        Args:
+            config_path (PathLike): The configuration file path.
+            data_root (PathLike | None): Root directory for the data. Defaults to None.
+            kwargs: Arguments that can override the engine's arguments.
+
+        Returns:
+            Engine: An instance of the Engine class.
+
+        Example:
+            >>> engine = Engine.from_config(
+            ...     config="config.yaml",
+            ... )
+        """
+        from lightning.pytorch.cli import instantiate_class
+
+        from otx.cli.utils.jsonargparse import get_configuration
+        from otx.core.utils.instantiators import partial_instantiate_class
+
+        config = get_configuration(str(config_path))
+        config.pop("config", None)  # Unnecessary config key
+        # Datamodule
+        data_config = config.pop("data")
+        if data_root is not None:
+            data_config["config"]["data_root"] = data_root
+        datamodule = OTXDataModule(
+            task=data_config["task"],
+            config=DataModuleConfig(
+                train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
+                val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
+                test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
+                tile_config=TilerConfig(**data_config["config"].pop("tile_config", {})),
+                **data_config["config"],
+            ),
+        )
+        # Model
+        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        config["model"]["init_args"]["num_classes"] = num_classes
+        model = instantiate_class(args=(), init=config.pop("model"))
+        optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
+        scheduler = partial_instantiate_class(init=config.pop("scheduler", None))
+
+        engine_config = {**config.pop("engine"), **config}
+        engine_config.update(kwargs)
+        return cls(
+            datamodule=datamodule,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            **engine_config,
+        )
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.

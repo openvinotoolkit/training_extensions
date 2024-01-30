@@ -6,12 +6,15 @@
 from __future__ import annotations
 
 import ast
+import logging
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator, TypeVar
 
 import docstring_parser
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace, namespace_to_dict
+
+logger = logging.getLogger()
 
 
 def get_short_docstring(component: TypeVar) -> str:
@@ -238,4 +241,12 @@ def get_configuration(config_path: str | Path) -> dict:
     with patch_update_configs():
         parser = OTXCLI.engine_subcommand_parser()
         args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)
-    return namespace_to_dict(args)
+    config = namespace_to_dict(args)
+    logger.info(f"{config_path} is loaded.")
+
+    # Remove unnecessary cli arguments for API usage
+    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume"]
+    logger.warning(f"The corresponding keys in config are not used.: {cli_args}")
+    for arg in cli_args:
+        config.pop(arg, None)
+    return config
