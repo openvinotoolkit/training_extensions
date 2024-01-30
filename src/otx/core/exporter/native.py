@@ -107,8 +107,8 @@ class OTXNativeModelExporter(OTXModelExporter):
             exported_model.outputs[0].tensor.set_names({"output1"})
 
         if self.metadata is not None:
-            self._extend_model_metadata(self.metadata)
-            exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, self.metadata)
+            export_metadata = self._extend_model_metadata(self.metadata)
+            exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, export_metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
 
