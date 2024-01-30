@@ -20,6 +20,7 @@ def fxt_rtmdet_tiny_config(fxt_asset_dir: Path) -> MMConfig:
     return MMConfig.fromfile(config_path)
 
 
+# [TODO]: This is a temporary approach.
 @pytest.fixture()
 def fxt_target_dataset_per_task() -> dict:
     return {
@@ -33,4 +34,31 @@ def fxt_target_dataset_per_task() -> dict:
         "action_detection": "tests/assets/action_detection_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
         "zero_shot_visual_prompting": "tests/assets/car_tree_bug",
+    }
+
+
+@pytest.fixture()
+def fxt_cli_override_command_per_task() -> dict:
+    return {
+        "multi_class_cls": ["--model.num_classes", "2"],
+        "multi_label_cls": ["--model.num_classes", "2"],
+        "h_label_cls": [
+            "--model.num_classes",
+            "7",
+            "--model.num_multiclass_heads",
+            "2",
+            "--model.num_multilabel_classes",
+            "3",
+        ],
+        "detection": ["--model.num_classes", "3"],
+        "instance_segmentation": ["--model.num_classes", "3"],
+        "semantic_segmentation": ["--model.num_classes", "2"],
+        "action_classification": ["--model.num_classes", "2"],
+        "action_detection": [
+            "--model.num_classes",
+            "5",
+            "--model.topk",
+            "3",
+        ],
+        "visual_prompting": [],
     }

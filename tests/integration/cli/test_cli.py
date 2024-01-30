@@ -18,35 +18,6 @@ RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if 
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
-# [TODO]: This is a temporary approach.
-@pytest.fixture()
-def fxt_cli_override_command_per_task() -> dict:
-    return {
-        "multi_class_cls": ["--model.num_classes", "2"],
-        "multi_label_cls": ["--model.num_classes", "2"],
-        "h_label_cls": [
-            "--model.num_classes",
-            "7",
-            "--model.num_multiclass_heads",
-            "2",
-            "--model.num_multilabel_classes",
-            "3",
-        ],
-        "detection": ["--model.num_classes", "3"],
-        "instance_segmentation": ["--model.num_classes", "3"],
-        "semantic_segmentation": ["--model.num_classes", "2"],
-        "action_classification": ["--model.num_classes", "2"],
-        "action_detection": [
-            "--model.num_classes",
-            "5",
-            "--model.topk",
-            "3",
-        ],
-        "visual_prompting": [],
-        "zero_shot_visual_prompting": ["--max_epochs", "1"],
-    }
-
-
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_e2e(
     recipe: str,
