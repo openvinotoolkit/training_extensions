@@ -316,8 +316,18 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                         _target.append(_target[i])
                 elif len(_preds) < len(_target):
                     num_diff = len(_target) - len(_preds)
-                    for i in range(num_diff):
-                        _preds.append(_preds[i])
+                    if len(_preds) == 0:
+                        # empty prediction
+                        _preds = [
+                            {
+                                "masks": torch.zeros_like(_target[0]["masks"], dtype=_target[0]["masks"].dtype),
+                                "labels": torch.zeros_like(_target[0]["labels"], dtype=_target[0]["labels"].dtype),
+                                "scores": torch.zeros(len(_target[0]["labels"]), dtype=torch.float32),
+                            } for _ in range(num_diff)
+                        ]
+                    else:
+                        for i in range(num_diff):
+                            _preds.append(_preds[i])
 
                 _metric.update(preds=_preds, target=_target)
             elif _name in ["IoU", "F1", "Dice"]:
