@@ -283,7 +283,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             self.reference_info["used_indices"] = defaultdict(list)
         else:
             # TODO(sungchul): expand axis if there are new labels # noqa: TD003
-            # TODO(sungchul): consider who to handle multiple reference features, currently replace it # noqa: TD003
+            # TODO(sungchul): consider how to handle multiple reference features, currently replace it # noqa: TD003
             return None
 
         for batch, (image, prompts, ori_shape) in enumerate(zip(images, processed_prompts, ori_shapes)):
