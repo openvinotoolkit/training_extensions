@@ -4,6 +4,14 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.4.5 (1Q24)
+-------------
+
+- Filter invalid polygon shapes
+- Fix a bug to set reverse_input_channels for OpenVINO models
+- Remove unreferenced dependency of protobuf
+
+
 v1.4.4 (4Q23)
 -------------
 
