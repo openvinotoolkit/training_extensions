@@ -2,10 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of base data entity."""
 
+
 import pytest
 import torch
 import torchvision.transforms.v2 as tvt
-from otx.core.data.entity.base import ImageType, OTXBatchDataEntity, OTXDataEntity
+import torchvision.transforms.v2.functional as F  # noqa: N812
+from otx.core.data.entity.base import ImageType, OTXBatchDataEntity, OTXDataEntity, Points
+from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 
 
 class TestOTXDataEntity:
@@ -126,3 +129,31 @@ class TestImageInfo:
         cuda_img_info = fxt_torchvision_data_entity.img_info.to(device="cuda")
         # Do not lose its meta info although calling `Tensor.to(device="cuda")`
         assert fxt_torchvision_data_entity.img_info.img_shape == cuda_img_info.img_shape
+
+
+class TestPoints:
+    def test_resize(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
+        transform = tvt.Resize(size=(3, 5))
+        results = transform(fxt_visual_prompting_data_entity)
+
+        assert isinstance(results.points, Points)
+        assert results.points.canvas_size == tuple(transform.size)
+        assert results.points.canvas_size == results.img_info.img_shape
+
+        assert str(results.points) == "Points([3.5000, 2.1000], canvas_size=(3, 5))"
+
+    def test_pad(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
+        transform = tvt.Pad(padding=(1, 2, 3, 4))
+        results = transform(fxt_visual_prompting_data_entity)
+
+        assert results.points.canvas_size == results.image[1].shape
+        assert torch.all(
+            results.points == fxt_visual_prompting_data_entity.points + torch.tensor(transform.padding[:2]),
+        )
+
+        assert str(results.points) == "Points([8., 9.], canvas_size=(16, 14))"
+
+    def test_get_size(self, fxt_visual_prompting_data_entity: VisualPromptingDataEntity) -> None:
+        results = F.get_size(fxt_visual_prompting_data_entity.points)
+
+        assert results == [10, 10]

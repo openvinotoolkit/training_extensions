@@ -279,7 +279,7 @@ class MemCacheHandlerSingleton:
             )
 
         logger.info(f"Try to create a {mem_size} size memory pool.")
-        if available_cpu_mem < ((mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB):
+        if not cls.check_system_memory(mem_size, available_cpu_mem):
             logger.warning("No available CPU memory left, mem_size will be set to 0.")
             mem_size = 0
 
@@ -305,6 +305,19 @@ class MemCacheHandlerSingleton:
         cls.instances.append(instance)
 
         return instance
+
+    @classmethod
+    def check_system_memory(cls, mem_size: int, available_cpu_mem: int) -> bool:
+        """Check there is enough system memory to maintain memory caching pool.
+
+        Parameters:
+            mem_size: Requested memory size (bytes) for the memory cahcing pool
+            available_cpu_mem: Memory capacity (bytes) of this system
+        Returns:
+            Return true if there is enough system memory. Otherwise, return false.
+        """
+        expected_mem_usage = (mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB
+        return available_cpu_mem >= expected_mem_usage
 
     @classmethod
     def delete(cls) -> None:

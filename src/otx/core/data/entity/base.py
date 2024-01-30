@@ -9,17 +9,47 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, TypeVar
 
+import torch
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from torch import Tensor, stack
 from torch.utils._pytree import tree_flatten
 from torchvision import tv_tensors
 
-from otx.core.data.entity.utils import register_pytree_node
+from otx.core.data.entity.utils import clamp_points, register_pytree_node
 from otx.core.types.image import ImageColorChannel, ImageType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     import numpy as np
+
+
+def custom_wrap(wrappee: Tensor, *, like: tv_tensors.TVTensor, **kwargs) -> tv_tensors.TVTensor:
+    """Add `Points` in tv_tensors.wrap.
+
+    If `like` is
+        - tv_tensors.BoundingBoxes : the `format` and `canvas_size` of `like` are assigned to `wrappee`
+        - Points : the `canvas_size` of `like` is assigned to `wrappee`
+    Unless, they are passed as `kwargs`.
+
+    Args:
+        wrappee (Tensor): The tensor to convert.
+        like (tv_tensors.TVTensor): The reference. `wrappee` will be converted into the same subclass as `like`.
+        kwargs: Can contain "format" and "canvas_size" if `like` is a tv_tensor.BoundingBoxes,
+            or "canvas_size" if `like` is a `Points`. Ignored otherwise.
+    """
+    if isinstance(like, tv_tensors.BoundingBoxes):
+        return tv_tensors.BoundingBoxes._wrap(  # noqa: SLF001
+            wrappee,
+            format=kwargs.get("format", like.format),
+            canvas_size=kwargs.get("canvas_size", like.canvas_size),
+        )
+    elif isinstance(like, Points):  # noqa: RET505
+        return Points._wrap(wrappee, canvas_size=kwargs.get("canvas_size", like.canvas_size))  # noqa: SLF001
+    else:
+        return wrappee.as_subclass(type(like))
+
+
+tv_tensors.wrap = custom_wrap
 
 
 class ImageInfo(tv_tensors.TVTensor):
@@ -272,6 +302,144 @@ def _normalize_image_info(
     image_info.norm_mean = (mean[0], mean[1], mean[2])
     image_info.norm_std = (std[0], std[1], std[2])
     return image_info
+
+
+class Points(tv_tensors.TVTensor):
+    """`torch.Tensor` subclass for points.
+
+    Attributes:
+        data: Any data that can be turned into a tensor with `torch.as_tensor`.
+        canvas_size (two-tuple of ints): Height and width of the corresponding image or video.
+        dtype (torch.dtype, optional): Desired data type of the point. If omitted, will be inferred from `data`.
+        device (torch.device, optional): Desired device of the point. If omitted and `data` is a
+            `torch.Tensor`, the device is taken from it. Otherwise, the point is constructed on the CPU.
+        requires_grad (bool, optional): Whether autograd should record operations on the point. If omitted and
+            `data` is a `torch.Tensor`, the value is taken from it. Otherwise, defaults to `False`.
+    """
+
+    canvas_size: tuple[int, int]
+
+    @classmethod
+    def _wrap(cls, tensor: Tensor, *, canvas_size: tuple[int, int]) -> Points:
+        points = tensor.as_subclass(cls)
+        points.canvas_size = canvas_size
+        return points
+
+    def __new__(  # noqa: D102
+        cls,
+        data: Any,  # noqa: ANN401
+        *,
+        canvas_size: tuple[int, int],
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | int | None = None,
+        requires_grad: bool | None = None,
+    ) -> Points:
+        tensor = cls._to_tensor(data, dtype=dtype, device=device, requires_grad=requires_grad)
+        return cls._wrap(tensor, canvas_size=canvas_size)
+
+    @classmethod
+    def _wrap_output(
+        cls,
+        output: Tensor,
+        args: tuple[()] = (),
+        kwargs: Mapping[str, Any] | None = None,
+    ) -> Points:
+        flat_params, _ = tree_flatten(args + (tuple(kwargs.values()) if kwargs else ()))
+        first_point_from_args = next(x for x in flat_params if isinstance(x, Points))
+        canvas_size = first_point_from_args.canvas_size
+
+        if isinstance(output, Tensor) and not isinstance(output, Points):
+            output = Points._wrap(output, canvas_size=canvas_size)
+        elif isinstance(output, (tuple, list)):
+            output = type(output)(Points._wrap(part, canvas_size=canvas_size) for part in output)
+        return output
+
+    def __repr__(self, *, tensor_contents: Any = None) -> str:  # noqa: ANN401
+        return self._make_repr(canvas_size=self.canvas_size)
+
+
+def resize_points(
+    points: torch.Tensor,
+    canvas_size: tuple[int, int],
+    size: list[int],
+    max_size: int | None = None,
+) -> tuple[torch.Tensor, tuple[int, int]]:
+    """Resize points."""
+    old_height, old_width = canvas_size
+    new_height, new_width = F._geometry._compute_resized_output_size(canvas_size, size=size, max_size=max_size)  # noqa: SLF001
+
+    if (new_height, new_width) == (old_height, old_width):
+        return points, canvas_size
+
+    w_ratio = new_width / old_width
+    h_ratio = new_height / old_height
+    ratios = torch.tensor([w_ratio, h_ratio], device=points.device)
+    return (
+        points.mul(ratios).to(points.dtype),
+        (new_height, new_width),
+    )
+
+
+@F.register_kernel(functional=F.resize, tv_tensor_cls=Points)
+def _resize_points_dispatch(
+    inpt: Points,
+    size: list[int],
+    max_size: int | None = None,
+    **kwargs,  # noqa: ARG001
+) -> Points:
+    output, canvas_size = resize_points(
+        inpt.as_subclass(torch.Tensor),
+        inpt.canvas_size,
+        size,
+        max_size=max_size,
+    )
+    return tv_tensors.wrap(output, like=inpt, canvas_size=canvas_size)
+
+
+def pad_points(
+    points: torch.Tensor,
+    canvas_size: tuple[int, int],
+    padding: list[int],
+    padding_mode: str = "constant",
+) -> tuple[torch.Tensor, tuple[int, int]]:
+    """Pad points."""
+    if padding_mode not in ["constant"]:
+        # TODO(sungchul): add support of other padding modes # noqa: TD003
+        raise ValueError(f"Padding mode '{padding_mode}' is not supported with bounding boxes")  # noqa: EM102, TRY003
+
+    left, right, top, bottom = F._geometry._parse_pad_padding(padding)  # noqa: SLF001
+
+    pad = [left, top]
+    points = points + torch.tensor(pad, dtype=points.dtype, device=points.device)
+
+    height, width = canvas_size
+    height += top + bottom
+    width += left + right
+    canvas_size = (height, width)
+
+    return clamp_points(points, canvas_size=canvas_size), canvas_size
+
+
+@F.register_kernel(functional=F.pad, tv_tensor_cls=Points)
+def _pad_bounding_boxes_dispatch(
+    inpt: Points,
+    padding: list[int],
+    padding_mode: str = "constant",
+    **kwargs,  # noqa: ARG001
+) -> Points:
+    output, canvas_size = pad_points(
+        inpt.as_subclass(torch.Tensor),
+        canvas_size=inpt.canvas_size,
+        padding=padding,
+        padding_mode=padding_mode,
+    )
+    return tv_tensors.wrap(output, like=inpt, canvas_size=canvas_size)
+
+
+@F.register_kernel(functional=F.get_size, tv_tensor_cls=Points)
+def get_size_points(point: Points) -> list[int]:
+    """Get size of points."""
+    return list(point.canvas_size)
 
 
 T_OTXDataEntity = TypeVar(

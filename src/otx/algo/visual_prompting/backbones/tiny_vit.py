@@ -9,7 +9,7 @@ import itertools
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+from timm.layers import DropPath, to_2tuple, trunc_normal_
 from torch import Tensor, nn
 
 from otx.algo.visual_prompting.utils.layer_norm_2d import LayerNorm2d
