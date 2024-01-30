@@ -23,18 +23,12 @@ RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
 # [TODO]: This is a temporary approach.
-DATASET = {
-    "multi_class_cls": {
-        "data_root": "tests/assets/classification_dataset",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "multi_label_cls": {
-        "data_root": "tests/assets/multilabel_classification",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "h_label_cls": {
-        "data_root": "tests/assets/hlabel_classification",
-        "overrides": [
+@pytest.fixture()
+def fxt_cli_override_command_per_task() -> dict:
+    return {
+        "multi_class_cls": ["--model.num_classes", "2"],
+        "multi_label_cls": ["--model.num_classes", "2"],
+        "h_label_cls": [
             "--model.num_classes",
             "7",
             "--model.num_multiclass_heads",
@@ -42,37 +36,18 @@ DATASET = {
             "--model.num_multilabel_classes",
             "3",
         ],
-    },
-    "detection": {
-        "data_root": "tests/assets/car_tree_bug",
-        "overrides": ["--model.num_classes", "3"],
-    },
-    "instance_segmentation": {
-        "data_root": "tests/assets/car_tree_bug",
-        "overrides": ["--model.num_classes", "3"],
-    },
-    "semantic_segmentation": {
-        "data_root": "tests/assets/common_semantic_segmentation_dataset/supervised",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "action_classification": {
-        "data_root": "tests/assets/action_classification_dataset/",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "action_detection": {
-        "data_root": "tests/assets/action_detection_dataset/",
-        "overrides": [
+        "detection": ["--model.num_classes", "3"],
+        "instance_segmentation": ["--model.num_classes", "3"],
+        "semantic_segmentation": ["--model.num_classes", "2"],
+        "action_classification": ["--model.num_classes", "2"],
+        "action_detection": [
             "--model.num_classes",
             "5",
             "--model.topk",
             "3",
         ],
-    },
-    "visual_prompting": {
-        "data_root": "tests/assets/car_tree_bug",
-        "overrides": [],
-    },
-}
+        "visual_prompting": [],
+    }
 
 
 def _check_relative_metric_diff(ref: float, value: float, eps: float) -> None:
@@ -110,6 +85,8 @@ def test_otx_export_infer(
     recipe: str,
     tmp_path: Path,
     fxt_local_seed: int,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
     fxt_accelerator: str,
     capfd: "pytest.CaptureFixture",
 ) -> None:
@@ -146,7 +123,7 @@ def test_otx_export_infer(
         "--config",
         recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
@@ -157,7 +134,7 @@ def test_otx_export_infer(
         f"{fxt_local_seed}",
         "--deterministic",
         deterministic_flag,
-        *DATASET[task]["overrides"],
+        *fxt_cli_override_command_per_task[task],
     ]
 
     with patch("sys.argv", command_cfg):
@@ -174,12 +151,12 @@ def test_otx_export_infer(
         "--config",
         recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         fxt_accelerator,
-        *DATASET[task]["overrides"],
+        *fxt_cli_override_command_per_task[task],
         "--checkpoint",
         str(ckpt_files[-1]),
     ]
@@ -198,10 +175,10 @@ def test_otx_export_infer(
             "--config",
             recipe,
             "--data_root",
-            DATASET[task]["data_root"],
+            fxt_target_dataset_per_task[task],
             "--engine.work_dir",
             str(tmp_path_test / "outputs"),
-            *DATASET[task]["overrides"],
+            *fxt_cli_override_command_per_task[task],
             "--checkpoint",
             str(ckpt_files[-1]),
             "--export_format",
@@ -229,12 +206,12 @@ def test_otx_export_infer(
         "--config",
         export_test_recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
-        *DATASET[task]["overrides"],
+        *fxt_cli_override_command_per_task[task],
         "--model.model_name",
         exported_model_path,
     ]
