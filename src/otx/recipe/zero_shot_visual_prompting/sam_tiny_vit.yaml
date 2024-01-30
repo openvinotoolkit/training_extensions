@@ -1,46 +1,38 @@
 model:
-  class_path: otx.algo.visual_prompting.segment_anything.OTXSegmentAnything
+  class_path: otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything
   init_args:
     backbone: tiny_vit
     num_classes: 0
     freeze_image_encoder: True
     freeze_prompt_encoder: True
-    freeze_mask_decoder: False
+    freeze_mask_decoder: True
+    default_threshold_reference: 0.3
+    default_threshold_target: 0.65
     # options
     use_stability_score: False
     return_single_mask: False
     return_extra_metrics: False
     stability_score_offset: 1.
 
-optimizer:
-  class_path: torch.optim.Adam
-  init_args:
-    lr: 0.00001
-
-scheduler:
-  class_path: torch.optim.lr_scheduler.ConstantLR
-  init_args:
-    factor: 1
-    total_iters: -1
-
 engine:
-  task: VISUAL_PROMPTING
+  task: ZERO_SHOT_VISUAL_PROMPTING
   device: auto
 
-callback_monitor: val/Dice
+callback_monitor: step
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
-  max_epochs: 100
+  max_epochs: 1
+  limit_val_batches: 0
   data:
-    task: VISUAL_PROMPTING
+    task: ZERO_SHOT_VISUAL_PROMPTING
     config:
       data_format: coco_instances
       vpm_config:
         use_bbox: True
         use_point: False
       train_subset:
-        batch_size: 2
+        batch_size: 1
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge

@@ -6,10 +6,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import torch
 import torch.utils._pytree as pytree
+import torchvision.transforms.v2.functional as F  # noqa: N812
+from torch import Tensor
+from torchvision import tv_tensors
+from torchvision.utils import _log_api_usage_once
 
 if TYPE_CHECKING:
-    from otx.core.data.entity.base import T_OTXDataEntity
+    from otx.core.data.entity.base import Points, T_OTXDataEntity  # noqa: TCH004
 
 
 def register_pytree_node(cls: type[T_OTXDataEntity]) -> type[T_OTXDataEntity]:
@@ -34,3 +39,35 @@ def register_pytree_node(cls: type[T_OTXDataEntity]) -> type[T_OTXDataEntity]:
         unflatten_fn=unflatten_fn,
     )
     return cls
+
+
+def _clamp_points(points: Tensor, canvas_size: tuple[int, int]) -> Tensor:
+    # TODO (sungchul): Tracking torchvision.transforms.v2.functional._meta._clamp_bounding_boxes
+    # https://github.com/pytorch/vision/blob/main/torchvision/transforms/v2/functional/_meta.py#L234-L249
+    in_dtype = points.dtype
+    points = points.clone() if points.is_floating_point() else points.float()
+    points[..., 0].clamp_(min=0, max=canvas_size[1])
+    points[..., 1].clamp_(min=0, max=canvas_size[0])
+    return points.to(in_dtype)
+
+
+def clamp_points(inpt: Tensor, canvas_size: tuple[int, int] | None = None) -> Tensor:
+    """Clamp point range."""
+    # TODO (sungchul): Tracking torchvision.transforms.v2.functional._meta.clamp_bounding_boxes
+    # https://github.com/pytorch/vision/blob/main/torchvision/transforms/v2/functional/_meta.py#L252-L274
+    if not torch.jit.is_scripting():
+        _log_api_usage_once(clamp_points)
+
+    if torch.jit.is_scripting() or F._utils.is_pure_tensor(inpt):  # noqa: SLF001
+        if canvas_size is None:
+            raise ValueError("For pure tensor inputs, `canvas_size` has to be passed.")  # noqa: EM101, TRY003
+        return _clamp_points(inpt, canvas_size=canvas_size)
+    elif isinstance(inpt, Points):  # noqa: RET505
+        if canvas_size is not None:
+            raise ValueError("For point tv_tensor inputs, `canvas_size` must not be passed.")  # noqa: EM101, TRY003
+        output = _clamp_points(inpt.as_subclass(Tensor), canvas_size=inpt.canvas_size)
+        return tv_tensors.wrap(output, like=inpt)
+    else:
+        raise TypeError(  # noqa: TRY003
+            f"Input can either be a plain tensor or a point tv_tensor, but got {type(inpt)} instead.",  # noqa: EM102
+        )
