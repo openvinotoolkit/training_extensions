@@ -32,10 +32,7 @@ jobs:
       - name: Code quality checks
         run: tox -vv -e pre-commit
   Unit-Test:
-    runs-on: [otx-gpu-t4-1]
-    container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
-      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
+    runs-on: ubuntu-20.04
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
