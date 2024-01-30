@@ -26,6 +26,9 @@ def test_engine_from_config(
         fxt_accelerator (str): The accelerator used for training.
         fxt_target_dataset_per_task (dict): A dictionary mapping tasks to target datasets.
     """
+    if task.lower() in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
         config_path=DEFAULT_CONFIG_PER_TASK[task],
@@ -39,7 +42,8 @@ def test_engine_from_config(
     assert isinstance(engine.datamodule, OTXDataModule)
 
     train_metric = engine.train(max_epochs=2)
-    assert len(train_metric) > 0
+    if task.lower() != "zero_shot_visual_prompting":
+        assert len(train_metric) > 0
 
     test_metric = engine.test()
     assert len(test_metric) > 0

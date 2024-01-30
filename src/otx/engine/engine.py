@@ -447,8 +447,8 @@ class Engine:
         num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
         config["model"]["init_args"]["num_classes"] = num_classes
         model = instantiate_class(args=(), init=config.pop("model"))
-        optimizer = partial_instantiate_class(init=config.pop("optimizer"))
-        scheduler = partial_instantiate_class(init=config.pop("scheduler"))
+        optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
+        scheduler = partial_instantiate_class(init=config.pop("scheduler", None))
 
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
