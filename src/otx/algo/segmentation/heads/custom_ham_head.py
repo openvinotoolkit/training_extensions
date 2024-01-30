@@ -7,6 +7,8 @@ import torch.nn.functional as f
 from mmseg.models.decode_heads.ham_head import NMF2D, LightHamHead
 from mmseg.registry import MODELS
 
+from .custom_fcn_head import ClassIncrementalMixin
+
 
 class CustomNMF2D(NMF2D):
     """Non-negative Matrix Factorization (NMF) module.
@@ -46,7 +48,7 @@ class CustomNMF2D(NMF2D):
 
 
 @MODELS.register_module()
-class CustomLightHamHead(LightHamHead):
+class CustomLightHamHead(ClassIncrementalMixin, LightHamHead):
     """SegNeXt decode head.
 
     It is modified LightHamHead from mmsegmentation.
