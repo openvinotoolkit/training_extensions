@@ -32,4 +32,5 @@ def fxt_target_dataset_per_task() -> dict:
         "action_classification": "tests/assets/action_classification_dataset/",
         "action_detection": "tests/assets/action_detection_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
+        "zero_shot_visual_prompting": "tests/assets/car_tree_bug",
     }

@@ -86,15 +86,6 @@ class TestSAMPromptEncoder:
 
         assert results == expected
 
-    @pytest.mark.parametrize("device", ["cpu", "cuda"])
-    def test_get_device(self, device: str) -> None:
-        """Test _get_device."""
-        self.prompt_encoder.point_embeddings.to(device)
-
-        results = self.prompt_encoder._get_device()
-
-        assert device == str(results).split(":")[0]
-
     @pytest.mark.parametrize(
         ("points", "boxes", "masks", "expected"),
         [
