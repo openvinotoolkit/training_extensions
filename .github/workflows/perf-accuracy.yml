@@ -1,0 +1,73 @@
+name: Performance-Accuracy Benchmark Test
+
+on:
+  workflow_dispatch: # run on request (no need for PR)
+    inputs:
+      model-type:
+        type: choice
+        description: Model type to run benchmark
+        options:
+          - default # speed, balance, accuracy models only
+          - all # default + other models
+        default: default
+      data-size:
+        type: choice
+        description: Dataset size to run benchmark
+        options:
+          - small
+          - medium
+          - large
+          - all
+        default: all
+      num-repeat:
+        description: Overrides default per-data-size number of repeat setting
+        default: 0
+      num-epoch:
+        description: Overrides default per-model number of epoch setting
+        default: 0
+      eval-upto:
+        type: choice
+        description: The last operation to evaluate. 'optimize' means all.
+        options:
+          - train
+          - export
+          - optimize
+        default: optimize
+
+jobs:
+  Perf-Accuracy-Benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - toxenv_task: "iseg"
+            task: "instance_segmentation"
+          - toxenv_task: "seg"
+            task: "semantic_segmentation"
+          - toxenv_task: "det"
+            task: "detection"
+          - toxenv_task: "ano"
+            task: "anomaly"
+          - toxenv_task: "cls"
+            task: "classification"
+    name: Perf-Accuracy-Benchmark-${{ matrix.toxenv_task }}-py310
+    uses: ./.github/workflows/run_tests_in_tox.yml
+    with:
+      python-version: "3.10"
+      toxenv-pyver: "py310"
+      toxenv-task: ${{ matrix.toxenv_task }}
+      tests-dir: >
+        tests/perf/test_${{ matrix.task }}.py
+        -k accuracy
+        --model-type ${{ inputs.model-type }}
+        --data-root /home/validation/data/new/
+        --data-size ${{ inputs.data-size }}
+        --num-repeat ${{ inputs.num-repeat }}
+        --num-epoch ${{ inputs.num-epoch }}
+        --eval-upto ${{ inputs.eval-upto }}
+        --summary-csv .tox/perf-accuracy-benchmark-${{ matrix.toxenv_task }}.csv
+      runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+      task: ${{ matrix.task }}
+      timeout-minutes: 8640
+      upload-artifact: true
+      artifact-prefix: perf-accuracy-benchmark
