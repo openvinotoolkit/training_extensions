@@ -8,17 +8,49 @@ from __future__ import annotations
 from inspect import isclass
 from typing import TYPE_CHECKING, Any
 
+import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import DictConfig
 from torchvision import tv_tensors
+from torchvision._utils import sequence_to_str
 from torchvision.transforms.v2 import functional as F  # noqa: N812
+
+from otx.core.data.entity.base import Points
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
 
     from otx.core.config.data import SubsetConfig
+
+
+def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:  # noqa: D103
+    sizes = {
+        tuple(F.get_size(inpt))
+        for inpt in flat_inputs
+        if tvt_v2._utils.check_type(  # noqa: SLF001
+            inpt,
+            (
+                F.is_pure_tensor,
+                tv_tensors.Image,
+                PIL.Image.Image,
+                tv_tensors.Video,
+                tv_tensors.Mask,
+                tv_tensors.BoundingBoxes,
+                Points,
+            ),
+        )
+    }
+    if not sizes:
+        raise TypeError("No image, video, mask, bounding box, or point was found in the sample")  # noqa: EM101, TRY003
+    elif len(sizes) > 1:  # noqa: RET506
+        raise ValueError(f"Found multiple HxW dimensions in the sample: {sequence_to_str(sorted(sizes))}")  # noqa: EM102, TRY003
+    h, w = sizes.pop()
+    return h, w
+
+
+tvt_v2._utils.query_size = custom_query_size  # noqa: SLF001
 
 
 class PerturbBoundingBoxes(tvt_v2.Transform):

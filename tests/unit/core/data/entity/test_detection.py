@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests of base data entity."""
+"""Unit tests of detection data entity."""
 
 import torch
 from otx.core.data.entity.base import ImageInfo

@@ -12,7 +12,11 @@ import torch
 from lightning import LightningModule
 from torch import Tensor
 
-from otx.core.data.entity.base import OTXBatchDataEntity
+from otx.core.data.entity.base import (
+    OTXBatchDataEntity,
+    OTXBatchLossEntity,
+    OTXBatchPredEntity,
+)
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.export import OTXExportFormat
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
@@ -105,9 +109,18 @@ class OTXLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
         """
-        optimizer = self.hparams.optimizer(params=self.parameters())
+        optimizer = (
+            self.hparams.optimizer(params=self.parameters())
+            if callable(self.hparams.optimizer)
+            else self.hparams.optimizer
+        )
         if self.hparams.scheduler is not None:
-            scheduler = self.hparams.scheduler(optimizer=optimizer)
+            scheduler = (
+                self.hparams.scheduler(optimizer=optimizer)
+                if callable(self.hparams.scheduler)
+                else self.hparams.scheduler
+            )
+            
             self.warmup_steps = float(scheduler.warmup_steps)
             self.warmup_by_epoch = scheduler.warmup_by_epoch
             return {
@@ -119,6 +132,7 @@ class OTXLitModule(LightningModule):
                     "frequency": self.trainer.check_val_every_n_epoch,
                 },
             }
+            
         return {"optimizer": optimizer}
     
     def optimizer_step(self, epoch: int, batch: int, optimizer: OptimizerCallable, optimizer_closure: callable[[], Tensor | None] = None):
@@ -220,3 +234,7 @@ class OTXLitModule(LightningModule):
             export_format: Format in which this `OTXModel` is exported.
         """
         self.model.export(output_dir, export_format)
+
+    def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward pass."""
+        return self.model.forward(*args, **kwargs)
