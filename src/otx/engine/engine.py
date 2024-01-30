@@ -40,6 +40,7 @@ LITMODULE_PER_TASK = {
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
     OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
+    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
 }
 
 
@@ -127,10 +128,10 @@ class Engine:
                 meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: OptimizerCallable = (
+        self.optimizer: OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
-        self.scheduler: LRSchedulerCallable = (
+        self.scheduler: LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 

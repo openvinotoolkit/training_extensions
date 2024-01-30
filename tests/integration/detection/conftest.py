@@ -11,6 +11,7 @@ from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
     TilerConfig,
+    VisualPromptingConfig,
 )
 from otx.core.data.module import OTXDataModule
 from otx.core.types.task import OTXTaskType
@@ -56,6 +57,7 @@ def fxt_datamodule(fxt_asset_dir, fxt_mmcv_det_transform_config) -> OTXDataModul
             transforms=fxt_mmcv_det_transform_config,
         ),
         tile_config=TilerConfig(),
+        vpm_config=VisualPromptingConfig(),
     )
     datamodule = OTXDataModule(
         task=OTXTaskType.DETECTION,
