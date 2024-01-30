@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """MobileNetV3 model implementation."""
+from __future__ import annotations
+
 from typing import Any
+
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.classification import (
