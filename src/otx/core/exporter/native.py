@@ -90,6 +90,7 @@ class OTXNativeModelExporter(OTXModelExporter):
                     tmp_dir,
                     base_model_name,
                     OTXPrecisionType.FP32,
+                    False,
                 )
                 exported_model = openvino.convert_model(
                     tmp_dir / (base_model_name + ".onnx"),
@@ -120,6 +121,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        embed_metadata: bool = True,
     ) -> Path:
         """Export to ONNX format.
 
@@ -132,7 +134,8 @@ class OTXNativeModelExporter(OTXModelExporter):
         torch.onnx.export(model, dummy_tensor, save_path, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
-        onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
+        if embed_metadata:
+            onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
         if precision == OTXPrecisionType.FP16:
             from onnxconverter_common import float16
 
