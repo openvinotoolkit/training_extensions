@@ -5,7 +5,7 @@ callbacks:
     init_args:
       monitor: null
       mode: max
-      patience: 100
+      patience: 5
       check_on_train_epoch_end: false
   - class_path: lightning.pytorch.callbacks.RichProgressBar
     init_args:

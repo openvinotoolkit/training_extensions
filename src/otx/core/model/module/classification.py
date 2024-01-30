@@ -4,7 +4,7 @@
 """Class definition for classification lightning module used in OTX."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor
@@ -121,7 +121,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
 
 class OTXMultilabelClsLitModule(OTXLitModule):
@@ -210,7 +210,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -328,7 +328,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
     @property
     def meta_info(self) -> LabelInfo:
