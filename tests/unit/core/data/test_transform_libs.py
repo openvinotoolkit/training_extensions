@@ -10,6 +10,7 @@ import torch
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
 from otx.core.config.data import SubsetConfig
+from otx.core.data.entity.base import Points
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
     PerturbBoundingBoxes,
@@ -68,6 +69,15 @@ class TestPadtoSquare:
         inpt = tv_tensors.BoundingBoxes(
             [[1, 1, 3, 3]],
             format=tv_tensors.BoundingBoxFormat.XYXY,
+            canvas_size=(5, 3),
+            dtype=torch.float32,
+        )
+        results = transform(inpt.clone(), transform._get_params([inpt]))
+
+        assert torch.all(results[0] == inpt)
+
+        inpt = Points(
+            [[1, 1], [3, 3]],
             canvas_size=(5, 3),
             dtype=torch.float32,
         )

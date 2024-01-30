@@ -59,8 +59,9 @@ class TestMemCacheHandler:
         assert handler.mem_size == 0
 
     @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
-    def test_fully_caching(self, mode, fxt_data_list) -> None:
+    def test_fully_caching(self, mode, fxt_data_list, monkeypatch) -> None:
         mem_size = get_data_list_size(fxt_data_list)
+        monkeypatch.setattr(MemCacheHandlerSingleton, "check_system_memory", lambda *_: True)
         handler = MemCacheHandlerSingleton.create(mode, mem_size)
 
         for key, data, meta in fxt_data_list:
@@ -76,8 +77,9 @@ class TestMemCacheHandler:
         assert len(handler) == len(fxt_data_list)
 
     @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
-    def test_unfully_caching(self, mode, fxt_data_list) -> None:
+    def test_unfully_caching(self, mode, fxt_data_list, monkeypatch) -> None:
         mem_size = get_data_list_size(fxt_data_list) // 2
+        monkeypatch.setattr(MemCacheHandlerSingleton, "check_system_memory", lambda *_: True)
         handler = MemCacheHandlerSingleton.create(mode, mem_size)
 
         for idx, (key, data, meta) in enumerate(fxt_data_list):
