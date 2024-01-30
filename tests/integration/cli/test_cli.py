@@ -43,6 +43,7 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "visual_prompting": [],
+        "zero_shot_visual_prompting": ["--max_epochs", "1"],
     }
 
 

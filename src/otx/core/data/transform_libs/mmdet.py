@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging as log
 from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
@@ -36,6 +37,14 @@ if TYPE_CHECKING:
 class LoadAnnotations(MMDetLoadAnnotations):
     """Class to override MMDet LoadAnnotations."""
 
+    def __init__(self, with_point: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        if with_point:
+            # TODO(sungchul): add point prompts in mmx # noqa: TD003
+            log.info("with_point for mmx is not supported yet, changed to False.")
+            with_point = False
+        self.with_point = with_point
+
     def transform(self, results: dict) -> dict:
         """Transform OTXDataEntity to MMDet annotation data entity format."""
         if (otx_data_entity := results.get("__otx__")) is None:
@@ -52,13 +61,18 @@ class LoadAnnotations(MMDetLoadAnnotations):
             otx_data_entity,
             (DetDataEntity, InstanceSegDataEntity, VisualPromptingDataEntity),
         ):
-            gt_bboxes_labels = otx_data_entity.labels.numpy()
+            gt_bboxes_labels = otx_data_entity.labels.numpy()  # type: ignore[union-attr]
             results["gt_bboxes_labels"] = gt_bboxes_labels
             results["gt_ignore_flags"] = np.zeros_like(gt_bboxes_labels, dtype=np.bool_)
         if self.with_mask and isinstance(otx_data_entity, (InstanceSegDataEntity, VisualPromptingDataEntity)):
             height, width = results["ori_shape"]
             gt_masks = self._generate_gt_masks(otx_data_entity, height, width)
             results["gt_masks"] = gt_masks
+        if self.with_point and isinstance(otx_data_entity, (VisualPromptingDataEntity)):
+            # TODO(sungchul): add point prompts in mmx # noqa: TD003
+            # gt_points = otx_data_entity.points.numpy()
+            # results["gt_points"] = gt_points
+            pass
         return results
 
     def _generate_gt_masks(
@@ -150,12 +164,11 @@ class PackDetInputs(MMDetPackDetInputs):
         bboxes = self.convert_bboxes(data_samples.gt_instances.bboxes, image_info.img_shape)
         labels = data_samples.gt_instances.labels
 
-        # masks, polygons = self.convert_masks_and_polygons(data_samples.gt_instances.masks)
-
         return VisualPromptingDataEntity(
             image=tv_tensors.Image(transformed.get("inputs")),
             img_info=image_info,
             bboxes=bboxes,
+            points=None,  # type: ignore[arg-type]
             masks=None,
             labels=labels,
             polygons=None,  # type: ignore[arg-type]

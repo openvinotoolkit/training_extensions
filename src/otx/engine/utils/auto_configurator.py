@@ -41,6 +41,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.ACTION_CLASSIFICATION: RECIPE_PATH / "action" / "action_classification" / "x3d.yaml",
     OTXTaskType.ACTION_DETECTION: RECIPE_PATH / "action" / "action_detection" / "x3d_fastrcnn.yaml",
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
+    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
 }
 
 TASK_PER_DATA_FORMAT = {
@@ -250,22 +251,22 @@ class AutoConfigurator:
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
-    def get_optimizer(self) -> OptimizerCallable:
+    def get_optimizer(self) -> OptimizerCallable | None:
         """Returns the optimizer callable based on the configuration.
 
         Returns:
-            OptimizerCallable: The optimizer callable.
+            OptimizerCallable | None: The optimizer callable.
         """
-        optimizer_config = self.config["optimizer"]
+        optimizer_config = self.config.get("optimizer", None)
         logger.warning(f"Set Default Optimizer: {optimizer_config}")
         return partial_instantiate_class(init=optimizer_config)
 
-    def get_scheduler(self) -> LRSchedulerCallable:
+    def get_scheduler(self) -> LRSchedulerCallable | None:
         """Returns the instantiated scheduler based on the configuration.
 
         Returns:
-            LRSchedulerCallable: The instantiated scheduler.
+            LRSchedulerCallable | None: The instantiated scheduler.
         """
-        scheduler_config = self.config["scheduler"]
+        scheduler_config = self.config.get("scheduler", None)
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
         return partial_instantiate_class(init=scheduler_config)
