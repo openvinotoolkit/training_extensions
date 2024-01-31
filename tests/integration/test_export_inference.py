@@ -5,6 +5,7 @@
 import importlib
 import inspect
 import logging
+import os
 import re
 from pathlib import Path
 from unittest.mock import patch
@@ -39,6 +40,7 @@ def fxt_local_seed() -> int:
 
     The random seed will be set for [0, fxt_num_repeat - 1]. Default is one.
     """
+    print(f"CUBLAS_WORKSPACE_CONFIG={os.environ.get('CUBLAS_WORKSPACE_CONFIG')}")
     selected_seed = 7
     msg = f"seed : {selected_seed}"
     log.info(msg)
