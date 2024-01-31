@@ -77,6 +77,8 @@ class OTXModelExporter:
             return self.to_openvino(model, output_dir, base_model_name, precision)
         if export_format == OTXExportFormatType.ONNX:
             return self.to_onnx(model, output_dir, base_model_name, precision)
+        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
+            return self.to_exportable_code(model, output_dir, base_model_name, precision)
 
         msg = f"Unsupported export format: {export_format}"
         raise ValueError(msg)
@@ -178,6 +180,7 @@ class OTXModelExporter:
             arch.write(Path(work_dir, "LICENSE"), Path("python") / "LICENSE")
             arch.write(Path(work_dir, "demo.py"), Path("python") / "demo.py")
             arch.write(Path(work_dir, "README.md"), Path("./") / "README.md")
+            arch.write(Path(work_dir, "setup.py"), Path("python") / "setup.py")
             # write demo_package
             demo_package = Path(work_dir, "demo_package")
             for root, _, files in os.walk(demo_package):

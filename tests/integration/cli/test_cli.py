@@ -116,7 +116,7 @@ def test_otx_e2e(
     ):
         return
 
-    format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml"}
+    format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml", "EXPORTABLE_CODE": "exportable_code.zip"}
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for fmt in format_to_ext:
@@ -140,7 +140,10 @@ def test_otx_e2e(
             main()
 
         assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
+        if fmt == "EXPORTABLE_CODE":
+            assert (tmp_path_test / "outputs" / f"{format_to_ext[fmt]}").exists()
+        else:
+            assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
     task = recipe.split("/")[-2]

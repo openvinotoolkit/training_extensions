@@ -77,6 +77,7 @@ def dump_frames(saved_frames: list, output: str, input_path: str | int, capture:
             filenames = [f"output_{i}.jpeg" for i, _ in enumerate(saved_frames)]
         for filename, frame in zip(filenames, saved_frames):
             image_path = str(output_path / filename)
+            cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             cv2.imwrite(image_path, frame)
             print(f"Image was saved to {image_path}")
 

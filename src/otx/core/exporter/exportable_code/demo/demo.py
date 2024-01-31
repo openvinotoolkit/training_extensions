@@ -1,5 +1,5 @@
 """Demo based on ModelAPI."""
-# Copyright (C) 2021-2022 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -7,7 +7,6 @@ import sys
 from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
-# pylint: disable=no-name-in-module, import-error
 from demo_package import AsyncExecutor, ModelWrapper, SyncExecutor, create_visualizer
 
 
@@ -33,11 +32,8 @@ def build_argparser() -> ArgumentParser:
         "-m",
         "--model",
         help="Optional. Path to directory with trained model and configuration file. "
-        "If you provide several models you will start the task chain pipeline with "
-        "the provided models in the order in which they were specified. Default value "
-        "points to deployed model folder '../model'.",
-        nargs="+",
-        default=[Path("../model")],
+        "Default value points to deployed model folder '../model'.",
+        default=Path("../model"),
         type=Path,
     )
     args.add_argument(
@@ -94,7 +90,7 @@ def main() -> int:
         raise ValueError(msg)
 
     # create models
-    model = ModelWrapper(args.model[0], device=args.device)
+    model = ModelWrapper(args.model, device=args.device)
     inferencer = EXECUTORS[args.inference_type]
 
     # create visualizer

@@ -29,6 +29,7 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
   - `LICENSE`
   - `demo.py`
   - `requirements.txt`
+  - `setup.py`
 
 ## Prerequisites
 
@@ -77,7 +78,8 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 1. Install requirements in the environment:
 
    ```bash
-   python -m pip install -r requirements.txt
+   cd python
+   python setup.py install
    ```
 
 ## Usecase
