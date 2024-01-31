@@ -25,11 +25,11 @@ class TestAdaptiveTrainScheduling:
         mock_trainer.max_epochs = 10
         mock_trainer.check_val_every_n_epoch = 1
         mock_trainer.log_every_n_steps = 50
-        
+
         mock_callback = MagicMock(spec=EarlyStopping)
-        mock_callback.patience = 5 
+        mock_callback.patience = 5
         mock_trainer.callbacks = [mock_callback]
-        
+
         mock_lr_scheduler_config = MagicMock(spec=LRSchedulerConfig)
         mock_lr_scheduler_config.frequency = 1
         mock_trainer.lr_scheduler_configs = [mock_lr_scheduler_config]

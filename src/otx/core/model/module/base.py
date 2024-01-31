@@ -122,7 +122,7 @@ class OTXLitModule(LightningModule):
             if self._use_warmup_scheduler():
                 self.warmup_steps = float(self.hparams.scheduler.warmup_steps)
                 self.warmup_by_epoch = self.hparams.scheduler.warmup_by_epoch
-                
+
             scheduler = (
                 self.hparams.scheduler(optimizer=optimizer)
                 if callable(self.hparams.scheduler)
