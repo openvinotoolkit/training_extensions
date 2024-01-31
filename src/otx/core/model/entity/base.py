@@ -261,17 +261,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
 
         return parameters
 
-    def _export_to_exportable_code(self) -> Path:
-        """Export to exportable code format.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-
-        Returns:
-            Path: path to the exported model.
-        """
-        raise NotImplementedError
-
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
 
