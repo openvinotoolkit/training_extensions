@@ -311,7 +311,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
     @classmethod
     def create_and_register_hook(
         cls,
-        backbone: torch.nn.Module,
+        target_layer: torch.nn.Module,
         cls_head_forward_fn: Callable,
         num_classes: int,
         # optimize_gap: bool,
@@ -322,7 +322,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
             num_classes=num_classes,
             # optimize_gap=optimize_gap,
         )
-        hook.handle = backbone.register_forward_hook(hook.recording_forward)
+        hook.handle = target_layer.register_forward_hook(hook.recording_forward)
         return hook
 
     def func(
@@ -336,7 +336,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         :return: Class-wise Saliency Maps. One saliency map per each predicted class.
         """
 
-        feature_map = self.cls_head_forward_fn(feature_map)
+        labels, boxes, masks = self.cls_head_forward_fn(feature_map)
         # with torch.no_grad():
         #     if self._neck is not None:
         #         feature_map = self._module.neck(feature_map)

@@ -73,14 +73,18 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         """Register explain hook at the model backbone output."""
         from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 
-        # SSD-like heads also have background class
-        # background_class = isinstance(self.model.bbox_head, CustomSSDHead)
         self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook(
-            self.backbone,
+            self.get_target_layer(),
             self.cls_head_forward_fn,
             num_classes=self.num_classes,
         )
 
+    def get_target_layer(self) -> torch.nn.Module:
+        """Returns the first (out of two) layernorm layer from the last backbone layer."""
+        layernorm_layers = [module for module in self.model.modules()]
+        target_layernorm_index = -1
+        return layernorm_layers[target_layernorm_index]
+    
     @property
     def backbone(self) -> nn.Module:
         """Returns model's backbone. Can be redefined at the model's level."""
@@ -103,8 +107,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         roi_head = self.model.roi_head
         rpn_head = self.model.rpn_head
 
-        batch_size = x[0].shape[0]
-        self.input_img_shape = (30, 30)
+        batch_size = 1 #x[0].shape[0]
+        self.input_img_shape = (576, 1024)
         img_metas = [
             {
                 "scale_factor": [1, 1, 1, 1],  # dummy scale_factor, not used
@@ -120,9 +124,12 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         test_cfg["nms"]["iou_threshold"] = 1
         test_cfg["nms"]["max_num"] = self.max_detections_per_img
 
-        labels, boxes = rpn_head(x)
-        boxes, labels = roi_head(x, img_metas, proposals, test_cfg)
-        return boxes, labels
+        proposals = rpn_head(x)
+        rpn_pred = rpn_head.predict_by_feat(*proposals, batch_img_metas=img_metas)
+        labels, boxes, masks = roi_head(x, rpn_pred, img_metas)
+
+
+        return labels, boxes, masks
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""
