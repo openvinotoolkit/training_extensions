@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import torch
 from otx.algo.detection.backbones.pytorchcv_backbones import (
-    generate_backbones,
+    _build_model_including_pytorchcv,
     multioutput_forward,
     replace_activation,
     replace_norm,
@@ -95,18 +95,9 @@ def test_train() -> None:
     assert model.features[3].training is True
 
 
-def test_generate_backbones(mocker) -> None:
-    modules: list[nn.Module] = []
+def test_generate_backbones() -> None:
+    cfg = {"type": "alexnet", "out_indices": [-1]}
+    model = _build_model_including_pytorchcv(cfg)
 
-    def mock_register_module(name, module) -> None:
-        modules.append([name, module])
-
-    mocker.patch(
-        "mmdet.registry.MODELS.register_module",
-        side_effect=mock_register_module,
-    )
-
-    generate_backbones()
-    alexnet = modules[0][1](out_indices=[-1])
-    assert len(modules) == 857
-    assert alexnet.out_indices == [-1]
+    assert "alexnet" in model.__class__.__name__.lower()
+    assert model.out_indices == [-1]
