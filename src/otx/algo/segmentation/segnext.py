@@ -24,12 +24,12 @@ class SegNext(MMSegCompatibleModel):
         return OTXv1Helper.load_seg_segnext_ckpt(state_dict, add_prefix)
 
     @property
-    def ptq_config(self) -> dict[str, Any]:
-        """PTQ config for LiteHRNet."""
-        # TODO(Kirill): check PTQ without adding the whole backbone to ignored_scope #noqa: TD003
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for SegNext."""
+        # TODO(Kirill): check PTQ removing hamburger from ignored_scope #noqa: TD003
         return {
             "ignored_scope": {
-                "patterns": ["/hamburger/"],
+                "patterns": ["*.hamburger.*"],
                 "types": [
                     "Add",
                     "MVN",

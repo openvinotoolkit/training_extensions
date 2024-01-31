@@ -10,7 +10,6 @@ import warnings
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple
 
-import nncf
 import numpy as np
 import openvino
 from attr import dataclass
@@ -242,11 +241,11 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             all_label_ids += lbl.replace(" ", "_") + " "
 
         # not every model requires ptq_config
-        ptq_config = self.ptq_config if hasattr(self, "ptq_config") else ""
+        optimization_config = self._optimization_config
         parameters["metadata"] = {
             ("model_info", "labels"): all_labels.strip(),
             ("model_info", "label_ids"): all_label_ids.strip(),
-            ("model_info", "ptq_config"): json.dumps(ptq_config),
+            ("model_info", "optimization_config"): json.dumps(optimization_config),
         }
 
         return parameters
@@ -258,6 +257,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             num_classes: Number of classes
         """
         raise NotImplementedError
+
+    @property
+    def _optimization_config(self) -> dict[str, str]:
+        return {}
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -351,6 +354,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         ptq_config: dict[str, Any] | None = None,
     ) -> Path:
         """Runs NNCF quantization."""
+        import nncf
+
         output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
 
         def check_if_quantized(model: openvino.Model) -> bool:
@@ -394,7 +399,12 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             OptimizeDatasetWrapper(train_dataset, self._OPTIMIZE_DATASET_SIZE_LIMIT),
             transform_fn,
         )
-        ptq_config = ptq_config if ptq_config is not None else self._generate_ptq_config(ov_model)
+        ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
+        if ptq_config is not None:
+            ptq_config.update(ptq_config_from_ir)
+        else:
+            ptq_config = ptq_config_from_ir
+
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
             quantization_dataset,
@@ -405,27 +415,24 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         return output_model_path
 
-    def _generate_ptq_config(self, ov_model: Model) -> dict:
-        """Generates the PTQ (Post-Training Quantization) configuration for the given OpenVINO model.
+    def _read_ptq_config_from_ir(self, ov_model: Model) -> dict[str, Any]:
+        """Generates the PTQ (Post-Training Quantization) configuration from the meta data of the given OpenVINO model.
 
         Args:
             ov_model (Model): The OpenVINO model in which the PTQ configuration is embedded.
 
         Returns:
             dict: The PTQ configuration as a dictionary.
-
-        Raises:
-            None
-
-        Example:
-            ptq_config = _generate_ptq_config(ov_model)
         """
         from nncf import IgnoredScope
         from nncf.common.quantization.structs import QuantizationPreset
         from nncf.parameters import ModelType
         from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 
-        initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["ptq_config"].value)
+        if "optimization_config" not in ov_model.rt_info["model_info"]:
+            return {}
+
+        initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["optimization_config"].value)
         if not initial_ptq_config:
             return {}
         argparser = ArgumentParser()

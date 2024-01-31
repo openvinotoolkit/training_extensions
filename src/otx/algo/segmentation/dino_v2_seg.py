@@ -31,6 +31,6 @@ class DinoV2Seg(MMSegCompatibleModel):
         raise RuntimeError(msg)
 
     @property
-    def ptq_config(self) -> dict[str, Any]:
+    def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for DinoV2Seg."""
         return {"model_type": "transformer"}

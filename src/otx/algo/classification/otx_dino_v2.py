@@ -117,6 +117,6 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         )
 
     @property
-    def ptq_config(self) -> dict[str, Any]:
+    def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for DinoV2Cls."""
         return {"model_type": "transformer"}

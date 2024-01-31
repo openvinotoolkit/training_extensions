@@ -69,7 +69,7 @@ class ExplainableDeit(ExplainableOTXClsModel):
         return logit
 
     @property
-    def ptq_config(self) -> dict[str, Any]:
+    def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for DeitTinyForMultilabelCls."""
         return {"model_type": "transformer"}
 
