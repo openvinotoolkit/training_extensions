@@ -21,7 +21,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         super().__init__(num_classes=num_classes, config=config)
 
     @property
-    def export_params(self) -> dict[str, Any]:
+    def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn"
