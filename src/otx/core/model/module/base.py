@@ -175,12 +175,12 @@ class OTXLitModule(LightningModule):
         if ckpt_meta_info and self.meta_info and ckpt_meta_info != self.meta_info:
             logger = logging.getLogger()
             logger.info(
-                f"Data classes from checkpoint: {ckpt_meta_info.class_names} -> "
+                f"Data classes from checkpoint: {ckpt_meta_info.label_names} -> "
                 f"Data classes from training data: {self.meta_info.label_names}",
             )
             self.register_load_state_dict_pre_hook(
                 self.meta_info.label_names,
-                ckpt_meta_info.class_names,
+                ckpt_meta_info.label_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
 
