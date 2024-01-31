@@ -1,11 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 import pytest
 import torch
-from torch import nn, Tensor
-
 from otx.algo.visual_prompting.backbones.vit import (
     Attention,
     Block,
@@ -17,18 +16,13 @@ from otx.algo.visual_prompting.backbones.vit import (
     window_unpartition,
 )
 from otx.algo.visual_prompting.utils import MLPBlock
+from torch import Tensor, nn
 
 
 class TestViT:
     @pytest.fixture()
     def vit(self) -> ViT:
-        return ViT(
-            img_size=4,
-            patch_size=2,
-            embed_dim=8,
-            depth=2,
-            num_heads=2,
-            out_chans=4)
+        return ViT(img_size=4, patch_size=2, embed_dim=8, depth=2, num_heads=2, out_chans=4)
 
     def test_init(self, vit) -> None:
         """Test init."""
@@ -81,21 +75,29 @@ class TestAttention:
         assert results.shape == expected
 
 
-@pytest.mark.parametrize(("inputs", "window_size", "expected"), [(torch.empty((1, 4, 4, 4)), 2, ((4, 2, 2, 4), (4, 4)))])
+@pytest.mark.parametrize(
+    ("inputs", "window_size", "expected"),
+    [(torch.empty((1, 4, 4, 4)), 2, ((4, 2, 2, 4), (4, 4)))],
+)
 def test_window_partition(inputs: Tensor, window_size: int, expected: tuple[int]) -> None:
     """Test window_partition."""
     results = window_partition(inputs, window_size)
-    windows, (Hp, Wp) = results
+    windows, (hp, wp) = results
 
     assert windows.shape == expected[0]
-    assert (Hp, Wp) == expected[1]
+    assert (hp, wp) == expected[1]
 
 
 @pytest.mark.parametrize(
-    ("windows", "window_size", "pad_hw", "hw", "expected"), [(torch.empty((2, 2, 2, 2)), 2, (2, 2), (4, 4), (2, 2, 2, 2))]
+    ("windows", "window_size", "pad_hw", "hw", "expected"),
+    [(torch.empty((2, 2, 2, 2)), 2, (2, 2), (4, 4), (2, 2, 2, 2))],
 )
 def test_window_unpartition(
-    windows: Tensor, window_size: int, pad_hw: tuple[int, int], hw: tuple[int, int], expected: tuple[int]
+    windows: Tensor,
+    window_size: int,
+    pad_hw: tuple[int, int],
+    hw: tuple[int, int],
+    expected: tuple[int],
 ) -> None:
     """Test window_unpartition."""
     results = window_unpartition(windows, window_size, pad_hw, hw)
@@ -125,7 +127,7 @@ def test_get_rel_pos(q_size: int, k_size: int, rel_pos: Tensor, expected: tuple[
             (2, 2),
             (2, 2),
             (1, 4, 4),
-        )
+        ),
     ],
 )
 def test_add_decomposed_rel_pos(
@@ -146,10 +148,7 @@ def test_add_decomposed_rel_pos(
 class TestPatchEmbed:
     @pytest.fixture()
     def patch_embed(self) -> PatchEmbed:
-        return PatchEmbed(
-            kernel_size=(2, 2),
-            stride=(2, 2),
-            embed_dim=8)
+        return PatchEmbed(kernel_size=(2, 2), stride=(2, 2), embed_dim=8)
 
     def test_init(self, patch_embed) -> None:
         """Test init."""

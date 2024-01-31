@@ -323,7 +323,8 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                                 "masks": torch.zeros_like(_target[0]["masks"], dtype=_target[0]["masks"].dtype),
                                 "labels": torch.zeros_like(_target[0]["labels"], dtype=_target[0]["labels"].dtype),
                                 "scores": torch.zeros(len(_target[0]["labels"]), dtype=torch.float32),
-                            } for _ in range(num_diff)
+                            }
+                            for _ in range(num_diff)
                         ]
                     else:
                         for i in range(num_diff):

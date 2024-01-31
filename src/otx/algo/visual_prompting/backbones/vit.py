@@ -5,18 +5,14 @@
 
 from __future__ import annotations
 
-
-from functools import partial
-from typing import Optional, Tuple, Type
-
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import Tensor, nn
 
 from otx.algo.visual_prompting.utils import LayerNorm2d, MLPBlock
 
 
-# This class and its supporting functions below lightly adapted from the ViTDet backbone available at: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/vit.py # noqa
+# This class and its supporting functions below lightly adapted from the ViTDet backbone available at: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/vit.py
 class ViT(nn.Module):
     """Vision Transformer for visual prompting task.
 
@@ -56,9 +52,8 @@ class ViT(nn.Module):
         use_rel_pos: bool = False,
         rel_pos_zero_init: bool = True,
         window_size: int = 0,
-        global_attn_indexes: Tuple[int, ...] = (),
+        global_attn_indexes: tuple[int, ...] = (),
     ) -> None:
-
         super().__init__()
         self.img_size = img_size
 
@@ -69,7 +64,7 @@ class ViT(nn.Module):
             embed_dim=embed_dim,
         )
 
-        self.pos_embed: Optional[nn.Parameter] = None
+        self.pos_embed: nn.Parameter | None = None
         if use_abs_pos:
             # Initialize absolute positional embedding with pretrain image size.
             self.pos_embed = nn.Parameter(torch.zeros(1, img_size // patch_size, img_size // patch_size, embed_dim))
@@ -124,9 +119,7 @@ class ViT(nn.Module):
         for blk in self.blocks:
             x = blk(x)
 
-        x = self.neck(x.permute(0, 3, 1, 2))
-
-        return x
+        return self.neck(x.permute(0, 3, 1, 2))
 
 
 class Block(nn.Module):
@@ -153,14 +146,13 @@ class Block(nn.Module):
         num_heads: int,
         mlp_ratio: float = 4.0,
         qkv_bias: bool = True,
-        norm_layer: Type[nn.Module] = nn.LayerNorm,
-        act_layer: Type[nn.Module] = nn.GELU,
+        norm_layer: type[nn.Module] = nn.LayerNorm,
+        act_layer: type[nn.Module] = nn.GELU,
         use_rel_pos: bool = False,
         rel_pos_zero_init: bool = True,
         window_size: int = 0,
-        input_size: Optional[Tuple[int, int]] = None,
+        input_size: tuple[int, int] | None = None,
     ) -> None:
-
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
@@ -190,18 +182,16 @@ class Block(nn.Module):
         x = self.norm1(x)
         # Window partition
         if self.window_size > 0:
-            H, W = x.shape[1], x.shape[2]
+            height, width = x.shape[1], x.shape[2]
             x, pad_hw = window_partition(x, self.window_size)
 
         x = self.attn(x)
         # Reverse window partition
         if self.window_size > 0:
-            x = window_unpartition(x, self.window_size, pad_hw, (H, W))
+            x = window_unpartition(x, self.window_size, pad_hw, (height, width))
 
         x = shortcut + x
-        x = x + self.mlp(self.norm2(x))
-
-        return x
+        return x + self.mlp(self.norm2(x))
 
 
 class Attention(nn.Module):
@@ -224,9 +214,8 @@ class Attention(nn.Module):
         qkv_bias: bool = True,
         use_rel_pos: bool = False,
         rel_pos_zero_init: bool = True,
-        input_size: Optional[Tuple[int, int]] = None,
+        input_size: tuple[int, int] | None = None,
     ) -> None:
-
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -237,7 +226,7 @@ class Attention(nn.Module):
 
         self.use_rel_pos = use_rel_pos
         if self.use_rel_pos:
-            assert input_size is not None, "Input size must be provided if using relative positional encoding."
+            assert input_size is not None, "Input size must be provided if using relative positional encoding."  # noqa: S101
             # initialize relative positional embeddings
             self.rel_pos_h = nn.Parameter(torch.zeros(2 * input_size[0] - 1, head_dim))
             self.rel_pos_w = nn.Parameter(torch.zeros(2 * input_size[1] - 1, head_dim))
@@ -246,73 +235,76 @@ class Attention(nn.Module):
         """Forward function.
 
         Args:
-            x (Tensor): Input tensor of shape (B, H, W, C).
+            x (Tensor): Input tensor of shape (batch, height, width, C).
 
         Returns:
-            Tensor: Output tensor of shape (B, H, W, C).
+            Tensor: Output tensor of shape (batch, height, width, C).
         """
-        B, H, W, _ = x.shape
-        # qkv with shape (3, B, nHead, H * W, C)
-        qkv = self.qkv(x).reshape(B, H * W, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
-        # q, k, v with shape (B * nHead, H * W, C)
-        q, k, v = qkv.reshape(3, B * self.num_heads, H * W, -1).unbind(0)
+        batch, height, width, _ = x.shape
+        # qkv with shape (3, batch, nHead, height * width, C)
+        qkv = self.qkv(x).reshape(batch, height * width, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
+        # q, k, v with shape (batch * nHead, height * width, C)
+        q, k, v = qkv.reshape(3, batch * self.num_heads, height * width, -1).unbind(0)
 
         attn = (q * self.scale) @ k.transpose(-2, -1)
 
         if self.use_rel_pos:
-            attn = add_decomposed_rel_pos(attn, q, self.rel_pos_h, self.rel_pos_w, (H, W), (H, W))
+            attn = add_decomposed_rel_pos(attn, q, self.rel_pos_h, self.rel_pos_w, (height, width), (height, width))
 
         attn = attn.softmax(dim=-1)
-        x = (attn @ v).view(B, self.num_heads, H, W, -1).permute(0, 2, 3, 1, 4).reshape(B, H, W, -1)
-        x = self.proj(x)
+        x = (
+            (attn @ v)
+            .view(batch, self.num_heads, height, width, -1)
+            .permute(0, 2, 3, 1, 4)
+            .reshape(batch, height, width, -1)
+        )
+        return self.proj(x)
 
-        return x
 
-
-def window_partition(x: Tensor, window_size: int) -> Tuple[Tensor, Tuple[int, int]]:
+def window_partition(x: Tensor, window_size: int) -> tuple[Tensor, tuple[int, int]]:
     """Partition into non-overlapping windows with padding if needed.
 
     Args:
-        x (Tensor): Input tokens with [B, H, W, C].
+        x (Tensor): Input tokens with [batch, height, width, channel].
         window_size (int): Window size.
 
     Returns:
-        windows (Tensor): windows after partition with [B * num_windows, window_size, window_size, C].
-        (Hp, Wp) (Tuple[int, int]): padded height and width before partition
+        windows (Tensor): windows after partition with [batch * num_windows, window_size, window_size, channel].
+        (hp, wp) (Tuple[int, int]): padded height and width before partition
     """
-    B, H, W, C = x.shape
+    batch, height, width, channel = x.shape
 
-    pad_h = (window_size - H % window_size) % window_size
-    pad_w = (window_size - W % window_size) % window_size
+    pad_h = (window_size - height % window_size) % window_size
+    pad_w = (window_size - width % window_size) % window_size
     if pad_h > 0 or pad_w > 0:
         x = F.pad(x, (0, 0, 0, pad_w, 0, pad_h))
-    Hp, Wp = H + pad_h, W + pad_w
+    hp, wp = height + pad_h, width + pad_w
 
-    x = x.view(B, Hp // window_size, window_size, Wp // window_size, window_size, C)
-    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
-    return windows, (Hp, Wp)
+    x = x.view(batch, hp // window_size, window_size, wp // window_size, window_size, channel)
+    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, channel)
+    return windows, (hp, wp)
 
 
-def window_unpartition(windows: Tensor, window_size: int, pad_hw: Tuple[int, int], hw: Tuple[int, int]) -> Tensor:
+def window_unpartition(windows: Tensor, window_size: int, pad_hw: tuple[int, int], hw: tuple[int, int]) -> Tensor:
     """Window unpartition into original sequences and removing padding.
 
     Args:
-        windows (Tensor): input tokens with [B * num_windows, window_size, window_size, C].
+        windows (Tensor): input tokens with [batch * num_windows, window_size, window_size, C].
         window_size (int): window size.
-        pad_hw (Tuple): padded height and width (Hp, Wp).
-        hw (Tuple): original height and width (H, W) before padding.
+        pad_hw (Tuple): padded height and width (hp, wp).
+        hw (Tuple): original height and width (h, w) before padding.
 
     Returns:
         x (Tensor): unpartitioned sequences with [B, H, W, C].
     """
-    Hp, Wp = pad_hw
-    H, W = hw
-    B = windows.shape[0] // (Hp * Wp // window_size // window_size)
-    x = windows.view(B, Hp // window_size, Wp // window_size, window_size, window_size, -1)
-    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, Hp, Wp, -1)
+    hp, wp = pad_hw
+    h, w = hw
+    batch = windows.shape[0] // (hp * wp // window_size // window_size)
+    x = windows.view(batch, hp // window_size, wp // window_size, window_size, window_size, -1)
+    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(batch, hp, wp, -1)
 
-    if Hp > H or Wp > W:
-        x = x[:, :H, :W, :].contiguous()
+    if hp > h or wp > w:
+        x = x[:, :h, :w, :].contiguous()
     return x
 
 
@@ -353,8 +345,8 @@ def add_decomposed_rel_pos(
     q: Tensor,
     rel_pos_h: Tensor,
     rel_pos_w: Tensor,
-    q_size: Tuple[int, int],
-    k_size: Tuple[int, int],
+    q_size: tuple[int, int],
+    k_size: tuple[int, int],
 ) -> Tensor:
     """Calculate decomposed Relative Positional Embeddings from `mvitv2`.
 
@@ -362,7 +354,7 @@ def add_decomposed_rel_pos(
 
     Args:
         attn (Tensor): attention map.
-        q (Tensor): query q in the attention layer with shape (B, q_h * q_w, C).
+        q (Tensor): query q in the attention layer with shape (batch, q_h * q_w, C).
         rel_pos_h (Tensor): relative position embeddings (Lh, C) for height axis.
         rel_pos_w (Tensor): relative position embeddings (Lw, C) for width axis.
         q_size (Tuple): spatial sequence size of query q with (q_h, q_w).
@@ -373,19 +365,19 @@ def add_decomposed_rel_pos(
     """
     q_h, q_w = q_size
     k_h, k_w = k_size
-    Rh = get_rel_pos(q_h, k_h, rel_pos_h)
-    Rw = get_rel_pos(q_w, k_w, rel_pos_w)
+    rh = get_rel_pos(q_h, k_h, rel_pos_h)
+    rw = get_rel_pos(q_w, k_w, rel_pos_w)
 
-    B, _, dim = q.shape
-    r_q = q.reshape(B, q_h, q_w, dim)
-    rel_h = torch.einsum("bhwc,hkc->bhwk", r_q, Rh)
-    rel_w = torch.einsum("bhwc,wkc->bhwk", r_q, Rw)
+    batch, _, dim = q.shape
+    r_q = q.reshape(batch, q_h, q_w, dim)
+    rel_h = torch.einsum("bhwc,hkc->bhwk", r_q, rh)
+    rel_w = torch.einsum("bhwc,wkc->bhwk", r_q, rw)
 
-    attn = (attn.view(B, q_h, q_w, k_h, k_w) + rel_h[:, :, :, :, None] + rel_w[:, :, :, None, :]).view(
-        B, q_h * q_w, k_h * k_w
+    return (attn.view(batch, q_h, q_w, k_h, k_w) + rel_h[:, :, :, :, None] + rel_w[:, :, :, None, :]).view(
+        batch,
+        q_h * q_w,
+        k_h * k_w,
     )
-
-    return attn
 
 
 class PatchEmbed(nn.Module):
@@ -401,13 +393,12 @@ class PatchEmbed(nn.Module):
 
     def __init__(
         self,
-        kernel_size: Tuple[int, int] = (16, 16),
-        stride: Tuple[int, int] = (16, 16),
-        padding: Tuple[int, int] = (0, 0),
+        kernel_size: tuple[int, int] = (16, 16),
+        stride: tuple[int, int] = (16, 16),
+        padding: tuple[int, int] = (0, 0),
         in_chans: int = 3,
         embed_dim: int = 768,
     ) -> None:
-
         super().__init__()
 
         self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding)
@@ -423,5 +414,4 @@ class PatchEmbed(nn.Module):
         """
         x = self.proj(x)
         # B C H W -> B H W C
-        x = x.permute(0, 2, 3, 1)
-        return x
+        return x.permute(0, 2, 3, 1)

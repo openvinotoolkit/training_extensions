@@ -139,10 +139,10 @@ class PromptGetter(nn.Module):
 
         point_coords = torch.where(mask_sim > threshold)
         fg_coords_scores = torch.stack(point_coords[::-1] + (mask_sim[point_coords],), dim=0).T
-        
+
         # to handle empty tensor
         len_fg_coords_scores = len(fg_coords_scores)
-        fg_coords_scores = F.pad(fg_coords_scores, (0, 0, 0, max(0, 1-len_fg_coords_scores)), value=-1)
+        fg_coords_scores = F.pad(fg_coords_scores, (0, 0, 0, max(0, 1 - len_fg_coords_scores)), value=-1)
 
         ratio = self.image_size / ori_shape.max()
         width = (ori_shape[1] * ratio).to(torch.int64)
@@ -239,18 +239,22 @@ class ZeroShotSegmentAnything(SegmentAnything):
             },
         )
         self.is_reference_info_empty = True
-        
+
     def initialize_reference_info(self, largest_label: int) -> None:
         """Initialize reference information."""
         self.reference_info["reference_feats"] = torch.zeros(largest_label + 1, 1, self.embed_dim)
         self.reference_info["used_indices"] = set()
         self.is_reference_info_empty = False
-        
+
     def expand_reference_info(self, new_largest_label: int) -> None:
         """Expand reference info dimensions if newly given processed prompts have more lables."""
         if new_largest_label > (cur_largest_label := len(self.reference_info["reference_feats"]) - 1):
             diff = new_largest_label - cur_largest_label
-            self.reference_info["reference_feats"] = F.pad(self.reference_info["reference_feats"], (0, 0, 0, 0, 0, diff), value=0.)
+            self.reference_info["reference_feats"] = F.pad(
+                self.reference_info["reference_feats"],
+                (0, 0, 0, 0, 0, diff),
+                value=0.0,
+            )
 
     @torch.no_grad()
     def learn(
@@ -453,11 +457,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     else:
                         overlapped_label.append(im)
 
-            for im in sorted(list(set(overlapped_label)), reverse=True):
+            for im in sorted(list(set(overlapped_label)), reverse=True):  # noqa: C414
                 masks.pop(im)
                 used_points[label].pop(im)
 
-            for jm in sorted(list(set(overlapped_other_label)), reverse=True):
+            for jm in sorted(list(set(overlapped_other_label)), reverse=True):  # noqa: C414
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
 

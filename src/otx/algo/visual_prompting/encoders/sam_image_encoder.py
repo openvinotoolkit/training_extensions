@@ -3,10 +3,10 @@
 
 """SAM image encoder model for the OTX visual prompting."""
 
+from functools import partial
 from typing import ClassVar
 
 from torch import nn
-from functools import partial
 
 
 class SAMImageEncoder(nn.Module):
@@ -71,11 +71,11 @@ class SAMImageEncoder(nn.Module):
             from otx.algo.visual_prompting.backbones.tiny_vit import TinyViT
 
             return TinyViT(**cls.backbone_configs.get(backbone.lower()))  # type: ignore[arg-type]
-        elif backbone.lower() in ["vit_b", "vit_l", "vit_h"]:
+        elif backbone.lower() in ["vit_b", "vit_l", "vit_h"]:  # noqa: RET505
             from otx.algo.visual_prompting.backbones.vit import ViT
-            
-            return ViT(**cls.backbone_configs.get(backbone.lower()))
-            
-        else:  # noqa: RET505
+
+            return ViT(**cls.backbone_configs.get(backbone.lower()))  # type: ignore[arg-type]
+
+        else:
             error_log = f"{backbone} is not supported for SAMImageEncoder. Set among tiny_vit and vit_b."
             raise ValueError(error_log)

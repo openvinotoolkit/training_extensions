@@ -160,7 +160,7 @@ class TestZeroShotSegmentAnything:
 
         for param in zero_shot_segment_anything.mask_decoder.parameters():
             assert not param.requires_grad
-            
+
         assert zero_shot_segment_anything.reference_info["reference_feats"] is None
         assert zero_shot_segment_anything.reference_info["used_indices"] is None
 
@@ -199,19 +199,19 @@ class TestZeroShotSegmentAnything:
             if key in ["backbone"]:
                 continue
             assert getattr(zero_shot_segment_anything, key) == value
-            
-    def test_initialize_reference_info_expand_reference_info(self, build_zero_shot_segment_anything):
+
+    def test_initialize_reference_info_expand_reference_info(self, build_zero_shot_segment_anything) -> None:
         """Test initialize_reference_info and expand_reference_info."""
         zero_shot_segment_anything = build_zero_shot_segment_anything()
-        
+
         zero_shot_segment_anything.initialize_reference_info(largest_label=0)
-        
+
         assert isinstance(zero_shot_segment_anything.reference_info["reference_feats"], Tensor)
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
         assert isinstance(zero_shot_segment_anything.reference_info["used_indices"], set)
-        
+
         zero_shot_segment_anything.expand_reference_info(new_largest_label=3)
-        
+
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((4, 1, 256))
 
     def test_learn(self, mocker, build_zero_shot_segment_anything) -> None:
@@ -234,12 +234,17 @@ class TestZeroShotSegmentAnything:
         ]
         ori_shapes = [torch.tensor((1024, 1024))]
 
-        _, ref_masks = zero_shot_segment_anything.learn(images=images, processed_prompts=processed_prompts, ori_shapes=ori_shapes, return_outputs=True)
+        _, ref_masks = zero_shot_segment_anything.learn(
+            images=images,
+            processed_prompts=processed_prompts,
+            ori_shapes=ori_shapes,
+            return_outputs=True,
+        )
 
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
-        assert all([ref_mask.shape == torch.Size((1, *ori_shape)) for ref_mask, ori_shape in zip(ref_masks, ori_shapes)])
+        assert ref_masks[0].shape == torch.Size((1, *ori_shapes[0]))
         assert 0 in zero_shot_segment_anything.reference_info["used_indices"]
-        
+
         new_processed_prompts = [
             {
                 torch.tensor(1): [
@@ -253,11 +258,16 @@ class TestZeroShotSegmentAnything:
                 ],
             },
         ]
-        
-        _, ref_masks = zero_shot_segment_anything.learn(images=images, processed_prompts=new_processed_prompts, ori_shapes=ori_shapes, return_outputs=True)
-        
+
+        _, ref_masks = zero_shot_segment_anything.learn(
+            images=images,
+            processed_prompts=new_processed_prompts,
+            ori_shapes=ori_shapes,
+            return_outputs=True,
+        )
+
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
-        assert all([ref_mask.shape == torch.Size((2, *ori_shape)) for ref_mask, ori_shape in zip(ref_masks, ori_shapes)])
+        assert ref_masks[0].shape == torch.Size((2, *ori_shapes[0]))
         assert 0 in zero_shot_segment_anything.reference_info["used_indices"]
         assert 1 in zero_shot_segment_anything.reference_info["used_indices"]
 
