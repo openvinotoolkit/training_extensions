@@ -26,7 +26,9 @@ class LiteHRNet(MMSegCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         parent_parameters = super()._export_parameters
-        parent_parameters.update({"onnx_export_configuration": OperatorExportTypes.ONNX_ATEN_FALLBACK})
+        parent_parameters.update(
+            {"onnx_export_configuration": {"operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK}},
+        )
 
         return parent_parameters
 
