@@ -15,30 +15,36 @@ from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
-    from torch import device, nn
+    from torch import nn
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
     """Base class for the detection models used in OTX."""
 
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "Segmentation"
-        metadata[("model_info", "task_type")] = "segmentation"
-        metadata[("model_info", "return_soft_prediction")] = str(True)
-        metadata[("model_info", "soft_threshold")] = str(0.5)
-        metadata[("model_info", "blur_strength")] = str(-1)
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        hierarchical_config: dict = {}
+        hierarchical_config["cls_heads_info"] = {}
+        hierarchical_config["label_tree_edges"] = []
 
-        return metadata
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "Segmentation",
+                ("model_info", "task_type"): "segmentation",
+                ("model_info", "return_soft_prediction"): str(True),
+                ("model_info", "soft_threshold"): str(0.5),
+                ("model_info", "blur_strength"): str(-1),
+            },
+        )
+        return parameters
 
 
 def _get_export_params_from_seg_mmconfig(config: DictConfig) -> dict[str, Any]:
@@ -61,29 +67,14 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self.config = config
         self.export_params = _get_export_params_from_seg_mmconfig(config)
         self.load_from = self.config.pop("load_from", None)
-        self.image_size = (544, 544)
+        self.image_size = (1, 3, 544, 544)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        from mmengine.registry import MODELS as MMENGINE_MODELS
-        from mmseg.models.data_preprocessor import SegDataPreProcessor as _SegDataPreProcessor
-        from mmseg.registry import MODELS
+        from .utils.mmseg import create_model
 
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MMENGINE_MODELS.register_module(force=True)
-        class SegDataPreProcessor(_SegDataPreProcessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
-
-        self.classification_layers = get_classification_layers(self.config, MODELS, "model.")
-        return build_mm_model(self.config, MODELS, self.load_from)
+        model, self.classification_layers = create_model(self.config, self.load_from)
+        return model
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         from mmengine.structures import PixelData
@@ -99,6 +90,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_sem_seg=PixelData(
                     data=masks,
@@ -148,20 +140,25 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             masks=masks,
         )
 
-    def _configure_export_parameters(self) -> None:
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
         self.export_params["resize_mode"] = "standard"
         self.export_params["pad_value"] = 0
         self.export_params["swap_rgb"] = False
         self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = (1, 3, *self.image_size)
+        self.export_params["input_size"] = self.image_size
         self.export_params["onnx_export_configuration"] = None
 
-    def _create_exporter(
-        self,
-    ) -> OTXModelExporter:
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(self.export_params)
+
+        return parent_parameters
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        self._configure_export_parameters()
-        return OTXNativeModelExporter(**self.export_params)
+        return OTXNativeModelExporter(**self._export_parameters)
 
 
 class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):

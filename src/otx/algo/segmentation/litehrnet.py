@@ -3,7 +3,11 @@
 #
 """LiteHRNet model implementations."""
 
-from typing import Literal
+from __future__ import annotations
+
+from typing import Any, Literal
+
+from torch.onnx import OperatorExportTypes
 
 from torch.onnx import OperatorExportTypes
 
@@ -20,11 +24,15 @@ class LiteHRNet(MMSegCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
 
-    def _configure_export_parameters(self) -> None:
-        super()._configure_export_parameters()
-        self.export_params["onnx_export_configuration"] = {
-            "operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK,
-        }
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(
+            {"onnx_export_configuration": {"operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK}},
+        )
+
+        return parent_parameters
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

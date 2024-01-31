@@ -81,7 +81,7 @@ decode_head:
     - 3
   loss_decode:
     loss_weight: 1.0
-    type: CrossEntropyLoss
+    type: CrossEntropyLossWithIgnore
     use_sigmoid: false
   norm_cfg:
     num_groups: 32

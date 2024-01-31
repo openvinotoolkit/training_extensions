@@ -3,9 +3,14 @@ model:
   init_args:
     backbone: tiny_vit
     num_classes: 0
-    freeze_image_encoder: true
-    freeze_prompt_encoder: true
-    freeze_mask_decoder: false
+    freeze_image_encoder: True
+    freeze_prompt_encoder: True
+    freeze_mask_decoder: False
+    # options
+    use_stability_score: False
+    return_single_mask: False
+    return_extra_metrics: False
+    stability_score_offset: 1.
 
 optimizer:
   class_path: torch.optim.Adam
@@ -31,7 +36,9 @@ overrides:
     task: VISUAL_PROMPTING
     config:
       data_format: coco_instances
-      include_polygons: false
+      vpm_config:
+        use_bbox: True
+        use_point: False
       train_subset:
         batch_size: 2
         num_workers: 4
@@ -39,6 +46,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
             init_args:
               size: 1024
+              antialias: True
           - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -55,6 +63,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
             init_args:
               size: 1024
+              antialias: True
           - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -71,6 +80,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
             init_args:
               size: 1024
+              antialias: True
           - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
