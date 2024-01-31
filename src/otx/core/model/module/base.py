@@ -44,7 +44,9 @@ class OTXLitModule(LightningModule):
 
         self.model = otx_model
         self.optimizer = optimizer
-        self.learning_rate = self.optimizer.keywords["lr"] if self.optimizer else None
+        self.learning_rate = (
+            self.optimizer.keywords["lr"] if self.optimizer and hasattr(self.optimizer, "keywords") else None
+        )
 
         self.scheduler = scheduler
         self.torch_compile = torch_compile

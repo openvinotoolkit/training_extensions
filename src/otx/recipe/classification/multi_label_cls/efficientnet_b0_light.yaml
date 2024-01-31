@@ -9,12 +9,14 @@ optimizer:
     lr: 0.0049
 
 scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
   init_args:
-    mode: min
+    warmup_steps: 0
+    warmup_by_epoch: False
+    mode: max
     factor: 0.5
-    patience: 1
-    monitor: train/loss
+    patience: 2
+    monitor: val/accuracy
 
 engine:
   task: MULTI_LABEL_CLS
