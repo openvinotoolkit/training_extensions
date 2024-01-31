@@ -30,7 +30,6 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
-    from openvino.model_api.models import Model
     from openvino.model_api.models.utils import ClassificationResult
     from torch import device, nn
 
@@ -72,7 +71,7 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             raise ValueError
 
         output = neck(x)
-        return head(output)
+        return head([output])
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
@@ -89,15 +88,19 @@ class OTXMulticlassClsModel(
 ):
     """Base class for the classification models used in OTX."""
 
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "Classification"
-        metadata[("model_info", "task_type")] = "classification"
-        metadata[("model_info", "multilabel")] = str(False)
-        metadata[("model_info", "hierarchical")] = str(False)
-        return metadata
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "Classification",
+                ("model_info", "task_type"): "classification",
+                ("model_info", "multilabel"): str(False),
+                ("model_info", "hierarchical"): str(False),
+            },
+        )
+        return parameters
 
 
 def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
@@ -133,7 +136,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (224, 224)
+        self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
 
     @property
@@ -217,12 +220,25 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             labels=labels,
         )
 
-    def _create_exporter(
-        self,
-        test_pipeline: list[dict] | None = None,
-    ) -> OTXModelExporter:
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        self.export_params["resize_mode"] = "standard"
+        self.export_params["pad_value"] = 0
+        self.export_params["swap_rgb"] = False
+        self.export_params["via_onnx"] = False
+        self.export_params["input_size"] = self.image_size
+        self.export_params["onnx_export_configuration"] = None
+
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(self.export_params)
+
+        return parent_parameters
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self.export_params)
+        return OTXNativeModelExporter(**self._export_parameters)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -234,16 +250,20 @@ class OTXMultilabelClsModel(
 ):
     """Multi-label classification models used in OTX."""
 
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "Classification"
-        metadata[("model_info", "task_type")] = "classification"
-        metadata[("model_info", "multilabel")] = str(True)
-        metadata[("model_info", "hierarchical")] = str(False)
-        metadata[("model_info", "confidence_threshold")] = str(0.5)
-        return metadata
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "Classification",
+                ("model_info", "task_type"): "classification",
+                ("model_info", "multilabel"): str(True),
+                ("model_info", "hierarchical"): str(False),
+                ("model_info", "confidence_threshold"): str(0.5),
+            },
+        )
+        return parameters
 
 
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
@@ -258,7 +278,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (224, 224)
+        self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
 
     @property
@@ -293,6 +313,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_score=labels,
             )
@@ -342,12 +363,25 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             labels=labels,
         )
 
-    def _create_exporter(
-        self,
-        test_pipeline: list[dict] | None = None,
-    ) -> OTXModelExporter:
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        self.export_params["resize_mode"] = "standard"
+        self.export_params["pad_value"] = 0
+        self.export_params["swap_rgb"] = False
+        self.export_params["via_onnx"] = False
+        self.export_params["input_size"] = self.image_size
+        self.export_params["onnx_export_configuration"] = None
+
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(self.export_params)
+
+        return parent_parameters
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self.export_params)
+        return OTXNativeModelExporter(**self._export_parameters)
 
 
 class OTXHlabelClsModel(
@@ -355,22 +389,25 @@ class OTXHlabelClsModel(
 ):
     """H-label classification models used in OTX."""
 
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "Classification"
-        metadata[("model_info", "task_type")] = "classification"
-        metadata[("model_info", "multilabel")] = str(False)
-        metadata[("model_info", "hierarchical")] = str(True)
-        metadata[("model_info", "confidence_threshold")] = str(0.5)
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
         hierarchical_config: dict = {}
         hierarchical_config["cls_heads_info"] = {}
         hierarchical_config["label_tree_edges"] = []
 
-        metadata[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
-
-        return metadata
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "Classification",
+                ("model_info", "task_type"): "classification",
+                ("model_info", "multilabel"): str(False),
+                ("model_info", "hierarchical"): str(True),
+                ("model_info", "confidence_threshold"): str(0.5),
+                ("model_info", "hierarchical_config"): json.dumps(hierarchical_config),
+            },
+        )
+        return parameters
 
 
 class MMPretrainHlabelClsModel(OTXHlabelClsModel):
@@ -385,7 +422,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (224, 224)
+        self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
 
     @property
@@ -428,6 +465,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_label=labels,
             )
@@ -477,15 +515,30 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             labels=labels,
         )
 
-    def _create_exporter(
-        self,
-        test_pipeline: list[dict] | None = None,
-    ) -> OTXModelExporter:
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        self.export_params["resize_mode"] = "standard"
+        self.export_params["pad_value"] = 0
+        self.export_params["swap_rgb"] = False
+        self.export_params["via_onnx"] = False
+        self.export_params["input_size"] = self.image_size
+        self.export_params["onnx_export_configuration"] = None
+
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(self.export_params)
+
+        return parent_parameters
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self.export_params)
+        return OTXNativeModelExporter(**self._export_parameters)
 
 
-class OVMulticlassClassificationModel(OVModel):
+class OVMulticlassClassificationModel(
+    OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+):
     """Classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -509,7 +562,9 @@ class OVMulticlassClassificationModel(OVModel):
         )
 
 
-class OVHlabelClassificationModel(OVModel):
+class OVHlabelClassificationModel(
+    OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+):
     """Hierarchical classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -518,14 +573,29 @@ class OVHlabelClassificationModel(OVModel):
 
     def __init__(
         self,
-        *args,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
         num_multiclass_heads: int = 1,
         num_multilabel_classes: int = 0,
-        **kwargs,
     ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
-        super().__init__(*args, **kwargs)
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
@@ -533,12 +603,9 @@ class OVHlabelClassificationModel(OVModel):
         Since OV IR model consist of all required hierarchy information,
         this method serves as placehloder
         """
-        return
-
-    def _create_model(self, *args) -> Model:
-        # confidence_threshold is 0.0 to return scores for all multilabel classes
-        model_api_configuration = {"hierarchical": True, "confidence_threshold": 0.0}
-        return super()._create_model(model_api_configuration)
+        if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
+            msg = "OpenVINO IR model should have hierarchical config embedded in rt_info of the model"
+            raise ValueError(msg)
 
     def _customize_outputs(
         self,
@@ -557,17 +624,36 @@ class OVHlabelClassificationModel(OVModel):
         )
 
 
-class OVMultilabelClassificationModel(OVModel):
+class OVMultilabelClassificationModel(
+    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+):
     """Multilabel classification model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
-    def _create_model(self, *args) -> Model:
-        # confidence_threshold is 0.0 to return scores for all classes
-        model_api_configuration = {"multilabel": True, "confidence_threshold": 0.0}
-        return super()._create_model(model_api_configuration)
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
 
     def _customize_outputs(
         self,

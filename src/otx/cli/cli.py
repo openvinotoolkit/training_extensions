@@ -6,17 +6,18 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 import yaml
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
 from rich.console import Console
 
 from otx import OTX_LOGO, __version__
-from otx.cli.utils import get_otx_root_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
+from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -67,11 +68,15 @@ class OTXCLI:
         )
         return parser
 
-    def subcommand_parser(self, **kwargs) -> ArgumentParser:
-        """Returns an ArgumentParser object for parsing command line arguments specific to a subcommand.
+    @staticmethod
+    def engine_subcommand_parser(**kwargs) -> ArgumentParser:
+        """Creates an ArgumentParser object for the engine subcommand.
+
+        Args:
+            **kwargs: Additional keyword arguments to be passed to the ArgumentParser constructor.
 
         Returns:
-            ArgumentParser: An ArgumentParser object configured with the specified arguments.
+            ArgumentParser: The created ArgumentParser object.
         """
         parser = ArgumentParser(
             formatter_class=CustomHelpFormatter,
@@ -93,7 +98,7 @@ class OTXCLI:
         )
         parser.add_argument(
             "--data_root",
-            type=str,
+            type=Optional[str],
             help="Path to dataset root.",
         )
         parser.add_argument(
@@ -102,10 +107,61 @@ class OTXCLI:
             help="Task Type.",
         )
         parser.add_argument(
+            "--seed",
+            type=int,
+            help="Sets seed for pseudo-random number generators in: pytorch, numpy, python.random.",
+        )
+        parser.add_argument(
             "--callback_monitor",
             type=str,
             help="The metric to monitor the model performance during training callbacks.",
         )
+        engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
+        parser.add_class_arguments(
+            Engine,
+            "engine",
+            fail_untyped=False,
+            sub_configs=True,
+            instantiate=False,
+            skip=engine_skip,
+        )
+        # Model Settings
+        from otx.core.model.entity.base import OTXModel
+
+        model_kwargs: dict[str, Any] = {"fail_untyped": False}
+
+        parser.add_subclass_arguments(
+            OTXModel,
+            "model",
+            required=False,
+            **model_kwargs,
+        )
+        # Datamodule Settings
+        from otx.core.data.module import OTXDataModule
+
+        parser.add_class_arguments(
+            OTXDataModule,
+            "data",
+            fail_untyped=False,
+            sub_configs=True,
+        )
+        # Optimizer & Scheduler Settings
+        from lightning.pytorch.cli import LRSchedulerTypeTuple
+        from torch.optim import Optimizer
+
+        optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
+        scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
+        parser.add_subclass_arguments(
+            baseclass=(Optimizer,),
+            nested_key="optimizer",
+            **optim_kwargs,
+        )
+        parser.add_subclass_arguments(
+            baseclass=LRSchedulerTypeTuple,
+            nested_key="scheduler",
+            **scheduler_kwargs,
+        )
+
         return parser
 
     @staticmethod
@@ -119,10 +175,11 @@ class OTXCLI:
         """
         device_kwargs = {"accelerator", "devices"}
         return {
-            "train": device_kwargs,
+            "train": {"seed"}.union(device_kwargs),
             "test": {"datamodule"}.union(device_kwargs),
             "predict": {"datamodule"}.union(device_kwargs),
             "export": device_kwargs,
+            "explain": {"datamodule"}.union(device_kwargs),
         }
 
     def add_subcommands(self) -> None:
@@ -142,66 +199,27 @@ class OTXCLI:
             # If environment is not configured to use Engine, do not add a subcommand for Engine.
             return
         for subcommand in self.engine_subcommands():
-            sub_parser = self.subcommand_parser()
-            engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
-            sub_parser.add_class_arguments(
-                Engine,
-                "engine",
-                fail_untyped=False,
-                sub_configs=True,
-                instantiate=False,
-                skip=engine_skip,
-            )
+            parser_kwargs = self._set_default_config_from_auto_configurator()
+            sub_parser = self.engine_subcommand_parser(**parser_kwargs)
+
             sub_parser.link_arguments("data_root", "engine.data_root")
-
-            # Model Settings
-            from otx.core.model.entity.base import OTXModel
-
-            model_kwargs: dict[str, Any] = {"fail_untyped": False}
-
-            sub_parser.add_subclass_arguments(
-                OTXModel,
-                "model",
-                required=False,
-                **model_kwargs,
-            )
-            # Datamodule Settings
-            from otx.core.data.module import OTXDataModule
-
-            sub_parser.add_class_arguments(
-                OTXDataModule,
-                "data",
-                fail_untyped=False,
-                sub_configs=True,
-            )
             sub_parser.link_arguments("data_root", "data.config.data_root")
 
-            # Optimizer & Scheduler Settings
-            from lightning.pytorch.cli import LRSchedulerTypeTuple
-            from torch.optim import Optimizer
-
-            optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
-            scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
-            sub_parser.add_subclass_arguments(
-                baseclass=(Optimizer,),
-                nested_key="optimizer",
-                **optim_kwargs,
-            )
-            sub_parser.add_subclass_arguments(
-                baseclass=LRSchedulerTypeTuple,
-                nested_key="scheduler",
-                **scheduler_kwargs,
-            )
-
-            skip: set[str | int] = set(self.engine_subcommands()[subcommand])
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
+
             added_arguments = sub_parser.add_method_arguments(
                 Engine,
                 subcommand,
-                skip=skip,
+                skip=set(self.engine_subcommands()[subcommand]),
                 fail_untyped=False,
             )
+
+            if "logger" in added_arguments:
+                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
+            if "callbacks" in added_arguments:
+                sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
+                sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
 
             # Load default subcommand config file
             default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
@@ -210,15 +228,27 @@ class OTXCLI:
                     default_config = yaml.safe_load(f)
                 sub_parser.set_defaults(**default_config)
 
-            if "logger" in added_arguments:
-                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
-            if "callbacks" in added_arguments:
-                sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
-                sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
-
             self._subcommand_method_arguments[subcommand] = added_arguments
             self._subcommand_parsers[subcommand] = sub_parser
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)
+
+    def _set_default_config_from_auto_configurator(self) -> dict:
+        parser_kwargs = {}
+        data_root = None
+        task = None
+        if "--data_root" in sys.argv:
+            data_root = sys.argv[sys.argv.index("--data_root") + 1]
+        if "--task" in sys.argv:
+            task = sys.argv[sys.argv.index("--task") + 1]
+        enable_auto_config = data_root is not None and "--config" not in sys.argv
+        if enable_auto_config:
+            from otx.core.types.task import OTXTaskType
+            from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
+
+            auto_configurator = AutoConfigurator(data_root=data_root, task=OTXTaskType(task))
+            config_file_path = DEFAULT_CONFIG_PER_TASK[auto_configurator.task]
+            parser_kwargs["default_config_files"] = [config_file_path]
+        return parser_kwargs
 
     def _set_extension_subcommands_parser(self, parser_subcommands: _ActionSubCommands) -> None:
         from otx.cli.install import add_install_parser
@@ -307,6 +337,19 @@ class OTXCLI:
             skip_check=True,
         )
 
+    def set_seed(self) -> None:
+        """Set the random seed for reproducibility.
+
+        This method retrieves the seed value from the argparser and uses it to set the random seed.
+        If a seed value is provided, it will be used to set the random seed using the
+        `seed_everything` function from the `lightning` module.
+        """
+        seed = self.get_config_value(self.config, "seed", None)
+        if seed is not None:
+            from lightning import seed_everything
+
+            seed_everything(seed, workers=True)
+
     def run(self) -> None:
         """Executes the specified subcommand.
 
@@ -319,6 +362,7 @@ class OTXCLI:
 
             otx_install(**self.config["install"])
         elif self.subcommand in self.engine_subcommands():
+            self.set_seed()
             self.instantiate_classes()
             fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)

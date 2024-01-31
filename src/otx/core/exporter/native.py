@@ -14,7 +14,7 @@ import openvino
 import torch
 
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportPrecisionType
+from otx.core.types.precision import OTXPrecisionType
 
 
 class OTXNativeModelExporter(OTXModelExporter):
@@ -30,18 +30,19 @@ class OTXNativeModelExporter(OTXModelExporter):
         swap_rgb: bool = False,
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
+        metadata: dict[tuple[str, str], str] | None = None,
     ) -> None:
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
+        self.metadata = metadata
 
     def to_openvino(
         self,
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-        metadata: dict[tuple[str, str], str] | None = None,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -57,8 +58,8 @@ class OTXNativeModelExporter(OTXModelExporter):
                     model,
                     tmp_dir,
                     base_model_name,
-                    OTXExportPrecisionType.FP32,
-                    None,
+                    OTXPrecisionType.FP32,
+                    False,
                 )
                 exported_model = openvino.convert_model(
                     tmp_dir / (base_model_name + ".onnx"),
@@ -75,10 +76,11 @@ class OTXNativeModelExporter(OTXModelExporter):
         if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
             exported_model.outputs[0].tensor.set_names({"output1"})
 
-        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
-        exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
+        if self.metadata is not None:
+            export_metadata = self._extend_model_metadata(self.metadata)
+            exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, export_metadata)
         save_path = output_dir / (base_model_name + ".xml")
-        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
 
         return Path(save_path)
 
@@ -87,8 +89,8 @@ class OTXNativeModelExporter(OTXModelExporter):
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
-        metadata: dict[tuple[str, str], str] | None = None,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        embed_metadata: bool = True,
     ) -> Path:
         """Export to ONNX format.
 
@@ -96,13 +98,14 @@ class OTXNativeModelExporter(OTXModelExporter):
         """
         dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
         save_path = str(output_dir / (base_model_name + ".onnx"))
-        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
+        metadata = {} if self.metadata is None else self._extend_model_metadata(self.metadata)
 
         torch.onnx.export(model, dummy_tensor, save_path, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
-        onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
-        if precision == OTXExportPrecisionType.FP16:
+        if embed_metadata:
+            onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
+        if precision == OTXPrecisionType.FP16:
             from onnxconverter_common import float16
 
             onnx_model = float16.convert_float_to_float16(onnx_model)

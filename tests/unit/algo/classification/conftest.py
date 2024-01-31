@@ -58,6 +58,48 @@ def fxt_hlabel_info() -> HLabelInfo:
 
 
 @pytest.fixture()
+def fxt_hlabel_multilabel_info() -> HLabelInfo:
+    return HLabelInfo(
+        num_multiclass_heads=3,
+        num_multilabel_classes=3,
+        head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},
+        num_single_label_classes=3,
+        empty_multiclass_head_indices=[],
+        class_to_group_idx={
+            "0": (0, 0),
+            "1": (0, 1),
+            "2": (1, 0),
+            "3": (1, 1),
+            "4": (2, 0),
+            "5": (2, 1),
+            "6": (3, 0),
+            "7": (3, 1),
+            "8": (3, 2),
+        },
+        all_groups=[["0", "1"], ["2", "3"], ["4", "5"], ["6"], ["7"], ["8"]],
+        label_to_idx={
+            "0": 0,
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+        },
+        label_tree_edges=[
+            ["0", "0"],
+            ["1", "0"],
+            ["2", "1"],
+            ["3", "1"],
+            ["4", "2"],
+            ["5", "2"],
+        ],
+    )
+
+
+@pytest.fixture()
 def fxt_multiclass_cls_batch_data_entity() -> MulticlassClsBatchDataEntity:
     batch_size = 2
     random_tensor = torch.randn((batch_size, 3, 224, 224))

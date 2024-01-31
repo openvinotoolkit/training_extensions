@@ -23,7 +23,7 @@ scheduler:
 
 engine:
   task: DETECTION
-  device: auto
+  device: cpu
 
 callback_monitor: val/map_50
 

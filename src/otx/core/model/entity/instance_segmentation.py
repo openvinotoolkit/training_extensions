@@ -159,6 +159,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_instances=InstanceData(
                     bboxes=bboxes,
@@ -248,7 +249,9 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         return self.export_params.get("mmdeploy_config") is not None
 
 
-class OVInstanceSegmentationModel(OVModel):
+class OVInstanceSegmentationModel(
+    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
+):
     """Instance segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository

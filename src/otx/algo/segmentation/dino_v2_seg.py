@@ -23,5 +23,5 @@ class DinoV2Seg(MMSegCompatibleModel):
         Model doesn't support export for now due to unsupported operations from xformers.
         This method will raise an error.
         """
-        msg = "{model_name} cannot be exported. It is not supported."
+        msg = "DinoV2Seg cannot be exported. It is not supported."
         raise RuntimeError(msg)

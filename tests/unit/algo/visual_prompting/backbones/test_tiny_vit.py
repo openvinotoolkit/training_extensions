@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 from otx.algo.visual_prompting.backbones.tiny_vit import (
     Attention,
@@ -20,21 +21,22 @@ from torch import nn
 
 
 class TestConv2d_BN:  # noqa: N801
-    def setup(self) -> None:
-        self.conv2d_bn = Conv2d_BN(a=1, b=1)
+    @pytest.fixture()
+    def conv2d_bn(self) -> Conv2d_BN:
+        return Conv2d_BN(a=1, b=1)
 
-    def test_init(self) -> None:
+    def test_init(self, conv2d_bn) -> None:
         """Test __init__."""
-        assert isinstance(self.conv2d_bn.c, nn.Conv2d)
-        assert isinstance(self.conv2d_bn.bn, nn.BatchNorm2d)
+        assert isinstance(conv2d_bn.c, nn.Conv2d)
+        assert isinstance(conv2d_bn.bn, nn.BatchNorm2d)
 
-    def test_fuse(self) -> None:
+    def test_fuse(self, conv2d_bn) -> None:
         """Test fuse."""
-        fulsed_module = self.conv2d_bn.fuse()
+        fulsed_module = conv2d_bn.fuse()
 
-        tmp_w = self.conv2d_bn.bn.weight / (self.conv2d_bn.bn.running_var + self.conv2d_bn.bn.eps) ** 0.5
-        new_w = self.conv2d_bn.c.weight * tmp_w[:, None, None, None]
-        new_b = self.conv2d_bn.bn.bias - self.conv2d_bn.bn.running_mean * tmp_w
+        tmp_w = conv2d_bn.bn.weight / (conv2d_bn.bn.running_var + conv2d_bn.bn.eps) ** 0.5
+        new_w = conv2d_bn.c.weight * tmp_w[:, None, None, None]
+        new_b = conv2d_bn.bn.bias - conv2d_bn.bn.running_mean * tmp_w
 
         assert torch.isclose(fulsed_module.weight, new_w)
         assert torch.isclose(fulsed_module.bias, new_b)
@@ -107,61 +109,53 @@ class TestAttention:
 
 
 class TestTinyViTBlock:
-    def setup(self) -> None:
-        self.dim = 4
-        self.input_resolution = (6, 6)
-        self.num_heads = 1
-        self.window_size = 2
-        self.mlp_ratio = 1.0
-        self.tiny_vit_block = TinyViTBlock(
-            dim=self.dim,
-            input_resolution=self.input_resolution,
-            num_heads=self.num_heads,
-            window_size=self.window_size,
-            mlp_ratio=self.mlp_ratio,
+    @pytest.fixture()
+    def tiny_vit_block(self) -> TinyViTBlock:
+        return TinyViTBlock(
+            dim=4,
+            input_resolution=(6, 6),
+            num_heads=1,
+            window_size=2,
+            mlp_ratio=1.0,
         )
 
-    def test_forward(self) -> None:
+    def test_forward(self, tiny_vit_block) -> None:
         """Test forward."""
         input_tensor = torch.rand(1, 36, 4)
 
-        results = self.tiny_vit_block(input_tensor)
+        results = tiny_vit_block(input_tensor)
 
         assert results.shape == torch.Size((1, 36, 4))
 
 
 class TestBasicLayer:
-    def setup(self) -> None:
-        self.dim = 4
-        self.input_resolution = (6, 6)
-        self.depth = 1
-        self.basic_layer = BasicLayer(
-            dim=self.dim,
-            input_resolution=self.input_resolution,
-            depth=self.depth,
+    @pytest.fixture()
+    def basic_layer(self) -> BasicLayer:
+        return BasicLayer(
+            dim=4,
+            input_resolution=(6, 6),
+            depth=1,
             num_heads=1,
             window_size=2,
         )
 
-    def test_forward(self) -> None:
+    def test_forward(self, basic_layer) -> None:
         """Test forward."""
         input_tensor = torch.rand(1, 36, 4)
 
-        results = self.basic_layer(input_tensor)
+        results = basic_layer(input_tensor)
 
         assert results.shape == torch.Size((1, 36, 4))
 
-    def test_extra_repr(self) -> None:
+    def test_extra_repr(self, basic_layer) -> None:
         """Test extra_repr."""
-        assert (
-            f"dim={self.dim}, input_resolution={self.input_resolution}, depth={self.depth}"
-            == self.basic_layer.extra_repr()
-        )
+        assert basic_layer.extra_repr() == "dim=4, input_resolution=(6, 6), depth=1"
 
 
 class TestTinyViT:
-    def setup(self) -> None:
-        self.tiny_vit = TinyViT(
+    @pytest.fixture()
+    def tiny_vit(self) -> TinyViT:
+        return TinyViT(
             img_size=1024,
             embed_dims=[64, 128, 160, 320],
             depths=[2, 2, 6, 2],
@@ -171,10 +165,10 @@ class TestTinyViT:
             layer_lr_decay=2.0,
         )
 
-    def test_forward(self) -> None:
+    def test_forward(self, tiny_vit) -> None:
         """Test forward."""
         input_tensor = torch.rand(1, 3, 1024, 1024)
 
-        results = self.tiny_vit(input_tensor)
+        results = tiny_vit(input_tensor)
 
         assert results.shape == torch.Size((1, 256, 64, 64))

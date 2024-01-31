@@ -36,7 +36,7 @@ def build_mm_model(config: DictConfig, model_registry: Registry, load_from: str 
     model.init_weights()
     mm_logger.setLevel(mm_logger_level)
     if load_from is not None:
-        load_checkpoint(model, load_from)
+        load_checkpoint(model, load_from, map_location="cpu")
 
     return model
 

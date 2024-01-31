@@ -2,10 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """MobileNetV3 model implementation."""
+from __future__ import annotations
+
+from typing import Any
 
 from typing import Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.classification import (
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
@@ -23,12 +27,15 @@ class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
         super().__init__(num_classes=num_classes, config=config)
 
     @property
-    def export_params(self) -> dict[str, Any]:
-        """Parameters for an  exporter."""
-        export_params = super().export_params
-        export_params["via_onnx"] = True
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parent_parameters = super()._export_parameters
+        parent_parameters.update({"via_onnx": True})
+        return parent_parameters
 
-        return export_params
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "hlabel", add_prefix)
 
 
 class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
@@ -40,12 +47,15 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
         super().__init__(num_classes=num_classes, config=config)
 
     @property
-    def export_params(self) -> dict[str, Any]:
-        """Parameters for an  exporter."""
-        export_params = super().export_params
-        export_params["via_onnx"] = True
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parent_parameters = super()._export_parameters
+        parent_parameters.update({"via_onnx": True})
+        return parent_parameters
 
-        return export_params
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "multiclass", add_prefix)
 
 
 class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
@@ -56,9 +66,12 @@ class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
         super().__init__(num_classes=num_classes, config=config)
 
     @property
-    def export_params(self) -> dict[str, Any]:
-        """Parameters for an  exporter."""
-        export_params = super().export_params
-        export_params["via_onnx"] = True
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parent_parameters = super()._export_parameters
+        parent_parameters.update({"via_onnx": True})
+        return parent_parameters
 
-        return export_params
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "multilabel", add_prefix)

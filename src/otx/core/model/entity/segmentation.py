@@ -29,17 +29,24 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
     """Base class for the detection models used in OTX."""
 
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "Segmentation"
-        metadata[("model_info", "task_type")] = "segmentation"
-        metadata[("model_info", "return_soft_prediction")] = str(True)
-        metadata[("model_info", "soft_threshold")] = str(0.5)
-        metadata[("model_info", "blur_strength")] = str(-1)
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        hierarchical_config: dict = {}
+        hierarchical_config["cls_heads_info"] = {}
+        hierarchical_config["label_tree_edges"] = []
 
-        return metadata
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "Segmentation",
+                ("model_info", "task_type"): "segmentation",
+                ("model_info", "return_soft_prediction"): str(True),
+                ("model_info", "soft_threshold"): str(0.5),
+                ("model_info", "blur_strength"): str(-1),
+            },
+        )
+        return parameters
 
 
 class MMSegCompatibleModel(OTXSegmentationModel):
@@ -54,7 +61,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
-        self.image_size = (544, 544)
+        self.image_size = (1, 3, 544, 544)
         super().__init__(num_classes=num_classes)
 
     @property
@@ -105,6 +112,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_sem_seg=PixelData(
                     data=masks,
@@ -154,15 +162,28 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             masks=masks,
         )
 
-    def _create_exporter(
-        self,
-        test_pipeline: list[dict] | None = None,
-    ) -> OTXModelExporter:
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        self.export_params["resize_mode"] = "standard"
+        self.export_params["pad_value"] = 0
+        self.export_params["swap_rgb"] = False
+        self.export_params["via_onnx"] = False
+        self.export_params["input_size"] = self.image_size
+        self.export_params["onnx_export_configuration"] = None
+
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(self.export_params)
+
+        return parent_parameters
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self.export_params)
+        return OTXNativeModelExporter(**self._export_parameters)
 
 
-class OVSegmentationModel(OVModel):
+class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Semantic segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
