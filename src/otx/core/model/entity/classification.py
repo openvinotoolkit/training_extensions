@@ -23,14 +23,13 @@ from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
-    from torch import device, nn
+    from torch import nn
 
     from otx.core.data.entity.classification import HLabelInfo
 
@@ -147,8 +146,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
-        self.classification_layers = classification_layers
+        from .utils.mmpretrain import create_model
+
+        model, self.classification_layers = create_model(self.config, self.load_from)
         return model
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
@@ -277,7 +277,9 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        from .utils.mmpretrain import create_model
+
+        model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
 
@@ -409,7 +411,9 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        from .utils.mmpretrain import create_model
+
+        model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
 
