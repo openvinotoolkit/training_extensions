@@ -379,6 +379,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         train_dataset = data_module.train_dataloader()
 
+        ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
+        if ptq_config is not None:
+            ptq_config.update(ptq_config_from_ir)
+        else:
+            ptq_config = ptq_config_from_ir
         quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
         ptq_config: dict = {}
         if "subset_size" not in ptq_config:
