@@ -97,11 +97,3 @@ class CustomFCNHead(ClassIncrementalMixin, FCNHead):
 
     Custom FCNHead supports ignored label for class incremental learning cases.
     """
-
-
-@MODELS.register_module()
-class CustomLightHamHead(ClassIncrementalMixin, LightHamHead):
-    """Custom LightHamHead implementation.
-
-    Custom LightHamHead supports ignored label for class incremental learning cases.
-    """
