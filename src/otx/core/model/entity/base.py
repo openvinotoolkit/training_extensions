@@ -5,18 +5,19 @@
 
 from __future__ import annotations
 
+import json
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple, Optional
-import json
+from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple
 
+import nncf
 import numpy as np
 import openvino
 from attr import dataclass
+from jsonargparse import ArgumentParser
 from openvino.model_api.models import Model
 from torch import nn
 
-import nncf
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -25,11 +26,7 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportFormatType
-from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
-from jsonargparse import ArgumentParser
-from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -197,17 +194,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         msg = "Optimization is not implemented for torch models"
         raise NotImplementedError(msg)
 
-    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
-        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
-        Args:
-            output_dir (Path): working directory to save the optimized model.
-            data_module (OTXDataModule): dataset for calibration of quantized layers.
-        Returns:
-            Path: path to the resulting optimized OpenVINO model.
-        """
-        msg = "Optimization is not implemented for torch models"
-        raise NotImplementedError(msg)
-
     @property
     def _exporter(self) -> OTXModelExporter:
         msg = (
@@ -219,6 +205,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation.
+
         To export OTXModel, you should define an appropriate parameters."
         "This is used in the constructor of `self._exporter`. "
         "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
@@ -245,6 +232,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
+
         Args:
             num_classes: Number of classes
         """
@@ -335,7 +323,12 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         return self._customize_outputs(outputs, inputs)
 
-    def optimize(self, output_dir: Path, data_module: OTXDataModule, ptq_config: Optional[dict[str, Any]] = None) -> Path:
+    def optimize(
+        self,
+        output_dir: Path,
+        data_module: OTXDataModule,
+        ptq_config: dict[str, Any] | None = None,
+    ) -> Path:
         """Runs NNCF quantization."""
         output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
 
@@ -392,8 +385,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         return output_model_path
 
     def _generate_ptq_config(self, ov_model: Model) -> dict:
-        """
-        Generates the PTQ (Post-Training Quantization) configuration for the given OpenVINO model.
+        """Generates the PTQ (Post-Training Quantization) configuration for the given OpenVINO model.
 
         Args:
             ov_model (Model): The OpenVINO model in which the PTQ configuration is embedded.
@@ -409,8 +401,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """
         from nncf import IgnoredScope
         from nncf.common.quantization.structs import QuantizationPreset
-        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
         from nncf.parameters import ModelType
+        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 
         initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["ptq_config"].value)
         if not initial_ptq_config:

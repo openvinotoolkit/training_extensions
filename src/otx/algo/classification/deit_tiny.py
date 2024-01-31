@@ -2,9 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """DeitTiny model implementation."""
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
 import torch
-from typing import Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -67,9 +70,7 @@ class ExplainableDeit(ExplainableOTXClsModel):
 
     @property
     def ptq_config(self) -> dict[str, Any]:
-        '''
-        PTQ config for DeitTinyForMultilabelCls
-        '''
+        """PTQ config for DeitTinyForMultilabelCls."""
         return {"model_type": "transformer"}
 
 
@@ -109,4 +110,3 @@ class DeitTinyForMultilabelCls(ExplainableDeit, MMPretrainMultilabelClsModel):
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
-

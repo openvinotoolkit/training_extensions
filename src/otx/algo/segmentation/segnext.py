@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """SegNext model implementations."""
+from __future__ import annotations
 
-from typing import Literal, Any
+from typing import Any, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -24,13 +25,16 @@ class SegNext(MMSegCompatibleModel):
 
     @property
     def ptq_config(self) -> dict[str, Any]:
-        '''
-        PTQ config for LiteHRNet
-        '''
-        # TODO[Kirill]: check PTQ without adding the whole backbone to ignored_scope
-        return {"ignored_scope": {"patterns": ["/hamburger/"], "types": [
-                                                                        "Add",
-                                                                        "MVN",
-                                                                        "Divide",
-                                                                        "Multiply",
-                                                                        ]}}
+        """PTQ config for LiteHRNet."""
+        # TODO(Kirill): check PTQ without adding the whole backbone to ignored_scope #noqa: TD003
+        return {
+            "ignored_scope": {
+                "patterns": ["/hamburger/"],
+                "types": [
+                    "Add",
+                    "MVN",
+                    "Divide",
+                    "Multiply",
+                ],
+            },
+        }

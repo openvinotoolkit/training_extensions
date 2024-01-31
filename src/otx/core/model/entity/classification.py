@@ -108,13 +108,6 @@ def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
     }
 
 
-def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
-    return {
-        "mean": config["data_preprocessor"]["mean"],
-        "std": config["data_preprocessor"]["std"],
-    }
-
-
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     """Multi-class Classification model compatible for MMPretrain.
 
