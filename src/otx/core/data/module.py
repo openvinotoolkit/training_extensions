@@ -195,3 +195,7 @@ class OTXDataModule(LightningDataModule):
                 hp[key] = OmegaConf.to_container(value, resolve=False)
 
         return hp
+
+    def __reduce__(self):
+        """Re-initialize object when unpickled."""
+        return (self.__class__, (self.task, self.config))

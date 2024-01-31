@@ -23,14 +23,13 @@ from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
-    from torch import device, nn
+    from torch import nn
 
     from otx.core.data.entity.classification import HLabelInfo
 
@@ -102,27 +101,6 @@ class OTXMulticlassClsModel(
         return parameters
 
 
-def _create_mmpretrain_model(config: DictConfig, load_from: str) -> tuple[nn.Module, dict[str, dict[str, int]]]:
-    from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
-    from mmpretrain.registry import MODELS
-
-    # NOTE: For the history of this monkey patching, please see
-    # https://github.com/openvinotoolkit/training_extensions/issues/2743
-    @MODELS.register_module(force=True)
-    class ClsDataPreprocessor(_ClsDataPreprocessor):
-        @property
-        def device(self) -> device:
-            try:
-                buf = next(self.buffers())
-            except StopIteration:
-                return super().device
-            else:
-                return buf.device
-
-    classification_layers = get_classification_layers(config, MODELS, "model.")
-    return build_mm_model(config, MODELS, load_from), classification_layers
-
-
 def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
     return {
         "mean": config["data_preprocessor"]["mean"],
@@ -147,8 +125,9 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
-        self.classification_layers = classification_layers
+        from .utils.mmpretrain import create_model
+
+        model, self.classification_layers = create_model(self.config, self.load_from)
         return model
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
@@ -277,7 +256,9 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        from .utils.mmpretrain import create_model
+
+        model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
 
@@ -409,7 +390,9 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
-        model, classification_layers = _create_mmpretrain_model(self.config, self.load_from)
+        from .utils.mmpretrain import create_model
+
+        model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
 
