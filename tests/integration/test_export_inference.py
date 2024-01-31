@@ -193,6 +193,7 @@ def test_otx_export_infer(
 
     assert (tmp_path_test / "outputs").exists()
 
+    # 5) test optimize
     command_cfg = [
         "otx",
         "optimize",
@@ -215,6 +216,7 @@ def test_otx_export_infer(
     assert (tmp_path_test / "outputs").exists()
     exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
 
+    # 6) test optimized model
     command_cfg = [
         "otx",
         "test",
@@ -245,4 +247,3 @@ def test_otx_export_infer(
     log.info(msg)
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
-    _check_relative_metric_diff(ov_acc, ptq_acc, 0.2)

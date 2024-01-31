@@ -5,16 +5,17 @@
 
 from __future__ import annotations
 
+import json
 import warnings
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 import openvino
+from jsonargparse import ArgumentParser
 from openvino.model_api.models import Model
 from torch import nn
 
-import nncf
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -230,21 +231,22 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         "This is used in the constructor of `self._exporter`. "
         "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
         "Please refer to `otx.core.exporter.*` for detailed examples."
-
         Returns:
             dict[str, Any]: parameters of exporter.
         """
         parameters = {}
-
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
             all_labels += lbl.replace(" ", "_") + " "
             all_label_ids += lbl.replace(" ", "_") + " "
 
+        # not every model requires ptq_config
+        optimization_config = self._optimization_config
         parameters["metadata"] = {
             ("model_info", "labels"): all_labels.strip(),
             ("model_info", "label_ids"): all_label_ids.strip(),
+            ("model_info", "optimization_config"): json.dumps(optimization_config),
         }
 
         return parameters
@@ -256,6 +258,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             num_classes: Number of classes
         """
         raise NotImplementedError
+
+    @property
+    def _optimization_config(self) -> dict[str, str]:
+        return {}
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -342,8 +348,15 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         return self._customize_outputs(outputs, inputs)
 
-    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+    def optimize(
+        self,
+        output_dir: Path,
+        data_module: OTXDataModule,
+        ptq_config: dict[str, Any] | None = None,
+    ) -> Path:
         """Runs NNCF quantization."""
+        import nncf
+
         output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
 
         def check_if_quantized(model: openvino.Model) -> bool:
@@ -366,6 +379,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         train_dataset = data_module.train_dataloader()
 
+        ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
+        if ptq_config is not None:
+            ptq_config.update(ptq_config_from_ir)
+        else:
+            ptq_config = ptq_config_from_ir
         quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
         ptq_config: dict = {}
         if "subset_size" not in ptq_config:
@@ -380,3 +398,39 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         openvino.save_model(compressed_model, output_model_path)
 
         return output_model_path
+
+    def _read_ptq_config_from_ir(self, ov_model: Model) -> dict[str, Any]:
+        """Generates the PTQ (Post-Training Quantization) configuration from the meta data of the given OpenVINO model.
+
+        Args:
+            ov_model (Model): The OpenVINO model in which the PTQ configuration is embedded.
+
+        Returns:
+            dict: The PTQ configuration as a dictionary.
+        """
+        from nncf import IgnoredScope
+        from nncf.common.quantization.structs import QuantizationPreset
+        from nncf.parameters import ModelType
+        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
+
+        if "optimization_config" not in ov_model.rt_info["model_info"]:
+            return {}
+
+        initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["optimization_config"].value)
+        if not initial_ptq_config:
+            return {}
+        argparser = ArgumentParser()
+        if "advanced_parameters" in initial_ptq_config:
+            argparser.add_class_arguments(AdvancedQuantizationParameters, "advanced_parameters")
+        if "preset" in initial_ptq_config:
+            initial_ptq_config["preset"] = QuantizationPreset(initial_ptq_config["preset"])
+            argparser.add_argument("--preset", type=QuantizationPreset)
+        if "model_type" in initial_ptq_config:
+            initial_ptq_config["model_type"] = ModelType(initial_ptq_config["model_type"])
+            argparser.add_argument("--model_type", type=ModelType)
+        if "ignored_scope" in initial_ptq_config:
+            argparser.add_class_arguments(IgnoredScope, "ignored_scope", as_positional=True)
+
+        initial_ptq_config = argparser.parse_object(initial_ptq_config)
+
+        return argparser.instantiate_classes(initial_ptq_config).as_dict()
