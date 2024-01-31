@@ -374,11 +374,13 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. To export a model, run
+            To export a model, run
                 ```python
                 otx export
                     --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                    --checkpoint <CKPT_PATH, str>
+                    --export_precision <FP32 or FP16, OTXExportPrecisionType>
+                    --export_format <FORMAT, OTXExportFormatType>
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -406,7 +408,10 @@ class Engine:
         raise RuntimeError(msg)
 
     def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None) -> Path:
-        """Applies PTQ to the underlying models (now works only for OV models).
+        """Applies NNCF.PTQ to the underlying models (now works only for OV models).
+
+        PTQ performs int-8 quantization on the input model, so the resulting model
+        comes in mixed precision (some operations, however, remain in FP32).
 
         Args:
             datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
@@ -419,6 +424,13 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
+        CLI Usage:
+            To optimize a model, run
+                ```python
+                otx optimize
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --model.model_name=<PATH_TO_IR_XML, str>
+                ```
         """
         return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
 

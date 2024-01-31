@@ -182,7 +182,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         return src2dst
 
     def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
-        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
+        """Runs quantization of the model with NNCF.PTQ on the passed data. Works only for OpenVINO models.
+
+        PTQ performs int-8 quantization on the input model, so the resulting model
+        comes in mixed precision (some operations, however, remain in FP32).
 
         Args:
             output_dir (Path): working directory to save the optimized model.
