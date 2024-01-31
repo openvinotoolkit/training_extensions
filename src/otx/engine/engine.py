@@ -139,9 +139,6 @@ class Engine:
         )
 
     _EXPORTED_MODEL_BASE_NAME = "exported_model"
-
-    _EXPORTED_MODEL_BASE_NAME = "exported_model"
-
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
     # ------------------------------------------------------------------------ #

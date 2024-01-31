@@ -9,8 +9,6 @@ from typing import Any, Literal
 
 from torch.onnx import OperatorExportTypes
 
-from torch.onnx import OperatorExportTypes
-
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.segmentation import MMSegCompatibleModel

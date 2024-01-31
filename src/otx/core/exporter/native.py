@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import onnx
 import openvino
@@ -25,23 +25,16 @@ class OTXNativeModelExporter(OTXModelExporter):
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        resize_mode: str = "standard",
+        resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
+        metadata: dict[tuple[str, str], str] | None = None,
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
-        metadata: dict[tuple[str, str], str] | None = None,
     ) -> None:
-        super().__init__()
-        self.input_size = input_size
-        self.mean = mean
-        self.std = std
-        self.resize_mode = resize_mode
-        self.pad_value = pad_value
-        self.swap_rgb = swap_rgb
+        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata)
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
-        self.metadata = metadata
 
     def _extend_model_metadata(self, metadata: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
         """Extends metadata coming from model with preprocessing-specific parameters.
