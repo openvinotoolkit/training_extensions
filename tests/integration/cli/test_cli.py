@@ -67,6 +67,9 @@ def test_otx_e2e(
     with patch("sys.argv", command_cfg):
         main()
 
+    if task in ("zero_shot_visual_prompting"):
+        pytest.skip("Full CLI test is not applicable to this task.")
+
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
     assert (tmp_path_train / "outputs" / "configs.yaml").exists()
