@@ -161,6 +161,9 @@ class TestZeroShotSegmentAnything:
         for param in zero_shot_segment_anything.mask_decoder.parameters():
             assert not param.requires_grad
 
+        assert zero_shot_segment_anything.reference_info["reference_feats"] is None
+        assert zero_shot_segment_anything.reference_info["used_indices"] is None
+
     @pytest.mark.parametrize(
         "kwargs",
         [
@@ -197,6 +200,20 @@ class TestZeroShotSegmentAnything:
                 continue
             assert getattr(zero_shot_segment_anything, key) == value
 
+    def test_initialize_reference_info_expand_reference_info(self, build_zero_shot_segment_anything) -> None:
+        """Test initialize_reference_info and expand_reference_info."""
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+
+        zero_shot_segment_anything.initialize_reference_info(largest_label=0)
+
+        assert isinstance(zero_shot_segment_anything.reference_info["reference_feats"], Tensor)
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
+        assert isinstance(zero_shot_segment_anything.reference_info["used_indices"], set)
+
+        zero_shot_segment_anything.expand_reference_info(new_largest_label=3)
+
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((4, 1, 256))
+
     def test_learn(self, mocker, build_zero_shot_segment_anything) -> None:
         """Test learn."""
         mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
@@ -217,12 +234,42 @@ class TestZeroShotSegmentAnything:
         ]
         ori_shapes = [torch.tensor((1024, 1024))]
 
-        zero_shot_segment_anything.learn(images=images, processed_prompts=processed_prompts, ori_shapes=ori_shapes)
+        _, ref_masks = zero_shot_segment_anything.learn(
+            images=images,
+            processed_prompts=processed_prompts,
+            ori_shapes=ori_shapes,
+            return_outputs=True,
+        )
 
-        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 1, 256))
-        assert len(zero_shot_segment_anything.reference_info["reference_masks"]) == 1
-        assert zero_shot_segment_anything.reference_info["reference_masks"][0].shape == torch.Size((1, 1024, 1024))
-        assert zero_shot_segment_anything.reference_info["used_indices"][0][0] == 0
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
+        assert ref_masks[0].shape == torch.Size((1, *ori_shapes[0]))
+        assert 0 in zero_shot_segment_anything.reference_info["used_indices"]
+
+        new_processed_prompts = [
+            {
+                torch.tensor(1): [
+                    tv_tensors.BoundingBoxes(
+                        torch.tensor([[0, 0, 10, 10]]),
+                        format="xyxy",
+                        canvas_size=(1024, 1024),
+                        dtype=torch.float32,
+                    ),
+                    Points(torch.tensor([[5, 5]]), canvas_size=(1024, 1024), dtype=torch.float32),
+                ],
+            },
+        ]
+
+        _, ref_masks = zero_shot_segment_anything.learn(
+            images=images,
+            processed_prompts=new_processed_prompts,
+            ori_shapes=ori_shapes,
+            return_outputs=True,
+        )
+
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
+        assert ref_masks[0].shape == torch.Size((2, *ori_shapes[0]))
+        assert 0 in zero_shot_segment_anything.reference_info["used_indices"]
+        assert 1 in zero_shot_segment_anything.reference_info["used_indices"]
 
     def test_infer(self, mocker, build_zero_shot_segment_anything) -> None:
         """Test infer."""
@@ -258,8 +305,106 @@ class TestZeroShotSegmentAnything:
                 for pm, up in zip(predicted_mask, used_points[label]):
                     assert pm[int(up[1]), int(up[0])] == up[2]
 
-    def test_inspect_overlapping_areas(self) -> None:
-        """Test __inspect_overlapping_areas."""
+    def test_inspect_overlapping_areas(self, mocker, build_zero_shot_segment_anything) -> None:
+        """Test _inspect_overlapping_areas."""
+        mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        predicted_masks = {
+            0: [
+                torch.tensor(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                    ],
+                ),
+            ],
+            1: [
+                torch.tensor(
+                    [
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 1, 1],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+            ],
+        }
+        used_points = {
+            0: [
+                torch.tensor([0, 0, 0.5]),  # to be removed
+                torch.tensor([2, 2, 0.5]),
+                torch.tensor([1, 4, 0.5]),
+            ],
+            1: [
+                torch.tensor([3, 0, 0.5]),
+                torch.tensor([4, 4, 0.5]),
+                torch.tensor([1, 4, 0.3]),  # to be removed
+                torch.tensor([0, 0, 0.7]),
+            ],
+        }
+
+        zero_shot_segment_anything._inspect_overlapping_areas(predicted_masks, used_points, threshold_iou=0.5)
+
+        assert len(predicted_masks[0]) == 2
+        assert len(predicted_masks[1]) == 3
+        assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
+        assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
 
 
 class TestOTXZeroShotSegmentAnything:

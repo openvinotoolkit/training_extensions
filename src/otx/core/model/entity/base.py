@@ -1,7 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for detection model entity used in OTX."""
+"""Class definition for base model entity used in OTX."""
 
 from __future__ import annotations
 
@@ -20,7 +20,9 @@ from otx.core.data.entity.base import (
     T_OTXBatchPredEntity,
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
-from otx.core.types.export import OTXExportFormat
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 
 if TYPE_CHECKING:
@@ -79,7 +81,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         """Create a PyTorch model for this class."""
 
     def _customize_inputs(self, inputs: T_OTXBatchDataEntity) -> dict[str, Any]:
-        """Customize OTX input batch data entity if needed for you model."""
+        """Customize OTX input batch data entity if needed for your model."""
         raise NotImplementedError
 
     def _customize_outputs(
@@ -87,7 +89,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for you model."""
+        """Customize OTX output batch data entity if needed for model."""
         raise NotImplementedError
 
     def forward(
@@ -95,7 +97,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
-        # If customize_inputs is overrided
+        # If customize_inputs is overridden
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
@@ -170,43 +172,59 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
                 src2dst.append(-1)
         return src2dst
 
-    def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
+    def export(
+        self,
+        output_dir: Path,
+        base_name: str,
+        export_format: OTXExportFormatType,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
         """Export this model to the specified output directory.
 
         Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
+            output_dir (Path): directory for saving the exported model
+            base_name: (str): base name for the exported model file. Extension is defined by the target export format
+            export_format (OTXExportFormatType): format of the output model
+            precision (OTXExportPrecisionType): precision of the output model
+        Returns:
+            Path: path to the exported model.
         """
-        if export_format == OTXExportFormat.OPENVINO:
-            self._export_to_openvino(output_dir)
-        if export_format == OTXExportFormat.ONNX:
-            self._export_to_onnx()
-        if export_format == OTXExportFormat.EXPORTABLE_CODE:
-            self._export_to_exportable_code()
+        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
 
-    def _export_to_openvino(self, output_dir: Path) -> None:
-        """Export to OpenVINO Intermediate Representation format.
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        msg = (
+            "To export this OTXModel, you should implement an appropriate exporter for it. "
+            "You can try to reuse ones provided in `otx.core.exporter.*`."
+        )
+        raise NotImplementedError(msg)
 
-        Args:
-            output_dir: Directory path to save exported binary files
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation.
+
+        To export OTXModel, you should define an appropriate parameters."
+        "This is used in the constructor of `self._exporter`. "
+        "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
+        "Please refer to `otx.core.exporter.*` for detailed examples."
+
+        Returns:
+            dict[str, Any]: parameters of exporter.
         """
-        raise NotImplementedError
+        parameters = {}
 
-    def _export_to_onnx(self) -> None:
-        """Export to ONNX format.
+        all_labels = ""
+        all_label_ids = ""
+        for lbl in self.label_info.label_names:
+            all_labels += lbl.replace(" ", "_") + " "
+            all_label_ids += lbl.replace(" ", "_") + " "
 
-        Args:
-            output_dir: Directory path to save exported binary files
-        """
-        raise NotImplementedError
+        parameters["metadata"] = {
+            ("model_info", "labels"): all_labels.strip(),
+            ("model_info", "label_ids"): all_label_ids.strip(),
+        }
 
-    def _export_to_exportable_code(self) -> None:
-        """Export to exportable code format.
-
-        Args:
-            output_dir: Directory path to save exported binary files
-        """
-        raise NotImplementedError
+        return parameters
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
@@ -221,10 +239,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
-    Intermidiate Representation (IR) models. OVModel can create and validate
+    Intermediate Representation (IR) models. OVModel can create and validate
     OpenVINO IR model directly from provided path locally or from
     OpenVINO OMZ repository. (Only PyTorch models are supported).
-    OVModel supports synchoronous as well as asynchronous inference type.
+    OVModel supports synchronous as well as asynchronous inference type.
 
     Args:
         num_classes: Number of classes this model can predict.
@@ -262,13 +280,20 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             max_num_requests=self.num_requests,
             plugin_config=plugin_config,
         )
-
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
         # restore original numpy image
-        images = [np.transpose(im.numpy(), (1, 2, 0)) for im in entity.images]
+        images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
         return {"inputs": images}
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for model."""
+        raise NotImplementedError
 
     def forward(
         self,
