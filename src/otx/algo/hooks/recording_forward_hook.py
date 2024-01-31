@@ -21,7 +21,8 @@ class BaseRecordingForwardHook:
         normalize (bool): Whether to normalize the resulting saliency maps.
     """
 
-    def __init__(self, normalize: bool = True) -> None:
+    def __init__(self, head_forward_fn: Callable, normalize: bool = True) -> None:
+        self._head_forward_fn = head_forward_fn
         self.handle: RemovableHandle | None = None
         self._records: list[torch.Tensor] = []
         self._norm_saliency_maps = normalize
@@ -67,6 +68,13 @@ class BaseRecordingForwardHook:
         for tensor in tensors_np:
             self._records.append(tensor)
 
+    def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
+        with torch.no_grad():
+            logits = self._head_forward_fn(x)
+            if not isinstance(logits, torch.Tensor):
+                logits = torch.tensor(logits)
+        return logits
+
     def _torch_to_numpy_from_list(self, tensor_list: list[torch.Tensor | None]) -> None:
         for i in range(len(tensor_list)):
             tensor = tensor_list[i]
@@ -102,8 +110,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         normalize: bool = True,
         optimize_gap: bool = False,
     ) -> None:
-        super().__init__(normalize)
-        self._head_forward_fn = head_forward_fn
+        super().__init__(head_forward_fn, normalize)
         self._num_classes = num_classes
         self._optimize_gap = optimize_gap
 
@@ -152,13 +159,6 @@ class ReciproCAMHook(BaseRecordingForwardHook):
 
         return saliency_maps.reshape((batch_size, self._num_classes, h, w))
 
-    def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
-        with torch.no_grad():
-            logits = self._head_forward_fn(x)
-            if not isinstance(logits, torch.Tensor):
-                logits = torch.tensor(logits)
-        return logits
-
     def _get_mosaic_feature_map(self, feature_map: torch.Tensor, c: int, h: int, w: int) -> torch.Tensor:
         if self._optimize_gap:
             # if isinstance(model_neck, GlobalAveragePooling):
@@ -179,6 +179,108 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         return mosaic_feature_map
 
 
+class ViTReciproCAMHook(BaseRecordingForwardHook):
+    """Implementation of ViTRecipro-CAM for class-wise saliency map for transformer-based classifiers.
+
+    Args:
+        head_forward_fn (callable): Forward pass function for the top of the model.
+        num_classes (int): Number of classes.
+        use_gaussian (bool): Defines kernel type for mosaic feature map generation.
+        If True, use gaussian 3x3 kernel. If False, use 1x1 kernel.
+        cls_token (bool): If True, includes classification token into the mosaic feature map.
+        normalize (bool): If True, Normalizes saliency maps.
+    """
+
+    def __init__(
+        self,
+        head_forward_fn: Callable,
+        num_classes: int,
+        use_gaussian: bool = True,
+        cls_token: bool = True,
+        normalize: bool = True,
+    ) -> None:
+        super().__init__(head_forward_fn, normalize)
+        self._num_classes = num_classes
+        self._use_gaussian = use_gaussian
+        self._cls_token = cls_token
+
+    @classmethod
+    def create_and_register_hook(
+        cls,
+        target_layernorm: torch.nn.Module,
+        head_forward_fn: Callable,
+        num_classes: int,
+    ) -> BaseRecordingForwardHook:
+        """Create this object and register it to the module forward hook."""
+        hook = cls(
+            head_forward_fn,
+            num_classes=num_classes,
+        )
+        hook.handle = target_layernorm.register_forward_hook(hook.recording_forward)
+        return hook
+
+    def func(self, feature_map: torch.Tensor, _: int = -1) -> torch.Tensor:
+        """Generate the class-wise saliency maps using ViTRecipro-CAM and then normalizing to (0, 255).
+
+        Args:
+            feature_map (torch.Tensor): feature maps from target layernorm layer.
+
+        Returns:
+            torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+        """
+        batch_size, token_number, _ = feature_map.size()
+        h = w = int((token_number - 1) ** 0.5)
+        saliency_maps = torch.empty(batch_size, self._num_classes, h, w)
+        for i in range(batch_size):
+            mosaic_feature_map = self._get_mosaic_feature_map(feature_map[i])
+            mosaic_prediction = self._predict_from_feature_map(mosaic_feature_map)
+            saliency_maps[i] = mosaic_prediction.transpose(1, 0).reshape((self._num_classes, h, w))
+
+        if self._norm_saliency_maps:
+            saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
+            saliency_maps = self._normalize_map(saliency_maps)
+        return saliency_maps.reshape((batch_size, self._num_classes, h, w))
+
+    def _get_mosaic_feature_map(self, feature_map: torch.Tensor) -> torch.Tensor:
+        token_number, dim = feature_map.size()
+        mosaic_feature_map = torch.zeros(token_number - 1, token_number, dim).to(feature_map.device)
+        h = w = int((token_number - 1) ** 0.5)
+
+        if self._use_gaussian:
+            if self._cls_token:
+                mosaic_feature_map[:, 0, :] = feature_map[0, :]
+            feature_map_spacial = feature_map[1:, :].reshape(1, h, w, dim)
+            feature_map_spacial_repeated = feature_map_spacial.repeat(h * w, 1, 1, 1)  # 196, 14, 14, 192
+
+            spacial_order = torch.arange(h * w).reshape(h, w)
+            gaussian = torch.tensor(
+                [[1 / 16.0, 1 / 8.0, 1 / 16.0], [1 / 8.0, 1 / 4.0, 1 / 8.0], [1 / 16.0, 1 / 8.0, 1 / 16.0]],
+            ).to(feature_map.device)
+            mosaic_feature_map_mask_padded = torch.zeros(h * w, h + 2, w + 2).to(feature_map.device)
+            for i in range(h):
+                for j in range(w):
+                    k = spacial_order[i, j]
+                    i_pad = i + 1
+                    j_pad = j + 1
+                    mosaic_feature_map_mask_padded[k, i_pad - 1 : i_pad + 2, j_pad - 1 : j_pad + 2] = gaussian
+            mosaic_feature_map_mask = mosaic_feature_map_mask_padded[:, 1:-1, 1:-1]
+            mosaic_feature_map_mask = torch.tensor(mosaic_feature_map_mask.unsqueeze(3).repeat(1, 1, 1, dim))
+
+            mosaic_fm_wo_cls_token = feature_map_spacial_repeated * mosaic_feature_map_mask
+            mosaic_feature_map[:, 1:, :] = mosaic_fm_wo_cls_token.reshape(h * w, h * w, dim)
+        else:
+            feature_map_repeated = feature_map.unsqueeze(0).repeat(h * w, 1, 1)
+            mosaic_feature_map_mask = torch.zeros(h * w, token_number).to(feature_map.device)
+            for i in range(h * w):
+                mosaic_feature_map_mask[i, i + 1] = torch.ones(1).to(feature_map.device)
+            if self._cls_token:
+                mosaic_feature_map_mask[:, 0] = torch.ones(1).to(feature_map.device)
+            mosaic_feature_map_mask = torch.tensor(mosaic_feature_map_mask.unsqueeze(2).repeat(1, 1, dim))
+            mosaic_feature_map = feature_map_repeated * mosaic_feature_map_mask
+
+        return mosaic_feature_map
+
+
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
@@ -190,8 +292,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         normalize: bool = True,
         use_cls_softmax: bool = True,
     ) -> None:
-        super().__init__(normalize)
-        self._cls_head_forward_fn = cls_head_forward_fn
+        super().__init__(cls_head_forward_fn, normalize)
         # SSD-like heads also have background class
         self._num_classes = num_classes
         self._num_anchors = num_anchors
@@ -229,7 +330,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        cls_scores = self._cls_head_forward_fn(feature_map)
+        cls_scores = self._head_forward_fn(feature_map)
 
         middle_idx = len(cls_scores) // 2
         # resize to the middle feature map
