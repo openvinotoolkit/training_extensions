@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
 from otx.core.data.entity.instance_segmentation import (
@@ -18,6 +17,7 @@ from otx.core.data.entity.instance_segmentation import (
 )
 from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
+from otx.core.utils.evaluation import OTXInstSegMeanAveragePrecision
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
@@ -41,8 +41,9 @@ class OTXInstanceSegLitModule(OTXLitModule):
             scheduler=scheduler,
         )
 
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")
+        self.val_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
+        self.test_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
+        self.gt_caches = {}
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -62,7 +63,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         self._log_metrics(self.test_metric, "test")
         self.test_metric.reset()
 
-    def _log_metrics(self, meter: MeanAveragePrecision, subset_name: str) -> None:
+    def _log_metrics(self, meter: OTXInstSegMeanAveragePrecision, subset_name: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -102,11 +103,12 @@ class OTXInstanceSegLitModule(OTXLitModule):
             raise TypeError(preds)
 
         self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            **self._convert_pred_entity_to_compute_metric(batch_idx, preds, inputs),
         )
 
     def _convert_pred_entity_to_compute_metric(
         self,
+        index: int,
         preds: InstanceSegBatchPredEntity,
         inputs: InstanceSegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
@@ -129,6 +131,9 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 },
             )
 
+        if index in self.gt_caches:
+            return {"preds": pred_info, "target": self.gt_caches[index]}
+
         for imgs_info, bboxes, masks, polygons, labels in zip(
             inputs.imgs_info,
             inputs.bboxes,
@@ -144,7 +149,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
                     "labels": labels,
                 },
             )
-
+        self.gt_caches[index] = target_info
         return {"preds": pred_info, "target": target_info}
 
     def test_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:
@@ -163,7 +168,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             raise TypeError(preds)
 
         self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            **self._convert_pred_entity_to_compute_metric(batch_idx, preds, inputs),
         )
 
     @property
