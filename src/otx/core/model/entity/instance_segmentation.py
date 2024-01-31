@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -22,6 +23,7 @@ from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import InstanceSegTileMerge
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -100,6 +102,16 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         self.config = config
         self.load_from = self.config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["model_builder"] = self._create_model
+        export_params["model_cfg"] = copy(self.config)
+
+        return export_params
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

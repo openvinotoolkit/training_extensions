@@ -5,13 +5,11 @@
 
 from __future__ import annotations
 
-from copy import copy
 from typing import Any, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.detection import MMDetCompatibleModel
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 
 class YoloX(MMDetCompatibleModel):
@@ -25,9 +23,7 @@ class YoloX(MMDetCompatibleModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
+        export_params = super()._export_parameters
         export_params["resize_mode"] = "fit_to_window"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = False
@@ -50,9 +46,7 @@ class YoloXTiny(YoloX):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
+        export_params = super()._export_parameters
         export_params["resize_mode"] = "fit_to_window"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = False

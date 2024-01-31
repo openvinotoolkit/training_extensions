@@ -129,9 +129,7 @@ class SSD(MMDetCompatibleModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
+        export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.ssd_mobilenetv2"
         export_params["input_size"] = (1, 3, 864, 864)
         export_params["resize_mode"] = "standard"

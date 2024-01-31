@@ -61,9 +61,10 @@ class MMdeployExporter(OTXModelExporter):
         resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
+        metadata: dict[tuple[str, str], str] | None = None,
         max_num_detections: int = 0,
     ) -> None:
-        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb)
+        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata)
         self._model_builder = model_builder
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
         self._model_cfg = MMConfig({"model": model_cfg, "test_pipeline": list(map(to_tuple, test_pipeline))})
@@ -86,7 +87,6 @@ class MMdeployExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -105,9 +105,8 @@ class MMdeployExporter(OTXModelExporter):
             str(onnx_path),
             input=(openvino.runtime.PartialShape(self.input_size),),
         )
+        exported_model = self._postprocess_openvino_model(exported_model)
 
-        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
-        exported_model = self._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
         onnx_path.unlink()
@@ -121,7 +120,7 @@ class MMdeployExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        metadata: dict[tuple[str, str], str] | None = None,
+        embed_metadata: bool = True,
     ) -> Path:
         """Export to ONNX format.
 
@@ -139,12 +138,8 @@ class MMdeployExporter(OTXModelExporter):
         save_path = self._cvt2onnx(model, output_dir, base_model_name, deploy_cfg)
 
         onnx_model = onnx.load(str(save_path))
-        metadata = {} if metadata is None else self._extend_model_metadata(metadata)
-        onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
-        if precision == OTXPrecisionType.FP16:
-            from onnxconverter_common import float16
+        onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
 
-            onnx_model = float16.convert_float_to_float16(onnx_model)
         onnx.save(onnx_model, str(save_path))
         log.info("Coverting to ONNX is done.")
 

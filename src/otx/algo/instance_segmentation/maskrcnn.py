@@ -25,9 +25,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
     @property
     def export_params(self) -> dict[str, Any]:
         """Parameters for an exporter."""
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
+        export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn"
         export_params["input_size"] = (1, 3, 1024, 1024)
         export_params["resize_mode"] = "fit_to_window"
@@ -50,9 +48,7 @@ class MaskRCNNSwinT(MaskRCNN):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
+        export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.config.mmdeploy.instance_segmentation.maskrcnn_swint"
         export_params["input_size"] = (1, 3, 1344, 1344)
         export_params["resize_mode"] = "fit_to_window"
