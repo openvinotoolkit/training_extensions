@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import fnmatch
+import textwrap
 from pathlib import Path
 
 from otx.core.utils.imports import get_otx_root_path
@@ -61,11 +62,14 @@ def list_models(task: str | None = None, pattern: str | None = None, print_table
         table.add_column("Model Name")
         table.add_column("Recipe Path")
         for recipe in recipe_list:
+            recipe_path = (
+                textwrap.fill(recipe, width=int(console.width / 2)) if len(recipe) > console.width / 2 else recipe
+            )
             table.add_row(
                 recipe.split("/")[-2].upper(),
                 Path(recipe).stem,
-                recipe,
+                recipe_path,
             )
-        console.print(table)
+        console.print(table, width=console.width, justify="center")
 
     return list({Path(recipe).stem for recipe in recipe_list})
