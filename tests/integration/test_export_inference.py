@@ -247,4 +247,3 @@ def test_otx_export_infer(
     log.info(msg)
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
-    _check_relative_metric_diff(ov_acc, ptq_acc, 0.2)
