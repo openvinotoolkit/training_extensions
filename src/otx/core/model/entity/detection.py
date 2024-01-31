@@ -59,7 +59,68 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         )
 
 
-class MMDetCompatibleModel(OTXDetectionModel):
+class ExplainableOTXDetModel(OTXDetectionModel):
+    """OTX detection model which can attach a XAI hook."""
+
+    def register_explain_hook(self) -> None:
+        """Register explain hook at the model backbone output."""
+        from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
+        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+
+        # SSD-like heads also have background class
+        background_class = isinstance(self.model.bbox_head, CustomSSDHead)
+        self.explain_hook = DetClassProbabilityMapHook.create_and_register_hook(
+            self.backbone,
+            self.cls_head_forward_fn,
+            num_classes=self.num_classes + background_class,
+            num_anchors=self.get_num_anchors(),
+        )
+
+    @property
+    def backbone(self) -> nn.Module:
+        """Returns model's backbone. Can be redefined at the model's level."""
+        if backbone := getattr(self.model, "backbone", None):
+            return backbone
+        raise ValueError
+
+    @torch.no_grad()
+    def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
+        """Performs model's neck and head forward and returns cls scores.
+
+        This can be redefined at the model's level.
+        """
+        if (head := getattr(self.model, "bbox_head", None)) is None:
+            raise ValueError
+
+        if (neck := getattr(self.model, "neck", None)) is not None:
+            x = neck(x)
+
+        head_out = head(x)
+        # Return the first output form detection head: classification scores
+        return head_out[0]
+
+    def get_num_anchors(self) -> list[int]:
+        """Gets the anchor configuration from model."""
+        if anchor_generator := getattr(self.model.bbox_head, "prior_generator", None):
+            return (
+                anchor_generator.num_base_anchors
+                if hasattr(anchor_generator, "num_base_anchors")
+                else anchor_generator.num_base_priors
+            )
+
+        return [1] * 10
+
+    def remove_explain_hook_handle(self) -> None:
+        """Removes explain hook from the model."""
+        if self.explain_hook.handle is not None:
+            self.explain_hook.handle.remove()
+
+    def reset_explain_hook(self) -> None:
+        """Clear all history of explain records."""
+        self.explain_hook.reset()
+
+
+class MMDetCompatibleModel(ExplainableOTXDetModel):
     """Detection model compatible for MMDet.
 
     It can consume MMDet model configuration translated into OTX configuration
@@ -111,6 +172,7 @@ class MMDetCompatibleModel(OTXDetectionModel):
                     "ori_shape": img_info.ori_shape,
                     "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
+                    "ignored_labels": img_info.ignored_labels,
                 },
                 gt_instances=InstanceData(
                     bboxes=bboxes,

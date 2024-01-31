@@ -30,7 +30,7 @@ decode_head:
     checkpoint: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth
     type: Pretrained
     prefix: decode_head
-  type: FCNHead
+  type: CustomFCNHead
   in_channels:
     - 384
     - 384
@@ -53,7 +53,7 @@ decode_head:
     requires_grad: true
   align_corners: false
   loss_decode:
-    type: CrossEntropyLoss
+    type: CrossEntropyLossWithIgnore
     use_sigmoid: false
     loss_weight: 1.0
 pretrained: null

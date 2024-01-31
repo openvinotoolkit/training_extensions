@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from otx.core.types.image import ImageColorChannel
@@ -70,6 +70,14 @@ class TilerConfig:
 
 
 @dataclass
+class VisualPromptingConfig:
+    """DTO for visual prompting data module configuration."""
+
+    use_bbox: bool = False
+    use_point: bool = False
+
+
+@dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
 
@@ -80,7 +88,8 @@ class DataModuleConfig:
     val_subset: SubsetConfig
     test_subset: SubsetConfig
 
-    tile_config: TilerConfig
+    tile_config: TilerConfig = field(default_factory=lambda: TilerConfig())
+    vpm_config: VisualPromptingConfig = field(default_factory=lambda: VisualPromptingConfig())
 
     mem_cache_size: str = "1GB"
     mem_cache_img_max_size: Optional[tuple[int, int]] = None

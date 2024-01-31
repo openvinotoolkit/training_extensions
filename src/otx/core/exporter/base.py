@@ -8,6 +8,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any
 
+from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
@@ -21,6 +22,35 @@ if TYPE_CHECKING:
 class OTXModelExporter:
     """Base class for the model exporters used in OTX."""
 
+    def export(
+        self,
+        model: torch.nn.Module,
+        output_dir: Path,
+        base_model_name: str = "exported_model",
+        export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
+        """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
+
+        Args:
+            model (torch.nn.Module): pytorch model top export
+            output_dir (Path): path to the directory to store export artifacts
+            base_model_name (str, optional): exported model name
+            format (OTXExportFormatType): final format of the exported model
+            precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
+
+        Returns:
+            Path: path to the exported model
+        """
+        if export_format == OTXExportFormatType.OPENVINO:
+            return self.to_openvino(model, output_dir, base_model_name, precision)
+        if export_format == OTXExportFormatType.ONNX:
+            return self.to_onnx(model, output_dir, base_model_name, precision)
+
+        msg = f"Unsupported export format: {export_format}"
+        raise ValueError(msg)
+
     @abstractmethod
     def to_openvino(
         self,
@@ -28,7 +58,6 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -37,7 +66,6 @@ class OTXModelExporter:
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
 
         Returns:
             Path: path to the exported model.
@@ -50,7 +78,7 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        metadata: dict[tuple[str, str], str] | None = None,
+        embed_metadata: bool = True,
     ) -> Path:
         """Export to ONNX format.
 
@@ -59,7 +87,9 @@ class OTXModelExporter:
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
+            embed_metadata (bool): flag which enables embedding of metadata to the ONNX model.
+            Metadata embedding should be enabled if model is going to be converted to OV IR
+            (otherwise OV fails on the resulting model).
 
         Returns:
             Path: path to the exported model.

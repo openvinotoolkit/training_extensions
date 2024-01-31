@@ -32,7 +32,7 @@ jobs:
       - name: Code quality checks
         run: tox -vv -e pre-commit
   Unit-Test:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: ubuntu-20.04
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:

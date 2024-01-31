@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Hooks for recording/updating model internal activations."""
@@ -177,3 +177,89 @@ class ReciproCAMHook(BaseRecordingForwardHook):
                     mosaic_feature_map_mask[k, :, i, j] = torch.ones(c).to(feature_map.device)
             mosaic_feature_map = feature_map_repeated * mosaic_feature_map_mask
         return mosaic_feature_map
+
+
+class DetClassProbabilityMapHook(BaseRecordingForwardHook):
+    """Saliency map hook for object detection models."""
+
+    def __init__(
+        self,
+        cls_head_forward_fn: Callable,
+        num_classes: int,
+        num_anchors: list[int],
+        normalize: bool = True,
+        use_cls_softmax: bool = True,
+    ) -> None:
+        super().__init__(normalize)
+        self._cls_head_forward_fn = cls_head_forward_fn
+        # SSD-like heads also have background class
+        self._num_classes = num_classes
+        self._num_anchors = num_anchors
+        # Should be switched off for tiling
+        self.use_cls_softmax = use_cls_softmax
+
+    @classmethod
+    def create_and_register_hook(
+        cls,
+        backbone: torch.nn.Module,
+        cls_head_forward_fn: Callable,
+        num_classes: int,
+        num_anchors: list[int],
+    ) -> BaseRecordingForwardHook:
+        """Create this object and register it to the module forward hook."""
+        hook = cls(
+            cls_head_forward_fn,
+            num_classes=num_classes,
+            num_anchors=num_anchors,
+        )
+        hook.handle = backbone.register_forward_hook(hook.recording_forward)
+        return hook
+
+    def func(
+        self,
+        feature_map: torch.Tensor | Sequence[torch.Tensor],
+        _: int = -1,
+    ) -> torch.Tensor:
+        """Generate the saliency map from raw classification head output, then normalizing to (0, 255).
+
+        Args:
+            feature_map (Union[torch.Tensor, List[torch.Tensor]]): Feature maps from backbone/FPN or
+            classification scores from cls_head.
+
+        Returns:
+            torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+        """
+        cls_scores = self._cls_head_forward_fn(feature_map)
+
+        middle_idx = len(cls_scores) // 2
+        # resize to the middle feature map
+        batch_size, _, height, width = cls_scores[middle_idx].size()
+        saliency_maps = torch.empty(batch_size, self._num_classes, height, width)
+        for batch_idx in range(batch_size):
+            cls_scores_anchorless = []
+            for scale_idx, cls_scores_per_scale in enumerate(cls_scores):
+                cls_scores_anchor_grouped = cls_scores_per_scale[batch_idx].reshape(
+                    self._num_anchors[scale_idx],
+                    (self._num_classes),
+                    *cls_scores_per_scale.shape[-2:],
+                )
+                cls_scores_out, _ = cls_scores_anchor_grouped.max(dim=0)
+                cls_scores_anchorless.append(cls_scores_out.unsqueeze(0))
+
+            cls_scores_anchorless_resized = [
+                torch.nn.functional.interpolate(cls_scores_anchorless_per_level, (height, width), mode="bilinear")
+                for cls_scores_anchorless_per_level in cls_scores_anchorless
+            ]
+
+            saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
+
+        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
+        # it would highlight one of the class maps as a background class
+        if self.use_cls_softmax:
+            saliency_maps[0] = torch.stack([torch.softmax(t, dim=1) for t in saliency_maps[0]])
+
+        if self._norm_saliency_maps:
+            saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, -1))
+            saliency_maps = self._normalize_map(saliency_maps)
+
+        return saliency_maps.reshape((batch_size, self._num_classes, height, width))
