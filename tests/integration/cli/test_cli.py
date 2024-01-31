@@ -191,6 +191,9 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+    import cv2
+    import numpy as np
+
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
@@ -213,6 +216,10 @@ def test_otx_explain_e2e(
         str(tmp_path_explain / "outputs"),
         "--engine.device",
         fxt_accelerator,
+        "--seed",
+        f"{0}",
+        "--deterministic",
+        "True",
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -221,6 +228,16 @@ def test_otx_explain_e2e(
 
     assert (tmp_path_explain / "outputs").exists()
     assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
+
+    reference_sal_vals = {
+        "multi_class_cls_efficientnet_v2_light": np.array([122, 106, 37, 13, 2, 18, 22], dtype=np.uint8),
+        "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
+        "h_label_cls_efficientnet_v2_light": np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
+    }
+    test_case_name = task + "_" + model_name
+    if test_case_name in reference_sal_vals:
+        sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
+        assert all(sal_map[:, 0, 0] == reference_sal_vals[test_case_name])
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
