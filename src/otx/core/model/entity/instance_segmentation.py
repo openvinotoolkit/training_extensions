@@ -112,11 +112,6 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
 
         return export_params
 
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        return {}
-
     def _create_model(self) -> nn.Module:
         from .utils.mmdet import create_model
 
