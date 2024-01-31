@@ -64,19 +64,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self.image_size = (1, 3, 544, 544)
         super().__init__(num_classes=num_classes)
 
-    @property
-    def export_params(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        export_params = get_mean_std_from_data_processing(self.config)
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = (1, 3, *self.image_size)
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
-
     def _create_model(self) -> nn.Module:
         from mmengine.registry import MODELS as MMENGINE_MODELS
         from mmseg.models.data_preprocessor import SegDataPreProcessor as _SegDataPreProcessor
@@ -165,20 +152,18 @@ class MMSegCompatibleModel(OTXSegmentationModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
+        return export_params
 
-        return parent_parameters
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
+    def _get_exporter(self, test_pipeline: list[dict] | None) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(**self._export_parameters)
 

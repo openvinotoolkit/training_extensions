@@ -22,7 +22,7 @@ from mmengine.config import Config as MMConfig
 from mmengine.registry.default_scope import DefaultScope
 
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportPrecisionType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
 
 if TYPE_CHECKING:
@@ -85,7 +85,7 @@ class MMdeployExporter(OTXModelExporter):
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
@@ -94,7 +94,7 @@ class MMdeployExporter(OTXModelExporter):
             model (torch.nn.Module): pytorch model top export
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
-            precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str], str] | None, optional): metadata to embed to the exported model.
 
         Returns:
@@ -109,7 +109,7 @@ class MMdeployExporter(OTXModelExporter):
         metadata = {} if metadata is None else self._extend_model_metadata(metadata)
         exported_model = self._embed_openvino_ir_metadata(exported_model, metadata)
         save_path = output_dir / (base_model_name + ".xml")
-        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXExportPrecisionType.FP16))
+        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
         onnx_path.unlink()
         log.info("Coverting to OpenVINO is done.")
 
@@ -120,7 +120,7 @@ class MMdeployExporter(OTXModelExporter):
         model: torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
-        precision: OTXExportPrecisionType = OTXExportPrecisionType.FP32,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
         metadata: dict[tuple[str, str], str] | None = None,
     ) -> Path:
         """Export to ONNX format.
@@ -129,7 +129,7 @@ class MMdeployExporter(OTXModelExporter):
             model (torch.nn.Module): pytorch model top export
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
-            precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
 
         Returns:
@@ -141,7 +141,7 @@ class MMdeployExporter(OTXModelExporter):
         onnx_model = onnx.load(str(save_path))
         metadata = {} if metadata is None else self._extend_model_metadata(metadata)
         onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
-        if precision == OTXExportPrecisionType.FP16:
+        if precision == OTXPrecisionType.FP16:
             from onnxconverter_common import float16
 
             onnx_model = float16.convert_float_to_float16(onnx_model)

@@ -35,25 +35,6 @@ class OTXInstanceSegModel(
 ):
     """Base class for the detection models used in OTX."""
 
-    def _generate_model_metadata(self) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "MaskRCNN"
-        metadata[("model_info", "task_type")] = "instance_segmentation"
-        metadata[("model_info", "confidence_threshold")] = str(0.0)  # it was able to be set in OTX 1.X
-        metadata[("model_info", "iou_threshold")] = str(0.5)
-
-        # Instance segmentation needs to add empty label
-        all_labels = "otx_empty_lbl "
-        all_label_ids = "None "
-        for lbl in self.label_info.label_names:
-            all_labels += lbl.replace(" ", "_") + " "
-            all_label_ids += lbl.replace(" ", "_") + " "
-
-        metadata[("model_info", "labels")] = all_labels.strip()
-        metadata[("model_info", "label_ids")] = all_label_ids.strip()
-
-        return metadata
-
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
 
@@ -86,6 +67,30 @@ class OTXInstanceSegModel(
             polygons=[pred_entity.polygons for pred_entity in pred_entities],
         )
 
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "MaskRCNN",
+                ("model_info", "task_type"): "instance_segmentation",
+                ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
+                ("model_info", "iou_threshold"): str(0.5),
+            },
+        )
+
+        # Instance segmentation needs to add empty label
+        all_labels = "otx_empty_lbl "
+        all_label_ids = "None "
+        for lbl in self.label_info.label_names:
+            all_labels += lbl.replace(" ", "_") + " "
+            all_label_ids += lbl.replace(" ", "_") + " "
+
+        parameters["metadata"][("model_info", "labels")] = all_labels.strip()
+        parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
+        return parameters
+
 
 class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
@@ -97,7 +102,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
         super().__init__(num_classes=num_classes)
 
     @property
-    def export_params(self) -> dict[str, Any]:
+    def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         return {}
 
@@ -231,10 +236,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             labels=labels,
         )
 
-    def _create_exporter(
-        self,
-        test_pipeline: list[dict] | None = None,
-    ) -> OTXModelExporter:
+    def _get_exporter(self, test_pipeline: list[dict] | None = None,) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if test_pipeline is None:
             msg = "test_pipeline is necessary for mmdeploy."
@@ -242,11 +244,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
 
         from otx.core.exporter.mmdeploy import MMdeployExporter
 
-        return MMdeployExporter(**self.export_params, test_pipeline=test_pipeline)
-
-    def need_mmdeploy(self) -> bool:
-        """Whether mmdeploy is used when exporting a model."""
-        return self.export_params.get("mmdeploy_config") is not None
+        return MMdeployExporter(**self._export_parameters, test_pipeline=test_pipeline)
 
 
 class OVInstanceSegmentationModel(

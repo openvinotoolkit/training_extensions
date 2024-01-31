@@ -13,7 +13,6 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
-from otx.core.exporter.base import OTXModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
@@ -25,17 +24,11 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import DetectionResult
     from torch import device, nn
 
+    from otx.core.exporter.base import OTXModelExporter
+
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
     """Base class for the detection models used in OTX."""
-
-    def _generate_model_metadata(self) -> dict[tuple[str, str], Any]:
-        metadata = super()._generate_model_metadata()
-        metadata[("model_info", "model_type")] = "ssd"
-        metadata[("model_info", "task_type")] = "detection"
-        metadata[("model_info", "confidence_threshold")] = str(0.0)  # it was able to be set in OTX 1.X
-        metadata[("model_info", "iou_threshold")] = str(0.5)
-        return metadata
 
     def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -66,6 +59,20 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
             labels=[pred_entity.labels for pred_entity in pred_entities],
         )
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "ssd",
+                ("model_info", "task_type"): "detection",
+                ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
+                ("model_info", "iou_threshold"): str(0.5),
+            },
+        )
+        return parameters
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
@@ -143,10 +150,10 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         self.load_from = config.pop("load_from", None)
         super().__init__(num_classes=num_classes)
 
-    @property
-    def export_params(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        return {}
+    # @property
+    # def _export_parameters(self) -> dict[str, Any]:
+    #     """Parameters for an exporter."""
+    #     return {}
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -255,10 +262,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             labels=labels,
         )
 
-    def _create_exporter(
-        self,
-        test_pipeline: list[dict] | None = None,
-    ) -> OTXModelExporter:
+    def _get_exporter(self, test_pipeline: list[dict] | None = None,) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if test_pipeline is None:
             msg = "test_pipeline is necessary for mmdeploy."
@@ -266,11 +270,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
         from otx.core.exporter.mmdeploy import MMdeployExporter
 
-        return MMdeployExporter(**self.export_params, test_pipeline=test_pipeline)
-
-    def need_mmdeploy(self) -> bool:
-        """Whether mmdeploy is used when exporting a model."""
-        return self.export_params.get("mmdeploy_config") is not None
+        return MMdeployExporter(**self._export_parameters, test_pipeline=test_pipeline)
 
 
 class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
