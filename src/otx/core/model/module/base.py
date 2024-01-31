@@ -18,12 +18,9 @@ from otx.core.data.entity.base import (
     OTXBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel
-from otx.core.types.export import OTXExportFormat
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo
@@ -240,15 +237,6 @@ class OTXLitModule(LightningModule):
     def label_info(self, label_info: LabelInfo | list[str]) -> None:
         """Set the member `OTXModel` label information."""
         self.model.label_info = label_info  # type: ignore[assignment]
-
-    def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
-        """Export the member `OTXModel` of this module to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-        """
-        self.model.export(output_dir, export_format)
 
     def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward pass."""
