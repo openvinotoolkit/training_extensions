@@ -1,14 +1,18 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 
 import importlib
 import inspect
+import logging
+import re
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 from otx.cli import main
+
+log = logging.getLogger(__name__)
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
@@ -18,13 +22,45 @@ RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if 
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
+def _check_relative_metric_diff(ref: float, value: float, eps: float) -> None:
+    assert ref >= 0
+    assert value >= 0
+    assert eps >= 0
+
+    avg = max(0.5 * (ref + value), 1e-9)
+    diff = abs(value - ref)
+
+    assert diff / avg <= eps, f"Relative difference exceeded {eps} threshold. Absolute difference: {diff}"
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_local_seed() -> int:
+    """The number of repetition for each test case.
+
+    The random seed will be set for [0, fxt_num_repeat - 1]. Default is one.
+    """
+    selected_seed = 7
+    msg = f"seed : {selected_seed}"
+    log.info(msg)
+    return selected_seed
+
+
+TASK_NAME_TO_MAIN_METRIC_NAME = {
+    "semantic_segmentation": "test/mIoU",
+    "multi_label_cls": "test/accuracy",
+    "multi_class_cls": "test/accuracy",
+}
+
+
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(
+def test_otx_export_infer(
     recipe: str,
     tmp_path: Path,
-    fxt_accelerator: str,
+    fxt_local_seed: int,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_accelerator: str,
+    capfd: "pytest.CaptureFixture",
 ) -> None:
     """
     Test OTX CLI e2e commands.
@@ -32,7 +68,8 @@ def test_otx_e2e(
     - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
     - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported to ONNX/IR model
+    - 'otx test' with the exported to ONNX/IR model model
+    - compare accuracy of the exported model vs the original accuracy
 
     Args:
         recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
@@ -42,9 +79,13 @@ def test_otx_e2e(
         None
     """
     task = recipe.split("/")[-2]
+
+    if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
+        pytest.skip(f"Inference pipeline for {recipe} is not implemented")
+
+    # litehrnet_* models don't support deterministic mode
     model_name = recipe.split("/")[-1].split(".")[0]
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+    deterministic_flag = "False" if "litehrnet" in recipe else "True"
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -61,20 +102,16 @@ def test_otx_e2e(
         fxt_accelerator,
         "--max_epochs",
         "2",
+        "--seed",
+        f"{fxt_local_seed}",
+        "--deterministic",
+        deterministic_flag,
         *fxt_cli_override_command_per_task[task],
     ]
 
     with patch("sys.argv", command_cfg):
         main()
 
-    if task in ("zero_shot_visual_prompting"):
-        pytest.skip("Full CLI test is not applicable to this task.")
-
-    # Currently, a simple output check
-    assert (tmp_path_train / "outputs").exists()
-    assert (tmp_path_train / "outputs" / "configs.yaml").exists()
-    assert (tmp_path_train / "outputs" / "csv").exists()
-    assert (tmp_path_train / "outputs" / "checkpoints").exists()
     ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
 
@@ -99,24 +136,8 @@ def test_otx_e2e(
     with patch("sys.argv", command_cfg):
         main()
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "csv").exists()
-
     # 3) otx export
-    if any(
-        task_name in recipe
-        for task_name in [
-            "h_label_cls",
-            "detection",
-            "dino_v2",
-            "instance_segmentation",
-            "action",
-            "visual_prompting",
-        ]
-    ):
-        return
-
-    format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml"}
+    format_to_ext = {"OPENVINO": "xml"}  # [TODO](@Vlad): extend to "ONNX": "onnx"
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for fmt in format_to_ext:
@@ -172,98 +193,12 @@ def test_otx_e2e(
 
     assert (tmp_path_test / "outputs").exists()
 
+    out, _ = capfd.readouterr()
+    assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
+    torch_acc, ov_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
+    torch_acc, ov_acc = float(torch_acc), float(ov_acc)
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_explain_e2e(
-    recipe: str,
-    tmp_path: Path,
-    fxt_accelerator: str,
-    fxt_target_dataset_per_task: dict,
-    fxt_cli_override_command_per_task: dict,
-) -> None:
-    """
-    Test OTX CLI explain e2e command.
+    msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
+    log.info(msg)
 
-    Args:
-        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
-        tmp_path (Path): The temporary path for storing the training outputs.
-
-    Returns:
-        None
-    """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
-
-    if ("_cls" not in task) and (task != "detection"):
-        pytest.skip("Supported only for classification and detection task.")
-
-    if "dino" in model_name:
-        pytest.skip("Dino is not supported.")
-
-    # otx explain
-    tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
-    command_cfg = [
-        "otx",
-        "explain",
-        "--config",
-        recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
-        str(tmp_path_explain / "outputs"),
-        "--engine.device",
-        fxt_accelerator,
-        *fxt_cli_override_command_per_task[task],
-    ]
-
-    with patch("sys.argv", command_cfg):
-        main()
-
-    assert (tmp_path_explain / "outputs").exists()
-    assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
-
-
-@pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
-def test_otx_ov_test(recipe: str, tmp_path: Path, fxt_target_dataset_per_task: dict) -> None:
-    """
-    Test OTX CLI e2e commands.
-
-    - 'otx test' with OV model
-
-    Args:
-        recipe (str): The OV recipe to use for testing. (eg. 'classification/openvino_model.yaml')
-        tmp_path (Path): The temporary path for storing the testing outputs.
-
-    Returns:
-        None
-    """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
-
-    if task in ["multi_label_cls", "instance_segmentation", "h_label_cls"]:
-        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
-        # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
-        pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    # otx test
-    tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
-        "--engine.device",
-        "cpu",
-    ]
-
-    with patch("sys.argv", command_cfg):
-        main()
-
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "csv").exists()
-    metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
-    assert len(metric_result) > 0
+    _check_relative_metric_diff(torch_acc, ov_acc, 0.1)

@@ -140,6 +140,10 @@ class PromptGetter(nn.Module):
         point_coords = torch.where(mask_sim > threshold)
         fg_coords_scores = torch.stack(point_coords[::-1] + (mask_sim[point_coords],), dim=0).T
 
+        # to handle empty tensor
+        len_fg_coords_scores = len(fg_coords_scores)
+        fg_coords_scores = F.pad(fg_coords_scores, (0, 0, 0, max(0, 1 - len_fg_coords_scores)), value=-1)
+
         ratio = self.image_size / ori_shape.max()
         width = (ori_shape[1] * ratio).to(torch.int64)
         n_w = width // self.downsizing
@@ -208,7 +212,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
         self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
 
-        self.initialize_reference_info()
+        self.set_empty_reference_info()
 
     def set_default_config(self, **kwargs) -> dict[str, Any]:
         """Set default config when using independently."""
@@ -224,26 +228,33 @@ class ZeroShotSegmentAnything(SegmentAnything):
         )
         return kwargs
 
-    def initialize_reference_info(self) -> None:
-        """Initialize reference information."""
-        reference_feats: Tensor = None
-        reference_masks: list[Tensor] | None = None
-        used_indices: defaultdict[int, list[int]] | None = None
+    def set_empty_reference_info(self) -> None:
+        """Set empty reference information."""
+        reference_feats: Tensor | None = None
+        used_indices: set | None = None
         self.reference_info = nn.ParameterDict(
             {
                 "reference_feats": reference_feats,
-                "reference_masks": reference_masks,
                 "used_indices": used_indices,
             },
         )
+        self.is_reference_info_empty = True
 
-    def check_reference_info_is_empty(self) -> bool:
-        """Check if reference information is empty."""
-        return (
-            self.reference_info["reference_feats"] is None
-            and self.reference_info["reference_masks"] is None
-            and self.reference_info["used_indices"] is None
-        )
+    def initialize_reference_info(self, largest_label: int) -> None:
+        """Initialize reference information."""
+        self.reference_info["reference_feats"] = torch.zeros(largest_label + 1, 1, self.embed_dim)
+        self.reference_info["used_indices"] = set()
+        self.is_reference_info_empty = False
+
+    def expand_reference_info(self, new_largest_label: int) -> None:
+        """Expand reference info dimensions if newly given processed prompts have more lables."""
+        if new_largest_label > (cur_largest_label := len(self.reference_info["reference_feats"]) - 1):
+            diff = new_largest_label - cur_largest_label
+            self.reference_info["reference_feats"] = F.pad(
+                self.reference_info["reference_feats"],
+                (0, 0, 0, 0, 0, diff),
+                value=0.0,
+            )
 
     @torch.no_grad()
     def learn(
@@ -252,8 +263,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]],
         ori_shapes: list[Tensor],
         return_outputs: bool = False,
-        is_init_ref_info: bool = True,
-    ) -> tuple[Tensor, list[Tensor], defaultdict[int, list[int]]] | None:
+    ) -> tuple[nn.ParameterDict, list[Tensor]] | None:
         """Get reference features.
 
         Using given images, get reference features.
@@ -269,27 +279,23 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 If True, `learn` operation will output reference features and masks.
                 If False, `learn` operation will insert reference features and masks to save them with the model.
                 Defaults to False.
-            is_init_ref_info (bool): Whether initialize reference features and masks.
         """
         assert len(images) == 1, "Only single batch is supported."  # noqa: S101
 
         # initialize tensors to contain reference features and prompts
-        if self.check_reference_info_is_empty() or is_init_ref_info:
-            largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
-            self.reference_info["reference_feats"] = torch.zeros(len(images), largest_label + 1, 1, self.embed_dim)
-            self.reference_info["reference_masks"] = [
-                torch.zeros(largest_label + 1, *map(int, ori_shape)) for ori_shape in ori_shapes
-            ]
-            self.reference_info["used_indices"] = defaultdict(list)
+        largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
+        if self.is_reference_info_empty:
+            self.initialize_reference_info(largest_label)
         else:
-            # TODO(sungchul): expand axis if there are new labels # noqa: TD003
-            # TODO(sungchul): consider how to handle multiple reference features, currently replace it # noqa: TD003
-            return None
+            self.expand_reference_info(largest_label)
+            # TODO(sungchul): consider who to handle multiple reference features, currently replace it # noqa: TD003
 
-        for batch, (image, prompts, ori_shape) in enumerate(zip(images, processed_prompts, ori_shapes)):
+        reference_masks: list[Tensor] = []
+        for image, prompts, ori_shape in zip(images, processed_prompts, ori_shapes):
             image_embedding = self.image_encoder(image)
             processed_embedding = image_embedding.squeeze().permute(1, 2, 0)
 
+            ref_masks = torch.zeros(largest_label + 1, *map(int, ori_shape))
             for label, input_prompts in prompts.items():
                 # TODO (sungchul): how to skip background class # noqa: TD003
                 # TODO (sungchul): ensemble multi reference features (current : use merged masks) # noqa: TD003
@@ -340,12 +346,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     )
                     default_threshold_reference -= 0.05
 
-                self.reference_info["reference_feats"][batch][label] = ref_feat.detach().cpu()
-                self.reference_info["reference_masks"][batch][label] = ref_mask.detach().cpu()
-                self.reference_info["used_indices"][batch].append(label)
+                self.reference_info["reference_feats"][label] = ref_feat.detach().cpu()
+                self.reference_info["used_indices"].add(int(label))
+                ref_masks[label] = ref_mask.detach().cpu()
+            reference_masks.append(ref_masks)
 
         if return_outputs:
-            return self.reference_info
+            return self.reference_info, reference_masks
         return None
 
     @torch.no_grad()
@@ -353,7 +360,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self,
         images: list[tv_tensors.Image],
         reference_feats: Tensor,
-        used_indices: dict[int, list[int]],
+        used_indices: set[int],
         ori_shapes: list[Tensor],
     ) -> list[list[defaultdict[int, list[Tensor]]]]:
         """Zero-shot inference with reference features.
@@ -363,7 +370,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Args:
             images (list[tv_tensors.Image]): Given images for target results.
             reference_feats (Tensor): Reference features for target prediction.
-            used_indices (dict[int, list[int]]): To check which indices of reference features are validate.
+            used_indices (set[int]): To check which indices of reference features are validate.
             ori_shapes (list[Tensor]): Original image size.
 
         Returns:
@@ -372,7 +379,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         assert len(images) == 1, "Only single batch is supported."  # noqa: S101
 
         total_results = []
-        for batch, (image, ori_shape) in enumerate(zip(images, ori_shapes)):
+        for image, ori_shape in zip(images, ori_shapes):
             if image.ndim == 3:
                 image = image.unsqueeze(0)  # noqa: PLW2901
 
@@ -380,13 +387,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             total_points_scores, total_bg_coords = self.prompt_getter(
                 image_embedding=image_embedding,
-                reference_feats=reference_feats[batch],
-                used_indices=used_indices[batch],
+                reference_feats=reference_feats,
+                used_indices=used_indices,
                 ori_shape=ori_shape,
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
-            for label in used_indices[batch]:
+            for label in used_indices:
                 points_scores, bg_coords = total_points_scores[label], total_bg_coords[label]
                 for point_score in points_scores:
                     if point_score[-1] == -1:
@@ -419,18 +426,17 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     used_points[label].append(point_score)
 
             # check overlapping area between different label masks
-            self.__inspect_overlapping_areas(predicted_masks, used_points)
+            self._inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
 
-    def __inspect_overlapping_areas(
+    def _inspect_overlapping_areas(
         self,
-        predicted_masks: dict[Tensor, list[Tensor]],
-        used_points: dict[Tensor, list[Tensor]],
+        predicted_masks: dict[int, list[Tensor]],
+        used_points: dict[int, list[Tensor]],
         threshold_iou: float = 0.8,
     ) -> None:
-        def __calculate_mask_iou(mask1: Tensor, mask2: Tensor) -> Tensor:
-            assert mask1.ndim == 2 and mask2.ndim == 2  # noqa: PT018, S101
+        def _calculate_mask_iou(mask1: Tensor, mask2: Tensor) -> Tensor:
             intersection = torch.logical_and(mask1, mask2).sum().item()
             union = torch.logical_or(mask1, mask2).sum().item()
             if union == 0:
@@ -445,17 +451,17 @@ class ZeroShotSegmentAnything(SegmentAnything):
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
                     else:
                         overlapped_label.append(im)
 
-            for im in overlapped_label[::-1]:
+            for im in sorted(list(set(overlapped_label)), reverse=True):  # noqa: C414
                 masks.pop(im)
                 used_points[label].pop(im)
 
-            for jm in overlapped_other_label[::-1]:
+            for jm in sorted(list(set(overlapped_other_label)), reverse=True):  # noqa: C414
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
 
@@ -622,7 +628,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
 
-    def __init__(self, backbone: Literal["tiny_vit"], num_classes: int = 0, **kwargs):
+    def __init__(self, backbone: Literal["tiny_vit", "vit_b"], num_classes: int = 0, **kwargs):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
         super().__init__(num_classes=num_classes)
 
