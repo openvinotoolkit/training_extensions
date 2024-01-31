@@ -21,7 +21,7 @@ class BaseRecordingForwardHook:
         normalize (bool): Whether to normalize the resulting saliency maps.
     """
 
-    def __init__(self, head_forward_fn: Callable, normalize: bool = True) -> None:
+    def __init__(self, head_forward_fn: Callable = lambda x: x, normalize: bool = True) -> None:
         self._head_forward_fn = head_forward_fn
         self.handle: RemovableHandle | None = None
         self._records: list[torch.Tensor] = []
@@ -98,7 +98,7 @@ class BaseRecordingForwardHook:
 
 
 class ActivationMapHook(BaseRecordingForwardHook):
-    """ActivationMapHook."""
+    """ActivationMapHook. Mean of the feature map along the channel dimension."""
 
     @classmethod
     def create_and_register_hook(
