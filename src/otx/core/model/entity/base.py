@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple
+from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple, Optional
+import json
 
 import numpy as np
 import openvino
@@ -200,18 +201,20 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        exporter = self._create_exporter()
-        metadata = self._generate_model_metadata()
+        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
 
-        if export_format == OTXExportFormatType.OPENVINO:
-            return exporter.to_openvino(self.model, output_dir, base_name, precision, metadata)
-        if export_format == OTXExportFormatType.ONNX:
-            return exporter.to_onnx(self.model, output_dir, base_name, precision, metadata)
-        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            return self._export_to_exportable_code()
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        msg = (
+            "To export this OTXModel, you should implement an appropriate exporter for it. "
+            "You can try to reuse ones provided in `otx.core.exporter.*`."
+        )
+        raise NotImplementedError(msg)
 
-        msg = f"Unsupported export format: {export_format}"
-        raise ValueError(msg)
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        return self._generate_model_metadata()
 
     def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
         """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
@@ -237,18 +240,25 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         """Generates model-specific metadata, which will be embedded into exported model.
 
         Returns:
-            dict[tuple[str, str], str]: metadata
+            dict[str, Any]: parameters of exporter.
         """
+        parameters = {}
+
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
             all_labels += lbl.replace(" ", "_") + " "
             all_label_ids += lbl.replace(" ", "_") + " "
 
-        return {
+        # not every model requires ptq_config
+        ptq_config = self.ptq_config if hasattr(self, "ptq_config") else ""
+        parameters["metadata"] = {
             ("model_info", "labels"): all_labels.strip(),
             ("model_info", "label_ids"): all_label_ids.strip(),
+            ("model_info", "ptq_config"): json.dumps(ptq_config),
         }
+
+        return parameters
 
     def _export_to_exportable_code(self) -> Path:
         """Export to exportable code format.
@@ -399,171 +409,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             OptimizeDatasetWrapper(train_dataset, self._OPTIMIZE_DATASET_SIZE_LIMIT),
             transform_fn,
         )
-        ptq_config: dict = {}
-
-        from nncf import IgnoredScope
-        from nncf.common.quantization.structs import QuantizationPreset
-        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
-        from nncf.quantization.range_estimator import (
-            AggregatorType,
-            RangeEstimatorParameters,
-            StatisticsCollectorParameters,
-            StatisticsType,
-        )
-        """class_path: lightning.pytorch.callbacks.EarlyStopping
-            init_args:
-            monitor: null
-            mode: max
-            patience: 100
-            check_on_train_epoch_end: false"""
-
-        advanced_parameters = AdvancedQuantizationParameters(
-            activations_range_estimator_params=RangeEstimatorParameters(
-                min=StatisticsCollectorParameters(
-                    statistics_type=StatisticsType.QUANTILE, aggregator_type=AggregatorType.MIN, quantile_outlier_prob=1e-4
-                ),
-                max=StatisticsCollectorParameters(
-                    statistics_type=StatisticsType.QUANTILE, aggregator_type=AggregatorType.MAX, quantile_outlier_prob=1e-4
-                ),
-            ),
-        )
-
-        init_dict = {"class_path": "nncf.quantization.advanced_parameters.AdvancedQuantizationParameters",
-        "init_args": {
-            "activations_range_estimator_params": {
-                "min": {
-                    "statistics_type": {"class_path": "nncf.quantization.range_estimator.StatisticsType.QUANTILE"},
-                    "aggregator_type": {"class_path": "nncf.quantization.range_estimator.AggregatorType.MIN"},
-                    "quantile_outlier_prob": 1e-4
-                },
-                "max": {
-                    "statistics_type": {"class_path": "nncf.quantization.range_estimator.StatisticsType.QUANTILE"},
-                    "aggregator_type": {"class_path": "nncf.quantization.range_estimator.AggregatorType.MAX"},
-                    "quantile_outlier_prob": 1e-4
-                }
-                        }
-                    }
-                }
-
-        test_string = '''advanced_parameters:
-                            activations_range_estimator_params:
-                                min:
-                                    statistics_type: QUANTILE
-                                    aggregator_type: MIN
-                                    quantile_outlier_prob: 1e-4
-                                max:
-                                    statistics_type: QUANTILE
-                                    aggregator_type: MAX
-                                    quantile_outlier_prob: 1e-4
-                    '''
-        test_dict = {"advanced_parameters": {"activations_range_estimator_params": {"min": {"statistics_type": "QUANTILE", "aggregator_type": "MIN", "quantile_outlier_prob": 1e-4},
-                                                                                    "max": {"statistics_type": "QUANTILE", "aggregator_type": "MAX", "quantile_outlier_prob": 1e-4}}}}
-        argparser = ArgumentParser()
-        argparser.add_class_arguments(AdvancedQuantizationParameters, "advanced_parameters")
-        config_from_string = argparser.parse_object(test_string)
-        config_from_dict = argparser.parse_string(test_dict)
-        ptq_config = argparser.instantiate_classes(cfg=config, instantiate_groups=True)
-
-        breakpoint()
-        # from omegaconf import OmegaConf
-        # init_cfg_2 = OmegaConf.create(init_cfg_2)
-        preset = QuantizationPreset.MIXED
-        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
-        AdvancedQuantizationParameters()
-        ignored_scope = IgnoredScope(
-            patterns=["/backbone/*"],
-            names=[
-                "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage0/stage0.0/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage0/stage0.0/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage0/stage0.0/Add_1",
-                "/backbone/stage0/stage0.1/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage0/stage0.1/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage0/stage0.1/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage0/stage0.1/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage0/stage0.1/Add_1",
-                "/backbone/stage1/stage1.0/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.0/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.0/layers/layers.0/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.0/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.0/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.0/Add_1",
-                "/backbone/stage1/stage1.0/layers/layers.1/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.0/Add_2",
-                "/backbone/stage1/stage1.0/Add_5",
-                "/backbone/stage1/stage1.1/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.1/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.1/layers/layers.0/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.1/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.1/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.1/Add_1",
-                "/backbone/stage1/stage1.1/layers/layers.1/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.1/Add_2",
-                "/backbone/stage1/stage1.1/Add_5",
-                "/backbone/stage1/stage1.2/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.2/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.2/layers/layers.0/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.2/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.2/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.2/Add_1",
-                "/backbone/stage1/stage1.2/layers/layers.1/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.2/Add_2",
-                "/backbone/stage1/stage1.2/Add_5",
-                "/backbone/stage1/stage1.3/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.3/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.3/layers/layers.0/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage1/stage1.3/Add_1",
-                "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_2",
-                "/backbone/stage1/stage1.3/Add_2",
-                "/backbone/stage1/stage1.3/Add_5",
-                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul_2",
-                "/backbone/stage2/stage2.0/layers/layers.0/cross_resolution_weighting/Mul_3",
-                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage2/stage2.0/Add_1",
-                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul_2",
-                "/backbone/stage2/stage2.0/Add_2",
-                "/backbone/stage2/stage2.0/layers/layers.1/cross_resolution_weighting/Mul_3",
-                "/backbone/stage2/stage2.0/Add_3",
-                "/backbone/stage2/stage2.0/Add_6",
-                "/backbone/stage2/stage2.0/Add_7",
-                "/backbone/stage2/stage2.0/Add_11",
-                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul",
-                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul_1",
-                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul_2",
-                "/backbone/stage2/stage2.1/layers/layers.0/cross_resolution_weighting/Mul_3",
-                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul",
-                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul_1",
-                "/backbone/stage2/stage2.1/Add_1",
-                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul_2",
-                "/backbone/stage2/stage2.1/Add_2",
-                "/backbone/stage2/stage2.1/layers/layers.1/cross_resolution_weighting/Mul_3",
-                "/backbone/stage2/stage2.1/Add_3",
-                "/backbone/stage2/stage2.1/Add_6",
-                "/backbone/stage2/stage2.1/Add_7",
-                "/backbone/stage2/stage2.1/Add_11",
-                "/aggregator/Add",
-                "/aggregator/Add_1",
-                "/aggregator/Add_2",
-                "/backbone/stage2/stage2.1/Add",
-            ],
-        )
-
-        ptq_string = ""
-        argparser = ArgumentParser()
-        argparser.add_class_arguments(AdvancedQuantizationParameters, "advanced_parameters")
-
-        breakpoint()
-        config = argparser.parse_string(init_cfg_2)
-        config = argparser.parse_object(init_cfg_2)
-        ptq_config = argparser.instantiate_classes(cfg=config, instantiate_groups=True)
-        breakpoint()
-
+        ptq_config = self._generate_ptq_config(ov_model)
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
             quantization_dataset,
@@ -573,3 +419,25 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         openvino.save_model(compressed_model, output_model_path)
 
         return output_model_path
+
+    def _generate_ptq_config(self, ov_model: Model) -> dict:
+        from nncf import IgnoredScope
+        from nncf.common.quantization.structs import QuantizationPreset
+        from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
+
+        initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["ptq_config"].value)
+        breakpoint()
+        if not initial_ptq_config:
+            return {}
+        argparser = ArgumentParser()
+        if "advanced_parameters" in initial_ptq_config:
+            argparser.add_class_arguments(AdvancedQuantizationParameters, "advanced_parameters")
+        if "preset" in initial_ptq_config:
+            initial_ptq_config["preset"] = QuantizationPreset(initial_ptq_config["preset"])
+            argparser.add_argument("--preset", type=QuantizationPreset)
+        if "ignored_scope" in initial_ptq_config:
+            argparser.add_class_arguments(IgnoredScope, "ignored_scope", as_positional=True)
+
+        initial_ptq_config = argparser.parse_object(initial_ptq_config)
+
+        return argparser.instantiate_classes(initial_ptq_config).as_dict()
