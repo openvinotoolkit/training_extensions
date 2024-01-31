@@ -17,6 +17,7 @@ from rich.console import Console
 from otx import OTX_LOGO, __version__
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
+from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
@@ -242,7 +243,6 @@ class OTXCLI:
             task = sys.argv[sys.argv.index("--task") + 1]
         enable_auto_config = data_root is not None and "--config" not in sys.argv
         if enable_auto_config:
-            from otx.core.types.task import OTXTaskType
             from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
             auto_configurator = AutoConfigurator(data_root=data_root, task=OTXTaskType(task))
@@ -254,6 +254,23 @@ class OTXCLI:
         from otx.cli.install import add_install_parser
 
         add_install_parser(parser_subcommands)
+
+        if _ENGINE_AVAILABLE:
+            # `otx find` arguments
+            find_parser = ArgumentParser(formatter_class=CustomHelpFormatter)
+            find_parser.add_argument(
+                "--task",
+                help="Value for filtering by task. Default is None, which shows all recipes.",
+                type=Optional[OTXTaskType],
+            )
+            find_parser.add_argument(
+                "--pattern",
+                help="This allows you to filter the model name of the recipe. \
+                      For example, if you want to find all models that contain the word 'efficient', \
+                      you can use '--pattern efficient'",
+                type=Optional[str],
+            )
+            parser_subcommands.add_subcommand("find", find_parser, help="This shows the model provided by OTX.")
 
     def instantiate_classes(self) -> None:
         """Instantiate the necessary classes based on the subcommand.
@@ -361,6 +378,10 @@ class OTXCLI:
             from otx.cli.install import otx_install
 
             otx_install(**self.config["install"])
+        elif self.subcommand == "find":
+            from otx.engine.utils.api import list_models
+
+            list_models(print_table=True, **self.config[self.subcommand])
         elif self.subcommand in self.engine_subcommands():
             self.set_seed()
             self.instantiate_classes()
