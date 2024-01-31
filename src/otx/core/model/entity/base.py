@@ -194,7 +194,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         msg = "Optimization is not implemented for torch models"
         raise NotImplementedError(msg)
 
-
     def export(
         self,
         output_dir: Path,
@@ -225,19 +224,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation.
-        """
-        raise NotImplementedError
 
-    def _create_exporter(
-        self,
-    ) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        raise NotImplementedError
-
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], str]:
-        """Generates model-specific metadata, which will be embedded into exported model.
         To export OTXModel, you should define an appropriate parameters."
         "This is used in the constructor of `self._exporter`. "
         "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
