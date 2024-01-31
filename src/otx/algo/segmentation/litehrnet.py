@@ -202,8 +202,6 @@ class LiteHRNet(MMSegCompatibleModel):
                 "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_2",
                 "/backbone/stage1/stage1.3/Add_2",
                 "/backbone/stage1/stage1.3/Add_5",
-                "/aggregator/Add",
-                "/aggregator/Add_1",
             ]
 
             return {
@@ -357,10 +355,6 @@ class LiteHRNet(MMSegCompatibleModel):
                 "/backbone/stage3/stage3.1/Add_13",
                 "/backbone/stage3/stage3.1/Add_14",
                 "/backbone/stage3/stage3.1/Add_19",
-                "/aggregator/Add",
-                "/aggregator/Add_1",
-                "/aggregator/Add_2",
-                "/aggregator/Add_3",
                 "/backbone/stage0/stage0.0/Add",
                 "/backbone/stage0/stage0.1/Add",
                 "/backbone/stage1/stage1.0/Add",
