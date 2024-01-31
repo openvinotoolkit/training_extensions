@@ -185,6 +185,12 @@ otx train --config <config-file-path> --print_config > config.yaml
 
 ## otx {subcommand}
 
+Use Auto-Configuration
+
+```console
+otx train --data_root <dataset-root> --task <TASK>
+```
+
 Use Configuration file
 
 ```console
