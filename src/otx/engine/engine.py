@@ -418,7 +418,6 @@ class Engine:
             >>> engine.optimize(
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
-            ...     explain_config=ExplainConfig(),
             ... )
         """
         return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
