@@ -81,7 +81,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         """Create a PyTorch model for this class."""
 
     def _customize_inputs(self, inputs: T_OTXBatchDataEntity) -> dict[str, Any]:
-        """Customize OTX input batch data entity if needed for you model."""
+        """Customize OTX input batch data entity if needed for your model."""
         raise NotImplementedError
 
     def _customize_outputs(
@@ -239,10 +239,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
-    Intermidiate Representation (IR) models. OVModel can create and validate
+    Intermediate Representation (IR) models. OVModel can create and validate
     OpenVINO IR model directly from provided path locally or from
     OpenVINO OMZ repository. (Only PyTorch models are supported).
-    OVModel supports synchoronous as well as asynchronous inference type.
+    OVModel supports synchronous as well as asynchronous inference type.
 
     Args:
         num_classes: Number of classes this model can predict.
