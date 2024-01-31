@@ -197,8 +197,8 @@ def test_otx_explain_e2e(
     if ("_cls" not in task) and (task != "detection"):
         pytest.skip("Supported only for classification and detection task.")
 
-    if "deit" in model_name or "dino" in model_name:
-        pytest.skip("Supported only for CNN models.")
+    if "dino" in model_name:
+        pytest.skip("Dino is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
