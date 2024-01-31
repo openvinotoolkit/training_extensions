@@ -212,33 +212,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         raise NotImplementedError(msg)
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        return self._generate_model_metadata()
-
-    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
-        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
-
-        Args:
-            output_dir (Path): working directory to save the optimized model.
-            data_module (OTXDataModule): dataset to for calibration of quantized layers.
-
-        Returns:
-            Path: path to the resulting optimized OpenVINO model.
-        """
-        raise NotImplementedError
-
-    def _create_exporter(
-        self,
-    ) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        raise NotImplementedError
-
-    def _generate_model_metadata(
-        self,
-    ) -> dict[tuple[str, str], str]:
-        """Generates model-specific metadata, which will be embedded into exported model.
-
+    def _export_parameters(self) -> dict[tuple[str, str], str]:
+        """Defines parameters required to export a particular model implementation.
         Returns:
             dict[str, Any]: parameters of exporter.
         """
@@ -259,6 +234,27 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         }
 
         return parameters
+
+    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
+
+        Args:
+            output_dir (Path): working directory to save the optimized model.
+            data_module (OTXDataModule): dataset to for calibration of quantized layers.
+
+        Returns:
+            Path: path to the resulting optimized OpenVINO model.
+        """
+        raise NotImplementedError
+
+    def _create_exporter(
+        self,
+    ) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        raise NotImplementedError
+
+    def _generate_model_metadata(
+
 
     def _export_to_exportable_code(self) -> Path:
         """Export to exportable code format.
@@ -426,7 +422,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 
         initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["ptq_config"].value)
-        breakpoint()
         if not initial_ptq_config:
             return {}
         argparser = ArgumentParser()
