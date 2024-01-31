@@ -19,10 +19,10 @@ from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
     parse_mem_cache_size_to_int,
 )
+from otx.core.data.pre_filtering import pre_filtering
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from datumaro.components.dataset import Dataset
     from lightning.pytorch.utilities.parsing import AttributeDict
 
     from otx.core.config.data import DataModuleConfig
@@ -52,7 +52,7 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
-        dataset = self._postprocess(dataset)
+        dataset = pre_filtering(dataset)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -112,17 +112,6 @@ class OTXDataModule(LightningDataModule):
         if (dataset := self.subsets.get(subset)) is None:
             msg = f"Dataset has no '{subset}'. Available subsets = {list(self.subsets.keys())}"
             raise KeyError(msg)
-        return dataset
-
-    def _postprocess(self, dataset: Dataset) -> Dataset:
-        """Post processing after importing dataset from Datumaro."""
-        if self.task == "DETECTION":
-            invalid_ids = [(item.id, item.subset) for item in dataset.get_subset("train") if len(item.annotations) == 0]
-            # TODO(Jaeguk): Add data filtering for invalid bbox  # noqa: TD003
-            # TODO(Jaeguk): Delete unused labels  # noqa: TD003
-            for invalid_id in invalid_ids:
-                dataset.remove(invalid_id[0], invalid_id[1])
-
         return dataset
 
     def train_dataloader(self) -> DataLoader:
