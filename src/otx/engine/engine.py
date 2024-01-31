@@ -18,6 +18,8 @@ from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
@@ -135,6 +137,8 @@ class Engine:
         self.scheduler: LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
+
+    _EXPORTED_MODEL_BASE_NAME = "exported_model"
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -346,9 +350,60 @@ class Engine:
             return_predictions=return_predictions,
         )
 
-    def export(self, *args, **kwargs) -> None:
-        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats."""
-        raise NotImplementedError
+    def export(
+        self,
+        checkpoint: str | Path | None = None,
+        export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
+        export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
+        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
+
+        Args:
+            checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
+            export_config (ExportConfig | None, optional): Config that allows to set export
+            format and precision. Defaults to None.
+
+        Returns:
+            Path: Path to the exported model.
+
+        Example:
+            >>> engine.export(
+            ...     checkpoint=<checkpoint/path>,
+            ...     export_format=OTXExportFormatType.OPENVINO,
+            ...     export_precision=OTXExportPrecisionType.FP32,
+            ... )
+
+        CLI Usage:
+            1. To export a model, run
+                ```python
+                otx export
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                ```
+        """
+        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+
+        if ckpt_path is not None:
+            self.model.eval()
+            lit_module = self._build_lightning_module(
+                model=self.model,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+            )
+            loaded_checkpoint = torch.load(ckpt_path)
+            lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
+            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
+            lit_module.load_state_dict(loaded_checkpoint)
+
+            return self.model.export(
+                output_dir=Path(self.work_dir),
+                base_name=self._EXPORTED_MODEL_BASE_NAME,
+                export_format=export_format,
+                precision=export_precision,
+            )
+
+        msg = "To make export, checkpoint must be specified."
+        raise RuntimeError(msg)
 
     def explain(
         self,

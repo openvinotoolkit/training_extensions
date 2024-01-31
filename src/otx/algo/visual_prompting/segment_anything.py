@@ -512,7 +512,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         outputs: Any,  # noqa: ANN401
         inputs: VisualPromptingBatchDataEntity,
     ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for you model."""
+        """Customize OTX output batch data entity if needed for model."""
         if self.training:
             return outputs
 
