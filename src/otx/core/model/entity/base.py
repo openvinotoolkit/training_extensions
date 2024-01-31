@@ -8,11 +8,10 @@ from __future__ import annotations
 import json
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator, NamedTuple
+from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 import openvino
-from attr import dataclass
 from jsonargparse import ArgumentParser
 from openvino.model_api.models import Model
 from torch import nn
@@ -33,7 +32,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
-    from torch.utils.data import DataLoader
 
     from otx.core.data.module import OTXDataModule
 
@@ -183,7 +181,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         return src2dst
 
     def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
-        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
+        """Runs quantization of the model with NNCF.PTQ on the passed data. Works only for OpenVINO models.
+
+        PTQ performs int-8 quantization on the input model, so the resulting model
+        comes in mixed precision (some operations, however, remain in FP32).
 
         Args:
             output_dir (Path): working directory to save the optimized model.
@@ -378,32 +379,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         train_dataset = data_module.train_dataloader()
 
-        @dataclass
-        class OptimizeDatasetWrapper(Iterable):
-            """Restricts the length of the underlying dataset."""
-
-            dataset: DataLoader
-            max_size: int
-
-            def __len__(self):
-                return min(self.max_size, len(self.dataset))
-
-            def __iter__(self) -> Iterator:
-                return self.dataset.__iter__()
-
-        if train_dataset.batch_size != 1:
-            msg = "Optimization pipeline supports only batch size 1."
-            raise RuntimeError(msg)
-
-        quantization_dataset = nncf.Dataset(  # type: ignore[attr-defined]
-            OptimizeDatasetWrapper(train_dataset, self._OPTIMIZE_DATASET_SIZE_LIMIT),
-            transform_fn,
-        )
-        ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
-        if ptq_config is not None:
-            ptq_config.update(ptq_config_from_ir)
-        else:
-            ptq_config = ptq_config_from_ir
+        quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
+        ptq_config: dict = {}
+        if "subset_size" not in ptq_config:
+            ptq_config["subset_size"] = self._OPTIMIZE_DATASET_SIZE_LIMIT
 
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
