@@ -360,7 +360,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self,
         images: list[tv_tensors.Image],
         reference_feats: Tensor,
-        used_indices: dict[int, list[int]],
+        used_indices: set[int],
         ori_shapes: list[Tensor],
     ) -> list[list[defaultdict[int, list[Tensor]]]]:
         """Zero-shot inference with reference features.
@@ -370,7 +370,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Args:
             images (list[tv_tensors.Image]): Given images for target results.
             reference_feats (Tensor): Reference features for target prediction.
-            used_indices (dict[int, list[int]]): To check which indices of reference features are validate.
+            used_indices (set[int]): To check which indices of reference features are validate.
             ori_shapes (list[Tensor]): Original image size.
 
         Returns:
@@ -426,17 +426,17 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     used_points[label].append(point_score)
 
             # check overlapping area between different label masks
-            self.__inspect_overlapping_areas(predicted_masks, used_points)
+            self._inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
 
-    def __inspect_overlapping_areas(
+    def _inspect_overlapping_areas(
         self,
-        predicted_masks: dict[Tensor, list[Tensor]],
-        used_points: dict[Tensor, list[Tensor]],
+        predicted_masks: dict[int, list[Tensor]],
+        used_points: dict[int, list[Tensor]],
         threshold_iou: float = 0.8,
     ) -> None:
-        def __calculate_mask_iou(mask1: Tensor, mask2: Tensor) -> Tensor:
+        def _calculate_mask_iou(mask1: Tensor, mask2: Tensor) -> Tensor:
             intersection = torch.logical_and(mask1, mask2).sum().item()
             union = torch.logical_or(mask1, mask2).sum().item()
             if union == 0:
@@ -451,7 +451,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
                     else:

@@ -305,8 +305,106 @@ class TestZeroShotSegmentAnything:
                 for pm, up in zip(predicted_mask, used_points[label]):
                     assert pm[int(up[1]), int(up[0])] == up[2]
 
-    def test_inspect_overlapping_areas(self) -> None:
-        """Test __inspect_overlapping_areas."""
+    def test_inspect_overlapping_areas(self, mocker, build_zero_shot_segment_anything) -> None:
+        """Test _inspect_overlapping_areas."""
+        mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        predicted_masks = {
+            0: [
+                torch.tensor(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                    ],
+                ),
+            ],
+            1: [
+                torch.tensor(
+                    [
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 1, 1],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+            ],
+        }
+        used_points = {
+            0: [
+                torch.tensor([0, 0, 0.5]),  # to be removed
+                torch.tensor([2, 2, 0.5]),
+                torch.tensor([1, 4, 0.5]),
+            ],
+            1: [
+                torch.tensor([3, 0, 0.5]),
+                torch.tensor([4, 4, 0.5]),
+                torch.tensor([1, 4, 0.3]),  # to be removed
+                torch.tensor([0, 0, 0.7]),
+            ],
+        }
+
+        zero_shot_segment_anything._inspect_overlapping_areas(predicted_masks, used_points, threshold_iou=0.5)
+
+        assert len(predicted_masks[0]) == 2
+        assert len(predicted_masks[1]) == 3
+        assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
+        assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
 
 
 class TestOTXZeroShotSegmentAnything:
