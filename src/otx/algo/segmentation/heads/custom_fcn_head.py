@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmseg.models.decode_heads.fcn_head import FCNHead
-from mmseg.models.decode_heads.ham_head import LightHamHead
 from mmseg.models.losses import accuracy
 from mmseg.models.utils import resize
 from mmseg.registry import MODELS
