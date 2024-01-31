@@ -115,3 +115,10 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
             scores=scores,
             labels=labels,
         )
+
+    @property
+    def ptq_config(self) -> dict[str, Any]:
+        '''
+        PTQ config for DinoV2Cls
+        '''
+        return {"model_type": "transformer"}

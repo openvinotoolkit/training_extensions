@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Iterable
 import torch
 from lightning import Trainer, seed_everything
 
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
@@ -22,7 +23,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike
+from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -42,6 +43,7 @@ LITMODULE_PER_TASK = {
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
     OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
+    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
 }
 
 
@@ -129,10 +131,10 @@ class Engine:
                 meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: OptimizerCallable = (
+        self.optimizer: OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
-        self.scheduler: LRSchedulerCallable = (
+        self.scheduler: LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
@@ -391,7 +393,7 @@ class Engine:
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
             # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
-            lit_module.load_state_dict(loaded_checkpoint["state_dict"])
+            lit_module.load_state_dict(loaded_checkpoint)
 
             return self.model.export(
                 output_dir=Path(self.work_dir),
@@ -403,7 +405,7 @@ class Engine:
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
 
-    def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None, **kwargs) -> Path:
+    def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None) -> Path:
         """Applies PTQ to the underlying models (now works only for OV models).
 
         Args:
@@ -411,6 +413,12 @@ class Engine:
 
         Returns:
             Path: path to the optimized model.
+
+        Example:
+            >>> engine.optimize(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ... )
         """
         return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
 
@@ -468,6 +476,61 @@ class Engine:
         # Temporary saving saliency map for image 0, class 0 (for tests)
         cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
         return saliency_maps
+
+    @classmethod
+    def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
+        """Builds the engine from a configuration file.
+
+        Args:
+            config_path (PathLike): The configuration file path.
+            data_root (PathLike | None): Root directory for the data. Defaults to None.
+            kwargs: Arguments that can override the engine's arguments.
+
+        Returns:
+            Engine: An instance of the Engine class.
+
+        Example:
+            >>> engine = Engine.from_config(
+            ...     config="config.yaml",
+            ... )
+        """
+        from lightning.pytorch.cli import instantiate_class
+
+        from otx.cli.utils.jsonargparse import get_configuration
+        from otx.core.utils.instantiators import partial_instantiate_class
+
+        config = get_configuration(str(config_path))
+        config.pop("config", None)  # Unnecessary config key
+        # Datamodule
+        data_config = config.pop("data")
+        if data_root is not None:
+            data_config["config"]["data_root"] = data_root
+        datamodule = OTXDataModule(
+            task=data_config["task"],
+            config=DataModuleConfig(
+                train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
+                val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
+                test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
+                tile_config=TilerConfig(**data_config["config"].pop("tile_config", {})),
+                **data_config["config"],
+            ),
+        )
+        # Model
+        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        config["model"]["init_args"]["num_classes"] = num_classes
+        model = instantiate_class(args=(), init=config.pop("model"))
+        optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
+        scheduler = partial_instantiate_class(init=config.pop("scheduler", None))
+
+        engine_config = {**config.pop("engine"), **config}
+        engine_config.update(kwargs)
+        return cls(
+            datamodule=datamodule,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            **engine_config,
+        )
 
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.

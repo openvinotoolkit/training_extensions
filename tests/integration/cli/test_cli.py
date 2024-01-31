@@ -18,34 +18,6 @@ RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if 
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
-# [TODO]: This is a temporary approach.
-@pytest.fixture()
-def fxt_cli_override_command_per_task() -> dict:
-    return {
-        "multi_class_cls": ["--model.num_classes", "2"],
-        "multi_label_cls": ["--model.num_classes", "2"],
-        "h_label_cls": [
-            "--model.num_classes",
-            "7",
-            "--model.num_multiclass_heads",
-            "2",
-            "--model.num_multilabel_classes",
-            "3",
-        ],
-        "detection": ["--model.num_classes", "3"],
-        "instance_segmentation": ["--model.num_classes", "3"],
-        "semantic_segmentation": ["--model.num_classes", "2"],
-        "action_classification": ["--model.num_classes", "2"],
-        "action_detection": [
-            "--model.num_classes",
-            "5",
-            "--model.topk",
-            "3",
-        ],
-        "visual_prompting": [],
-    }
-
-
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_e2e(
     recipe: str,
@@ -94,6 +66,9 @@ def test_otx_e2e(
 
     with patch("sys.argv", command_cfg):
         main()
+
+    if task in ("zero_shot_visual_prompting"):
+        pytest.skip("Full CLI test is not applicable to this task.")
 
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
@@ -219,11 +194,11 @@ def test_otx_explain_e2e(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "_cls" not in task:
-        pytest.skip("Supported only for classification tast.")
+    if ("_cls" not in task) and (task != "detection"):
+        pytest.skip("Supported only for classification and detection task.")
 
-    if "deit" in model_name or "dino" in model_name:
-        pytest.skip("Supported only for CNN models.")
+    if "dino" in model_name:
+        pytest.skip("Dino is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

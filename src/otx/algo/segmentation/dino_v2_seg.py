@@ -4,6 +4,7 @@
 """DinoV2Seg model implementations."""
 
 from pathlib import Path
+from typing import Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
@@ -25,3 +26,10 @@ class DinoV2Seg(MMSegCompatibleModel):
         """
         msg = "DinoV2Seg cannot be exported. It is not supported."
         raise RuntimeError(msg)
+
+    @property
+    def ptq_config(self) -> dict[str, Any]:
+        '''
+        PTQ config for DinoV2Seg
+        '''
+        return {"model_type": "transformer"}

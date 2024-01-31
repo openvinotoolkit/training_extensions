@@ -26,7 +26,9 @@ class LiteHRNet(MMSegCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         parent_parameters = super()._export_parameters
-        parent_parameters.update({"onnx_export_configuration": OperatorExportTypes.ONNX_ATEN_FALLBACK})
+        parent_parameters.update(
+            {"onnx_export_configuration": {"operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK}},
+        )
 
         return parent_parameters
 
@@ -39,6 +41,7 @@ class LiteHRNet(MMSegCompatibleModel):
         '''
         PTQ config for LiteHRNet
         '''
+        # TODO[Kirill]: check PTQ without adding the whole backbone to ignored_scope
         return {"advanced_parameters": {"activations_range_estimator_params": {"min": {"statistics_type": "QUANTILE", "aggregator_type": "MIN", "quantile_outlier_prob": 1e-4},
                                                                                     "max": {"statistics_type": "QUANTILE", "aggregator_type": "MAX", "quantile_outlier_prob": 1e-4}}},
                                                                                     "preset" : "mixed",

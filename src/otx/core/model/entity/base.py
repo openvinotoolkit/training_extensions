@@ -93,7 +93,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         """Create a PyTorch model for this class."""
 
     def _customize_inputs(self, inputs: T_OTXBatchDataEntity) -> dict[str, Any]:
-        """Customize OTX input batch data entity if needed for you model."""
+        """Customize OTX input batch data entity if needed for your model."""
         raise NotImplementedError
 
     def _customize_outputs(
@@ -184,24 +184,29 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
                 src2dst.append(-1)
         return src2dst
 
-    def export(
-        self,
-        output_dir: Path,
-        base_name: str,
-        export_format: OTXExportFormatType,
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> Path:
-        """Export this model to the specified output directory.
+    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
 
         Args:
-            output_dir (Path): directory for saving the exported model
-            base_name: (str): base name for the exported model file. Extension is defined by the target export format
-            export_format (OTXExportFormatType): format of the output model
-            precision (OTXExportPrecisionType): precision of the output model
+            output_dir (Path): working directory to save the optimized model.
+            data_module (OTXDataModule): dataset for calibration of quantized layers.
+
         Returns:
-            Path: path to the exported model.
+            Path: path to the resulting optimized OpenVINO model.
         """
-        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        msg = "Optimization is not implemented for torch models"
+        raise NotImplementedError(msg)
+
+    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
+        Args:
+            output_dir (Path): working directory to save the optimized model.
+            data_module (OTXDataModule): dataset for calibration of quantized layers.
+        Returns:
+            Path: path to the resulting optimized OpenVINO model.
+        """
+        msg = "Optimization is not implemented for torch models"
+        raise NotImplementedError(msg)
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -212,13 +217,16 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         raise NotImplementedError(msg)
 
     @property
-    def _export_parameters(self) -> dict[tuple[str, str], str]:
+    def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation.
+        To export OTXModel, you should define an appropriate parameters."
+        "This is used in the constructor of `self._exporter`. "
+        "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
+        "Please refer to `otx.core.exporter.*` for detailed examples."
         Returns:
             dict[str, Any]: parameters of exporter.
         """
         parameters = {}
-
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
@@ -235,41 +243,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
 
         return parameters
 
-    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
-        """Runs NNCF quantization on the passed data. Works only for OpenVINO models.
-
-        Args:
-            output_dir (Path): working directory to save the optimized model.
-            data_module (OTXDataModule): dataset to for calibration of quantized layers.
-
-        Returns:
-            Path: path to the resulting optimized OpenVINO model.
-        """
-        raise NotImplementedError
-
-    def _create_exporter(
-        self,
-    ) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        raise NotImplementedError
-
-    def _generate_model_metadata(
-
-
-    def _export_to_exportable_code(self) -> Path:
-        """Export to exportable code format.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-
-        Returns:
-            Path: path to the exported model.
-        """
-        raise NotImplementedError
-
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
-
         Args:
             num_classes: Number of classes
         """
@@ -280,7 +255,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
-    Intermidiate Representation (IR) models. OVModel can create and validate
+    Intermediate Representation (IR) models. OVModel can create and validate
     OpenVINO IR model directly from provided path locally or from
     OpenVINO OMZ repository. (Only PyTorch models are supported).
     OVModel supports synchronous as well as asynchronous inference type.
@@ -360,7 +335,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         return self._customize_outputs(outputs, inputs)
 
-    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+    def optimize(self, output_dir: Path, data_module: OTXDataModule, ptq_config: Optional[dict[str, Any]] = None) -> Path:
         """Runs NNCF quantization."""
         output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
 
@@ -405,7 +380,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             OptimizeDatasetWrapper(train_dataset, self._OPTIMIZE_DATASET_SIZE_LIMIT),
             transform_fn,
         )
-        ptq_config = self._generate_ptq_config(ov_model)
+        ptq_config = ptq_config if ptq_config is not None else self._generate_ptq_config(ov_model)
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
             quantization_dataset,
@@ -417,9 +392,25 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         return output_model_path
 
     def _generate_ptq_config(self, ov_model: Model) -> dict:
+        """
+        Generates the PTQ (Post-Training Quantization) configuration for the given OpenVINO model.
+
+        Args:
+            ov_model (Model): The OpenVINO model in which the PTQ configuration is embedded.
+
+        Returns:
+            dict: The PTQ configuration as a dictionary.
+
+        Raises:
+            None
+
+        Example:
+            ptq_config = _generate_ptq_config(ov_model)
+        """
         from nncf import IgnoredScope
         from nncf.common.quantization.structs import QuantizationPreset
         from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
+        from nncf.parameters import ModelType
 
         initial_ptq_config = json.loads(ov_model.rt_info["model_info"]["ptq_config"].value)
         if not initial_ptq_config:
@@ -430,6 +421,9 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         if "preset" in initial_ptq_config:
             initial_ptq_config["preset"] = QuantizationPreset(initial_ptq_config["preset"])
             argparser.add_argument("--preset", type=QuantizationPreset)
+        if "model_type" in initial_ptq_config:
+            initial_ptq_config["model_type"] = ModelType(initial_ptq_config["model_type"])
+            argparser.add_argument("--model_type", type=ModelType)
         if "ignored_scope" in initial_ptq_config:
             argparser.add_class_arguments(IgnoredScope, "ignored_scope", as_positional=True)
 

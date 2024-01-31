@@ -78,6 +78,7 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        embed_metadata: bool = True,
     ) -> Path:
         """Export to ONNX format.
 
@@ -86,6 +87,9 @@ class OTXModelExporter:
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            embed_metadata (bool): flag which enables embedding of metadata to the ONNX model.
+            Metadata embedding should be enabled if model is going to be converted to OV IR
+            (otherwise OV fails on the resulting model).
 
         Returns:
             Path: path to the exported model.

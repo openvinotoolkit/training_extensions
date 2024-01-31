@@ -33,7 +33,8 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture()
-def fxt_mem_cache_handler() -> MemCacheHandlerBase:
+def fxt_mem_cache_handler(monkeypatch) -> MemCacheHandlerBase:
+    monkeypatch.setattr(MemCacheHandlerSingleton, "check_system_memory", lambda *_: True)
     handler = MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=1024 * 1024)
     yield handler
     MemCacheHandlerSingleton.delete()
