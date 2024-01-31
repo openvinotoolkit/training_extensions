@@ -15,7 +15,6 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 from otx.core.utils.utils import get_mean_std_from_data_processing
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
-    from torch import device, nn
+    from torch import nn
 
     from otx.core.exporter.base import OTXModelExporter
 
@@ -163,27 +162,10 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         return export_params
 
     def _create_model(self) -> nn.Module:
-        from mmdet.models.data_preprocessors import (
-            DetDataPreprocessor as _DetDataPreprocessor,
-        )
-        from mmdet.registry import MODELS
-        from mmengine.registry import MODELS as MMENGINE_MODELS
+        from .utils.mmdet import create_model
 
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MMENGINE_MODELS.register_module(force=True)
-        class DetDataPreprocessor(_DetDataPreprocessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
-
-        self.classification_layers = get_classification_layers(self.config, MODELS, "model.")
-        return build_mm_model(self.config, MODELS, self.load_from)
+        model, self.classification_layers = create_model(self.config, self.load_from)
+        return model
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
