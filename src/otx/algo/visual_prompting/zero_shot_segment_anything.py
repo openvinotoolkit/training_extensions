@@ -371,7 +371,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         assert len(images) == 1, "Only single batch is supported."  # noqa: S101
 
         total_results = []
-        for batch, (image, ori_shape) in enumerate(zip(images, ori_shapes)):
+        for image, ori_shape in zip(images, ori_shapes):
             if image.ndim == 3:
                 image = image.unsqueeze(0)  # noqa: PLW2901
 
@@ -429,7 +429,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
         threshold_iou: float = 0.8,
     ) -> None:
         def __calculate_mask_iou(mask1: Tensor, mask2: Tensor) -> Tensor:
-            assert mask1.ndim == 2 and mask2.ndim == 2  # noqa: PT018, S101
             intersection = torch.logical_and(mask1, mask2).sum().item()
             union = torch.logical_or(mask1, mask2).sum().item()
             if union == 0:
@@ -450,11 +449,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     else:
                         overlapped_label.append(im)
 
-            for im in overlapped_label[::-1]:
+            for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
                 used_points[label].pop(im)
 
-            for jm in overlapped_other_label[::-1]:
+            for jm in sorted(list(set(overlapped_other_label)), reverse=True):
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
 
