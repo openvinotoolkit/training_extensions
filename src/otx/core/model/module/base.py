@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 from lightning import LightningModule
@@ -44,15 +44,15 @@ class OTXLitModule(LightningModule):
 
         self.model = otx_model
         self.optimizer = optimizer
-        self.learning_rate = self.optimizer.keywords['lr'] if self.optimizer else None
-        
+        self.learning_rate = self.optimizer.keywords["lr"] if self.optimizer else None
+
         self.scheduler = scheduler
         self.torch_compile = torch_compile
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False, ignore=["otx_model"])
-       
+
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
         train_loss = self.model(inputs)
@@ -99,12 +99,10 @@ class OTXLitModule(LightningModule):
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
 
-    def _use_warmup_sheduler(self) -> bool:
+    def _use_warmup_scheduler(self) -> bool:
         """Check the status whether warmup scheduler is used or not."""
-        return True if hasattr(
-            self.scheduler, "warmup_steps") and hasattr(
-                self.scheduler, "warmup_by_epoch") else False
-    
+        return bool(hasattr(self.scheduler, "warmup_steps") and hasattr(self.scheduler, "warmup_by_epoch"))
+
     def configure_optimizers(self) -> dict[str, Any]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
 
@@ -121,15 +119,16 @@ class OTXLitModule(LightningModule):
             else self.hparams.optimizer
         )
         if self.hparams.scheduler is not None:
+            if self._use_warmup_scheduler():
+                self.warmup_steps = float(self.hparams.scheduler.warmup_steps)
+                self.warmup_by_epoch = self.hparams.scheduler.warmup_by_epoch
+                
             scheduler = (
                 self.hparams.scheduler(optimizer=optimizer)
                 if callable(self.hparams.scheduler)
                 else self.hparams.scheduler
             )
-            if self._use_warmup_sheduler():
-                self.warmup_steps = float(scheduler.warmup_steps)
-                self.warmup_by_epoch = scheduler.warmup_by_epoch
-                
+
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
@@ -139,28 +138,34 @@ class OTXLitModule(LightningModule):
                     "frequency": self.trainer.check_val_every_n_epoch,
                 },
             }
-            
+
         return {"optimizer": optimizer}
-    
-    def optimizer_step(self, epoch: int, batch: int, optimizer: OptimizerCallable, optimizer_closure: callable[[], Tensor | None] = None):
+
+    def optimizer_step(
+        self,
+        epoch: int,
+        batch: int,
+        optimizer: OptimizerCallable,
+        optimizer_closure: Callable[[], Tensor | None],
+    ) -> None:
         """Override the optimizer_step function to apply the warm-up.
-        
+
         It supports both warmup_by_epoch and warmup_by_steps.
         """
         optimizer.step(closure=optimizer_closure)
-        
-        if self._use_warmup_sheduler():
+
+        if self._use_warmup_scheduler():
             if self.warmup_by_epoch:
                 if self.trainer.current_epoch < self.warmup_steps:
                     lr_scale = min(1.0, float(self.trainer.current_epoch + 1) / self.warmup_steps)
                     for pg in optimizer.param_groups:
-                        pg['lr'] = lr_scale * self.learning_rate
-            else:
-                if self.trainer.global_step < self.warmup_steps:
-                    lr_scale = min(1.0, float(self.trainer.global_step + 1) / self.warmup_steps)
-                    for pg in optimizer.param_groups:
-                        pg['lr'] = lr_scale * self.learning_rate
-        
+                        pg["lr"] = lr_scale * self.learning_rate
+
+            elif self.trainer.global_step < self.warmup_steps:
+                lr_scale = min(1.0, float(self.trainer.global_step + 1) / self.warmup_steps)
+                for pg in optimizer.param_groups:
+                    pg["lr"] = lr_scale * self.learning_rate
+
     def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
         """Register self.model's load_state_dict_pre_hook.
 

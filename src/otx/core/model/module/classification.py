@@ -4,7 +4,7 @@
 """Class definition for classification lightning module used in OTX."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor

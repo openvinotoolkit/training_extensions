@@ -9,7 +9,7 @@ import logging as log
 import math
 from typing import TYPE_CHECKING
 
-from lightning import Callback, LightningModule, Trainer
+from lightning import Callback
 
 if TYPE_CHECKING:
     from lightning import LightningModule, Trainer
@@ -44,7 +44,7 @@ class AdaptiveTrainScheduling(Callback):
             iter_per_epoch=iter_per_epoch,
             max_interval=max_interval,
         )
-        self.is_enabled = True if adaptive_check_val_every_n_epoch > 1 else False
+        self.is_enabled = adaptive_check_val_every_n_epoch > 1
 
         if adaptive_check_val_every_n_epoch != trainer.check_val_every_n_epoch:
             msg = (
@@ -56,10 +56,8 @@ class AdaptiveTrainScheduling(Callback):
 
             self._saved_check_val_every_n_epoch = trainer.check_val_every_n_epoch
             trainer.check_val_every_n_epoch = adaptive_check_val_every_n_epoch
-            
-            plateau_scheduler = self._find_plateau_scheduler(trainer.lr_scheduler_configs)
-            if plateau_scheduler:
-                plateau_scheduler.frequency = trainer.check_val_every_n_epoch
+            self._change_early_stopping_patience(trainer.callbacks, adaptive_check_val_every_n_epoch)
+            self._change_lr_scheduler_frequency(trainer.lr_scheduler_configs, adaptive_check_val_every_n_epoch)
 
         if iter_per_epoch < trainer.log_every_n_steps:
             msg = (
@@ -71,7 +69,7 @@ class AdaptiveTrainScheduling(Callback):
 
             self._saved_log_every_n_steps = trainer.log_every_n_steps
             trainer.log_every_n_steps = iter_per_epoch
-    
+
     def on_train_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Execute this function at terminating the train stage."""
         if self._saved_check_val_every_n_epoch:
@@ -85,20 +83,36 @@ class AdaptiveTrainScheduling(Callback):
     def _get_adaptive_interval(self, iter_per_epoch: int, max_interval: int) -> int:
         """Get adaptive interval."""
         return max(round(math.exp(self.decay * iter_per_epoch) * max_interval), 1)
-    
-    def _find_plateau_scheduler(self, lr_configs: list[LRSchedulerConfig]) -> LRSchedulerConfig | None:
-        """Find the ReduceLROnPlateau scheduler config if multi schedulers are used.
-        
-        When ReduceLROnPlateau scheduler wants to monitor the validation metric (i.e. val/accuracy),
-        the frequency value of lr_scheduler_config should have multiple value of trainer.check_val_every_n_epoch
-        https://github.com/Lightning-AI/pytorch-lightning/blob/9d35c61f5f103b04b7fd1f504b8b937450482d07/src/lightning/pytorch/core/module.py#L993
-        
-        Therefore, should change the frequency value in the case above. 
+
+    def _change_lr_scheduler_frequency(self, lr_configs: list[LRSchedulerConfig], adaptive_interval: int) -> None:
+        """Change the frequency of LRscheduler.
+
+        Since adaptive interval changes the validation interval, the frequency of LRscheduler also
+        should be changed according to the adaptive interval.
         """
         for config in lr_configs:
-            if config.reduce_on_plateau:
-                return config
-        
-        return None    
-             
-        
+            if hasattr(config, "frequency"):
+                msg = (
+                    "The frequency of LRscheduler will be changed due to the effect of adaptive interval: "
+                    f"{config.frequency} --> {adaptive_interval}."
+                )
+                log.warning(msg)
+                config.frequency = adaptive_interval
+
+    def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
+        """Change the EarlyStopping patience to change the patience.
+
+        Since adaptive interval changes the validation interval, the patience of early stopping also
+        should be changed according to the adaptive interval.
+        """
+        from lightning.pytorch.callbacks.early_stopping import EarlyStopping
+
+        for callback in callbacks:
+            if isinstance(callback, EarlyStopping):
+                adjusted_patience = int(callback.patience / adaptive_interval)
+                msg = (
+                    "The patience of early stopping will be changed due to the effect of adaptive interval: "
+                    f"{callback.patience} --> {adjusted_patience}."
+                )
+                log.warning(msg)
+                callback.patience = adjusted_patience
