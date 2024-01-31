@@ -89,6 +89,38 @@ class BaseRecordingForwardHook:
         return saliency_maps.to(torch.uint8)
 
 
+class ActivationMapHook(BaseRecordingForwardHook):
+    """ActivationMapHook."""
+
+    @classmethod
+    def create_and_register_hook(
+        cls,
+        backbone: torch.nn.Module,
+    ) -> BaseRecordingForwardHook:
+        """Create this object and register it to the module forward hook."""
+        hook = cls()
+        hook.handle = backbone.register_forward_hook(hook.recording_forward)
+        return hook
+
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
+        """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
+        if isinstance(feature_map, (list, tuple)):
+            assert fpn_idx < len(
+                feature_map
+            ), f"fpn_idx: {fpn_idx} is out of scope of feature_map length {len(feature_map)}!"
+            feature_map = feature_map[fpn_idx]
+
+        batch_size, _, h, w = feature_map.size()
+        activation_map = torch.mean(feature_map, dim=1)
+
+        if self._norm_saliency_maps:
+            activation_map = activation_map.reshape((batch_size, h * w))
+            activation_map = self._normalize_map(activation_map)
+
+        activation_map = activation_map.reshape((batch_size, h, w))
+        return activation_map
+
+
 class ReciproCAMHook(BaseRecordingForwardHook):
     """Implementation of Recipro-CAM for class-wise saliency map.
 
