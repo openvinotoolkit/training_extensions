@@ -13,7 +13,7 @@ name = "otx"
 dynamic = ["version"]
 description = "OpenVINO™ Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO™"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {file = "LICENSE"}
 authors = [
     { name = "OpenVINO™ Training Extensions Contributors" },
@@ -23,9 +23,9 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Cython",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
     "datumaro==1.6.0rc1",
@@ -73,8 +73,9 @@ base = [
     "timm",
     "openvino==2023.2.0",
     "openvino-dev==2023.2.0",
-    "openvino-model-api==0.1.7",
-    "onnx==1.13.0"
+    "openvino-model-api==0.1.8",
+    "onnx==1.13.0",
+    "onnxconverter-common==1.14.0"
 ]
 mmlab = [
     "mmdet==3.2.0",
@@ -103,7 +104,7 @@ include = ["otx*"]
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # CI CONFIGURATION.                                                        #
 [tool.cibuildwheel]
-build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
+build = "cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -122,7 +123,7 @@ exclude_lines = [
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # MYPY CONFIGURATION.                                                         #
 [tool.mypy]
-python_version = 3.8
+python_version = 3.10
 ignore_missing_imports = true
 show_error_codes = true
 

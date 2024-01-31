@@ -4,10 +4,11 @@
 """Test Factory classes for dataset and transforms."""
 
 import pytest
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig, VisualPromptingConfig
 from otx.core.data.dataset.classification import OTXMulticlassClsDataset
 from otx.core.data.dataset.detection import OTXDetectionDataset
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
+from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
 from otx.core.data.factory import OTXDatasetFactory, TransformLibFactory
 from otx.core.data.transform_libs.mmcv import MMCVTransformLib
 from otx.core.data.transform_libs.mmdet import MMDetTransformLib
@@ -44,6 +45,8 @@ class TestOTXDatasetFactory:
             (OTXTaskType.MULTI_CLASS_CLS, OTXMulticlassClsDataset),
             (OTXTaskType.DETECTION, OTXDetectionDataset),
             (OTXTaskType.SEMANTIC_SEGMENTATION, OTXSegmentationDataset),
+            (OTXTaskType.VISUAL_PROMPTING, OTXVisualPromptingDataset),
+            (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING, OTXZeroShotVisualPromptingDataset),
         ],
     )
     def test_create(self, fxt_mock_dm_subset, fxt_mem_cache_handler, task_type, dataset_cls, mocker) -> None:
@@ -52,6 +55,9 @@ class TestOTXDatasetFactory:
         cfg_data_module = mocker.MagicMock(spec=DataModuleConfig)
         cfg_data_module.tile_config = mocker.MagicMock(spec=TilerConfig)
         cfg_data_module.tile_config.enable_tiler = False
+        cfg_data_module.vpm_config = mocker.MagicMock(spec=VisualPromptingConfig)
+        cfg_data_module.vpm_config.use_bbox = False
+        cfg_data_module.vpm_config.use_point = False
         assert isinstance(
             OTXDatasetFactory.create(
                 task=task_type,

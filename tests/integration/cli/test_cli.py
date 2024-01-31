@@ -18,66 +18,21 @@ RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if 
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
-# [TODO]: This is a temporary approach.
-DATASET = {
-    "multi_class_cls": {
-        "data_root": "tests/assets/classification_dataset",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "multi_label_cls": {
-        "data_root": "tests/assets/multilabel_classification",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "h_label_cls": {
-        "data_root": "tests/assets/hlabel_classification",
-        "overrides": [
-            "--model.num_classes",
-            "7",
-            "--model.num_multiclass_heads",
-            "2",
-            "--model.num_multilabel_classes",
-            "3",
-        ],
-    },
-    "detection": {
-        "data_root": "tests/assets/car_tree_bug",
-        "overrides": ["--model.num_classes", "3"],
-    },
-    "instance_segmentation": {
-        "data_root": "tests/assets/car_tree_bug",
-        "overrides": ["--model.num_classes", "3"],
-    },
-    "semantic_segmentation": {
-        "data_root": "tests/assets/common_semantic_segmentation_dataset/supervised",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "action_classification": {
-        "data_root": "tests/assets/action_classification_dataset/",
-        "overrides": ["--model.num_classes", "2"],
-    },
-    "action_detection": {
-        "data_root": "tests/assets/action_detection_dataset/",
-        "overrides": [
-            "--model.num_classes",
-            "5",
-            "--model.topk",
-            "3",
-        ],
-    },
-    "visual_prompting": {
-        "data_root": "tests/assets/car_tree_bug",
-        "overrides": [],
-    },
-}
-
-
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
+def test_otx_e2e(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+) -> None:
     """
     Test OTX CLI e2e commands.
 
-    - 'otx train' with 2 epochs trainig
+    - 'otx train' with 2 epochs training
     - 'otx test' with output checkpoint from 'otx train'
+    - 'otx export' with output checkpoint from 'otx train'
+    - 'otx test' with the exported to ONNX/IR model
 
     Args:
         recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
@@ -88,6 +43,8 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     """
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -97,18 +54,21 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         "--config",
         recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
         "2",
-        *DATASET[task]["overrides"],
+        *fxt_cli_override_command_per_task[task],
     ]
 
     with patch("sys.argv", command_cfg):
         main()
+
+    if task in ("zero_shot_visual_prompting"):
+        pytest.skip("Full CLI test is not applicable to this task.")
 
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
@@ -126,12 +86,12 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
         "--config",
         recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         fxt_accelerator,
-        *DATASET[task]["overrides"],
+        *fxt_cli_override_command_per_task[task],
         "--checkpoint",
         str(ckpt_files[-1]),
     ]
@@ -142,9 +102,129 @@ def test_otx_e2e(recipe: str, tmp_path: Path, fxt_accelerator: str) -> None:
     assert (tmp_path_test / "outputs").exists()
     assert (tmp_path_test / "outputs" / "csv").exists()
 
+    # 3) otx export
+    if any(
+        task_name in recipe
+        for task_name in [
+            "h_label_cls",
+            "detection",
+            "dino_v2",
+            "instance_segmentation",
+            "action",
+            "visual_prompting",
+        ]
+    ):
+        return
+
+    format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml"}
+
+    tmp_path_test = tmp_path / f"otx_test_{model_name}"
+    for fmt in format_to_ext:
+        command_cfg = [
+            "otx",
+            "export",
+            "--config",
+            recipe,
+            "--data_root",
+            fxt_target_dataset_per_task[task],
+            "--engine.work_dir",
+            str(tmp_path_test / "outputs"),
+            *fxt_cli_override_command_per_task[task],
+            "--checkpoint",
+            str(ckpt_files[-1]),
+            "--export_format",
+            f"{fmt}",
+        ]
+
+        with patch("sys.argv", command_cfg):
+            main()
+
+        assert (tmp_path_test / "outputs").exists()
+        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
+
+    # 4) infer of the exported models
+    task = recipe.split("/")[-2]
+    tmp_path_test = tmp_path / f"otx_test_{model_name}"
+    if "_cls" in recipe:
+        export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
+    else:
+        export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
+    exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
+
+    command_cfg = [
+        "otx",
+        "test",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        "cpu",
+        *fxt_cli_override_command_per_task[task],
+        "--model.model_name",
+        exported_model_path,
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+
+
+@pytest.mark.parametrize("recipe", RECIPE_LIST)
+def test_otx_explain_e2e(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+) -> None:
+    """
+    Test OTX CLI explain e2e command.
+
+    Args:
+        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    task = recipe.split("/")[-2]
+    model_name = recipe.split("/")[-1].split(".")[0]
+
+    if ("_cls" not in task) and (task != "detection"):
+        pytest.skip("Supported only for classification and detection task.")
+
+    if "dino" in model_name:
+        pytest.skip("Dino is not supported.")
+
+    # otx explain
+    tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
+    command_cfg = [
+        "otx",
+        "explain",
+        "--config",
+        recipe,
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_explain / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_explain / "outputs").exists()
+    assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
+
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
-def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
+def test_otx_ov_test(recipe: str, tmp_path: Path, fxt_target_dataset_per_task: dict) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -173,7 +253,7 @@ def test_otx_ov_test(recipe: str, tmp_path: Path) -> None:
         "--config",
         recipe,
         "--data_root",
-        DATASET[task]["data_root"],
+        fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
