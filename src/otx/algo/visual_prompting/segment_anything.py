@@ -23,6 +23,15 @@ DEFAULT_CONFIG_SEGMENT_ANYTHING: dict[str, dict[str, Any]] = {
     "tiny_vit": {
         "load_from": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
     },
+    "vit_b": {
+        "load_from": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
+    },
+    "vit_l": {
+        "load_from": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
+    },
+    "vit_h": {
+        "load_from": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
+    },
 }
 
 
@@ -117,7 +126,8 @@ class SegmentAnything(nn.Module):
                 "image_encoder.head.weight",
                 "image_encoder.head.bias",
             ]:
-                state_dict.pop(key)
+                if key in state_dict:
+                    state_dict.pop(key)
             self.load_state_dict(state_dict)
         except ValueError as e:
             log.info(
@@ -471,7 +481,7 @@ class SegmentAnything(nn.Module):
 class OTXSegmentAnything(OTXVisualPromptingModel):
     """Visual Prompting model."""
 
-    def __init__(self, backbone: Literal["tiny_vit"], num_classes: int = 0, **kwargs):
+    def __init__(self, backbone: Literal["tiny_vit", "vit_b"], num_classes: int = 0, **kwargs):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
         super().__init__(num_classes=num_classes)
 
