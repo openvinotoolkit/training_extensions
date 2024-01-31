@@ -184,13 +184,12 @@ class OTXModelExporter:
         self,
         onnx_model: onnx.ModelProto,
         embed_metadata: bool,
-        precision: OTXPrecisionType
+        precision: OTXPrecisionType,
     ) -> onnx.ModelProto:
         if embed_metadata:
-            metadata = {} if metadata is None else self._extend_model_metadata(self.metadata)
+            metadata = {} if self.metadata is None else self._extend_model_metadata(self.metadata)
             onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
 
-        onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
         if precision == OTXPrecisionType.FP16:
             from onnxconverter_common import float16
 

@@ -36,8 +36,9 @@ class ATSS(MMDetCompatibleModel):
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 
+
 class ATSSR50FPN(ATSS):
-    """ATSS r50 FPN Model."""
+    """ATSSR50FPN Model."""
 
     def __init__(self, num_classes: int) -> None:
         super().__init__(num_classes=num_classes, variant="r50_fpn")

@@ -225,7 +225,7 @@ class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
             labels=labels,
         )
 
-    def _get_exporter(self, test_pipeline: list[dict] | None = None,) -> OTXModelExporter:
+    def _get_exporter(self, test_pipeline: list[dict] | None = None) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if test_pipeline is None:
             msg = "test_pipeline is necessary for mmdeploy."

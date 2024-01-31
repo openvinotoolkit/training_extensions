@@ -188,6 +188,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
             test_pipeline (list[dict] | None): test dataset pipeline. necessary for mmdeploy.
+
         Returns:
             Path: path to the exported model.
         """

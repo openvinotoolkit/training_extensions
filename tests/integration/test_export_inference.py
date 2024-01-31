@@ -49,8 +49,8 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "semantic_segmentation": "test/mIoU",
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
-    "detection" : "test/map_50",
-    "instance_segmentation" : "test/map_50",
+    "detection": "test/map_50",
+    "instance_segmentation": "test/map_50",
 }
 
 
