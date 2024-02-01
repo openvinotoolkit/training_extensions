@@ -1,5 +1,5 @@
 import json
-from os import path as osp
+from pathlib import Path
 
 import pytest
 from otx.hpo.hpo_base import Trial
@@ -15,11 +15,8 @@ def trial(good_trial_args):
     return Trial(**good_trial_args)
 
 
-def register_scores_to_trial(trial, scores=[val for val in range(100)]):
-    if len(trial.score) != 0:
-        base_resource = max(trial.score.keys())
-    else:
-        base_resource = 0
+def register_scores_to_trial(trial, scores=list(range(100))):  # noqa: B006, B008
+    base_resource = max(trial.score.keys()) if len(trial.score) != 0 else 0
     for idx, score in enumerate(scores):
         trial.register_score(score, base_resource + idx + 1)
 
@@ -35,7 +32,7 @@ class TestTrial:
 
     @pytest.mark.parametrize("iter_val", [-10, 0])
     def test_set_negative_iteration(self, trial, iter_val):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="should be positive"):
             trial.iteration = iter_val
 
     def test_get_train_configuration(self, good_trial_args):
@@ -58,23 +55,20 @@ class TestTrial:
     @pytest.mark.parametrize("resource", [-10, 0])
     def test_register_score_not_postive_resource(self, trial, resource):
         score = 10
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="should be positive"):
             trial.register_score(score, resource)
 
     @pytest.mark.parametrize("mode", ["min", "max"])
     @pytest.mark.parametrize("resource_limit", [None, 10, 20])
     def test_get_best_score(self, trial, mode, resource_limit):
-        scores = [val for val in range(100)]
+        scores = list(range(100))
         register_scores_to_trial(trial, scores)
 
         if resource_limit is not None:
             scores = {i + 1: score for i, score in enumerate(scores)}
             scores = [val for key, val in scores.items() if key <= resource_limit]
 
-        if mode == "min":
-            expected_score = min(scores)
-        else:
-            expected_score = max(scores)
+        expected_score = min(scores) if mode == "min" else max(scores)
 
         assert expected_score == trial.get_best_score(mode, resource_limit)
 
@@ -82,7 +76,7 @@ class TestTrial:
         assert trial.get_best_score() is None
 
     def test_get_best_score_no_trial_to_meet_condition(self, trial):
-        scores = [val for val in range(100)]
+        scores = list(range(100))
         register_scores_to_trial(trial, scores)
         assert trial.get_best_score(resource_limit=0.5) is None
 
@@ -91,7 +85,7 @@ class TestTrial:
 
     def test_get_best_score_with_wrong_mode_value(self, trial):
         register_scores_to_trial(trial)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="mode should be"):
             trial.get_best_score(mode="wrong")
 
     @pytest.mark.parametrize("resource", [12, 42.12])
@@ -102,12 +96,12 @@ class TestTrial:
     def test_get_progress_not_trained_at_all(self, trial):
         assert trial.get_progress() == 0
 
-    def test_save_results(self, trial, tmp_path):
+    def test_save_results(self, trial, tmp_path: Path):
         register_scores_to_trial(trial)
-        save_path = osp.join(tmp_path, "test")
+        save_path = tmp_path / "test"
         trial.save_results(save_path)
 
-        with open(save_path) as f:
+        with save_path.open() as f:
             result = json.load(f)
 
         assert result["id"] == "name"
@@ -125,7 +119,7 @@ class TestTrial:
 
     def test_finalize_without_registered_score(self, trial):
         trial.iteration = 10
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError, match="didn't report any score but tries to be done"):
             trial.finalize()
 
     def test_is_not_done(self, trial):
@@ -138,5 +132,5 @@ class TestTrial:
         assert trial.is_done()
 
     def test_is_done_iteration_not_set_yet(self, trial):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="iteration isn't set yet"):
             trial.is_done()

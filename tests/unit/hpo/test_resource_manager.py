@@ -24,7 +24,7 @@ class TestCPUResourceManager:
 
     @pytest.mark.parametrize("num_parallel_trial", [-1, 0])
     def test_init_with_not_positive_num_parallel_trial(self, num_parallel_trial):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             CPUResourceManager(num_parallel_trial)
 
     def test_reserve_resource(self, cpu_resource_manager):
@@ -64,12 +64,12 @@ class TestGPUResourceManager:
 
     @pytest.mark.parametrize("num_gpu_for_single_trial", [-1, 0])
     def test_init_not_positive_num_gpu(self, num_gpu_for_single_trial):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             GPUResourceManager(num_gpu_for_single_trial=num_gpu_for_single_trial)
 
     @pytest.mark.parametrize("available_gpu", [",", "a,b", "0,a", ""])
     def test_init_wrong_available_gpu_value(self, available_gpu):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             GPUResourceManager(available_gpu=available_gpu)
 
     def test_reserve_resource(self):
@@ -117,7 +117,7 @@ class TestGPUResourceManager:
             assert gpu_resource_manager.have_available_resource()
             gpu_resource_manager.reserve_resource(i)
 
-        for i in range(max_parallel, max_parallel + 10):
+        for _i in range(max_parallel, max_parallel + 10):
             assert not gpu_resource_manager.have_available_resource()
 
 
@@ -138,7 +138,7 @@ def test_get_resource_manager_gpu():
 
 
 def test_get_resource_manager_wrong_resource_type():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Available resource type"):
         get_resource_manager("wrong")
 
 
