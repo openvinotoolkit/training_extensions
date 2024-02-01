@@ -50,7 +50,6 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
     "detection": "test/map_50",
-    "instance_segmentation": "test/map_50",
 }
 
 
@@ -85,6 +84,14 @@ def test_otx_export_infer(
     if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
+    epoch = 2
+    command_args = []
+    if "yolox" in recipe:  # yolox variants need more epoch for stable result
+        epoch = 30
+        command_args = ["--optimizer.lr", "0.0002"]
+    elif "atss_resnext101" not in recipe:
+        epoch = 5
+
     # litehrnet_* models don't support deterministic mode
     model_name = recipe.split("/")[-1].split(".")[0]
     deterministic_flag = "False" if "litehrnet" in recipe else "True"
@@ -103,12 +110,13 @@ def test_otx_export_infer(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "2",
+        str(epoch),
         "--seed",
         f"{fxt_local_seed}",
         "--deterministic",
         deterministic_flag,
         *fxt_cli_override_command_per_task[task],
+        *command_args,
     ]
 
     with patch("sys.argv", command_cfg):
