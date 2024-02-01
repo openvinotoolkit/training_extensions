@@ -8,7 +8,13 @@ from __future__ import annotations
 from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
+import io
+import json
+import os
+import tempfile
+from zipfile import ZipFile
 
+from otx.core.exporter.exportable_code import demo
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 
@@ -112,15 +118,21 @@ class OTXModelExporter:
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
     ) -> Path:
-        """Export to ONNX format.
+            """
+            Abstract method for ONNX export.
 
-        Args:
-            model (torch.nn.Module): pytorch model top export
-            output_dir (Path): path to the directory to store export artifacts
-            base_model_name (str, optional): exported model name
-            precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
-        """
+            Converts the given torch model to ONNX format and saves it to the specified output directory.
+
+            Args:
+                model (torch.nn.Module): The input PyTorch model to be converted.
+                output_dir (Path): The directory where the ONNX model will be saved.
+                base_model_name (str, optional): The name of the exported ONNX model. Defaults to "exported_model".
+                precision (OTXPrecisionType, optional): The precision type for the exported model. Defaults to OTXPrecisionType.FP32.
+                embed_metadata (bool, optional): Flag to embed metadata in the exported ONNX model. Defaults to True.
+
+            Returns:
+                Path: The file path where the ONNX model is saved.
+            """
 
     def to_exportable_code(
         self,
@@ -128,7 +140,7 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> Path:
+        ) -> Path:
         """Export to zip folder final OV IR model with runable demo.
 
         Args:
@@ -136,21 +148,10 @@ class OTXModelExporter:
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            embed_metadata (bool): flag which enables embedding of metadata to the ONNX model.
-            Metadata embedding should be enabled if model is going to be converted to OV IR
-            (otherwise OV fails on the resulting model).
 
         Returns:
             Path: path to the exported model.
         """
-        import io
-        import json
-        import os
-        import tempfile
-        from zipfile import ZipFile
-
-        from otx.core.exporter.exportable_code import demo
-
         work_dir = Path(demo.__file__).parent
         parameters: dict[str, Any] = {}
         if self.metadata is not None:
@@ -160,13 +161,14 @@ class OTXModelExporter:
                 "labels": self.metadata.get(("model_info", "labels"), ""),
                 "labels_ids": self.metadata.get(("model_info", "label_ids"), ""),
             }
-        zip_buffer = io.BytesIO()
-        temp_dir = tempfile.TemporaryDirectory()
-        with ZipFile(zip_buffer, "w") as arch:
+
+        output_zip_path = output_dir / "exportable_code.zip"
+        Path.mkdir(output_dir, exist_ok=True)
+        with tempfile.TemporaryDirectory() as temp_dir, ZipFile(output_zip_path, "x") as arch:
             # model files
-            path_to_model = self.to_openvino(model, Path(temp_dir.name), base_model_name, precision)
+            path_to_model = self.to_openvino(model, Path(temp_dir), base_model_name, precision)
             arch.write(str(path_to_model), Path("model") / "model.xml")
-            arch.write(str(path_to_model)[:-4] + ".bin", Path("model") / "model.bin")
+            arch.write(path_to_model.with_suffix(".bin"), Path("model") / "model.bin")
 
             arch.writestr(
                 str(Path("model") / "config.json"),
@@ -174,15 +176,15 @@ class OTXModelExporter:
             )
             # python files
             arch.write(
-                Path(work_dir) / "requirements.txt",
+                work_dir / "requirements.txt",
                 Path("python") / "requirements.txt",
             )
-            arch.write(Path(work_dir, "LICENSE"), Path("python") / "LICENSE")
-            arch.write(Path(work_dir, "demo.py"), Path("python") / "demo.py")
-            arch.write(Path(work_dir, "README.md"), Path("./") / "README.md")
-            arch.write(Path(work_dir, "setup.py"), Path("python") / "setup.py")
+            arch.write(work_dir.parents[5] / "LICENSE", Path("python") / "LICENSE")
+            arch.write(work_dir / "demo.py", Path("python") / "demo.py")
+            arch.write(work_dir / "README.md", Path("./") / "README.md")
+            arch.write(work_dir / "setup.py", Path("python") / "setup.py")
             # write demo_package
-            demo_package = Path(work_dir, "demo_package")
+            demo_package = work_dir / "demo_package"
             for root, _, files in os.walk(demo_package):
                 if root.endswith("__pycache__"):
                     continue
@@ -190,12 +192,7 @@ class OTXModelExporter:
                     file_path = Path(root) / file
                     archive_path = file_path.relative_to(demo_package)
                     arch.write(file_path, Path("python") / "demo_package" / archive_path)
-        # save archive
-        output_path = output_dir / "exportable_code.zip"
-        with Path.open(output_path, "wb") as f:
-            f.write(zip_buffer.getvalue())
-        temp_dir.cleanup()
-        return output_path
+        return output_zip_path
 
     @staticmethod
     def _embed_onnx_metadata(onnx_model: onnx.ModelProto, metadata: dict[tuple[str, str], Any]) -> onnx.ModelProto:

@@ -41,7 +41,7 @@ def build_argparser() -> ArgumentParser:
         "--inference_type",
         help="Optional. Type of inference for single model.",
         choices=["sync", "async"],
-        default="sync",
+        default="async",
         type=str,
     )
     args.add_argument(

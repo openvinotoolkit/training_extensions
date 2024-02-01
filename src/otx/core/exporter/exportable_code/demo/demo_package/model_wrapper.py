@@ -38,21 +38,12 @@ class ModelWrapper:
 
     def __init__(self, model_dir: Path, device: str = "CPU") -> None:
         model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "model.xml"), device=device)
-
-        try:
-            config_data = model_adapter.model.get_rt_info(["otx_config"])
-            if not isinstance(config_data, str):
-                # OV 2023.0 return OVAny which needs to be casted with astype()
-                config_data = config_data.astype(str)
-            self.parameters = json.loads(config_data)
-        except RuntimeError:
-            self.parameters = get_parameters(model_dir / "config.json")
+        if not (model_dir / "config.json").exists():
+            msg = "config.json doesn't exist in the model directory."
+            raise RuntimeError(msg)
+        self.parameters = get_parameters(model_dir / "config.json")
         self._labels = self.parameters["model_parameters"]["labels"]
         self._task_type = TaskType[self.parameters["converter_type"].upper()]
-
-        self.segm = bool(
-            self._task_type is TaskType.INSTANCE_SEGMENTATION,
-        )
 
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
