@@ -42,6 +42,9 @@ LITMODULE_PER_TASK = {
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
     OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
+    OTXTaskType.ANOMALY_CLASSICATION: "otx.core.model.module.anomaly.OTXAnomalyLitModel",
+    OTXTaskType.ANOMALY_SEGMENTATION: "otx.core.model.module.anomaly.OTXAnomalyLitModel",
+    OTXTaskType.ANOMALY_DETECTION: "otx.core.model.module.anomaly.OTXAnomalyLitModel",
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
 }
