@@ -15,47 +15,34 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 class OTXInstSegMeanAveragePrecision(MeanAveragePrecision):
     """Mean Average Precision for Instance Segmentation.
 
-    This metric computes RLE directly from torch.Tensor masks to
-    accelerate the computation.
+    This metric computes RLE directly to accelerate the computation.
     """
 
-    def encode_rle(self, mask: torch.Tensor) -> dict:
-        """Encodes a mask into RLE format.
-
-        Rewrite of https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/mask.py
-
-        Example:
-            Given M=[0 0 1 1 1 0 1] the RLE counts is [2 3 1 1].
-            Or for M=[1 1 1 1 1 1 0] the RLE counts is [0 6 1].
+    def update(self, preds: list[dict], target: list[dict]) -> None:
+        """Update the metric with the given predictions and targets.
 
         Args:
-            mask (torch.Tensor): A binary mask (0 or 1) of shape (H, W).
-
-        Returns:
-            dict: A dictionary with keys "counts" and "size".
+            preds (list[dict]): list of RLE encoded masks
+            target (list[dict]): list of RLE encoded masks
         """
-        rle = {"counts": [], "size": list(mask.shape)}
-        device = mask.device
-        vector = mask.t().ravel()
-        diffs = torch.diff(vector)
-        next_diffs = torch.where(diffs != 0)[0] + 1
+        for item in preds:
+            bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
+            if bbox_detection is not None:
+                self.detection_box.append(bbox_detection)
+            if mask_detection is not None:
+                self.detection_mask.append(mask_detection)
+            self.detection_labels.append(item["labels"])
+            self.detection_scores.append(item["scores"])
 
-        counts = torch.diff(
-            torch.cat(
-                (
-                    torch.tensor([0], device=device),
-                    next_diffs,
-                    torch.tensor([len(vector)], device=device),
-                ),
-            ),
-        )
-
-        # odd counts are always the numbers of zeros
-        if vector[0] == 1:
-            counts = torch.cat((torch.tensor([0], device=device), counts))
-
-        rle["counts"] = counts.tolist()
-        return rle
+        for item in target:
+            bbox_groundtruth, mask_groundtruth = self._get_safe_item_values(item)
+            if bbox_groundtruth is not None:
+                self.groundtruth_box.append(bbox_groundtruth)
+            if mask_groundtruth is not None:
+                self.groundtruth_mask.append(mask_groundtruth)
+            self.groundtruth_labels.append(item["labels"])
+            self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
+            self.groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
 
     def _get_safe_item_values(
         self,
@@ -73,8 +60,8 @@ class OTXInstSegMeanAveragePrecision(MeanAveragePrecision):
         """
         if "segm" in self.iou_type:
             masks = []
-            for mask in item["masks"]:
-                rle = self.encode_rle(mask)
-                rle = mask_utils.frPyObjects(rle, *rle["size"])
+            for rle in item["masks"]:
+                if isinstance(rle["counts"], list):
+                    rle["counts"] = mask_utils.frPyObjects(rle, *rle["size"])["counts"]
                 masks.append((tuple(rle["size"]), rle["counts"]))
         return None, tuple(masks)

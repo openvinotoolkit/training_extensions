@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchvision import tv_tensors
 
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -18,7 +17,7 @@ from otx.core.data.entity.instance_segmentation import (
 from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.evaluation import OTXInstSegMeanAveragePrecision
-from otx.core.utils.mask_util import polygon_to_bitmap
+from otx.core.utils.mask_util import encode_rle, polygon_to_bitmap
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -43,7 +42,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
 
         self.val_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
         self.test_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
-        self.gt_caches = {}
+        self.gt_caches: dict[int, list] = {}
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -122,10 +121,11 @@ class OTXInstanceSegLitModule(OTXLitModule):
             preds.scores,
             preds.labels,
         ):
+            rles = [encode_rle(mask) for mask in masks.data]
             pred_info.append(
                 {
                     "boxes": bboxes.data,
-                    "masks": masks.data,
+                    "masks": rles,
                     "scores": scores,
                     "labels": labels,
                 },
@@ -141,11 +141,11 @@ class OTXInstanceSegLitModule(OTXLitModule):
             inputs.polygons,
             inputs.labels,
         ):
-            bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
+            bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape, return_rle=True)
             target_info.append(
                 {
                     "boxes": bboxes.data,
-                    "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
+                    "masks": bit_masks,
                     "labels": labels,
                 },
             )
