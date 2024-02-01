@@ -17,11 +17,13 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Callable, Literal
 
+from otx.utils import append_signal_handler
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
+    from signal import Signals
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +77,8 @@ class HpoLoop:
         )
         self._main_pid = os.getpid()
 
-        signal.signal(signal.SIGINT, self._terminate_signal_handler)
-        signal.signal(signal.SIGTERM, self._terminate_signal_handler)
+        append_signal_handler(signal.SIGINT, self._terminate_signal_handler)
+        append_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
 
     def run(self) -> None:
         """Run a HPO loop."""
@@ -182,17 +184,15 @@ class HpoLoop:
                 logger.info(f"Kill child process {process.pid}")
                 process.kill()
 
-    def _terminate_signal_handler(self, signum, _frame) -> None:
+    def _terminate_signal_handler(self, signum: Signals, frame_) -> None:
         # This code prevents child processses from being killed unintentionally by proccesses forked from main process
         if self._main_pid != os.getpid():
-            sys.exit()
+            return
 
         self._terminate_all_running_processes()
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}
         logger.warning(f"{singal_name[signum]} is sent. process exited.")
-
-        sys.exit(1)
 
 
 def _run_train(train_func: Callable, hp_config: dict, report_func: Callable) -> None:
