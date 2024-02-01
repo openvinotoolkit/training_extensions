@@ -60,6 +60,6 @@ def fxt_cli_override_command_per_task() -> dict:
         "zero_shot_visual_prompting": [
             "--max_epochs",
             "1",
-            "--no-update-num-classes",
+            "--disable-infer-num-classes",
         ],
     }
