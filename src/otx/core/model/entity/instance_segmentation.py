@@ -72,74 +72,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         """Register explain hook at the model backbone output."""
         from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 
-        self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook(
-            self.get_target_layer(),
-            self.cls_head_forward_fn,
-            num_classes=self.num_classes,
-        )
-
-    def get_target_layer(self) -> torch.nn.Module:
-        """Returns the first (out of two) layernorm layer from the last backbone layer."""
-        layernorm_layers = [module for module in self.model.modules()]
-        target_layernorm_index = -1
-        return layernorm_layers[target_layernorm_index]
-    
-    @property
-    def backbone(self) -> nn.Module:
-        """Returns model's backbone. Can be redefined at the model's level."""
-        if backbone := getattr(self.model, "backbone", None):
-            return backbone
-        raise ValueError
-
-    @torch.no_grad()
-    def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward and returns cls scores.
-        This can be redefined at the model's level.
-        """
-        # if (head := getattr(self.model, "bbox_head", None)) is None:
-        #     raise ValueError
-
-        if (neck := getattr(self.model, "neck", None)) is not None:
-            x = neck(x)
-
-        # head_out = head(x)
-        roi_head = self.model.roi_head
-        rpn_head = self.model.rpn_head
-
-        batch_size = 1 #x[0].shape[0]
-        self.input_img_shape = (576, 1024)
-        img_metas = [
-            {
-                "scale_factor": [1, 1, 1, 1],  # dummy scale_factor, not used
-                "img_shape": self.input_img_shape,
-            }
-        ]
-        img_metas *= batch_size
-        # proposals = self._module.rpn_head.simple_test_rpn(x, img_metas)
-        test_cfg = roi_head.test_cfg
-        self.max_detections_per_img = 300
-
-        test_cfg["max_per_img"] = self.max_detections_per_img
-        test_cfg["nms"]["iou_threshold"] = 1
-        test_cfg["nms"]["max_num"] = self.max_detections_per_img
-
-        proposals = rpn_head(x)
-        rpn_pred = rpn_head.predict_by_feat(*proposals, batch_img_metas=img_metas)
-        labels, boxes, masks = roi_head(x, rpn_pred, img_metas)
-
-
-        return labels, boxes, masks
-
-    def get_num_anchors(self) -> list[int]:
-        """Gets the anchor configuration from model."""
-        if anchor_generator := getattr(self.model.bbox_head, "prior_generator", None):
-            return (
-                anchor_generator.num_base_anchors
-                if hasattr(anchor_generator, "num_base_anchors")
-                else anchor_generator.num_base_priors
-            )
-
-        return [1] * 10
+        self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook()
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
