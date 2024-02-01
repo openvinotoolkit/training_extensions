@@ -424,7 +424,8 @@ class Engine:
         Args:
             datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
             max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
-            used for model optimization.
+            used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
+            default settings.
 
         Returns:
             Path: path to the optimized model.
