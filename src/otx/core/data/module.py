@@ -52,7 +52,7 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
-        dataset = pre_filtering(dataset)
+        dataset = pre_filtering(dataset, self.config.data_format)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,

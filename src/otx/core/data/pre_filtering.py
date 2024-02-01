@@ -15,12 +15,12 @@ if TYPE_CHECKING:
     from datumaro.components.dataset_base import DatasetItem
 
 
-def pre_filtering(dataset: DmDataset) -> DmDataset:
+def pre_filtering(dataset: DmDataset, data_format: str) -> DmDataset:
     """Filtering invalid data in datumaro dataset."""
     dataset = DmDataset.filter(dataset, is_non_empty_item)
     dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
 
-    return remove_unused_labels(dataset)
+    return remove_unused_labels(dataset, data_format)
 
 
 def is_non_empty_item(item: DatasetItem) -> bool:
@@ -43,9 +43,16 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:
     return True
 
 
-def remove_unused_labels(dataset: DmDataset) -> DmDataset:
+def remove_unused_labels(dataset: DmDataset, data_format: str) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
+    if data_format == "ava":
+        used_labels = [0, *used_labels]
+    elif data_format == "common_semantic_segmentation_with_subset_dirs":
+        if 0 in used_labels:
+            used_labels = [label - 1 for label in used_labels[1:]]
+        else:
+            used_labels = [label - 1 for label in used_labels]
     mapping = {original_categories[idx]: original_categories[idx] for idx in used_labels}
     return dataset.transform("remap_labels", mapping=mapping, default="delete")
