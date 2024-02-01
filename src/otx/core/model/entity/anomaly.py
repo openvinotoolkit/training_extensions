@@ -40,9 +40,7 @@ class _AnomalibLightningArgsCache:
 class OTXAnomalyModel(OTXModel):
     """Base Anomaly OTX Model."""
 
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         self.model: nn.Module
         super().__init__(num_classes=2)
         # This cache is used to get params from the OTX model and pass it into Anomalib Lightning module
@@ -70,3 +68,4 @@ class OTXAnomalyModel(OTXModel):
     ) -> Path:
         # TODO
         ...
+        export_to_openvino()

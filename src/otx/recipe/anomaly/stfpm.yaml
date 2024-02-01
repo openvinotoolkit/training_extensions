@@ -1,13 +1,11 @@
 model:
-  class_path: otx.algo.anomaly.padim.Padim
+  class_path: otx.algo.anomaly.stfpm.STFPM
   init_args:
     input_size:
       - 256
       - 256
     layers: ["layer1", "layer2", "layer3"]
     backbone: "resnet18"
-    pre_trained: True
-    n_features: null
 
 engine:
   task: ANOMALY_CLASSIFICATION
@@ -17,7 +15,7 @@ callback_monitor: step
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
-  max_epochs: 1
+  max_epochs: 100
   limit_val_batches: 0
   data:
     task: ANOMALY_CLASSIFICATION

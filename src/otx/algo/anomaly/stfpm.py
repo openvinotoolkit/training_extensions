@@ -24,18 +24,18 @@ class STFPM(OTXAnomalyModel):
         input_size: tuple[int, int],
         backbone: str = "resnet18",
     ) -> None:
-        super().__init__()
         self.input_size = input_size
-        self.layers = layers
+        self._layers = layers
         self.backbone = backbone
+        super().__init__()
 
         self.anomalib_lightning_args.update(
             input_size=self.input_size,
-            layers=self.layers,
+            layers=self._layers,
             backbone=self.backbone,
         )
 
     def _create_model(self) -> nn.Module:
         from anomalib.models.image.stfpm.torch_model import STFPMModel
 
-        return STFPMModel(layers=self.layers, input_size=self.input_size, backbone=self.backbone)
+        return STFPMModel(layers=self._layers, input_size=self.input_size, backbone=self.backbone)

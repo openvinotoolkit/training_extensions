@@ -25,16 +25,16 @@ class Padim(OTXAnomalyModel):
         pre_trained: bool = True,
         n_features: int | None = None,
     ) -> None:
-        super().__init__()
         self.input_size = input_size
-        self.layers = layers
+        self._layers = layers
         self.backbone = backbone
         self.pre_trained = pre_trained
         self.n_features = n_features
+        super().__init__()
 
         self.anomalib_lightning_args.update(
             input_size=self.input_size,
-            layers=self.layers,
+            layers=self._layers,
             backbone=self.backbone,
             pre_trained=self.pre_trained,
             n_features=self.n_features,
@@ -45,7 +45,7 @@ class Padim(OTXAnomalyModel):
 
         return PadimModel(
             input_size=self.input_size,
-            layers=self.layers,
+            layers=self._layers,
             backbone=self.backbone,
             pre_trained=self.pre_trained,
             n_features=self.n_features,

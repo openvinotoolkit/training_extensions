@@ -83,6 +83,12 @@ class OTXDatasetFactory:
             "image_color_channel": cfg_data_module.image_color_channel,
             "stack_images": cfg_data_module.stack_images,
         }
+
+        if task == OTXTaskType.ANOMALY_CLASSIFICATION:
+            from .dataset.anomaly import AnomalyClassificationDataset
+
+            return AnomalyClassificationDataset(**common_kwargs)
+
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
 

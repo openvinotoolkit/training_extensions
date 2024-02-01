@@ -32,7 +32,7 @@ class AnomalyClassificationDataItem(OTXDataEntity):
     @property
     def task(self) -> OTXTaskType:
         """Task type is anomaly classification."""
-        return OTXTaskType.ANOMALY_CLASSICATION
+        return OTXTaskType.ANOMALY_CLASSIFICATION
 
     label: torch.LongTensor
 
@@ -47,7 +47,7 @@ class AnomalyClassificationDataBatch(OTXBatchDataEntity):
     @property
     def task(self) -> OTXTaskType:
         """OTX Task type definition."""
-        return OTXTaskType.ANOMALY_CLASSICATION
+        return OTXTaskType.ANOMALY_CLASSIFICATION
 
     @classmethod
     def collate_fn(
