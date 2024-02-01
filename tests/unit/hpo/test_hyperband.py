@@ -11,24 +11,24 @@ from tempfile import TemporaryDirectory
 from typing import Union
 
 import pytest
-
 from otx.hpo import hyperband
 from otx.hpo.hpo_base import TrialStatus
 from otx.hpo.hyperband import AshaTrial, Bracket, HyperBand, Rung
+
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 
-@pytest.fixture
+@pytest.fixture()
 def good_trial_args():
     return {"trial_id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def trial(good_trial_args):
     return AshaTrial(**good_trial_args)
 
 
-@pytest.fixture
+@pytest.fixture()
 def good_rung_args():
     return {"resource": 10, "num_required_trial": 16, "reduction_factor": 2, "rung_idx": 0}
 
@@ -42,12 +42,12 @@ def register_scores_to_trial(trial, scores=[val for val in range(100)]):
         trial.register_score(score, base_resource + idx + 1)
 
 
-@pytest.fixture
+@pytest.fixture()
 def rung(good_rung_args):
     return Rung(**good_rung_args)
 
 
-@pytest.fixture
+@pytest.fixture()
 def good_bracket_args():
     hp_configs = [AshaTrial(i, {"hp1": 1, "hp2": 1.2}) for i in range(100)]
     return {
@@ -61,12 +61,12 @@ def good_bracket_args():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def bracket(good_bracket_args):
     return Bracket(**good_bracket_args)
 
 
-@pytest.fixture
+@pytest.fixture()
 def good_hyperband_args():
     with TemporaryDirectory() as tmp_dir:
         yield {
@@ -90,7 +90,7 @@ def good_hyperband_args():
         }
 
 
-@pytest.fixture
+@pytest.fixture()
 def hyper_band(good_hyperband_args):
     return HyperBand(**good_hyperband_args)
 
@@ -139,7 +139,7 @@ class TestAshaTrial:
         save_path = osp.join(tmp_path, "test")
         trial.save_results(save_path)
 
-        with open(save_path, "r") as f:
+        with open(save_path) as f:
             result = json.load(f)
         assert result["id"] == "name"
         assert result["configuration"]["hp1"] == 1
@@ -429,7 +429,7 @@ class TestBracket:
             math.log(
                 good_bracket_args["maximum_resource"] / good_bracket_args["minimum_resource"],
                 good_bracket_args["reduction_factor"],
-            )
+            ),
         )
         assert bracket.max_rung == expected_val
 
@@ -444,7 +444,8 @@ class TestBracket:
 
     @e2e_pytest_component
     @pytest.mark.parametrize(
-        "minimum_resource,maximum_resource,reduction_factor", [(-1, 100, 3), (1, -3, 3), (1, 100, -2), (10, 3, 3)]
+        "minimum_resource,maximum_resource,reduction_factor",
+        [(-1, 100, 3), (1, -3, 3), (1, 100, -2), (10, 3, 3)],
     )
     def test_calcuate_max_rung_with_wrong_input(self, minimum_resource, maximum_resource, reduction_factor):
         with pytest.raises(ValueError):
@@ -550,7 +551,8 @@ class TestBracket:
         trial = bracket.get_next_trial()
         expected_trial_id = trial.id
         register_scores_to_trial(
-            trial, [expected_score for _ in range(bracket._rungs[trial.rung].resource - trial.get_progress())]
+            trial,
+            [expected_score for _ in range(bracket._rungs[trial.rung].resource - trial.get_progress())],
         )
         while True:
             trial = bracket.get_next_trial()
@@ -558,7 +560,8 @@ class TestBracket:
                 break
 
             register_scores_to_trial(
-                trial, [score for score in range(bracket._rungs[trial.rung].resource - trial.get_progress())]
+                trial,
+                [score for score in range(bracket._rungs[trial.rung].resource - trial.get_progress())],
             )
         trial = bracket.get_best_trial()
         assert trial.get_best_score(bracket._mode) == expected_score
@@ -585,12 +588,13 @@ class TestBracket:
                 break
 
             register_scores_to_trial(
-                trial, [score for score in range(bracket._rungs[trial.rung].resource - trial.get_progress())]
+                trial,
+                [score for score in range(bracket._rungs[trial.rung].resource - trial.get_progress())],
             )
 
         bracket.save_results(tmp_path)
 
-        with open(osp.join(tmp_path, "rung_status.json"), "r") as f:
+        with open(osp.join(tmp_path, "rung_status.json")) as f:
             result = json.load(f)
 
         assert result["minimum_resource"] == good_bracket_args["minimum_resource"]
@@ -613,7 +617,8 @@ class TestBracket:
                 break
 
             register_scores_to_trial(
-                trial, [score for score in range(bracket._rungs[trial.rung].resource - trial.get_progress())]
+                trial,
+                [score for score in range(bracket._rungs[trial.rung].resource - trial.get_progress())],
             )
 
         bracket.print_result()
@@ -903,7 +908,7 @@ class TestHyperBand:
             hyper_band.report_score(score=1, resource=trial.iteration, trial_id=trial.id)
 
         s_max = math.floor(
-            math.log(hyper_band.maximum_resource / first_validation, good_hyperband_args["reduction_factor"])
+            math.log(hyper_band.maximum_resource / first_validation, good_hyperband_args["reduction_factor"]),
         )
         expected_min = hyper_band.maximum_resource * (good_hyperband_args["reduction_factor"] ** -s_max)
 
@@ -1066,7 +1071,7 @@ class TestHyperBand:
             hyper_band.report_score(score=1, resource=trial.iteration, trial_id=trial.id)
 
         s_max = math.floor(
-            math.log(hyper_band.maximum_resource / validation_interval, good_hyperband_args["reduction_factor"])
+            math.log(hyper_band.maximum_resource / validation_interval, good_hyperband_args["reduction_factor"]),
         )
 
         expected_min = hyper_band.maximum_resource * (good_hyperband_args["reduction_factor"] ** -s_max)
@@ -1147,7 +1152,9 @@ class TestHyperBand:
 
 
 def _get_full_asha_resource(
-    maximum_resource: Union[float, int], minimum_resource: Union[float, int], reduction_factor: int
+    maximum_resource: Union[float, int],
+    minimum_resource: Union[float, int],
+    reduction_factor: int,
 ) -> Union[int, float]:
     total_resource: Union[int, float] = 0
     s_max = math.floor(math.log(maximum_resource / minimum_resource, reduction_factor))

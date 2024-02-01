@@ -2,17 +2,17 @@ import json
 from os import path as osp
 
 import pytest
-
 from otx.hpo.hpo_base import Trial
+
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 
-@pytest.fixture
+@pytest.fixture()
 def good_trial_args():
     return {"trial_id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def trial(good_trial_args):
     return Trial(**good_trial_args)
 
@@ -124,7 +124,7 @@ class TestTrial:
         save_path = osp.join(tmp_path, "test")
         trial.save_results(save_path)
 
-        with open(save_path, "r") as f:
+        with open(save_path) as f:
             result = json.load(f)
 
         assert result["id"] == "name"

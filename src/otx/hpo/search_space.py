@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
+import logging
 import math
 import typing
-import logging
 from typing import Any, Generator, Literal
 
 from otx.hpo.utils import check_positive
@@ -38,10 +38,10 @@ class SingleSearchSpace:
 
     def __init__(
         self,
-        type: Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"],
-        min: float | int | None = None,
-        max: float | int | None = None,
-        step: float |  int | None = None,
+        type: Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"],  # noqa: A002
+        min: float | int | None = None,  # noqa: A002
+        max: float | int | None = None,  # noqa: A002
+        step: float | int | None = None,
         log_base: int | None = 2,
         choice_list: list | tuple | None = None,
     ) -> None:
@@ -58,17 +58,17 @@ class SingleSearchSpace:
         self._check_all_value_is_right()
 
     @property
-    def type(self) -> Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"]:
+    def type(self) -> Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"]:  # noqa: A003
         """Type of hyper parameter in search space."""
         return self._type
 
     @property
-    def min(self) -> float | int | None:
+    def min(self) -> float | int | None:  # noqa: A003
         """Lower bounding of search space."""
         return self._min
 
     @property
-    def max(self) -> float | int | None:
+    def max(self) -> float | int | None:  # noqa: A003
         """Upper bounding of search space."""
         return self._max
 
@@ -89,9 +89,9 @@ class SingleSearchSpace:
 
     def set_value(
         self,
-        type: str | None = None,
-        min: float | int | None = None,
-        max: float | int | None = None,
+        type: Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"] | None = None,  # noqa: A002
+        min: float | int | None = None,  # noqa: A002
+        max: float | int | None = None,  # noqa: A002
         step: float | int | None = None,
         log_base: int | None = None,
         choice_list: list | tuple | None = None,
@@ -105,8 +105,9 @@ class SingleSearchSpace:
         To prevent it, this function priovides a way to set all necessary values at a time.
 
         Args:
-            type (str | None, optional): type of hyper parameter in search space.
-                                         supported types: uniform, loguniform, quniform, qloguniform, choice
+            type ("uniform" | "loguniform" | "quniform" | "qloguniform" | "choice" | None, optional):
+                type of hyper parameter in search space. supported types: uniform, loguniform, quniform,
+                qloguniform, choice
             min (float | int | None, optional): upper bounding of search space.
                                                 If type isn't choice, this value is required.
             max (float | int | None, optional): lower bounding of search space
@@ -137,54 +138,68 @@ class SingleSearchSpace:
     def _align_min_max_to_choice_list_if_categorical(self) -> None:
         if self.is_categorical():
             self._min = 0
-            self._max = len(self._choice_list) - 1
+            self._max = len(self._choice_list) - 1  # type: ignore[arg-type]
 
     def _check_all_value_is_right(self) -> None:
         # pylint: disable=too-many-branches
         if self._type not in AVAILABLE_SEARCH_SPACE_TYPE:
-            raise ValueError(
-                f"type should be one of {', '.join(AVAILABLE_SEARCH_SPACE_TYPE)}. " f"But your argument is {self._type}"
+            error_msg = (
+                f"type should be one of {', '.join(AVAILABLE_SEARCH_SPACE_TYPE)}. But your argument is {self._type}"
             )
+            raise ValueError(error_msg)
 
         if self.is_categorical():
-            if len(self._choice_list) <= 1:
-                raise ValueError("If type is choice, choice_list should have more than one element")
+            if self._choice_list is None or len(self._choice_list) <= 1:
+                error_msg = "If type is choice, choice_list should have more than one element"
+                raise ValueError(error_msg)
             if self._min != 0:
-                raise ValueError("if type is categorical, min should be 0.")
+                error_msg = "if type is categorical, min should be 0."
+                raise ValueError(error_msg)
             if self._max != len(self._choice_list) - 1:
-                raise ValueError("if type is categorical, max should be last index number of choice_list.")
+                error_msg = "if type is categorical, max should be last index number of choice_list."
+                raise ValueError(error_msg)
         else:
-            if min is None:
-                raise ValueError("If type isn't choice, you should set min value of search space.")
-            if max is None:
-                raise ValueError("If type isn't choice, you should set max value of search space.")
+            if self._min is None:
+                error_msg = "If type isn't choice, you should set min value of search space."
+                raise ValueError(error_msg)
+            if self._max is None:
+                error_msg = "If type isn't choice, you should set max value of search space."
+                raise ValueError(error_msg)
 
             if self._min >= self._max:
-                raise ValueError(
-                    "max value should be greater than min value.\n" f"max value : {self._max} / min value : {self._min}"
+                error_msg = (
+                    f"max value should be greater than min value.\nmax value : {self._max} / min value : {self._min}"
                 )
+                raise ValueError(error_msg)
 
             if self.use_log_scale():
+                if self._log_base is None:
+                    error_msg = "Type loguniform and qloguniform need log_base."
+                    raise ValueError(error_msg)
                 if self._log_base <= 1:
-                    raise ValueError("log base should be greater than 1.\n" f"your log base value is {self._log_base}.")
+                    error_msg = f"log base should be greater than 1.\nyour log base value is {self._log_base}."
+                    raise ValueError(error_msg)
                 if self._min <= 0:
-                    raise ValueError(
-                        "If you use log scale, min value should be greater than 0.\n" f"your min value is {self._min}"
+                    error_msg = (
+                        f"If you use log scale, min value should be greater than 0.\nyour min value is {self._min}"
                     )
+                    raise ValueError(error_msg)
             if self.use_quantized_step():
                 if self._step is None:
-                    raise ValueError(f"The {self._type} type requires step value. But it doesn't exists")
+                    error_msg = f"The {self._type} type requires step value. But it doesn't exists"
+                    raise ValueError(error_msg)
                 check_positive(self._step, "step")
                 if self._step > self._max - self._min:
-                    raise ValueError(
+                    error_msg = (
                         "Difference between min and max is greater than step.\n"
                         f"Current value is min : {self._min}, max : {self._max}, step : {self._step}"
                     )
+                    raise ValueError(error_msg)
 
     def __repr__(self) -> str:
         """Print serach space status."""
         if self.is_categorical():
-            return f"type: {self._type}, candidiate : {', '.join(self._choice_list)}"
+            return f"type: {self._type}, candidiate : {', '.join(self._choice_list)}"  # type: ignore[arg-type]
         rep = f"type: {self._type}, search space : {self._min} ~ {self._max}"
         if self.use_quantized_step():
             rep += f", step : {self._step}"
@@ -207,13 +222,13 @@ class SingleSearchSpace:
     def lower_space(self) -> float | int | None:
         """Get lower bound value considering log scale if necessary."""
         if self.use_log_scale():
-            return math.log(self._min, self._log_base)
+            return math.log(self._min, self._log_base)  # type: ignore[arg-type]
         return self._min
 
     def upper_space(self) -> float | int | None:
         """Get upper bound value considering log scale if necessary."""
         if self.use_log_scale():
-            return math.log(self._max, self._log_base)
+            return math.log(self._max, self._log_base)  # type: ignore[arg-type]
         return self._max
 
     @typing.no_type_check
@@ -246,7 +261,7 @@ class SingleSearchSpace:
             Union[int, float]: value converted to HPO perspective.
         """
         if self.use_log_scale():
-            return math.log(number, self._log_base)  # type: ignore
+            return math.log(number, self._log_base)  # type: ignore[arg-type]
         return number
 
 
@@ -303,7 +318,8 @@ class SearchSpace:
         try:
             return self.search_space[key]
         except KeyError as exc:
-            raise KeyError(f"There is no search space named {key}.") from exc
+            error_msg = f"There is no search space named {key}."
+            raise KeyError(error_msg) from exc
 
     def __repr__(self) -> str:
         """Print all search spaces."""
@@ -318,15 +334,11 @@ class SearchSpace:
         return len(self.search_space)
 
     def _search_space_generator(self) -> Generator[str, Any, None]:
-        for key in self.search_space:
-            yield key
+        yield from self.search_space
 
     def has_categorical_param(self) -> bool:
         """Check there is a search space whose type is choice."""
-        for param in self.search_space.values():
-            if param.is_categorical():
-                return True
-        return False
+        return any(param.is_categorical() for param in self.search_space.values())
 
     def get_real_config(self, config: dict) -> dict:
         """Convert search space of each config from HPO perspective to human perspective.
@@ -368,15 +380,15 @@ class SearchSpace:
         """Convert search space of each config from zero one scale to human perspective.
 
         Args:
-            config (Dict): config to convert
+            config (dict): config to convert
 
         Returns:
-            Dict: config converted to human perspective.
+            dict: config converted to human perspective.
         """
         for key, val in config.items():
             lower = self.search_space[key].lower_space()
             upper = self.search_space[key].upper_space()
-            val = (upper - lower) * val + lower
-            config[key] = val
+            real_val = (upper - lower) * val + lower  # type: ignore[operator]
+            config[key] = real_val
 
         return self.get_real_config(config)

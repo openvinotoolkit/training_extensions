@@ -2,8 +2,8 @@ import copy
 import math
 
 import pytest
-
 from otx.hpo.search_space import SearchSpace, SingleSearchSpace
+
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 ALL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform", "choice"]
@@ -467,7 +467,7 @@ class TestSearchSpace:
             "choice_list": ["somevalue1", "somevalue2", "somevalue3"],
         }
 
-    @pytest.fixture
+    @pytest.fixture()
     def search_space_with_all_types(self):
         return SearchSpace(self.get_search_space_depending_on_type(ALL_TYPE))
 

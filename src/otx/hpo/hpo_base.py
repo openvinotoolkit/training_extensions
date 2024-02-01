@@ -6,14 +6,18 @@
 from __future__ import annotations
 
 import json
-import tempfile
 import logging
+import tempfile
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import Any, Literal
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.hpo.search_space import SearchSpace
 from otx.hpo.utils import check_mode_input, check_positive
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
 
 logger = logging.getLogger(__name__)
 
@@ -77,21 +81,21 @@ class HpoBase(ABC):
         check_positive(full_dataset_size, "full_dataset_size")
         check_positive(num_full_iterations, "num_full_iterations")
         if not 0 < non_pure_train_ratio <= 1:
-            raise ValueError(
+            error_msg = (
                 "non_pure_train_ratio should be greater than 0 and lesser than or equal to 1."
-                f" Your value is {subset_ratio}"
+                f"Your value is {subset_ratio}"
             )
+            raise ValueError(error_msg)
         if maximum_resource is not None:
             check_positive(maximum_resource, "maximum_resource")
         if num_trials is not None:
             check_positive(num_trials, "num_trials")
         check_positive(num_workers, "num_workers")
-        if subset_ratio is not None:
-            if not 0 < subset_ratio <= 1:
-                raise ValueError(
-                    "subset_ratio should be greater than 0 and lesser than or equal to 1."
-                    f" Your value is {subset_ratio}"
-                )
+        if subset_ratio is not None and not 0 < subset_ratio <= 1:
+            error_msg = (
+                f"subset_ratio should be greater than 0 and lesser than or equal to 1. Your value is {subset_ratio}"
+            )
+            raise ValueError(error_msg)
 
         if save_path is None:
             save_path = tempfile.mkdtemp(prefix="OTX-hpo-")
@@ -118,42 +122,42 @@ class HpoBase(ABC):
         self.prior_hyper_parameters = prior_hyper_parameters
 
     @abstractmethod
-    def print_result(self):
+    def print_result(self) -> None:
         """Print a HPO algorithm result."""
         raise NotImplementedError
 
     @abstractmethod
-    def save_results(self):
+    def save_results(self) -> None:
         """Save a HPO algorithm result."""
         raise NotImplementedError
 
     @abstractmethod
-    def is_done(self):
+    def is_done(self) -> bool:
         """Check whether HPO algorithm is done."""
         raise NotImplementedError
 
     @abstractmethod
-    def get_next_sample(self):
+    def get_next_sample(self) -> Trial | None:
         """Get next sample to train."""
         raise NotImplementedError
 
     @abstractmethod
-    def auto_config(self):
+    def auto_config(self):  # noqa: ANN201
         """Configure HPO algorithm automatically."""
         raise NotImplementedError
 
     @abstractmethod
-    def get_progress(self):
+    def get_progress(self) -> int | float:
         """Get current progress of HPO algorithm."""
         raise NotImplementedError
 
     @abstractmethod
-    def report_score(self, score, resource, trial_id, done):
+    def report_score(self, score: float | int, resource: float | int, trial_id: Hashable, done: bool) -> TrialStatus:
         """Report a score to HPO algorithm."""
         raise NotImplementedError
 
     @abstractmethod
-    def get_best_config(self):
+    def get_best_config(self) -> dict[str, Any] | None:
         """Get best config of HPO algorithm."""
         raise NotImplementedError
 
@@ -167,17 +171,17 @@ class Trial:
         train_environment (dict | None, optional): Train environment for the trial. Defaults to None.
     """
 
-    def __init__(self, trial_id: Any, configuration: dict, train_environment: dict | None = None) -> None:
+    def __init__(self, trial_id: Hashable, configuration: dict, train_environment: dict | None = None) -> None:
         self._id = trial_id
         self._configuration = configuration
         self.score: dict[float | int, float | int] = {}
         self._train_environment = train_environment
-        self._iteration = None
+        self._iteration: int | float | None = None
         self.status: TrialStatus = TrialStatus.READY
         self._done = False
 
     @property
-    def id(self) -> Any:
+    def id(self) -> Hashable:  # noqa: A003
         """Trial id."""
         return self._id
 
@@ -220,7 +224,9 @@ class Trial:
         self.score[resource] = score
 
     def get_best_score(
-        self, mode: Literal["max", "min"] = "max", resource_limit: float | int | None = None
+        self,
+        mode: Literal["max", "min"] = "max",
+        resource_limit: float | int | None = None,
     ) -> float | int | None:
         """Get best score of the trial.
 
@@ -238,7 +244,7 @@ class Trial:
         if resource_limit is None:
             scores = self.score.values()
         else:
-            scores = [val for key, val in self.score.items() if key <= resource_limit]  # type: ignore
+            scores = [val for key, val in self.score.items() if key <= resource_limit]  # type: ignore[assignment, index]
 
         if len(scores) == 0:
             return None
@@ -270,19 +276,21 @@ class Trial:
             "score": self.score,
         }
 
-        with open(save_path, "w", encoding="utf-8") as f:
+        with Path(save_path).open("w", encoding="utf-8") as f:
             json.dump(results, f)
 
     def finalize(self) -> None:
         """Set done as True."""
         if not self.score:
-            raise RuntimeError(f"Trial{self.id} didn't report any score but tries to be done.")
+            error_msg = f"Trial{self.id} didn't report any score but tries to be done."
+            raise RuntimeError(error_msg)
         self._done = True
 
     def is_done(self) -> bool:
         """Check the trial is done."""
         if self.iteration is None:
-            raise ValueError("iteration isn't set yet.")
+            error_msg = "iteration isn't set yet."
+            raise ValueError(error_msg)
         return self._done or self.get_progress() >= self.iteration
 
 

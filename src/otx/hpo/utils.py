@@ -5,10 +5,10 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 
-def left_vlaue_is_better(val1: Any, val2: Any, mode: Literal["max", "min"]) -> bool:
+def left_vlaue_is_better(val1: int | float, val2: int | float, mode: Literal["max", "min"]) -> bool:
     """Check left value is better than right value.
 
     Whether check it's greather or lesser is changed depending on 'model'.
@@ -27,11 +27,11 @@ def left_vlaue_is_better(val1: Any, val2: Any, mode: Literal["max", "min"]) -> b
     return val1 < val2
 
 
-def check_positive(value: Any, variable_name: str | None = None, error_message: str | None = None) -> None:
+def check_positive(value: int | float, variable_name: str | None = None, error_message: str | None = None) -> None:
     """Validate that value is positivle.
 
     Args:
-        value (Any): value to validate.
+        value (int | float): value to validate.
         variable_name (str | None, optional): name of value. It's used for error message. Defaults to None.
         error_message (str | None, optional): Error message to use when type is different. Defaults to None.
 
@@ -42,17 +42,17 @@ def check_positive(value: Any, variable_name: str | None = None, error_message: 
         if error_message is not None:
             message = error_message
         elif variable_name:
-            message = f"{variable_name} should be positive.\n" f"your value : {value}"
+            message = f"{variable_name} should be positive.\nyour value : {value}"
         else:
             raise ValueError
         raise ValueError(message)
 
 
-def check_not_negative(value, variable_name: str | None = None, error_message: str | None = None) -> None:
+def check_not_negative(value: int | float, variable_name: str | None = None, error_message: str | None = None) -> None:
     """Validate that value isn't negative.
 
     Args:
-        value (Any): value to validate.
+        value (int | float): value to validate.
         variable_name (str | None, optional): name of value. It's used for error message. Defaults to None.
         error_message (str | None, optional): Error message to use when type is different. Defaults to None.
 
@@ -63,7 +63,7 @@ def check_not_negative(value, variable_name: str | None = None, error_message: s
         if error_message is not None:
             message = error_message
         elif variable_name:
-            message = f"{variable_name} should be positive.\n" f"your value : {value}"
+            message = f"{variable_name} should be positive.\nyour value : {value}"
         else:
             raise ValueError
         raise ValueError(message)
@@ -79,4 +79,5 @@ def check_mode_input(mode: str) -> None:
         ValueError: If 'mode' is not both 'max' and 'min', the error is raised.
     """
     if mode not in ["max", "min"]:
-        raise ValueError("mode should be max or min.\n" f"Your value : {mode}")
+        error_msg = f"mode should be max or min.\nYour value : {mode}"
+        raise ValueError(error_msg)

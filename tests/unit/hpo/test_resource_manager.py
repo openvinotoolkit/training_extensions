@@ -1,20 +1,20 @@
 import pytest
-
 from otx.hpo.resource_manager import (
     CPUResourceManager,
     GPUResourceManager,
     _remove_none_from_dict,
     get_resource_manager,
 )
+
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 
-@pytest.fixture
+@pytest.fixture()
 def cpu_resource_manager():
     return CPUResourceManager(num_parallel_trial=4)
 
 
-@pytest.fixture
+@pytest.fixture()
 def gpu_resource_manager():
     return GPUResourceManager(num_gpu_for_single_trial=1, available_gpu="0,1,2,3")
 
@@ -149,7 +149,9 @@ def test_get_resource_manager_gpu():
     num_gpu_for_single_trial = 1
     available_gpu = "0,1,2,3"
     manager = get_resource_manager(
-        resource_type="gpu", num_gpu_for_single_trial=num_gpu_for_single_trial, available_gpu=available_gpu
+        resource_type="gpu",
+        num_gpu_for_single_trial=num_gpu_for_single_trial,
+        available_gpu=available_gpu,
     )
     assert isinstance(manager, GPUResourceManager)
 

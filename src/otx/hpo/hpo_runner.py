@@ -5,20 +5,23 @@
 
 from __future__ import annotations
 
+import logging
 import multiprocessing
 import os
 import queue
 import signal
 import sys
 import time
-import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Callable, Literal
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,10 @@ class HpoLoop:
         self._uid_index = 0
         self._trial_fault_count = 0
         self._resource_manager = get_resource_manager(
-            resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu
+            resource_type,
+            num_parallel_trial,
+            num_gpu_for_single_trial,
+            available_gpu,
         )
         self._main_pid = os.getpid()
 
@@ -88,7 +94,7 @@ class HpoLoop:
                 time.sleep(1)
         except Exception as e:
             self._terminate_all_running_processes()
-            raise e
+            raise e  # noqa: TRY201
         logger.info("HPO loop is done.")
 
         if self._trial_fault_count >= 3:
@@ -119,8 +125,10 @@ class HpoLoop:
                 partial(_report_score, recv_queue=trial_queue, send_queue=self._report_queue, uid=uid),
             ),
         )
-        os.environ = origin_env
-        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore
+        os.environ.clear()
+        for key, val in origin_env.items():
+            os.environ[key] = val
+        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
         process.start()
 
     def _remove_finished_process(self) -> None:
@@ -143,7 +151,10 @@ class HpoLoop:
             report = self._report_queue.get_nowait()
             trial = self._running_trials[report["uid"]]
             trial_status = self._hpo_algo.report_score(
-                report["score"], report["progress"], trial.trial.id, report["done"]
+                report["score"],
+                report["progress"],
+                trial.trial.id,
+                report["done"],
             )
             trial.queue.put_nowait(trial_status)
 
@@ -186,7 +197,7 @@ class HpoLoop:
 
 def _run_train(train_func: Callable, hp_config: dict, report_func: Callable) -> None:
     # set multi process method as default
-    multiprocessing.set_start_method(None, True)  # type: ignore
+    multiprocessing.set_start_method(None, True)
     train_func(hp_config, report_func)
 
 
@@ -195,7 +206,7 @@ def _report_score(
     progress: int | float,
     recv_queue: multiprocessing.Queue,
     send_queue: multiprocessing.Queue,
-    uid: Any,
+    uid: Hashable,
     done: bool = False,
 ) -> TrialStatus:
     logger.debug(f"score : {score}, progress : {progress}, uid : {uid}, pid : {os.getpid()}, done : {done}")

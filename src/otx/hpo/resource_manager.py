@@ -5,14 +5,17 @@
 
 from __future__ import annotations
 
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 
 from otx.hpo.utils import check_positive
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
 
 logger = logging.getLogger(__name__)
 
@@ -21,17 +24,17 @@ class BaseResourceManager(ABC):
     """Abstract class for resource manager class."""
 
     @abstractmethod
-    def reserve_resource(self, trial_id):
+    def reserve_resource(self, trial_id: Hashable) -> dict | None:
         """Reserve a resource."""
         raise NotImplementedError
 
     @abstractmethod
-    def release_resource(self, trial_id):
+    def release_resource(self, trial_id: Hashable) -> None:
         """Release a resource."""
         raise NotImplementedError
 
     @abstractmethod
-    def have_available_resource(self):
+    def have_available_resource(self) -> bool:
         """Check that there is available resource."""
         raise NotImplementedError
 
@@ -47,9 +50,9 @@ class CPUResourceManager(BaseResourceManager):
         check_positive(num_parallel_trial, "num_parallel_trial")
 
         self._num_parallel_trial = num_parallel_trial
-        self._usage_status = []
+        self._usage_status: list[Any] = []
 
-    def reserve_resource(self, trial_id: Any) -> dict | None:
+    def reserve_resource(self, trial_id: Hashable) -> dict | None:
         """Reserve a resource under 'trial_id'.
 
         Args:
@@ -61,13 +64,14 @@ class CPUResourceManager(BaseResourceManager):
         if not self.have_available_resource():
             return None
         if trial_id in self._usage_status:
-            raise RuntimeError(f"{trial_id} already has reserved resource.")
+            error_msg = f"{trial_id} already has reserved resource."
+            raise RuntimeError(error_msg)
 
         logger.debug(f"{trial_id} reserved.")
         self._usage_status.append(trial_id)
         return {}
 
-    def release_resource(self, trial_id: Any) -> None:
+    def release_resource(self, trial_id: Hashable) -> None:
         """Release a resource under 'trial_id'.
 
         Args:
@@ -115,12 +119,11 @@ class GPUResourceManager(BaseResourceManager):
     def _transform_gpu_format_from_string_to_arr(self, gpu: str) -> list[int]:
         for val in gpu.split(","):
             if not val.isnumeric():
-                raise ValueError(
-                    "gpu format is wrong. " "gpu should only have numbers delimited by ','.\n" f"your value is {gpu}"
-                )
+                error_msg = f"gpu format is wrong. gpu should only have numbers delimited by ','.\nyour value is {gpu}"
+                raise ValueError(error_msg)
         return [int(val) for val in gpu.split(",")]
 
-    def reserve_resource(self, trial_id: Any) -> dict | None:
+    def reserve_resource(self, trial_id: Hashable) -> dict | None:
         """Reserve a resource under 'trial_id'.
 
         Args:
@@ -135,7 +138,8 @@ class GPUResourceManager(BaseResourceManager):
         if not self.have_available_resource():
             return None
         if trial_id in self._usage_status:
-            raise RuntimeError(f"{trial_id} already has reserved resource.")
+            error_msg = f"{trial_id} already has reserved resource."
+            raise RuntimeError(error_msg)
 
         resource = list(self._available_gpu[: self._num_gpu_for_single_trial])
         self._available_gpu = self._available_gpu[self._num_gpu_for_single_trial :]
@@ -143,7 +147,7 @@ class GPUResourceManager(BaseResourceManager):
         self._usage_status[trial_id] = resource
         return {"CUDA_VISIBLE_DEVICES": ",".join([str(val) for val in resource])}
 
-    def release_resource(self, trial_id: Any) -> None:
+    def release_resource(self, trial_id: Hashable) -> None:
         """Release a resource under 'trial_id'.
 
         Args:
@@ -191,12 +195,13 @@ def get_resource_manager(
     if resource_type == "cpu":
         args = {"num_parallel_trial": num_parallel_trial}
         args = _remove_none_from_dict(args)
-        return CPUResourceManager(**args)  # type: ignore
+        return CPUResourceManager(**args)  # type: ignore[arg-type]
     if resource_type == "gpu":
-        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}  # type: ignore
+        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}  # type: ignore[dict-item]
         args = _remove_none_from_dict(args)
-        return GPUResourceManager(**args)  # type: ignore
-    raise ValueError(f"Available resource type is cpu, gpu. Your value is {resource_type}.")
+        return GPUResourceManager(**args)  # type: ignore[arg-type]
+    error_msg = f"Available resource type is cpu, gpu. Your value is {resource_type}."
+    raise ValueError(error_msg)
 
 
 def _remove_none_from_dict(dict_val: dict) -> dict:
