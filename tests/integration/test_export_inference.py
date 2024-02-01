@@ -50,6 +50,7 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
     "detection": "test/map_50",
+    "instance_segmentation": "test/map_50",
 }
 
 
@@ -83,6 +84,8 @@ def test_otx_export_infer(
 
     if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
+    if "maskrcnn_swint" in recipe:
+        pytest.skip("maskrcnn_swint isn't trained at all.")
 
     epoch = 2
     command_args = []
