@@ -18,6 +18,7 @@ results/
 build/
 dist/
 !src/otx/recipes/**
+src/otx/recipes/**/__pycache__
 *egg-info
 
 *.pth
@@ -45,3 +46,6 @@ src/**/*.so
 
 # Dataset made by unit-test
 tests/**/detcon_mask/*
+
+# sphinx-autosummary generated files
+docs/**/_autosummary/

@@ -5,6 +5,7 @@
 
 import copy
 import os
+from pathlib import Path
 
 import pytest
 import torch
@@ -137,8 +138,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "DeiT-Tiny" and dump_features:
-            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -160,8 +159,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -169,8 +166,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -229,9 +224,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -239,9 +231,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
@@ -249,9 +238,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -259,9 +245,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
 
     @e2e_pytest_component
@@ -269,9 +252,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -312,6 +292,8 @@ class TestToolsMultiClassSemiSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args0)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
@@ -321,6 +303,8 @@ class TestToolsMultiClassSemiSLClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args0)
 
@@ -329,6 +313,8 @@ class TestToolsMultiClassSemiSLClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args0)
         args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
@@ -398,8 +384,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "DeiT-Tiny" and dump_features:
-            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -414,8 +398,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -452,9 +434,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
@@ -462,9 +441,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
@@ -472,9 +448,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -482,9 +455,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.01)
 
     @e2e_pytest_component
@@ -492,9 +462,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
@@ -576,8 +543,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "DeiT-Tiny" and dump_features:
-            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -592,8 +557,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
 
@@ -630,9 +593,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
@@ -640,9 +600,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
@@ -650,9 +607,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.01)
 
     @e2e_pytest_component
@@ -660,9 +614,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -670,9 +621,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component

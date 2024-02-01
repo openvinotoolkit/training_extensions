@@ -17,7 +17,7 @@ import timm
 from mmcv.runner import load_checkpoint
 from torch import nn
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from ..builder import BACKBONES
 
@@ -56,7 +56,7 @@ class TimmModelsWrapper(nn.Module):
         self.model = timm.create_model(NAME_DICT[self.model_name], pretrained=pretrained, num_classes=1000)
         if self.pretrained:
             logger.info(f"init weight - {pretrained_urls[self.model_name]}")
-        self.model.classifier = None  # Detach classifier. Only use 'backbone' part in mpa.
+        self.model.classifier = None  # Detach classifier. Only use 'backbone' part in otx.
         self.num_head_features = self.model.num_features
         self.num_features = self.model.conv_head.in_channels if self.is_mobilenet else self.model.num_features
         self.pooling_type = pooling_type

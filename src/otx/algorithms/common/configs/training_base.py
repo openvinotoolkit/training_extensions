@@ -1,18 +1,7 @@
 """Base Configuration of OTX Common Algorithms."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from sys import maxsize
 
@@ -30,7 +19,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
+from .configuration_enums import BatchSizeAdaptType, InputSizePreset, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -42,6 +31,7 @@ class TrainType(ConfigurableEnum):
     Semisupervised = "Semisupervised"
     Selfsupervised = "Selfsupervised"
     Incremental = "Incremental"
+    Zeroshot = "Zeroshot"
     Futurework = "Futurework"
 
 
@@ -69,9 +59,21 @@ class BaseConfig(ConfigurableParameters):
             min_value=1,
             max_value=2048,
             header="Batch size",
-            description="The number of training samples seen in each iteration of training. Increasing thisvalue "
+            description="The number of training samples seen in each iteration of training. Increasing this value "
             "improves training time and may make the training more stable. A larger batch size has higher "
             "memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        inference_batch_size = configurable_integer(
+            default_value=1,
+            min_value=1,
+            max_value=512,
+            header="Inference batch size",
+            description="The number of samples seen in each iteration of inference. Increasing this value "
+            "improves inference time. A larger batch size has higher memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
@@ -198,6 +200,17 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        input_size = selectable(
+            default_value=InputSizePreset.DEFAULT,
+            header="Configure model input size.",
+            description="The input size of the given model could be configured to one of the predefined resolutions."
+            "Reduced training and inference time could be expected by using smaller input size."
+            "Defaults to per-model default resolution.",
+            warning="Modifying input size may decrease model performance.",
+            affects_outcome_of=ModelLifecycle.NONE,
+            visible_in_ui=False,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""
@@ -215,6 +228,16 @@ class BaseConfig(ConfigurableParameters):
             max_value=1,
             header="Confidence threshold",
             description="This threshold only takes effect if the threshold is not set based on the result.",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        max_num_detections = configurable_integer(
+            header="Maximum number of detection per image",
+            description="Extra detection outputs will be discared in non-maximum suppression process. "
+            "Defaults to 0, which means per-model default value.",
+            default_value=0,
+            min_value=0,
+            max_value=10000,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
@@ -268,7 +291,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize,
+            max_value=100000,
         )
 
         stat_requests_number = configurable_integer(
@@ -276,7 +299,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of requests during statistics collection",
             default_value=0,
             min_value=0,
-            max_value=maxsize,
+            max_value=200,
         )
 
         preset = selectable(

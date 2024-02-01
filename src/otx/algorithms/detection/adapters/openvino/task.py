@@ -1,18 +1,7 @@
 """Openvino Task of Detection."""
 
-# Copyright (C) 2021 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 import copy
 import io
@@ -32,13 +21,12 @@ from addict import Dict as ADDict
 from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import ImageModel, Model
+from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
-from otx.algorithms.detection.adapters.openvino.model_wrappers import OTXMaskRCNNModel
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
     config_to_bytes,
@@ -71,7 +59,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     DetectionToAnnotationConverter,
     IPredictionToAnnotationConverter,
@@ -86,14 +74,13 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
-from otx.api.utils.detection_utils import detection2array
-from otx.api.utils.tiler import Tiler
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
 
 # pylint: disable=too-many-locals
-class BaseInferencerWithConverter(BaseInferencer):
+class BaseInferencerWithConverter(IInferencer):
     """BaseInferencerWithConverter class in OpenVINO task."""
 
     def __init__(
@@ -112,25 +99,22 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Pre-process function of OpenVINO Detection Inferencer."""
         return self.model.preprocess(image)
 
-    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
-        """Post-process function of OpenVINO Detection Inferencer."""
-        detections = self.model.postprocess(prediction, metadata)
-
-        return self.converter.convert_to_annotation(detections, metadata)
-
-    def get_saliency_map(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+    def get_saliency_map(self, prediction: Any):
         """Saliency map function of OpenVINO Detection Inferencer."""
-        if isinstance(self.model, OTXMaskRCNNModel):
-            num_classes = len(self.converter.labels)  # type: ignore
-            return self.model.get_saliency_map_from_prediction(prediction, metadata, num_classes)
-        else:
-            return prediction["saliency_map"][0]
+        if isinstance(prediction.saliency_map, list):
+            return prediction.saliency_map
+
+        if prediction.saliency_map.shape[0] == 1:
+            return prediction.saliency_map[0]
+
+        return prediction.saliency_map
 
     def predict(self, image: np.ndarray):
         """Predict function of OpenVINO Detection Inferencer."""
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
-        predictions = self.post_process(raw_predictions, metadata)
+        detections = self.model.postprocess(raw_predictions, metadata)
+        predictions = self.converter.convert_to_annotation(detections, metadata)
         if "feature_vector" not in raw_predictions or "saliency_map" not in raw_predictions:
             warnings.warn(
                 "Could not find Feature Vector and Saliency Map in OpenVINO output. "
@@ -139,8 +123,8 @@ class BaseInferencerWithConverter(BaseInferencer):
             features = (None, None)
         else:
             features = (
-                raw_predictions["feature_vector"].reshape(-1),
-                self.get_saliency_map(raw_predictions, metadata),
+                detections.feature_vector.reshape(-1),
+                self.get_saliency_map(detections),
             )
         return predictions, features
 
@@ -153,7 +137,8 @@ class BaseInferencerWithConverter(BaseInferencer):
         try:
             id, preprocessing_meta, result_handler = callback_args
             prediction = self.model.inference_adapter.copy_raw_result(request)
-            processed_prediciton = self.post_process(prediction, preprocessing_meta)
+            detections = self.model.postprocess(prediction, preprocessing_meta)
+            processed_prediciton = self.converter.convert_to_annotation(detections, preprocessing_meta)
 
             if "feature_vector" not in prediction or "saliency_map" not in prediction:
                 warnings.warn(
@@ -163,8 +148,8 @@ class BaseInferencerWithConverter(BaseInferencer):
                 features = (None, None)
             else:
                 features = (
-                    copy.deepcopy(prediction["feature_vector"].reshape(-1)),
-                    self.get_saliency_map(prediction, preprocessing_meta),
+                    copy.deepcopy(detections.feature_vector.reshape(-1)),
+                    self.get_saliency_map(detections),
                 )
 
             result_handler(id, processed_prediciton, features)
@@ -223,20 +208,14 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         configuration = {
             **attr.asdict(
                 hparams.postprocessing,
-                filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
+                filter=lambda attr, _: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
         configuration.update(model_configuration)
-        model = Model.create_model(model_adapter, "OTX_SSD", configuration, preload=True)
+        model = Model.create_model(model_adapter, "SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
-
-    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
-        """Detection specific post-process."""
-        detections = self.model.postprocess(prediction, metadata)
-        detections = detection2array(detections.objects)
-        return self.converter.convert_to_annotation(detections, metadata)
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
@@ -269,7 +248,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         }
         configuration.update(model_configuration)
 
-        model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
+        model = Model.create_model(model_adapter, "MaskRCNN", configuration, preload=True)
         converter = MaskToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
@@ -303,8 +282,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
-
+        model = Model.create_model(model_adapter, "MaskRCNN", configuration, preload=True)
         converter = RotatedRectToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
@@ -351,35 +329,40 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             )
             classifier = ImageModel(inference_adapter=adapter, configuration={}, preload=True)
 
-        self.tiler = Tiler(
-            tile_size=int(tile_size * tile_ir_scale_factor),
-            overlap=overlap / tile_ir_scale_factor,
-            max_number=max_number,
-            detector=inferencer.model,
-            classifier=classifier,
-            mode=mode,
-            segm=bool(isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))),
-            num_classes=len(inferencer.converter.labels),  # type: ignore
-        )
+        tiler_config = {
+            "tile_size": int(tile_size * tile_ir_scale_factor),
+            "tiles_overlap": overlap / tile_ir_scale_factor,
+            "max_pred_number": max_number,
+        }
+
+        is_segm = isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
+        if is_segm:
+            self.tiler = InstanceSegmentationTiler(
+                inferencer.model, tiler_config, execution_mode=mode, tile_classifier_model=classifier
+            )
+        else:
+            self.tiler = DetectionTiler(inferencer.model, tiler_config, execution_mode=mode)
 
         super().__init__(inferencer.configuration, inferencer.model, inferencer.converter)
 
-    def predict(
-        self, image: np.ndarray, mode: str = "async"
-    ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
+    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
         """Run prediction by tiling image to small patches.
 
         Args:
             image (np.ndarray): input image
-            mode (str, optional): run inference in sync or async mode. Defaults to 'async'.
 
         Returns:
             detections: AnnotationSceneEntity
             features: list including feature vector and saliency map
         """
-        detections, features = self.tiler.predict(image, mode)
-        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
-        return detections, features
+        detections = self.tiler(image)
+        annotations = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
+        features = (
+            detections.feature_vector.reshape(-1),
+            self.get_saliency_map(detections),
+        )
+
+        return annotations, features
 
 
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
@@ -393,12 +376,18 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
         self.inferencer = self.load_inferencer()
+        self._avg_time_per_image: Optional[float] = None
         logger.info("OpenVINO task initialization completed")
 
     @property
     def hparams(self):
         """Hparams of OpenVINO Detection Task."""
         return self.task_environment.get_hyper_parameters(DetectionConfig)
+
+    @property
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
+        return self._avg_time_per_image
 
     def load_config(self) -> ADDict:
         """Load configurable parameters from model adapter.
@@ -434,10 +423,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
         _hparams = copy.deepcopy(self.hparams)
-        self.confidence_threshold = float(
-            np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
-        )
-        _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        if _hparams.postprocessing.result_based_confidence_threshold:
+            self.confidence_threshold = float(
+                np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
+            )
+            _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        logger.info(f"Confidence Threshold: {_hparams.postprocessing.confidence_threshold}")
         _hparams.postprocessing.use_ellipse_shapes = self.config.postprocessing.use_ellipse_shapes
         async_requests_num = get_default_async_reqs_num()
         args = [
@@ -450,14 +441,16 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         ]
         if self.task_type == TaskType.DETECTION:
             if (
-                self.task_environment.model_template.model_template_id == "Custom_Object_Detection_YOLOX"
+                "YOLOX" in self.task_environment.model_template.model_template_id
                 and not self.config.tiling_parameters.enable_tiling
             ):
                 args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
             if self.config.tiling_parameters.enable_tiling:
-                args.append({"resize_type": "fit_to_window_letterbox"})
+                args.append({"resize_type": "standard"})
+            else:
+                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 0})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
@@ -521,7 +514,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
-            if add_saliency_map and saliency_map is not None:
+            if add_saliency_map and saliency_map is not None and len(saliency_map) > 0:
                 labels = self.task_environment.get_labels().copy()
                 if len(saliency_map) == len(labels) + 1:
                     # Include the background as the last category
@@ -559,7 +552,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         self.inferencer.await_all()
 
-        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")
         return dataset
@@ -625,6 +619,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 f"Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead."
             )
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
+        logger.info(f"F-measure after evaluation: {output_resultset.performance}")
         logger.info("OpenVINO metric evaluation completed")
 
     def deploy(self, output_model: ModelEntity) -> None:
@@ -695,7 +690,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("Optimize failed, model is None")
 
-        dataset = dataset.get_subset(Subset.TRAINING)
+        dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])

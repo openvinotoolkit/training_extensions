@@ -3,10 +3,10 @@
     "classification": {
       "supervised": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train",
-          "--val-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--test-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--input": "classification/cifar10_subset/test/airplane"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--input": "classification/multiclass_CUB/test/Acadian_Flycatcher"
         },
         "multi_label": {
           "--train-data-roots": "classification/multi_label_coco_subset_cls_decr",
@@ -21,16 +21,16 @@
           "--input": "classification/h_label_cifar10_subset/images/test/airplane"
         },
         "supcon": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train",
-          "--val-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--test-data-roots": "classification/cifar10_subset_cls_decr/test"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test"
         }
       },
       "class_incr": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset/train",
-          "--val-data-roots": "classification/cifar10_subset/test",
-          "--test-data-roots": "classification/cifar10_subset/test"
+          "--train-data-roots": "classification/multiclass_CUB/train",
+          "--val-data-roots": "classification/multiclass_CUB/test",
+          "--test-data-roots": "classification/multiclass_CUB/test"
         },
         "multi_label": {
           "--train-data-roots": "classification/multi_label_coco_subset",
@@ -40,15 +40,15 @@
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train",
-          "--val-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--test-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--unlabeled-data-roots": "classification/cifar10_unlabeled"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--unlabeled-data-roots": "classification/CUB_unlabeled"
         }
       },
       "self_supervised": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train"
         }
       }
     },
@@ -78,9 +78,9 @@
       },
       "tiling": {
         "multi_class": {
-          "--train-data-roots": "detection/coco_subset_cls_decr",
-          "--val-data-roots": "detection/coco_subset_cls_decr",
-          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset",
           "--input": "detection/coco_subset/images/test"
         }
       }
@@ -185,288 +185,716 @@
       "train_params": []
     }
   },
+
   "regression_criteria": {
+    "action_classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MoViNet": 0.519,
+            "X3D": 0.613
+          },
+          "export": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          },
+          "deploy": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          },
+          "nncf": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          },
+          "ptq": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          }
+        }
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "X3D_FAST_RCNN": 0.613
+          },
+          "export": {
+            "X3D_FAST_RCNN": 0.0
+          },
+          "deploy": {
+            "X3D_FAST_RCNN": 0.0
+          },
+          "nncf": {
+            "X3D_FAST_RCNN": 0.0
+          },
+          "ptq": {
+            "X3D_FAST_RCNN": 0.0
+          }
+        }
+      }
+    },
+    "anomaly_segmentation": {
+      "train": {
+        "carpet": {
+          "STFPM": 0.322,
+          "PADIM": 0.313
+        },
+        "wood": {
+          "STFPM": 0.31,
+          "PADIM": 0.355
+        },
+        "zipper": {
+          "STFPM": 0.357,
+          "PADIM": 0.232
+        }
+      },
+      "export": {
+        "carpet": {
+          "STFPM": 0.034,
+          "PADIM": 0.205
+        },
+        "wood": {
+          "STFPM": 0.129,
+          "PADIM": 0.208
+        },
+        "zipper": {
+          "STFPM": 0.357,
+          "PADIM": 0.232
+        }
+      },
+      "deploy": {
+        "carpet": {
+          "STFPM": 0.034,
+          "PADIM": 0.205
+        },
+        "wood": {
+          "STFPM": 0.129,
+          "PADIM": 0.208
+        },
+        "zipper": {
+          "STFPM": 0.357,
+          "PADIM": 0.232
+        }
+      },
+      "nncf": {
+        "carpet": {
+          "STFPM": 0.43,
+          "PADIM": 0.374
+        },
+        "wood": {
+          "STFPM": 0.448,
+          "PADIM": 0.312
+        },
+        "zipper": {
+          "STFPM": 0.483,
+          "PADIM": 0.305
+        }
+      },
+      "ptq": {
+        "carpet": {
+          "STFPM": 0.034,
+          "PADIM": 0.225
+        },
+        "wood": {
+          "STFPM": 0.127,
+          "PADIM": 0.227
+        },
+        "zipper": {
+          "STFPM": 0.354,
+          "PADIM": 0.195
+        }
+      }
+    },
+    "anomaly_detection": {
+      "train": {
+        "carpet": {
+          "STFPM": 0.167,
+          "PADIM": 0.267
+        },
+        "wood": {
+          "STFPM": 0.103,
+          "PADIM": 0.159
+        },
+        "zipper": {
+          "STFPM": 0.108,
+          "PADIM": 0.063
+        }
+      },
+      "export": {
+        "carpet": {
+          "STFPM": 0.045,
+          "PADIM": 0.226
+        },
+        "wood": {
+          "STFPM": 0.063,
+          "PADIM": 0.153
+        },
+        "zipper": {
+          "STFPM": 0.101,
+          "PADIM": 0.062
+        }
+      },
+      "deploy": {
+        "carpet": {
+          "STFPM": 0.045,
+          "PADIM": 0.226
+        },
+        "wood": {
+          "STFPM": 0.063,
+          "PADIM": 0.153
+        },
+        "zipper": {
+          "STFPM": 0.101,
+          "PADIM": 0.062
+        }
+      },
+      "nncf": {
+        "carpet": {
+          "STFPM": 0.145,
+          "PADIM": 0.164
+        },
+        "wood": {
+          "STFPM": 0.09,
+          "PADIM": 0.223
+        },
+        "zipper": {
+          "STFPM": 0.166,
+          "PADIM": 0.067
+        }
+      },
+      "ptq": {
+        "carpet": {
+          "STFPM": 0.037,
+          "PADIM": 0.208
+        },
+        "wood": {
+          "STFPM": 0.053,
+          "PADIM": 0.159
+        },
+        "zipper": {
+          "STFPM": 0.125,
+          "PADIM": 0.043
+        }
+      }
+    },
+    "anomaly_classification": {
+      "train": {
+        "carpet": {
+          "STFPM": 0.829,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.886,
+          "PADIM": 0.924
+        },
+        "zipper": {
+          "STFPM": 0.788,
+          "PADIM": 0.821
+        }
+      },
+      "export": {
+        "carpet": {
+          "STFPM": 0.784,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.8,
+          "PADIM": 0.82
+        },
+        "zipper": {
+          "STFPM": 0.781,
+          "PADIM": 0.815
+        }
+      },
+      "deploy": {
+        "carpet": {
+          "STFPM": 0.784,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.8,
+          "PADIM": 0.82
+        },
+        "zipper": {
+          "STFPM": 0.781,
+          "PADIM": 0.815
+        }
+      },
+      "nncf": {
+        "carpet": {
+          "STFPM": 0.88,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.886,
+          "PADIM": 0.937
+        },
+        "zipper": {
+          "STFPM": 0.821,
+          "PADIM": 0.808
+        }
+      },
+      "ptq": {
+        "carpet": {
+          "STFPM": 0.796,
+          "PADIM": 0.739
+        },
+        "wood": {
+          "STFPM": 0.8,
+          "PADIM": 0.826
+        },
+        "zipper": {
+          "STFPM": 0.788,
+          "PADIM": 0.768
+        }
+      }
+    },
     "classification": {
       "supervised": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 0.772,
-            "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-V2-S": 0.778,
+            "EfficientNet-B0": 0.699,
+            "MobileNet-V3-large-1x": 0.687,
+            "DeiT-Tiny": 0.596
           },
           "export": {
-            "EfficientNet-V2-S": 0.772,
-            "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-V2-S": 0.778,
+            "EfficientNet-B0": 0.698,
+            "MobileNet-V3-large-1x": 0.686,
+            "DeiT-Tiny": 0.597
           },
           "deploy": {
-            "EfficientNet-V2-S": 0.772,
-            "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-V2-S": 0.778,
+            "EfficientNet-B0": 0.698,
+            "MobileNet-V3-large-1x": 0.686,
+            "DeiT-Tiny": 0.597
           },
           "nncf": {
-            "EfficientNet-V2-S": 0.764,
-            "MobileNet-V3-large-1x": 0.733,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.776,
+            "EfficientNet-B0": 0.691,
+            "MobileNet-V3-large-1x": 0.677,
+            "DeiT-Tiny": 0.0
           },
           "ptq": {
-            "EfficientNet-V2-S": 0.711,
-            "MobileNet-V3-large-1x": 0.692,
-            "EfficientNet-B0": 0.725
+            "EfficientNet-V2-S": 0.768,
+            "EfficientNet-B0": 0.681,
+            "MobileNet-V3-large-1x": 0.624,
+            "DeiT-Tiny": 0.594
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 0.968,
-            "MobileNet-V3-large-1x": 0.966,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.958,
+            "MobileNet-V3-large-1x": 0.965,
+            "DeiT-Tiny": 0.952
           },
           "export": {
             "EfficientNet-V2-S": 0.968,
+            "EfficientNet-B0": 0.958,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "DeiT-Tiny": 0.952
           },
           "deploy": {
             "EfficientNet-V2-S": 0.968,
+            "EfficientNet-B0": 0.958,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "DeiT-Tiny": 0.952
           },
           "nncf": {
-            "EfficientNet-V2-S": 0.967,
+            "EfficientNet-V2-S": 0.971,
+            "EfficientNet-B0": 0.961,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "DeiT-Tiny": 0.0
           },
           "ptq": {
-            "EfficientNet-V2-S": 0.968,
+            "EfficientNet-V2-S": 0.971,
+            "EfficientNet-B0": 0.96,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.964
+            "DeiT-Tiny": 0.952
           }
         },
         "h_label": {
           "train": {
-            "EfficientNet-V2-S": 0.602,
-            "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
           },
           "export": {
-            "EfficientNet-V2-S": 0.602,
-            "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-V2-S": 0.761,
+            "EfficientNet-B0": 0.737,
+            "MobileNet-V3-large-1x": 0.736,
+            "DeiT-Tiny": 0.768
           },
           "deploy": {
-            "EfficientNet-V2-S": 0.602,
-            "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-V2-S": 0.761,
+            "EfficientNet-B0": 0.737,
+            "MobileNet-V3-large-1x": 0.736,
+            "DeiT-Tiny": 0.768
           },
           "nncf": {
-            "EfficientNet-V2-S": 0.594,
-            "MobileNet-V3-large-1x": 0.622,
-            "EfficientNet-B0": 0.638
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
           },
           "ptq": {
-            "EfficientNet-V2-S": 0.577,
-            "MobileNet-V3-large-1x": 0.472,
-            "EfficientNet-B0": 0.605
+            "EfficientNet-V2-S": 0.757,
+            "EfficientNet-B0": 0.727,
+            "MobileNet-V3-large-1x": 0.691,
+            "DeiT-Tiny": 0.768
           }
         },
         "supcon": {
           "train": {
-            "EfficientNet-V2-S": 0.783,
-            "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.772
+            "EfficientNet-V2-S": 0.773,
+            "EfficientNet-B0": 0.675,
+            "MobileNet-V3-large-1x": 0.677
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 0.758,
+            "EfficientNet-B0": 0.674,
+            "MobileNet-V3-large-1x": 0.658,
+            "DeiT-Tiny": 0.656
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 0.776,
+            "EfficientNet-B0": 0.687,
+            "MobileNet-V3-large-1x": 0.662
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
           }
         }
       },
       "class_incr": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 0.79,
-            "MobileNet-V3-large-1x": 0.76,
-            "EfficientNet-B0": 0.81
+            "EfficientNet-V2-S": 0.783,
+            "EfficientNet-B0": 0.702,
+            "MobileNet-V3-large-1x": 0.687
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 0.97,
-            "MobileNet-V3-large-1x": 0.97,
-            "EfficientNet-B0": 0.964
-          }
-        },
-        "h_label": {
-          "train": {
+            "EfficientNet-B0": 0.954,
+            "MobileNet-V3-large-1x": 0.96,
+            "DeiT-Tiny": 0.954
+          },
+          "export": {
             "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 0.822,
-            "MobileNet-V3-large-1x": 0.764,
-            "EfficientNet-B0": 0.797
-          }
-        }
-      },
-      "self_supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 0.767,
-            "MobileNet-V3-large-1x": 0.744,
-            "EfficientNet-B0": 0.794
+            "DeiT-Tiny": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
           }
         }
       }
     },
     "detection": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 0.537,
-            "SSD": 0.179,
-            "MobileNetV2-ATSS": 0.446
-          },
-          "export": {
-            "YOLOX": 0.534,
-            "SSD": 0.179,
-            "MobileNetV2-ATSS": 0.455
-          },
-          "deploy": {
-            "YOLOX": 0.534,
-            "SSD": 0.179,
-            "MobileNetV2-ATSS": 0.455
-          },
-          "nncf": {
-            "YOLOX": 0.517,
-            "SSD": 0.181,
-            "MobileNetV2-ATSS": 0.446
-          },
-          "ptq": {
-            "YOLOX": 0.531,
-            "SSD": 0.18,
-            "MobileNetV2-ATSS": 0.458
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 0.532,
-            "SSD": 0.2,
-            "MobileNetV2-ATSS": 0.443
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 0.398,
-            "SSD": 0.142,
-            "MobileNetV2-ATSS": 0.414
-          }
-        }
-      },
       "tiling": {
         "multi_class": {
           "train": {
-            "YOLOX": 0.545,
-            "SSD": 0.19,
-            "MobileNetV2-ATSS": 0.459
+            "ResNeXt101-ATSS": 0.662,
+            "YOLOX-S": 0.389,
+            "MobileNetV2-ATSS": 0.474,
+            "SSD": 0.228,
+            "YOLOX-TINY": 0.549,
+            "YOLOX-L": 0.655,
+            "YOLOX-X": 0.675
           },
           "export": {
-            "YOLOX": 0.549,
-            "SSD": 0.19,
-            "MobileNetV2-ATSS": 0.469
+            "ResNeXt101-ATSS": 0.663,
+            "YOLOX-S": 0.386,
+            "MobileNetV2-ATSS": 0.475,
+            "SSD": 0.228,
+            "YOLOX-TINY": 0.549,
+            "YOLOX-L": 0.654,
+            "YOLOX-X": 0.674
           },
           "deploy": {
-            "YOLOX": 0.549,
-            "SSD": 0.19,
-            "MobileNetV2-ATSS": 0.469
+            "ResNeXt101-ATSS": 0.663,
+            "YOLOX-S": 0.386,
+            "MobileNetV2-ATSS": 0.475,
+            "SSD": 0.228,
+            "YOLOX-TINY": 0.549,
+            "YOLOX-L": 0.654,
+            "YOLOX-X": 0.674
           },
           "nncf": {
-            "YOLOX": 0.0,
+            "ResNeXt101-ATSS": 0.655,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
             "SSD": 0.0,
-            "MobileNetV2-ATSS": 0.0
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
           },
           "ptq": {
-            "YOLOX": 0.531,
-            "SSD": 0.192,
-            "MobileNetV2-ATSS": 0.459
-          }
-        }
-      }
-    },
-    "segmentation": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 0.636,
-            "Lite-HRNet-18-mod2": 0.692,
-            "Lite-HRNet-18": 0.801,
-            "Lite-HRNet-x-mod3": 0.693
-          },
-          "export": {
-            "Lite-HRNet-s-mod2": 0.636,
-            "Lite-HRNet-18-mod2": 0.691,
-            "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.692
-          },
-          "deploy": {
-            "Lite-HRNet-s-mod2": 0.636,
-            "Lite-HRNet-18-mod2": 0.691,
-            "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.692
-          },
-          "nncf": {
-            "Lite-HRNet-s-mod2": 0.678,
-            "Lite-HRNet-18-mod2": 0.707,
-            "Lite-HRNet-18": 0.79,
-            "Lite-HRNet-x-mod3": 0.668
-          },
-          "ptq": {
-            "Lite-HRNet-s-mod2": 0.725,
-            "Lite-HRNet-18-mod2": 0.269,
-            "Lite-HRNet-18": 0.115,
-            "Lite-HRNet-x-mod3": 0.041
-          }
-        },
-        "supcon": {
-          "train": {
-            "Lite-HRNet-s-mod2": 0.691,
-            "Lite-HRNet-18-mod2": 0.676,
-            "Lite-HRNet-18": 0.682,
-            "Lite-HRNet-x-mod3": 0.698
+            "ResNeXt101-ATSS": 0.651,
+            "YOLOX-S": 0.423,
+            "MobileNetV2-ATSS": 0.465,
+            "SSD": 0.229,
+            "YOLOX-TINY": 0.54,
+            "YOLOX-L": 0.677,
+            "YOLOX-X": 0.691
           }
         }
       },
-      "class_incr": {
+      "supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.66,
-            "Lite-HRNet-18-mod2": 0.768,
-            "Lite-HRNet-18": 0.669,
-            "Lite-HRNet-x-mod3": 0.712
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.467,
+            "SSD": 0.221,
+            "YOLOX-TINY": 0.577,
+            "YOLOX-L": 0.684,
+            "YOLOX-X": 0.696
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.466,
+            "SSD": 0.222,
+            "YOLOX-TINY": 0.575,
+            "YOLOX-L": 0.681,
+            "YOLOX-X": 0.69
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.466,
+            "SSD": 0.222,
+            "YOLOX-TINY": 0.575,
+            "YOLOX-L": 0.681,
+            "YOLOX-X": 0.69
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.63,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.462,
+            "SSD": 0.217,
+            "YOLOX-TINY": 0.571,
+            "YOLOX-L": 0.68,
+            "YOLOX-X": 0.691
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.632,
+            "YOLOX-S": 0.424,
+            "MobileNetV2-ATSS": 0.461,
+            "SSD": 0.219,
+            "YOLOX-TINY": 0.568,
+            "YOLOX-L": 0.675,
+            "YOLOX-X": 0.689
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.681,
-            "Lite-HRNet-18-mod2": 0.696,
-            "Lite-HRNet-18": 0.742,
-            "Lite-HRNet-x-mod3": 0.802
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.074,
+            "MobileNetV2-ATSS": 0.374,
+            "SSD": 0.158,
+            "YOLOX-TINY": 0.453,
+            "YOLOX-L": 0.652,
+            "YOLOX-X": 0.673
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
           }
         }
       },
-      "self_supervised": {
+      "class_incr": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.785,
-            "Lite-HRNet-18-mod2": 0.798,
-            "Lite-HRNet-18": 0.782,
-            "Lite-HRNet-x-mod3": 0.785
+            "ResNeXt101-ATSS": 0.631,
+            "YOLOX-S": 0.425,
+            "MobileNetV2-ATSS": 0.463,
+            "SSD": 0.23,
+            "YOLOX-TINY": 0.572,
+            "YOLOX-L": 0.679,
+            "YOLOX-X": 0.691
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
           }
         }
       }
@@ -475,1218 +903,285 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 0.466,
-            "MaskRCNN-EfficientNetB2B": 0.27
+            "MaskRCNN-SwinT-FP16": 0.477,
+            "MaskRCNN-EfficientNetB2B": 0.333,
+            "MaskRCNN-ResNet50": 0.448
           },
           "export": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.482,
+            "MaskRCNN-EfficientNetB2B": 0.347,
+            "MaskRCNN-ResNet50": 0.47
           },
           "deploy": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.482,
+            "MaskRCNN-EfficientNetB2B": 0.347,
+            "MaskRCNN-ResNet50": 0.47
           },
           "nncf": {
-            "MaskRCNN-ResNet50": 0.437,
-            "MaskRCNN-EfficientNetB2B": 0.286
+            "MaskRCNN-SwinT-FP16": 0.457,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
           },
           "ptq": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.453,
+            "MaskRCNN-EfficientNetB2B": 0.337,
+            "MaskRCNN-ResNet50": 0.467
           }
         }
       },
       "class_incr": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 0.481,
-            "MaskRCNN-EfficientNetB2B": 0.307
-          }
-        }
-      },
-      "tiling": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 0.471,
-            "MaskRCNN-EfficientNetB2B": 0.304
+            "MaskRCNN-SwinT-FP16": 0.476,
+            "MaskRCNN-EfficientNetB2B": 0.306,
+            "MaskRCNN-ResNet50": 0.487
           },
           "export": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
           },
           "deploy": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
           },
           "nncf": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
           },
           "ptq": {
-            "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
           }
         }
       }
     },
-    "action_classification": {
+    "segmentation": {
       "supervised": {
         "multi_class": {
           "train": {
-            "X3D": 0.612,
-            "MoViNet": 0.492
+            "SegNext-B": 0.823,
+            "Lite-HRNet-18": 0.706,
+            "SegNext-t": 0.769,
+            "SegNext-s": 0.796,
+            "Lite-HRNet-18-mod2": 0.709,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.678
           },
           "export": {
-            "X3D": 0.589,
-            "MoViNet": 0.0
+            "SegNext-B": 0.823,
+            "Lite-HRNet-18": 0.705,
+            "SegNext-t": 0.769,
+            "SegNext-s": 0.795,
+            "Lite-HRNet-18-mod2": 0.708,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.678
+          },
+          "deploy": {
+            "SegNext-B": 0.823,
+            "Lite-HRNet-18": 0.705,
+            "SegNext-t": 0.769,
+            "SegNext-s": 0.795,
+            "Lite-HRNet-18-mod2": 0.708,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.678
+          },
+          "nncf": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
           },
           "ptq": {
-            "X3D": 0.58,
-            "MoViNet": 0.0
+            "SegNext-B": 0.821,
+            "Lite-HRNet-18": 0.121,
+            "SegNext-t": 0.756,
+            "SegNext-s": 0.794,
+            "Lite-HRNet-18-mod2": 0.706,
+            "Lite-HRNet-s-mod2": 0.619,
+            "Lite-HRNet-x-mod3": 0.623
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-18": 0.551,
+            "Lite-HRNet-18-mod2": 0.539,
+            "Lite-HRNet-s-mod2": 0.466,
+            "Lite-HRNet-x-mod3": 0.551
+          },
+          "export": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
           }
         }
-      }
-    },
-    "action_detection": {
-      "supervised": {
+      },
+      "semi_supervised": {
         "multi_class": {
           "train": {
-            "X3D_FAST_RCNN": 0.59
+            "SegNext-B": 0.825,
+            "Lite-HRNet-18": 0.665,
+            "SegNext-t": 0.73,
+            "SegNext-s": 0.746,
+            "Lite-HRNet-18-mod2": 0.677,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.658
+          },
+          "export": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
           }
         }
-      }
-    },
-    "anomaly_classification": {
-      "train": {
-        "bottle": {
-          "STFPM": 0.771,
-          "PADIM": 0.952
-        },
-        "cable": {
-          "STFPM": 0.627,
-          "PADIM": 0.64
-        },
-        "capsule": {
-          "STFPM": 0.826,
-          "PADIM": 0.871
-        },
-        "carpet": {
-          "STFPM": 0.821,
-          "PADIM": 0.769
-        },
-        "grid": {
-          "STFPM": 0.731,
-          "PADIM": 0.744
-        },
-        "hazelnut": {
-          "STFPM": 0.664,
-          "PADIM": 0.873
-        },
-        "leather": {
-          "STFPM": 0.871,
-          "PADIM": 0.863
-        },
-        "metal_nut": {
-          "STFPM": 0.817,
-          "PADIM": 0.843
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.762,
-          "PADIM": 0.75
-        },
-        "tile": {
-          "STFPM": 0.872,
-          "PADIM": 0.752
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.81
-        },
-        "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.69
-        },
-        "wood": {
-          "STFPM": 0.949,
-          "PADIM": 0.937
-        },
-        "zipper": {
-          "STFPM": 0.815,
-          "PADIM": 0.841
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 0.797,
+            "Lite-HRNet-18": 0.657,
+            "SegNext-t": 0.653,
+            "SegNext-s": 0.759,
+            "Lite-HRNet-18-mod2": 0.647,
+            "Lite-HRNet-s-mod2": 0.633,
+            "Lite-HRNet-x-mod3": 0.658
+          },
+          "export": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          }
         }
       },
-      "export": {
-        "bottle": {
-          "STFPM": 0.759,
-          "PADIM": 0.823
-        },
-        "cable": {
-          "STFPM": 0.613,
-          "PADIM": 0.615
-        },
-        "capsule": {
-          "STFPM": 0.826,
-          "PADIM": 0.848
-        },
-        "carpet": {
-          "STFPM": 0.771,
-          "PADIM": 0.786
-        },
-        "grid": {
-          "STFPM": 0.745,
-          "PADIM": 0.731
-        },
-        "hazelnut": {
-          "STFPM": 0.642,
-          "PADIM": 0.727
-        },
-        "leather": {
-          "STFPM": 0.795,
-          "PADIM": 0.847
-        },
-        "metal_nut": {
-          "STFPM": 0.809,
-          "PADIM": 0.812
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.761,
-          "PADIM": 0.746
-        },
-        "tile": {
-          "STFPM": 0.74,
-          "PADIM": 0.718
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.718
-        },
-        "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.424
-        },
-        "wood": {
-          "STFPM": 0.832,
-          "PADIM": 0.825
-        },
-        "zipper": {
-          "STFPM": 0.815,
-          "PADIM": 0.834
-        }
-      },
-      "deploy": {
-        "bottle": {
-          "STFPM": 0.759,
-          "PADIM": 0.823
-        },
-        "cable": {
-          "STFPM": 0.613,
-          "PADIM": 0.615
-        },
-        "capsule": {
-          "STFPM": 0.826,
-          "PADIM": 0.848
-        },
-        "carpet": {
-          "STFPM": 0.771,
-          "PADIM": 0.786
-        },
-        "grid": {
-          "STFPM": 0.745,
-          "PADIM": 0.731
-        },
-        "hazelnut": {
-          "STFPM": 0.642,
-          "PADIM": 0.727
-        },
-        "leather": {
-          "STFPM": 0.795,
-          "PADIM": 0.847
-        },
-        "metal_nut": {
-          "STFPM": 0.809,
-          "PADIM": 0.812
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.761,
-          "PADIM": 0.746
-        },
-        "tile": {
-          "STFPM": 0.74,
-          "PADIM": 0.718
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.718
-        },
-        "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.424
-        },
-        "wood": {
-          "STFPM": 0.832,
-          "PADIM": 0.825
-        },
-        "zipper": {
-          "STFPM": 0.815,
-          "PADIM": 0.834
-        }
-      },
-      "nncf": {
-        "bottle": {
-          "STFPM": 0.867,
-          "PADIM": 0.94
-        },
-        "cable": {
-          "STFPM": 0.636,
-          "PADIM": 0.673
-        },
-        "capsule": {
-          "STFPM": 0.871,
-          "PADIM": 0.856
-        },
-        "carpet": {
-          "STFPM": 0.846,
-          "PADIM": 0.812
-        },
-        "grid": {
-          "STFPM": 0.756,
-          "PADIM": 0.731
-        },
-        "hazelnut": {
-          "STFPM": 0.764,
-          "PADIM": 0.909
-        },
-        "leather": {
-          "STFPM": 0.944,
-          "PADIM": 0.911
-        },
-        "metal_nut": {
-          "STFPM": 0.826,
-          "PADIM": 0.817
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.762,
-          "PADIM": 0.744
-        },
-        "tile": {
-          "STFPM": 0.872,
-          "PADIM": 0.786
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.857
-        },
-        "transistor": {
-          "STFPM": 0.39,
-          "PADIM": 0.81
-        },
-        "wood": {
-          "STFPM": 0.937,
-          "PADIM": 0.937
-        },
-        "zipper": {
-          "STFPM": 0.821,
-          "PADIM": 0.834
-        }
-      },
-      "ptq": {
-        "bottle": {
-          "STFPM": 0.759,
-          "PADIM": 0.781
-        },
-        "cable": {
-          "STFPM": 0.613,
-          "PADIM": 0.626
-        },
-        "capsule": {
-          "STFPM": 0.826,
-          "PADIM": 0.833
-        },
-        "carpet": {
-          "STFPM": 0.761,
-          "PADIM": 0.812
-        },
-        "grid": {
-          "STFPM": 0.742,
-          "PADIM": 0.731
-        },
-        "hazelnut": {
-          "STFPM": 0.636,
-          "PADIM": 0.73
-        },
-        "leather": {
-          "STFPM": 0.776,
-          "PADIM": 0.903
-        },
-        "metal_nut": {
-          "STFPM": 0.809,
-          "PADIM": 0.809
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.744,
-          "PADIM": 0.744
-        },
-        "tile": {
-          "STFPM": 0.739,
-          "PADIM": 0.721
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.75
-        },
-        "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.436
-        },
-        "wood": {
-          "STFPM": 0.822,
-          "PADIM": 0.835
-        },
-        "zipper": {
-          "STFPM": 0.788,
-          "PADIM": 0.755
-        }
-      }
-    },
-    "anomaly_detection": {
-      "train": {
-        "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.12
-        },
-        "cable": {
-          "STFPM": 0.0,
-          "PADIM": 0.104
-        },
-        "capsule": {
-          "STFPM": 0.015,
-          "PADIM": 0.108
-        },
-        "carpet": {
-          "STFPM": 0.113,
-          "PADIM": 0.241
-        },
-        "grid": {
-          "STFPM": 0.0,
-          "PADIM": 0.009
-        },
-        "hazelnut": {
-          "STFPM": 0.0,
-          "PADIM": 0.106
-        },
-        "leather": {
-          "STFPM": 0.092,
-          "PADIM": 0.145
-        },
-        "metal_nut": {
-          "STFPM": 0.043,
-          "PADIM": 0.18
-        },
-        "pill": {
-          "STFPM": 0.058,
-          "PADIM": 0.023
-        },
-        "screw": {
-          "STFPM": 0.0,
-          "PADIM": 0.019
-        },
-        "tile": {
-          "STFPM": 0.0,
-          "PADIM": 0.015
-        },
-        "toothbrush": {
-          "STFPM": 0.0,
-          "PADIM": 0.178
-        },
-        "transistor": {
-          "STFPM": 0.048,
-          "PADIM": 0.051
-        },
-        "wood": {
-          "STFPM": 0.137,
-          "PADIM": 0.18
-        },
-        "zipper": {
-          "STFPM": 0.183,
-          "PADIM": 0.078
-        }
-      },
-      "export": {
-        "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.404
-        },
-        "cable": {
-          "STFPM": 0.0,
-          "PADIM": 0.053
-        },
-        "capsule": {
-          "STFPM": 0.015,
-          "PADIM": 0.088
-        },
-        "carpet": {
-          "STFPM": 0.019,
-          "PADIM": 0.221
-        },
-        "grid": {
-          "STFPM": 0.0,
-          "PADIM": 0.011
-        },
-        "hazelnut": {
-          "STFPM": 0.0,
-          "PADIM": 0.22
-        },
-        "leather": {
-          "STFPM": 0.039,
-          "PADIM": 0.108
-        },
-        "metal_nut": {
-          "STFPM": 0.0,
-          "PADIM": 0.089
-        },
-        "pill": {
-          "STFPM": 0.051,
-          "PADIM": 0.047
-        },
-        "screw": {
-          "STFPM": 0.0,
-          "PADIM": 0.0
-        },
-        "tile": {
-          "STFPM": 0.014,
-          "PADIM": 0.08
-        },
-        "toothbrush": {
-          "STFPM": 0.059,
-          "PADIM": 0.11
-        },
-        "transistor": {
-          "STFPM": 0.0,
-          "PADIM": 0.184
-        },
-        "wood": {
-          "STFPM": 0.022,
-          "PADIM": 0.139
-        },
-        "zipper": {
-          "STFPM": 0.0,
-          "PADIM": 0.127
-        }
-      },
-      "deploy": {
-        "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.404
-        },
-        "cable": {
-          "STFPM": 0.0,
-          "PADIM": 0.053
-        },
-        "capsule": {
-          "STFPM": 0.015,
-          "PADIM": 0.088
-        },
-        "carpet": {
-          "STFPM": 0.019,
-          "PADIM": 0.221
-        },
-        "grid": {
-          "STFPM": 0.0,
-          "PADIM": 0.011
-        },
-        "hazelnut": {
-          "STFPM": 0.0,
-          "PADIM": 0.22
-        },
-        "leather": {
-          "STFPM": 0.039,
-          "PADIM": 0.108
-        },
-        "metal_nut": {
-          "STFPM": 0.0,
-          "PADIM": 0.089
-        },
-        "pill": {
-          "STFPM": 0.051,
-          "PADIM": 0.047
-        },
-        "screw": {
-          "STFPM": 0.0,
-          "PADIM": 0.0
-        },
-        "tile": {
-          "STFPM": 0.014,
-          "PADIM": 0.08
-        },
-        "toothbrush": {
-          "STFPM": 0.059,
-          "PADIM": 0.11
-        },
-        "transistor": {
-          "STFPM": 0.0,
-          "PADIM": 0.184
-        },
-        "wood": {
-          "STFPM": 0.022,
-          "PADIM": 0.139
-        },
-        "zipper": {
-          "STFPM": 0.0,
-          "PADIM": 0.127
-        }
-      },
-      "nncf": {
-        "bottle": {
-          "STFPM": 0.056,
-          "PADIM": 0.276
-        },
-        "cable": {
-          "STFPM": 0.05,
-          "PADIM": 0.05
-        },
-        "capsule": {
-          "STFPM": 0.017,
-          "PADIM": 0.146
-        },
-        "carpet": {
-          "STFPM": 0.155,
-          "PADIM": 0.238
-        },
-        "grid": {
-          "STFPM": 0.0,
-          "PADIM": 0.0
-        },
-        "hazelnut": {
-          "STFPM": 0.0,
-          "PADIM": 0.192
-        },
-        "leather": {
-          "STFPM": 0.121,
-          "PADIM": 0.131
-        },
-        "metal_nut": {
-          "STFPM": 0.021,
-          "PADIM": 0.103
-        },
-        "pill": {
-          "STFPM": 0.044,
-          "PADIM": 0.094
-        },
-        "screw": {
-          "STFPM": 0.014,
-          "PADIM": 0.029
-        },
-        "tile": {
-          "STFPM": 0.02,
-          "PADIM": 0.07
-        },
-        "toothbrush": {
-          "STFPM": 0.066,
-          "PADIM": 0.125
-        },
-        "transistor": {
-          "STFPM": 0.0,
-          "PADIM": 0.038
-        },
-        "wood": {
-          "STFPM": 0.075,
-          "PADIM": 0.181
-        },
-        "zipper": {
-          "STFPM": 0.195,
-          "PADIM": 0.123
-        }
-      },
-      "ptq": {
-        "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.306
-        },
-        "cable": {
-          "STFPM": 0.0,
-          "PADIM": 0.038
-        },
-        "capsule": {
-          "STFPM": 0.012,
-          "PADIM": 0.127
-        },
-        "carpet": {
-          "STFPM": 0.026,
-          "PADIM": 0.202
-        },
-        "grid": {
-          "STFPM": 0.0,
-          "PADIM": 0.01
-        },
-        "hazelnut": {
-          "STFPM": 0.007,
-          "PADIM": 0.24
-        },
-        "leather": {
-          "STFPM": 0.038,
-          "PADIM": 0.101
-        },
-        "metal_nut": {
-          "STFPM": 0.0,
-          "PADIM": 0.147
-        },
-        "pill": {
-          "STFPM": 0.041,
-          "PADIM": 0.085
-        },
-        "screw": {
-          "STFPM": 0.0,
-          "PADIM": 0.004
-        },
-        "tile": {
-          "STFPM": 0.0,
-          "PADIM": 0.0
-        },
-        "toothbrush": {
-          "STFPM": 0.015,
-          "PADIM": 0.184
-        },
-        "transistor": {
-          "STFPM": 0.0,
-          "PADIM": 0.209
-        },
-        "wood": {
-          "STFPM": 0.031,
-          "PADIM": 0.201
-        },
-        "zipper": {
-          "STFPM": 0.0,
-          "PADIM": 0.158
-        }
-      }
-    },
-    "anomaly_segmentation": {
-      "train": {
-        "bottle": {
-          "STFPM": 0.323,
-          "PADIM": 0.598
-        },
-        "cable": {
-          "STFPM": 0.15,
-          "PADIM": 0.228
-        },
-        "capsule": {
-          "STFPM": 0.121,
-          "PADIM": 0.294
-        },
-        "carpet": {
-          "STFPM": 0.455,
-          "PADIM": 0.367
-        },
-        "grid": {
-          "STFPM": 0.068,
-          "PADIM": 0.014
-        },
-        "hazelnut": {
-          "STFPM": 0.098,
-          "PADIM": 0.452
-        },
-        "leather": {
-          "STFPM": 0.307,
-          "PADIM": 0.379
-        },
-        "metal_nut": {
-          "STFPM": 0.367,
-          "PADIM": 0.386
-        },
-        "pill": {
-          "STFPM": 0.203,
-          "PADIM": 0.255
-        },
-        "screw": {
-          "STFPM": 0.038,
-          "PADIM": 0.06
-        },
-        "tile": {
-          "STFPM": 0.449,
-          "PADIM": 0.232
-        },
-        "toothbrush": {
-          "STFPM": 0.203,
-          "PADIM": 0.478
-        },
-        "transistor": {
-          "STFPM": 0.179,
-          "PADIM": 0.417
-        },
-        "wood": {
-          "STFPM": 0.561,
-          "PADIM": 0.35
-        },
-        "zipper": {
-          "STFPM": 0.259,
-          "PADIM": 0.328
-        }
-      },
-      "export": {
-        "bottle": {
-          "STFPM": 0.26,
-          "PADIM": 0.573
-        },
-        "cable": {
-          "STFPM": 0.094,
-          "PADIM": 0.126
-        },
-        "capsule": {
-          "STFPM": 0.077,
-          "PADIM": 0.31
-        },
-        "carpet": {
-          "STFPM": 0.262,
-          "PADIM": 0.328
-        },
-        "grid": {
-          "STFPM": 0.019,
-          "PADIM": 0.014
-        },
-        "hazelnut": {
-          "STFPM": 0.077,
-          "PADIM": 0.371
-        },
-        "leather": {
-          "STFPM": 0.158,
-          "PADIM": 0.308
-        },
-        "metal_nut": {
-          "STFPM": 0.386,
-          "PADIM": 0.358
-        },
-        "pill": {
-          "STFPM": 0.154,
-          "PADIM": 0.223
-        },
-        "screw": {
-          "STFPM": 0.036,
-          "PADIM": 0.033
-        },
-        "tile": {
-          "STFPM": 0.393,
-          "PADIM": 0.181
-        },
-        "toothbrush": {
-          "STFPM": 0.088,
-          "PADIM": 0.147
-        },
-        "transistor": {
-          "STFPM": 0.15,
-          "PADIM": 0.285
-        },
-        "wood": {
-          "STFPM": 0.559,
-          "PADIM": 0.349
-        },
-        "zipper": {
-          "STFPM": 0.118,
-          "PADIM": 0.165
-        }
-      },
-      "deploy": {
-        "bottle": {
-          "STFPM": 0.26,
-          "PADIM": 0.573
-        },
-        "cable": {
-          "STFPM": 0.094,
-          "PADIM": 0.126
-        },
-        "capsule": {
-          "STFPM": 0.077,
-          "PADIM": 0.31
-        },
-        "carpet": {
-          "STFPM": 0.262,
-          "PADIM": 0.328
-        },
-        "grid": {
-          "STFPM": 0.019,
-          "PADIM": 0.014
-        },
-        "hazelnut": {
-          "STFPM": 0.077,
-          "PADIM": 0.371
-        },
-        "leather": {
-          "STFPM": 0.158,
-          "PADIM": 0.308
-        },
-        "metal_nut": {
-          "STFPM": 0.386,
-          "PADIM": 0.358
-        },
-        "pill": {
-          "STFPM": 0.154,
-          "PADIM": 0.223
-        },
-        "screw": {
-          "STFPM": 0.036,
-          "PADIM": 0.033
-        },
-        "tile": {
-          "STFPM": 0.393,
-          "PADIM": 0.181
-        },
-        "toothbrush": {
-          "STFPM": 0.088,
-          "PADIM": 0.147
-        },
-        "transistor": {
-          "STFPM": 0.15,
-          "PADIM": 0.285
-        },
-        "wood": {
-          "STFPM": 0.559,
-          "PADIM": 0.349
-        },
-        "zipper": {
-          "STFPM": 0.118,
-          "PADIM": 0.165
-        }
-      },
-      "nncf": {
-        "bottle": {
-          "STFPM": 0.309,
-          "PADIM": 0.616
-        },
-        "cable": {
-          "STFPM": 0.215,
-          "PADIM": 0.264
-        },
-        "capsule": {
-          "STFPM": 0.14,
-          "PADIM": 0.317
-        },
-        "carpet": {
-          "STFPM": 0.463,
-          "PADIM": 0.344
-        },
-        "grid": {
-          "STFPM": 0.091,
-          "PADIM": 0.015
-        },
-        "hazelnut": {
-          "STFPM": 0.292,
-          "PADIM": 0.513
-        },
-        "leather": {
-          "STFPM": 0.395,
-          "PADIM": 0.394
-        },
-        "metal_nut": {
-          "STFPM": 0.358,
-          "PADIM": 0.41
-        },
-        "pill": {
-          "STFPM": 0.228,
-          "PADIM": 0.281
-        },
-        "screw": {
-          "STFPM": 0.03,
-          "PADIM": 0.051
-        },
-        "tile": {
-          "STFPM": 0.467,
-          "PADIM": 0.181
-        },
-        "toothbrush": {
-          "STFPM": 0.282,
-          "PADIM": 0.464
-        },
-        "transistor": {
-          "STFPM": 0.187,
-          "PADIM": 0.351
-        },
-        "wood": {
-          "STFPM": 0.517,
-          "PADIM": 0.355
-        },
-        "zipper": {
-          "STFPM": 0.289,
-          "PADIM": 0.273
-        }
-      },
-      "ptq": {
-        "bottle": {
-          "STFPM": 0.253,
-          "PADIM": 0.555
-        },
-        "cable": {
-          "STFPM": 0.096,
-          "PADIM": 0.141
-        },
-        "capsule": {
-          "STFPM": 0.072,
-          "PADIM": 0.296
-        },
-        "carpet": {
-          "STFPM": 0.247,
-          "PADIM": 0.307
-        },
-        "grid": {
-          "STFPM": 0.02,
-          "PADIM": 0.014
-        },
-        "hazelnut": {
-          "STFPM": 0.073,
-          "PADIM": 0.383
-        },
-        "leather": {
-          "STFPM": 0.141,
-          "PADIM": 0.347
-        },
-        "metal_nut": {
-          "STFPM": 0.006,
-          "PADIM": 0.105
-        },
-        "pill": {
-          "STFPM": 0.135,
-          "PADIM": 0.241
-        },
-        "screw": {
-          "STFPM": 0.011,
-          "PADIM": 0.037
-        },
-        "tile": {
-          "STFPM": 0.382,
-          "PADIM": 0.184
-        },
-        "toothbrush": {
-          "STFPM": 0.084,
-          "PADIM": 0.198
-        },
-        "transistor": {
-          "STFPM": 0.148,
-          "PADIM": 0.34
-        },
-        "wood": {
-          "STFPM": 0.556,
-          "PADIM": 0.349
-        },
-        "zipper": {
-          "STFPM": 0.128,
-          "PADIM": 0.141
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "Lite-HRNet-18": 0.635,
+            "Lite-HRNet-18-mod2": 0.656,
+            "Lite-HRNet-s-mod2": 0.639,
+            "Lite-HRNet-x-mod3": 0.565
+          },
+          "export": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          }
         }
       }
     }
   },
   "kpi_e2e_train_time_criteria": {
-    "classification": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 141.137,
-            "MobileNet-V3-large-1x": 72.732,
-            "EfficientNet-B0": 82.521
-          }
-        },
-        "multi_label": {
-          "train": {
-            "EfficientNet-V2-S": 214.508,
-            "MobileNet-V3-large-1x": 185.442,
-            "EfficientNet-B0": 187.332
-          }
-        },
-        "h_label": {
-          "train": {
-            "EfficientNet-V2-S": 149.627,
-            "MobileNet-V3-large-1x": 76.041,
-            "EfficientNet-B0": 87.159
-          }
-        },
-        "supcon": {
-          "train": {
-            "EfficientNet-V2-S": 136.036,
-            "MobileNet-V3-large-1x": 134.635,
-            "EfficientNet-B0": 124.474
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 141.137,
-            "MobileNet-V3-large-1x": 80.603,
-            "EfficientNet-B0": 82.521
-          }
-        },
-        "multi_label": {
-          "train": {
-            "EfficientNet-V2-S": 214.508,
-            "MobileNet-V3-large-1x": 185.442,
-            "EfficientNet-B0": 187.332
-          }
-        },
-        "h_label": {
-          "train": {
-            "EfficientNet-V2-S": 0.0,
-            "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 423.184,
-            "MobileNet-V3-large-1x": 227.445,
-            "EfficientNet-B0": 230.227
-          }
-        }
-      },
-      "self_supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 141.137,
-            "MobileNet-V3-large-1x": 72.239,
-            "EfficientNet-B0": 82.521
-          }
-        }
-      }
-    },
-    "detection": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 4226.84,
-            "SSD": 1992.196,
-            "MobileNetV2-ATSS": 1843.627
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 3059.355,
-            "SSD": 1439.16,
-            "MobileNetV2-ATSS": 1531.103
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 4962.307,
-            "SSD": 6410.017,
-            "MobileNetV2-ATSS": 6263.435
-          }
-        }
-      },
-      "tiling": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 1689.117,
-            "SSD": 2052.821,
-            "MobileNetV2-ATSS": 2074.501
-          }
-        }
-      }
-    },
-    "segmentation": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 393.137,
-            "Lite-HRNet-18-mod2": 443.94,
-            "Lite-HRNet-18": 446.99,
-            "Lite-HRNet-x-mod3": 667.493
-          }
-        },
-        "supcon": {
-          "train": {
-            "Lite-HRNet-s-mod2": 241.88,
-            "Lite-HRNet-18-mod2": 279.19,
-            "Lite-HRNet-18": 279.71,
-            "Lite-HRNet-x-mod3": 454.31
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 447.762,
-            "Lite-HRNet-18-mod2": 474.511,
-            "Lite-HRNet-18": 486.038,
-            "Lite-HRNet-x-mod3": 759.906
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 564.257,
-            "Lite-HRNet-18-mod2": 715.882,
-            "Lite-HRNet-18": 601.665,
-            "Lite-HRNet-x-mod3": 902.047
-          }
-        }
-      },
-      "self_supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 727.372,
-            "Lite-HRNet-18-mod2": 756.383,
-            "Lite-HRNet-18": 750.812,
-            "Lite-HRNet-x-mod3": 1017.624
-          }
-        }
-      }
-    },
-    "instance_segmentation": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 5857.729,
-            "MaskRCNN-EfficientNetB2B": 4869.547
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 5154.329,
-            "MaskRCNN-EfficientNetB2B": 4342.104
-          }
-        }
-      },
-      "tiling": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 8086.079,
-            "MaskRCNN-EfficientNetB2B": 7274.234
-          }
-        }
-      }
-    },
     "action_classification": {
       "supervised": {
         "multi_class": {
           "train": {
-            "X3D": 3604.046,
-            "MoViNet": 2091.719
+            "MoViNet": 261.901,
+            "X3D": 293.573
           }
         }
       }
@@ -1695,398 +1190,271 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "X3D_FAST_RCNN": 11349.635
+            "X3D_FAST_RCNN": 1324.578
           }
-        }
-      }
-    },
-    "anomaly_classification": {
-      "train": {
-        "bottle": {
-          "STFPM": 719.611,
-          "PADIM": 113.547
-        },
-        "cable": {
-          "STFPM": 777.212,
-          "PADIM": 81.765
-        },
-        "capsule": {
-          "STFPM": 737.924,
-          "PADIM": 74.779
-        },
-        "carpet": {
-          "STFPM": 915.018,
-          "PADIM": 115.933
-        },
-        "grid": {
-          "STFPM": 880.849,
-          "PADIM": 78.714
-        },
-        "hazelnut": {
-          "STFPM": 612.339,
-          "PADIM": 444.225
-        },
-        "leather": {
-          "STFPM": 976.283,
-          "PADIM": 130.234
-        },
-        "metal_nut": {
-          "STFPM": 602.296,
-          "PADIM": 133.969
-        },
-        "pill": {
-          "STFPM": 1612.218,
-          "PADIM": 349.457
-        },
-        "screw": {
-          "STFPM": 479.455,
-          "PADIM": 89.838
-        },
-        "tile": {
-          "STFPM": 812.539,
-          "PADIM": 90.505
-        },
-        "toothbrush": {
-          "STFPM": 729.418,
-          "PADIM": 103.921
-        },
-        "transistor": {
-          "STFPM": 559.613,
-          "PADIM": 100.966
-        },
-        "wood": {
-          "STFPM": 645.307,
-          "PADIM": 120.205
-        },
-        "zipper": {
-          "STFPM": 1094.092,
-          "PADIM": 85.425
-        }
-      }
-    },
-    "anomaly_detection": {
-      "train": {
-        "bottle": {
-          "STFPM": 616.724,
-          "PADIM": 70.212
-        },
-        "cable": {
-          "STFPM": 1099.243,
-          "PADIM": 97.758
-        },
-        "capsule": {
-          "STFPM": 442.791,
-          "PADIM": 79.647
-        },
-        "carpet": {
-          "STFPM": 672.606,
-          "PADIM": 76.309
-        },
-        "grid": {
-          "STFPM": 606.42,
-          "PADIM": 98.1
-        },
-        "hazelnut": {
-          "STFPM": 442.13,
-          "PADIM": 75.02
-        },
-        "leather": {
-          "STFPM": 665.451,
-          "PADIM": 78.943
-        },
-        "metal_nut": {
-          "STFPM": 841.626,
-          "PADIM": 72.459
-        },
-        "pill": {
-          "STFPM": 1048.111,
-          "PADIM": 77.902
-        },
-        "screw": {
-          "STFPM": 916.603,
-          "PADIM": 80.394
-        },
-        "tile": {
-          "STFPM": 967.902,
-          "PADIM": 83.676
-        },
-        "toothbrush": {
-          "STFPM": 552.189,
-          "PADIM": 70.768
-        },
-        "transistor": {
-          "STFPM": 556.002,
-          "PADIM": 74.005
-        },
-        "wood": {
-          "STFPM": 897.382,
-          "PADIM": 74.659
-        },
-        "zipper": {
-          "STFPM": 1778.595,
-          "PADIM": 79.349
         }
       }
     },
     "anomaly_segmentation": {
       "train": {
-        "bottle": {
-          "STFPM": 1604.738,
-          "PADIM": 162.997
-        },
-        "cable": {
-          "STFPM": 966.757,
-          "PADIM": 192.818
-        },
-        "capsule": {
-          "STFPM": 1468.992,
-          "PADIM": 181.064
-        },
         "carpet": {
-          "STFPM": 1609.069,
-          "PADIM": 147.889
-        },
-        "grid": {
-          "STFPM": 1080.058,
-          "PADIM": 152.668
-        },
-        "hazelnut": {
-          "STFPM": 1083.441,
-          "PADIM": 312.687
-        },
-        "leather": {
-          "STFPM": 2060.551,
-          "PADIM": 166.385
-        },
-        "metal_nut": {
-          "STFPM": 1124.054,
-          "PADIM": 163.375
-        },
-        "pill": {
-          "STFPM": 2116.461,
-          "PADIM": 445.256
-        },
-        "screw": {
-          "STFPM": 3076.376,
-          "PADIM": 209.651
-        },
-        "tile": {
-          "STFPM": 2123.952,
-          "PADIM": 205.008
-        },
-        "toothbrush": {
-          "STFPM": 1351.298,
-          "PADIM": 198.668
-        },
-        "transistor": {
-          "STFPM": 1619.98,
-          "PADIM": 169.985
+          "STFPM": 606.461,
+          "PADIM": 51.744
         },
         "wood": {
-          "STFPM": 1040.837,
-          "PADIM": 191.44
+          "STFPM": 843.012,
+          "PADIM": 54.485
         },
         "zipper": {
-          "STFPM": 2514.32,
-          "PADIM": 186.099
+          "STFPM": 570.453,
+          "PADIM": 52.987
+        }
+      }
+    },
+    "anomaly_detection": {
+      "train": {
+        "carpet": {
+          "STFPM": 380.418,
+          "PADIM": 35.742
+        },
+        "wood": {
+          "STFPM": 233.758,
+          "PADIM": 35.502
+        },
+        "zipper": {
+          "STFPM": 389.025,
+          "PADIM": 36.59
+        }
+      }
+    },
+    "anomaly_classification": {
+      "train": {
+        "carpet": {
+          "STFPM": 483.17,
+          "PADIM": 33.738
+        },
+        "wood": {
+          "STFPM": 391.582,
+          "PADIM": 33.527
+        },
+        "zipper": {
+          "STFPM": 284.238,
+          "PADIM": 33.347
+        }
+      }
+    },
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 218.197,
+            "EfficientNet-B0": 178.446,
+            "MobileNet-V3-large-1x": 166.941,
+            "DeiT-Tiny": 164.726
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 184.384,
+            "EfficientNet-B0": 126.295,
+            "MobileNet-V3-large-1x": 102.924,
+            "DeiT-Tiny": 123.242
+          }
+        },
+        "h_label": {
+          "train": {
+            "EfficientNet-V2-S": 110.326,
+            "EfficientNet-B0": 130.742,
+            "MobileNet-V3-large-1x": 115.362,
+            "DeiT-Tiny": 117.818
+          }
+        },
+        "supcon": {
+          "train": {
+            "EfficientNet-V2-S": 262.529,
+            "EfficientNet-B0": 218.38,
+            "MobileNet-V3-large-1x": 201.337
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 1114.203,
+            "EfficientNet-B0": 659.838,
+            "MobileNet-V3-large-1x": 545.86,
+            "DeiT-Tiny": 403.769
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 19.834,
+            "EfficientNet-B0": 16.462,
+            "MobileNet-V3-large-1x": 15.144
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 202.416,
+            "EfficientNet-B0": 229.533,
+            "MobileNet-V3-large-1x": 144.591
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 175.599,
+            "EfficientNet-B0": 180.583,
+            "MobileNet-V3-large-1x": 118.757,
+            "DeiT-Tiny": 139.84
+          }
+        }
+      }
+    },
+    "detection": {
+      "tiling": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 1252.666,
+            "YOLOX-S": 280.936,
+            "MobileNetV2-ATSS": 354.523,
+            "SSD": 298.68,
+            "YOLOX-TINY": 212.431,
+            "YOLOX-L": 395.392,
+            "YOLOX-X": 800.653
+          }
+        }
+      },
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 2121.852,
+            "YOLOX-S": 620.867,
+            "MobileNetV2-ATSS": 316.917,
+            "SSD": 271.298,
+            "YOLOX-TINY": 464.486,
+            "YOLOX-L": 816.651,
+            "YOLOX-X": 1672.582
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 2666.141,
+            "YOLOX-S": 443.316,
+            "MobileNetV2-ATSS": 536.618,
+            "SSD": 429.656,
+            "YOLOX-TINY": 406.971,
+            "YOLOX-L": 728.398,
+            "YOLOX-X": 1814.394
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 2098.555,
+            "YOLOX-S": 626.248,
+            "MobileNetV2-ATSS": 518.843,
+            "SSD": 401.059,
+            "YOLOX-TINY": 471.214,
+            "YOLOX-L": 848.263,
+            "YOLOX-X": 1671.449
+          }
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 1364.765,
+            "MaskRCNN-EfficientNetB2B": 605.386,
+            "MaskRCNN-ResNet50": 1284.017
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 1369.209,
+            "MaskRCNN-EfficientNetB2B": 984.011,
+            "MaskRCNN-ResNet50": 1285.941
+          }
+        }
+      }
+    },
+    "segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 125.655,
+            "Lite-HRNet-18": 100.721,
+            "SegNext-t": 75.879,
+            "SegNext-s": 84.361,
+            "Lite-HRNet-18-mod2": 99.325,
+            "Lite-HRNet-s-mod2": 87.493,
+            "Lite-HRNet-x-mod3": 152.836
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-18": 130.635,
+            "Lite-HRNet-18-mod2": 129.879,
+            "Lite-HRNet-s-mod2": 117.903,
+            "Lite-HRNet-x-mod3": 181.323
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 159.307,
+            "Lite-HRNet-18": 147.132,
+            "SegNext-t": 106.195,
+            "SegNext-s": 114.734,
+            "Lite-HRNet-18-mod2": 143.903,
+            "Lite-HRNet-s-mod2": 122.088,
+            "Lite-HRNet-x-mod3": 236.362
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 185.828,
+            "Lite-HRNet-18": 158.973,
+            "SegNext-t": 143.487,
+            "SegNext-s": 149.674,
+            "Lite-HRNet-18-mod2": 161.458,
+            "Lite-HRNet-s-mod2": 150.652,
+            "Lite-HRNet-x-mod3": 205.917
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "Lite-HRNet-18": 148.859,
+            "Lite-HRNet-18-mod2": 148.226,
+            "Lite-HRNet-s-mod2": 125.109,
+            "Lite-HRNet-x-mod3": 255.65
+          }
         }
       }
     }
   },
   "kpi_e2e_eval_time_criteria": {
-    "classification": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 17.8,
-            "MobileNet-V3-large-1x": 16.453,
-            "EfficientNet-B0": 15.145
-          }
-        },
-        "multi_label": {
-          "train": {
-            "EfficientNet-V2-S": 18.706,
-            "MobileNet-V3-large-1x": 20.311,
-            "EfficientNet-B0": 19.497
-          }
-        },
-        "h_label": {
-          "train": {
-            "EfficientNet-V2-S": 17.99,
-            "MobileNet-V3-large-1x": 18.068,
-            "EfficientNet-B0": 13.558
-          }
-        },
-        "supcon": {
-          "train": {
-            "EfficientNet-V2-S": 17.1,
-            "MobileNet-V3-large-1x": 17.988,
-            "EfficientNet-B0": 14.586
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 16.715,
-            "MobileNet-V3-large-1x": 16.722,
-            "EfficientNet-B0": 15.488
-          }
-        },
-        "multi_label": {
-          "train": {
-            "EfficientNet-V2-S": 19.618,
-            "MobileNet-V3-large-1x": 20.686,
-            "EfficientNet-B0": 17.046
-          }
-        },
-        "h_label": {
-          "train": {
-            "EfficientNet-V2-S": 0.0,
-            "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 16.885,
-            "MobileNet-V3-large-1x": 17.905,
-            "EfficientNet-B0": 15.107
-          }
-        }
-      },
-      "self_supervised": {
-        "multi_class": {
-          "train": {
-            "EfficientNet-V2-S": 15.552,
-            "MobileNet-V3-large-1x": 14.267,
-            "EfficientNet-B0": 15.179
-          }
-        }
-      }
-    },
-    "detection": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 82.169,
-            "SSD": 86.989,
-            "MobileNetV2-ATSS": 73.888
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 59.154,
-            "SSD": 89.412,
-            "MobileNetV2-ATSS": 62.492
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 47.199,
-            "SSD": 76.703,
-            "MobileNetV2-ATSS": 50.34
-          }
-        }
-      },
-      "tiling": {
-        "multi_class": {
-          "train": {
-            "YOLOX": 146.561,
-            "SSD": 169.937,
-            "MobileNetV2-ATSS": 84.882
-          }
-        }
-      }
-    },
-    "segmentation": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 36.656,
-            "Lite-HRNet-18-mod2": 42.2,
-            "Lite-HRNet-18": 43.046,
-            "Lite-HRNet-x-mod3": 59.053
-          }
-        },
-        "supcon": {
-          "train": {
-            "Lite-HRNet-s-mod2": 13.835,
-            "Lite-HRNet-18-mod2": 16.39,
-            "Lite-HRNet-18": 16.23,
-            "Lite-HRNet-x-mod3": 26.549
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 43.425,
-            "Lite-HRNet-18-mod2": 48.536,
-            "Lite-HRNet-18": 43.817,
-            "Lite-HRNet-x-mod3": 74.163
-          }
-        }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 43.347,
-            "Lite-HRNet-18-mod2": 51.605,
-            "Lite-HRNet-18": 47.816,
-            "Lite-HRNet-x-mod3": 56.125
-          }
-        }
-      },
-      "self_supervised": {
-        "multi_class": {
-          "train": {
-            "Lite-HRNet-s-mod2": 37.616,
-            "Lite-HRNet-18-mod2": 36.786,
-            "Lite-HRNet-18": 44.935,
-            "Lite-HRNet-x-mod3": 52.59
-          }
-        }
-      }
-    },
-    "instance_segmentation": {
-      "supervised": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 142.759,
-            "MaskRCNN-EfficientNetB2B": 119.753
-          }
-        }
-      },
-      "class_incr": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 103.552,
-            "MaskRCNN-EfficientNetB2B": 118.353
-          }
-        }
-      },
-      "tiling": {
-        "multi_class": {
-          "train": {
-            "MaskRCNN-ResNet50": 522.271,
-            "MaskRCNN-EfficientNetB2B": 321.017
-          }
-        }
-      }
-    },
     "action_classification": {
       "supervised": {
         "multi_class": {
           "train": {
-            "X3D": 384.374,
-            "MoViNet": 244.952
+            "MoViNet": 39.944,
+            "X3D": 42.252
           }
         }
       }
@@ -2095,200 +1463,260 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "X3D_FAST_RCNN": 289.228
+            "X3D_FAST_RCNN": 94.44
           }
-        }
-      }
-    },
-    "anomaly_classification": {
-      "train": {
-        "bottle": {
-          "STFPM": 15.642,
-          "PADIM": 18.455
-        },
-        "cable": {
-          "STFPM": 20.231,
-          "PADIM": 20.494
-        },
-        "capsule": {
-          "STFPM": 17.804,
-          "PADIM": 16.181
-        },
-        "carpet": {
-          "STFPM": 17.077,
-          "PADIM": 22.427
-        },
-        "grid": {
-          "STFPM": 25.84,
-          "PADIM": 24.198
-        },
-        "hazelnut": {
-          "STFPM": 23.11,
-          "PADIM": 23.72
-        },
-        "leather": {
-          "STFPM": 18.26,
-          "PADIM": 19.211
-        },
-        "metal_nut": {
-          "STFPM": 21.384,
-          "PADIM": 20.524
-        },
-        "pill": {
-          "STFPM": 22.02,
-          "PADIM": 15.948
-        },
-        "screw": {
-          "STFPM": 16.735,
-          "PADIM": 16.325
-        },
-        "tile": {
-          "STFPM": 19.721,
-          "PADIM": 17.233
-        },
-        "toothbrush": {
-          "STFPM": 19.855,
-          "PADIM": 16.595
-        },
-        "transistor": {
-          "STFPM": 18.758,
-          "PADIM": 19.858
-        },
-        "wood": {
-          "STFPM": 19.183,
-          "PADIM": 23.046
-        },
-        "zipper": {
-          "STFPM": 17.853,
-          "PADIM": 15.467
-        }
-      }
-    },
-    "anomaly_detection": {
-      "train": {
-        "bottle": {
-          "STFPM": 15.482,
-          "PADIM": 17.691
-        },
-        "cable": {
-          "STFPM": 28.371,
-          "PADIM": 27.715
-        },
-        "capsule": {
-          "STFPM": 21.189,
-          "PADIM": 20.122
-        },
-        "carpet": {
-          "STFPM": 22.601,
-          "PADIM": 19.355
-        },
-        "grid": {
-          "STFPM": 17.123,
-          "PADIM": 16.811
-        },
-        "hazelnut": {
-          "STFPM": 18.379,
-          "PADIM": 20.818
-        },
-        "leather": {
-          "STFPM": 19.115,
-          "PADIM": 19.309
-        },
-        "metal_nut": {
-          "STFPM": 16.946,
-          "PADIM": 18.315
-        },
-        "pill": {
-          "STFPM": 22.808,
-          "PADIM": 21.151
-        },
-        "screw": {
-          "STFPM": 20.324,
-          "PADIM": 24.962
-        },
-        "tile": {
-          "STFPM": 26.288,
-          "PADIM": 23.913
-        },
-        "toothbrush": {
-          "STFPM": 17.988,
-          "PADIM": 16.785
-        },
-        "transistor": {
-          "STFPM": 19.241,
-          "PADIM": 17.293
-        },
-        "wood": {
-          "STFPM": 20.676,
-          "PADIM": 18.066
-        },
-        "zipper": {
-          "STFPM": 19.993,
-          "PADIM": 22.77
         }
       }
     },
     "anomaly_segmentation": {
       "train": {
-        "bottle": {
-          "STFPM": 39.449,
-          "PADIM": 31.495
-        },
-        "cable": {
-          "STFPM": 48.302,
-          "PADIM": 40.103
-        },
-        "capsule": {
-          "STFPM": 41.977,
-          "PADIM": 38.647
-        },
         "carpet": {
-          "STFPM": 27.533,
-          "PADIM": 30.966
-        },
-        "grid": {
-          "STFPM": 28.542,
-          "PADIM": 36.005
-        },
-        "hazelnut": {
-          "STFPM": 49.986,
-          "PADIM": 40.583
-        },
-        "leather": {
-          "STFPM": 32.621,
-          "PADIM": 32.192
-        },
-        "metal_nut": {
-          "STFPM": 62.213,
-          "PADIM": 49.135
-        },
-        "pill": {
-          "STFPM": 51.913,
-          "PADIM": 51.866
-        },
-        "screw": {
-          "STFPM": 46.137,
-          "PADIM": 28.663
-        },
-        "tile": {
-          "STFPM": 51.027,
-          "PADIM": 52.074
-        },
-        "toothbrush": {
-          "STFPM": 31.896,
-          "PADIM": 28.637
-        },
-        "transistor": {
-          "STFPM": 42.772,
-          "PADIM": 38.587
+          "STFPM": 11.986,
+          "PADIM": 10.973
         },
         "wood": {
-          "STFPM": 43.555,
-          "PADIM": 40.225
+          "STFPM": 14.704,
+          "PADIM": 13.279
         },
         "zipper": {
-          "STFPM": 42.113,
-          "PADIM": 39.517
+          "STFPM": 14.002,
+          "PADIM": 13.41
+        }
+      }
+    },
+    "anomaly_detection": {
+      "train": {
+        "carpet": {
+          "STFPM": 8.138,
+          "PADIM": 8.243
+        },
+        "wood": {
+          "STFPM": 7.5,
+          "PADIM": 7.6
+        },
+        "zipper": {
+          "STFPM": 8.728,
+          "PADIM": 8.825
+        }
+      }
+    },
+    "anomaly_classification": {
+      "train": {
+        "carpet": {
+          "STFPM": 5.954,
+          "PADIM": 6.075
+        },
+        "wood": {
+          "STFPM": 5.839,
+          "PADIM": 5.853
+        },
+        "zipper": {
+          "STFPM": 5.778,
+          "PADIM": 5.972
+        }
+      }
+    },
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 15.683,
+            "EfficientNet-B0": 14.97,
+            "MobileNet-V3-large-1x": 15.073,
+            "DeiT-Tiny": 55.993
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 6.952,
+            "EfficientNet-B0": 6.299,
+            "MobileNet-V3-large-1x": 6.105,
+            "DeiT-Tiny": 8.112
+          }
+        },
+        "h_label": {
+          "train": {
+            "EfficientNet-V2-S": 10.636,
+            "EfficientNet-B0": 9.836,
+            "MobileNet-V3-large-1x": 9.835,
+            "DeiT-Tiny": 26.898
+          }
+        },
+        "supcon": {
+          "train": {
+            "EfficientNet-V2-S": 15.597,
+            "EfficientNet-B0": 14.843,
+            "MobileNet-V3-large-1x": 14.996
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 16.646,
+            "EfficientNet-B0": 16.055,
+            "MobileNet-V3-large-1x": 15.865,
+            "DeiT-Tiny": 66.312
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 15.71,
+            "EfficientNet-B0": 15.043,
+            "MobileNet-V3-large-1x": 15.007
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 16.179,
+            "EfficientNet-B0": 15.279,
+            "MobileNet-V3-large-1x": 15.256
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 6.893,
+            "EfficientNet-B0": 6.312,
+            "MobileNet-V3-large-1x": 6.107,
+            "DeiT-Tiny": 8.018
+          }
+        }
+      }
+    },
+    "detection": {
+      "tiling": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 104.089,
+            "YOLOX-S": 105.713,
+            "MobileNetV2-ATSS": 59.865,
+            "SSD": 135.033,
+            "YOLOX-TINY": 58.541,
+            "YOLOX-L": 110.035,
+            "YOLOX-X": 124.0
+          }
+        }
+      },
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 44.526,
+            "YOLOX-S": 14.622,
+            "MobileNetV2-ATSS": 14.839,
+            "SSD": 13.216,
+            "YOLOX-TINY": 13.123,
+            "YOLOX-L": 27.983,
+            "YOLOX-X": 30.28
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 41.62,
+            "YOLOX-S": 12.791,
+            "MobileNetV2-ATSS": 14.857,
+            "SSD": 13.156,
+            "YOLOX-TINY": 16.424,
+            "YOLOX-L": 22.869,
+            "YOLOX-X": 37.766
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 44.94,
+            "YOLOX-S": 26.482,
+            "MobileNetV2-ATSS": 24.495,
+            "SSD": 16.785,
+            "YOLOX-TINY": 22.293,
+            "YOLOX-L": 30.249,
+            "YOLOX-X": 35.993
+          }
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 47.091,
+            "MaskRCNN-EfficientNetB2B": 30.544,
+            "MaskRCNN-ResNet50": 40.727
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 47.186,
+            "MaskRCNN-EfficientNetB2B": 30.885,
+            "MaskRCNN-ResNet50": 39.559
+          }
+        }
+      }
+    },
+    "segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 12.568,
+            "Lite-HRNet-18": 14.135,
+            "SegNext-t": 10.923,
+            "SegNext-s": 10.89,
+            "Lite-HRNet-18-mod2": 14.046,
+            "Lite-HRNet-s-mod2": 12.14,
+            "Lite-HRNet-x-mod3": 21.656
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-18": 15.703,
+            "Lite-HRNet-18-mod2": 16.187,
+            "Lite-HRNet-s-mod2": 12.206,
+            "Lite-HRNet-x-mod3": 27.72
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 13.182,
+            "Lite-HRNet-18": 14.826,
+            "SegNext-t": 11.236,
+            "SegNext-s": 11.108,
+            "Lite-HRNet-18-mod2": 14.542,
+            "Lite-HRNet-s-mod2": 12.768,
+            "Lite-HRNet-x-mod3": 21.772
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 12.84,
+            "Lite-HRNet-18": 12.651,
+            "SegNext-t": 10.582,
+            "SegNext-s": 12.587,
+            "Lite-HRNet-18-mod2": 18.138,
+            "Lite-HRNet-s-mod2": 13.276,
+            "Lite-HRNet-x-mod3": 20.736
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "Lite-HRNet-18": 17.608,
+            "Lite-HRNet-18-mod2": 14.745,
+            "Lite-HRNet-s-mod2": 13.395,
+            "Lite-HRNet-x-mod3": 23.336
+          }
         }
       }
     }

@@ -18,7 +18,11 @@ __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375
 __resize_target_size = 224
 
 __common_pipeline = [
-    dict(type="Resize", size=__resize_target_size),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=False),
+        enable_memcache=True,  # Cache after resizing image
+    ),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
     dict(type="AugMixAugment", config_str="augmix-m5-w3"),
     dict(type="RandomRotate", p=0.35, angle=(-10, 10)),
@@ -47,7 +51,19 @@ __unlabeled_pipeline = [
     dict(type="Collect", keys=["img", "img_strong"]),
 ]
 
+__val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=False),
+        enable_memcache=True,  # Cache after resizing image
+    ),
+    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="ImageToTensor", keys=["img"]),
+    dict(type="Collect", keys=["img"]),
+]
+
 __test_pipeline = [
+    dict(type="LoadImageFromOTXDataset"),
     dict(type="Resize", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
@@ -55,17 +71,13 @@ __test_pipeline = [
 ]
 
 __dataset_type = "OTXClsDataset"
-__samples_per_gpu = 32
-__workers_per_gpu = 2
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=__workers_per_gpu,
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
     unlabeled=dict(
         type=__dataset_type,
         pipeline=__unlabeled_pipeline,
     ),
-    val=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
+    val=dict(type=__dataset_type, test_mode=True, pipeline=__val_pipeline),
     test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
 )

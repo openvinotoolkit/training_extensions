@@ -6,14 +6,16 @@
 import ctypes as ct
 import multiprocessing as mp
 from multiprocessing.managers import DictProxy
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
+import psutil
 from multiprocess.synchronize import Lock
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
+GIB = 1024**3
 
 
 class _DummyLock:
@@ -49,31 +51,32 @@ class MemCacheHandlerBase:
         """Get the reserved memory pool size (bytes)."""
         return len(self._arr)
 
-    def get(self, key: Any) -> Optional[np.ndarray]:
+    def get(self, key: Any) -> Tuple[Optional[np.ndarray], Optional[Dict]]:
         """Try to look up the cached item with the given key.
 
         Args:
             key (Any): A key for looking up the cached item
 
         Returns:
-            If succeed return np.ndarray, otherwise return None
+            If succeed return (np.ndarray, Dict), otherwise return (None, None)
         """
         if self.mem_size == 0 or key not in self._cache_addr:
-            return None
+            return None, None
 
         addr = self._cache_addr[key]
 
-        offset, count, shape, strides = addr
+        offset, count, dtype, shape, strides, meta = addr
 
-        data = np.frombuffer(self._arr, dtype=np.uint8, count=count, offset=offset)
-        return np.lib.stride_tricks.as_strided(data, shape, strides)
+        data = np.frombuffer(self._arr, dtype=dtype, count=count, offset=offset)
+        return np.lib.stride_tricks.as_strided(data, shape, strides), meta
 
-    def put(self, key: Any, data: np.ndarray) -> Optional[int]:
-        """Try to store np.ndarray with a key to the reserved memory pool.
+    def put(self, key: Any, data: np.ndarray, meta: Optional[Dict] = None) -> Optional[int]:
+        """Try to store np.ndarray and metadata with a key to the reserved memory pool.
 
         Args:
             key (Any): A key to store the cached item
             data (np.ndarray): A data sample to store
+            meta (Optional[Dict]): A metadata of the data sample
 
         Returns:
             Optional[int]: If succeed return the address of cached item in memory pool
@@ -81,22 +84,24 @@ class MemCacheHandlerBase:
         if self._freeze.value:
             return None
 
-        assert data.dtype == np.uint8
+        data_bytes = data.size * data.itemsize
 
         with self._lock:
-            new_page = self._cur_page.value + data.size
+            new_page = self._cur_page.value + data_bytes
 
             if key in self._cache_addr or new_page > self.mem_size:
                 return None
 
             offset = ct.byref(self._arr, self._cur_page.value)
-            ct.memmove(offset, data.ctypes.data, data.size)
+            ct.memmove(offset, data.ctypes.data, data_bytes)
 
             self._cache_addr[key] = (
                 self._cur_page.value,
                 data.size,
+                data.dtype,
                 data.shape,
                 data.strides,
+                meta,
             )
             self._cur_page.value = new_page
             return new_page
@@ -154,6 +159,7 @@ class MemCacheHandlerSingleton:
     """A singleton class to create, delete and get MemCacheHandlerBase."""
 
     instance: MemCacheHandlerBase
+    CPU_MEM_LIMITS_GIB: int = 30
 
     @classmethod
     def get(cls) -> MemCacheHandlerBase:
@@ -175,7 +181,6 @@ class MemCacheHandlerSingleton:
             mode (str): There are two options: null, multiprocessing or singleprocessing.
             mem_size (int): The size of memory pool (bytes).
         """
-        logger.info(f"Try to create a {mem_size} size memory pool.")
 
         # COPY FROM mmcv.runner.get_dist_info
         from torch import distributed
@@ -185,9 +190,19 @@ class MemCacheHandlerSingleton:
         else:
             world_size = 1
 
+        # Prevent CPU OOM issue
+        memory_info = psutil.virtual_memory()
+        available_cpu_mem = memory_info.available / GIB
+
         if world_size > 1:
             mem_size = mem_size // world_size
+            available_cpu_mem = available_cpu_mem // world_size
             logger.info(f"Since world_size={world_size} > 1, each worker a {mem_size} size memory pool.")
+
+        logger.info(f"Try to create a {mem_size} size memory pool.")
+        if available_cpu_mem < ((mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB):
+            logger.warning("No available CPU memory left, mem_size will be set to 0.")
+            mem_size = 0
 
         if mode == "null" or mem_size == 0:
             cls.instance = MemCacheHandlerBase(mem_size=0)

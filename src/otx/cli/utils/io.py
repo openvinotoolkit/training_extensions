@@ -49,8 +49,14 @@ model_adapter_keys = (
     "tile_classifier.bin",
     "visual_prompting_image_encoder.xml",
     "visual_prompting_image_encoder.bin",
+    "visual_prompting_prompt_getter.xml",
+    "visual_prompting_prompt_getter.bin",
     "visual_prompting_decoder.xml",
     "visual_prompting_decoder.bin",
+    "image_threshold",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
+    "pixel_threshold",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
+    "min",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
+    "max",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
 )
 
 

@@ -6,7 +6,11 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from openvino.model_api.models.utils import Detection
+from openvino.model_api.models.utils import (
+    ClassificationResult,
+    Detection,
+    ImageResultWithSoftPrediction,
+)
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -626,7 +630,12 @@ class TestSegmentationToAnnotation:
                 ),
             ]
         )
-        hard_predictions = np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)])
+        result = ImageResultWithSoftPrediction(
+            np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)]),
+            soft_prediction,
+            np.array(0),
+            np.array(0),
+        )
 
         metadata = {
             "non-required key": 1,
@@ -634,7 +643,7 @@ class TestSegmentationToAnnotation:
             "soft_prediction": soft_prediction,
         }
 
-        predictions_to_annotations = converter.convert_to_annotation(predictions=hard_predictions, metadata=metadata)
+        predictions_to_annotations = converter.convert_to_annotation(predictions=result, metadata=metadata)
         check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=2)
         check_annotation(
             actual_annotation=predictions_to_annotations.annotations[0],
@@ -808,7 +817,7 @@ class TestSegmentationToAnnotation:
             label_schema.add_child(parent=label_0, child=label_0_2)
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = [(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)]
+            predictions = ClassificationResult([(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
@@ -823,7 +832,7 @@ class TestSegmentationToAnnotation:
             # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" method with
             # "predictions" equal to empty list
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = []
+            predictions = ClassificationResult([], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
@@ -841,12 +850,15 @@ class TestSegmentationToAnnotation:
 
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = [(2, 0.9), (1, 0.8)]
+            predictions = ClassificationResult([(2, 0.9), (1, 0.8)], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 predictions_to_annotations.annotations[0],
-                expected_labels=[ScoredLabel(label=label_0_2, probability=0.9)],
+                expected_labels=[
+                    ScoredLabel(label=label_0_2, probability=0.9),
+                    ScoredLabel(label=label_0_1_1, probability=0.8),
+                ],
             )
 
     @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -933,69 +945,3 @@ class TestSegmentationToAnnotation:
             converter = AnomalyClassificationToAnnotationConverter(label_schema=label_schema)
             assert converter.normal_label == non_empty_labels[0]
             assert converter.anomalous_label == non_empty_labels[2]
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_anomaly_classification_to_annotation_convert(
-        self,
-    ):
-        """
-        <b>Description:</b>
-        Check "AnomalyClassificationToAnnotationConverter" class "convert_to_annotation" method
-
-        <b>Input data:</b>
-        "AnomalyClassificationToAnnotationConverter" class object, "predictions" array
-
-        <b>Expected results:</b>
-        Test passes if "AnnotationSceneEntity" object returned by "convert_to_annotation" method is equal to
-        expected
-
-        <b>Steps</b>
-        1. Check attributes of "AnnotationSceneEntity" object returned by "convert_to_annotation" method for
-        "metadata" dictionary with specified "threshold" key
-        2. Check attributes of "AnnotationSceneEntity" object returned by "convert_to_annotation" method for
-        "metadata" dictionary without specified "threshold" key
-        """
-
-        def check_annotation(actual_annotation: Annotation, expected_labels: list):
-            assert isinstance(actual_annotation, Annotation)
-            assert actual_annotation.get_labels() == expected_labels
-            assert isinstance(actual_annotation.shape, Rectangle)
-            assert Rectangle.is_full_box(rectangle=actual_annotation.shape)
-
-        non_empty_labels = [
-            LabelEntity(name="Normal", domain=Domain.CLASSIFICATION, id=ID("1")),
-            LabelEntity(
-                name="Anomalous",
-                domain=Domain.CLASSIFICATION,
-                id=ID("2"),
-                is_anomalous=True,
-            ),
-        ]
-        label_group = LabelGroup(name="Anomaly classification labels group", labels=non_empty_labels)
-        label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = AnomalyClassificationToAnnotationConverter(label_schema=label_schema)
-        predictions = np.array([0.7])
-        # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" with
-        # specified "threshold" key
-        metadata = {
-            "non-required key": 1,
-            "other non-required key": 2,
-            "threshold": 0.8,
-        }
-        predictions_to_annotations = converter.convert_to_annotation(predictions=predictions, metadata=metadata)
-        check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
-        check_annotation(
-            predictions_to_annotations.annotations[0],
-            expected_labels=[ScoredLabel(label=non_empty_labels[0], probability=0.7)],
-        )
-        # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" without
-        # specified "threshold" key
-        metadata = {"non-required key": 1, "other non-required key": 2}
-        predictions_to_annotations = converter.convert_to_annotation(predictions=predictions, metadata=metadata)
-        check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
-        check_annotation(
-            predictions_to_annotations.annotations[0],
-            expected_labels=[ScoredLabel(label=non_empty_labels[1], probability=0.7)],
-        )

@@ -1,25 +1,13 @@
 """NNCF Task of OTX Segmentation."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from functools import partial
 from typing import List, Optional
 
 import otx.algorithms.segmentation.adapters.mmseg.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.task import MMSegmentationTask
 from otx.api.entities.datasets import DatasetEntity
@@ -38,6 +26,7 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -50,9 +39,16 @@ class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
 
-    def _init_task(self, export: bool = False):  # noqa
-        super(NNCFBaseTask, self)._init_task(export)
+    def configure(
+        self,
+        training=True,
+        ir_options=None,
+        export=False,
+    ):
+        """Configure configs for nncf task."""
+        super(NNCFBaseTask, self).configure(training, ir_options, export)
         self._prepare_optimize(export)
+        return self._config
 
     def _prepare_optimize(self, export=False):
         super()._prepare_optimize()
@@ -115,3 +111,6 @@ class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable
             visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
             output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
         return output, best_score
+
+    def _save_model_post_hook(self, modelinfo):
+        modelinfo["input_size"] = self._input_size

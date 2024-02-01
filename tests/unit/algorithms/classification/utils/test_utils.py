@@ -76,7 +76,7 @@ def test_get_cls_deploy_config(default_hierarchical_data) -> None:
     inf_conf = {"test": "test"}
     config = get_cls_deploy_config(label_schema, inf_conf)
 
-    assert config["type_of_model"] == "otx_classification"
+    assert config["type_of_model"] == "Classification"
     assert config["converter_type"] == "CLASSIFICATION"
     assert "labels" in config["model_parameters"]
     for k in inf_conf:
@@ -93,3 +93,7 @@ def test_get_cls_model_api_configuration(default_hierarchical_data):
     assert len(model_api_cfg) > 0
     assert model_api_cfg[("model_info", "confidence_threshold")] == str(config["confidence_threshold"])
     assert ("model_info", "hierarchical_config") in model_api_cfg
+    assert ("model_info", "labels") in model_api_cfg
+    assert ("model_info", "label_ids") in model_api_cfg
+    assert len(label_schema.get_labels(include_empty=False)) == len(model_api_cfg[("model_info", "labels")].split())
+    assert len(label_schema.get_labels(include_empty=False)) == len(model_api_cfg[("model_info", "label_ids")].split())

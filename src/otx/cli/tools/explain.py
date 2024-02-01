@@ -18,7 +18,6 @@ from pathlib import Path
 
 # Update environment variables for CLI use
 import otx.cli  # noqa: F401
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
@@ -33,8 +32,10 @@ from otx.cli.utils.io import (
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
+from otx.utils.logger import config_logger, get_logger
 
 logger = get_logger()
 
@@ -49,12 +50,14 @@ def get_args():
     parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     parser.add_argument(
-        "--explain-data-roots",
+        "-i",
+        "--input",
         required=True,
         help="Comma-separated paths to explain data folders.",
     )
     parser.add_argument(
-        "--save-explanation-to",
+        "-o",
+        "--output",
         default="saliency_dump",
         help="Output path for explanation images.",
     )
@@ -88,7 +91,7 @@ def get_args():
         help="Weight of the saliency map when overlaying the input image with saliency map.",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 
@@ -122,10 +125,7 @@ def _log_after_saving(explain_predicted_classes, explained_image_counter, args, 
             "Please adjust training pipeline or use different model-data pair."
         )
     if explained_image_counter > 0:
-        logger.info(
-            f"Saliency maps saved to {args.save_explanation_to} for {explained_image_counter} "
-            f"out of {num_images} images."
-        )
+        logger.info(f"Saliency maps saved to {args.output} for {explained_image_counter} out of {num_images} images.")
 
 
 def main():
@@ -134,6 +134,7 @@ def main():
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, mode="explain")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -167,10 +168,10 @@ def main():
             f"{args.explain_algorithm} currently not supported. \
             Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
-    if not Path(args.save_explanation_to).exists():
-        Path(args.save_explanation_to).mkdir(parents=True)
+    if not Path(args.output).exists():
+        Path(args.output).mkdir(parents=True)
 
-    image_files = get_image_files(args.explain_data_roots)
+    image_files = get_image_files(args.input)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
     explain_predicted_classes = not args.explain_all_classes
     explain_parameters = ExplainParameters(
@@ -199,7 +200,7 @@ def main():
                 process_saliency_maps=explain_parameters.process_saliency_maps,
                 img=explained_data.numpy,
                 saliency_map=saliency_data.numpy,
-                save_dir=args.save_explanation_to,
+                save_dir=args.output,
                 fname=fname,
                 weight=args.overlay_weight,
             )

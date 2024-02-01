@@ -8,7 +8,7 @@ from pathlib import Path
 import cv2 as cv
 import numpy as np
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
@@ -43,7 +43,7 @@ def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False
         for label in not_empty_labels:
             label_schema.add_group(
                 LabelGroup(
-                    name=label.name,
+                    name="___" + label.name,
                     labels=[label],
                     group_type=LabelGroupType.EXCLUSIVE,
                 )
@@ -165,11 +165,11 @@ def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
         recipie_path = "src/otx/recipes/stages/classification/semisl.yaml"
     elif task_type == "incremental":
         recipie_path = "src/otx/recipes/stages/classification/incremental.yaml"
-    recipie_cfg = MPAConfig.fromfile(recipie_path)
-    model_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "model.py")
+    recipie_cfg = OTXConfig.fromfile(recipie_path)
+    model_cfg = OTXConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "model.py")
     model_cfg.model.multilabel = False
     model_cfg.model.hierarchical = False
-    data_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "data_pipeline.py")
+    data_cfg = OTXConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "data_pipeline.py")
     data_cfg.data.train.data_dir = "tests/assets/classification_dataset"
     if create_val:
         data_cfg.data.val.data_dir = "tests/assets/classification_dataset"

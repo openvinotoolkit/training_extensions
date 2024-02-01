@@ -80,6 +80,7 @@ class TestMMSegmentationTask:
         for i in range(20):
             fake_label.append(LabelEntity(name=f"class_{i}", domain=Domain.SEGMENTATION, id=ID(str(i))))
         mock_environemnt.get_labels.return_value = fake_label
+        del mock_environemnt.get_hyper_parameters.return_value.learning_parameters.input_size  # To avoid mocking error
         task = MMSegmentationTask(mock_environemnt)
 
         for i, label_entity in task._label_dictionary.items():

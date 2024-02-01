@@ -172,8 +172,7 @@ def substitute_values_for_lifecycle(
 
     Args:
         config (ConfigurableParameters): ConfigurableParameter object to substitute values into
-        value_input (ConfigurableParameters): ConfigurableParameters to take the values to be substituted
-            from.
+        value_input (ConfigurableParameters): ConfigurableParameters to take the values to be substituted from.
         model_lifecycle (Union[ModelLifecycle, Sequence[ModelLifecycle]]): Phase or list of phases in the
             model lifecycle to carry out the substitution for. For example, if
             `model_lifecycle = ModelLifecycle.INFERENCE` is passed, only parameters that

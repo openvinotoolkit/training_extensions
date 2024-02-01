@@ -25,7 +25,6 @@ from otx.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
-from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model import (
@@ -43,7 +42,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     ClassificationToAnnotationConverter,
     DetectionBoxToAnnotationConverter,
@@ -58,7 +57,7 @@ from tests.unit.algorithms.action.test_helpers import (
 )
 
 
-class MockOVInferencer(BaseInferencer):
+class MockOVInferencer(IInferencer):
     """Mock class for OV inferencer."""
 
     def __init__(self, *args, **kwargs):
@@ -89,7 +88,7 @@ class MockModel:
     """Mock class for OV model."""
 
     def preprocess(self, image):
-        return "Preprocess function is called"
+        return "Preprocess function is called", None
 
     def postprocess(self, prediction, metadata):
         return "Postprocess function is called"
@@ -177,7 +176,7 @@ class TestActionOVInferencer:
         """Test pre_process funciton."""
         dataset = generate_action_cls_otx_dataset(1, 10, self.labels)
         inputs = dataset._items
-        assert self.inferencer.pre_process(inputs) == "Preprocess function is called"
+        assert self.inferencer.pre_process(inputs) == ("Preprocess function is called", None)
 
     @e2e_pytest_unit
     def test_post_process(self, mocker) -> None:
@@ -393,4 +392,4 @@ class TestDataLoaderWrapper:
 
         out = self.dataloader[0]
         assert isinstance(out[1], AnnotationSceneEntity)
-        assert len(out[0]) == 10
+        assert len(out[0]) == 29

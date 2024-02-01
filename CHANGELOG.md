@@ -2,23 +2,101 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[unreleased\]
+
+### New features
+
+- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>, <https://github.com/openvinotoolkit/training_extensions/pull/2753>)
+
+### Enhancements
+
+- Upgrade NNCF to 2.7 and OpenVINO to 2023.2 (<https://github.com/openvinotoolkit/training_extensions/pull/2656>)
+- Automate performance benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/2742>)
+
 ## \[v1.5.0\]
 
 ### New features
 
--
+- Enable configurable confidence threshold for otx eval and export (<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
+- Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
+- Enable FeatureVectorHook to support action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
+- Add ONNX metadata to detection, instance segmentation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
+- Add a new feature to configure input size (<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
+- Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
+- Add a new object detector Lite-DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
+- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task (<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
+- Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2485>)
+- Add new argument to track resource usage in train command (<https://github.com/openvinotoolkit/training_extensions/pull/2500>)
+- Add Self-SL for semantic segmentation of SegNext families (<https://github.com/openvinotoolkit/training_extensions/pull/2215>)
+- Adapt input size automatically based on dataset statistics (<https://github.com/openvinotoolkit/training_extensions/pull/2499>)
 
 ### Enhancements
 
--
+- Refine input data in-memory caching (<https://github.com/openvinotoolkit/training_extensions/pull/2416>)
+- Adapt timeout value of initialization for distributed training (<https://github.com/openvinotoolkit/training_extensions/pull/2422>)
+- Optimize data loading by merging load & resize operations w/ caching support for cls/det/iseg/sseg (<https://github.com/openvinotoolkit/training_extensions/pull/2438>, <https://github.com/openvinotoolkit/training_extensions/pull/2453>, <https://github.com/openvinotoolkit/training_extensions/pull/2460>)
+- Support torch==2.0.1 (<https://github.com/openvinotoolkit/training_extensions/pull/2465>)
+- Set "Auto" as default input size mode (<https://github.com/openvinotoolkit/training_extensions/pull/2515>)
 
 ### Bug fixes
 
 - Fix F1 auto-threshold to choose best largest confidence (<https://github.com/openvinotoolkit/training_extensions/pull/2371>)
+- Fix IBLoss enablement with DeiT-Tiny when class incremental training (<https://github.com/openvinotoolkit/training_extensions/pull/2594>)
 
 ### Known issues
 
-- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch>=1.13.1
+- NNCF QAT optimization is disabled for MaskRCNN models due to CUDA runtime error in ROIAlign kernel on torch==2.0.1
+
+## \[v1.4.4\]
+
+### Enhancements
+
+- Update ModelAPI configuration(<https://github.com/openvinotoolkit/training_extensions/pull/2564>)
+- Add Anomaly modelAPI changes (<https://github.com/openvinotoolkit/training_extensions/pull/2563>)
+- Update Image numpy access (<https://github.com/openvinotoolkit/training_extensions/pull/2586>)
+- Make max_num_detections configurable (<https://github.com/openvinotoolkit/training_extensions/pull/2647>)
+
+### Bug fixes
+
+- Fix IBLoss enablement with DeiT-Tiny when class incremental training (<https://github.com/openvinotoolkit/training_extensions/pull/2595>)
+- Fix mmcls bug not wrapping model in DataParallel on CPUs (<https://github.com/openvinotoolkit/training_extensions/pull/2601>)
+- Fix h-label loss normalization issue w/ exclusive label group of singe label (<https://github.com/openvinotoolkit/training_extensions/pull/2604>)
+- Fix division by zero in class incremental learning for classification (<https://github.com/openvinotoolkit/training_extensions/pull/2606>)
+- Fix saliency maps calculation issue for detection models (<https://github.com/openvinotoolkit/training_extensions/pull/2609>)
+- Fix h-label bug of missing parent labels in output (<https://github.com/openvinotoolkit/training_extensions/pull/2626>)
+
+## \[v1.4.3\]
+
+### Enhancements
+
+- Re-introduce adaptive scheduling for training (<https://github.com/openvinotoolkit/training_extensions/pull/2541>)
+
+## \[v1.4.2\]
+
+### Enhancements
+
+- Upgrade nncf version to 2.6.0 (<https://github.com/openvinotoolkit/training_extensions/pull/2459>)
+- Bump datumaro version to 1.5.0 (<https://github.com/openvinotoolkit/training_extensions/pull/2470>, <https://github.com/openvinotoolkit/training_extensions/pull/2502>)
+- Set tox version constraint (<https://github.com/openvinotoolkit/training_extensions/pull/2472>)
+- Add model category attributes to model template (<https://github.com/openvinotoolkit/training_extensions/pull/2439>)
+
+### Bug fixes
+
+- Bug fix for albumentations (<https://github.com/openvinotoolkit/training_extensions/pull/2467>)
+- Add workaround for the incorrect meta info M-RCNN (used for XAI) (<https://github.com/openvinotoolkit/training_extensions/pull/2437>)
+- Fix label list order for h-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2440>)
+- Modified fq numbers for lite HRNET e2e tests (<https://github.com/openvinotoolkit/training_extensions/pull/2445>)
+
+## \[v1.4.1\]
+
+### Enhancements
+
+- Update the README file in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2411>)
+
+### Bug fixes
+
+- Fix broken links in documentation (<https://github.com/openvinotoolkit/training_extensions/pull/2405>)
 
 ## \[v1.4.0\]
 
@@ -53,6 +131,7 @@ All notable changes to this project will be documented in this file.
 - Fix NNCF training on CPU (<https://github.com/openvinotoolkit/training_extensions/pull/2373>)
 - Fix H-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2377>)
 - Fix invalid import structures in otx.api (<https://github.com/openvinotoolkit/training_extensions/pull/2383>)
+- Add for async inference calculating saliency maps from predictions (Mask RCNN IR) (<https://github.com/openvinotoolkit/training_extensions/pull/2395>)
 
 ### Known issues
 
@@ -262,7 +341,7 @@ All notable changes to this project will be documented in this file.
 - Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
 - Introduce `build` command to customize task or model configurations in isolated workspace
 - Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
-- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/introduction.html)
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/1.0.0/guide/get_started/introduction.html)
 - Improve training performance by introducing enhanced loss for the few-shot transfer
 
 ### Bug fixes

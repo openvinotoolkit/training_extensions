@@ -34,3 +34,7 @@ def test_get_det_model_api_configuration():
         tiling_parameters.tile_overlap / tiling_parameters.tile_ir_scale_factor
     )
     assert model_api_cfg[("model_info", "max_pred_number")] == str(tiling_parameters.tile_max_number)
+    assert ("model_info", "labels") in model_api_cfg
+    assert ("model_info", "label_ids") in model_api_cfg
+    assert len(label_schema.get_labels(include_empty=False)) == len(model_api_cfg[("model_info", "labels")].split())
+    assert len(label_schema.get_labels(include_empty=False)) == len(model_api_cfg[("model_info", "label_ids")].split())

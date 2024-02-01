@@ -17,6 +17,7 @@
 import glob
 import os
 import time
+from contextlib import nullcontext
 from copy import deepcopy
 from functools import partial
 from typing import Dict, Optional, Union
@@ -35,24 +36,27 @@ from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )
 from otx.algorithms.action.task import OTXActionTask
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    BaseRecordingForwardHook,
+    FeatureVectorHook,
+)
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_adaptive_interval_training,
-    patch_data_pipeline,
     patch_early_stopping,
     patch_from_hyperparams,
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    MPAConfig,
+    OTXConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelPrecision
@@ -61,6 +65,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -81,14 +86,18 @@ class MMActionTask(OTXActionTask):
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
 
-        self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
         self.set_seed()
 
         # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        if os.path.isfile(self.data_pipeline_path):
+            data_pipeline_cfg = Config.fromfile(self.data_pipeline_path)
+            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
+        else:
+            raise FileNotFoundError(f"data_pipeline: {self.data_pipeline_path} not founded")
 
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
@@ -155,7 +164,7 @@ class MMActionTask(OTXActionTask):
         """Patch mmcv configs for OTX action settings."""
 
         # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
+        # changes under configuration and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
@@ -310,7 +319,7 @@ class MMActionTask(OTXActionTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 
@@ -362,9 +371,6 @@ class MMActionTask(OTXActionTask):
             )
         )
 
-        dump_features = False
-        dump_saliency_map = False
-
         self._init_task()
 
         cfg = self.configure(False, "test", None)
@@ -399,6 +405,7 @@ class MMActionTask(OTXActionTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
+        feature_model = model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -422,32 +429,20 @@ class MMActionTask(OTXActionTask):
         feature_vectors = []
         saliency_maps = []
 
-        def dump_features_hook():
-            raise NotImplementedError("get_feature_vector function for mmaction is not implemented")
-
-        # pylint: disable=unused-argument
-        def dummy_dump_features_hook(model, inp, out):
-            feature_vectors.append(None)
-
-        def dump_saliency_hook():
-            raise NotImplementedError("get_saliency_map for mmaction is not implemented")
-
-        # pylint: disable=unused-argument
-        def dummy_dump_saliency_hook(model, inp, out):
-            saliency_maps.append(None)
-
-        feature_vector_hook = dump_features_hook if dump_features else dummy_dump_features_hook
-        saliency_map_hook = dump_saliency_hook if dump_saliency_map else dummy_dump_saliency_hook
+        feature_vector_hook: BaseRecordingForwardHook = FeatureVectorHook(feature_model)
+        saliency_hook = nullcontext()
 
         prog_bar = ProgressBar(len(dataloader))
-        with model.module.backbone.register_forward_hook(feature_vector_hook):
-            with model.module.backbone.register_forward_hook(saliency_map_hook):
+        with feature_vector_hook:
+            with saliency_hook:
                 for data in dataloader:
                     with torch.no_grad():
                         result = model(return_loss=False, **data)
                     eval_predictions.extend(result)
                     for _ in range(videos_per_gpu):
                         prog_bar.update()
+                feature_vectors = feature_vector_hook.records
+                saliency_maps = [None] * len(mm_dataset)
         prog_bar.file.write("\n")
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
@@ -518,7 +513,7 @@ class MMActionTask(OTXActionTask):
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
-            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+            deploy_cfg = OTXConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(

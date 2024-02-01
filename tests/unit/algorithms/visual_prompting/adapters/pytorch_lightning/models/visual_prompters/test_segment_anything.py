@@ -16,44 +16,9 @@ from torch import Tensor
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import (
     SegmentAnything,
-    CKPT_PATHS,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-
-
-class MockImageEncoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.backbone = nn.Linear(1, 1)
-
-    def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]])
-
-
-class MockPromptEncoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.layer = nn.Linear(1, 1)
-        self.embed_dim = 4
-        self.pe_layer = None
-        self.mask_downscaling = None
-
-    def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]]), torch.Tensor([[1]])
-
-    def get_dense_pe(self):
-        return torch.Tensor([[1]])
-
-
-class MockMaskDecoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.layer = nn.Linear(1, 1)
-        self.num_mask_tokens = 4
-        self.predict_masks = None
-
-    def forward(self, *args, **kwargs):
-        return torch.Tensor([[1]]), torch.Tensor([[1]])
+from tests.unit.algorithms.visual_prompting.test_helpers import MockImageEncoder, MockPromptEncoder, MockMaskDecoder
 
 
 class TestSegmentAnything:
@@ -384,28 +349,12 @@ class TestSegmentAnything:
     @e2e_pytest_unit
     def test_mask_postprocessing(self, mocker) -> None:
         """Test mask_postprocessing."""
-        sam = SegmentAnything(config=self.base_config)
-        mocker.patch.object(sam, "resize_longest_image_size", return_value=Tensor((6, 6)))
-        sam.config.image_size = 6
-
         masks = torch.empty(1, 1, 2, 2)
         orig_size = Tensor((8, 8))
 
-        results = sam.mask_postprocessing(masks, orig_size)
+        results = SegmentAnything.mask_postprocessing(masks, 6, orig_size)
 
         assert results[0, 0].shape == tuple(orig_size)
-
-    @e2e_pytest_unit
-    def test_resize_longest_image_size(self) -> None:
-        """Test resize_longest_image_size."""
-        sam = SegmentAnything(config=self.base_config)
-
-        input_image_size = Tensor((2, 4))
-        longest_side = 6
-
-        results = sam.resize_longest_image_size(input_image_size, longest_side)
-
-        assert torch.all(results == Tensor((3, 6)))
 
     @e2e_pytest_unit
     def test_forward_train(self) -> None:

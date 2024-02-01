@@ -1,10 +1,14 @@
-TestToolsMPAInstanceSegmentation:
+TestToolsOTXInstanceSegmentation:
   nncf:
     number_of_fakequantizers: 204
+  pot:
+    number_of_fakequantizers: 137
   ptq:
-    number_of_fakequantizers: 162
+    number_of_fakequantizers: 160
 TestToolsTilingInstanceSegmentation:
   nncf:
     number_of_fakequantizers: 204
+  pot:
+    number_of_fakequantizers: 137
   ptq:
-    number_of_fakequantizers: 162
+    number_of_fakequantizers: 160

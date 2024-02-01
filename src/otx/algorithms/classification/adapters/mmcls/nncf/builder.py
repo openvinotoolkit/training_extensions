@@ -7,7 +7,6 @@ from functools import partial
 from typing import Optional, Union
 
 import torch
-from mmcls.utils import get_root_logger
 from mmcv.parallel import DataContainer
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
@@ -20,8 +19,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+from otx.utils.logger import get_logger
 
-logger = get_root_logger()
+logger = get_logger()
 
 
 def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statements
@@ -123,6 +123,8 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statement
         )
         state_dict = None
 
+    if config.data.test.pipeline[0]["type"] == "LoadImageFromOTXDataset":
+        config.data.test.pipeline = config.data.test.pipeline[1:]
     test_pipeline = Compose(config.data.test.pipeline)
     get_fake_input_fn = partial(
         get_fake_input,
@@ -154,7 +156,7 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statement
             compression_ctrl=compression_ctrl,
         )
     )
-    # TODO: move this to OTX task when MPA is absorbed into OTX
+    # TODO: move this to OTX task
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
     remove_from_configs_by_type(custom_hooks, "LazyEarlyStoppingHook")

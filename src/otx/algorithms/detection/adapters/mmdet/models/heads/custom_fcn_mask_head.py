@@ -73,6 +73,10 @@ class CustomFCNMaskHead(FCNMaskHead):
             cls_segms[labels[i]].append(mask[0])
         return cls_segms
 
+    def get_scaled_seg_masks(self, *args, **kwargs):
+        """Original method "get_seg_mask" from FCNMaskHead. Used in Semi-SL algorithm."""
+        return super().get_seg_masks(*args, **kwargs)
+
 
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER

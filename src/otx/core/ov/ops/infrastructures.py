@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from ..utils import get_op_name  # type: ignore[attr-defined]
 from .builder import OPS
@@ -233,6 +233,8 @@ class ConstantV0(Operation[ConstantV0Attribute]):
             if not np.array_equal(data, data_):
                 logger.warning(f"Overflow detected in {op_name}")
             data = torch.from_numpy(data_)
+        elif data.dtype == np.uint16:
+            data = torch.from_numpy(data.astype(np.int32))
         else:
             data = torch.from_numpy(data)
 

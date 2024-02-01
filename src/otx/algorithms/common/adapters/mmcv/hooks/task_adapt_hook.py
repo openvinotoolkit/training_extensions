@@ -9,8 +9,9 @@ from torch.utils.data import DataLoader
 from otx.algorithms.common.adapters.torch.dataloaders.samplers import (
     BalancedSampler,
     ClsIncrSampler,
+    OTXSampler,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -25,6 +26,7 @@ class TaskAdaptHook(Hook):
         model_type (str): Types of models used for learning
         sampler_flag (bool): Flag about using ClsIncrSampler
         efficient_mode (bool): Flag about using efficient mode sampler
+        use_adaptive_repeat (bool): Flag about using adaptive repeat data
     """
 
     def __init__(
@@ -57,13 +59,28 @@ class TaskAdaptHook(Hook):
             collate_fn = runner.data_loader.collate_fn
             worker_init_fn = runner.data_loader.worker_init_fn
             rank, world_size = get_dist_info()
+
+            if isinstance(runner.data_loader.sampler, OTXSampler):
+                repeat = runner.data_loader.sampler.repeat
+            else:
+                repeat = 1
             if self.sampler_type == "balanced":
                 sampler = BalancedSampler(
-                    dataset, batch_size, efficient_mode=self.efficient_mode, num_replicas=world_size, rank=rank
+                    dataset,
+                    batch_size,
+                    efficient_mode=self.efficient_mode,
+                    num_replicas=world_size,
+                    rank=rank,
+                    n_repeats=repeat,
                 )
             else:
                 sampler = ClsIncrSampler(
-                    dataset, batch_size, efficient_mode=self.efficient_mode, num_replicas=world_size, rank=rank
+                    dataset,
+                    batch_size,
+                    efficient_mode=self.efficient_mode,
+                    num_replicas=world_size,
+                    rank=rank,
+                    n_repeats=repeat,
                 )
             runner.data_loader = DataLoader(
                 dataset,

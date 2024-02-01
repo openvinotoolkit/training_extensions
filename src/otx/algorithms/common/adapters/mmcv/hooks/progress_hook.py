@@ -19,8 +19,8 @@ import math
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -68,7 +68,7 @@ class OTXProgressHook(Hook):
         if self.verbose:
             progress = self.progress
             if progress >= self.print_threshold:
-                logger.warning(f"training progress {progress:.0f}%")
+                logger.info(f"training progress {progress:.0f}%")
                 self.print_threshold = (progress + 10) // 10 * 10
 
     def before_val_iter(self, runner: BaseRunner):

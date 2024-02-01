@@ -10,7 +10,7 @@ from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import master_only
 from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -91,10 +91,10 @@ class OTXLoggerHook(LoggerHook):
 
 @HOOKS.register_module()
 class LoggerReplaceHook(Hook):
-    """replace logger in the runner to the MPA logger.
+    """replace logger in the runner to the OTX logger.
 
     DO NOT INCLUDE this hook to the recipe directly.
-    mpa will add this hook to all recipe internally.
+    OTX will add this hook to all recipe internally.
     """
 
     def __init__(self, **kwargs):
@@ -103,4 +103,4 @@ class LoggerReplaceHook(Hook):
     def before_run(self, runner):
         """Replace logger."""
         runner.logger = logger
-        logger.info("logger in the runner is replaced to the MPA logger")
+        logger.info("logger in the runner is replaced to the OTX logger")

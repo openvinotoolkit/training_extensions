@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import logging
 import os
 import shutil
 from collections import defaultdict
@@ -30,6 +29,9 @@ from otx.cli.utils.importing import get_otx_root_path
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
+from otx.utils.logger import get_logger
+
+logger = get_logger()
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -293,7 +295,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if all_unlabeled_images > 1:
                 return unlabeled_dir
 
-            logging.warning(
+            logger.warning(
                 "WARNING: There are none or too litle images to start Semi-SL training. "
                 "It should be more than relative threshold (at least 7% of labeled images) "
                 "Start Supervised training instead."
@@ -672,10 +674,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if file_name.endswith(".py"):
                 try:
                     from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-                        MPAConfig,
+                        OTXConfig,
                     )
 
-                    config = MPAConfig.fromfile(str(target_dir / file_name))
+                    config = OTXConfig.fromfile(str(target_dir / file_name))
                     self._patch_cli_configs(config)
                     config.dump(str(dest_dir / file_name))
                 except Exception as exc:

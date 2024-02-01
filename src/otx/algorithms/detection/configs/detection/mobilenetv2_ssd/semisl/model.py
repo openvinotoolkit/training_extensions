@@ -25,9 +25,11 @@ _base_ = [
 __width_mult = 1.0
 
 model = dict(
-    super_type="UnbiasedTeacher",
-    pseudo_conf_thresh=0.25,
-    unlabeled_loss_weight=1.0,
+    super_type="MeanTeacher",
+    pseudo_conf_thresh=0.3,
+    unlabeled_loss_weights={"cls": 0.1, "bbox": 0.0, "obj": 0.0, "centerness": 0.0},
+    filter_empty_annotations=True,
+    visualize=False,
     type="CustomSingleStageDetector",
     bbox_head=dict(
         type="CustomSSDHead",

@@ -39,6 +39,7 @@ from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchem
 from otx.api.entities.media import IMediaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
@@ -272,11 +273,16 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
-    def _is_normal_polygon(self, annotation: DatumAnnotationType.polygon) -> bool:
+    def _is_normal_polygon(self, annotation: DatumAnnotationType.polygon, width: int, height: int) -> bool:
         """To filter out the abnormal polygon."""
-        x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
-        y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
-        return min(x_points) < max(x_points) and min(y_points) < max(y_points)
+        x_points = annotation.points[::2]  # Extract x-coordinates
+        y_points = annotation.points[1::2]  # Extract y-coordinates
+
+        return (
+            min(x_points) < max(x_points) < width
+            and min(y_points) < max(y_points) < height
+            and annotation.get_area() > 0
+        )
 
     def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
         """To filter out the abrnormal bbox."""
@@ -350,6 +356,21 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
+    def _get_ellipse_entity(
+        self, annotation: DatumAnnotation, width: int, height: int, num_polygons: int = -1
+    ) -> Annotation:
+        """Get ellipse entity."""
+        ellipse = Ellipse(
+            annotation.x1 / (width - 1),
+            annotation.y1 / (height - 1),
+            annotation.x2 / (width - 1),
+            annotation.y2 / (height - 1),
+        )
+        return Annotation(
+            ellipse,
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
+        )
+
     def _get_mask_entity(self, annotation: DatumAnnotation) -> Annotation:
         """Get mask entity."""
         mask = Image(data=annotation.image, size=annotation.image.shape)
@@ -368,6 +389,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             used_labels (List): list for index of used label
         """
         clean_label_entities = []
+
         for used_label in used_labels:
             clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities
