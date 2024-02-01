@@ -4,7 +4,6 @@ import math
 import pytest
 from otx.hpo.search_space import SearchSpace, SingleSearchSpace
 
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 ALL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform", "choice"]
 NOT_CATEGORICAL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform"]
@@ -149,14 +148,12 @@ def make_arg_type_wrong(arg):
 
 
 class TestSingleSearchSpace:
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_init_with_good_input(self, type):
         args = MAKE_GOOD_ARGS[type]()
         for arg in args:
             SingleSearchSpace(**arg)
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", NOT_CATEGORICAL_TYPE)
     def test_init_wrong_minmax_arg(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -168,7 +165,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     SingleSearchSpace(**wrong_arg)
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", USE_QUANTIZED_STEP_TYPE)
     def test_init_wrong_step_arg(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -181,7 +177,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     SingleSearchSpace(**wrong_arg)
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", USE_LOG_SCALE_TYPE)
     def test_init_wrong_log_base_arg(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -194,7 +189,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     SingleSearchSpace(**wrong_arg)
 
-    @e2e_pytest_component
     def test_init_wrong_choice_list_arg(self):
         args = MAKE_GOOD_ARGS["choice"]()
         for arg in args:
@@ -206,7 +200,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     SingleSearchSpace(**wrong_arg)
 
-    @e2e_pytest_component
     def test_init_with_wrong_type(self):
         for type in ALL_TYPE:
             args = MAKE_GOOD_ARGS[type]()
@@ -218,7 +211,6 @@ class TestSingleSearchSpace:
                     with pytest.raises(errors):
                         SingleSearchSpace(**wrong_arg)
 
-    @e2e_pytest_component
     def test_set_value_normally(self):
         args = []
         for type in ALL_TYPE:
@@ -229,7 +221,6 @@ class TestSingleSearchSpace:
             sss.set_value(**new_arg)
             cur_arg = new_arg
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", NOT_CATEGORICAL_TYPE)
     def test_set_value_wrong_minmax_arg(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -245,7 +236,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     sss.set_value(**wrong_arg)
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", USE_QUANTIZED_STEP_TYPE)
     def test_set_value_wrong_step_arg(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -261,7 +251,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     sss.set_value(**wrong_arg)
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", USE_LOG_SCALE_TYPE)
     def test_set_value_wrong_log_base_arg(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -277,7 +266,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     sss.set_value(**wrong_arg)
 
-    @e2e_pytest_component
     def test_set_value_wrong_choice_list_arg(self):
         args = MAKE_GOOD_ARGS["choice"]()
         for arg in args:
@@ -292,7 +280,6 @@ class TestSingleSearchSpace:
                 with pytest.raises(errors):
                     sss.set_value(**wrong_arg)
 
-    @e2e_pytest_component
     def test_set_value_with_wrong_type(self):
         for type in ALL_TYPE:
             args = MAKE_GOOD_ARGS[type]()
@@ -305,7 +292,6 @@ class TestSingleSearchSpace:
                     with pytest.raises(errors):
                         sss.set_value(**wrong_arg)
 
-    @e2e_pytest_component
     def test_align_min_max_to_choice_list_if_categorical(self):
         args = MAKE_GOOD_ARGS["choice"]()
         for arg in args:
@@ -316,7 +302,6 @@ class TestSingleSearchSpace:
             assert sss.min == 0
             assert sss.max == len(arg["choice_list"]) - 1
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_is_categorical(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -327,7 +312,6 @@ class TestSingleSearchSpace:
             else:
                 assert sss.is_categorical()
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_use_quantized_step(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -338,7 +322,6 @@ class TestSingleSearchSpace:
             else:
                 assert not sss.use_quantized_step()
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_use_log_scale(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -349,7 +332,6 @@ class TestSingleSearchSpace:
             else:
                 assert not sss.use_log_scale()
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_lower_space_upper_space(self, type):
         args = MAKE_GOOD_ARGS[type]()
@@ -369,7 +351,6 @@ class TestSingleSearchSpace:
                     assert sss.lower_space() == min
                     assert sss.upper_space() == max
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     @pytest.mark.parametrize("number", [2.3, 15])
     def test_space_to_real(self, type, number):
@@ -394,7 +375,6 @@ class TestSingleSearchSpace:
                     expected_ret = round((expected_ret - gap) / step) * step + gap
                 assert ret == expected_ret
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("type", ALL_TYPE)
     @pytest.mark.parametrize("number", [10, 512.3])
     def test_real_to_space(self, type, number):
@@ -410,55 +390,43 @@ class TestSingleSearchSpace:
 
 class TestSearchSpace:
     @staticmethod
-    def get_search_space_depending_on_type(types, range_format=False):
+    def get_search_space_depending_on_type(types):
         if not isinstance(types, (list, tuple)):
             types = [types]
         search_space = {}
 
         if "uniform" in types:
-            TestSearchSpace.add_uniform_search_space(search_space, range_format)
+            TestSearchSpace.add_uniform_search_space(search_space)
         if "quniform" in types:
-            TestSearchSpace.add_quniform_search_space(search_space, range_format)
+            TestSearchSpace.add_quniform_search_space(search_space)
         if "loguniform" in types:
-            TestSearchSpace.add_loguniform_search_space(search_space, range_format)
+            TestSearchSpace.add_loguniform_search_space(search_space)
         if "qloguniform" in types:
-            TestSearchSpace.add_qloguniform_search_space(search_space, range_format)
+            TestSearchSpace.add_qloguniform_search_space(search_space)
         if "choice" in types:
             TestSearchSpace.add_choice_search_space(search_space)
 
         return search_space
 
     @staticmethod
-    def add_uniform_search_space(search_space, range_format=False):
+    def add_uniform_search_space(search_space):
         search_space["uniform_search_space"] = {"param_type": "uniform"}
-        if range_format:
-            search_space["uniform_search_space"]["range"] = [1, 10]
-        else:
-            search_space["uniform_search_space"].update({"min": 1, "max": 10})
+        search_space["uniform_search_space"].update({"min": 1, "max": 10})
 
     @staticmethod
-    def add_quniform_search_space(search_space, range_format=False):
+    def add_quniform_search_space(search_space):
         search_space["quniform_search_space"] = {"param_type": "quniform"}
-        if range_format:
-            search_space["quniform_search_space"]["range"] = [1, 10, 3]
-        else:
-            search_space["quniform_search_space"].update({"min": 1, "max": 10, "step": 3})
+        search_space["quniform_search_space"].update({"min": 1, "max": 10, "step": 3})
 
     @staticmethod
-    def add_loguniform_search_space(search_space, range_format=False):
+    def add_loguniform_search_space(search_space):
         search_space["loguniform_search_space"] = {"param_type": "loguniform"}
-        if range_format:
-            search_space["loguniform_search_space"]["range"] = [1, 10, 2]
-        else:
-            search_space["loguniform_search_space"].update({"min": 1, "max": 10, "log_base": 2})
+        search_space["loguniform_search_space"].update({"min": 1, "max": 10, "log_base": 2})
 
     @staticmethod
-    def add_qloguniform_search_space(search_space, range_format=False):
+    def add_qloguniform_search_space(search_space):
         search_space["qloguniform_search_space"] = {"param_type": "qloguniform"}
-        if range_format:
-            search_space["qloguniform_search_space"]["range"] = [1, 10, 3, 2]
-        else:
-            search_space["qloguniform_search_space"].update({"min": 1, "max": 10, "step": 3, "log_base": 2})
+        search_space["qloguniform_search_space"].update({"min": 1, "max": 10, "step": 3, "log_base": 2})
 
     @staticmethod
     def add_choice_search_space(search_space):
@@ -471,47 +439,17 @@ class TestSearchSpace:
     def search_space_with_all_types(self):
         return SearchSpace(self.get_search_space_depending_on_type(ALL_TYPE))
 
-    @e2e_pytest_component
-    def test_init_with_range_format_argument(self):
-        search_space = self.get_search_space_depending_on_type(ALL_TYPE, True)
-        ss = SearchSpace(search_space)
-        assert ss is not None
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("type", NOT_CATEGORICAL_TYPE)
-    def test_init_with_insufficient_range_arguments(self, type):
-        search_space = self.get_search_space_depending_on_type(type, True)
-        if type in USE_LOG_SCALE_TYPE:
-            num_to_delete = 2
-        else:
-            num_to_delete = 1
-        search_space[f"{type}_search_space"]["range"] = search_space[f"{type}_search_space"]["range"][:-num_to_delete]
-        with pytest.raises(ValueError):
-            SearchSpace(search_space)
-
-    @e2e_pytest_component
-    def test_init_both_format_exists(self):
-        search_space = self.get_search_space_depending_on_type(ALL_TYPE)
-        range_format = self.get_search_space_depending_on_type(ALL_TYPE, True)
-        for key, val in search_space.items():
-            val.update(range_format[key])
-        SearchSpace(search_space)
-
-    @e2e_pytest_component
     def test_get_item_available(self, search_space_with_all_types):
         for type in ALL_TYPE:
             search_space_with_all_types[f"{type}_search_space"]
 
-    @e2e_pytest_component
     def test_iteratble(self, search_space_with_all_types):
         for val in search_space_with_all_types:
             pass
 
-    @e2e_pytest_component
     def test_len_is_available(self, search_space_with_all_types):
         assert len(search_space_with_all_types) == 5
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("choice_exist", [True, False])
     def test_has_categorical_param(self, search_space_with_all_types, choice_exist):
         if choice_exist:
@@ -522,7 +460,6 @@ class TestSearchSpace:
 
         assert ss.has_categorical_param() == choice_exist
 
-    @e2e_pytest_component
     def test_get_real_config_with_proper_argument(self, search_space_with_all_types):
         # search space configuration
         step = 3
@@ -547,14 +484,12 @@ class TestSearchSpace:
 
             assert val == rescaled_requested_val
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("wrong_name", ["wrong_name", 1, 3.2])
     def test_get_real_config_with_wrong_name_config(self, search_space_with_all_types, wrong_name):
         config = {wrong_name: 3.2}
         with pytest.raises(KeyError):
             search_space_with_all_types.get_real_config(config)
 
-    @e2e_pytest_component
     def test_get_space_config_with_proper_argument(self, search_space_with_all_types):
         # search space configuration
         log_base = 2
@@ -570,14 +505,12 @@ class TestSearchSpace:
 
             assert val == rescaled_requested_val
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("wrong_name", ["wrong_name", 1, 3.2])
     def test_get_space_config_with_wrong_name_config(self, search_space_with_all_types, wrong_name):
         config = {wrong_name: 3.2}
         with pytest.raises(KeyError):
             search_space_with_all_types.get_space_config(config)
 
-    @e2e_pytest_component
     def test_get_bayeopt_search_space(self, search_space_with_all_types):
         bayes_opt_format = search_space_with_all_types.get_bayeopt_search_space()
 
@@ -586,14 +519,12 @@ class TestSearchSpace:
             min_val, max_val = val
             assert min_val < max_val
 
-    @e2e_pytest_component
     def test_convert_from_zero_one_scale_to_real_space_with_good_args(self, search_space_with_all_types):
         config = {}
         for key in search_space_with_all_types:
             config[key] = 0.5
         search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
 
-    @e2e_pytest_component
     @pytest.mark.parametrize("config", ["wrong_value", [1, 3, 4], (1, 2)])
     def test_convert_from_zero_one_scale_to_real_space_with_bad_arg_type(self, search_space_with_all_types, config):
         with pytest.raises(AttributeError):
