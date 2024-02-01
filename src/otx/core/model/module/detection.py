@@ -141,4 +141,4 @@ class OTXDetectionLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "val/map_50"
+        return "train/loss"

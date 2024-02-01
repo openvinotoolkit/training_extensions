@@ -33,7 +33,6 @@ class AdaptiveTrainScheduling(Callback):
         self.decay = decay
         self._saved_check_val_every_n_epoch: int | None = None
         self._saved_log_every_n_steps: int | None = None
-        self.is_enabled: bool = False
 
     def on_train_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Execute this function at starting the train stage."""
