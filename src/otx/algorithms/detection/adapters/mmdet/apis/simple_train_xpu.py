@@ -9,10 +9,9 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Union
 
-import mmcv
 import torch
 import tqdm
-from mmcv.engine import single_gpu_test
+from mmdet.apis import single_gpu_test
 from mmcv.ops.nms import NMSop
 from mmcv.ops.roi_align import RoIAlign
 from mmcv.runner.checkpoint import save_checkpoint as mmcv_save_checkpoint
@@ -35,6 +34,8 @@ logger = get_root_logger(logging.INFO)
 
 def train_detector_debug(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
     """Trains a detector via mmdet."""
+    # CHANGE IF REQUIRED
+    cfg.device = "cuda" # cuda, cpu, xpu
 
     # Prepare configs for training
     loader_cfg = dict(
@@ -58,6 +59,25 @@ def train_detector_debug(model, dataset, cfg, distributed=False, validate=False,
     train_loader_cfg = {**loader_cfg, **cfg.data.get("train_dataloader", {})}
     train_data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
     num_iter_per_epoch = len(train_data_loaders[-1])
+
+    # prepare val data loaders
+    if validate:
+        val_dataloader_default_args = dict(
+            samples_per_gpu=1, workers_per_gpu=2, dist=distributed, shuffle=False, persistent_workers=False
+        )
+
+        val_dataloader_args = {**val_dataloader_default_args, **cfg.data.get("val_dataloader", {})}
+        # Support batch_size > 1 in validation
+
+        if val_dataloader_args["samples_per_gpu"] > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            cfg.data.val.pipeline = replace_ImageToTensor(cfg.data.val.pipeline)
+        val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+
+        val_dataloader = build_dataloader(val_dataset, **val_dataloader_args)
+        eval_cfg = cfg.get("evaluation", {})
+        eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"
+
 
     # put model on gpus
     if cfg.device == "xpu":
@@ -89,15 +109,16 @@ def train_detector_debug(model, dataset, cfg, distributed=False, validate=False,
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     print_iter = 10
+    best_score = 0
     cur_iter = 0
     # debugging tool to save tensors with weights and gradients
-    model_debugger = ModelDebugger(model, enabled=True, save_dir="./debug_folder", max_iters=2)
+    model_debugger = ModelDebugger(model, enabled=False, save_dir="./debug_folder", max_iters=2)
 
     # Simple training loop
     for epoch in tqdm.tqdm(range(cfg.runner.max_epochs)):
         lr_scheduler.register_progress(epoch, cur_iter)
         lr_scheduler.before_train_epoch()
-
+        model.train()
         for i, data in enumerate(train_data_loaders[-1]):
             cur_iter = num_iter_per_epoch * epoch + i
             lr_scheduler.register_progress(epoch, cur_iter)
@@ -117,8 +138,20 @@ def train_detector_debug(model, dataset, cfg, distributed=False, validate=False,
                     + " / ".join([f"{key} : {round(val,3)}" for key, val in loss_log.items()])
                 )
 
+        # eval
+        if validate:
+            model.eval()
+            logger.info(f"Epoch #{epoch + 1} evaluation starts")
+            eval_result = single_gpu_test(model, val_dataloader)
+            eval_res = val_dataloader.dataset.evaluate(eval_result, logger=None, metric="mAP", iou_thr=[0.5])
+            score = eval_res["mAP"]
+
+            if score >= best_score:
+                best_score = score
+
         save_checkpoint(model, optimizer, cfg.work_dir, epoch + 1)
 
+    print("Training finished. Best score: ", best_score)
 
 def parse_losses(losses):
     """Parse the raw outputs (losses) of the network.

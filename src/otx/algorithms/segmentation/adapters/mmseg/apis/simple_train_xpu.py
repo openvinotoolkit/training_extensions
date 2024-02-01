@@ -27,6 +27,9 @@ logger = get_root_logger(logging.INFO)
 
 def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
     """Launch segmentor training."""
+    # CHANGE IF REQUIRED
+    cfg.device = "cuda" # cuda, cpu, xpu
+
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
@@ -97,7 +100,7 @@ def train_segmentor_debug(model, dataset, cfg, distributed=False, validate=False
     lr_updater.before_run()
 
     # debugging tool to save tensors with weights and gradients
-    model_debugger = ModelDebugger(model, enabled=True, save_dir="./debug_folder", max_iters=2)
+    model_debugger = ModelDebugger(model, enabled=False, save_dir="./debug_folder", max_iters=2)
 
     # Simple training loop
     iter_idx = 0
