@@ -25,6 +25,8 @@ def pre_filtering(dataset: DmDataset, data_format: str) -> DmDataset:
 
 def is_non_empty_item(item: DatasetItem) -> bool:
     """Return whether DatasetItem's annotation is non-empty."""
+    msg = "If there are empty annotation items in train set, they will be filtered out before training."
+    warnings.warn(msg, stacklevel=2)
     return not (item.subset == "train" and len(item.annotations) == 0)
 
 
@@ -46,6 +48,8 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:
 def remove_unused_labels(dataset: DmDataset, data_format: str) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
+    msg = "If there are unused labels in dataset, they will be filtered out before training."
+    warnings.warn(msg, stacklevel=2)
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
     if data_format == "ava":
         used_labels = [0, *used_labels]
