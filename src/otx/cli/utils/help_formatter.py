@@ -21,17 +21,40 @@ if TYPE_CHECKING:
 
 
 BASE_ARGUMENTS = {"config", "print_config", "help", "engine", "model", "model.help", "task"}
-ENGINE_ARGUMENTS = {"data_root", "engine.help", "engine.device", "engine.checkpoint", "engine.work_dir"}
+ENGINE_ARGUMENTS = {"data_root", "engine.help", "engine.device", "engine.work_dir"}
 REQUIRED_ARGUMENTS = {
     "train": {
         "data",
         "optimizer",
         "scheduler",
+        "engine.checkpoint",
         *BASE_ARGUMENTS,
         *ENGINE_ARGUMENTS,
     },
     "test": {
         "data",
+        "checkpoint",
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
+    "predict": {
+        "data",
+        "checkpoint",
+        "return_predictions",
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
+    "export": {
+        "checkpoint",
+        "export_format",
+        "export_precision",
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
+    "explain": {
+        "data",
+        "checkpoint",
+        "explain_config",
         *BASE_ARGUMENTS,
         *ENGINE_ARGUMENTS,
     },
