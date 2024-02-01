@@ -432,6 +432,8 @@ class Engine:
         """
         import cv2
 
+        from otx.algo.utils.xai_utils import get_processed_saliency_maps
+
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
             explain_config = ExplainConfig()
@@ -449,16 +451,24 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
-        self.trainer.predict(
+        predictions = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
-        # Optimize for memory <- TODO(negvet)
-        saliency_maps = self.trainer.model.model.explain_hook.records
+
+        raw_saliency_maps = self.trainer.model.model.explain_hook.records
         # Temporary saving saliency map for image 0, class 0 (for tests)
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
-        return saliency_maps
+        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), raw_saliency_maps[0][0])
+
+        # # Optimize for memory <- TODO(negvet)
+        # saliency_maps = self.trainer.model.model.explain_hook.records
+        # # Temporary saving saliency map for image 0, class 0 (for tests)
+        # cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
+        # return raw_saliency_maps
+        return get_processed_saliency_maps(
+            raw_saliency_maps, explain_config, predictions
+        )  # filtering e.g. PREDICTIONS, post-processing e.g. resizing
 
     @classmethod
     def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
