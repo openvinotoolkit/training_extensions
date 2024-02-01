@@ -119,8 +119,11 @@ class OTXCLI:
             help="The metric to monitor the model performance during training callbacks.",
         )
         parser.add_argument(
-            "--no-update-num-classes",
-            help="This disables the ability to update the model with the num_classes in the dataset.",
+            "--disable-infer-num-classes",
+            help="OTX automatically infers num_classes from the given dataset "
+            "and applies it to the model initialization."
+            "Consequently, there might be a mismatch with the provided model configuration during runtime. "
+            "Setting this option to true will disable this behavior.",
             action="store_true",
         )
         engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
@@ -316,7 +319,7 @@ class OTXCLI:
         from otx.engine.utils.auto_configurator import get_num_classes_from_meta_info
 
         # Update num_classes
-        if not self.get_config_value(self.config_init, "no_update_num_classes", False):
+        if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
             num_classes = get_num_classes_from_meta_info(task=self.datamodule.task, meta_info=self.datamodule.meta_info)
             if num_classes != model_config.init_args.num_classes:
                 warning_msg = (
