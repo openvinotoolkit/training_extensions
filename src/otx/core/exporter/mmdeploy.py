@@ -194,22 +194,6 @@ class MMdeployExporter(OTXModelExporter):
         """Partition onnx conversion."""
         raise NotImplementedError  # NOTE need for exporting tiling model.
 
-        # if "partition_cfg" in partition_cfgs:
-        #     partition_cfgs = partition_cfgs.get("partition_cfg", None)
-        # else:
-        #     assert "type" in partition_cfgs
-        #     partition_cfgs = get_predefined_partition_cfg(deploy_cfg, partition_cfgs["type"])
-
-        # origin_ir_file = osp.join(args.work_dir, save_file)
-        # for partition_cfg in partition_cfgs:
-        #     save_file = partition_cfg["save_file"]
-        #     save_path = osp.join(args.work_dir, save_file)
-        #     start = partition_cfg["start"]
-        #     end = partition_cfg["end"]
-        #     dynamic_axes = partition_cfg.get("dynamic_axes", None)
-
-        #     extract_model(origin_ir_file, start, end, dynamic_axes=dynamic_axes, save_file=save_path)
-
 
 def mmdeploy_init_model_helper(*_, **kwargs) -> torch.nn.Module:
     """Helper function for initializing a model for inference using the 'mmdeploy' library."""
@@ -245,17 +229,6 @@ def patch_ir_scale_factor(deploy_cfg: MMConfig, hyper_parameters) -> None:  # no
         hyper_parameters (DetectionConfig): OTX detection hyper parameters>
     """
     raise NotImplementedError  # NOTE need to implement for tiling
-
-    # if hyper_parameters.tiling_parameters.enable_tiling:
-    #     scale_ir_input = deploy_cfg.get("scale_ir_input", False)
-    #     if scale_ir_input:
-    #         tile_ir_scale_factor = hyper_parameters.tiling_parameters.tile_ir_scale_factor
-    #         log.info(f"Apply OpenVINO IR scale factor: {tile_ir_scale_factor}")
-    #         ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
-    #         ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
-    #         ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
-    #         deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
-    #         print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
 
 
 def load_mmconfig_from_pkg(cfg: str) -> MMConfig:
