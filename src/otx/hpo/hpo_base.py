@@ -1,30 +1,21 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 """HPO algorithm abstract class."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+from __future__ import annotations
 
 import json
 import tempfile
+import logging
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Literal
 
 from otx.hpo.search_space import SearchSpace
 from otx.hpo.utils import check_mode_input, check_positive
-from otx.utils.logger import get_logger
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 
 class HpoBase(ABC):
@@ -34,53 +25,53 @@ class HpoBase(ABC):
     Only common methods are implemented but not core algorithm of HPO.
 
     Args:
-        search_space (Dict[str, Dict[str, Any]]): hyper parameter search space to find.
-        save_path (Optional[str]): path where result of HPO is saved.
-        mode (str, optinal): One of {min, max}. Determines whether objective is
-                    minimizing or maximizing the metric attribute.
-        num_trials (Optional[int]): How many training to conduct for HPO.
-        num_workers (int): How many trains are executed in parallel.
-        num_full_iterations (int): epoch for traninig after HPO.
-        non_pure_train_ratio (float): ratio of validation time to (train time + validation time)
-        full_dataset_size (int): train dataset size
-        metric (str): Which score metric to use.
-        expected_time_ratio (Optional[Union[int, float]]): Time to use for HPO.
-                                            If HPO is configured automatically,
-                                            HPO use time about exepected_time_ratio *
-                                            train time after HPO times.
-        maximum_resource (Optional[Union[int, float]]): Maximum resource to use for training each trial.
-        subset_ratio (Optional[Union[float, int]]): ratio to how many train dataset to use for each trial.
+        search_space (dict[str, dict[str, Any]]): hyper parameter search space to find.
+        save_path (str | None, optional): path where result of HPO is saved.
+        mode ("max" | "min", optional): One of {min, max}. Determines whether objective is
+                                        minimizing or maximizing the metric attribute.
+        num_trials (int | None, optional): How many training to conduct for HPO.
+        num_workers (int, optional): How many trains are executed in parallel.
+        num_full_iterations (int, optional): epoch for traninig after HPO.
+        non_pure_train_ratio (float, optional): ratio of validation time to (train time + validation time)
+        full_dataset_size (int, optional): train dataset size
+        metric (str, optional): Which score metric to use.
+        expected_time_ratio (int | float | None, optional): Time to use for HPO.
+                                                            If HPO is configured automatically,
+                                                            HPO use time about exepected_time_ratio *
+                                                            train time after HPO times.
+        maximum_resource (int | float | None, optional): Maximum resource to use for training each trial.
+        subset_ratio (float | int | None, optional): ratio to how many train dataset to use for each trial.
                                      The lower value is, the faster the speed is.
                                      But If it's too low, HPO can be unstable.
-        min_subset_size (int) : Minimum size of subset. Default value is 500.
-        resume (bool): resume flag decide to use previous HPO results.
-                       If HPO completed, you can just use optimized hyper parameters.
-                       If HPO stopped in middle, you can resume in middle.
-        prior_hyper_parameters (Optional[Union[Dict, List[Dict]]]) = Hyper parameters to try first.
-        acceptable_additional_time_ratio (Union[float, int]) = Decide how much additional time can be acceptable.
+        min_subset_size (int, optional) : Minimum size of subset. Default value is 500.
+        resume (bool, optional): resume flag decide to use previous HPO results.
+                                 If HPO completed, you can just use optimized hyper parameters.
+                                 If HPO stopped in middle, you can resume in middle.
+        prior_hyper_parameters (dict | list[dict] | None, optional) = Hyper parameters to try first.
+        acceptable_additional_time_ratio (float | int, optional) = Decide how much additional time can be acceptable.
     """
 
     # pylint: disable=too-many-instance-attributes
 
     def __init__(
         self,
-        search_space: Dict[str, Dict[str, Any]],
-        save_path: Optional[str] = None,
-        mode: str = "max",
-        num_trials: Optional[int] = None,
+        search_space: dict[str, dict[str, Any]],
+        save_path: str | None = None,
+        mode: Literal["max", "min"] = "max",
+        num_trials: int | None = None,
         num_workers: int = 1,
-        num_full_iterations: Union[int, float] = 1,
+        num_full_iterations: int | float = 1,
         non_pure_train_ratio: float = 0.2,
         full_dataset_size: int = 0,
         metric: str = "mAP",
-        expected_time_ratio: Optional[Union[int, float]] = None,
-        maximum_resource: Optional[Union[int, float]] = None,
-        subset_ratio: Optional[Union[float, int]] = None,
+        expected_time_ratio: int | float | None = None,
+        maximum_resource: int | float | None = None,
+        subset_ratio: float | int | None = None,
         min_subset_size: int = 500,
         resume: bool = False,
-        prior_hyper_parameters: Optional[Union[Dict, List[Dict]]] = None,
-        acceptable_additional_time_ratio: Union[float, int] = 1.0,
-    ):
+        prior_hyper_parameters: dict | list[dict] | None = None,
+        acceptable_additional_time_ratio: float | int = 1.0,
+    ) -> None:
         # pylint: disable=too-many-arguments, too-many-locals
         check_mode_input(mode)
         check_positive(full_dataset_size, "full_dataset_size")
@@ -113,7 +104,7 @@ class HpoBase(ABC):
         self.non_pure_train_ratio = non_pure_train_ratio
         self.full_dataset_size = full_dataset_size
         self.expected_time_ratio = expected_time_ratio
-        self.maximum_resource: Optional[Union[int, float]] = maximum_resource
+        self.maximum_resource: int | float | None = maximum_resource
         self.subset_ratio = subset_ratio
         self.min_subset_size = min_subset_size
         self.resume = resume
@@ -172,36 +163,36 @@ class Trial:
 
     Args:
         trial_id (Any): Trial id.
-        configuration (Dict): Configuration to train with.
-        train_environment (Optional[Dict], optional): Train environment for the trial. Defaults to None.
+        configuration (dict): Configuration to train with.
+        train_environment (dict | None, optional): Train environment for the trial. Defaults to None.
     """
 
-    def __init__(self, trial_id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
+    def __init__(self, trial_id: Any, configuration: dict, train_environment: dict | None = None) -> None:
         self._id = trial_id
         self._configuration = configuration
-        self.score: Dict[Union[float, int], Union[float, int]] = {}
+        self.score: dict[float | int, float | int] = {}
         self._train_environment = train_environment
         self._iteration = None
         self.status: TrialStatus = TrialStatus.READY
         self._done = False
 
     @property
-    def id(self):
+    def id(self) -> Any:
         """Trial id."""
         return self._id
 
     @property
-    def configuration(self):
+    def configuration(self) -> dict:
         """Configuration to train with."""
         return self._configuration
 
     @property
-    def iteration(self):
+    def iteration(self) -> int | float | None:
         """Iteration to use for training."""
         return self._iteration
 
     @iteration.setter
-    def iteration(self, val):
+    def iteration(self, val: int | float) -> None:
         """Setter for iteration."""
         check_positive(val, "iteration")
         self._iteration = val
@@ -209,37 +200,38 @@ class Trial:
             self._done = False
 
     @property
-    def train_environment(self):
+    def train_environment(self) -> dict | None:
         """Train environment for the trial."""
         return self._train_environment
 
-    def get_train_configuration(self) -> Dict[str, Any]:
+    def get_train_configuration(self) -> dict[str, Any]:
         """Get configurations needed to trian."""
         self._configuration["iterations"] = self.iteration
         return {"id": self.id, "configuration": self.configuration, "train_environment": self.train_environment}
 
-    def register_score(self, score: Union[int, float], resource: Union[int, float]):
+    def register_score(self, score: int | float, resource: int | float) -> None:
         """Register score to the trial.
 
         Args:
-            score (Union[int, float]): Score to register.
-            resource (Union[int, float]): Resource used to get score. It should be positive.
+            score (int | float): Score to register.
+            resource (int | float): Resource used to get score. It should be positive.
         """
         check_positive(resource, "resource")
         self.score[resource] = score
 
     def get_best_score(
-        self, mode: str = "max", resource_limit: Optional[Union[float, int]] = None
-    ) -> Optional[Union[float, int]]:
+        self, mode: Literal["max", "min"] = "max", resource_limit: float | int | None = None
+    ) -> float | int | None:
         """Get best score of the trial.
 
         Args:
-            mode (str, optional): Decide which is better between highest score or lowest score. Defaults to "max".
-            resource_limit (Optional[Union[float, int]], optional): Find a best score among the score at resource
-                                                                    lower than this value. Defaults to None.
+            mode ("max" | "min", optional):
+                Decide which is better between highest score or lowest score. Defaults to "max".
+            resource_limit (float | int | None, optional): Find a best score among the score at resource
+                                                           lower than this value. Defaults to None.
 
         Returns:
-            Optional[Union[float, int]]: Best score. If there is no score, return None.
+            float | int | None: Best score. If there is no score, return None.
         """
         check_mode_input(mode)
 
@@ -255,17 +247,17 @@ class Trial:
             return max(scores)
         return min(scores)
 
-    def get_progress(self) -> Union[float, int]:
+    def get_progress(self) -> float | int:
         """Get a progress of the trial.
 
         Returns:
-            Union[float, int]: How many resource is used for the trial.
+            float | int: How many resource is used for the trial.
         """
         if len(self.score) == 0:
             return 0
         return max(self.score.keys())
 
-    def save_results(self, save_path: str):
+    def save_results(self, save_path: str) -> None:
         """Save a result in the 'save_path'.
 
         Args:
@@ -281,13 +273,13 @@ class Trial:
         with open(save_path, "w", encoding="utf-8") as f:
             json.dump(results, f)
 
-    def finalize(self):
+    def finalize(self) -> None:
         """Set done as True."""
         if not self.score:
             raise RuntimeError(f"Trial{self.id} didn't report any score but tries to be done.")
         self._done = True
 
-    def is_done(self):
+    def is_done(self) -> bool:
         """Check the trial is done."""
         if self.iteration is None:
             raise ValueError("iteration isn't set yet.")
