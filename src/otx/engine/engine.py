@@ -457,18 +457,16 @@ class Engine:
             ckpt_path=ckpt_path,
         )
 
+        # Optimize for memory <- TODO(negvet)
         raw_saliency_maps = self.trainer.model.model.explain_hook.records
         # Temporary saving saliency map for image 0, class 0 (for tests)
         cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), raw_saliency_maps[0][0])
 
-        # # Optimize for memory <- TODO(negvet)
-        # saliency_maps = self.trainer.model.model.explain_hook.records
-        # # Temporary saving saliency map for image 0, class 0 (for tests)
-        # cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
-        # return raw_saliency_maps
         return get_processed_saliency_maps(
-            raw_saliency_maps, explain_config, predictions
-        )  # filtering e.g. PREDICTIONS, post-processing e.g. resizing
+            raw_saliency_maps,
+            explain_config,
+            predictions,
+        )
 
     @classmethod
     def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
