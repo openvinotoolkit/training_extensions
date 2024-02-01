@@ -11,9 +11,6 @@ from typing import TYPE_CHECKING, Any, Iterable
 import torch
 from lightning import Trainer, seed_everything
 
-import numpy as np
-import cv2
-
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
@@ -25,7 +22,6 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.algo.hooks.recording_forward_hook import get_processed_saliency_maps
 
 from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
 
@@ -450,10 +446,12 @@ class Engine:
         """
         import cv2
 
+        from otx.algo.utils.xai_utils import get_processed_saliency_maps
+
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
             explain_config = ExplainConfig()
-        
+
         explain_config.num_classes = self.model.num_classes
 
         lit_module = self._build_lightning_module(
@@ -476,22 +474,11 @@ class Engine:
         )
         # Optimize for memory <- TODO(negvet)
         raw_saliency_maps = self.trainer.model.model.explain_hook.records
-        # Temporary saving saliency map for image 0, class 0 (for tests)
+
         saliency_maps = get_processed_saliency_maps(raw_saliency_maps, explain_config, predictions)
 
-        for i, mask in enumerate(predictions[0].masks[0]):
-            cv2.imwrite(str(Path(self.work_dir) / "saliency_maps0" / f"{i}.jpg"), np.array(mask*255))
-
-        # for i, mask in enumerate(predictions[1].masks[0]):
-        #     cv2.imwrite(str(Path(self.work_dir) / "saliency_maps1" / f"{i}.jpg"), np.array(mask*255))
-
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map00.jpg"), saliency_maps[0][0])
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map01.jpg"), saliency_maps[0][1])
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map02.jpg"), saliency_maps[0][2])
-
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map10.jpg"), saliency_maps[1][0])
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map11.jpg"), saliency_maps[1][1])
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map12.jpg"), saliency_maps[1][2])
+        # Temporary saving saliency map for image 0, class 0 (for tests)
+        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
         return saliency_maps
 
     @classmethod

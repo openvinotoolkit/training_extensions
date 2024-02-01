@@ -65,6 +65,7 @@ class OTXInstanceSegModel(
             polygons=[pred_entity.polygons for pred_entity in pred_entities],
         )
 
+
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     """OTX Instance Segmentation model which can attach a XAI hook."""
 

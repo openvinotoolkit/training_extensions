@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Sequence, Tuple, Optional, Union
+from typing import TYPE_CHECKING, Callable, Sequence
 
 import numpy as np
 import torch
@@ -332,7 +332,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        cls_scores = self._predict_from_feature_map(feature_map)
+        cls_scores = self._head_forward_fn(feature_map)
 
         middle_idx = len(cls_scores) // 2
         # resize to the middle feature map
@@ -374,53 +374,52 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
     @classmethod
     def create_and_register_hook(cls) -> BaseRecordingForwardHook:
         """Create this object and register it to the module forward hook."""
-        hook = cls()
-        return hook
+        return cls()
 
     def func(
         self,
-        feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1
+        feature_map: torch.Tensor | Sequence[torch.Tensor],
+        fpn_idx: int = -1,
     ) -> None:
         """Return None for saliency map hook to generate saliency maps from predictions."""
-        return None
+        return
 
     @classmethod
-    def get_sal_map_from_preds(cls, preds:InstanceSegBatchPredEntity, num_classes: int):
+    def get_sal_map_from_preds(cls, preds: list[InstanceSegBatchPredEntity], num_classes: int) -> torch.Tensor:
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
-            preds (InstanceSegBatchPredEntity): Predictions of Instance Segmentation model.
+            preds (List[InstanceSegBatchPredEntity]): Predictions of Instance Segmentation model.
             num_classes (int): Num classes that model can predict.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
+        # TODO(gzalessk): Add unit tests # noqa: TD003
         batch_size = len(preds)
         _, height, width = preds[0].masks[0].data.shape
         batch_saliency_maps = torch.empty((batch_size, num_classes, height, width))
 
         for batch, pred in enumerate(preds):
-            boxes, masks, scores, labels = pred.bboxes[0].data, pred.masks[0].data, pred.scores[0].data, pred.labels[0].data
+            masks, scores, labels = (
+                pred.masks[0].data,
+                pred.scores[0].data,
+                pred.labels[0].data,
+            )
             saliency_maps = [torch.zeros((height, width), dtype=torch.float32) for _ in range(num_classes)]
             class_objects = [0 for _ in range(num_classes)]
 
-            for boxes, confidence, cl, raw_mask in zip(boxes, scores, labels, masks):
+            for confidence, class_ind, raw_mask in zip(scores, labels, masks):
                 weighted_mask = raw_mask * confidence
-                saliency_maps[cl] += weighted_mask
-                class_objects[cl] += 1
+                saliency_maps[class_ind] += weighted_mask
+                class_objects[class_ind] += 1
 
-            for cl in range(num_classes):
+            for class_ind in range(num_classes):
                 # Normalize by number of objects of the certain class
-                saliency_maps[cl] /= max(class_objects[cl], 1)  
+                saliency_maps[class_ind] /= max(class_objects[class_ind], 1)
             batch_saliency_maps[batch] = torch.stack(saliency_maps)
 
         batch_saliency_maps = batch_saliency_maps.reshape((batch_size, num_classes, -1))
         batch_saliency_maps = cls._normalize_map(batch_saliency_maps)
         batch_saliency_maps = batch_saliency_maps.reshape(batch_size, num_classes, height, width)
         return batch_saliency_maps.numpy()
-
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
-
-def get_processed_saliency_maps(raw_saliency_maps, explain_config, predictions):
-    sal_map = MaskRCNNRecordingForwardHook.get_sal_map_from_preds(predictions, explain_config.num_classes)
-    return sal_map

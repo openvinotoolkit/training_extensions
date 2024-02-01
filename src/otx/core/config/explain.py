@@ -15,3 +15,4 @@ class ExplainConfig:
 
     target_explain_group: TargetExplainGroup = TargetExplainGroup.ALL
     postprocess: bool = False
+    num_classes: int = 0
