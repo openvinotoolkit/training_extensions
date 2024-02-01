@@ -96,7 +96,20 @@ class AdaptiveTrainScheduling(Callback):
                     f"{config.frequency} --> {adaptive_interval}."
                 )
                 log.warning(msg)
+         self.revert_frequency = []
+         ...
+                saved_frequency = config.frequency
                 config.frequency = adaptive_interval
+
+                def _revert():
+                    config.frequency = saved_frequency
+                self.revert_frequency += [_revert]
+
+...
+
+    def on_train_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        for revert in self.revert_frequency:
+            revert()
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
         """Change the EarlyStopping patience to change the patience.
