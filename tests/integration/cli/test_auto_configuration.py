@@ -10,27 +10,6 @@ from otx.cli import main
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 
-# [TODO]: Please Remove this with auto num_classes update feature in CLI
-@pytest.fixture()
-def fxt_cli_override_command_per_task() -> dict:
-    return {
-        "multi_class_cls": ["--model.num_classes", "2"],
-        "multi_label_cls": ["--model.num_classes", "2"],
-        "detection": ["--model.num_classes", "3"],
-        "instance_segmentation": ["--model.num_classes", "3"],
-        "semantic_segmentation": ["--model.num_classes", "2"],
-        "action_classification": ["--model.num_classes", "2"],
-        "action_detection": [
-            "--model.num_classes",
-            "5",
-            "--model.topk",
-            "3",
-        ],
-        "visual_prompting": [],
-        "zero_shot_visual_prompting": ["--max_epochs", "1"],
-    }
-
-
 @pytest.mark.parametrize("task", [task.value.lower() for task in DEFAULT_CONFIG_PER_TASK])
 def test_otx_cli_auto_configuration(
     task: str,

@@ -245,7 +245,7 @@ def get_configuration(config_path: str | Path) -> dict:
     logger.info(f"{config_path} is loaded.")
 
     # Remove unnecessary cli arguments for API usage
-    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume"]
+    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume", "no_update_num_classes"]
     logger.warning(f"The corresponding keys in config are not used.: {cli_args}")
     for arg in cli_args:
         config.pop(arg, None)

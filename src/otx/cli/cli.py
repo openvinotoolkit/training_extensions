@@ -9,6 +9,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
+from warnings import warn
 
 import yaml
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
@@ -115,6 +116,11 @@ class OTXCLI:
             "--callback_monitor",
             type=str,
             help="The metric to monitor the model performance during training callbacks.",
+        )
+        parser.add_argument(
+            "--no-update-num-classes",
+            help="This disables the ability to update the model with the num_classes in the dataset.",
+            action="store_true",
         )
         engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
         parser.add_class_arguments(
@@ -262,9 +268,11 @@ class OTXCLI:
         If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
         """
         if self.subcommand in self.engine_subcommands():
+            # For num_classes update, Model is instantiated separately.
+            model_config = self.config[self.subcommand].pop("model")
             self.config_init = self.parser.instantiate_classes(self.config)
             self.datamodule = self.get_config_value(self.config_init, "data")
-            self.model, optimizer, scheduler = self.instantiate_model()
+            self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
 
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
@@ -275,16 +283,38 @@ class OTXCLI:
                 **engine_kwargs,
             )
 
-    def instantiate_model(self) -> tuple:
+    def instantiate_model(self, model_config: Namespace) -> tuple:
         """Instantiate the model based on the subcommand.
 
         This method checks if the subcommand is one of the engine subcommands.
         If it is, it instantiates the model.
 
+        Args:
+            model_config (Namespace): The model configuration.
+
         Returns:
             tuple: The model and optimizer and scheduler.
         """
-        model = self.get_config_value(self.config_init, "model")
+        from otx.core.model.entity.base import OTXModel
+        from otx.engine.utils.auto_configurator import get_num_classes_from_meta_info
+
+        # Update num_classes
+        if not self.get_config_value(self.config_init, "no_update_num_classes", False):
+            num_classes = get_num_classes_from_meta_info(task=self.datamodule.task, meta_info=self.datamodule.meta_info)
+            if num_classes != model_config.init_args.num_classes:
+                warning_msg = (
+                    f"The `num_classes` in dataset is {num_classes} "
+                    f"but, the `num_classes` of model is {model_config.init_args.num_classes}. "
+                    f"So, Update `model.num_classes` to {num_classes}."
+                )
+                warn(warning_msg, stacklevel=0)
+                model_config.init_args.num_classes = num_classes
+
+        # Parses the OTXModel separately to update num_classes.
+        model_parser = ArgumentParser()
+        model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
+        model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+
         optimizer_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "optimizer", Namespace()))
         scheduler_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "scheduler", Namespace()))
         from otx.core.utils.instantiators import partial_instantiate_class

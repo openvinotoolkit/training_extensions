@@ -40,23 +40,19 @@ def fxt_target_dataset_per_task() -> dict:
 @pytest.fixture()
 def fxt_cli_override_command_per_task() -> dict:
     return {
-        "multi_class_cls": ["--model.num_classes", "2"],
-        "multi_label_cls": ["--model.num_classes", "2"],
+        "multi_class_cls": [],
+        "multi_label_cls": [],
         "h_label_cls": [
-            "--model.num_classes",
-            "7",
             "--model.num_multiclass_heads",
             "2",
             "--model.num_multilabel_classes",
             "3",
         ],
-        "detection": ["--model.num_classes", "3"],
-        "instance_segmentation": ["--model.num_classes", "3"],
-        "semantic_segmentation": ["--model.num_classes", "2"],
-        "action_classification": ["--model.num_classes", "2"],
+        "detection": [],
+        "instance_segmentation": [],
+        "semantic_segmentation": [],
+        "action_classification": [],
         "action_detection": [
-            "--model.num_classes",
-            "5",
             "--model.topk",
             "3",
         ],
