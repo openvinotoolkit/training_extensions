@@ -340,6 +340,9 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
 
         self._build_trainer(**kwargs)
 
