@@ -46,3 +46,5 @@ class TestAdaptiveTrainScheduling:
         # Restore temporarily updated values
         assert mock_trainer.check_val_every_n_epoch == 1
         assert mock_trainer.log_every_n_steps == 50
+        assert mock_trainer.callbacks[0].patience == 5
+        assert mock_trainer.lr_scheduler_configs[0].frequency == 1

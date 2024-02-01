@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from lightning.pytorch.cli import ReduceLROnPlateau
+from torch.optim.lr_scheduler import PolynomialLR
 
 if TYPE_CHECKING:
     from torch.optim import Optimizer
@@ -25,7 +26,6 @@ class BaseWarmupScheduler:
     """
 
     warmup_steps: int
-    warmup_by_epoch: bool
 
 
 class WarmupReduceLROnPlateau(BaseWarmupScheduler, ReduceLROnPlateau):
@@ -35,7 +35,6 @@ class WarmupReduceLROnPlateau(BaseWarmupScheduler, ReduceLROnPlateau):
         optimizer (Optimizer): Wrapped optimizer.
         warmup_steps (int): The total number of the warmup steps. it could be epoch or iter.
         monitor (str): The name of monitoring value.
-        warmup_by_epoch (bool): If True, warmup_steps represent the epoch.
         mode (str): One of `min`, `max`. In `min` mode, lr will
             be reduced when the quantity monitored has stopped
             decreasing; in `max` mode it will be reduced when the
@@ -73,7 +72,6 @@ class WarmupReduceLROnPlateau(BaseWarmupScheduler, ReduceLROnPlateau):
         optimizer: Optimizer,
         warmup_steps: int,
         monitor: str,
-        warmup_by_epoch: bool = False,
         mode: str = "min",
         factor: float = 0.1,
         patience: int = 10,
@@ -85,7 +83,6 @@ class WarmupReduceLROnPlateau(BaseWarmupScheduler, ReduceLROnPlateau):
         verbose: bool = False,
     ):
         self.warmup_steps = warmup_steps
-        self.warmup_by_epoch = warmup_by_epoch
         super().__init__(
             optimizer,
             monitor,
@@ -97,5 +94,37 @@ class WarmupReduceLROnPlateau(BaseWarmupScheduler, ReduceLROnPlateau):
             cooldown,
             min_lr,
             eps,
+            verbose,
+        )
+
+
+class WarmupPolynomialLR(BaseWarmupScheduler, PolynomialLR):
+    """PolynomialLR for enabling the warmup.
+
+    Args:
+        optimizer (Optimizer): Wrapped optimizer.
+        warmup_steps (int): The total number of the warmup steps. it could be epoch or iter.
+        total_iters (int): The number of steps that the scheduler decays the learning rate. Default: 5.
+        power (int): The power of the polynomial. Default: 1.0.
+        verbose (bool): If ``True``, prints a message to stdout for
+            each update. Default: ``False``.
+
+    """
+
+    def __init__(
+        self,
+        optimizer: Optimizer,
+        warmup_steps: int,
+        total_iters: int = 5,
+        power: float = 1.0,
+        last_epoch: int = -1,
+        verbose: bool = False,
+    ):
+        self.warmup_steps = warmup_steps
+        super().__init__(
+            optimizer,
+            total_iters,
+            power,
+            last_epoch,
             verbose,
         )

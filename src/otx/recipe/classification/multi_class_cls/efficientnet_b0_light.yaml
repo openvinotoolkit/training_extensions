@@ -15,10 +15,9 @@ scheduler:
   class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
   init_args:
     warmup_steps: 0
-    warmup_by_epoch: False
     mode: max
     factor: 0.5
-    patience: 2
+    patience: 1
     monitor: val/accuracy
 
 engine:

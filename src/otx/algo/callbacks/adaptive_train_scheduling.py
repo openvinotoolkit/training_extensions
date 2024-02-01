@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging as log
 import math
+from functools import partial
 from typing import TYPE_CHECKING
 
 from lightning import Callback
@@ -34,6 +35,7 @@ class AdaptiveTrainScheduling(Callback):
         self._saved_check_val_every_n_epoch: int | None = None
         self._saved_log_every_n_steps: int | None = None
         self._revert_frequency: list = []
+        self._revert_patience: list = []
 
     def on_train_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Execute this function at starting the train stage."""
@@ -44,7 +46,6 @@ class AdaptiveTrainScheduling(Callback):
             iter_per_epoch=iter_per_epoch,
             max_interval=max_interval,
         )
-        self.is_enabled = adaptive_check_val_every_n_epoch > 1
 
         if adaptive_check_val_every_n_epoch != trainer.check_val_every_n_epoch:
             msg = (
@@ -84,6 +85,10 @@ class AdaptiveTrainScheduling(Callback):
             for revert in self._revert_frequency:
                 revert()
 
+        if len(self._revert_patience) > 0:
+            for revert in self._revert_patience:
+                revert()
+
     def _get_adaptive_interval(self, iter_per_epoch: int, max_interval: int) -> int:
         """Get adaptive interval."""
         return max(round(math.exp(self.decay * iter_per_epoch) * max_interval), 1)
@@ -95,7 +100,7 @@ class AdaptiveTrainScheduling(Callback):
         should be changed according to the adaptive interval.
         """
 
-        def _revert() -> None:
+        def _revert_func(config: LRSchedulerConfig, saved_frequency: int) -> None:
             config.frequency = saved_frequency
 
         for config in lr_configs:
@@ -109,7 +114,7 @@ class AdaptiveTrainScheduling(Callback):
                 saved_frequency = config.frequency
                 config.frequency = adaptive_interval
 
-                self._revert_frequency += [_revert]
+                self._revert_frequency += [partial(_revert_func, config, saved_frequency)]
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
         """Change the EarlyStopping patience to change the patience.
@@ -117,6 +122,10 @@ class AdaptiveTrainScheduling(Callback):
         Since adaptive interval changes the validation interval, the patience of early stopping also
         should be changed according to the adaptive interval.
         """
+
+        def _revert_func(callback: Callback, saved_patience: int) -> None:
+            callback.patience = saved_patience
+
         from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 
         for callback in callbacks:
@@ -127,4 +136,8 @@ class AdaptiveTrainScheduling(Callback):
                     f"{callback.patience} --> {adjusted_patience}."
                 )
                 log.warning(msg)
+
+                saved_patience = callback.patience
                 callback.patience = adjusted_patience
+
+                self._revert_patience += [partial(_revert_func, callback, saved_patience)]
