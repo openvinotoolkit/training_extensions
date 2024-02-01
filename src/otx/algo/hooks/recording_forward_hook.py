@@ -376,11 +376,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         """Create this object and register it to the module forward hook."""
         return cls()
 
-    def func(
-        self,
-        feature_map: torch.Tensor | Sequence[torch.Tensor],
-        fpn_idx: int = -1,
-    ) -> None:
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], _: int = -1) -> None:
         """Return None for saliency map hook to generate saliency maps from predictions."""
         return
 
