@@ -44,7 +44,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     """
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
-    _OPTIMIZE_DATASET_SIZE_LIMIT: int = 300
 
     def __init__(self, num_classes: int) -> None:
         super().__init__()
@@ -388,8 +387,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             ptq_config = ptq_config_from_ir
 
         quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
-        if "subset_size" not in ptq_config:
-            ptq_config["subset_size"] = self._OPTIMIZE_DATASET_SIZE_LIMIT
 
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
