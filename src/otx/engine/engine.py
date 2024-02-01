@@ -407,7 +407,11 @@ class Engine:
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
 
-    def optimize(self, datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None) -> Path:
+    def optimize(
+        self,
+        datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
+        max_data_subset_size: int | None = None,
+    ) -> Path:
         """Applies NNCF.PTQ to the underlying models (now works only for OV models).
 
         PTQ performs int-8 quantization on the input model, so the resulting model
@@ -415,6 +419,8 @@ class Engine:
 
         Args:
             datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
+            max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
+            used for model optimization.
 
         Returns:
             Path: path to the optimized model.
@@ -432,7 +438,15 @@ class Engine:
                     --model.model_name=<PATH_TO_IR_XML, str>
                 ```
         """
-        return self.model.optimize(Path(self.work_dir), datamodule if datamodule is not None else self.datamodule)
+        ptq_config = {}
+        if max_data_subset_size is not None:
+            ptq_config["subset_size"] = max_data_subset_size
+
+        return self.model.optimize(
+            Path(self.work_dir),
+            datamodule if datamodule is not None else self.datamodule,
+            ptq_config,
+        )
 
     def explain(
         self,

@@ -180,7 +180,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
                 src2dst.append(-1)
         return src2dst
 
-    def optimize(self, output_dir: Path, data_module: OTXDataModule) -> Path:
+    def optimize(self, output_dir: Path, data_module: OTXDataModule, ptq_config: dict[str, Any] | None = None) -> Path:
         """Runs quantization of the model with NNCF.PTQ on the passed data. Works only for OpenVINO models.
 
         PTQ performs int-8 quantization on the input model, so the resulting model
@@ -189,6 +189,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Args:
             output_dir (Path): working directory to save the optimized model.
             data_module (OTXDataModule): dataset for calibration of quantized layers.
+            ptq_config (dict[str, Any] | None): config for NNCF.PTQ.
 
         Returns:
             Path: path to the resulting optimized OpenVINO model.
@@ -381,11 +382,12 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
         if ptq_config is not None:
-            ptq_config.update(ptq_config_from_ir)
+            ptq_config_from_ir.update(ptq_config)
+            ptq_config = ptq_config_from_ir
         else:
             ptq_config = ptq_config_from_ir
+
         quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
-        ptq_config: dict = {}
         if "subset_size" not in ptq_config:
             ptq_config["subset_size"] = self._OPTIMIZE_DATASET_SIZE_LIMIT
 
@@ -408,8 +410,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         Returns:
             dict: The PTQ configuration as a dictionary.
         """
-        from nncf import IgnoredScope
-        from nncf.common.quantization.structs import QuantizationPreset
+        from nncf import IgnoredScope  # type: ignore[attr-defined]
+        from nncf.common.quantization.structs import QuantizationPreset  # type: ignore[attr-defined]
         from nncf.parameters import ModelType
         from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 
