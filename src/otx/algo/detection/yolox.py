@@ -24,9 +24,9 @@ class YoloX(MMDetCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["resize_mode"] = "fit_to_window"
+        export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114
-        export_params["swap_rgb"] = False
+        export_params["swap_rgb"] = True
         export_params["input_size"] = (1, 3, 640, 640)
         export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.yolox"
 
@@ -47,7 +47,7 @@ class YoloXTiny(YoloX):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["resize_mode"] = "fit_to_window"
+        export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = False
         export_params["input_size"] = (1, 3, 416, 416)
