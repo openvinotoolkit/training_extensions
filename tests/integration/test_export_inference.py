@@ -92,8 +92,8 @@ def test_otx_export_infer(
     if "yolox" in recipe:  # yolox variants need more epoch for stable result
         epoch = 30
         command_args = ["--optimizer.lr", "0.0002"]
-    elif "atss_resnext101" not in recipe:
-        epoch = 5
+    elif "atss_resnext101" in recipe:
+        epoch = 10
 
     # litehrnet_* models don't support deterministic mode
     model_name = recipe.split("/")[-1].split(".")[0]
