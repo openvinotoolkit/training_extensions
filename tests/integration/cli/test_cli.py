@@ -237,8 +237,6 @@ def test_otx_explain_e2e(
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
         sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
-        # assert all(sal_map[:, 0, 0] == reference_sal_vals[test_case_name])
-
         actual_sal_vals = sal_map[:, 0, 0]
         ref_sal_vals = reference_sal_vals[test_case_name]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
