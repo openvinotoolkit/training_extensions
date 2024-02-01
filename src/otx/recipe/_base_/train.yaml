@@ -7,6 +7,7 @@ callbacks:
       mode: max
       patience: 10
       check_on_train_epoch_end: false
+      min_delta: 0.001
   - class_path: lightning.pytorch.callbacks.RichProgressBar
     init_args:
       refresh_rate: 1
