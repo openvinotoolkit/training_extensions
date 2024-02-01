@@ -116,20 +116,19 @@ class OTXNativeModelExporter(OTXModelExporter):
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
     ) -> Path:
-        """
-        Export the given PyTorch model to ONNX format and save it to the specified output directory.
+        """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
         Args:
             model (torch.nn.Module): The PyTorch model to be exported.
             output_dir (Path): The directory where the ONNX model will be saved.
             base_model_name (str, optional): The base name for the exported model. Defaults to "exported_model".
-            precision (OTXPrecisionType, optional): The precision type for the exported model. Defaults to OTXPrecisionType.FP32.
+            precision (OTXPrecisionType, optional): The precision type for the exported model.
+            Defaults to OTXPrecisionType.FP32.
             embed_metadata (bool, optional): Whether to embed metadata in the ONNX model. Defaults to True.
 
         Returns:
             Path: The path to the saved ONNX model.
         """
-
         dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
         save_path = str(output_dir / (base_model_name + ".onnx"))
         metadata = {} if self.metadata is None else self._extend_model_metadata(self.metadata)

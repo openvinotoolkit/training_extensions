@@ -5,13 +5,12 @@
 
 from __future__ import annotations
 
-from abc import abstractmethod
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
-import io
 import json
 import os
 import tempfile
+from abc import abstractmethod
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
 from otx.core.exporter.exportable_code import demo
@@ -118,21 +117,21 @@ class OTXModelExporter:
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
     ) -> Path:
-            """
-            Abstract method for ONNX export.
+        """Abstract method for ONNX export.
 
-            Converts the given torch model to ONNX format and saves it to the specified output directory.
+        Converts the given torch model to ONNX format and saves it to the specified output directory.
 
-            Args:
-                model (torch.nn.Module): The input PyTorch model to be converted.
-                output_dir (Path): The directory where the ONNX model will be saved.
-                base_model_name (str, optional): The name of the exported ONNX model. Defaults to "exported_model".
-                precision (OTXPrecisionType, optional): The precision type for the exported model. Defaults to OTXPrecisionType.FP32.
-                embed_metadata (bool, optional): Flag to embed metadata in the exported ONNX model. Defaults to True.
+        Args:
+            model (torch.nn.Module): The input PyTorch model to be converted.
+            output_dir (Path): The directory where the ONNX model will be saved.
+            base_model_name (str, optional): The name of the exported ONNX model. Defaults to "exported_model".
+            precision (OTXPrecisionType, optional): The precision type for the exported model.
+            Defaults to OTXPrecisionType.FP32.
+            embed_metadata (bool, optional): Flag to embed metadata in the exported ONNX model. Defaults to True.
 
-            Returns:
-                Path: The file path where the ONNX model is saved.
-            """
+        Returns:
+            Path: The file path where the ONNX model is saved.
+        """
 
     def to_exportable_code(
         self,
@@ -140,7 +139,7 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        ) -> Path:
+    ) -> Path:
         """Export to zip folder final OV IR model with runable demo.
 
         Args:
