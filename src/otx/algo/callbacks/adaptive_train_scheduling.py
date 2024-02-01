@@ -33,6 +33,7 @@ class AdaptiveTrainScheduling(Callback):
         self.decay = decay
         self._saved_check_val_every_n_epoch: int | None = None
         self._saved_log_every_n_steps: int | None = None
+        self._revert_frequency: list = []
 
     def on_train_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Execute this function at starting the train stage."""
@@ -79,6 +80,10 @@ class AdaptiveTrainScheduling(Callback):
             trainer.log_every_n_steps = self._saved_log_every_n_steps
             self._saved_log_every_n_steps = None
 
+        if len(self._revert_frequency) > 0:
+            for revert in self._revert_frequency:
+                revert()
+
     def _get_adaptive_interval(self, iter_per_epoch: int, max_interval: int) -> int:
         """Get adaptive interval."""
         return max(round(math.exp(self.decay * iter_per_epoch) * max_interval), 1)
@@ -89,6 +94,10 @@ class AdaptiveTrainScheduling(Callback):
         Since adaptive interval changes the validation interval, the frequency of LRscheduler also
         should be changed according to the adaptive interval.
         """
+
+        def _revert() -> None:
+            config.frequency = saved_frequency
+
         for config in lr_configs:
             if hasattr(config, "frequency"):
                 msg = (
@@ -96,20 +105,11 @@ class AdaptiveTrainScheduling(Callback):
                     f"{config.frequency} --> {adaptive_interval}."
                 )
                 log.warning(msg)
-         self.revert_frequency = []
-         ...
+
                 saved_frequency = config.frequency
                 config.frequency = adaptive_interval
 
-                def _revert():
-                    config.frequency = saved_frequency
-                self.revert_frequency += [_revert]
-
-...
-
-    def on_train_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
-        for revert in self.revert_frequency:
-            revert()
+                self._revert_frequency += [_revert]
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
         """Change the EarlyStopping patience to change the patience.
