@@ -327,7 +327,7 @@ class Engine:
             1. you can pick a model.
                 ```python
                 otx predict
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
             2. If you have a ready configuration file, run it like this.
@@ -374,13 +374,17 @@ class Engine:
             ... )
 
         CLI Usage:
-            To export a model, run
+            1. To export a model with default setting (OPENVINO, FP32), run
                 ```python
                 otx export
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
-                    --export_precision <FP32 or FP16, OTXExportPrecisionType>
-                    --export_format <FORMAT, OTXExportFormatType>
+                ```
+            2. To export a model with precision FP16 and format ONNX, run
+                ```python
+                otx export
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -472,6 +476,14 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     explain_config=ExplainConfig(),
             ... )
+
+        CLI Usage:
+            1. To run XAI using the specified model, run
+                ```python
+                otx explain
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
         """
         import cv2
 
