@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from datumaro.components.dataset import Dataset as DmDataset
 from importlib_resources import files
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig, OmegaConf
@@ -16,6 +17,10 @@ from otx.core.data.module import (
     OTXDataModule,
     OTXTaskType,
 )
+
+
+def mock_data_filtering(dataset: DmDataset) -> DmDataset:
+    return dataset
 
 
 class TestModule:
@@ -54,6 +59,7 @@ class TestModule:
         mock_otx_dataset_factory,
         task,
         fxt_config,
+        mocker,
     ) -> None:
         # Our query for subset name for train, val, test
         fxt_config.train_subset.subset_name = "train_1"
@@ -63,6 +69,8 @@ class TestModule:
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+
+        mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
 
         OTXDataModule(task=task, config=fxt_config)
 
@@ -93,10 +101,13 @@ class TestModule:
         mock_otx_dataset_factory,
         fxt_real_tv_cls_config,
         tmpdir,
+        mocker,
     ) -> None:
         # Dataset will have "train", "val", and "test" subsets
         mock_dm_subsets = {name: MagicMock() for name in ["train", "val", "test"]}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+
+        mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
 
         module = OTXDataModule(task=OTXTaskType.MULTI_CLASS_CLS, config=fxt_real_tv_cls_config)
         logger = CSVLogger(tmpdir)
