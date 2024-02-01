@@ -9,16 +9,17 @@ import fnmatch
 import textwrap
 from pathlib import Path
 
+from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
 RECIPE_PATH = get_otx_root_path() / "recipe"
 
 
-def list_models(task: str | None = None, pattern: str | None = None, print_table: bool = False) -> list[str]:
+def list_models(task: OTXTaskType | None = None, pattern: str | None = None, print_table: bool = False) -> list[str]:
     """Returns a list of available models for training.
 
     Args:
-        task (str | None, optional): Recipe Filter by Task.
+        task (OTXTaskType | None, optional): Recipe Filter by Task.
         pattern (Optional[str], optional): A string pattern to filter the list of available models. Defaults to None.
         print_table (bool, optional): Output the recipe information as a Rich.Table.
             This is primarily used for `otx find` in the CLI.
@@ -45,8 +46,8 @@ def list_models(task: str | None = None, pattern: str | None = None, print_table
         # Print the recipe information as a Rich.Table (include task, model name, recipe path)
         >>> models = list_models(task="MULTI_CLASS_CLS", pattern="*efficient", print_table=True)
     """
-    task = task.lower() if task is not None else "**"
-    recipe_list = [str(recipe) for recipe in RECIPE_PATH.glob(f"**/{task}/*.yaml") if "_base_" not in recipe.parts]
+    task_type = task.name.lower() if task is not None else "**"
+    recipe_list = [str(recipe) for recipe in RECIPE_PATH.glob(f"**/{task_type}/*.yaml") if "_base_" not in recipe.parts]
 
     if pattern is not None:
         # Always match keys with any postfix.
