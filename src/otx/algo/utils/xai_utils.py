@@ -9,9 +9,27 @@ from otx.core.config.explain import ExplainConfig
 
 def get_processed_saliency_maps(
     raw_saliency_maps: list,
-    explain_config: ExplainConfig | None,  # noqa: ARG001
-    predictions: list | None,  # noqa: ARG001
+    explain_config: ExplainConfig | None,
+    predictions: list | None,
 ) -> list | None:
     """Implement saliency map filtering and post-processing."""
     # Implement <- TODO(negvet)
-    return raw_saliency_maps
+    selected_saliency_maps = select_saliency_maps(raw_saliency_maps, explain_config, predictions)
+    return process_saliency_maps(selected_saliency_maps, explain_config)
+
+
+def select_saliency_maps(
+    saliency_maps: list,
+    explain_config: ExplainConfig | None,  # noqa: ARG001
+    predictions: list | None,  # noqa: ARG001
+) -> list | None:
+    """Select saliency maps in accordance with TargetExplainGroup."""
+    return saliency_maps
+
+
+def process_saliency_maps(
+    saliency_maps: list,
+    explain_config: ExplainConfig | None,  # noqa: ARG001
+) -> list | None:
+    """Postptocess saliency maps."""
+    return saliency_maps

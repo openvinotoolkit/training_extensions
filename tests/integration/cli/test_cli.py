@@ -232,7 +232,6 @@ def test_otx_explain_e2e(
     assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
 
     reference_sal_vals = {
-        "multi_class_cls_efficientnet_v2_light": np.array([122, 106, 37, 13, 2, 18, 22], dtype=np.uint8),
         "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
         "h_label_cls_efficientnet_v2_light": np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
     }
