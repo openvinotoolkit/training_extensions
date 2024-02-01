@@ -10,16 +10,15 @@ import multiprocessing
 import os
 import queue
 import signal
-import sys
 import time
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Callable, Literal
 
-from otx.utils import append_signal_handler
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
+from otx.utils import append_signal_handler
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -184,7 +183,7 @@ class HpoLoop:
                 logger.info(f"Kill child process {process.pid}")
                 process.kill()
 
-    def _terminate_signal_handler(self, signum: Signals, frame_) -> None:
+    def _terminate_signal_handler(self, signum: Signals, frame_) -> None:  # noqa: ANN001
         # This code prevents child processses from being killed unintentionally by proccesses forked from main process
         if self._main_pid != os.getpid():
             return
