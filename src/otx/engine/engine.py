@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
-    from lightning.pytorch.utilities.types import EVAL_DATALOADERS
+    from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
 
@@ -327,7 +327,7 @@ class Engine:
             1. you can pick a model.
                 ```python
                 otx predict
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
             2. If you have a ready configuration file, run it like this.
@@ -340,6 +340,9 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
 
         self._build_trainer(**kwargs)
 
@@ -374,11 +377,17 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. To export a model, run
+            1. To export a model with default setting (OPENVINO, FP32), run
                 ```python
                 otx export
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
+            2. To export a model with precision FP16 and format ONNX, run
+                ```python
+                otx export
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -405,6 +414,48 @@ class Engine:
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
 
+    def optimize(
+        self,
+        datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
+        max_data_subset_size: int | None = None,
+    ) -> Path:
+        """Applies NNCF.PTQ to the underlying models (now works only for OV models).
+
+        PTQ performs int-8 quantization on the input model, so the resulting model
+        comes in mixed precision (some operations, however, remain in FP32).
+
+        Args:
+            datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
+            max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
+            used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
+            default settings.
+
+        Returns:
+            Path: path to the optimized model.
+
+        Example:
+            >>> engine.optimize(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ... )
+        CLI Usage:
+            To optimize a model, run
+                ```python
+                otx optimize
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --model.model_name=<PATH_TO_IR_XML, str>
+                ```
+        """
+        ptq_config = {}
+        if max_data_subset_size is not None:
+            ptq_config["subset_size"] = max_data_subset_size
+
+        return self.model.optimize(
+            Path(self.work_dir),
+            datamodule if datamodule is not None else self.datamodule,
+            ptq_config,
+        )
+
     def explain(
         self,
         checkpoint: PathLike | None = None,
@@ -429,6 +480,14 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     explain_config=ExplainConfig(),
             ... )
+
+        CLI Usage:
+            1. To run XAI using the specified model, run
+                ```python
+                otx explain
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
         """
         import cv2
 

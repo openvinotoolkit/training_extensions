@@ -3,7 +3,7 @@
 
 """CLI entrypoints."""
 
-from .cli import OTXCLI
+from otx.cli.cli import OTXCLI
 
 
 def main() -> None:
