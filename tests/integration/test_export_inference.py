@@ -80,6 +80,9 @@ def test_otx_export_infer(
     """
     task = recipe.split("/")[-2]
 
+    if task not in TASK_NAME_TO_MAIN_METRIC_NAME:
+        pytest.skip(f"Inference pipeline for {recipe} is not implemented")
+
     # litehrnet_* models don't support deterministic mode
     model_name = recipe.split("/")[-1].split(".")[0]
     deterministic_flag = "True"
