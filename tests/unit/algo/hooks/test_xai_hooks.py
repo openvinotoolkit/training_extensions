@@ -1,6 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import torch
+
 from datumaro import Polygon
 from torch import LongTensor
 from torchvision import tv_tensors
