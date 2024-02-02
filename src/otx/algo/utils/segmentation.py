@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, ClassVar
+from typing import Any, Callable, ClassVar
 
 import torch
 import torch.nn.functional as f
@@ -85,7 +85,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
         self.value_channels = value_channels if value_channels is not None else in_channels
         self.conv_cfg = conv_cfg
         if norm_cfg is None:
-            norm_cfg = {type: "BN"}
+            norm_cfg = {"type": "BN"}
         if psp_size is None:
             psp_size = (1, 3, 6, 8)
         self.norm_cfg = norm_cfg
@@ -97,7 +97,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             padding=0,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg={type: "ReLU"},
+            act_cfg={"type": "ReLU"},
         )
         self.key_psp = PSPModule(psp_size, method="max")
 
@@ -109,7 +109,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             padding=0,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg={type: "ReLU"},
+            act_cfg={"type": "ReLU"},
         )
         self.value_psp = PSPModule(psp_size, method="max")
 
@@ -190,28 +190,45 @@ class IterativeAggregator(nn.Module):
 
     def __init__(
         self,
-        in_channels: list,
-        min_channels: int = 0,
+        in_channels: list[int],
+        min_channels: int | None = None,
         conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        merge_norm: str = "none",
+        merge_norm: str | None = None,
         use_concat: bool = False,
-    ):
+    ) -> None:
+        """IterativeAggregator for LiteHRNet.
+
+        Args:
+            in_channels (list[int]): List of input channels for each branch.
+            min_channels (int | None): Minimum number of channels. Defaults to None.
+            conv_cfg (dict | None): Config for convolution layers. Defaults to None.
+            norm_cfg (dict | None): Config for normalization layers. Defaults to None.
+            merge_norm (str | None): Whether to merge normalization layers. Defaults to None.
+            use_concat (bool): Whether to use concatenation. Defaults to False.
+
+        Returns:
+            None
+        """
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN"}
         super().__init__()
 
         self.use_concat = use_concat
-        if norm_cfg is None:
-            norm_cfg = {type: "BN"}
+
         num_branches = len(in_channels)
         self.in_channels = in_channels[::-1]
 
-        out_channels = 1
-        projects, expanders = [], []
-        fuse_layers: list[ConvModule] = []
+        min_channels = min_channels if min_channels is not None else 0
+
+        projects: list[Any] = []
+        expanders: list[Any] = []
+        fuse_layers: list[Any] = []
         for i in range(num_branches):
             if not self.use_concat or i == 0:
                 fuse_layers.append(None)
             else:
+                out_channels = self.in_channels[i + 1]
                 fuse_layers.append(
                     ConvModule(
                         in_channels=2 * out_channels,
@@ -220,7 +237,7 @@ class IterativeAggregator(nn.Module):
                         stride=1,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg={type: "ReLU"},
+                        act_cfg={"type": "ReLU"},
                     ),
                 )
 
@@ -238,9 +255,9 @@ class IterativeAggregator(nn.Module):
                     padding=1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg={type: "ReLU"},
+                    act_cfg={"type": "ReLU"},
                     dw_act_cfg=None,
-                    pw_act_cfg={type: "ReLU"},
+                    pw_act_cfg={"type": "ReLU"},
                 ),
             )
 
@@ -253,7 +270,7 @@ class IterativeAggregator(nn.Module):
                         stride=1,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg={type: "ReLU"},
+                        act_cfg={"type": "ReLU"},
                     ),
                 )
             else:
@@ -266,283 +283,8 @@ class IterativeAggregator(nn.Module):
         self.merge_norm = merge_norm
 
     @staticmethod
-    def _norm(x: torch.Tensor, mode: str = "none") -> torch.Tensor:
-        if mode == "none":
-            out = x
-        elif mode == "channel":
-            out = normalize(x, dim=1, p=2)
-        else:
-            _, c, h, w = x.size()
-            y = x.view(-1, c, h * w)
-            y = normalize(y, dim=2, p=2)
-            out = y.view(-1, c, h, w)
-
-        return out
-
-    def forward(self, x: list) -> list:
-        """Forward."""
-        x = x[::-1]
-
-        y_list = []
-        last_x = None
-        for i, s in enumerate(x):
-            _s = self.expanders[i](s) if self.expanders[i] is not None else s
-
-            if last_x is not None:
-                last_x = f.interpolate(last_x, size=_s.size()[-2:], mode="bilinear", align_corners=True)
-
-                norm_s = self._norm(_s, self.merge_norm)
-                norm_x = self._norm(last_x, self.merge_norm)
-
-                if self.use_concat:
-                    concat_s = torch.cat([norm_s, norm_x], dim=1)
-                    _s = self.fuse_layers[i](concat_s)
-                else:
-                    _s = norm_s + norm_x
-
-            _s = self.projects[i](_s)
-            last_x = _s
-
-            y_list.append(_s)
-
-        return y_list[::-1]
-
-
-class IterativeConcatAggregator(nn.Module):
-    """IterativeConcatAggregator."""
-
-    def __init__(
-        self,
-        in_channels: list,
-        min_channels: int = 0,
-        conv_cfg: dict | None = None,
-        norm_cfg: dict | None = None,
-        merge_norm: str = "none",
-    ):
-        if norm_cfg is None:
-            norm_cfg = {type: "BN"}
-
-        super().__init__()
-
-        num_branches = len(in_channels)
-        self.in_channels = in_channels[::-1]
-
-        min_channels = min_channels if min_channels is not None else 0
-
-        fuse_layers = [None]
-        for i in range(1, num_branches):
-            if i == 1:
-                num_input_channels = self.in_channels[i - 1] + self.in_channels[i]
-            else:
-                num_input_channels = max(self.in_channels[i - 1], min_channels) + self.in_channels[i]
-
-            num_out_channels = max(self.in_channels[i], min_channels)
-
-            fuse_layers.append(
-                ConvModule(
-                    in_channels=num_input_channels,
-                    out_channels=num_out_channels,
-                    kernel_size=1,
-                    stride=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg={type: "ReLU"},
-                ),
-            )
-
-        self.fuse_layers = nn.ModuleList(fuse_layers)
-
-        self.merge_norm = merge_norm
-
-    @staticmethod
-    def _norm(x: torch.Tensor, mode: str = "none") -> torch.Tensor:
-        if mode == "none":
-            out = x
-        elif mode == "channel":
-            out = normalize(x, dim=1, p=2)
-        else:
-            _, c, h, w = x.size()
-            y = x.view(-1, c, h * w)
-            y = normalize(y, dim=2, p=2)
-            out = y.view(-1, c, h, w)
-
-        return out
-
-    def forward(self, x: list) -> list:
-        """Forward."""
-        x = x[::-1]
-
-        y_list = []
-        last_x = None
-        for i, s in enumerate(x):
-            if last_x is not None:
-                last_x = f.interpolate(last_x, size=s.size()[-2:], mode="bilinear", align_corners=True)
-
-                norm_s = self._norm(s, self.merge_norm)
-                norm_x = self._norm(last_x, self.merge_norm)
-
-                concat_s = torch.cat([norm_s, norm_x], dim=1)
-                _s = self.fuse_layers[i](concat_s)
-            else:
-                _s = s
-
-            last_x = _s
-            y_list.append(_s)
-
-        return y_list[::-1]
-
-
-class LocalAttentionModule(nn.Module):
-    """LocalAttentionModule.
-
-    Reference: https://github.com/lxtGH/GALD-DGCNet.
-    """
-
-    def __init__(self, num_channels: int, conv_cfg: dict | None = None, norm_cfg: dict | None = None):
-        if norm_cfg is None:
-            norm_cfg = {type: "BN"}
-        super().__init__()
-
-        self.num_channels = num_channels
-        self.conv_cfg = conv_cfg
-        self.norm_cfg = norm_cfg
-
-        self.dwconv1 = ConvModule(
-            in_channels=self.num_channels,
-            out_channels=self.num_channels,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            groups=self.num_channels,
-            conv_cfg=self.conv_cfg,
-            norm_cfg=self.norm_cfg,
-            act_cfg={type: "ReLU"},
-        )
-        self.dwconv2 = ConvModule(
-            in_channels=self.num_channels,
-            out_channels=self.num_channels,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            groups=self.num_channels,
-            conv_cfg=self.conv_cfg,
-            norm_cfg=self.norm_cfg,
-            act_cfg={type: "ReLU"},
-        )
-        self.dwconv3 = ConvModule(
-            in_channels=self.num_channels,
-            out_channels=self.num_channels,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            groups=self.num_channels,
-            conv_cfg=self.conv_cfg,
-            norm_cfg=self.norm_cfg,
-            act_cfg={type: "ReLU"},
-        )
-        self.sigmoid_spatial = nn.Sigmoid()
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward."""
-        _, _, h, w = x.size()
-
-        y = self.dwconv1(x)
-        y = self.dwconv2(y)
-        y = self.dwconv3(y)
-        y = f.interpolate(y, size=(h, w), mode="bilinear", align_corners=True)
-        mask = self.sigmoid_spatial(y)
-
-        return x + x * mask
-
-class IterativeAggregator(nn.Module):
-    """IterativeAggregator.
-
-    Based on: https://github.com/HRNet/Lite-HRNet.
-    """
-
-    def __init__(
-        self,
-        in_channels,
-        min_channels=None,
-        conv_cfg=None,
-        norm_cfg=None,
-        merge_norm=None,
-        use_concat=False,
-    ):
-        if norm_cfg is None:
-            norm_cfg = dict(type="BN")
-        super().__init__()
-
-        self.use_concat = use_concat
-
-        num_branches = len(in_channels)
-        self.in_channels = in_channels[::-1]
-
-        min_channels = min_channels if min_channels is not None else 0
-        assert min_channels >= 0
-
-        out_channels = None
-        projects, expanders, fuse_layers = [], [], []
-        for i in range(num_branches):
-            if not self.use_concat or i == 0:
-                fuse_layers.append(None)
-            else:
-                fuse_layers.append(
-                    ConvModule(
-                        in_channels=2 * out_channels,
-                        out_channels=out_channels,
-                        kernel_size=1,
-                        stride=1,
-                        conv_cfg=conv_cfg,
-                        norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
-                    )
-                )
-
-            if i != num_branches - 1:
-                out_channels = max(self.in_channels[i + 1], min_channels)
-            else:
-                out_channels = max(self.in_channels[i], min_channels)
-
-            projects.append(
-                DepthwiseSeparableConvModule(
-                    in_channels=max(self.in_channels[i], min_channels),
-                    out_channels=out_channels,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=dict(type="ReLU"),
-                    dw_act_cfg=None,
-                    pw_act_cfg=dict(type="ReLU"),
-                )
-            )
-
-            if self.in_channels[i] < min_channels:
-                expanders.append(
-                    ConvModule(
-                        in_channels=self.in_channels[i],
-                        out_channels=min_channels,
-                        kernel_size=1,
-                        stride=1,
-                        conv_cfg=conv_cfg,
-                        norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
-                    )
-                )
-            else:
-                expanders.append(None)
-
-        self.projects = nn.ModuleList(projects)
-        self.expanders = nn.ModuleList(expanders)
-        self.fuse_layers = nn.ModuleList(fuse_layers)
-
-        assert merge_norm in [None, "none", "channel", "spatial"]
-        self.merge_norm = merge_norm
-
-    @staticmethod
-    def _norm(x, mode=None):
+    def _norm(x: torch.Tensor, mode: str | None = None) -> torch.Tensor:
+        """Normalize."""
         if mode is None or mode == "none":
             out = x
         elif mode == "channel":
@@ -555,13 +297,21 @@ class IterativeAggregator(nn.Module):
 
         return out
 
-    def forward(self, x):
-        """Forward."""
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        """Perform forward pass through the network.
+
+        Args:
+        - x (List[Tensor]): Input tensor.
+
+        Returns:
+        - List[Tensor]: Output tensor list.
+        """
         x = x[::-1]
 
         y_list = []
         last_x = None
-        for i, s in enumerate(x):
+        for i, s_in in enumerate(x):
+            s = s_in
             if self.expanders[i] is not None:
                 s = self.expanders[i](s)
 
@@ -585,85 +335,64 @@ class IterativeAggregator(nn.Module):
         return y_list[::-1]
 
 
-class IterativeConcatAggregator(nn.Module):
-    """IterativeConcatAggregator."""
+class LocalAttentionModule(nn.Module):
+    """LocalAttentionModule.
 
-    def __init__(
-        self,
-        in_channels,
-        min_channels=None,
-        conv_cfg=None,
-        norm_cfg=None,
-        merge_norm=None,
-    ):
+    Reference: https://github.com/lxtGH/GALD-DGCNet.
+    """
+
+    def __init__(self, num_channels: int, conv_cfg: dict | None = None, norm_cfg: dict | None = None):
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
-
+            norm_cfg = {"type": "BN"}
         super().__init__()
 
-        num_branches = len(in_channels)
-        self.in_channels = in_channels[::-1]
+        self.num_channels = num_channels
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
 
-        min_channels = min_channels if min_channels is not None else 0
-        assert min_channels >= 0
+        self.dwconv1 = ConvModule(
+            in_channels=self.num_channels,
+            out_channels=self.num_channels,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            groups=self.num_channels,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg={"type": "ReLU"},
+        )
+        self.dwconv2 = ConvModule(
+            in_channels=self.num_channels,
+            out_channels=self.num_channels,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            groups=self.num_channels,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg={"type": "ReLU"},
+        )
+        self.dwconv3 = ConvModule(
+            in_channels=self.num_channels,
+            out_channels=self.num_channels,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            groups=self.num_channels,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg={"type": "ReLU"},
+        )
+        self.sigmoid_spatial = nn.Sigmoid()
 
-        fuse_layers = [None]
-        for i in range(1, num_branches):
-            if i == 1:
-                num_input_channels = self.in_channels[i - 1] + self.in_channels[i]
-            else:
-                num_input_channels = max(self.in_channels[i - 1], min_channels) + self.in_channels[i]
-
-            num_out_channels = max(self.in_channels[i], min_channels)
-
-            fuse_layers.append(
-                ConvModule(
-                    in_channels=num_input_channels,
-                    out_channels=num_out_channels,
-                    kernel_size=1,
-                    stride=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=dict(type="ReLU"),
-                )
-            )
-
-        self.fuse_layers = nn.ModuleList(fuse_layers)
-
-        assert merge_norm in [None, "none", "channel", "spatial"]
-        self.merge_norm = merge_norm
-
-    @staticmethod
-    def _norm(x, mode=None):
-        if mode is None or mode == "none":
-            out = x
-        elif mode == "channel":
-            out = normalize(x, dim=1, p=2)
-        else:
-            _, c, h, w = x.size()
-            y = x.view(-1, c, h * w)
-            y = normalize(y, dim=2, p=2)
-            out = y.view(-1, c, h, w)
-
-        return out
-
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
-        x = x[::-1]
+        _, _, h, w = x.size()
 
-        y_list = []
-        last_x = None
-        for i, s in enumerate(x):
-            if last_x is not None:
-                last_x = f.interpolate(last_x, size=s.size()[-2:], mode="bilinear", align_corners=True)
+        y = self.dwconv1(x)
+        y = self.dwconv2(y)
+        y = self.dwconv3(y)
+        y = f.interpolate(y, size=(h, w), mode="bilinear", align_corners=True)
+        mask = self.sigmoid_spatial(y)
 
-                norm_s = self._norm(s, self.merge_norm)
-                norm_x = self._norm(last_x, self.merge_norm)
-
-                concat_s = torch.cat([norm_s, norm_x], dim=1)
-                s = self.fuse_layers[i](concat_s)
-
-            last_x = s
-            y_list.append(s)
-
-        return y_list[::-1]
+        return x + x * mask

@@ -3,12 +3,11 @@
 #
 """Utils used for OTX models."""
 
-from .segmentation import AsymmetricPositionAttentionModule, IterativeAggregator, LocalAttentionModule, channel_shuffle, IterativeAggregator
+from .segmentation import AsymmetricPositionAttentionModule, IterativeAggregator, LocalAttentionModule, channel_shuffle
 
 __all__ = [
     "IterativeAggregator",
     "channel_shuffle",
     "LocalAttentionModule",
     "AsymmetricPositionAttentionModule",
-    "IterativeAggregator"
 ]

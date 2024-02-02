@@ -99,9 +99,9 @@ decode_head:
     - 1
     - 2
     - 3
-  input_transform: resize_concat
-  enable_aggregator: True,
-  channels: 600
+  input_transform: "multiple_select"
+  channels: 40
+  enable_aggregator: True
   kernel_size: 1
   num_convs: 1
   concat_input: false
