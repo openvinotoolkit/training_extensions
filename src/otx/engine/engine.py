@@ -348,10 +348,16 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
+        checkpoint_path: str | None = None
+        if checkpoint is not None:
+            checkpoint_path = str(checkpoint)
+        elif self.checkpoint is not None:
+            checkpoint_path = str(self.checkpoint)
+
         return self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else str(self.checkpoint),
+            ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
 
