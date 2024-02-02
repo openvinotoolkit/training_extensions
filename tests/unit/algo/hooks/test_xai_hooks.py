@@ -4,6 +4,7 @@ import torch
 from datumaro import Polygon
 from torch import LongTensor
 from torchvision import tv_tensors
+
 from otx.algo.hooks.recording_forward_hook import (
     ActivationMapHook,
     DetClassProbabilityMapHook,
