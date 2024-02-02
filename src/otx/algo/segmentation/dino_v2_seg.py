@@ -2,11 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """DinoV2Seg model implementations."""
+from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class DinoV2Seg(MMSegCompatibleModel):
@@ -25,3 +29,8 @@ class DinoV2Seg(MMSegCompatibleModel):
         """
         msg = "DinoV2Seg cannot be exported. It is not supported."
         raise RuntimeError(msg)
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for DinoV2Seg."""
+        return {"model_type": "transformer"}

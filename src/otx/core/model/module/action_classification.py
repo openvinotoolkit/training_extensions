@@ -63,7 +63,7 @@ class OTXActionClsLitModule(OTXLitModule):
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
             raise RuntimeError(msg)
 
-        self.log("accuracy", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: ActionClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -112,4 +112,4 @@ class OTXActionClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
