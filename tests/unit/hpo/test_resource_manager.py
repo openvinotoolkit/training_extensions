@@ -59,6 +59,12 @@ class TestCPUResourceManager:
 
 
 class TestGPUResourceManager:
+    @pytest.fixture(autouse=True)
+    def setupt_test(self, mocker):
+        mock_torch_cuda = mocker.patch("otx.hpo.resource_manager.torch.cuda")
+        mock_torch_cuda.is_available.return_value = True
+        mock_torch_cuda.device_count.return_value = 4
+
     def test_init(self):
         GPUResourceManager(num_gpu_for_single_trial=1, available_gpu="0,1,2")
 
@@ -74,13 +80,12 @@ class TestGPUResourceManager:
 
     def test_reserve_resource(self):
         num_gpu_for_single_trial = 2
-        num_gpus = 8
-        max_parallel = num_gpus // num_gpu_for_single_trial
         gpu_resource_manager = GPUResourceManager(
             num_gpu_for_single_trial=num_gpu_for_single_trial,
-            available_gpu=",".join([str(val) for val in range(num_gpus)]),
+            available_gpu=",".join([str(val) for val in range(8)]),
         )
         num_gpus = len(gpu_resource_manager._available_gpu)
+        max_parallel = num_gpus // num_gpu_for_single_trial
 
         for i in range(max_parallel):
             env = gpu_resource_manager.reserve_resource(i)
@@ -105,13 +110,12 @@ class TestGPUResourceManager:
 
     def test_have_available_resource(self):
         num_gpu_for_single_trial = 2
-        num_gpus = 8
-        max_parallel = num_gpus // num_gpu_for_single_trial
         gpu_resource_manager = GPUResourceManager(
             num_gpu_for_single_trial=num_gpu_for_single_trial,
-            available_gpu=",".join([str(val) for val in range(num_gpus)]),
+            available_gpu=",".join([str(val) for val in range(8)]),
         )
         num_gpus = len(gpu_resource_manager._available_gpu)
+        max_parallel = num_gpus // num_gpu_for_single_trial
 
         for i in range(max_parallel):
             assert gpu_resource_manager.have_available_resource()
@@ -126,7 +130,8 @@ def test_get_resource_manager_cpu():
     assert isinstance(manager, CPUResourceManager)
 
 
-def test_get_resource_manager_gpu():
+def test_get_resource_manager_gpu(mocker):
+    mocker.patch("otx.hpo.resource_manager.torch.cuda.is_available", return_value=True)
     num_gpu_for_single_trial = 1
     available_gpu = "0,1,2,3"
     manager = get_resource_manager(
@@ -143,8 +148,7 @@ def test_get_resource_manager_wrong_resource_type():
 
 
 def test_get_resource_manager_gpu_without_available_gpu(mocker):
-    mock_is_available = mocker.patch("otx.hpo.resource_manager.torch.cuda.is_available")
-    mock_is_available.return_value = False
+    mocker.patch("otx.hpo.resource_manager.torch.cuda.is_available", return_value=False)
 
     manager = get_resource_manager("gpu")
     assert isinstance(manager, CPUResourceManager)
