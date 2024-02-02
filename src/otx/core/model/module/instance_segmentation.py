@@ -44,7 +44,6 @@ class OTXInstanceSegLitModule(OTXLitModule):
 
         self.val_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
         self.test_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
-        self.gt_caches: dict[int, list] = {}
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -143,9 +142,6 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 },
             )
 
-        if index in self.gt_caches:
-            return {"preds": pred_info, "target": self.gt_caches[index]}
-
         for imgs_info, bboxes, masks, polygons, labels in zip(
             inputs.imgs_info,
             inputs.bboxes,
@@ -165,7 +161,6 @@ class OTXInstanceSegLitModule(OTXLitModule):
                     "labels": labels,
                 },
             )
-        self.gt_caches[index] = target_info
         return {"preds": pred_info, "target": target_info}
 
     def test_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:
