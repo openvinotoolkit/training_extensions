@@ -105,6 +105,11 @@ class OTXTileDataset(OTXDataset):
         """Get item implementation from the original dataset."""
         return self._dataset._get_item_impl(index)
 
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> OTXDataEntity:
+        """Convert a tile dataset item to OTXDataEntity."""
+        msg = "Method _convert_entity is not implemented."
+        raise NotImplementedError(msg)
+
     def get_tiles(self, image: np.ndarray, item: DatasetItem) -> tuple[list[OTXDataEntity], list[dict]]:
         """Retrieves tiles from the given image and dataset item.
 

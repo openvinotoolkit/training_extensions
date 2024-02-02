@@ -53,7 +53,6 @@ def encode_rle(mask: torch.Tensor) -> dict:
     Returns:
         dict: A dictionary with keys "counts" and "size".
     """
-    rle = {"counts": [], "size": list(mask.shape)}
     device = mask.device
     vector = mask.t().ravel()
     diffs = torch.diff(vector)
@@ -73,5 +72,4 @@ def encode_rle(mask: torch.Tensor) -> dict:
     if vector[0] == 1:
         counts = torch.cat((torch.tensor([0], device=device), counts))
 
-    rle["counts"] = counts.tolist()
-    return rle
+    return {"counts": counts.tolist(), "size": list(mask.shape)}

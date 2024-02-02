@@ -12,12 +12,15 @@ from typing import Generic
 import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo, T_OTXDataEntity
+from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
+from otx.core.data.entity.instance_segmentation import (
+    InstanceSegBatchPredEntity,
+    InstanceSegPredEntity,
+)
 
 
-class TileMerge(Generic[T_OTXDataEntity]):
+class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
     """Base class for tile merge.
 
     Args:
@@ -40,8 +43,8 @@ class TileMerge(Generic[T_OTXDataEntity]):
         self.max_num_instances = max_num_instances
 
     @abstractmethod
-    def merge_entities(self, img_info: ImageInfo, entities: list[T_OTXDataEntity]) -> T_OTXDataEntity:
-        """Merge tile predictions to one single prediction.
+    def _merge_entities(self, img_info: ImageInfo, entities: list[T_OTXDataEntity]) -> T_OTXDataEntity:
+        """Merge tile predictions to one single full-size prediction data entity.
 
         Args:
             img_info (ImageInfo): Image information about the original image before tiling.
@@ -53,8 +56,12 @@ class TileMerge(Generic[T_OTXDataEntity]):
         raise NotImplementedError
 
     @abstractmethod
-    def merge(self, batch_tile_preds: list, batch_tile_attrs: list) -> list[T_OTXDataEntity]:
-        """Merge tile predictions to one single prediction.
+    def merge(
+        self,
+        batch_tile_preds: list[T_OTXBatchPredEntity],
+        batch_tile_attrs: list[list[dict]],
+    ) -> list[T_OTXDataEntity]:
+        """Merge batch tile predictions to a list of full-size prediction data entities.
 
         Args:
             batch_tile_preds (list): list of tile predictions.
@@ -66,8 +73,12 @@ class TileMerge(Generic[T_OTXDataEntity]):
 class DetectionTileMerge(TileMerge):
     """Detection tile merge."""
 
-    def merge(self, batch_tile_preds: list[DetBatchPredEntity], batch_tile_attrs: list) -> list[DetPredEntity]:
-        """Merge detection tile predictions to one single prediction.
+    def merge(
+        self,
+        batch_tile_preds: list[DetBatchPredEntity],
+        batch_tile_attrs: list[list[dict]],
+    ) -> list[DetPredEntity]:
+        """Merge batch tile predictions to a list of full-size prediction data entities.
 
         Args:
             batch_tile_preds (list): detection tile predictions.
@@ -109,13 +120,12 @@ class DetectionTileMerge(TileMerge):
                         score=_scores,
                     ),
                 )
+        return [
+            self._merge_entities(image_info, entities_to_merge[img_id])
+            for img_id, image_info in zip(img_ids, self.img_infos)
+        ]
 
-        predictions = []
-        for img_id, image_info in zip(img_ids, self.img_infos):
-            predictions.append(self.merge_entities(image_info, entities_to_merge[img_id]))
-        return predictions
-
-    def merge_entities(self, img_info: ImageInfo, entities: list[DetPredEntity]) -> DetPredEntity:
+    def _merge_entities(self, img_info: ImageInfo, entities: list[DetPredEntity]) -> DetPredEntity:
         """Merge tile predictions to one single prediction.
 
         Args:
@@ -166,7 +176,7 @@ class InstanceSegTileMerge(TileMerge):
     def merge(
         self,
         batch_tile_preds: list[InstanceSegBatchPredEntity],
-        batch_tile_attrs: list,
+        batch_tile_attrs: list[list[dict]],
     ) -> list[InstanceSegPredEntity]:
         """Merge inst-seg tile predictions to one single prediction.
 
@@ -215,12 +225,12 @@ class InstanceSegTileMerge(TileMerge):
                     ),
                 )
 
-        predictions = []
-        for img_id, image_info in zip(img_ids, self.img_infos):
-            predictions.append(self.merge_entities(image_info, entities_to_merge[img_id]))
-        return predictions
+        return [
+            self._merge_entities(image_info, entities_to_merge[img_id])
+            for img_id, image_info in zip(img_ids, self.img_infos)
+        ]
 
-    def merge_entities(self, img_info: ImageInfo, entities: list[InstanceSegPredEntity]) -> InstanceSegPredEntity:
+    def _merge_entities(self, img_info: ImageInfo, entities: list[InstanceSegPredEntity]) -> InstanceSegPredEntity:
         """Merge tile predictions to one single prediction.
 
         Args:

@@ -10,13 +10,15 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
+from otx.algo.instance_segmentation.otx_instseg_evaluation import (
+    OTXInstSegMeanAveragePrecision,
+)
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
 from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
-from otx.core.utils.evaluation import OTXInstSegMeanAveragePrecision
 from otx.core.utils.mask_util import encode_rle, polygon_to_bitmap
 
 if TYPE_CHECKING:
