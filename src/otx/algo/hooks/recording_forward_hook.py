@@ -23,7 +23,7 @@ class BaseRecordingForwardHook:
         normalize (bool): Whether to normalize the resulting saliency maps.
     """
 
-    def __init__(self, head_forward_fn: Callable = lambda x: x, normalize: bool = True) -> None:
+    def __init__(self, head_forward_fn: Callable | None = None, normalize: bool = True) -> None:
         self._head_forward_fn = head_forward_fn
         self.handle: RemovableHandle | None = None
         self._records: list[torch.Tensor] = []
@@ -72,10 +72,11 @@ class BaseRecordingForwardHook:
 
     def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
-            logits = self._head_forward_fn(x)
-            if not isinstance(logits, torch.Tensor):
-                logits = torch.tensor(logits)
-        return logits
+            if self._head_forward_fn:
+                x = self._head_forward_fn(x)
+                if not isinstance(x, torch.Tensor):
+                    x = torch.tensor(x)
+        return x
 
     def _torch_to_numpy_from_list(self, tensor_list: list[torch.Tensor | None]) -> None:
         for i in range(len(tensor_list)):
@@ -97,6 +98,34 @@ class BaseRecordingForwardHook:
                 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
             )
         return saliency_maps.to(torch.uint8)
+
+
+class ActivationMapHook(BaseRecordingForwardHook):
+    """ActivationMapHook. Mean of the feature map along the channel dimension."""
+
+    @classmethod
+    def create_and_register_hook(
+        cls,
+        backbone: torch.nn.Module,
+    ) -> BaseRecordingForwardHook:
+        """Create this object and register it to the module forward hook."""
+        hook = cls()
+        hook.handle = backbone.register_forward_hook(hook.recording_forward)
+        return hook
+
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
+        """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
+        if isinstance(feature_map, (list, tuple)):
+            feature_map = feature_map[fpn_idx]
+
+        batch_size, _, h, w = feature_map.size()
+        activation_map = torch.mean(feature_map, dim=1)
+
+        if self._norm_saliency_maps:
+            activation_map = activation_map.reshape((batch_size, h * w))
+            activation_map = self._normalize_map(activation_map)
+
+        return activation_map.reshape((batch_size, h, w))
 
 
 class ReciproCAMHook(BaseRecordingForwardHook):
@@ -332,7 +361,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        cls_scores = self._head_forward_fn(feature_map)
+        cls_scores = self._head_forward_fn(feature_map) if self._head_forward_fn else feature_map
 
         middle_idx = len(cls_scores) // 2
         # resize to the middle feature map
