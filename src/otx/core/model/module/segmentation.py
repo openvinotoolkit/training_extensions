@@ -134,4 +134,4 @@ class OTXSegmentationLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/mIoU"
