@@ -1,8 +1,7 @@
-"""Streamer for reading input."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Streamer for reading input."""
 
 from __future__ import annotations
 

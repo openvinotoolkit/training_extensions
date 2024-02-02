@@ -1,7 +1,7 @@
-"""This module implements activation map."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""This module implements activation map."""
 
 from __future__ import annotations
 

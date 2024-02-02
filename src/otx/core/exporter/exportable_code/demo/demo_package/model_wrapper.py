@@ -1,6 +1,7 @@
-"""ModelContainer class used for loading the model in the model wrapper."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""ModelContainer class used for loading the model in the model wrapper."""
 
 from __future__ import annotations
 

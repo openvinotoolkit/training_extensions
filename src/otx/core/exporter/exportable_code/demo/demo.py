@@ -1,7 +1,7 @@
-"""Demo based on ModelAPI."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Demo based on ModelAPI."""
 
 import sys
 from argparse import SUPPRESS, ArgumentParser

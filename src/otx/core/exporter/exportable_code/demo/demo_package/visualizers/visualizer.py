@@ -1,8 +1,7 @@
-"""Visualizer for results of prediction."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Visualizer for results of prediction."""
 
 from __future__ import annotations
 

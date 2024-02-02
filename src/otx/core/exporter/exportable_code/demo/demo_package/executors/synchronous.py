@@ -1,7 +1,7 @@
-"""Synchronous Executor based on ModelAPI."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Synchronous Executor based on ModelAPI."""
 
 from __future__ import annotations
 
