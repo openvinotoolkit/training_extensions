@@ -32,6 +32,7 @@ def test_list_models_pattern() -> None:
         "efficientnet_v2_light",
         "efficientnet_b0_light",
         "maskrcnn_efficientnetb2b",
+        "maskrcnn_efficientnetb2b_tile",
         "otx_efficientnet_v2",
         "otx_efficientnet_b0",
     ]
