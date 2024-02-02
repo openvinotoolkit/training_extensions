@@ -491,8 +491,6 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import get_processed_saliency_maps
 
-        from otx.algo.utils.xai_utils import get_processed_saliency_maps
-
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
             explain_config = ExplainConfig()
@@ -523,8 +521,9 @@ class Engine:
         return get_processed_saliency_maps(
             raw_saliency_maps,
             explain_config,
-            predictions, explain_hook,
-            Path(self.work_dir)
+            predictions,
+            explain_hook,
+            Path(self.work_dir),
         )
 
     @classmethod

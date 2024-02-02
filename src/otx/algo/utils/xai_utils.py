@@ -14,6 +14,7 @@ from otx.core.config.explain import ExplainConfig
 if TYPE_CHECKING:
     from pathlib import Path
 
+
 def get_processed_saliency_maps(
     raw_saliency_maps: list,
     explain_config: ExplainConfig,
