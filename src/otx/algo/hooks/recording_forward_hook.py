@@ -21,7 +21,7 @@ class BaseRecordingForwardHook:
         normalize (bool): Whether to normalize the resulting saliency maps.
     """
 
-    def __init__(self, head_forward_fn: Callable = lambda x: x, normalize: bool = True) -> None:
+    def __init__(self, head_forward_fn: Callable | None = None, normalize: bool = True) -> None:
         self._head_forward_fn = head_forward_fn
         self.handle: RemovableHandle | None = None
         self._records: list[torch.Tensor] = []
@@ -70,10 +70,11 @@ class BaseRecordingForwardHook:
 
     def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
-            logits = self._head_forward_fn(x)
-            if not isinstance(logits, torch.Tensor):
-                logits = torch.tensor(logits)
-        return logits
+            if self._head_forward_fn:
+                x = self._head_forward_fn(x)
+                if not isinstance(x, torch.Tensor):
+                    x = torch.tensor(x)
+        return x
 
     def _torch_to_numpy_from_list(self, tensor_list: list[torch.Tensor | None]) -> None:
         for i in range(len(tensor_list)):
@@ -358,7 +359,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        cls_scores = self._head_forward_fn(feature_map)
+        cls_scores = self._head_forward_fn(feature_map) if self._head_forward_fn else feature_map
 
         middle_idx = len(cls_scores) // 2
         # resize to the middle feature map

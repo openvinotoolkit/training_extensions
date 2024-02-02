@@ -219,7 +219,7 @@ def test_otx_explain_e2e(
         "--engine.device",
         fxt_accelerator,
         "--seed",
-        f"{0}",
+        "0",
         "--deterministic",
         "True",
         *fxt_cli_override_command_per_task[task],
@@ -230,6 +230,9 @@ def test_otx_explain_e2e(
 
     assert (tmp_path_explain / "outputs").exists()
     assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
+    sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
+    assert sal_map.shape[0] > 0
+    assert sal_map.shape[1] > 0
 
     reference_sal_vals = {
         "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
@@ -237,7 +240,6 @@ def test_otx_explain_e2e(
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
         actual_sal_vals = sal_map[:, 0, 0]
         ref_sal_vals = reference_sal_vals[test_case_name]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)

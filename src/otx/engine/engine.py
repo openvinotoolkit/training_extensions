@@ -430,8 +430,6 @@ class Engine:
             ...     explain_config=ExplainConfig(),
             ... )
         """
-        import cv2
-
         from otx.algo.utils.xai_utils import get_processed_saliency_maps
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -459,13 +457,11 @@ class Engine:
 
         # Optimize for memory <- TODO(negvet)
         raw_saliency_maps = self.trainer.model.model.explain_hook.records
-        # Temporary saving saliency map for image 0, class 0 (for tests)
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), raw_saliency_maps[0][0])
-
         return get_processed_saliency_maps(
             raw_saliency_maps,
             explain_config,
             predictions,
+            Path(self.work_dir),
         )
 
     @classmethod
