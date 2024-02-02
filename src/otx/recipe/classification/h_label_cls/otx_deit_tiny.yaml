@@ -6,19 +6,19 @@ model:
     num_multilabel_classes: 0
 
 optimizer:
-  class_path: torch.optim.SGD
+  class_path: torch.optim.AdamW
   init_args:
     lr: 0.0001
-    momentum: 0.9
-    weight_decay: 0.0001
+    weight_decay: 0.05
 
 scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
   init_args:
-    mode: min
+    warmup_steps: 10
+    mode: max
     factor: 0.5
     patience: 1
-    monitor: train/loss
+    monitor: val/accuracy
 
 engine:
   task: H_LABEL_CLS
