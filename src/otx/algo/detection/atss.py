@@ -24,7 +24,7 @@ class ATSS(MMDetCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.atss"
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.atss"
         export_params["input_size"] = (1, 3, 736, 992)
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0
@@ -47,7 +47,7 @@ class ATSSR50FPN(ATSS):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.atss_r50_fpn"
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.atss_r50_fpn"
         export_params["input_size"] = (1, 3, 800, 1333)
         export_params["resize_mode"] = "fit_to_window"
         export_params["pad_value"] = 0

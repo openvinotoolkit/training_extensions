@@ -1,6 +1,6 @@
 """MMDployment config of MaskRCNN-SwinT-FP16 model for Instance-Seg Task."""
 
-_base_ = ["../base/base_instance_segmentation.py"]
+_base_ = ["./base_instance_segmentation.py"]
 
 
 # NOTE: Its necessary to use opset11 as squeeze>=opset13 does not work in

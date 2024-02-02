@@ -24,7 +24,7 @@ class RTMDet(MMDetCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.rtmdet"
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.rtmdet"
         export_params["input_size"] = (1, 3, 640, 640)
         export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114

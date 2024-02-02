@@ -1,6 +1,6 @@
 """Instance segmentation models based deploy config."""
 
-_base_ = ["./base_detection.py"]
+_base_ = ["../../detection/mmdeploy/base_detection.py"]
 
 ir_config = dict(
     output_names=[

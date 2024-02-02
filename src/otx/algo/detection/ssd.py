@@ -129,7 +129,7 @@ class SSD(MMDetCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.ssd_mobilenetv2"
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.ssd_mobilenetv2"
         export_params["input_size"] = (1, 3, 864, 864)
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0

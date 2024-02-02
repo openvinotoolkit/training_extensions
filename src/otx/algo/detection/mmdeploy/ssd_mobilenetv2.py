@@ -1,6 +1,6 @@
 """MMDeploy config of SSD model for Detection Task."""
 
-_base_ = ["../base/base_detection.py"]
+_base_ = ["./base_detection.py"]
 
 ir_config = dict(
     output_names=["boxes", "labels"],

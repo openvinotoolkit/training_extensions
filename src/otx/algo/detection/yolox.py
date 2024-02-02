@@ -28,7 +28,7 @@ class YoloX(MMDetCompatibleModel):
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = True
         export_params["input_size"] = (1, 3, 640, 640)
-        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.yolox"
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.yolox"
 
         return export_params
 
@@ -51,6 +51,6 @@ class YoloXTiny(YoloX):
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = False
         export_params["input_size"] = (1, 3, 416, 416)
-        export_params["deploy_cfg"] = "otx.config.mmdeploy.detection.yolox_tiny"
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.yolox_tiny"
 
         return export_params
