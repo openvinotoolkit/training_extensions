@@ -100,6 +100,7 @@ decode_head:
     - 2
     - 3
   input_transform: resize_concat
+  enable_aggregator: True,
   channels: 600
   kernel_size: 1
   num_convs: 1
