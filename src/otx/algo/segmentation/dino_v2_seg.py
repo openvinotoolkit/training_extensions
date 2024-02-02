@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """DinoV2Seg model implementations."""
+from __future__ import annotations
 
-from pathlib import Path
+from typing import Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
@@ -17,11 +18,9 @@ class DinoV2Seg(MMSegCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
 
-    def export(self, *args) -> Path:
-        """Export method for DinoV2Seg.
-
-        Model doesn't support export for now due to unsupported operations from xformers.
-        This method will raise an error.
-        """
-        msg = "DinoV2Seg cannot be exported. It is not supported."
-        raise RuntimeError(msg)
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parent_parameters = super()._export_parameters
+        parent_parameters["input_size"] = (1, 3, 560, 560)
+        return parent_parameters
