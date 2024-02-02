@@ -438,6 +438,14 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     explain_config=ExplainConfig(),
             ... )
+
+        CLI Usage:
+            1. To run XAI using the specified model, run
+                ```python
+                otx explain
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
         """
         from otx.algo.utils.xai_utils import get_processed_saliency_maps
 
