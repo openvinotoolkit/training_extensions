@@ -210,8 +210,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
-            test_pipeline (list[dict] | None): test dataset pipeline. necessary for mmdeploy.
-
         Returns:
             Path: path to the exported model.
         """
@@ -230,8 +228,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         """Defines parameters required to export a particular model implementation.
 
         To export OTXModel, you should define an appropriate parameters."
-        "This is used in the constructor of exporter. "
-        "For example, `exporter = SomeExporter(**self.export_parameters)`. "
+        "This is used in the constructor of `self._exporter`. "
+        "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
         "Please refer to `otx.core.exporter.*` for detailed examples."
         Returns:
             dict[str, Any]: parameters of exporter.
