@@ -4,7 +4,7 @@
 """DinoV2Seg model implementations."""
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
@@ -24,3 +24,8 @@ class DinoV2Seg(MMSegCompatibleModel):
         parent_parameters = super()._export_parameters
         parent_parameters["input_size"] = (1, 3, 560, 560)
         return parent_parameters
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for DinoV2Seg."""
+        return {"model_type": "transformer"}

@@ -141,3 +141,8 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(**self._export_parameters)
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for DinoV2Cls."""
+        return {"model_type": "transformer"}
