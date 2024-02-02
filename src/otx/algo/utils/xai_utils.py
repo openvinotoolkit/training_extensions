@@ -4,21 +4,21 @@
 
 from __future__ import annotations
 
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+from otx.algo.hooks.recording_forward_hook import BaseRecordingForwardHook, MaskRCNNRecordingForwardHook
 from otx.core.config.explain import ExplainConfig
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 
 
 def get_processed_saliency_maps(
     raw_saliency_maps: list,
     explain_config: ExplainConfig,
     predictions: list | None,
+    explain_hook: BaseRecordingForwardHook,
 ) -> list:
     """Implement saliency map filtering and post-processing."""
-    if predictions is not None and isinstance(predictions[0], InstanceSegBatchPredEntity):
+    if predictions is not None and isinstance(explain_hook, MaskRCNNRecordingForwardHook):
+        # TODO: It is a temporary workaround. This function will be removed after we # noqa: TD003, TD002
+        # refactor XAI logics into `OTXModel.forward_explain()`.
+
         # Mask-RCNN case, receive saliency maps from predictions
-        raw_saliency_maps = MaskRCNNRecordingForwardHook.get_sal_map_from_preds(
-            predictions,
-            explain_config.num_classes,
-        )
+        raw_saliency_maps = explain_hook.func(predictions)
     return raw_saliency_maps

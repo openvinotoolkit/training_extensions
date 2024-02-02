@@ -472,10 +472,12 @@ class Engine:
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
-        # Optimize for memory <- TODO(negvet)
-        raw_saliency_maps = self.trainer.model.model.explain_hook.records
 
-        saliency_maps = get_processed_saliency_maps(raw_saliency_maps, explain_config, predictions)
+        explain_hook = self.trainer.model.model.explain_hook
+        # Optimize for memory <- TODO(negvet)
+        raw_saliency_maps = explain_hook.records
+
+        saliency_maps = get_processed_saliency_maps(raw_saliency_maps, explain_config, predictions, explain_hook)
 
         # Temporary saving saliency map for image 0, class 0 (for tests)
         cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])

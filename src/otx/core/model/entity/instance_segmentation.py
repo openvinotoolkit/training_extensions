@@ -73,7 +73,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         """Register explain hook at the model backbone output."""
         from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 
-        self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook()
+        self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook(
+            num_classes=self.num_classes,
+        )
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
