@@ -51,7 +51,7 @@ class ATSSR50FPN(ATSS):
         export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.atss_r50_fpn"
         export_params["input_size"] = self.image_size
-        export_params["resize_mode"] = "fit_to_window"
+        export_params["resize_mode"] = "standard"  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
 
