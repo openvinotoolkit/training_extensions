@@ -280,6 +280,7 @@ def test_otx_ov_test(recipe: str, tmp_path: Path, fxt_target_dataset_per_task: d
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
+        "--disable-infer-num-classes",
     ]
 
     with patch("sys.argv", command_cfg):

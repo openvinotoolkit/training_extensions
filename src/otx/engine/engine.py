@@ -327,7 +327,7 @@ class Engine:
             1. you can pick a model.
                 ```python
                 otx predict
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
             2. If you have a ready configuration file, run it like this.
@@ -340,6 +340,9 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
 
         self._build_trainer(**kwargs)
 
@@ -377,8 +380,14 @@ class Engine:
             1. To export a model, run
                 ```python
                 otx export
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
+            2. To export a model with precison FP16 and format ONNX, run
+                ```python
+                otx export
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -463,6 +472,7 @@ class Engine:
             predictions,
             Path(self.work_dir),
         )
+
 
     @classmethod
     def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:

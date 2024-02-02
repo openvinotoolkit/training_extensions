@@ -82,6 +82,9 @@ mmlab = [
     "mmpretrain==1.1.1",
     "mmsegmentation==1.2.1",
     "mmaction2==1.2.0",
+    # Without the pip cache, openxlab will sometimes install to a lower version. This is related to the installation of the mmlab library.
+    # This causes an error when training the mm model, so fix the version first.
+    "openxlab==0.0.34",
 ]
 
 [project.scripts]
@@ -284,6 +287,7 @@ max-returns = 10
     "PT004",    # fixture ignore type returning.
     "E501",     # Test skips lines that are too long.
     "ANN001",   # Skip annotation type hint in test codes
+    "ANN201",   # Skip return type hint in test codes
     "D",     # Test skips missing docstring argument with magic (fixture) methods.
 ]
 "src/otx/**/*.py" = [
