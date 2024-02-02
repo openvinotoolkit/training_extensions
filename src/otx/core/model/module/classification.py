@@ -121,7 +121,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
 
 class OTXMultilabelClsLitModule(OTXLitModule):
@@ -210,7 +210,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -328,7 +328,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
     @property
     def meta_info(self) -> LabelInfo:

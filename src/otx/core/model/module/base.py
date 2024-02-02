@@ -12,6 +12,7 @@ import torch
 from lightning import LightningModule
 from torch import Tensor
 
+from otx.algo.schedulers.warmup_schedulers import BaseWarmupScheduler
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchLossEntity,
@@ -24,6 +25,21 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo
+
+
+class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
+    """Linear Warmup scheduler."""
+
+    def __init__(
+        self,
+        optimizer: torch.optim.Optimizer,
+        num_warmup_steps: int = 1000,
+    ):
+        if num_warmup_steps > 0:
+            msg = f"num_warmup_steps should be > 0, got {num_warmup_steps}"
+            ValueError(msg)
+        self.num_warmup_steps = num_warmup_steps
+        super().__init__(optimizer, lambda step: min(step / num_warmup_steps, 1.0))
 
 
 class OTXLitModule(LightningModule):
@@ -94,7 +110,7 @@ class OTXLitModule(LightningModule):
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
 
-    def configure_optimizers(self) -> dict[str, Any]:
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
 
         Normally you'd need one. But in the case of GANs or similar you might have multiple.
@@ -109,22 +125,29 @@ class OTXLitModule(LightningModule):
             if callable(self.hparams.optimizer)
             else self.hparams.optimizer
         )
-        if self.hparams.scheduler is not None:
-            scheduler = (
-                self.hparams.scheduler(optimizer=optimizer)
-                if callable(self.hparams.scheduler)
-                else self.hparams.scheduler
-            )
-            return {
-                "optimizer": optimizer,
-                "lr_scheduler": {
-                    "scheduler": scheduler,
-                    "monitor": self.lr_scheduler_monitor_key,
-                    "interval": "epoch",
-                    "frequency": 1,
+
+        scheduler = (
+            self.hparams.scheduler(optimizer=optimizer) if callable(self.hparams.scheduler) else self.hparams.scheduler
+        )
+
+        lr_scheduler_configs = []
+        if isinstance(scheduler, BaseWarmupScheduler) and scheduler.warmup_steps > 0:
+            lr_scheduler_configs += [
+                {
+                    "scheduler": LinearWarmupScheduler(optimizer, num_warmup_steps=scheduler.warmup_steps),
+                    "interval": "step",
                 },
-            }
-        return {"optimizer": optimizer}
+            ]
+        lr_scheduler_configs += [
+            {
+                "scheduler": scheduler,
+                "monitor": self.lr_scheduler_monitor_key,
+                "interval": "epoch",
+                "frequency": self.trainer.check_val_every_n_epoch,
+            },
+        ]
+
+        return [optimizer], lr_scheduler_configs
 
     def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
         """Register self.model's load_state_dict_pre_hook.
