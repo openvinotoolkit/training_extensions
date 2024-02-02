@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
     "datumaro==1.6.0rc1",
     "omegaconf",
-    "rich",
+    "rich>=13.5.2",
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks
     "ftfy",
@@ -84,9 +84,8 @@ mmlab = [
     "mmsegmentation==1.2.1",
     "mmaction2==1.2.0",
     "mmdeploy==1.3.*",
-    # Without the pip cache, openxlab will sometimes install to a lower version. This is related to the installation of the mmlab library.
-    # This causes an error when training the mm model, so fix the version first.
-    "openxlab==0.0.34",
+    # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
+    "oss2==2.17.0",
 ]
 
 [project.scripts]
