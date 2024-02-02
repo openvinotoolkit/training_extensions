@@ -1,11 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import torch
-
 from datumaro import Polygon
-from torch import LongTensor
-from torchvision import tv_tensors
-
 from otx.algo.hooks.recording_forward_hook import (
     ActivationMapHook,
     DetClassProbabilityMapHook,
@@ -15,6 +11,8 @@ from otx.algo.hooks.recording_forward_hook import (
 )
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
+from torch import LongTensor
+from torchvision import tv_tensors
 
 
 def test_activationmap() -> None:
