@@ -156,7 +156,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         if self.image_size is None:
-            raise ValueError("self.image_size shouldn't be None to use mmdeploy.")
+            error_msg = "self.image_size shouldn't be None to use mmdeploy."
+            raise ValueError(error_msg)
 
         export_params = super()._export_parameters
         export_params.update(get_mean_std_from_data_processing(self.config))
@@ -174,12 +175,12 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
         return [
-            {"type" : "LoadImageFromFile"},
-            {"type" : "Resize", "scale" : [self.image_size[3], self.image_size[2]], "keep_ratio" : True},
-            {"type" : "LoadAnnotations", "with_bbox" : True},
+            {"type": "LoadImageFromFile"},
+            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
+            {"type": "LoadAnnotations", "with_bbox": True},
             {
-                "type" : "PackDetInputs",
-                "meta_keys" : ["ori_filename" "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape",]
+                "type": "PackDetInputs",
+                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
             },
         ]
 

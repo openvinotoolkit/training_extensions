@@ -28,7 +28,7 @@ class YoloX(MMDetCompatibleModel):
         export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = True
-        export_params["input_size"] = self.image_size 
+        export_params["input_size"] = self.image_size
         export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.yolox"
 
         return export_params
