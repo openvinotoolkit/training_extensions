@@ -178,13 +178,13 @@ class TestTorchVisionTransformLib:
         assert item.img_info.img_shape == item.image.shape[1:]
 
         if fxt_image_color_channel == ImageColorChannel.RGB:
-            r_pixel = 255.0 * (0.229 * item.image[0, 0, 0] + 0.485)
-            g_pixel = 255.0 * (0.224 * item.image[1, 0, 0] + 0.456)
-            b_pixel = 255.0 * (0.225 * item.image[2, 0, 0] + 0.406)
+            r_pixel = 0.229 * item.image[0, 0, 0] + 0.485
+            g_pixel = 0.224 * item.image[1, 0, 0] + 0.456
+            b_pixel = 0.225 * item.image[2, 0, 0] + 0.406
         else:
-            b_pixel = 255.0 * (0.229 * item.image[0, 0, 0] + 0.485)
-            g_pixel = 255.0 * (0.224 * item.image[1, 0, 0] + 0.456)
-            r_pixel = 255.0 * (0.225 * item.image[2, 0, 0] + 0.406)
+            b_pixel = 0.229 * item.image[0, 0, 0] + 0.485
+            g_pixel = 0.224 * item.image[1, 0, 0] + 0.456
+            r_pixel = 0.225 * item.image[2, 0, 0] + 0.406
 
         assert torch.allclose(r_pixel, torch.tensor(2.0))
         assert torch.allclose(g_pixel, torch.tensor(1.0))
