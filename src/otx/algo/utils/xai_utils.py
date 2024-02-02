@@ -16,13 +16,15 @@ if TYPE_CHECKING:
 
 
 def get_processed_saliency_maps(
-    raw_saliency_maps: list,
+    explain_hook: BaseRecordingForwardHook,
     explain_config: ExplainConfig,
     predictions: list | None,
-    explain_hook: BaseRecordingForwardHook,
     work_dir: Path | None,
 ) -> list:
     """Implement saliency map filtering and post-processing."""
+    # Optimize for memory <- TODO(negvet)
+    raw_saliency_maps = explain_hook.records
+
     if predictions is not None and isinstance(explain_hook, MaskRCNNRecordingForwardHook):
         # TODO: It is a temporary workaround. This function will be removed after we # noqa: TD003, TD002
         # refactor XAI logics into `OTXModel.forward_explain()`.

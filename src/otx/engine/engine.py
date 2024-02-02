@@ -515,14 +515,11 @@ class Engine:
         )
 
         explain_hook = self.trainer.model.model.explain_hook
-        # Optimize for memory <- TODO(negvet)
-        raw_saliency_maps = explain_hook.records
 
         return get_processed_saliency_maps(
-            raw_saliency_maps,
+            explain_hook,
             explain_config,
             predictions,
-            explain_hook,
             Path(self.work_dir),
         )
 
