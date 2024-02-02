@@ -473,7 +473,6 @@ class Engine:
             Path(self.work_dir),
         )
 
-
     @classmethod
     def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
         """Builds the engine from a configuration file.
