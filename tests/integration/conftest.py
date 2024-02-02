@@ -50,6 +50,7 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "detection": [],
+        "rotated_detection": [],
         "instance_segmentation": [],
         "semantic_segmentation": [],
         "action_classification": [],
