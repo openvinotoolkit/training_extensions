@@ -82,6 +82,9 @@ mmlab = [
     "mmpretrain==1.1.1",
     "mmsegmentation==1.2.1",
     "mmaction2==1.2.0",
+    # Without the pip cache, openxlab will sometimes install to a lower version. This is related to the installation of the mmlab library.
+    # This causes an error when training the mm model, so fix the version first.
+    "openxlab==0.0.34",
 ]
 
 [project.scripts]
