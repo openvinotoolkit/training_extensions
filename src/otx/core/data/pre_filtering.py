@@ -32,9 +32,8 @@ def is_non_empty_item(item: DatasetItem) -> bool:
     return False
 
 
-def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:
+def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: ARG001
     """Return whether DatasetItem's annotation is valid."""
-    del item
     if isinstance(annotation, Bbox):
         x1, y1, x2, y2 = annotation.points
         if x1 < x2 and y1 < y2:
