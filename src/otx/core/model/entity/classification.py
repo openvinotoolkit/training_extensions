@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
+from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -357,8 +358,19 @@ class OTXHlabelClsModel(
         """Defines parameters required to export a particular model implementation."""
         parameters = super()._export_parameters
         hierarchical_config: dict = {}
-        hierarchical_config["cls_heads_info"] = {}
-        hierarchical_config["label_tree_edges"] = []
+
+        label_info: HLabelMetaInfo = self.label_info  # type: ignore[assignment]
+        hierarchical_config["cls_heads_info"] = {
+            "num_multiclass_heads": label_info.hlabel_info.num_multiclass_heads,
+            "num_multilabel_classes": label_info.hlabel_info.num_multilabel_classes,
+            "head_idx_to_logits_range": label_info.hlabel_info.head_idx_to_logits_range,
+            "num_single_label_classes": label_info.hlabel_info.num_single_label_classes,
+            "class_to_group_idx": label_info.hlabel_info.class_to_group_idx,
+            "all_groups": label_info.hlabel_info.all_groups,
+            "label_to_idx": label_info.hlabel_info.label_to_idx,
+            "empty_multiclass_head_indices": label_info.hlabel_info.empty_multiclass_head_indices,
+        }
+        hierarchical_config["label_tree_edges"] = label_info.hlabel_info.label_tree_edges
 
         parameters["metadata"].update(
             {
