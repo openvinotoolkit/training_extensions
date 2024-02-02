@@ -25,6 +25,12 @@ v1.5.0 (4Q23)
 - Support torch==2.0.1
 - Set "Auto" as default input size mode
 
+v1.4.5 (1Q24)
+-------------
+
+- Filter invalid polygon shapes
+- Fix a bug to set reverse_input_channels for OpenVINO models
+- Remove unreferenced dependency of protobuf
 
 v1.4.4 (4Q23)
 -------------

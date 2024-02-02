@@ -37,6 +37,17 @@ All notable changes to this project will be documented in this file.
 - OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch>=1.13.1
 - NNCF QAT optimization is disabled for MaskRCNN models due to CUDA runtime error in ROIAlign kernel on torch==2.0.1
 
+## \[v1.4.5\]
+
+### Bug fixes
+
+- Filter invalid polygon shapes (<https://github.com/openvinotoolkit/training_extensions/pull/2795>)
+- 🐞 Bugfix: Set reverse*input_channels to True in OpenVINO models (<https://github.com/openvinotoolkit/training_extensions/pull/2848>*
+
+### Misc
+
+- Remove dependency of protobuf to omit vulnerability issue (<https://github.com/openvinotoolkit/training_extensions/pull/2851>)
+
 ## \[v1.4.4\]
 
 ### Enhancements
@@ -312,7 +323,7 @@ All notable changes to this project will be documented in this file.
 
 ## \[v1.0.0\]
 
-> _**NOTES**_
+> **NOTES**
 >
 > OpenVINO™ Training Extensions which version 1.0.0 has been updated to include functional and security updates. Users should update to the latest version.
 
@@ -340,7 +351,7 @@ All notable changes to this project will be documented in this file.
 
 ## \[v0.5.0\]
 
-> _**NOTES**_
+> **NOTES**
 >
 > OpenVINO Training Extension which version is equal or older then v0.5.0 does not include the latest functional and security updates. OTE Version 1.0.0 is targeted to be released in February 2023 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
 
