@@ -36,6 +36,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "otx_efficientnet_b0.yaml",
     OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0_light.yaml",
     OTXTaskType.DETECTION: RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
+    OTXTaskType.ROTATED_DETECTION: RECIPE_PATH / "rotated_detection" / "maskrcnn_r50.yaml",
     OTXTaskType.SEMANTIC_SEGMENTATION: RECIPE_PATH / "semantic_segmentation" / "litehrnet_18.yaml",
     OTXTaskType.INSTANCE_SEGMENTATION: RECIPE_PATH / "instance_segmentation" / "maskrcnn_r50.yaml",
     OTXTaskType.ACTION_CLASSIFICATION: RECIPE_PATH / "action" / "action_classification" / "x3d.yaml",
@@ -47,8 +48,18 @@ DEFAULT_CONFIG_PER_TASK = {
 TASK_PER_DATA_FORMAT = {
     "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS],
     "datumaro": [OTXTaskType.MULTI_LABEL_CLS],
-    "coco_instances": [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.VISUAL_PROMPTING],
-    "coco": [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.VISUAL_PROMPTING],
+    "coco_instances": [
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
+        OTXTaskType.VISUAL_PROMPTING,
+    ],
+    "coco": [
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
+        OTXTaskType.VISUAL_PROMPTING,
+    ],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "ava": [OTXTaskType.ACTION_DETECTION],

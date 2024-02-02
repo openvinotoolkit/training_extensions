@@ -28,6 +28,7 @@ def fxt_target_dataset_per_task() -> dict:
         "multi_label_cls": "tests/assets/multilabel_classification",
         "h_label_cls": "tests/assets/hlabel_classification",
         "detection": "tests/assets/car_tree_bug",
+        "rotated_detection": "tests/assets/car_tree_bug",
         "instance_segmentation": "tests/assets/car_tree_bug",
         "semantic_segmentation": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "action_classification": "tests/assets/action_classification_dataset/",
