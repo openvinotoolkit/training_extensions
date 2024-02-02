@@ -15,7 +15,7 @@ from otx.core.data.entity.detection import (
     DetBatchDataEntity,
     DetBatchPredEntity,
 )
-from otx.core.model.entity.detection import OTXDetectionModel
+from otx.core.model.entity.detection import ExplainableOTXDetModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class OTXDetectionLitModule(OTXLitModule):
 
     def __init__(
         self,
-        otx_model: OTXDetectionModel,
+        otx_model: ExplainableOTXDetModel,
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
@@ -141,12 +141,4 @@ class OTXDetectionLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
-
-    def _load_from_prev_otx_ckpt(self, ckpt: dict) -> dict:
-        """Get the state_dict, supporting the backward compatibility."""
-        state_dict = super()._load_from_prev_otx_ckpt(ckpt)
-        for key in list(state_dict.keys()):
-            if key.startswith("model.model.ema_"):
-                state_dict.pop(key)
-        return state_dict
+        return "val/map_50"

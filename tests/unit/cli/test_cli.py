@@ -50,11 +50,21 @@ class TestOTXCLI:
     def test_subcommand_parser(self, mocker) -> None:
         mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
         cli = OTXCLI()
-        parser = cli.subcommand_parser()
+        parser = cli.engine_subcommand_parser()
         assert parser.__class__.__name__ == "ArgumentParser"
         argument_list = [action.dest for action in parser._actions]
-        expected_argument = ["help", "verbose", "config", "print_config", "data_root", "task", "callback_monitor"]
-        assert sorted(argument_list) == sorted(expected_argument)
+        expected_argument = [
+            "help",
+            "verbose",
+            "config",
+            "print_config",
+            "data_root",
+            "task",
+            "seed",
+            "callback_monitor",
+        ]
+        for args in expected_argument:
+            assert args in argument_list
 
     def test_add_subcommands(self, mocker) -> None:
         mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)

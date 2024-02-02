@@ -12,17 +12,34 @@ import torch
 from lightning import LightningModule
 from torch import Tensor
 
-from otx.core.data.entity.base import OTXBatchDataEntity
+from otx.algo.schedulers.warmup_schedulers import BaseWarmupScheduler
+from otx.core.data.entity.base import (
+    OTXBatchDataEntity,
+    OTXBatchLossEntity,
+    OTXBatchPredEntity,
+)
 from otx.core.model.entity.base import OTXModel
-from otx.core.types.export import OTXExportFormat
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo
+
+
+class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
+    """Linear Warmup scheduler."""
+
+    def __init__(
+        self,
+        optimizer: torch.optim.Optimizer,
+        num_warmup_steps: int = 1000,
+    ):
+        if num_warmup_steps > 0:
+            msg = f"num_warmup_steps should be > 0, got {num_warmup_steps}"
+            ValueError(msg)
+        self.num_warmup_steps = num_warmup_steps
+        super().__init__(optimizer, lambda step: min(step / num_warmup_steps, 1.0))
 
 
 class OTXLitModule(LightningModule):
@@ -93,7 +110,7 @@ class OTXLitModule(LightningModule):
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
 
-    def configure_optimizers(self) -> dict[str, Any]:
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
 
         Normally you'd need one. But in the case of GANs or similar you might have multiple.
@@ -103,19 +120,34 @@ class OTXLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
         """
-        optimizer = self.hparams.optimizer(params=self.parameters())
-        if self.hparams.scheduler is not None:
-            scheduler = self.hparams.scheduler(optimizer=optimizer)
-            return {
-                "optimizer": optimizer,
-                "lr_scheduler": {
-                    "scheduler": scheduler,
-                    "monitor": self.lr_scheduler_monitor_key,
-                    "interval": "epoch",
-                    "frequency": 1,
+        optimizer = (
+            self.hparams.optimizer(params=self.parameters())
+            if callable(self.hparams.optimizer)
+            else self.hparams.optimizer
+        )
+
+        scheduler = (
+            self.hparams.scheduler(optimizer=optimizer) if callable(self.hparams.scheduler) else self.hparams.scheduler
+        )
+
+        lr_scheduler_configs = []
+        if isinstance(scheduler, BaseWarmupScheduler) and scheduler.warmup_steps > 0:
+            lr_scheduler_configs += [
+                {
+                    "scheduler": LinearWarmupScheduler(optimizer, num_warmup_steps=scheduler.warmup_steps),
+                    "interval": "step",
                 },
-            }
-        return {"optimizer": optimizer}
+            ]
+        lr_scheduler_configs += [
+            {
+                "scheduler": scheduler,
+                "monitor": self.lr_scheduler_monitor_key,
+                "interval": "epoch",
+                "frequency": self.trainer.check_val_every_n_epoch,
+            },
+        ]
+
+        return [optimizer], lr_scheduler_configs
 
     def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
         """Register self.model's load_state_dict_pre_hook.
@@ -137,16 +169,6 @@ class OTXLitModule(LightningModule):
         state_dict["meta_info"] = self.meta_info
         return state_dict
 
-    def _load_from_prev_otx_ckpt(self, state_dict: dict[str, Any]) -> dict[str, Any]:
-        """Attach the model.model prefix to load without problem."""
-        msg = "Trying to load the model checkpoint created by OTX 1.X. it will be converted to OTX2.0 format."
-        warnings.warn(msg, stacklevel=1)
-        for key in list(state_dict.keys()):
-            value = state_dict.pop(key)
-            new_key = "model.model." + key
-            state_dict[new_key] = value
-        return state_dict
-
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
 
@@ -157,7 +179,9 @@ class OTXLitModule(LightningModule):
         """
         if is_ckpt_from_otx_v1(ckpt):
             model_state_dict = ckpt["model"]["state_dict"]
-            state_dict = self._load_from_prev_otx_ckpt(model_state_dict)
+            msg = "The checkpoint comes from OTXv1, checkpoint keys will be updated automatically."
+            warnings.warn(msg, stacklevel=2)
+            state_dict = self.model.load_from_otx_v1_ckpt(model_state_dict)
         elif is_ckpt_for_finetuning(ckpt):
             state_dict = ckpt["state_dict"]
         else:
@@ -174,12 +198,12 @@ class OTXLitModule(LightningModule):
         if ckpt_meta_info and self.meta_info and ckpt_meta_info != self.meta_info:
             logger = logging.getLogger()
             logger.info(
-                f"Data classes from checkpoint: {ckpt_meta_info.class_names} -> "
+                f"Data classes from checkpoint: {ckpt_meta_info.label_names} -> "
                 f"Data classes from training data: {self.meta_info.label_names}",
             )
             self.register_load_state_dict_pre_hook(
                 self.meta_info.label_names,
-                ckpt_meta_info.class_names,
+                ckpt_meta_info.label_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
 
@@ -198,11 +222,6 @@ class OTXLitModule(LightningModule):
         """Set the member `OTXModel` label information."""
         self.model.label_info = label_info  # type: ignore[assignment]
 
-    def export(self, output_dir: Path, export_format: OTXExportFormat) -> None:
-        """Export the member `OTXModel` of this module to the specified output directory.
-
-        Args:
-            output_dir: Directory path to save exported binary files.
-            export_format: Format in which this `OTXModel` is exported.
-        """
-        self.model.export(output_dir, export_format)
+    def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward pass."""
+        return self.model.forward(*args, **kwargs)

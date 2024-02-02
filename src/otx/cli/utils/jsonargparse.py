@@ -6,12 +6,15 @@
 from __future__ import annotations
 
 import ast
+import logging
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator, TypeVar
 
 import docstring_parser
-from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace
+from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace, namespace_to_dict
+
+logger = logging.getLogger()
 
 
 def get_short_docstring(component: TypeVar) -> str:
@@ -131,10 +134,79 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
-            cfg.__dict__.update(overrides)
+            cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
+
+
+# [FIXME] harimkang: have to see if there's a better way to do it. (For now, Added 2 lines to existing function)
+# The thing called `overrides` is only available in OTXCLI via `apply_config`.
+# Currently, default_config_files in jsonargparse is loading the default config file without using the ActionConfigFile,
+# and it's not updating the overrides properly in the process.
+# So this function patches to allow configs to come in via `default_config_files` with `overrides` applied.
+def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) -> Namespace:
+    """Returns a namespace with all default values.
+
+    Args:
+        skip_check: Whether to skip check if configuration is valid.
+
+    Returns:
+        An object with all default values as attributes.
+    """
+    import argparse
+
+    from jsonargparse._actions import _ActionPrintConfig, filter_default_actions
+    from jsonargparse._common import parser_context
+    from jsonargparse._namespace import recreate_branches
+    from jsonargparse._parameter_resolvers import UnknownDefault
+    from jsonargparse._typehints import ActionTypeHint
+    from jsonargparse._util import argument_error, change_to_path_dir
+
+    cfg = Namespace()
+    for action in filter_default_actions(self._actions):
+        if (
+            action.default != argparse.SUPPRESS
+            and action.dest != argparse.SUPPRESS
+            and not isinstance(action.default, UnknownDefault)
+        ):
+            cfg[action.dest] = recreate_branches(action.default)
+
+    self._logger.debug("Loaded parser defaults: %s", cfg)
+
+    default_config_files = self._get_default_config_files()
+    for key, default_config_file in default_config_files:
+        with change_to_path_dir(default_config_file), parser_context(parent_parser=self):
+            cfg_file = self._load_config_parser_mode(default_config_file.get_content(), key=key)
+            cfg = self.merge_config(cfg_file, cfg)
+            overrides = cfg.__dict__.pop("overrides", None)
+            if overrides is not None:
+                cfg.update(overrides)
+            try:
+                with _ActionPrintConfig.skip_print_config():
+                    cfg = self._parse_common(
+                        cfg=cfg,
+                        env=False,
+                        defaults=False,
+                        with_meta=None,
+                        skip_check=skip_check,
+                        skip_required=True,
+                    )
+            except (TypeError, KeyError, argparse.ArgumentError) as ex:
+                msg = f'Problem in default config file "{default_config_file}": {ex.args[0]}'
+                raise argument_error(msg) from ex
+        meta = cfg.get("__default_config__")
+        if isinstance(meta, list):
+            meta.append(default_config_file)
+        elif isinstance(meta, Path):
+            cfg["__default_config__"] = [meta, default_config_file]
+        else:
+            cfg["__default_config__"] = default_config_file
+        self._logger.debug("Parsed default configuration from path: %s", default_config_file)
+
+    ActionTypeHint.add_sub_defaults(self, cfg)
+
+    return cfg
 
 
 @contextmanager
@@ -142,11 +214,39 @@ def patch_update_configs() -> Iterator[None]:
     """Patch the update and apply_config methods of the given namespace and action_config_file objects."""
     original_update = Namespace.update
     original_apply_config = ActionConfigFile.apply_config
+    original_get_defaults = ArgumentParser.get_defaults
 
     try:
         Namespace.update = update
         ActionConfigFile.apply_config = apply_config
+        ArgumentParser.get_defaults = get_defaults_with_overrides
         yield
     finally:
         Namespace.update = original_update
         ActionConfigFile.apply_config = original_apply_config
+        ArgumentParser.get_defaults = original_get_defaults
+
+
+def get_configuration(config_path: str | Path) -> dict:
+    """Get the configuration from the given path.
+
+    Args:
+        config_path (str | Path): The path to the configuration file.
+
+    Returns:
+        dict: The configuration dictionary.
+    """
+    from otx.cli.cli import OTXCLI
+
+    with patch_update_configs():
+        parser = OTXCLI.engine_subcommand_parser()
+        args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)
+    config = namespace_to_dict(args)
+    logger.info(f"{config_path} is loaded.")
+
+    # Remove unnecessary cli arguments for API usage
+    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume", "disable_infer_num_classes"]
+    logger.warning(f"The corresponding keys in config are not used.: {cli_args}")
+    for arg in cli_args:
+        config.pop(arg, None)
+    return config

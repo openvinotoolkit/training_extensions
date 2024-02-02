@@ -4,5 +4,6 @@
 """Backbone modules for OTX visual prompting model."""
 
 from .tiny_vit import TinyViT
+from .vit import ViT
 
-__all__ = ["TinyViT"]
+__all__ = ["TinyViT", "ViT"]

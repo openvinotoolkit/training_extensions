@@ -80,6 +80,7 @@ class MemCacheHandlerBase:
     """
 
     def __init__(self, mem_size: int):
+        self._mem_size = mem_size
         self._init_data_structs(mem_size)
 
     def _init_data_structs(self, mem_size: int) -> None:
@@ -190,6 +191,10 @@ class MemCacheHandlerBase:
             f"store {len(self)} items."
         )
 
+    def __reduce__(self):
+        """Dump just mem_size and re-initialize with that value when unpickled."""
+        return (self.__class__, (self._mem_size,))
+
     @property
     def frozen(self) -> bool:
         """True if this handler is frozen, otherwise return False."""
@@ -279,7 +284,7 @@ class MemCacheHandlerSingleton:
             )
 
         logger.info(f"Try to create a {mem_size} size memory pool.")
-        if available_cpu_mem < ((mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB):
+        if not cls.check_system_memory(mem_size, available_cpu_mem):
             logger.warning("No available CPU memory left, mem_size will be set to 0.")
             mem_size = 0
 
@@ -305,6 +310,19 @@ class MemCacheHandlerSingleton:
         cls.instances.append(instance)
 
         return instance
+
+    @classmethod
+    def check_system_memory(cls, mem_size: int, available_cpu_mem: int) -> bool:
+        """Check there is enough system memory to maintain memory caching pool.
+
+        Parameters:
+            mem_size: Requested memory size (bytes) for the memory cahcing pool
+            available_cpu_mem: Memory capacity (bytes) of this system
+        Returns:
+            Return true if there is enough system memory. Otherwise, return false.
+        """
+        expected_mem_usage = (mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB
+        return available_cpu_mem >= expected_mem_usage
 
     @classmethod
     def delete(cls) -> None:

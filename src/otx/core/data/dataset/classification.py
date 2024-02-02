@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from typing import Callable
 
 import torch
@@ -62,7 +63,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
-        return MulticlassClsBatchDataEntity.collate_fn
+        return partial(MulticlassClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
 
 class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
@@ -75,6 +76,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     def _get_item_impl(self, index: int) -> MultilabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
+        ignored_labels: list[int] = []  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
@@ -87,20 +89,25 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
                 img_shape=img_shape,
                 ori_shape=img_shape,
                 image_color_channel=self.image_color_channel,
+                ignored_labels=ignored_labels,
             ),
-            labels=self._convert_to_onehot(labels),
+            labels=self._convert_to_onehot(labels, ignored_labels),
         )
 
         return self._apply_transforms(entity)
 
-    def _convert_to_onehot(self, labels: torch.tensor) -> torch.tensor:
+    def _convert_to_onehot(self, labels: torch.tensor, ignored_labels: list[int]) -> torch.tensor:
         """Convert label to one-hot vector format."""
-        return functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
+        onehot = functional.one_hot(labels, self.num_classes).sum(0).clamp_max_(1)
+        if ignored_labels:
+            for ignore_label in ignored_labels:
+                onehot[ignore_label] = -1
+        return onehot
 
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect MultilabelClsDataEntity into MultilabelClsBatchDataEntity in data loader."""
-        return MultilabelClsBatchDataEntity.collate_fn
+        return partial(MultilabelClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
 
 class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
@@ -123,10 +130,11 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
     def _get_item_impl(self, index: int) -> HlabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
+        ignored_labels: list[int] = []  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
-        hlabel_labels = self._convert_label_to_hlabel_format(label_anns)
+        hlabel_labels = self._convert_label_to_hlabel_format(label_anns, ignored_labels)
 
         entity = HlabelClsDataEntity(
             image=img_data,
@@ -135,13 +143,14 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
                 img_shape=img_shape,
                 ori_shape=img_shape,
                 image_color_channel=self.image_color_channel,
+                ignored_labels=ignored_labels,
             ),
             labels=torch.as_tensor(hlabel_labels),
         )
 
         return self._apply_transforms(entity)
 
-    def _convert_label_to_hlabel_format(self, label_anns: list[Label]) -> list[int]:
+    def _convert_label_to_hlabel_format(self, label_anns: list[Label], ignored_labels: list[int]) -> list[int]:
         """Convert format of the label to the h-label.
 
         It converts the label format to h-label format.
@@ -168,9 +177,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         num_multiclass_heads = self.meta_info.hlabel_info.num_multiclass_heads
         num_multilabel_classes = self.meta_info.hlabel_info.num_multilabel_classes
 
-        # NOTE: currently ignored labels are not considered yet.
-        ignored_labels: list = []
-
         class_indices = [0] * (num_multiclass_heads + num_multilabel_classes)
         for i in range(num_multiclass_heads):
             class_indices[i] = -1
@@ -181,7 +187,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
-            elif ann.label not in ignored_labels:
+            elif not ignored_labels or ann.label not in ignored_labels:
                 class_indices[num_multiclass_heads + in_group_idx] = 1
             else:
                 class_indices[num_multiclass_heads + in_group_idx] = -1
@@ -191,4 +197,4 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect HlabelClsDataEntity into HlabelClsBatchDataEntity in data loader."""
-        return HlabelClsBatchDataEntity.collate_fn
+        return partial(HlabelClsBatchDataEntity.collate_fn, stack_images=self.stack_images)

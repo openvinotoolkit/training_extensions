@@ -15,7 +15,12 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision import tv_tensors
 
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
+from otx.core.data.entity.visual_prompting import (
+    VisualPromptingBatchDataEntity,
+    VisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingBatchDataEntity,
+    ZeroShotVisualPromptingBatchPredEntity,
+)
 from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
@@ -40,7 +45,10 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
+        self.set_metrics()
 
+    def set_metrics(self) -> None:
+        """Set metrics."""
         self.train_metric = MetricCollection(
             {
                 "loss": MeanMetric(),
@@ -66,6 +74,10 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             },
         )
 
+    def on_train_epoch_start(self) -> None:
+        """Callback triggered when the train epoch starts."""
+        self.train_metric.reset()
+
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
         self.val_metric.reset()
@@ -73,6 +85,11 @@ class OTXVisualPromptingLitModule(OTXLitModule):
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
         self.test_metric.reset()
+
+    def on_train_epoch_end(self) -> None:
+        """Callback triggered when the train epoch ends."""
+        self._log_metrics(self.train_metric, "train")
+        self.train_metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
@@ -101,7 +118,11 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 prog_bar=True,
             )
 
-    def training_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> Tensor:  # type: ignore[override]
+    def training_step(
+        self,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+        batch_idx: int,
+    ) -> Tensor:
         """Step for model training."""
         train_loss = self.model(inputs)
 
@@ -149,8 +170,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: VisualPromptingBatchPredEntity,
-        inputs: VisualPromptingBatchDataEntity,
+        preds: VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         """Convert the prediction entity to the format required by the compute metric function."""
         pred_info = []
@@ -185,7 +206,12 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
         return {"preds": pred_info, "target": target_info}
 
-    def _inference_step(self, metric: MetricCollection, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+    def _inference_step(
+        self,
+        metric: MetricCollection,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
         """Perform a single inference step on a batch of data from the inference set."""
         preds = self.model(inputs)
 
@@ -211,3 +237,98 @@ class OTXVisualPromptingLitModule(OTXLitModule):
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
         return "train/loss"
+
+
+class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
+    """Base class for the lightning module used in OTX zero-shot visual prompting task."""
+
+    def set_metrics(self) -> None:
+        """Set metrics."""
+        self.test_metric = MetricCollection(
+            {
+                "IoU": BinaryJaccardIndex(),
+                "F1": BinaryF1Score(),
+                "Dice": Dice(),
+                "mAP": MeanAveragePrecision(iou_type="segm"),
+            },
+        )
+
+    def on_train_epoch_start(self) -> None:
+        """Skip on_train_epoch_start unused in zero-shot visual prompting."""
+
+    def on_train_epoch_end(self) -> None:
+        """Skip on_train_epoch_end unused in zero-shot visual prompting."""
+
+    def on_validation_epoch_start(self) -> None:
+        """Skip on_validation_epoch_start unused in zero-shot visual prompting."""
+
+    def on_validation_epoch_end(self) -> None:
+        """Skip on_validation_epoch_end unused in zero-shot visual prompting."""
+
+    def configure_optimizers(self) -> None:  # type: ignore[override]
+        """Skip configure_optimizers unused in zero-shot visual prompting."""
+
+    def training_step(
+        self,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+        batch_idx: int,
+    ) -> Tensor:
+        """Skip training_step unused in zero-shot visual prompting."""
+        self.model(inputs)
+
+    def validation_step(
+        self,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
+        """Skip validation_step unused in zero-shot visual prompting."""
+
+    def _inference_step(
+        self,
+        metric: MetricCollection,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
+        """Perform a single inference step on a batch of data from the inference set."""
+        preds = self.model(inputs)
+
+        if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
+            raise TypeError(preds)
+
+        converted_entities = self._convert_pred_entity_to_compute_metric(preds, inputs)
+        for _name, _metric in metric.items():
+            if _name == "mAP":
+                # MeanAveragePrecision
+                _preds = [
+                    {
+                        k: v > 0.5 if k == "masks" else v.squeeze(1).to(self.device) if k == "labels" else v
+                        for k, v in ett.items()
+                    }
+                    for ett in converted_entities["preds"]
+                ]
+                _target = converted_entities["target"]
+
+                # match #_preds and #_target
+                if len(_preds) > len(_target):
+                    # interpolate _target
+                    num_diff = len(_preds) - len(_target)
+                    for idx in range(num_diff):
+                        _target.append(_target[idx])
+                elif len(_preds) < len(_target):
+                    num_diff = len(_target) - len(_preds)
+                    pad_prediction = {
+                        "masks": torch.zeros_like(_target[0]["masks"], dtype=_target[0]["masks"].dtype),
+                        "labels": torch.zeros_like(_target[0]["labels"], dtype=_target[0]["labels"].dtype),
+                        "scores": torch.zeros(len(_target[0]["labels"]), dtype=torch.float32),
+                    }  # for empty prediction
+                    for idx in range(num_diff):
+                        _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
+
+                _metric.update(preds=_preds, target=_target)
+            elif _name in ["IoU", "F1", "Dice"]:
+                # BinaryJaccardIndex, BinaryF1Score, Dice
+                for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                    _metric.update(
+                        cvt_preds["masks"].sum(dim=0).clamp(0, 1),
+                        cvt_target["masks"].sum(dim=0).clamp(0, 1),
+                    )

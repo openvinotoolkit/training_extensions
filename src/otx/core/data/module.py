@@ -19,6 +19,7 @@ from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
     parse_mem_cache_size_to_int,
 )
+from otx.core.data.pre_filtering import pre_filtering
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -51,6 +52,8 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        if self.task != "H_LABEL_CLS":
+            dataset = pre_filtering(dataset, self.config.data_format)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -157,6 +160,21 @@ class OTXDataModule(LightningDataModule):
             persistent_workers=config.num_workers > 0,
         )
 
+    def predict_dataloader(self) -> DataLoader:
+        """Get test dataloader."""
+        config = self.config.test_subset
+        dataset = self._get_dataset(config.subset_name)
+
+        return DataLoader(
+            dataset=dataset,
+            batch_size=config.batch_size,
+            shuffle=False,
+            num_workers=config.num_workers,
+            pin_memory=True,
+            collate_fn=dataset.collate_fn,
+            persistent_workers=config.num_workers > 0,
+        )
+
     def setup(self, stage: str) -> None:
         """Setup for each stage."""
 
@@ -180,3 +198,7 @@ class OTXDataModule(LightningDataModule):
                 hp[key] = OmegaConf.to_container(value, resolve=False)
 
         return hp
+
+    def __reduce__(self):
+        """Re-initialize object when unpickled."""
+        return (self.__class__, (self.task, self.config))

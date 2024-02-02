@@ -2,16 +2,10 @@ model:
   class_path: otx.core.model.entity.classification.OVMulticlassClassificationModel
   init_args:
     num_classes: 1000
-    config:
-      class_path: omegaconf.dictconfig.DictConfig
-      init_args:
-        content:
-          model_name: efficientnet-b0-pytorch
-          async_inference: True
-          use_throughput_mode: False
-          model_type: Classification
-          head:
-            num_classes: 1000
+    model_name: efficientnet-b0-pytorch
+    async_inference: True
+    use_throughput_mode: False
+    model_type: Classification
 
 optimizer:
   class_path: torch.optim.Adam
@@ -29,7 +23,7 @@ scheduler:
 
 engine:
   task: MULTI_CLASS_CLS
-  device: auto
+  device: cpu
 
 callback_monitor: val/accuracy
 
@@ -37,7 +31,8 @@ data: ../../_base_/data/torchvision_base.yaml
 
 overrides:
   data:
+    task: MULTI_CLASS_CLS
     config:
-      image_color_channel: BGR
+      image_color_channel: RGB
       test_subset:
         batch_size: 128

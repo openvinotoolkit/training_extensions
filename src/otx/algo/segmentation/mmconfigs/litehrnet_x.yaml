@@ -100,7 +100,7 @@ data_preprocessor:
     size_divisor: 32
   type: SegDataPreProcessor
 decode_head:
-  type: FCNHead
+  type: CustomFCNHead
   in_channels:
     - 18
     - 60
@@ -125,7 +125,7 @@ decode_head:
     requires_grad: true
   align_corners: false
   loss_decode:
-    type: CrossEntropyLoss
+    type: CrossEntropyLossWithIgnore
     use_sigmoid: false
     loss_weight: 1.0
 pretrained: null
