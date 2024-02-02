@@ -8,10 +8,10 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 from openvino.model_api.pipelines import AsyncPipeline
 
 if TYPE_CHECKING:
+    import numpy as np
     from demo_package.model_wrapper import ModelWrapper
 
 from demo_package.streamer import get_streamer
@@ -60,6 +60,9 @@ class AsyncExecutor:
         for next_id in range(next_frame_id_to_show, next_frame_id):
             start_time = time.perf_counter()
             results = self.async_pipeline.get_result(next_id)
+            if not results:
+                msg = "Async pipeline returned None results"
+                raise RuntimeError(msg)
             output = self.render_result(results)
             self.visualizer.show(output)
             if self.visualizer.output:
@@ -71,11 +74,5 @@ class AsyncExecutor:
     def render_result(self, results: tuple[Any, dict]) -> np.ndarray:
         """Render for results of inference."""
         predictions, frame_meta = results
-        if self.model.task_type == "Detection":
-            # Predictions for the detection task
-            predictions = np.array(
-                [[pred.id, pred.score, *[pred.xmin, pred.ymin, pred.xmax, pred.ymax]] for pred in predictions.objects],
-            )
-            predictions.shape = len(predictions), 6
         current_frame = frame_meta["frame"]
         return self.visualizer.draw(current_frame, predictions)
