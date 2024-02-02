@@ -24,7 +24,8 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        ignored_labels: list[int] = []  # This should be assigned form item
+        num_classes = self.meta_info.num_classes
+        ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         # create 2D class mask. We use np.sum() since Datumaro returns 3D masks (one for each class)
@@ -33,7 +34,10 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             axis=0,
             dtype=np.uint8,
         )
-
+        mask = torch.as_tensor(mask_anns, dtype=torch.long)
+        # assign possible ignored labels from dataset to max label class + 1.
+        # it is needed to compute mDice metric.
+        mask[mask==255] = num_classes
         entity = SegDataEntity(
             image=img_data,
             img_info=ImageInfo(
@@ -44,7 +48,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 ignored_labels=ignored_labels,
             ),
             gt_seg_map=tv_tensors.Mask(
-                torch.as_tensor(mask_anns, dtype=torch.long),
+                mask
             ),
         )
         return self._apply_transforms(entity)

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics import JaccardIndex
+from torchmetrics import JaccardIndex, Dice
 
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
@@ -45,13 +45,15 @@ class OTXSegmentationLitModule(OTXLitModule):
             raise RuntimeError(msg)
 
         metric_params = {
-            "task": "multiclass",
-            "num_classes": num_classes,
-            "ignore_index": 255,
+            # a hack to use ignore_index in Dice metric
+            "num_classes": num_classes + 1,
+            "ignore_index": num_classes,
+            "multiclass": True,
+            "average": "macro"
         }
 
-        self.val_metric = JaccardIndex(**metric_params)
-        self.test_metric = JaccardIndex(**metric_params)
+        self.val_metric = Dice(**metric_params)
+        self.test_metric = Dice(**metric_params)
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -80,7 +82,7 @@ class OTXSegmentationLitModule(OTXLitModule):
                 log.debug("Cannot log Tensor which is not scalar")
                 return
             self.log(
-                f"{key}/mIoU",
+                f"{key}/{type(self.val_metric).__name__}",
                 results,
                 sync_dist=True,
                 prog_bar=True,
