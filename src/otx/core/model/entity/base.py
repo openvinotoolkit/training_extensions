@@ -178,7 +178,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        test_pipeline: list[dict] | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -192,10 +191,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        exporter = self._get_exporter(test_pipeline)
-        return exporter.export(self.model, output_dir, base_name, export_format, precision)
+        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
 
-    def _get_exporter(self, test_pipeline: list[dict] | None) -> OTXModelExporter:
+    @property
+    def _exporter(self) -> OTXModelExporter:
         msg = (
             "To export this OTXModel, you should implement an appropriate exporter for it. "
             "You can try to reuse ones provided in `otx.core.exporter.*`."

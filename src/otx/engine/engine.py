@@ -400,7 +400,6 @@ class Engine:
                 base_name=self._EXPORTED_MODEL_BASE_NAME,
                 export_format=export_format,
                 precision=export_precision,
-                test_pipeline=self.datamodule.config.test_subset.transforms,
             )
 
         msg = "To make export, checkpoint must be specified."

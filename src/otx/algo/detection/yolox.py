@@ -19,6 +19,7 @@ class YoloX(MMDetCompatibleModel):
         model_name = f"yolox_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
+        self.image_size = (1, 3, 640, 640)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -27,7 +28,7 @@ class YoloX(MMDetCompatibleModel):
         export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = True
-        export_params["input_size"] = (1, 3, 640, 640)
+        export_params["input_size"] = self.image_size 
         export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.yolox"
 
         return export_params
@@ -42,6 +43,7 @@ class YoloXTiny(YoloX):
 
     def __init__(self, num_classes: int) -> None:
         super().__init__(num_classes=num_classes, variant="tiny")
+        self.image_size = (1, 3, 416, 416)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -50,7 +52,7 @@ class YoloXTiny(YoloX):
         export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = False
-        export_params["input_size"] = (1, 3, 416, 416)
+        export_params["input_size"] = self.image_size
         export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.yolox_tiny"
 
         return export_params

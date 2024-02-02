@@ -149,15 +149,20 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
+        self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(num_classes=num_classes)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
+        if self.image_size is None:
+            raise ValueError("self.image_size shouldn't be None to use mmdeploy.")
+
         export_params = super()._export_parameters
         export_params.update(get_mean_std_from_data_processing(self.config))
         export_params["model_builder"] = self._create_model
         export_params["model_cfg"] = copy(self.config)
+        export_params["test_pipeline"] = self._make_fake_test_pipeline()
 
         return export_params
 
@@ -166,6 +171,17 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
         model, self.classification_layers = create_model(self.config, self.load_from)
         return model
+
+    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
+        return [
+            {"type" : "LoadImageFromFile"},
+            {"type" : "Resize", "scale" : [self.image_size[3], self.image_size[2]], "keep_ratio" : True},
+            {"type" : "LoadAnnotations", "with_bbox" : True},
+            {
+                "type" : "PackDetInputs",
+                "meta_keys" : ["ori_filename" "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape",]
+            },
+        ]
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
@@ -251,15 +267,12 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             labels=labels,
         )
 
-    def _get_exporter(self, test_pipeline: list[dict] | None = None) -> OTXModelExporter:
+    @property
+    def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if test_pipeline is None:
-            msg = "test_pipeline is necessary for mmdeploy."
-            raise ValueError(msg)
-
         from otx.core.exporter.mmdeploy import MMdeployExporter
 
-        return MMdeployExporter(**self._export_parameters, test_pipeline=test_pipeline)
+        return MMdeployExporter(**self._export_parameters)
 
 
 class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):

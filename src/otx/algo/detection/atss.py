@@ -19,13 +19,14 @@ class ATSS(MMDetCompatibleModel):
         model_name = f"atss_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
+        self.image_size = (1, 3, 736, 992)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.atss"
-        export_params["input_size"] = (1, 3, 736, 992)
+        export_params["input_size"] = self.image_size
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
@@ -42,13 +43,14 @@ class ATSSR50FPN(ATSS):
 
     def __init__(self, num_classes: int) -> None:
         super().__init__(num_classes=num_classes, variant="r50_fpn")
+        self.image_size = (1, 3, 800, 1333)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
         export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.atss_r50_fpn"
-        export_params["input_size"] = (1, 3, 800, 1333)
+        export_params["input_size"] = self.image_size
         export_params["resize_mode"] = "fit_to_window"
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
