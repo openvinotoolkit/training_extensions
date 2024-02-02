@@ -86,11 +86,7 @@ def test_otx_export_infer(
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
     epoch = 2
-    command_args = []
-    if "yolox" in recipe:  # yolox variants need more epoch for stable result
-        epoch = 30
-        command_args = ["--optimizer.lr", "0.0002"]
-    elif "atss_resnext101" in recipe:
+    if "atss_resnext101" in recipe:
         epoch = 10
 
     # litehrnet_* models don't support deterministic mode
@@ -117,7 +113,6 @@ def test_otx_export_infer(
         "--deterministic",
         deterministic_flag,
         *fxt_cli_override_command_per_task[task],
-        *command_args,
     ]
 
     with patch("sys.argv", command_cfg):
@@ -257,5 +252,7 @@ def test_otx_export_infer(
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
 
-    if task != "instance_segmentation":  # instance_segmentation model score is unstable
+    if (
+        task != "instance_segmentation" or "yolox_tiny" in recipe or "atss_r50_fpn" in recipe
+    ):  # models who have other resize_model than 'standard' can have score difference
         _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
