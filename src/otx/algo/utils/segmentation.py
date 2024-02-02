@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar
+from typing import Callable, ClassVar
 
 import torch
 import torch.nn.functional as f
@@ -221,9 +221,8 @@ class IterativeAggregator(nn.Module):
 
         min_channels = min_channels if min_channels is not None else 0
 
-        projects: list[Any] = []
-        expanders: list[Any] = []
-        fuse_layers: list[Any] = []
+        projects, expanders = [], []
+        fuse_layers: list[ConvModule] = []
         for i in range(num_branches):
             if not self.use_concat or i == 0:
                 fuse_layers.append(None)
