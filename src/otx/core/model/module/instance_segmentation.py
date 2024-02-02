@@ -113,7 +113,18 @@ class OTXInstanceSegLitModule(OTXLitModule):
         preds: InstanceSegBatchPredEntity,
         inputs: InstanceSegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-        """Convert the prediction entity to the format required by the compute metric function."""
+        """Convert the prediction entity to the format that the metric can compute and cache the ground truth.
+
+        This function will convert mask to RLE format and cache the ground truth for the current batch.
+
+        Args:
+            index (int): The index of the current batch.
+            preds (InstanceSegBatchPredEntity): Current batch predictions.
+            inputs (InstanceSegBatchDataEntity): Current batch ground-truth inputs.
+
+        Returns:
+            dict[str, list[dict[str, Tensor]]]: The converted predictions and ground truth.
+        """
         pred_info = []
         target_info = []
 
@@ -123,11 +134,10 @@ class OTXInstanceSegLitModule(OTXLitModule):
             preds.scores,
             preds.labels,
         ):
-            rles = [encode_rle(mask) for mask in masks.data]
             pred_info.append(
                 {
                     "boxes": bboxes.data,
-                    "masks": rles,
+                    "masks": [encode_rle(mask) for mask in masks.data],
                     "scores": scores,
                     "labels": labels,
                 },
@@ -143,11 +153,11 @@ class OTXInstanceSegLitModule(OTXLitModule):
             inputs.polygons,
             inputs.labels,
         ):
-            bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape, return_rle=True)
+            rles = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape, return_rle=True)
             target_info.append(
                 {
                     "boxes": bboxes.data,
-                    "masks": bit_masks,
+                    "masks": rles,
                     "labels": labels,
                 },
             )
