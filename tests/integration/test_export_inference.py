@@ -234,8 +234,6 @@ def test_otx_export_infer(
     ]
 
     with patch("sys.argv", command_cfg):
-        if "litehrnet_x" in recipe:
-            pytest.skip("Openvino can't load the litehrnet_x after PTQ optimization")
         main()
 
     assert (tmp_path_test / "outputs").exists()
