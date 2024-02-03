@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import torch
 from lightning import Trainer, seed_everything
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
-    from lightning.pytorch.utilities.types import EVAL_DATALOADERS
+    from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
 
@@ -148,7 +148,7 @@ class Engine:
         self,
         max_epochs: int = 10,
         seed: int | None = None,
-        deterministic: bool = False,
+        deterministic: bool | Literal["warn"] = False,
         precision: _PRECISION_INPUT | None = "32",
         val_check_interval: int | float | None = None,
         callbacks: list[Callback] | Callback | None = None,
@@ -161,7 +161,9 @@ class Engine:
         Args:
             max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
             seed (int | None, optional): The random seed. Defaults to None.
-            deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
+            deterministic (bool | Literal["warn"]): Whether to enable deterministic behavior.
+            Also, can be set to `warn` to avoid failures, because some operations don't
+            support deterministic mode. Defaults to False.
             precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
             val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
@@ -340,13 +342,22 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
 
         self._build_trainer(**kwargs)
+
+        checkpoint_path: str | None = None
+        if checkpoint is not None:
+            checkpoint_path = str(checkpoint)
+        elif self.checkpoint is not None:
+            checkpoint_path = str(self.checkpoint)
 
         return self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
+            ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
 
@@ -374,13 +385,13 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. To export a model, run
+            1. To export a model with default setting (OPENVINO, FP32), run
                 ```python
                 otx export
                     --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
-            2. To export a model with precison FP16 and format ONNX, run
+            2. To export a model with precision FP16 and format ONNX, run
                 ```python
                 otx export
                     --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
@@ -411,6 +422,48 @@ class Engine:
 
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
+
+    def optimize(
+        self,
+        datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
+        max_data_subset_size: int | None = None,
+    ) -> Path:
+        """Applies NNCF.PTQ to the underlying models (now works only for OV models).
+
+        PTQ performs int-8 quantization on the input model, so the resulting model
+        comes in mixed precision (some operations, however, remain in FP32).
+
+        Args:
+            datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
+            max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
+            used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
+            default settings.
+
+        Returns:
+            Path: path to the optimized model.
+
+        Example:
+            >>> engine.optimize(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ... )
+        CLI Usage:
+            To optimize a model, run
+                ```python
+                otx optimize
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --model.model_name=<PATH_TO_IR_XML, str>
+                ```
+        """
+        ptq_config = {}
+        if max_data_subset_size is not None:
+            ptq_config["subset_size"] = max_data_subset_size
+
+        return self.model.optimize(
+            Path(self.work_dir),
+            datamodule if datamodule is not None else self.datamodule,
+            ptq_config,
+        )
 
     def explain(
         self,
@@ -445,7 +498,7 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        import cv2
+        from otx.algo.utils.xai_utils import get_processed_saliency_maps
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
@@ -464,16 +517,20 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
-        self.trainer.predict(
+        predictions = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
+
         # Optimize for memory <- TODO(negvet)
-        saliency_maps = self.trainer.model.model.explain_hook.records
-        # Temporary saving saliency map for image 0, class 0 (for tests)
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
-        return saliency_maps
+        raw_saliency_maps = self.trainer.model.model.explain_hook.records
+        return get_processed_saliency_maps(
+            raw_saliency_maps,
+            explain_config,
+            predictions,
+            Path(self.work_dir),
+        )
 
     @classmethod
     def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:

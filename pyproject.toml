@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
     "datumaro==1.6.0rc1",
     "omegaconf",
-    "rich",
+    "rich>=13.5.2",
     "jsonargparse==4.27.1",
     "psutil", # Mem cache needs system checks
     "ftfy",
@@ -71,17 +71,21 @@ base = [
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
-    "openvino==2023.2.0",
-    "openvino-dev==2023.2.0",
-    "openvino-model-api==0.1.8",
+    "openvino==2023.3.0",
+    "openvino-dev==2023.3.0",
+    "openvino-model-api==0.1.9",
     "onnx==1.13.0",
-    "onnxconverter-common==1.14.0"
+    "onnxconverter-common==1.14.0",
+    "nncf==2.8.0",
 ]
 mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
     "mmsegmentation==1.2.1",
     "mmaction2==1.2.0",
+    # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
+    # This causes an error when training the mm model, so fix the version first.
+    "oss2==2.17.0",
 ]
 
 [project.scripts]
@@ -284,6 +288,7 @@ max-returns = 10
     "PT004",    # fixture ignore type returning.
     "E501",     # Test skips lines that are too long.
     "ANN001",   # Skip annotation type hint in test codes
+    "ANN201",   # Skip return type hint in test codes
     "D",     # Test skips missing docstring argument with magic (fixture) methods.
 ]
 "src/otx/**/*.py" = [

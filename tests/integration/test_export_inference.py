@@ -80,13 +80,10 @@ def test_otx_export_infer(
     """
     task = recipe.split("/")[-2]
 
-    if task not in TASK_NAME_TO_MAIN_METRIC_NAME or "dino_v2" in recipe:
+    if task not in TASK_NAME_TO_MAIN_METRIC_NAME:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
 
-    # litehrnet_* models don't support deterministic mode
     model_name = recipe.split("/")[-1].split(".")[0]
-    deterministic_flag = "False" if "litehrnet" in recipe else "True"
-
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -105,7 +102,7 @@ def test_otx_export_infer(
         "--seed",
         f"{fxt_local_seed}",
         "--deterministic",
-        deterministic_flag,
+        "warn",
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -193,10 +190,55 @@ def test_otx_export_infer(
 
     assert (tmp_path_test / "outputs").exists()
 
+    # 5) test optimize
+    command_cfg = [
+        "otx",
+        "optimize",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        "cpu",
+        *fxt_cli_override_command_per_task[task],
+        "--model.model_name",
+        exported_model_path,
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+    exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
+
+    # 6) test optimized model
+    command_cfg = [
+        "otx",
+        "test",
+        "--config",
+        export_test_recipe,
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        "cpu",
+        *fxt_cli_override_command_per_task[task],
+        "--model.model_name",
+        exported_model_path,
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+
     out, _ = capfd.readouterr()
     assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
-    torch_acc, ov_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
-    torch_acc, ov_acc = float(torch_acc), float(ov_acc)
+    torch_acc, ov_acc, ptq_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
+    torch_acc, ov_acc, ptq_acc = float(torch_acc), float(ov_acc), float(ptq_acc)
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
