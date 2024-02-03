@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics import Dice, JaccardIndex
+from torchmetrics import Dice
 
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
@@ -40,7 +40,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         )
         num_classes = otx_model.num_classes
         if num_classes is None:
-            msg = """JaccardIndex metric cannot be used with num_classes = None.
+            msg = """Dice metric cannot be used with num_classes = None.
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
 
@@ -48,8 +48,6 @@ class OTXSegmentationLitModule(OTXLitModule):
             # a hack to use ignore_index in Dice metric
             "num_classes": num_classes + 1,
             "ignore_index": num_classes,
-            "multiclass": True,
-            "average": "macro",
         }
 
         self.val_metric = Dice(**metric_params)
@@ -71,7 +69,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.test_metric, "test")
 
-    def _log_metrics(self, meter: JaccardIndex, key: str) -> None:
+    def _log_metrics(self, meter: Dice, key: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
