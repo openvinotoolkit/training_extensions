@@ -34,6 +34,6 @@ not fully covered by unit tests or manual testing can be complicated. -->
 - [ ] I have updated the license header for each file (see an example below).
 
 ```python
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 ```
