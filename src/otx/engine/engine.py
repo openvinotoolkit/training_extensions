@@ -211,6 +211,7 @@ class Engine:
 
         if seed is not None:
             seed_everything(seed, workers=True)
+            torch.backends.cudnn.deterministic = True
 
         self._build_trainer(
             logger=logger,
@@ -235,7 +236,7 @@ class Engine:
             **fit_kwargs,
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
+        print(self.trainer.callback_metrics)
         return self.trainer.callback_metrics
 
     def test(

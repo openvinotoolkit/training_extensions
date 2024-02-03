@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics import JaccardIndex, Dice
+from torchmetrics import Dice, JaccardIndex
 
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
@@ -49,7 +49,7 @@ class OTXSegmentationLitModule(OTXLitModule):
             "num_classes": num_classes + 1,
             "ignore_index": num_classes,
             "multiclass": True,
-            "average": "macro"
+            "average": "macro",
         }
 
         self.val_metric = Dice(**metric_params)

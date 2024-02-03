@@ -37,7 +37,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         mask = torch.as_tensor(mask_anns, dtype=torch.long)
         # assign possible ignored labels from dataset to max label class + 1.
         # it is needed to compute mDice metric.
-        mask[mask==255] = num_classes
+        mask[mask == 255] = num_classes
         entity = SegDataEntity(
             image=img_data,
             img_info=ImageInfo(
@@ -48,7 +48,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 ignored_labels=ignored_labels,
             ),
             gt_seg_map=tv_tensors.Mask(
-                mask
+                mask,
             ),
         )
         return self._apply_transforms(entity)
