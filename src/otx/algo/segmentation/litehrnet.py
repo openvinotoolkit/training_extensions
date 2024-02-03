@@ -377,6 +377,7 @@ class LiteHRNet(MMSegCompatibleModel):
 
             return {
                 "ignored_scope": {
+                    "patterns": ["/aggregator/*"],
                     "names": ignored_scope_names,
                 },
                 "preset": "performance",
