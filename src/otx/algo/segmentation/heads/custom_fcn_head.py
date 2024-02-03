@@ -132,6 +132,8 @@ class CustomFCNHead(ClassIncrementalMixin, FCNHead):
             input_transform = None
             if isinstance(in_index, list):
                 in_index = in_index[0]
+        else:
+            aggregator = None
 
         super().__init__(
             *args,
@@ -142,6 +144,7 @@ class CustomFCNHead(ClassIncrementalMixin, FCNHead):
             in_channels=in_channels,
             **kwargs,
         )
+
         self.aggregator = aggregator
         # re-define variables
         self.in_channels = in_channels

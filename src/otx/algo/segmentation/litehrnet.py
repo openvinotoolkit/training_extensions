@@ -133,6 +133,9 @@ class LiteHRNet(MMSegCompatibleModel):
                 "/backbone/stage2/stage2.1/Add_6",
                 "/backbone/stage2/stage2.1/Add_7",
                 "/backbone/stage2/stage2.1/Add_11",
+                "/aggregator/Add",
+                "/aggregator/Add_1",
+                "/aggregator/Add_2",
                 "/backbone/stage2/stage2.1/Add",
             ]
 
@@ -202,6 +205,8 @@ class LiteHRNet(MMSegCompatibleModel):
                 "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_2",
                 "/backbone/stage1/stage1.3/Add_2",
                 "/backbone/stage1/stage1.3/Add_5",
+                "/aggregator/Add",
+                "/aggregator/Add_1",
             ]
 
             return {
@@ -212,6 +217,7 @@ class LiteHRNet(MMSegCompatibleModel):
             }
 
         if self.model_name == "litehrnet_x":
+            # TODO(Kirill): aggregator in ignored scope leads to an error in ModelAPI #noqa: TD003
             ignored_scope_names = [
                 "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul",
                 "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul_1",
