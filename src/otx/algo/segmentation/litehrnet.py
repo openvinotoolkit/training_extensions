@@ -217,7 +217,6 @@ class LiteHRNet(MMSegCompatibleModel):
             }
 
         if self.model_name == "litehrnet_x":
-            # TODO(Kirill): aggregator in ignored scope leads to an error in ModelAPI #noqa: TD003
             ignored_scope_names = [
                 "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul",
                 "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul_1",
