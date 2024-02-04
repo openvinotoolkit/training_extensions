@@ -14,8 +14,9 @@ optimizer:
     weight_decay: 0.01
 
 scheduler:
-  class_path: torch.optim.lr_scheduler.PolynomialLR
+  class_path: otx.algo.schedulers.warmup_schedulers.WarmupPolynomialLR
   init_args:
+    warmup_steps: 20
     total_iters: 100
     power: 0.9
     last_epoch: -1

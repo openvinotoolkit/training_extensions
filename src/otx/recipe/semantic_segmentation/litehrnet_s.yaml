@@ -14,11 +14,12 @@ optimizer:
     weight_decay: 0.0
 
 scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
   init_args:
-    mode: min
-    factor: 0.1
-    patience: 10
+    warmup_steps: 100
+    mode: max
+    factor: 0.5
+    patience: 5
     monitor: val/Dice
 
 engine:
