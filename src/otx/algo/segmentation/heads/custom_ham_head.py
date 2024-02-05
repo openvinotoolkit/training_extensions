@@ -1,6 +1,7 @@
-"""Implementation of HamburgerNet head."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""Implementation of HamburgerNet head."""
 
 import torch
 import torch.nn.functional as f

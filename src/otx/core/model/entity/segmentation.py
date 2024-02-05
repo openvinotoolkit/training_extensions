@@ -95,7 +95,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             )
         ]
         preprocessor: SegDataPreProcessor = self.model.data_preprocessor
-
         mmseg_inputs = preprocessor(data=mmseg_inputs, training=self.training)
         mmseg_inputs["mode"] = "loss" if self.training else "predict"
 

@@ -97,8 +97,7 @@ class OTXv1Helper:
         """Load the OTX1.x lite hrnet segmentation checkpoints."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
-            if "decode_head.aggregator.projects" not in key:
-                state_dict[add_prefix + key] = val
+            state_dict[add_prefix + key] = val
         return state_dict
 
     @staticmethod

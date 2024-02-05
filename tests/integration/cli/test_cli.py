@@ -116,10 +116,14 @@ def test_otx_e2e(
     ):
         return
 
-    format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml"}
+    format_to_file = {
+        "ONNX": "exported_model.onnx",
+        "OPENVINO": "exported_model.xml",
+        "EXPORTABLE_CODE": "exportable_code.zip",
+    }
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    for fmt in format_to_ext:
+    for fmt in format_to_file:
         command_cfg = [
             "otx",
             "export",
@@ -140,7 +144,7 @@ def test_otx_e2e(
             main()
 
         assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
+        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
     task = recipe.split("/")[-2]
@@ -191,6 +195,9 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+    import cv2
+    import numpy as np
+
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
@@ -207,12 +214,18 @@ def test_otx_explain_e2e(
         "explain",
         "--config",
         recipe,
+        "--model.num_classes",
+        "1000",
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
         fxt_accelerator,
+        "--seed",
+        "0",
+        "--deterministic",
+        "True",
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -221,6 +234,19 @@ def test_otx_explain_e2e(
 
     assert (tmp_path_explain / "outputs").exists()
     assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
+    sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
+    assert sal_map.shape[0] > 0
+    assert sal_map.shape[1] > 0
+
+    reference_sal_vals = {
+        "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
+        "h_label_cls_efficientnet_v2_light": np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
+    }
+    test_case_name = task + "_" + model_name
+    if test_case_name in reference_sal_vals:
+        actual_sal_vals = sal_map[:, 0, 0]
+        ref_sal_vals = reference_sal_vals[test_case_name]
+        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)

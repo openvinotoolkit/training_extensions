@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
 """SSD object detector for the OTX detection."""
 
 from __future__ import annotations
