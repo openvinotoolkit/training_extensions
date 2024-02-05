@@ -11,7 +11,7 @@ import torch
 from torch import Tensor
 
 from otx.algo.instance_segmentation.otx_instseg_evaluation import (
-    OTXInstSegMeanAveragePrecision,
+    OTXMaskRLEMeanAveragePrecision,
 )
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -42,8 +42,8 @@ class OTXInstanceSegLitModule(OTXLitModule):
             scheduler=scheduler,
         )
 
-        self.val_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
-        self.test_metric = OTXInstSegMeanAveragePrecision(iou_type="segm")
+        self.val_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
+        self.test_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -63,7 +63,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         self._log_metrics(self.test_metric, "test")
         self.test_metric.reset()
 
-    def _log_metrics(self, meter: OTXInstSegMeanAveragePrecision, subset_name: str) -> None:
+    def _log_metrics(self, meter: OTXMaskRLEMeanAveragePrecision, subset_name: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"

@@ -12,8 +12,8 @@ import torch
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 
-class OTXInstSegMeanAveragePrecision(MeanAveragePrecision):
-    """Mean Average Precision for Instance Segmentation.
+class OTXMaskRLEMeanAveragePrecision(MeanAveragePrecision):
+    """Customised MAP metric for instance segmentation.
 
     This metric computes RLE directly to accelerate the computation.
     """
