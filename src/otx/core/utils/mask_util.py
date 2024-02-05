@@ -19,7 +19,6 @@ def polygon_to_bitmap(
     polygons: list[Polygon],
     height: int,
     width: int,
-    return_rle: bool = False,
 ) -> np.ndarray:
     """Convert a list of polygons to a bitmap mask.
 
@@ -33,9 +32,26 @@ def polygon_to_bitmap(
     """
     polygons = [polygon.points for polygon in polygons]
     rles = mask_utils.frPyObjects(polygons, height, width)
-    if return_rle:
-        return rles
     return mask_utils.decode(rles).astype(bool).transpose((2, 0, 1))
+
+
+def polygon_to_rle(
+    polygons: list[Polygon],
+    height: int,
+    width: int,
+) -> list[dict]:
+    """Convert a list of polygons to a list of RLE masks.
+
+    Args:
+        polygons (list[Polygon]): List of Datumaro Polygon objects.
+        height (int): bitmap height
+        width (int): bitmap width
+
+    Returns:
+        list[dict]: List of RLE masks.
+    """
+    polygons = [polygon.points for polygon in polygons]
+    return mask_utils.frPyObjects(polygons, height, width)
 
 
 def encode_rle(mask: torch.Tensor) -> dict:

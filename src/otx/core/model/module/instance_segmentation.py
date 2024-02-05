@@ -19,7 +19,7 @@ from otx.core.data.entity.instance_segmentation import (
 )
 from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
-from otx.core.utils.mask_util import encode_rle, polygon_to_bitmap
+from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -103,12 +103,11 @@ class OTXInstanceSegLitModule(OTXLitModule):
             raise TypeError(preds)
 
         self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(batch_idx, preds, inputs),
+            **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        index: int,
         preds: InstanceSegBatchPredEntity,
         inputs: InstanceSegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
@@ -117,7 +116,6 @@ class OTXInstanceSegLitModule(OTXLitModule):
         This function will convert mask to RLE format and cache the ground truth for the current batch.
 
         Args:
-            index (int): The index of the current batch.
             preds (InstanceSegBatchPredEntity): Current batch predictions.
             inputs (InstanceSegBatchDataEntity): Current batch ground-truth inputs.
 
@@ -152,7 +150,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             rles = (
                 [encode_rle(mask) for mask in masks.data]
                 if len(masks)
-                else polygon_to_bitmap(polygons, *imgs_info.ori_shape, return_rle=True)
+                else polygon_to_rle(polygons, *imgs_info.ori_shape)
             )
             target_info.append(
                 {
@@ -179,7 +177,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             raise TypeError(preds)
 
         self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(batch_idx, preds, inputs),
+            **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 
     @property
