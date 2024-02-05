@@ -1,11 +1,11 @@
-max_epochs: 10
+max_epochs: 200
 min_epochs: 1
 callbacks:
   - class_path: lightning.pytorch.callbacks.EarlyStopping
     init_args:
       monitor: null
       mode: max
-      patience: 10 # will be updated at the optimization phase. It needs to differentiate for each tasks.
+      patience: 10 
       check_on_train_epoch_end: false
       min_delta: 0.001
   - class_path: lightning.pytorch.callbacks.RichProgressBar
