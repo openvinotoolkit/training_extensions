@@ -71,7 +71,7 @@ class LabelInfo:
         Returns:
             LabelInfo(
                 label_names=["label_0", ...],
-                label_groups=[]
+                label_groups=[["label_0", ...]]
             )
         """
         label_names = [f"label_{idx}" for idx in range(num_classes)]
