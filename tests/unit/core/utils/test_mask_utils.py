@@ -1,7 +1,8 @@
+import numpy as np
 import torch
 from otx.core.utils.mask_util import encode_rle
 from pycocotools import mask as mask_utils
-import numpy as np
+
 
 def test_encode_rle(num_test_cases=30):
     """Test encode_rle function.
@@ -15,5 +16,5 @@ def test_encode_rle(num_test_cases=30):
         torch_rle = encode_rle(mask)
         torch_rle = mask_utils.frPyObjects(torch_rle, *torch_rle["size"])
         np_rle = mask_utils.encode(np.asfortranarray(mask.numpy()))
-        assert torch_rle['counts'] == np_rle['counts'], f"Expected {np_rle['counts']} but got {torch_rle['counts']}"
-        assert torch_rle['size'] == np_rle['size'], f"Expected {np_rle['size']} but got {torch_rle['size']}"
+        assert torch_rle["counts"] == np_rle["counts"], f"Expected {np_rle['counts']} but got {torch_rle['counts']}"
+        assert torch_rle["size"] == np_rle["size"], f"Expected {np_rle['size']} but got {torch_rle['size']}"

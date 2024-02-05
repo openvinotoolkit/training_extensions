@@ -1,8 +1,7 @@
 import torch
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from otx.algo.instance_segmentation.otx_instseg_evaluation import OTXMaskRLEMeanAveragePrecision
 from otx.core.utils.mask_util import encode_rle
-
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 
 def test_custom_rle_map_metric(num_masks=50, h=10, w=10):
@@ -17,23 +16,13 @@ def test_custom_rle_map_metric(num_masks=50, h=10, w=10):
     scores = torch.rand(num_masks)
 
     torch_map_metric.update(
-        preds=[
-            {"masks": pred_masks,
-             "labels": labels,
-             "scores": scores}],
-        target=[
-            {"masks": target_masks,
-             "labels": labels}],
+        preds=[{"masks": pred_masks, "labels": labels, "scores": scores}],
+        target=[{"masks": target_masks, "labels": labels}],
     )
 
     custom_map_metric.update(
-        preds=[
-            {"masks": [encode_rle(pred) for pred in pred_masks],
-             "labels": labels,
-             "scores": scores}],
-        target=[
-            {"masks": [encode_rle(target) for target in target_masks],
-             "labels": labels}],
+        preds=[{"masks": [encode_rle(pred) for pred in pred_masks], "labels": labels, "scores": scores}],
+        target=[{"masks": [encode_rle(target) for target in target_masks], "labels": labels}],
     )
 
     # Compare the results
