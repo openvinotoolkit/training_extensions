@@ -49,8 +49,6 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "semantic_segmentation": "test/mIoU",
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
-    "detection": "test/map_50",
-    "instance_segmentation": "test/map_50",
 }
 
 
@@ -100,7 +98,7 @@ def test_otx_export_infer(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        str(epoch),
+        "2",
         "--seed",
         f"{fxt_local_seed}",
         "--deterministic",
@@ -245,7 +243,4 @@ def test_otx_export_infer(
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
 
-    if (
-        task != "instance_segmentation" or "yolox_tiny" in recipe or "atss_r50_fpn" in recipe
-    ):  # models who have other resize_model than 'standard' can have score difference
-        _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
+    _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
