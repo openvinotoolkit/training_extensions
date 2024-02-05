@@ -336,6 +336,9 @@ class OTXCLI:
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
+        # Update self.config with model
+        self.config[self.subcommand].update(Namespace(model=model_config))
+
         optimizer_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "optimizer", Namespace()))
         scheduler_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "scheduler", Namespace()))
         from otx.core.utils.instantiators import partial_instantiate_class
