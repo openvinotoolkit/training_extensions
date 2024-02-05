@@ -3,10 +3,13 @@
 natsort==8.1.*
 prettytable==3.9.*
 pyyaml
-datumaro~=1.5.1rc4
+#datumaro~=1.5.1rc4
+datumaro @ git+https://github.com/openvinotoolkit/datumaro.git@releases/1.5.0
 psutil==5.9.*
 scipy==1.10.*
 bayesian-optimization==1.4.*
 tensorboard==2.15.*; python_version >= '3.9'
 tensorboard==2.14.*; python_version < '3.9'
 multiprocess==0.70.*
+
+protobuf~=4.23.0  # for test
