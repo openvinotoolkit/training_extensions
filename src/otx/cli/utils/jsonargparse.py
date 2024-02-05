@@ -134,10 +134,63 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
+            # This is a feature to handle the callbacks & logger override for user-convinience
+            list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
+            list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
             cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
+
+
+def list_override(configs: Namespace, key: str, overrides: list) -> None:
+    """Overrides the nested list type in the given configs with the provided override_list.
+
+    Args:
+        configs (Namespace): The configuration object containing the key.
+        key (str): key of the configs want to override.
+        overrides (list): The list of dictionary item to override the existing ones.
+
+    Example:
+        >>> configs = [
+        ...     ...
+        ...     Namespace(
+        ...         class_path='lightning.pytorch.callbacks.EarlyStopping',
+        ...         init_args=Namespace(patience=10, ...),
+        ...     ),
+        ...     ...
+        ... ]
+        >>> override_callbacks = [
+        ...     ...
+        ...     {
+        ...         'class_path': 'lightning.pytorch.callbacks.EarlyStopping',
+        ...         'init_args': {'patience': 3},
+        ...     },
+        ...     ...
+        ... ]
+        >>> list_override(configs=configs, key="callbacks", overrides=override_callbacks)
+        >>> configs = [
+        ...     ...
+        ...     Namespace(
+        ...         class_path='lightning.pytorch.callbacks.EarlyStopping',
+        ...         init_args=Namespace(patience=3, ...),
+        ...     ),
+        ...     ...
+        ... ]
+    """
+    if key not in configs:
+        return
+    for target in overrides:
+        class_path = target.get("class_path", None)
+        if class_path is None:
+            msg = "class_path is required in the override list."
+            raise ValueError(msg)
+
+        item = next((item for item in configs[key] if item["class_path"] == class_path), None)
+        if item is not None:
+            item.update(target)
+        else:
+            configs[key].append(dict_to_namespace(target))
 
 
 # [FIXME] harimkang: have to see if there's a better way to do it. (For now, Added 2 lines to existing function)
