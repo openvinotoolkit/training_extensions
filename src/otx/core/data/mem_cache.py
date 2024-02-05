@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Memory cache handler implementations and singleton class to call them."""
+
 from __future__ import annotations
 
 import ctypes as ct
