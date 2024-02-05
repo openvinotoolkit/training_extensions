@@ -53,7 +53,8 @@ def test_configure_task_with_unsupported_data_format(tmp_path: Path) -> None:
 )
 def test_get_num_classes_from_meta_info(task: OTXTaskType) -> None:
     # Test the get_num_classes_from_meta_info function
-    meta_info = LabelInfo(label_names=["class1", "class2", "class3"])
+    label_names = ["class1", "class2", "class3"]
+    meta_info = LabelInfo(label_names=label_names, label_groups=[label_names])
     num_classes = get_num_classes_from_meta_info(task, meta_info)
     assert num_classes == 3
 
@@ -65,7 +66,7 @@ def test_get_num_classes_from_meta_info_with_no_background(has_background: bool)
     label_names = ["class1", "class2", "class3"]
     if has_background:
         label_names = ["background", *label_names]
-    meta_info = LabelInfo(label_names)
+    meta_info = LabelInfo(label_names=label_names, label_groups=[label_names])
     num_classes = get_num_classes_from_meta_info(task, meta_info)
     assert num_classes == 4
 
@@ -139,7 +140,8 @@ class TestAutoConfigurator:
         assert model.num_classes == 1000
 
         # With meta_info
-        meta_info = LabelInfo(label_names=["class1", "class2", "class3"])
+        label_names = ["class1", "class2", "class3"]
+        meta_info = LabelInfo(label_names=label_names, label_groups=[label_names])
         model = auto_configurator.get_model(meta_info=meta_info)
         assert isinstance(model, OTXModel)
         assert model.num_classes == 3
