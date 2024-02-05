@@ -133,6 +133,9 @@ class LiteHRNet(MMSegCompatibleModel):
                 "/backbone/stage2/stage2.1/Add_6",
                 "/backbone/stage2/stage2.1/Add_7",
                 "/backbone/stage2/stage2.1/Add_11",
+                "/aggregator/Add",
+                "/aggregator/Add_1",
+                "/aggregator/Add_2",
                 "/backbone/stage2/stage2.1/Add",
             ]
 
@@ -202,6 +205,8 @@ class LiteHRNet(MMSegCompatibleModel):
                 "/backbone/stage1/stage1.3/layers/layers.1/cross_resolution_weighting/Mul_2",
                 "/backbone/stage1/stage1.3/Add_2",
                 "/backbone/stage1/stage1.3/Add_5",
+                "/aggregator/Add",
+                "/aggregator/Add_1",
             ]
 
             return {
@@ -371,6 +376,7 @@ class LiteHRNet(MMSegCompatibleModel):
 
             return {
                 "ignored_scope": {
+                    "patterns": ["/aggregator/*"],
                     "names": ignored_scope_names,
                 },
                 "preset": "performance",

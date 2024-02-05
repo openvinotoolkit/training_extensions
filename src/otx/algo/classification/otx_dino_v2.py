@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
 """DINO-V2 model for the OTX classification."""
 
 from __future__ import annotations
