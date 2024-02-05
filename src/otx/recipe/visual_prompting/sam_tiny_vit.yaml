@@ -29,47 +29,14 @@ engine:
 
 callback_monitor: val/Dice
 
-# tmp: currently getting all callbacks is required to override specific component
-callbacks:
-  - class_path: lightning.pytorch.callbacks.EarlyStopping
-    init_args:
-      monitor: val/Dice # updated
-      mode: max
-      patience: 3 # updated
-      check_on_train_epoch_end: false
-  - class_path: lightning.pytorch.callbacks.RichProgressBar
-    init_args:
-      refresh_rate: 1
-      leave: false
-  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-    init_args:
-      dirpath: null
-      monitor: null
-      mode: max
-      save_top_k: 1
-      save_last: true
-      auto_insert_metric_name: false
-      filename: "checkpoints/epoch_{epoch:03d}"
-  - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
-    init_args:
-      prog_bar: true
-      on_step: false
-      on_epoch: true
-  - class_path: lightning.pytorch.callbacks.RichModelSummary
-    init_args:
-      max_depth: 1
-  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
-    init_args:
-      logging_interval: epoch
-      log_momentum: true
-  - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
-    init_args:
-      max_interval: 5
-      decay: -0.025
-
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val/Dice
+        patience: 3
   data:
     task: VISUAL_PROMPTING
     config:
