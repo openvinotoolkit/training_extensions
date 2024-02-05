@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
 """EfficientNetV2 model.
 
 Original papers:

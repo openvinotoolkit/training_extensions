@@ -1,12 +1,12 @@
-"""Module for OTX engine components."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""Module for OTX engine components."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import torch
 from lightning import Trainer, seed_everything
@@ -38,6 +38,7 @@ LITMODULE_PER_TASK = {
     OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
     OTXTaskType.H_LABEL_CLS: "otx.core.model.module.classification.OTXHlabelClsLitModule",
     OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
+    OTXTaskType.ROTATED_DETECTION: "otx.core.model.module.rotated_detection.OTXRotatedDetLitModule",
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
@@ -148,7 +149,7 @@ class Engine:
         self,
         max_epochs: int = 10,
         seed: int | None = None,
-        deterministic: bool = False,
+        deterministic: bool | Literal["warn"] = False,
         precision: _PRECISION_INPUT | None = "32",
         val_check_interval: int | float | None = None,
         callbacks: list[Callback] | Callback | None = None,
@@ -161,7 +162,9 @@ class Engine:
         Args:
             max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
             seed (int | None, optional): The random seed. Defaults to None.
-            deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
+            deterministic (bool | Literal["warn"]): Whether to enable deterministic behavior.
+            Also, can be set to `warn` to avoid failures, because some operations don't
+            support deterministic mode. Defaults to False.
             precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
             val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
@@ -346,10 +349,16 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
+        checkpoint_path: str | None = None
+        if checkpoint is not None:
+            checkpoint_path = str(checkpoint)
+        elif self.checkpoint is not None:
+            checkpoint_path = str(self.checkpoint)
+
         return self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
+            ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
 
