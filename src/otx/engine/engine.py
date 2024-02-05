@@ -523,10 +523,10 @@ class Engine:
             ckpt_path=ckpt_path,
         )
 
-        # Optimize for memory <- TODO(negvet)
-        raw_saliency_maps = self.trainer.model.model.explain_hook.records
+        explain_hook = self.trainer.model.model.explain_hook
+
         return get_processed_saliency_maps(
-            raw_saliency_maps,
+            explain_hook,
             explain_config,
             predictions,
             Path(self.work_dir),
