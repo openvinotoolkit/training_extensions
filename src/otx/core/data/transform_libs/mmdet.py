@@ -15,8 +15,9 @@ from datumaro import Polygon
 from mmcv.transforms import BaseTransform
 from mmdet.datasets.transforms import LoadAnnotations as MMDetLoadAnnotations
 from mmdet.datasets.transforms import PackDetInputs as MMDetPackDetInputs
-from mmdet.registry import TRANSFORMS
+from mmdet.registry import TRANSFORMS as MMDET_TRANSFORMS
 from mmdet.structures.mask import BitmapMasks, PolygonMasks
+from mmengine.registry import Registry
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
@@ -28,9 +29,15 @@ from .mmcv import MMCVTransformLib
 
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
-    from mmengine.registry import Registry
 
     from otx.core.config.data import SubsetConfig
+
+TRANSFORMS = Registry(  # to make mmdeploy use mmdet pipeline module
+    "transform",
+    scope="otx",
+    parent=MMDET_TRANSFORMS,
+    locations=["otx.core.data.transform_libs.mmdet"],
+)
 
 
 @TRANSFORMS.register_module(force=True)
