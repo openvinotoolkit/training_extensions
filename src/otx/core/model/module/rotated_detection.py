@@ -13,6 +13,7 @@ from otx.core.model.entity.rotated_detection import OTXRotatedDetModel
 from otx.core.model.module.instance_segmentation import OTXInstanceSegLitModule
 
 if TYPE_CHECKING:
+    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
 
@@ -25,13 +26,14 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = MeanAveragePrecision,
+        test_metric: Metric = MeanAveragePrecision
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            val_metric=val_metric,
+            test_metric=test_metric
         )
-
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")

@@ -27,6 +27,7 @@ from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes
 
 if TYPE_CHECKING:
     from lightning import Callback
+    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
@@ -155,6 +156,8 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
+        val_metric: Metric | None = None,
+        test_metric: Metric | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -209,6 +212,8 @@ class Engine:
             model=self.model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
+            val_metric=val_metric,
+            test_metric=test_metric
         )
         lit_module.meta_info = self.datamodule.meta_info
 
@@ -662,6 +667,8 @@ class Engine:
         model: OTXModel,
         optimizer: OptimizerCallable,
         scheduler: LRSchedulerCallable,
+        val_metric: Metric,
+        test_metric: Metric 
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -681,4 +688,6 @@ class Engine:
             optimizer=optimizer,
             scheduler=scheduler,
             torch_compile=False,
+            val_metric=val_metric,
+            test_metric=test_metric
         )

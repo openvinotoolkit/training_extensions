@@ -19,6 +19,7 @@ from otx.core.model.entity.segmentation import OTXSegmentationModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
+    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
 
@@ -31,6 +32,8 @@ class OTXSegmentationLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = JaccardIndex,
+        test_metric: Metric = JaccardIndex
     ):
         super().__init__(
             otx_model=otx_model,
@@ -43,15 +46,12 @@ class OTXSegmentationLitModule(OTXLitModule):
             msg = """JaccardIndex metric cannot be used with num_classes = None.
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
+        
+        val_metric.num_classes = num_classes
+        test_metric.num_classes = num_classes
 
-        metric_params = {
-            "task": "multiclass",
-            "num_classes": num_classes,
-            "ignore_index": 255,
-        }
-
-        self.val_metric = JaccardIndex(**metric_params)
-        self.test_metric = JaccardIndex(**metric_params)
+        self.val_metric = val_metric 
+        self.test_metric = test_metric 
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

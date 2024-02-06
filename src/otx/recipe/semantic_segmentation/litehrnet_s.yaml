@@ -22,6 +22,20 @@ scheduler:
     patience: 5
     monitor: val/mIoU
 
+val_metric:
+  class_path: torchmetrics.classification.jaccard.JaccardIndex
+  init_args:
+    task: multiclass
+    num_classes: 1000
+    ignore_index: 255
+
+test_metric:
+  class_path: torchmetrics.classification.jaccard.JaccardIndex
+  init_args:
+    task: multiclass
+    num_classes: 1000
+    ignore_index: 255
+
 engine:
   task: SEMANTIC_SEGMENTATION
   device: auto

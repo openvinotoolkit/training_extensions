@@ -21,6 +21,7 @@ from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
+    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
 
@@ -33,6 +34,9 @@ class OTXInstanceSegLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = MeanAveragePrecision,
+        test_metric: Metric = MeanAveragePrecision
+        
     ):
         super().__init__(
             otx_model=otx_model,
@@ -40,9 +44,8 @@ class OTXInstanceSegLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")
+        self.val_metric = val_metric
+        self.test_metric = test_metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

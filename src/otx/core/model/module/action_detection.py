@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.data.entity.action_detection import (
     ActionDetBatchDataEntity,
@@ -19,6 +18,8 @@ from otx.core.model.entity.action_detection import OTXActionDetModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
+    from torchmetrics import Metric
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
 
@@ -31,6 +32,8 @@ class OTXActionDetLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = MeanAveragePrecision,
+        test_metric: Metric = MeanAveragePrecision
     ):
         super().__init__(
             otx_model=otx_model,
@@ -38,8 +41,8 @@ class OTXActionDetLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        self.val_metric = MeanAveragePrecision()
-        self.test_metric = MeanAveragePrecision()
+        self.val_metric = val_metric
+        self.test_metric = test_metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

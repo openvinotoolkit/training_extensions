@@ -20,6 +20,7 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
 
 class OTXDetectionLitModule(OTXLitModule):
@@ -31,6 +32,8 @@ class OTXDetectionLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = MeanAveragePrecision,
+        test_metric: Metric = MeanAveragePrecision
     ):
         super().__init__(
             otx_model=otx_model,
@@ -39,8 +42,8 @@ class OTXDetectionLitModule(OTXLitModule):
             scheduler=scheduler,
         )
 
-        self.val_metric = MeanAveragePrecision()
-        self.test_metric = MeanAveragePrecision()
+        self.val_metric = val_metric
+        self.test_metric = test_metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

@@ -18,6 +18,7 @@ from otx.core.model.entity.action_classification import OTXActionClsModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
+    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
 
@@ -30,6 +31,8 @@ class OTXActionClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = Accuracy,
+        test_metric: Metric = Accuracy
     ):
         super().__init__(
             otx_model=otx_model,
@@ -38,8 +41,11 @@ class OTXActionClsLitModule(OTXLitModule):
             scheduler=scheduler,
         )
         num_classes = otx_model.num_classes
-        self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
+        val_metric.num_classes = num_classes
+        test_metric.num_classes = num_classes
+        
+        self.val_metric = val_metric
+        self.test_metric = test_metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

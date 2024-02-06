@@ -21,6 +21,20 @@ scheduler:
     power: 0.9
     last_epoch: -1
 
+val_metric:
+  class_path: torchmetrics.classification.jaccard.JaccardIndex
+  init_args:
+    task: multiclass
+    num_classes: 1000
+    ignore_index: 255
+
+test_metric:
+  class_path: torchmetrics.classification.jaccard.JaccardIndex
+  init_args:
+    task: multiclass
+    num_classes: 1000
+    ignore_index: 255
+
 engine:
   task: SEMANTIC_SEGMENTATION
   device: auto

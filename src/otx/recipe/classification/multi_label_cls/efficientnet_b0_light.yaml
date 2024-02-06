@@ -17,6 +17,20 @@ scheduler:
     patience: 1
     monitor: val/accuracy
 
+val_metric:
+  class_path: torchmetrics.classification.accuracy.MultilabelAccuracy
+  init_args:
+    num_labels: 1000
+    threshold: 0.5
+    average: micro
+
+test_metric:
+  class_path: torchmetrics.classification.accuracy.MultilabelAccuracy
+  init_args:
+    num_labels: 1000
+    threshold: 0.5
+    average: micro
+
 engine:
   task: MULTI_LABEL_CLS
   device: auto

@@ -20,6 +20,18 @@ scheduler:
     patience: 5
     monitor: val/map_50
 
+val_metric:
+  class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: segm
+
+test_metric:
+  class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: segm
+
 engine:
   task: INSTANCE_SEGMENTATION
   device: auto

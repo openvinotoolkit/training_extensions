@@ -26,7 +26,7 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
+    from torchmetrics import Metric
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -39,6 +39,8 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = Accuracy,
+        test_metric: Metric = Accuracy
     ):
         super().__init__(
             otx_model=otx_model,
@@ -47,8 +49,11 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             scheduler=scheduler,
         )
         num_classes = otx_model.num_classes
-        self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
+        val_metric.num_classes = num_classes
+        test_metric.num_classes = num_classes 
+        
+        self.val_metric = val_metric
+        self.test_metric = test_metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -132,6 +137,8 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = MultilabelAccuracy,
+        test_metric: Metric = MultilabelAccuracy
     ):
         super().__init__(
             otx_model=otx_model,
@@ -140,8 +147,11 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
         )
         self.num_labels = otx_model.num_classes
-        self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
-        self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
+        val_metric.num_labels = self.num_labels
+        test_metric.num_labels = self.num_labels
+        
+        self.val_metric = val_metric 
+        self.test_metric = test_metric 
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -220,6 +230,8 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        val_metric: Metric = HLabelAccuracy,
+        test_metric: Metric = HLabelAccuracy
     ):
         super().__init__(
             otx_model=otx_model,
@@ -227,6 +239,9 @@ class OTXHlabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
+        
+        self.val_metric = val_metric
+        self.test_metric = test_metric
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
@@ -244,16 +259,13 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
-        self.val_metric = HLabelAccuracy(
-            num_multiclass_heads=self.num_multiclass_heads,
-            num_multilabel_classes=self.num_multilabel_classes,
-            head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
-        )
-        self.test_metric = HLabelAccuracy(
-            num_multiclass_heads=self.num_multiclass_heads,
-            num_multilabel_classes=self.num_multilabel_classes,
-            head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
-        )
+        self.val_metric.num_multiclass_heads = self.num_multiclass_heads
+        self.val_metric.num_multilabel_classes = self.num_multilabel_classes
+        self.val_metric.head_idx_to_logits_range = self.hlabel_info.head_idx_to_logits_range
+        
+        self.test_metric.num_multiclass_heads = self.num_multiclass_heads
+        self.test_metric.num_multilabel_classes = self.num_multilabel_classes
+        self.test_metric.head_idx_to_logits_range = self.hlabel_info.head_idx_to_logits_range
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
