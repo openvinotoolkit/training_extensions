@@ -217,7 +217,7 @@ class OTXModelExporter:
         Model's original metadata has priority over exporter's extra metadata
 
         Args:
-            metadata (dict[tuple[str, str], str]): _description_
+            metadata (dict[tuple[str, str], str]): existing metadata for export
 
         Returns:
             dict[tuple[str, str] ,str]: updated metadata
