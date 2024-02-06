@@ -48,10 +48,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        num_classes = otx_model.num_classes
-        val_metric.num_classes = num_classes
-        test_metric.num_classes = num_classes 
-        
         self.val_metric = val_metric
         self.test_metric = test_metric
 
@@ -146,10 +142,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        self.num_labels = otx_model.num_classes
-        val_metric.num_labels = self.num_labels
-        test_metric.num_labels = self.num_labels
-        
         self.val_metric = val_metric 
         self.test_metric = test_metric 
 

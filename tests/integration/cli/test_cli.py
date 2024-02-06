@@ -41,18 +41,76 @@ def parametrize_by_task(task_name):
 
 # Example usage
 @parametrize_by_task('classification')
-def test_classification(recipe):
-    # Your test logic here
-    pass
+def test_classification(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
 
 @parametrize_by_task('detection')
-def test_detection(recipe):
-    # Your test logic here
-    pass
+def test_detection(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
 
+@parametrize_by_task('instance_segmentation')
+def test_instance_segmentation(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
-def test_otx_e2e(
+@parametrize_by_task('rotated_detection')
+def test_rotated_detection(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+
+@parametrize_by_task('semantic_segmentation')
+def test_semantic_segmentation(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+
+@parametrize_by_task('visual_prompting')
+def test_visual_prompting(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+
+@parametrize_by_task('zero_shot_visual_prompting')
+def test_zero_shot_visual_prompting(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+):
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+
+def otx_e2e(
     recipe: str,
     tmp_path: Path,
     fxt_accelerator: str,

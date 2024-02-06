@@ -31,8 +31,8 @@ class OTXActionClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric = Accuracy,
-        test_metric: Metric = Accuracy
+        val_metric: Metric | None = None,
+        test_metric: Metric | None = None
     ):
         super().__init__(
             otx_model=otx_model,
@@ -40,9 +40,6 @@ class OTXActionClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        num_classes = otx_model.num_classes
-        val_metric.num_classes = num_classes
-        test_metric.num_classes = num_classes
         
         self.val_metric = val_metric
         self.test_metric = test_metric

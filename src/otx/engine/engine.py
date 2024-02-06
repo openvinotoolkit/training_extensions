@@ -157,7 +157,6 @@ class Engine:
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
         val_metric: Metric | None = None,
-        test_metric: Metric | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -213,7 +212,6 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
             val_metric=val_metric,
-            test_metric=test_metric
         )
         lit_module.meta_info = self.datamodule.meta_info
 
@@ -250,6 +248,7 @@ class Engine:
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        test_metric: Metric | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -285,6 +284,7 @@ class Engine:
             model=self.model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
+            test_metric=test_metric
         )
         if datamodule is None:
             datamodule = self.datamodule
@@ -667,8 +667,8 @@ class Engine:
         model: OTXModel,
         optimizer: OptimizerCallable,
         scheduler: LRSchedulerCallable,
-        val_metric: Metric,
-        test_metric: Metric 
+        val_metric: Metric | None = None,
+        test_metric: Metric | None = None
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -676,6 +676,8 @@ class Engine:
             model (OTXModel): The OTXModel instance.
             optimizer (OptimizerCallable): The optimizer callable.
             scheduler (LRSchedulerCallable): The learning rate scheduler callable.
+            val_metric (Metric | None): The validation metric, it could be None when export, predict..
+            test_metric (Metric | None): The test metric, it could be None when export, predict..
 
         Returns:
             OTXLitModule: The built LightningModule instance.

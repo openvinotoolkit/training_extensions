@@ -32,8 +32,8 @@ class OTXSegmentationLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric = JaccardIndex,
-        test_metric: Metric = JaccardIndex
+        val_metric: Metric | None = None,
+        test_metric: Metric | None = None
     ):
         super().__init__(
             otx_model=otx_model,
@@ -47,9 +47,6 @@ class OTXSegmentationLitModule(OTXLitModule):
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
         
-        val_metric.num_classes = num_classes
-        test_metric.num_classes = num_classes
-
         self.val_metric = val_metric 
         self.test_metric = test_metric 
 

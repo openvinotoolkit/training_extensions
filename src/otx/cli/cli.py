@@ -289,11 +289,30 @@ class OTXCLI:
         If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
         """
         if self.subcommand in self.engine_subcommands():
-            # For num_classes update, Model is instantiated separately.
+            # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
+            
+            val_metric_config = self.config[self.subcommand].pop("val_metric")
+            test_metric_config = self.config[self.subcommand].pop("test_metric")
+            
+            # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.datamodule = self.get_config_value(self.config_init, "data")
+            
+            # Instantiate the model and needed components
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
+            
+            # Instantiate the metric with changing the num_classes 
+            val_metric, test_metric = self.instantiate_metric(
+                metric_config={
+                    "val": val_metric_config,
+                    "test": test_metric_config
+                }
+            )
+            if val_metric: 
+                self.config_init[self.subcommand]['val_metric'] = val_metric
+            if test_metric:
+                self.config_init[self.subcommand]['test_metric'] = test_metric
 
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
@@ -303,7 +322,29 @@ class OTXCLI:
                 datamodule=self.datamodule,
                 **engine_kwargs,
             )
-
+            
+    def instantiate_metric(self, metric_config: dict[str, Namespace]) -> tuple:
+        # Parses the Metric separately to update num_classes.
+        from torchmetrics import Metric
+        metric_parser = ArgumentParser()
+        
+        val_metric_config = metric_config["val"]
+        test_metric_config = metric_config["test"]
+        
+        num_classes = self.model.num_classes
+        val_metric, test_metric = None, None
+        if val_metric_config:
+            self._patch_metric_num_classes(num_classes, val_metric_config)
+            metric_parser.add_subclass_arguments(Metric, "val_metric", required=False, fail_untyped=False)
+            val_metric = metric_parser.instantiate_classes(Namespace(val_metric=val_metric_config)).get("val_metric")
+        if test_metric_config:
+            self._patch_metric_num_classes(num_classes, test_metric_config)
+            metric_parser.add_subclass_arguments(Metric, "test_metric", required=False, fail_untyped=False)
+            test_metric = metric_parser.instantiate_classes(Namespace(test_metric=test_metric_config)).get("test_metric")
+        
+        return (val_metric, test_metric)
+    
+    
     def instantiate_model(self, model_config: Namespace) -> tuple:
         """Instantiate the model based on the subcommand.
 
@@ -330,12 +371,12 @@ class OTXCLI:
                 )
                 warn(warning_msg, stacklevel=0)
                 model_config.init_args.num_classes = num_classes
-
+                
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
-
+        
         optimizer_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "optimizer", Namespace()))
         scheduler_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "scheduler", Namespace()))
         from otx.core.utils.instantiators import partial_instantiate_class
@@ -401,6 +442,17 @@ class OTXCLI:
 
             seed_everything(seed, workers=True)
 
+    def _patch_metric_num_classes(self, num_classes: int, metric_config: Namespace) -> None:
+        """Patch the num_classes of the torchmetrics."""
+        metric_import_lib = metric_config.class_path.split('.')[0]
+        if metric_import_lib != "torchmetrics":
+            return 
+        
+        if metric_config.init_args.get("num_labels"):
+            metric_config.init_args.num_labels = num_classes
+        elif metric_config.init_args.get("num_classes"):
+            metric_config.init_args.num_classes = num_classes
+                 
     def run(self) -> None:
         """Executes the specified subcommand.
 

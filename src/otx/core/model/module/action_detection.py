@@ -32,8 +32,8 @@ class OTXActionDetLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric = MeanAveragePrecision,
-        test_metric: Metric = MeanAveragePrecision
+        val_metric: Metric | None = None,
+        test_metric: Metric | None = None
     ):
         super().__init__(
             otx_model=otx_model,
