@@ -365,7 +365,7 @@ class TestOTXOpenVinoDataLoader:
             self.mocker_read_model.assert_called_once()
             self.mocker_compile_model.assert_called_once()
             assert "label" not in results
-            assert "orig_size" not in results
+            assert "orig_size" in results
             assert "image_embeddings" in results
 
 

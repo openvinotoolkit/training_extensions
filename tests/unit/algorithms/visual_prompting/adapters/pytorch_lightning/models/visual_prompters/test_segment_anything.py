@@ -345,16 +345,6 @@ class TestSegmentAnything:
         assert iou_preds[:, -1] == selected_iou_pred
 
     @e2e_pytest_unit
-    def test_mask_postprocessing(self, mocker) -> None:
-        """Test mask_postprocessing."""
-        masks = torch.empty(1, 1, 2, 2)
-        orig_size = Tensor((8, 8))
-
-        results = SegmentAnything.mask_postprocessing(masks, 6, orig_size)
-
-        assert results[0, 0].shape == tuple(orig_size)
-
-    @e2e_pytest_unit
     def test_forward_train(self) -> None:
         """Test forward."""
         sam = SegmentAnything(config=self.base_config)
@@ -494,22 +484,40 @@ class TestSegmentAnything:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
-        "input_size,original_size,padding,expected",
+        "input_size,original_size,expected",
         [
-            ((6, 6), (8, 8), (0, 0, 0, 0), (8, 8)),
-            ((6, 6), (8, 8), (0, 0, 2, 2), (8, 8)),
+            (6, torch.tensor((8, 8)), (1, 8, 8)),
+            (6, torch.tensor((8, 8)), (1, 8, 8)),
         ],
     )
     def test_postprocess_masks(
-        self, input_size: Tuple[int], original_size: Tuple[int], padding: Tuple[int], expected: Tuple[int]
+        self, input_size: int, original_size: Tuple[int], expected: Tuple[int]
     ) -> None:
         """Test postprocess_masks."""
         sam = SegmentAnything(config=self.base_config)
         masks = torch.zeros((1, 1, 4, 4))
 
-        results = sam.postprocess_masks(masks, input_size, padding, original_size)
+        results = sam.postprocess_masks(masks, input_size, original_size)
 
         assert results.shape[1:] == expected
+        
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "input_image_size,expected",
+        [
+            (torch.tensor((2, 4)), torch.tensor((3, 6))),
+            (torch.tensor((4, 2)), torch.tensor((6, 3))),
+        ],
+    )
+    def test_get_prepadded_size(self, input_image_size: Tensor, expected: Tensor) -> None:
+        """Test get_prepadded_size."""
+        sam = SegmentAnything(config=self.base_config)
+
+        longest_side = 6
+
+        results = sam.get_prepadded_size(input_image_size, longest_side)
+
+        assert torch.all(results == expected)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(

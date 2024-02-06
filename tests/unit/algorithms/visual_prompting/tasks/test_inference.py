@@ -353,12 +353,13 @@ class TestZeroShotTask:
                 "point_labels": np.random.randint(low=0, high=4, size=(1, 2)).astype(np.float32),
                 "mask_input": np.random.randn(1, 1, *mask_input_size).astype(np.float32),
                 "has_mask_input": np.array([[1]], dtype=np.float32),
+                "orig_size": np.random.randint(low=256, high=2048, size=(1, 2)).astype(np.float32),
             },
         }
         onnx_outputs = {
             "visual_prompting_image_encoder": ["image_embeddings"],
             "visual_prompting_prompt_getter": ["total_points_scores", "total_bg_coords"],
-            "visual_prompting_decoder": ["iou_predictions", "low_res_masks"],
+            "visual_prompting_decoder": ["upscaled_masks", "iou_predictions", "low_res_masks"],
         }
 
         onnx_rt_models = {

@@ -132,7 +132,7 @@ class PromptGetter(nn.Module):
 
         sim = self.reference_feats[label].to(device) @ target_feat
         sim = sim.reshape(1, 1, h_feat, w_feat)
-        sim = ZeroShotSegmentAnything.mask_postprocessing(sim, self.image_size, original_size[0])
+        sim = ZeroShotSegmentAnything.postprocess_masks(sim, self.image_size, original_size[0])
 
         threshold = (threshold == 0) * self.default_threshold_target + threshold
         points_scores, bg_coords = self._point_selection(
@@ -321,7 +321,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
-                        original_size=original_size,
+                        original_size=original_size.unsqueeze(0),
                         is_cascade=False,
                     )
                     reference_prompt[masks] += 1
@@ -396,7 +396,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
-                        original_size=original_size[0],
+                        original_size=original_size,
                     )
                     predicted_masks[label].append((mask * points_score[2]).detach().cpu())
                     used_points[label].append(points_score.detach().cpu())
@@ -463,7 +463,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif is_cascade and i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks = self._postprocess_masks(logits, scores, original_size, is_single=True)  # noqa: F821
+                mask_input, masks = self._postprocess_masks(masks, logits, scores, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
                     return masks
 
@@ -471,7 +471,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif is_cascade and i == 2:
                 # Cascaded Post-refinement-2
-                mask_input, masks = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                mask_input, masks = self._postprocess_masks(masks, logits, scores)  # noqa: F821
                 if masks.sum() == 0:
                     return masks
 
@@ -480,21 +480,22 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 y, x = coords[:, 0], coords[:, 1]
                 box_coords = ResizeLongestSide.apply_coords(
                     torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
-                    original_size,
+                    original_size[0],
                     self.config.model.image_size,
                 )
                 point_coords = torch.cat((point_coords, box_coords), dim=1)
                 point_labels = torch.cat((point_labels, self.point_labels_box.to(self.device)), dim=1)
 
-            scores, logits = self(
+            high_res_masks, scores, logits = self(
                 image_embeddings=image_embeddings,
                 point_coords=point_coords,
                 point_labels=point_labels,
                 mask_input=mask_input,
                 has_mask_input=has_mask_input,
+                orig_size=original_size,
             )
-
-        _, masks = self._postprocess_masks(logits, scores, original_size)
+            masks = high_res_masks > self.config.model.mask_threshold
+        _, masks = self._postprocess_masks(masks, logits, scores)
         return masks
 
     def training_step(self, batch, batch_idx) -> None:
@@ -619,15 +620,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def _postprocess_masks(
         self,
+        masks: torch.Tensor,
         logits: torch.Tensor,
         scores: torch.Tensor,
-        original_size: torch.Tensor,
         is_single: bool = False,
     ):
         """Post-process masks for cascaded post-refinements."""
-        high_res_masks = self.mask_postprocessing(logits, self.config.model.image_size, original_size)
-        masks = high_res_masks > self.config.model.mask_threshold
-
         if is_single:
             best_idx = 0
         else:
@@ -642,7 +640,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             if len(scores[0]) == 0:
                 # all predicted masks were zero masks, ignore them.
-                return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
+                return None, torch.zeros(masks.shape[-2:], device="cpu")
 
             best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]

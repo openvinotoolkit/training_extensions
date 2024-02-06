@@ -526,7 +526,6 @@ class OTXOpenVinoDataLoader:
             image_embeddings = self.image_encoder(images["images"])
             prompt = prompts[0]  # only use the first prompt
             prompt.pop("label")
-            prompt.pop("orig_size")
             prompt.update({"image_embeddings": image_embeddings["image_embeddings"]})
             return prompt
             # TODO (sungchul): change has_mask_input
@@ -587,6 +586,7 @@ class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
             inputs_decoder.update(image_embeddings)
             inputs_decoder.update(
                 {
+                    "orig_size": original_size[None],
                     "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
                     "has_mask_input": np.zeros((1, 1), dtype=np.float32),
                 }
