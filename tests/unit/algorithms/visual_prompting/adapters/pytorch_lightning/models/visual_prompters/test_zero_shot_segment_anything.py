@@ -114,18 +114,21 @@ class TestPromptGetter:
         assert bg_coords == "bg_coords"
 
     @e2e_pytest_unit
-    def test_point_selection(self) -> None:
+    @pytest.mark.parametrize(
+        "mask_sim,expected",
+        [
+            (torch.arange(0.1, 1.0, 0.1).reshape(3, 3), torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]])),
+            (torch.zeros(3, 3), torch.tensor([[-1, -1, -1]]))
+        ])
+    def test_point_selection(self, mask_sim: torch.Tensor, expected: torch.Tensor) -> None:
         """Test _point_selection."""
-        mask_sim = torch.arange(0.1, 1.0, 0.1).reshape(self.prompt_getter.image_size, self.prompt_getter.image_size)
-
         points_scores, bg_coords = self.prompt_getter._point_selection(
             mask_sim=mask_sim,
             original_size=torch.tensor([self.prompt_getter.image_size, self.prompt_getter.image_size]),
             threshold=torch.tensor([[0.5]]),
         )
 
-        assert torch.equal(points_scores, torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]))
-        assert torch.equal(bg_coords, torch.tensor([[0, 0]]))
+        assert torch.equal(points_scores, expected)
 
 
 class TestZeroShotSegmentAnything:

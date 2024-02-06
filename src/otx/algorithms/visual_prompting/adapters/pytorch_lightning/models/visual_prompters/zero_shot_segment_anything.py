@@ -163,6 +163,10 @@ class PromptGetter(nn.Module):
 
         point_coords = torch.where(mask_sim > threshold)
         fg_coords_scores = torch.stack(point_coords[::-1] + (mask_sim[point_coords],), dim=0).T
+        
+        # to handle empty tensor
+        len_fg_coords_scores = len(fg_coords_scores)
+        fg_coords_scores = F.pad(fg_coords_scores, (0, 0, 0, max(0, 1 - len_fg_coords_scores)), value=-1)
 
         ratio = self.image_size / original_size.max()
         width = (original_size[1] * ratio).to(torch.int64)
