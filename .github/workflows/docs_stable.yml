@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Build-Docs:
     runs-on: ubuntu-20.04
