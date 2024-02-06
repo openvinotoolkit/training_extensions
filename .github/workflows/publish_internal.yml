@@ -42,7 +42,8 @@ jobs:
     needs: [build_wheels, build_sdist]
     environment: pypi
     runs-on: [self-hosted, linux, x64, dev]
-    permissions: write-all
+    permissions:
+      packages: write
     steps:
       - name: Set up Python
         uses: actions/setup-python@v4

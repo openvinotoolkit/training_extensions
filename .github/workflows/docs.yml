@@ -12,7 +12,7 @@ jobs:
   Build-Docs:
     runs-on: ubuntu-20.04
     permissions:
-      contents: write
+      pages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
