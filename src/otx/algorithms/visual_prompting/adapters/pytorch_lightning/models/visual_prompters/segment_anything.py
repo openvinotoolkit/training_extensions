@@ -133,32 +133,26 @@ class SegmentAnything(LightningModule):
             )
         )
 
-    def load_checkpoint(
-        self,
-        state_dict: Optional[OrderedDict] = None,
-        revise_keys: List = [(r"^image_encoder.", r"image_encoder.backbone.")],
-    ) -> None:
+    def load_checkpoint(self, state_dict: Optional[OrderedDict] = None) -> None:
         """Load checkpoint for SAM.
 
         Args:
             state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
-            revise_keys (List, optional): List of tuples of regex patterns to revise keys of state_dict.
-                Defaults to [(r'^image_encoder.', r'image_encoder.backbone.')].
         """
-
-        def replace_state_dict_keys(state_dict, revise_keys):
-            for p, r in revise_keys:
-                state_dict = OrderedDict(
-                    {
-                        re.sub(p, r, k) if re.search(p, k) and not re.search(r, k) else k: v
-                        for k, v in state_dict.items()
-                    }
-                )
-            return state_dict
-
+        def skip_unused_parameters(state_dict):
+            if self.config.model.backbone == "tiny_vit":
+                for key in [
+                    "image_encoder.norm_head.weight",
+                    "image_encoder.norm_head.bias",
+                    "image_encoder.head.weight",
+                    "image_encoder.head.bias",
+                ]:
+                    if key in state_dict:
+                        state_dict.pop(key)
+        
         if state_dict:
             # state_dict from args.load_from
-            state_dict = replace_state_dict_keys(state_dict, revise_keys)
+            skip_unused_parameters(state_dict)
             self.load_state_dict(state_dict)
         elif self.config.model.checkpoint:
             if str(self.config.model.checkpoint).endswith(".ckpt"):
@@ -172,7 +166,8 @@ class SegmentAnything(LightningModule):
                     # load checkpoint from local
                     with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
-                state_dict = replace_state_dict_keys(state_dict, revise_keys)
+
+                skip_unused_parameters(state_dict)
                 self.load_state_dict(state_dict, strict=False)
 
     ##########################################################

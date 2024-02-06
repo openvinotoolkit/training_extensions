@@ -148,12 +148,8 @@ class MockConfig:
 
 
 class MockImageEncoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.backbone = nn.Linear(1, 1)
-
-    def forward(self, *args, **kwargs):
-        return torch.ones((1, 2, 4, 4))
+    def __new__(cls, *args, **kwargs):
+        return nn.Linear(4, 4)
 
 
 class MockPromptEncoder(nn.Module):

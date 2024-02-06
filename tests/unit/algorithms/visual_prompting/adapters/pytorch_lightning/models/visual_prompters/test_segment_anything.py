@@ -76,7 +76,7 @@ class TestSegmentAnything:
             # backbone == vit_b
             sam = SegmentAnything(config)
 
-            assert isinstance(sam.image_encoder, MockImageEncoder)
+            assert isinstance(sam.image_encoder, nn.Linear)
             assert isinstance(sam.prompt_encoder, MockPromptEncoder)
             assert isinstance(sam.mask_decoder, MockMaskDecoder)
 
@@ -159,8 +159,8 @@ class TestSegmentAnything:
                 False,
                 OrderedDict(
                     [
-                        ("image_encoder.weight", Tensor([[0.0]])),
-                        ("image_encoder.bias", Tensor([0.0])),
+                        ("image_encoder.weight", torch.ones(4, 4)),
+                        ("image_encoder.bias", torch.ones(4)),
                         ("prompt_encoder.layer.weight", Tensor([[0.0]])),
                         ("prompt_encoder.layer.bias", Tensor([0.0])),
                         ("mask_decoder.layer.weight", Tensor([[0.0]])),
@@ -172,8 +172,8 @@ class TestSegmentAnything:
                 True,
                 OrderedDict(
                     [
-                        ("image_encoder.backbone.weight", Tensor([[1.0]])),
-                        ("image_encoder.backbone.bias", Tensor([1.0])),
+                        ("image_encoder.weight", torch.ones(4, 4)),
+                        ("image_encoder.bias", torch.ones(4)),
                         ("prompt_encoder.layer.weight", Tensor([[1.0]])),
                         ("prompt_encoder.layer.bias", Tensor([1.0])),
                         ("mask_decoder.layer.weight", Tensor([[1.0]])),
@@ -196,10 +196,8 @@ class TestSegmentAnything:
         sam_state_dict = sam.state_dict()
 
         for k, v in state_dict.items():
-            if not is_backbone_arg:
-                k = k.replace("image_encoder", "image_encoder.backbone")
             assert k in sam_state_dict
-            assert v == sam_state_dict[k]
+            assert torch.all(v == sam_state_dict[k])
 
     @e2e_pytest_unit
     def test_load_checkpoint_without_checkpoint(self, mocker):
@@ -360,7 +358,7 @@ class TestSegmentAnything:
     def test_forward_train(self) -> None:
         """Test forward."""
         sam = SegmentAnything(config=self.base_config)
-        images = torch.zeros((1))
+        images = torch.zeros((1, 3, 4, 4))
         bboxes = torch.zeros((1))
 
         results = sam.forward_train(images=images, bboxes=bboxes, points=None)

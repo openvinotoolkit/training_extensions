@@ -5,7 +5,7 @@
 #
 
 from omegaconf import DictConfig
-from torch import Tensor, nn
+from torch import nn
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones import (
     build_tiny_vit,
@@ -19,26 +19,13 @@ class SAMImageEncoder(nn.Module):
     Args:
         config (DictConfig): Config for image encoder.
     """
-
-    def __init__(self, config: DictConfig):
-        super().__init__()
+    
+    def __new__(cls, config: DictConfig):
         if "tiny_vit" == config.backbone:
-            self.backbone = build_tiny_vit(config.image_size)
+            return build_tiny_vit(config.image_size)
         elif "vit" in config.backbone:
-            self.backbone = build_vit(config.backbone, config.image_size)
+            return build_vit(config.backbone, config.image_size)
         else:
             raise NotImplementedError(
                 (f"{config.backbone} for image encoder of SAM is not implemented yet. " f"Use vit_b, l, or h.")
             )
-
-    def forward(self, images: Tensor) -> Tensor:
-        """Forward function of image encoder.
-
-        Args:
-            images (Tensor): Input tensor.
-
-        Returns:
-            image_embeddings (Tensor): Output tensor.
-        """
-        image_embeddings = self.backbone(images)
-        return image_embeddings
