@@ -42,7 +42,10 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         """
         tile_preds: list[DetBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
-        merger = DetectionTileMerge(inputs.imgs_info)
+        merger = DetectionTileMerge.from_config(
+            inputs.imgs_info,
+            self.config,
+        )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):

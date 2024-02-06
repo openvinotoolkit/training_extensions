@@ -47,7 +47,11 @@ class OTXInstanceSegModel(
         """
         tile_preds: list[InstanceSegBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
-        merger = InstanceSegTileMerge(inputs.imgs_info)
+
+        merger = InstanceSegTileMerge.from_config(
+            inputs.imgs_info,
+            self.config,
+        )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
