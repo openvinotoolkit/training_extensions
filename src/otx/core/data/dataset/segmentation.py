@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import warnings
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -12,7 +14,7 @@ import torch
 from datumaro.components.annotation import Image, Mask
 from torchvision import tv_tensors
 
-from otx.core.data.dataset.base import Transforms
+from otx.core.data.dataset.base import LabelInfo, Transforms
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
@@ -22,6 +24,22 @@ from .base import OTXDataset
 
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
+
+
+@dataclass
+class SegMetaInfo(LabelInfo):
+    """Meta information of Semantic Segmentation."""
+
+    def __init__(self, label_names: list[str], label_groups: list[list[str]]) -> None:
+        if not any(word.lower() == "background" for word in label_names):
+            msg = (
+                "Currently, no background label exists for `label_names`. "
+                "Segmentation requires a background label. "
+                "To do this, `Background` is added at index 0 of `label_names`."
+            )
+            warnings.warn(msg, stacklevel=2)
+            label_names.insert(0, "Background")
+        super().__init__(label_names, label_groups)
 
 
 class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
@@ -46,21 +64,10 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             image_color_channel,
             stack_images,
         )
-        # Check & Update background label in LabelInfo
-        self._update_meta_info()
-
-    def _update_meta_info(self) -> None:
-        """Updates the meta information of the dataset.
-
-        This method checks if the label names contain the word "background" and inserts
-        "Background" at the beginning of the label names list if it is not found.
-
-        Currently, this is a workaround method to update the num_classes of multiple models in train-test-export etc.
-        to be the same. This should be addressed in another workaround or in datumaro.
-        """
-        label_names = self.meta_info.label_names
-        if not any(word.lower() == "background" for word in label_names):
-            label_names.insert(0, "Background")
+        self.meta_info = SegMetaInfo(
+            label_names=self.meta_info.label_names,
+            label_groups=self.meta_info.label_groups,
+        )
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
