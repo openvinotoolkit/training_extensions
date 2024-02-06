@@ -73,7 +73,6 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
 
         Returns:
             Path: path to the exported model
@@ -211,3 +210,56 @@ class OTXModelExporter:
             ov_model.set_rt_info(data, list(k))
 
         return ov_model
+
+    def _extend_model_metadata(self, metadata: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
+        """Extends metadata coming from model with preprocessing-specific parameters.
+
+        Model's original metadata has priority over exporter's extra metadata
+
+        Args:
+            metadata (dict[tuple[str, str], str]): existing metadata for export
+
+        Returns:
+            dict[tuple[str, str] ,str]: updated metadata
+        """
+        mean_str = " ".join(map(str, self.mean))
+        std_str = " ".join(map(str, self.std))
+
+        extra_data = {
+            ("model_info", "mean_values"): mean_str.strip(),
+            ("model_info", "scale_values"): std_str.strip(),
+            ("model_info", "resize_type"): self.resize_mode,
+            ("model_info", "pad_value"): str(self.pad_value),
+            ("model_info", "reverse_input_channels"): str(self.swap_rgb),
+        }
+        extra_data.update(metadata)
+
+        return extra_data
+
+    def _postprocess_openvino_model(self, exported_model: openvino.Model) -> openvino.Model:
+        # workaround for OVC's bug: single output doesn't have a name in OV model
+        if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
+            exported_model.outputs[0].tensor.set_names({"output1"})
+
+        if self.metadata is not None:
+            export_metadata = self._extend_model_metadata(self.metadata)
+            exported_model = self._embed_openvino_ir_metadata(exported_model, export_metadata)
+
+        return exported_model
+
+    def _postprocess_onnx_model(
+        self,
+        onnx_model: onnx.ModelProto,
+        embed_metadata: bool,
+        precision: OTXPrecisionType,
+    ) -> onnx.ModelProto:
+        if embed_metadata:
+            metadata = {} if self.metadata is None else self._extend_model_metadata(self.metadata)
+            onnx_model = self._embed_onnx_metadata(onnx_model, metadata)
+
+        if precision == OTXPrecisionType.FP16:
+            from onnxconverter_common import float16
+
+            onnx_model = float16.convert_float_to_float16(onnx_model)
+
+        return onnx_model

@@ -49,6 +49,8 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "semantic_segmentation": "test/mIoU",
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
+    "detection": "test/map_50",
+    "instance_segmentation": "test/map_50",
 }
 
 
@@ -82,6 +84,10 @@ def test_otx_export_infer(
 
     if task not in TASK_NAME_TO_MAIN_METRIC_NAME:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
+    elif (task == "detection" and "atss_mobilenetv2" not in recipe) or (
+        task == "instance_segmentation" and "maskrcnn_efficientnetb2b" not in recipe
+    ):
+        pytest.skip("To prevent memory bug from aborting integration test, test single model per task.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
     # 1) otx train
@@ -242,5 +248,9 @@ def test_otx_export_infer(
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
+
+    # Not compare w/ instance segmentation because training isn't able to be deterministic, which can lead to unstable test result.
+    if "maskrcnn_efficientnetb2b" in recipe:
+        return
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.1)

@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -27,6 +27,7 @@ class SSD(MMDetCompatibleModel):
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
+        self.image_size = (1, 3, 864, 864)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -124,6 +125,18 @@ class SSD(MMDetCompatibleModel):
 
             # Replace checkpoint weight by mixed weights
             state_dict[prefix + param_name] = model_param
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
+        export_params = super()._export_parameters
+        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.ssd_mobilenetv2"
+        export_params["input_size"] = self.image_size
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+
+        return export_params
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

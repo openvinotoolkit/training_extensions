@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging as log
 import tempfile
 from pathlib import Path
 from typing import Any, Literal
@@ -35,31 +36,6 @@ class OTXNativeModelExporter(OTXModelExporter):
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata)
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
-
-    def _extend_model_metadata(self, metadata: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
-        """Extends metadata coming from model with preprocessing-specific parameters.
-
-        Model's original metadata has priority over exporter's extra metadata
-
-        Args:
-            metadata (dict[tuple[str, str],str]): metadata to extend.
-
-        Returns:
-            dict[tuple[str, str],str]: updated metadata
-        """
-        mean_str = " ".join(map(str, self.mean))
-        std_str = " ".join(map(str, self.std))
-
-        extra_data = {
-            ("model_info", "mean_values"): mean_str.strip(),
-            ("model_info", "scale_values"): std_str.strip(),
-            ("model_info", "resize_type"): self.resize_mode,
-            ("model_info", "pad_value"): str(self.pad_value),
-            ("model_info", "reverse_input_channels"): str(self.swap_rgb),
-        }
-        extra_data.update(metadata)
-
-        return extra_data
 
     def to_openvino(
         self,
@@ -95,16 +71,11 @@ class OTXNativeModelExporter(OTXModelExporter):
                 example_input=dummy_tensor,
                 input=(openvino.runtime.PartialShape(self.input_size),),
             )
+        exported_model = self._postprocess_openvino_model(exported_model)
 
-        # workaround for OVC's bug: single output doesn't have a name in OV model
-        if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
-            exported_model.outputs[0].tensor.set_names({"output1"})
-
-        if self.metadata is not None:
-            export_metadata = self._extend_model_metadata(self.metadata)
-            exported_model = OTXNativeModelExporter._embed_openvino_ir_metadata(exported_model, export_metadata)
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
+        log.info("Coverting to OpenVINO is done.")
 
         return Path(save_path)
 
@@ -131,17 +102,13 @@ class OTXNativeModelExporter(OTXModelExporter):
         """
         dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
         save_path = str(output_dir / (base_model_name + ".onnx"))
-        metadata = {} if self.metadata is None else self._extend_model_metadata(self.metadata)
 
         torch.onnx.export(model, dummy_tensor, save_path, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
-        if embed_metadata:
-            onnx_model = OTXNativeModelExporter._embed_onnx_metadata(onnx_model, metadata)
-        if precision == OTXPrecisionType.FP16:
-            from onnxconverter_common import float16
+        onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
 
-            onnx_model = float16.convert_float_to_float16(onnx_model)
         onnx.save(onnx_model, save_path)
+        log.info("Coverting to ONNX is done.")
 
         return Path(save_path)

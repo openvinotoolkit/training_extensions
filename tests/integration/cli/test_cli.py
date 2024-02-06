@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 from otx.cli import main
 
 # This assumes have OTX installed in environment.
@@ -75,6 +76,12 @@ def test_otx_e2e(
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
     assert (tmp_path_train / "outputs" / "configs.yaml").exists()
+    # Check Configs file
+    with (tmp_path_train / "outputs" / "configs.yaml").open() as file:
+        train_output_config = yaml.safe_load(file)
+    assert "model" in train_output_config
+    assert "data" in train_output_config
+    assert "engine" in train_output_config
     assert (tmp_path_train / "outputs" / "csv").exists()
     assert (tmp_path_train / "outputs" / "checkpoints").exists()
     ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
