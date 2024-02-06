@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Callable
 
 import torch
-from datumaro import Image, Label
+from datumaro import Image
 
 from otx.core.data.dataset.base import OTXDataset
 from otx.core.data.entity.anomaly import (
@@ -26,7 +26,9 @@ class AnomalyClassificationDataset(OTXDataset[AnomalyClassificationDataItem]):
         datumaro_item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = datumaro_item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
-        labels = [annotation for annotation in datumaro_item.annotations if isinstance(annotation, Label)]
+        label: torch.LongTensor = (
+            torch.tensor(0.0, dtype=torch.long) if "good" in datumaro_item.id else torch.tensor(1.0, dtype=torch.long)
+        )
 
         item = AnomalyClassificationDataItem(
             image=img_data,
@@ -36,7 +38,7 @@ class AnomalyClassificationDataset(OTXDataset[AnomalyClassificationDataItem]):
                 ori_shape=img_shape,
                 image_color_channel=self.image_color_channel,
             ),
-            label=torch.as_tensor([annotation.label for annotation in labels]),
+            label=label,
         )
         return self._apply_transforms(item)
 

@@ -8,12 +8,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from otx.core.model.entity.base import OTXModel
-from otx.core.types.export import OTXExportFormatType
-from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import torch
     from torch import nn
 
@@ -58,14 +54,3 @@ class OTXAnomalyModel(OTXModel):
         Overrides the base forward as input and output customization occurs from the lightning model.
         """
         return self.model(input_tensor)
-
-    def export(
-        self,
-        output_dir: Path,
-        base_name: str,
-        export_format: OTXExportFormatType,
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> Path:
-        # TODO
-        ...
-        export_to_openvino()

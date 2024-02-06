@@ -398,7 +398,7 @@ class Engine:
             # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
             lit_module.load_state_dict(loaded_checkpoint)
 
-            return self.model.export(
+            return lit_module.export(
                 output_dir=Path(self.work_dir),
                 base_name=self._EXPORTED_MODEL_BASE_NAME,
                 export_format=export_format,
