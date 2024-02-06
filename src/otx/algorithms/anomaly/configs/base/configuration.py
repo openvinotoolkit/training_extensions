@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from sys import maxsize
-
 from attr import attrs
 
 from otx.algorithms.anomaly.configs.base.configuration_enums import (
