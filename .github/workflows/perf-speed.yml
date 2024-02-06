@@ -34,6 +34,9 @@ on:
           - optimize
         default: optimize
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Perf-Speed-Benchmark:
     name: Perf-Speed-Benchmark-all-py310
