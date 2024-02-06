@@ -17,6 +17,39 @@ RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in 
 RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
+CLS_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("classification/**/*.yaml")]
+DET_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("detection/**/*.yaml")]
+ISEG_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("instance_segmentation/**/*.yaml")]
+RDET_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("rotated_detection/**/*.yaml")]
+SEG_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("semantic_segmentation/**/*.yaml")]
+VPM_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("visual_prompting/**/*.yaml")]
+ZSVP_RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("zero_shot_visual_prompting/**/*.yaml")]
+
+def parametrize_by_task(task_name):
+    recipe_lists = {
+        'classification': CLS_RECIPE_LIST,
+        'detection': DET_RECIPE_LIST,
+        'instance_segmentation': ISEG_RECIPE_LIST,
+        'rotated_detection': RDET_RECIPE_LIST,
+        'semantic_segmentation': SEG_RECIPE_LIST,
+        'visual_prompting': VPM_RECIPE_LIST,
+        'zero_shot_visual_prompting': ZSVP_RECIPE_LIST,
+    }
+    def decorator(func):
+        return pytest.mark.parametrize("recipe", recipe_lists[task_name])(func)
+    return decorator
+
+# Example usage
+@parametrize_by_task('classification')
+def test_classification(recipe):
+    # Your test logic here
+    pass
+
+@parametrize_by_task('detection')
+def test_detection(recipe):
+    # Your test logic here
+    pass
+
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_e2e(
