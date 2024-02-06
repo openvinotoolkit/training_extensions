@@ -1,6 +1,6 @@
-"""OTX Benchmark based on tools/experiment.py."""
+"""OTX Benchmark runner."""
 
-# Copyright (C) 2023-2024 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -8,84 +8,97 @@ import os
 import glob
 import pandas as pd
 import yaml
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
-from tests.test_suite.run_test_command import check_run
+#from tests.test_suite.run_test_command import check_run
 
 
-class OTXBenchmark:
-    """Benchmark runner based on tools/experiment.py in OTX1.x.
-
-    Example:
-        >>> bm = OTXBenchmark(['random_sample1', 'random_sample2'], data_root='./data/coco')
-        >>> atss_result = bm.run('MobileNetV2-ATSS')
-        >>> yolox_result = bm.run('YOLOX-TINY')
+class Benchmark:
+    """Benchmark runner for OTX2.x.
 
     Args:
-        datasets (List[str]): Paths to datasets relative to the data_root.
-            Intended for, but not restricted to different sampling based on same dataset.
         data_root (str): Path to the root of dataset directories. Defaults to './data'.
+        output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
         num_epoch (int): Overrides the per-model default number of epoch settings.
             Defaults to 0, which means no overriding.
         num_repeat (int): Number for trials with different random seed, which would be set
             as range(0, num_repeat). Defaults to 1.
-        train_params (dict, optional): Additional training parameters.
-            e.x) {'learning_parameters.num_iters': 2}. Defaults to {}.
-        track_resources (bool): Whether to track CPU & GPU usage metrics. Defaults to False.
         eval_upto (str): The last serial operation to evaluate. Choose one of ('train', 'export', 'optimize').
             Operations include the preceeding ones.
             e.x) Eval up to 'optimize': train -> eval -> export -> eval -> optimize -> eval
             Default to 'train'.
-        output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
-        dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
         tags (dict, optional): Key-values pair metadata for the experiment.
-        subset_dir_names (dict, optional): Specify dataset subset directory names, if any.
-            e.x) {"train": "train_10percent", "val": "val_all", "test": "test"}
+        dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
     """
+
+    @dataclass
+    class Model:
+        """Benchmark model."""
+        task: str
+        name: str
+        type: str
+
+    @dataclass
+    class Dataset:
+        """Benchmark dataset."""
+        name: str
+        path: Path
+        size: str
+        data_format: str
+        num_classes: int
+        num_repeat: int = 1
+        extra_overrides: dict | None = None
+
+    @dataclass
+    class Metric:
+        """Benchmark metric."""
+        name: str
+        op: str
+        margin: float
 
     def __init__(
         self,
-        datasets: List[str],
-        data_root: str = "data",
+        data_root: Path = Path("data"),
+        output_root: Path = Path("otx-benchmark"),
         num_epoch: int = 0,
         num_repeat: int = 1,
-        train_params: dict | None = None,
-        track_resources: bool = False,
         eval_upto: str = "train",
-        output_root: str = "otx-benchmark",
+        tags: dict[str,str] | None = None,
         dry_run: bool = False,
-        tags: dict | None = None,
-        subset_dir_names: dict | None = None,
     ):
-        self.datasets = datasets
         self.data_root = data_root
+        self.output_root = output_root
         self.num_epoch = num_epoch
         self.num_repeat = num_repeat
-        self.train_params = train_params or {}
-        self.track_resources = track_resources
         self.eval_upto = eval_upto
-        self.output_root = output_root
-        self.dry_run = dry_run
         self.tags = tags or {}
-        self.subset_dir_names = subset_dir_names or {"train": "", "val": "", "test": ""}
+        self.dry_run = dry_run
 
     def run(
         self,
-        model_id: str,
-        train_params: dict = {},
-        tags: dict = {},
+        model: Model,
+        dataset: Dataset,
+        metrics: list[Metric],
+        tags: dict[str, str] | None = None,
     ) -> pd.DataFrame | None:
-        """Run configured benchmark with given model and return the result.
+        """Run configured benchmark with given dataset and model and return the result.
 
         Args:
-            model_id (str): Target model identifier
-            train_params (dict): Overrides global benchmark train params
+            model (Model): Target model settings
+            dataset (Dataset): Target dataset settings
+            metrics (list[Metric]): Target metric settings
             tags (dict): Overrides global benchmark tags
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
         """
+
+        all_tags = self.tags.copy()
+        all_tags.update(tags)
+        print(model, dataset, metrics, all_tags)
+        return None
 
         # Build config file
         cfg = self._build_config(model_id, train_params, tags)
@@ -103,7 +116,7 @@ class OTXBenchmark:
         if self.dry_run:
             cmd.append("-d")
         # Run benchmark
-        check_run(cmd)
+        #check_run(cmd)
         # Load result
         result = self.load_result(cfg_dir)
         return result
