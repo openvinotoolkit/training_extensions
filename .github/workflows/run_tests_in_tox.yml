@@ -33,6 +33,10 @@ on:
       toxenv-ptver:
         type: string
         default: "pt1"
+
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   run_tests_in_tox:
     # tricky workaround to pass list from the string input type

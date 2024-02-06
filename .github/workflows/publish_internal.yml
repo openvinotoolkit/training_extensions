@@ -3,6 +3,9 @@ name: Build and upload to internal PyPI
 on:
   workflow_dispatch: # run on request (no need for PR)
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   build_wheels:
     name: Build wheels

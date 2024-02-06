@@ -6,6 +6,9 @@ on:
     # every UTC 6PM from Mon to Fri
     - cron: "0 18 * * 1-5"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Trivy-scan:
     runs-on: ubuntu-20.04

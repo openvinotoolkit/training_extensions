@@ -12,6 +12,9 @@ on:
       - synchronize
   workflow_dispatch: # run on request (no need for PR)
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Code-Quality-Checks:
     # This is what will cancel the job concurrency
