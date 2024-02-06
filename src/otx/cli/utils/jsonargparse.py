@@ -188,7 +188,7 @@ def list_override(configs: Namespace, key: str, overrides: list) -> None:
 
         item = next((item for item in configs[key] if item["class_path"] == class_path), None)
         if item is not None:
-            item.update(target)
+            Namespace(item).update(target)
         else:
             configs[key].append(dict_to_namespace(target))
 
@@ -232,7 +232,9 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
         with change_to_path_dir(default_config_file), parser_context(parent_parser=self):
             cfg_file = self._load_config_parser_mode(default_config_file.get_content(), key=key)
             cfg = self.merge_config(cfg_file, cfg)
-            overrides = cfg.__dict__.pop("overrides", None)
+            overrides = cfg.__dict__.pop("overrides", {})
+            list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
+            list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
             if overrides is not None:
                 cfg.update(overrides)
             try:

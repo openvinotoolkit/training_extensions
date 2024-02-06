@@ -35,7 +35,6 @@ overrides:
   callbacks:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: val/Dice
         patience: 3
   data:
     task: VISUAL_PROMPTING
