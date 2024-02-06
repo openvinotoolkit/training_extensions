@@ -1,4 +1,7 @@
-"""MMDeploy config of ATSS model for Detection Task."""
+"""MMDeploy config of ATSS model for Detection Task.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 _base_ = ["./base_detection.py"]
 

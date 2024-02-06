@@ -1,4 +1,7 @@
-"""Instance segmentation models based deploy config."""
+"""Instance segmentation models based deploy config.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 _base_ = ["../../detection/mmdeploy/base_detection.py"]
 

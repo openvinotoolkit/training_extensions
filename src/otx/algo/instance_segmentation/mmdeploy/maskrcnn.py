@@ -1,4 +1,7 @@
-"""MMDeploy config of MaskRCNN models for Instance-Seg Task."""
+"""MMDeploy config of MaskRCNN models for Instance-Seg Task.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 _base_ = ["./base_instance_segmentation.py"]
 

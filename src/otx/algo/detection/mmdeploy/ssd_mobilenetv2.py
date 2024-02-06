@@ -1,4 +1,7 @@
-"""MMDeploy config of SSD model for Detection Task."""
+"""MMDeploy config of SSD model for Detection Task.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 _base_ = ["./base_detection.py"]
 

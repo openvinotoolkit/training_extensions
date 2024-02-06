@@ -1,4 +1,7 @@
-"""MMDeploy config of YOLOX models except YOLOX_tiny for Detection Task."""
+"""MMDeploy config of YOLOX models except YOLOX_tiny for Detection Task.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 _base_ = ["./base_detection.py"]
 

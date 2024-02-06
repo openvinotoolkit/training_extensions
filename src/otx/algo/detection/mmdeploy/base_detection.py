@@ -1,4 +1,7 @@
-"""Detection models base deploy config."""
+"""Detection models base deploy config.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 ir_config = dict(
     type="onnx",

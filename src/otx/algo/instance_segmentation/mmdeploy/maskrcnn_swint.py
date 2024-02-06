@@ -1,4 +1,7 @@
-"""MMDployment config of MaskRCNN-SwinT-FP16 model for Instance-Seg Task."""
+"""MMDployment config of MaskRCNN-SwinT-FP16 model for Instance-Seg Task.
+
+reference: https://github.com/open-mmlab/mmdeploy/
+"""
 
 _base_ = ["./base_instance_segmentation.py"]
 
