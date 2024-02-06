@@ -16,7 +16,7 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
-from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
+from otx.core.model.entity.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -29,7 +29,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
 
     def __init__(
         self,
-        otx_model: OTXInstanceSegModel,
+        otx_model: ExplainableOTXInstanceSegModel,
         torch_compile: bool,
         optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,

@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 class OTXInstanceSegModel(
     OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, TileBatchInstSegDataEntity],
 ):
-    """Base class for the detection models used in OTX."""
+    """Base class for the Instance Segmentation models used in OTX."""
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -66,7 +66,28 @@ class OTXInstanceSegModel(
         )
 
 
-class MMDetInstanceSegCompatibleModel(OTXInstanceSegModel):
+class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
+    """OTX Instance Segmentation model which can attach a XAI hook."""
+
+    def register_explain_hook(self) -> None:
+        """Register explain hook at the model backbone output."""
+        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+
+        self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook(
+            num_classes=self.num_classes,
+        )
+
+    def remove_explain_hook_handle(self) -> None:
+        """Removes explain hook from the model."""
+        if self.explain_hook.handle is not None:
+            self.explain_hook.handle.remove()
+
+    def reset_explain_hook(self) -> None:
+        """Clear all history of explain records."""
+        self.explain_hook.reset()
+
+
+class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
 
     def __init__(self, num_classes: int, config: DictConfig) -> None:
