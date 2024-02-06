@@ -65,8 +65,8 @@ class TilerConfig:
     """DTO for tiler configuration."""
 
     enable_tiler: bool = False
-    grid_size: tuple[int, int] = (2, 2)
-    overlap: float = 0.0
+    tile_size: tuple[int, int] = (400, 400)
+    overlap: float = 0.2
 
 
 @dataclass
