@@ -623,7 +623,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             if len(scores[0]) == 0:
                 # all predicted masks were zero masks, ignore them.
-                return None, torch.zeros((self.image_size, self.image_size), device="cpu")
+                return None, torch.zeros(masks.shape[-2:], device="cpu")
 
             best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]

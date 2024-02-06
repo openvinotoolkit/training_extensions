@@ -405,6 +405,22 @@ class TestZeroShotSegmentAnything:
         assert len(predicted_masks[1]) == 3
         assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
         assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
+        
+    @pytest.mark.parametrize(
+        ("masks", "logits", "expected"),
+        [
+            (torch.ones(1, 4, 8, 8), torch.ones(1, 4, 4, 4), torch.ones(8, 8)),
+            (torch.zeros(1, 4, 8, 8), torch.zeros(1, 4, 4, 4), torch.zeros(8, 8)),
+        ],
+    )
+    def test_decide_cascade_results(self, mocker, build_zero_shot_segment_anything, masks: Tensor, logits: Tensor, expected: Tensor) -> None:
+        mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        scores = torch.tensor([[0.0, 0.1, 0.2, 0.3]])
+        
+        _, result = zero_shot_segment_anything._decide_cascade_results(masks, logits, scores)
+
+        assert torch.equal(result, expected)
 
 
 class TestOTXZeroShotSegmentAnything:
