@@ -80,6 +80,33 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         """Clear all history of explain records."""
         self.explain_hook.reset()
 
+    def get_custom_forward(self):
+        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+
+        head_forward_fn = self.head_forward_fn
+        num_classes = self.num_classes
+        optimize_gap = self.has_gap
+
+        def custom_forward(
+            self, inputs: torch.Tensor, data_samples: Optional[List[DataSample]] = None, mode: str = "tensor"
+        ):
+            x = self.backbone(inputs)
+            backbone_feat = x
+
+            hook = ReciproCAMHook(
+                head_forward_fn,
+                num_classes=num_classes,
+                optimize_gap=optimize_gap,
+            )
+            saliency_maps = hook.func(backbone_feat)
+
+            if self.with_neck:
+                x = self.neck(x)
+
+            return self.head(x) if self.with_head else x, saliency_maps
+
+        return custom_forward
+
 
 class OTXMulticlassClsModel(
     ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, T_OTXTileBatchDataEntity],

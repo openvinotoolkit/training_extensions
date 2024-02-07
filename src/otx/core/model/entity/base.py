@@ -202,6 +202,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        dump_auxiliaries: bool = False,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -213,7 +214,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        return self._exporter.export(self.model, output_dir, base_name, export_format, precision, dump_auxiliaries)
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -248,8 +249,13 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             ("model_info", "label_ids"): all_label_ids.strip(),
             ("model_info", "optimization_config"): json.dumps(optimization_config),
         }
+        parameters["custom_forward"] = self.get_custom_forward()
 
         return parameters
+
+    def get_custom_forward(self):
+        """Returns custom forward function, that dumps auxiliary outputs: feature vector and saliency map."""
+        return
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.

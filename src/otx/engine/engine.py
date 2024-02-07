@@ -367,6 +367,7 @@ class Engine:
         checkpoint: str | Path | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        dump_auxiliaries: bool = False,
     ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
@@ -374,6 +375,7 @@ class Engine:
             checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
+            dump_auxiliaries (bool): Flag to return "feature_vector" and "saliency_map". Defaults to False.
 
         Returns:
             Path: Path to the exported model.
@@ -383,6 +385,7 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     export_format=OTXExportFormatType.OPENVINO,
             ...     export_precision=OTXExportPrecisionType.FP32,
+            ...     dump_auxiliaries=True,
             ... )
 
         CLI Usage:
@@ -418,6 +421,7 @@ class Engine:
                 base_name=self._EXPORTED_MODEL_BASE_NAME,
                 export_format=export_format,
                 precision=export_precision,
+                dump_auxiliaries=dump_auxiliaries,
             )
 
         msg = "To make export, checkpoint must be specified."
