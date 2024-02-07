@@ -473,8 +473,9 @@ class HpoRunner:
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
 
-        progress_updater_thread = Thread(target=self._update_hpo_progress, args=[hpo_algo], daemon=True)
-        progress_updater_thread.start()
+        if self._update_hpo_progress is not None:
+            progress_updater_thread = Thread(target=self._update_hpo_progress, args=[hpo_algo], daemon=True)
+            progress_updater_thread.start()
 
         resource_type = "gpu" if torch.cuda.is_available() else "cpu"
         run_hpo_loop(
