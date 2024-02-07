@@ -23,7 +23,7 @@ from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
 from otx.core.types.image import ImageColorChannel
 
 if TYPE_CHECKING:
-    from datumaro import DatasetSubset, Image
+    from datumaro import DatasetSubset, Image, LabelCategories
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
@@ -54,6 +54,7 @@ class LabelInfo:
     """Object to represent label information."""
 
     label_names: list[str]
+    label_groups: list[list[str]]
 
     @property
     def num_classes(self) -> int:
@@ -68,9 +69,41 @@ class LabelInfo:
             num_classes: Number of classes
 
         Returns:
-            LabelInfo(label_names=["label_0", ...])
+            LabelInfo(
+                label_names=["label_0", ...],
+                label_groups=[["label_0", ...]]
+            )
         """
-        return LabelInfo(label_names=[f"label_{idx}" for idx in range(num_classes)])
+        label_names = [f"label_{idx}" for idx in range(num_classes)]
+
+        return LabelInfo(
+            label_names=label_names,
+            label_groups=[label_names],
+        )
+
+    @classmethod
+    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> LabelInfo:
+        """Create this object from the datumaro label groups.
+
+        Args:
+            dm_label_categories (LabelCategories): The label category information from Datumaro.
+
+        Returns:
+            LabelInfo(
+                label_names=["Heart_King", "Heart_Queen", "Spade_King", "Spade_Jack"]
+                label_groups=[["Heart_King", "Heart_Queen"], ["Spade_King", "Spade_Jack"]]
+            )
+
+        """
+        label_names = [item.name for item in dm_label_categories.items]
+        label_groups = [label_group.labels for label_group in dm_label_categories.label_groups]
+        if len(label_groups) == 0:  # Single-label classification
+            label_groups = [label_names]
+
+        return LabelInfo(
+            label_names=label_names,
+            label_groups=label_groups,
+        )
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -107,10 +140,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.max_refetch = max_refetch
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
-
-        self.meta_info = LabelInfo(
-            label_names=[category.name for category in self.dm_subset.categories()[AnnotationType.label]],
-        )
+        self.meta_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
 
     def __len__(self) -> int:
         return len(self.ids)
@@ -172,7 +202,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
             msg = "Cannot get image data"
             raise RuntimeError(msg)
 
-        img_data = self._cache_img(key=key, img_data=img_data)
+        img_data = self._cache_img(key=key, img_data=img_data.astype(np.uint8))
 
         return img_data, img_data.shape[:2]
 

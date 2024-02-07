@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 from otx.cli import main
 
 # This assumes have OTX installed in environment.
@@ -42,6 +43,7 @@ def test_otx_e2e(
         None
     """
     task = recipe.split("/")[-2]
+    tile_param = fxt_cli_override_command_per_task["tile"] if "tile" in recipe else []
     model_name = recipe.split("/")[-1].split(".")[0]
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
@@ -62,6 +64,7 @@ def test_otx_e2e(
         "--max_epochs",
         "2",
         *fxt_cli_override_command_per_task[task],
+        *tile_param,
     ]
 
     with patch("sys.argv", command_cfg):
@@ -73,6 +76,12 @@ def test_otx_e2e(
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
     assert (tmp_path_train / "outputs" / "configs.yaml").exists()
+    # Check Configs file
+    with (tmp_path_train / "outputs" / "configs.yaml").open() as file:
+        train_output_config = yaml.safe_load(file)
+    assert "model" in train_output_config
+    assert "data" in train_output_config
+    assert "engine" in train_output_config
     assert (tmp_path_train / "outputs" / "csv").exists()
     assert (tmp_path_train / "outputs" / "checkpoints").exists()
     ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
@@ -116,10 +125,14 @@ def test_otx_e2e(
     ):
         return
 
-    format_to_ext = {"ONNX": "onnx", "OPENVINO": "xml"}
+    format_to_file = {
+        "ONNX": "exported_model.onnx",
+        "OPENVINO": "exported_model.xml",
+        "EXPORTABLE_CODE": "exportable_code.zip",
+    }
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    for fmt in format_to_ext:
+    for fmt in format_to_file:
         command_cfg = [
             "otx",
             "export",
@@ -140,7 +153,7 @@ def test_otx_e2e(
             main()
 
         assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
+        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
     task = recipe.split("/")[-2]

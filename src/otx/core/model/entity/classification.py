@@ -25,6 +25,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -102,13 +103,6 @@ class OTXMulticlassClsModel(
         return parameters
 
 
-def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
-    return {
-        "mean": config["data_preprocessor"]["mean"],
-        "std": config["data_preprocessor"]["std"],
-    }
-
-
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     """Multi-class Classification model compatible for MMPretrain.
 
@@ -120,7 +114,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
@@ -197,17 +190,16 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
-
-        return parent_parameters
+        return export_params
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -251,7 +243,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
@@ -330,17 +321,16 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
-
-        return parent_parameters
+        return export_params
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -396,7 +386,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
@@ -483,17 +472,16 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
-
-        return parent_parameters
+        return export_params
 
     @property
     def _exporter(self) -> OTXModelExporter:

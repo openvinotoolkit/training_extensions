@@ -10,6 +10,7 @@ import torch.nn.functional as F  # noqa: N812
 from mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
 from mmdet.registry import MODELS
 from torch import Tensor, nn
+from torch.cuda.amp import custom_fwd
 
 
 def cross_sigmoid_focal_loss(
@@ -82,6 +83,7 @@ class CrossSigmoidFocalLoss(nn.Module):
 
         self.cls_criterion = cross_sigmoid_focal_loss
 
+    @custom_fwd(cast_inputs=torch.float32)
     def forward(
         self,
         pred: Tensor,
