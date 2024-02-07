@@ -85,7 +85,7 @@ def test_otx_export_infer(
     if task not in TASK_NAME_TO_MAIN_METRIC_NAME:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
     elif (task == "detection" and "atss_mobilenetv2" not in recipe) or (
-        task == "instance_segmentation" and "maskrcnn_efficientnetb2b" not in recipe
+        task == "instance_segmentation" and "maskrcnn_efficientnetb2b.yaml" not in recipe
     ):
         pytest.skip("To prevent memory bug from aborting integration test, test single model per task.")
 
