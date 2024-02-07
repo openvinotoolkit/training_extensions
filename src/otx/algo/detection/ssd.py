@@ -28,6 +28,7 @@ class SSD(MMDetCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
         self.image_size = (1, 3, 864, 864)
+        self._register_load_state_dict_pre_hook(self.set_anchors_hook)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -95,6 +96,19 @@ class SSD(MMDetCompatibleModel):
                     classification_layers[prefix + key] = {"use_bg": use_bg, "num_anchors": num_anchors}
         return classification_layers
 
+    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
+        """Return state dictionary of model entity with anchor information.
+
+        Returns:
+            A dictionary containing SSD state.
+
+        """
+        state_dict = super().state_dict(*args, **kwargs)
+        anchor_generator = self.model.bbox_head.anchor_generator
+        anchors = {"heights": anchor_generator.heights, "widths": anchor_generator.widths}
+        state_dict["model.model.anchors"] = anchors
+        return state_dict
+
     def load_state_dict_pre_hook(self, state_dict: dict[str, torch.Tensor], prefix: str, *args, **kwargs) -> None:
         """Modify input state_dict according to class name matching before weight loading."""
         model2ckpt = self.map_class_names(self.model_classes, self.ckpt_classes)
@@ -137,6 +151,15 @@ class SSD(MMDetCompatibleModel):
         export_params["swap_rgb"] = False
 
         return export_params
+
+    def set_anchors_hook(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
+        """Pre hook for pop anchor statistics from checkpoint state_dict."""
+        anchors = state_dict.pop("model.model.anchors", None)
+        if anchors is not None:
+            anchor_generator = self.model.bbox_head.anchor_generator
+            anchor_generator.widths = anchors["widths"]
+            anchor_generator.heights = anchors["heights"]
+            anchor_generator.gen_base_anchors()
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
