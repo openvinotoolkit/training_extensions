@@ -276,19 +276,24 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        model = self.model
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = str(checkpoint).endswith(".xml")
+        if is_ir_ckpt and not self.model.__class__.__name__.startswith("OV"):
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
-        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
-        if checkpoint is not None:
+        if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
 
