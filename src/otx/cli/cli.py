@@ -317,11 +317,10 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         from otx.core.model.entity.base import OTXModel
-        from otx.engine.utils.auto_configurator import get_num_classes_from_meta_info
 
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = get_num_classes_from_meta_info(task=self.datamodule.task, meta_info=self.datamodule.meta_info)
+            num_classes = self.datamodule.meta_info.num_classes
             if num_classes != model_config.init_args.num_classes:
                 warning_msg = (
                     f"The `num_classes` in dataset is {num_classes} "
