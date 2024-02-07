@@ -1,12 +1,13 @@
 model:
-  class_path: otx.algo.detection.yolox.YoloXTiny
+  class_path: otx.algo.detection.yolox.YoloX
   init_args:
     num_classes: 80
+    variant: l
 
 optimizer:
   class_path: torch.optim.SGD
   init_args:
-    lr: 0.0002
+    lr: 0.001
     momentum: 0.9
     weight_decay: 0.0001
 
@@ -30,40 +31,23 @@ overrides:
   gradient_clip_val: 35.0
   data:
     config:
+      tile_config:
+        enable_tiler: true
+      image_color_channel: BGR
       train_subset:
+        num_workers: 4
         batch_size: 8
         transforms:
           - type: LoadImageFromFile
+            to_float32: true
           - type: LoadAnnotations
             with_bbox: true
-          - type: CachedMosaic
-            random_pop: false
-            pad_val: 114.0
-            max_cached_images: 20
-            img_scale:
-              - 640
-              - 640
-          - type: RandomAffine
-            scaling_ratio_range:
-              - 0.5
-              - 1.5
-            border:
-              - -320
-              - -320
-          - type: PhotoMetricDistortion
-            brightness_delta: 32
-            contrast_range:
-              - 0.5
-              - 1.5
-            saturation_range:
-              - 0.5
-              - 1.5
-            hue_delta: 18
+          - type: YOLOXHSVRandomAug
           - type: Resize
             scale:
               - 640
               - 640
-            keep_ratio: True
+            keep_ratio: true
           - type: RandomFlip
             prob: 0.5
           - type: Pad
@@ -82,14 +66,16 @@ overrides:
               - img_shape
               - pad_shape
       val_subset:
+        num_workers: 4
         batch_size: 8
         transforms:
           - type: LoadImageFromFile
+            to_float32: true
           - type: Resize
             scale:
-              - 416
-              - 416
-            keep_ratio: True
+              - 640
+              - 640
+            keep_ratio: true
           - type: Pad
             pad_to_square: true
             pad_val: 114
@@ -104,14 +90,16 @@ overrides:
               - img_shape
               - pad_shape
       test_subset:
+        num_workers: 4
         batch_size: 8
         transforms:
           - type: LoadImageFromFile
+            to_float32: true
           - type: Resize
             scale:
-              - 416
-              - 416
-            keep_ratio: True
+              - 640
+              - 640
+            keep_ratio: true
           - type: Pad
             pad_to_square: true
             pad_val: 114

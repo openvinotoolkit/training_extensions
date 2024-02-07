@@ -9,16 +9,17 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
-from torchvision import tv_tensors
 
+from otx.algo.instance_segmentation.otx_instseg_evaluation import (
+    OTXMaskRLEMeanAveragePrecision,
+)
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
 )
 from otx.core.model.entity.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
-from otx.core.utils.mask_util import polygon_to_bitmap
+from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -41,8 +42,8 @@ class OTXInstanceSegLitModule(OTXLitModule):
             scheduler=scheduler,
         )
 
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")
+        self.val_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
+        self.test_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -62,7 +63,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         self._log_metrics(self.test_metric, "test")
         self.test_metric.reset()
 
-    def _log_metrics(self, meter: MeanAveragePrecision, subset_name: str) -> None:
+    def _log_metrics(self, meter: OTXMaskRLEMeanAveragePrecision, subset_name: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -110,7 +111,17 @@ class OTXInstanceSegLitModule(OTXLitModule):
         preds: InstanceSegBatchPredEntity,
         inputs: InstanceSegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
-        """Convert the prediction entity to the format required by the compute metric function."""
+        """Convert the prediction entity to the format that the metric can compute and cache the ground truth.
+
+        This function will convert mask to RLE format and cache the ground truth for the current batch.
+
+        Args:
+            preds (InstanceSegBatchPredEntity): Current batch predictions.
+            inputs (InstanceSegBatchDataEntity): Current batch ground-truth inputs.
+
+        Returns:
+            dict[str, list[dict[str, Tensor]]]: The converted predictions and ground truth.
+        """
         pred_info = []
         target_info = []
 
@@ -123,7 +134,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             pred_info.append(
                 {
                     "boxes": bboxes.data,
-                    "masks": masks.data,
+                    "masks": [encode_rle(mask) for mask in masks.data],
                     "scores": scores,
                     "labels": labels,
                 },
@@ -136,15 +147,18 @@ class OTXInstanceSegLitModule(OTXLitModule):
             inputs.polygons,
             inputs.labels,
         ):
-            bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
+            rles = (
+                [encode_rle(mask) for mask in masks.data]
+                if len(masks)
+                else polygon_to_rle(polygons, *imgs_info.ori_shape)
+            )
             target_info.append(
                 {
                     "boxes": bboxes.data,
-                    "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
+                    "masks": rles,
                     "labels": labels,
                 },
             )
-
         return {"preds": pred_info, "target": target_info}
 
     def test_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:
