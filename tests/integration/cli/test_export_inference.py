@@ -5,9 +5,9 @@
 import importlib
 import inspect
 import logging
-import re
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from tests.integration.cli.utils import run_main
@@ -63,7 +63,6 @@ def test_otx_export_infer(
     fxt_cli_override_command_per_task: dict,
     fxt_accelerator: str,
     fxt_open_subprocess: bool,
-    capfd: "pytest.CaptureFixture",
 ) -> None:
     """
     Test OTX CLI e2e commands.
@@ -132,7 +131,7 @@ def test_otx_export_infer(
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
+        str(tmp_path_test / "outputs" / "torch"),
         "--engine.device",
         fxt_accelerator,
         *fxt_cli_override_command_per_task[task],
@@ -185,7 +184,7 @@ def test_otx_export_infer(
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
+        str(tmp_path_test / "outputs" / "openvino"),
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
@@ -228,7 +227,7 @@ def test_otx_export_infer(
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
+        str(tmp_path_test / "outputs" / "nncf_ptq"),
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
@@ -240,10 +239,19 @@ def test_otx_export_infer(
 
     assert (tmp_path_test / "outputs").exists()
 
-    out, _ = capfd.readouterr()
-    assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
-    torch_acc, ov_acc, ptq_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
-    torch_acc, ov_acc, ptq_acc = float(torch_acc), float(ov_acc), float(ptq_acc)
+    df_torch = pd.read_csv(next((tmp_path_test / "outputs" / "torch").glob("**/metrics.csv")))
+    df_openvino = pd.read_csv(next((tmp_path_test / "outputs" / "openvino").glob("**/metrics.csv")))
+    df_nncf_ptq = pd.read_csv(next((tmp_path_test / "outputs" / "nncf_ptq").glob("**/metrics.csv")))
+
+    metric_name = TASK_NAME_TO_MAIN_METRIC_NAME[task]
+
+    assert metric_name in df_torch.columns
+    assert metric_name in df_openvino.columns
+    assert metric_name in df_nncf_ptq.columns
+
+    torch_acc = df_torch[metric_name].item()
+    ov_acc = df_openvino[metric_name].item()
+    ptq_acc = df_nncf_ptq[metric_name].item()  # noqa: F841
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
