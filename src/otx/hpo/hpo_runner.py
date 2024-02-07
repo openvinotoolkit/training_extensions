@@ -124,7 +124,9 @@ class HpoLoop:
             args=(
                 self._train_func,
                 trial.get_train_configuration(),
-                partial(_report_score, recv_queue=trial_queue, send_queue=self._report_queue, uid=uid),
+                partial(
+                    _report_score, recv_queue=trial_queue, send_queue=self._report_queue, uid=uid, trial_id=trial.id
+                ),
             ),
         )
         os.environ.clear()
@@ -151,14 +153,14 @@ class HpoLoop:
     def _get_reports(self) -> None:
         while not self._report_queue.empty():
             report = self._report_queue.get_nowait()
-            trial = self._running_trials[report["uid"]]
             trial_status = self._hpo_algo.report_score(
                 report["score"],
                 report["progress"],
-                trial.trial.id,
+                report["trial_id"],
                 report["done"],
             )
-            trial.queue.put_nowait(trial_status)
+            if report["uid"] in self._running_trials:
+                self._running_trials[report["uid"]].queue.put_nowait(trial_status)
 
         self._hpo_algo.save_results()
 
@@ -207,11 +209,21 @@ def _report_score(
     recv_queue: multiprocessing.Queue,
     send_queue: multiprocessing.Queue,
     uid: Hashable,
+    trial_id: Hashable,
     done: bool = False,
 ) -> TrialStatus:
-    logger.debug(f"score : {score}, progress : {progress}, uid : {uid}, pid : {os.getpid()}, done : {done}")
+    logger.debug(
+        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, pid : {os.getpid()}, done : {done}"
+    )
     try:
-        send_queue.put_nowait({"score": score, "progress": progress, "uid": uid, "pid": os.getpid(), "done": done})
+        send_queue.put_nowait({
+            "score": score,
+            "progress": progress,
+            "uid": uid,
+            "trial_id" : trial_id,
+            "pid": os.getpid(),
+            "done": done
+        })
     except ValueError:
         return TrialStatus.STOP
 
