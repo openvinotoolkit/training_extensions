@@ -410,7 +410,8 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
+            self.model.label_info = lit_module.meta_info
+
             lit_module.load_state_dict(loaded_checkpoint)
 
             return self.model.export(
