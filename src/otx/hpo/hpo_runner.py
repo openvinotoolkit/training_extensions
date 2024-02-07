@@ -129,11 +129,11 @@ class HpoLoop:
                 ),
             ),
         )
+        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
+        process.start()
         os.environ.clear()
         for key, val in origin_env.items():
             os.environ[key] = val
-        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
-        process.start()
 
     def _remove_finished_process(self) -> None:
         trial_to_remove = []
