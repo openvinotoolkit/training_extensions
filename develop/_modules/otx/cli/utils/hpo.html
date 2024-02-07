@@ -245,12 +245,14 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isclass</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -267,6 +269,7 @@
 <span class="kn">from</span> <span class="nn">otx.cli.utils.io</span> <span class="kn">import</span> <span class="n">read_model</span><span class="p">,</span> <span class="n">save_model_data</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.adapter</span> <span class="kn">import</span> <span class="n">get_dataset_adapter</span>
 <span class="kn">from</span> <span class="nn">otx.hpo</span> <span class="kn">import</span> <span class="n">HyperBand</span><span class="p">,</span> <span class="n">TrialStatus</span><span class="p">,</span> <span class="n">run_hpo_loop</span>
+<span class="kn">from</span> <span class="nn">otx.hpo.hpo_base</span> <span class="kn">import</span> <span class="n">HpoBase</span>
 <span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
@@ -619,6 +622,7 @@
 <span class="sd">        val_dataset_size (int): validation dataset size</span>
 <span class="sd">        hpo_workdir (Union[str, Path]): work directory for HPO</span>
 <span class="sd">        hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.</span>
+<span class="sd">        progress_updater_callback (Optional[Callable[[Union[int, float]], None]]): callback to update progress</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># pylint: disable=too-many-instance-attributes</span>
@@ -630,6 +634,7 @@
         <span class="n">val_dataset_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">hpo_workdir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">hpo_time_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">progress_updater_callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">train_dataset_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;train_dataset_size should be bigger than 0. Your value is </span><span class="si">{</span><span class="n">train_dataset_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -646,6 +651,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_val_dataset_size</span> <span class="o">=</span> <span class="n">val_dataset_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_hp</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_weight_name</span> <span class="o">=</span> <span class="s2">&quot;initial_weight.pth&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_progress_updater_callback</span> <span class="o">=</span> <span class="n">progress_updater_callback</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_align_batch_size_search_space_to_dataset_size</span><span class="p">()</span>
 
@@ -703,6 +709,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_environment</span><span class="o">.</span><span class="n">save_initial_weight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_initial_model_weight_path</span><span class="p">())</span>
         <span class="n">hpo_algo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hpo_algo</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_hpo_progress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">progress_updater_thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_hpo_progress</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">hpo_algo</span><span class="p">],</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">progress_updater_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
         <span class="n">resource_type</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
         <span class="n">run_hpo_loop</span><span class="p">(</span>
             <span class="n">hpo_algo</span><span class="p">,</span>
@@ -778,11 +789,29 @@
         <span class="k">return</span> <span class="n">default_hyper_parameters</span>
 
     <span class="k">def</span> <span class="nf">_get_initial_model_weight_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_workdir</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_weight_name</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_workdir</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_weight_name</span>
+
+    <span class="k">def</span> <span class="nf">_update_hpo_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function for a thread to report a HPO progress regularly.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hpo_algo (HpoBase): HPO algorithm class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hpo_algo</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+                <span class="k">break</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_progress_updater_callback</span><span class="p">(</span><span class="n">hpo_algo</span><span class="o">.</span><span class="n">get_progress</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="run_hpo"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.hpo.html#otx.cli.utils.hpo.run_hpo">[docs]</a><span class="k">def</span> <span class="nf">run_hpo</span><span class="p">(</span>
-    <span class="n">hpo_time_ratio</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">environment</span><span class="p">:</span> <span class="n">TaskEnvironment</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">data_roots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]</span>
+    <span class="n">hpo_time_ratio</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">environment</span><span class="p">:</span> <span class="n">TaskEnvironment</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
+    <span class="n">data_roots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span>
+    <span class="n">progress_updater_callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TaskEnvironment</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run HPO and load optimized hyper parameter and best HPO model weight.</span>
 
@@ -792,6 +821,7 @@
 <span class="sd">        environment (TaskEnvironment): otx task environment</span>
 <span class="sd">        dataset (DatasetEntity): dataset to use for training</span>
 <span class="sd">        data_roots (Dict[str, Dict]): dataset path of each dataset type</span>
+<span class="sd">        progress_updater_callback (Optional[Callable[[Union[int, float]], None]]): callback to update progress</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">task_type</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">task_type</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_hpo_enabled_task</span><span class="p">(</span><span class="n">task_type</span><span class="p">):</span>
@@ -812,6 +842,7 @@
         <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">Subset</span><span class="o">.</span><span class="n">VALIDATION</span><span class="p">)),</span>
         <span class="n">hpo_save_path</span><span class="p">,</span>
         <span class="n">hpo_time_ratio</span><span class="p">,</span>
+        <span class="n">progress_updater_callback</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;started hyper-parameter optimization&quot;</span><span class="p">)</span>
