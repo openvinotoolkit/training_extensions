@@ -7,10 +7,10 @@ import inspect
 import logging
 import re
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
-from otx.cli import main
+
+from tests.integration.cli.utils import run_main
 
 log = logging.getLogger(__name__)
 
@@ -62,6 +62,7 @@ def test_otx_export_infer(
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_accelerator: str,
+    fxt_open_subprocess: bool,
     capfd: "pytest.CaptureFixture",
 ) -> None:
     """
@@ -112,8 +113,7 @@ def test_otx_export_infer(
         *fxt_cli_override_command_per_task[task],
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
@@ -136,8 +136,7 @@ def test_otx_export_infer(
         str(ckpt_files[-1]),
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     # 3) otx export
     format_to_ext = {"OPENVINO": "xml"}  # [TODO](@Vlad): extend to "ONNX": "onnx"
@@ -160,8 +159,7 @@ def test_otx_export_infer(
             f"{fmt}",
         ]
 
-        with patch("sys.argv", command_cfg):
-            main()
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         assert (tmp_path_test / "outputs").exists()
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
@@ -191,8 +189,7 @@ def test_otx_export_infer(
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
 
@@ -213,8 +210,7 @@ def test_otx_export_infer(
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
     exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
@@ -236,8 +232,7 @@ def test_otx_export_infer(
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
 
