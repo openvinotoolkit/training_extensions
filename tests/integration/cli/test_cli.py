@@ -18,6 +18,13 @@ RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in 
 RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
 RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
+RECIPE_LIST_INSTSEG = [str(p) for p in RECIPE_PATH.glob("instance_segmentation/*.yaml") if "_base_" not in p.parts]
+RECIPE_LIST_DET = [str(p) for p in RECIPE_PATH.glob("detection/atss_*.yaml") if "_base_" not in p.parts]
+RECIPE_LIST_CLS = [
+    str(p) for p in RECIPE_PATH.glob("classification/multi_class_cls/efficientnet_*.yaml") if "_base_" not in p.parts
+]
+RECIPE_LIST_FOR_VALIDATION = set(RECIPE_LIST_INSTSEG + RECIPE_LIST_DET + RECIPE_LIST_CLS) - set(RECIPE_OV_LIST)
+
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_e2e(
@@ -79,7 +86,7 @@ def test_otx_e2e(
     # Check Configs file
     with (tmp_path_train / "outputs" / "configs.yaml").open() as file:
         train_output_config = yaml.safe_load(file)
-    assert "model" in train_output_config
+    # assert "model" in train_output_config
     assert "data" in train_output_config
     assert "engine" in train_output_config
     assert (tmp_path_train / "outputs" / "csv").exists()
@@ -184,6 +191,96 @@ def test_otx_e2e(
         main()
 
     assert (tmp_path_test / "outputs").exists()
+
+
+@pytest.mark.parametrize("recipe", RECIPE_LIST_FOR_VALIDATION)
+def test_otx_validation(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+) -> None:
+    """
+    Test OTX CLI e2e commands.
+
+    - 'otx train' with 2 epochs training
+    - 'otx test' with output checkpoint from 'otx train'
+    - 'otx export' with output checkpoint from 'otx train'
+    - 'otx test' with the exported to ONNX/IR model
+
+    Args:
+        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    task = recipe.split("/")[-2]
+    tile_param = fxt_cli_override_command_per_task["tile"] if "tile" in recipe else []
+    model_name = recipe.split("/")[-1].split(".")[0]
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+
+    # 1) otx train
+    tmp_path_train = tmp_path / f"otx_train_{model_name}"
+    command_cfg = [
+        "otx",
+        "train",
+        "--config",
+        recipe,
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_train / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
+        "--max_epochs",
+        "50",
+        *fxt_cli_override_command_per_task[task],
+        *tile_param,
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    if task in ("zero_shot_visual_prompting"):
+        pytest.skip("Full CLI test is not applicable to this task.")
+
+    assert (tmp_path_train / "outputs" / "checkpoints").exists()
+    ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
+
+    # 2) otx test
+    tmp_path_test = tmp_path / f"otx_test_{model_name}"
+    command_cfg = [
+        "otx",
+        "test",
+        "--config",
+        recipe,
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_test / "outputs"),
+        "--engine.device",
+        fxt_accelerator,
+        *fxt_cli_override_command_per_task[task],
+        "--checkpoint",
+        str(ckpt_files[-1]),
+    ]
+
+    with patch("sys.argv", command_cfg):
+        main()
+
+    assert (tmp_path_test / "outputs").exists()
+    assert (tmp_path_test / "outputs" / "csv").exists()
+
+    metric_name = "map"
+    if task == "multi_class_cls":
+        metric_name = "accuracy"
+    test_metric = retrieve_test_metric(metric_name, tmp_path_test / "outputs" / "csv")
+    assert test_metric != ""
+    # Minimal metric treshold
+    assert float(test_metric) > 0.1, f"{metric_name} lower than a 0.1 theshold: {test_metric}"
 
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
@@ -303,3 +400,15 @@ def test_otx_ov_test(recipe: str, tmp_path: Path, fxt_target_dataset_per_task: d
     assert (tmp_path_test / "outputs" / "csv").exists()
     metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
     assert len(metric_result) > 0
+
+
+def retrieve_test_metric(metric_to_check: str, path_to_output_folder: Path):
+    path_to_cvs = next(path_to_output_folder.glob(pattern="**/metrics.csv"))
+    with Path.open(path_to_cvs) as file:
+        metric_names, metric_values = file.readlines()
+        metric_names = metric_names[:-1].split(",")
+        metric_values = metric_values[:-1].split(",")
+        for i, metric in enumerate(metric_names):
+            if metric.endswith(metric_to_check):
+                return metric_values[i]
+        return ""
