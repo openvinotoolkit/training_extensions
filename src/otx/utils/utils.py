@@ -5,7 +5,7 @@
 
 import signal
 from functools import partial
-from typing import Callable
+from typing import Callable, Any
 
 
 def append_signal_handler(sig_num: signal.Signals, sig_handler: Callable) -> None:
@@ -26,3 +26,21 @@ def append_signal_handler(sig_num: signal.Signals, sig_handler: Callable) -> Non
             old_func(*args, **kwargs)
 
     signal.signal(sig_num, partial(helper, old_func=old_sig_handler))
+
+
+def get_using_comma_seperated_key(key: str, target) -> Any:
+    splited_key = key.split(".")
+    for each_key in splited_key:
+        target = target[each_key] if isinstance(target, dict) else getattr(target, each_key)
+    return target
+
+
+def set_using_comma_seperated_key(key: str, val: Any, target) -> None:
+    splited_key = key.split(".")
+    for each_key in splited_key[:-1]:
+        target = target[each_key] if isinstance(target, dict) else getattr(target, each_key)
+
+    if isinstance(target, dict):
+        target[splited_key[-1]] = val
+    else:
+        setattr(target, splited_key[-1], val)

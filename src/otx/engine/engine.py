@@ -12,7 +12,6 @@ import torch
 from lightning import Trainer, seed_everything, Callback
 
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
-from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
@@ -23,9 +22,10 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.hpo import run_hpo_loop, HyperBand, TrialStatus
+from otx.utils.utils import set_using_comma_seperated_key
 
-from .utils.auto_configurator import AutoConfigurator, PathLike
+from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .utils.hpo import execute_hpo
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -158,7 +158,9 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
-        is_hpo=True,
+        run_hpo: bool = False,
+        hpo_time_ratio: int = 4,
+        hpo_cfg_file: str | Path | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -209,44 +211,19 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
-        # is_hpo = False
-        if is_hpo:  # HPO
-            kwargs["check_val_every_n_epoch"] = 1
-            hpo_algo = get_hpo_algo(
-                self.work_dir,
-                max_epochs,
-                len(self.datamodule.subsets['train']),
-                len(self.datamodule.subsets['val']),
-            )
-            resource_type = "gpu" if torch.cuda.is_available() else "cpu"
-            run_hpo_loop(
-                hpo_algo,
-                partial(
-                    run_hpo_trial,
-                    engine=self,
-                    max_epochs=max_epochs,
-                    seed=seed,
-                    deterministic=deterministic,
-                    precision=precision,
-                    val_check_interval=val_check_interval,
-                    callbacks=callbacks,
-                    logger=logger,
-                    resume=resume,
-                    **kwargs,
-                ),
-                resource_type,  # type: ignore
-            )
-            best_config = hpo_algo.get_best_config()
-            if best_config is not None:
-                print(best_config["config"])
-            hpo_algo.print_result()
+        if run_hpo:
+            temp = locals()
+            temp_kwargs = temp.pop("kwargs", {})
+            temp.update(temp_kwargs)
+            temp["engine"] = self
+            del temp["self"]
+            del temp["run_hpo"]
+            best_hp = execute_hpo(**temp)
+            for key, val in best_hp.items():
+                set_using_comma_seperated_key(key, val, self)
 
             breakpoint()
 
-        for callback in callbacks:
-            if isinstance(callback, AdaptiveTrainScheduling):
-                callback.max_interval =1
-        
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -731,170 +708,3 @@ class Engine:
             scheduler=scheduler,
             torch_compile=False,
         )
-
-
-def get_hpo_algo(save_path, max_epoch, train_dataset_size, val_dataset_size):
-    # # cls
-    # args = {
-    #     "search_space": {
-    #         "lr" : {
-    #             "param_type" : "qloguniform",
-    #             "range" : [0.00098, 0.0245, 0.00001],
-    #         },
-    #         "bs" : {
-    #             "param_type" : "qloguniform",
-    #             "range" : [42, 96, 2],
-    #         },
-    #     },
-    #     "save_path": str(save_path),
-    #     "maximum_resource": None,
-    #     "minimum_resource": None,
-    #     "mode": "max",
-    #     "num_workers": 1,
-    #     "num_full_iterations": max_epoch,
-    #     "full_dataset_size": train_dataset_size,
-    #     "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
-    #     "metric": "val/accuracy",
-    #     "expected_time_ratio": 4,
-    #     "prior_hyper_parameters": {
-    #         "lr" : 0.0049,
-    #         "bs" : 64,
-    #     },
-    #     "asynchronous_bracket": True,
-    #     "asynchronous_sha": torch.cuda.device_count() != 1,
-    # }
-
-    # for det
-    # args = {
-    #     "search_space": {
-    #         "lr" : {
-    #             "param_type" : "qloguniform",
-    #             "range" : [0.0004, 0.04, 0.0001],
-    #         },
-    #         "bs" : {
-    #             "param_type" : "qloguniform",
-    #             "range" : [4, 16, 2],
-    #         },
-    #     },
-    #     "save_path": str(save_path),
-    #     "maximum_resource": None,
-    #     "minimum_resource": None,
-    #     "mode": "max",
-    #     "num_workers": 1,
-    #     "num_full_iterations": max_epoch,
-    #     "full_dataset_size": train_dataset_size,
-    #     "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
-    #     "metric": "val/map_50",
-    #     "expected_time_ratio": 4,
-    #     "prior_hyper_parameters": {
-    #         "lr" : 0.004,
-    #         "bs" : 8,
-    #     },
-    #     "asynchronous_bracket": True,
-    #     "asynchronous_sha": torch.cuda.device_count() != 1,
-    # }
-
-    # seg
-    args = {
-        "search_space": {
-            "lr" : {
-                "param_type" : "qloguniform",
-                "range" : [0.0001, 0.01, 0.0001],
-            },
-            "bs" : {
-                "param_type" : "qloguniform",
-                "range" : [4, 16, 2],
-            },
-        },
-        "save_path": str(save_path),
-        "maximum_resource": None,
-        "minimum_resource": None,
-        "mode": "max",
-        "num_workers": 1,
-        "num_full_iterations": max_epoch,
-        "full_dataset_size": train_dataset_size,
-        "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
-        "metric": "val/mIoU",
-        "expected_time_ratio": 4,
-        "prior_hyper_parameters": {
-            "lr" : 0.001,
-            "bs" : 8,
-        },
-        "asynchronous_bracket": True,
-        "asynchronous_sha": torch.cuda.device_count() != 1,
-    }
-
-    # act
-    # args = {
-    #     "search_space": {
-    #         "lr" : {
-    #             "param_type" : "qloguniform",
-    #             "range" : [0.0001, 0.01, 0.0001],
-    #         },
-    #         "bs" : {
-    #             "param_type" : "qloguniform",
-    #             "range" : [4, 16, 2],
-    #         },
-    #     },
-    #     "save_path": str(save_path),
-    #     "maximum_resource": None,
-    #     "minimum_resource": None,
-    #     "mode": "max",
-    #     "num_workers": 1,
-    #     "num_full_iterations": max_epoch,
-    #     "full_dataset_size": train_dataset_size,
-    #     "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
-    #     "metric": "accuracy",
-    #     "expected_time_ratio": 4,
-    #     "prior_hyper_parameters": {
-    #         "lr" : 0.004,
-    #         "bs" : 8,
-    #     },
-    #     "asynchronous_bracket": True,
-    #     "asynchronous_sha": torch.cuda.device_count() != 1,
-    # }
-
-    return HyperBand(**args)
-
-
-
-def run_hpo_trial(
-    hp_config: dict[str, Any],
-    report_func,
-    engine,
-    callbacks: list[Callback] | Callback | None = None,
-    **train_args,
-):
-    engine.optimizer.keywords["lr"] = hp_config["configuration"]["lr"]
-    engine.datamodule.config.train_subset.batch_size = hp_config["configuration"]["bs"]
-
-    hpo_callback = HPOCallback(report_func, "val/mIoU")
-    if isinstance(callbacks, list):
-        callbacks.append(hpo_callback)
-    elif isinstance(callbacks, Callback):
-        callbacks = [callbacks, hpo_callback]
-    elif callbacks is None:
-        callbacks = hpo_callback
-
-    engine.train(callbacks=callbacks, is_hpo=False, **train_args)
-    report_func(0, 0, done=True)
-
-
-class HPOCallback(Callback):
-    """Timer for logging iteration time for train, val, and test phases."""
-
-    def __init__(self, report_func, metric: str):
-        super().__init__()
-        self._report_func = report_func
-        self.metric = metric
-
-    def on_validation_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        logs = trainer.callback_metrics
-        score = logs.get(self.metric)
-        print("*"*100, "engine log: ", logs, "score: ", score)
-        epoch = trainer.current_epoch + 1
-        if score is not None:
-            score = score.item()
-            print(f"In hpo callback : {score} /  {epoch}")
-            if self._report_func(score=score, progress=epoch) == TrialStatus.STOP:
-                trainer.should_stop = True

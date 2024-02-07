@@ -723,7 +723,7 @@ class HyperBand(HpoBase):
         """Save a ASHA result."""
         for idx, bracket in self._brackets.items():
             save_path = Path(self.save_path) / str(idx)
-            save_path.mkdir(parents=True)
+            save_path.mkdir(parents=True, exist_ok=True)
             bracket.save_results(str(save_path))
 
     def auto_config(self) -> list[dict[str, Any]]:
