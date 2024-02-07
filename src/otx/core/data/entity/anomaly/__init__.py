@@ -10,6 +10,18 @@ from .classification import (
     AnomalyClassificationDataItem,
     AnomalyClassificationPrediction,
 )
+from .detection import (
+    AnomalyDetectionBatchPrediction,
+    AnomalyDetectionDataBatch,
+    AnomalyDetectionDataItem,
+    AnomalyDetectionPrediction,
+)
+from .segmentation import (
+    AnomalySegmentationBatchPrediction,
+    AnomalySegmentationDataBatch,
+    AnomalySegmentationDataItem,
+    AnomalySegmentationPrediction,
+)
 
 __all__ = [
     # Anomaly Classification
@@ -17,4 +29,14 @@ __all__ = [
     "AnomalyClassificationBatchPrediction",
     "AnomalyClassificationDataItem",
     "AnomalyClassificationPrediction",
+    # Anomaly Segmentation
+    "AnomalySegmentationBatchPrediction",
+    "AnomalySegmentationDataBatch",
+    "AnomalySegmentationDataItem",
+    "AnomalySegmentationPrediction",
+    # Anomaly Detection
+    "AnomalyDetectionDataItem",
+    "AnomalyDetectionDataBatch",
+    "AnomalyDetectionBatchPrediction",
+    "AnomalyDetectionPrediction",
 ]

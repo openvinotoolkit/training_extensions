@@ -14,6 +14,7 @@ from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormal
 from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.callbacks.thresholding import _ThresholdCallback
 from lightning.pytorch.callbacks.callback import Callback
+from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
 from otx.core.data.entity.anomaly.classification import AnomalyClassificationDataBatch, AnomalyClassificationPrediction
 from otx.core.model.entity.anomaly import OTXAnomalyModel
@@ -117,7 +118,7 @@ class _RouteCallback(Callback):
         )
 
 
-class OTXAnomalyLitModel(OTXLitModule):
+class OTXBaseAnomalyLitModel(OTXLitModule):
     """Anomaly OTX Lightning model.
 
     Used to wrap all the Anomaly models in OTX.
@@ -129,10 +130,12 @@ class OTXAnomalyLitModel(OTXLitModule):
         torch_compile: bool,
         optimizer: OptimizerCallable,
         scheduler: LRSchedulerCallable,
+        task_type: TaskType,
     ):
         super().__init__(otx_model=otx_model, torch_compile=torch_compile, optimizer=optimizer, scheduler=scheduler)
         self.anomaly_lightning_model: AnomalyModule
         self.model: OTXAnomalyModel
+        self.task_type = task_type
         self._setup_anomalib_lightning_model(name=self.model.__class__.__name__)
 
     def _setup_anomalib_lightning_model(self, name: str | None = None) -> None:
@@ -211,15 +214,18 @@ class OTXAnomalyLitModel(OTXLitModule):
 
     def configure_callbacks(self) -> Callback:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
+        image_metrics = ["AUROC", "F1Score"]
+        pixel_metrics = image_metrics if self.task_type != TaskType.CLASSIFICATION else None
         return _RouteCallback(
             [
                 _PostProcessorCallback(),
                 _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
                 _ThresholdCallback(threshold="F1AdaptiveThreshold"),
                 _MetricsCallback(
-                    task=TaskType.CLASSIFICATION,
-                    image_metrics=["AUROC", "F1Score"],
-                ),  # TODO add image and pixel metrics
+                    task=self.task_type,
+                    image_metrics=image_metrics,
+                    pixel_metrics=pixel_metrics,
+                ),
             ],
         )
 
@@ -279,10 +285,6 @@ class OTXAnomalyLitModel(OTXLitModule):
 
         return super().load_state_dict(ckpt, *args, **kwargs)
 
-    def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
-        """Customize inputs for the model."""
-        return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
-
     def _customize_outputs(
         self,
         outputs: Any,
@@ -290,3 +292,53 @@ class OTXAnomalyLitModel(OTXLitModule):
     ) -> AnomalyClassificationPrediction:
         # TODO
         ...
+
+
+class OTXAnomalyClassificationLitModel(OTXBaseAnomalyLitModel):
+    def __init__(
+        self,
+        otx_model: OTXAnomalyModel,
+        torch_compile: bool,
+        optimizer: OptimizerCallable,
+        scheduler: LRSchedulerCallable,
+    ):
+        super().__init__(otx_model, torch_compile, optimizer, scheduler, task_type=TaskType.CLASSIFICATION)
+
+    def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
+        """Customize inputs for the model."""
+        return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
+
+
+class OTXAnomalySegmentationLitModel(OTXBaseAnomalyLitModel):
+    def __init__(
+        self,
+        otx_model: OTXAnomalyModel,
+        torch_compile: bool,
+        optimizer: OptimizerCallable,
+        scheduler: LRSchedulerCallable,
+    ):
+        super().__init__(otx_model, torch_compile, optimizer, scheduler, task_type=TaskType.SEGMENTATION)
+
+    def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
+        """Customize inputs for the model."""
+        return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
+
+
+class OTXAnomalyDetectionLitModel(OTXBaseAnomalyLitModel):
+    def __init__(
+        self,
+        otx_model: OTXAnomalyModel,
+        torch_compile: bool,
+        optimizer: OptimizerCallable,
+        scheduler: LRSchedulerCallable,
+    ):
+        super().__init__(otx_model, torch_compile, optimizer, scheduler, task_type=TaskType.DETECTION)
+
+    def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
+        """Customize inputs for the model."""
+        return {
+            "image": inputs.images,
+            "label": torch.vstack(inputs.labels).squeeze(),
+            "mask": inputs.masks,
+            "boxes": inputs.boxes,
+        }
