@@ -5,11 +5,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Optional
 
+import cv2
 import numpy as np
+import mmcv
 from mmcv.transforms import LoadImageFromFile as MMCVLoadImageFromFile
+from mmcv.transforms import Resize as MMCVResize
 from mmcv.transforms.builder import TRANSFORMS
+from openvino.model_api.adapters.utils import resize_image_with_aspect_ocv, resize_image_letterbox_ocv
 
 from otx.core.data.entity.base import OTXDataEntity
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
@@ -39,6 +43,63 @@ class LoadImageFromFile(MMCVLoadImageFromFile):
         results["__otx__"] = entity
 
         return results
+
+
+@TRANSFORMS.register_module()
+class ResizeWithAspectMAPI(MMCVResize):
+    """Resize that reproduces `fit_to_window` in MAPI."""
+    def __init__(self, scale: tuple[int, int], **kwargs) -> None:
+        if not isinstance(scale, tuple):
+            raise RuntimeError
+        super().__init__(keep_ratio=True, scale=scale, **kwargs)
+        self.scale = scale
+
+    def _resize_img(self, results: dict) -> None:
+        """Resize images with ``results['scale']``."""
+
+        if results.get('img', None) is not None:
+            if self.keep_ratio:
+                #img = resize_image_with_aspect_ocv(results['img'], self.scale)
+                #h, w = results['img'].shape[:2]
+                #scale = min(self.scale[1] / h, self.scale[0] / w)
+                #w_scale, h_scale = scale, scale
+                """
+                scale_factor = min(max_long_edge / max(h, w),
+                           max_short_edge / min(h, w))
+
+                results['scale'],
+                w, h = size
+                return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
+                """
+
+                img, scale_factor = mmcv.imrescale(
+                    results['img'],
+                    results['scale'],
+                    interpolation=self.interpolation,
+                    return_scale=True,
+                    backend=self.backend)
+                # the w_scale and h_scale has minor difference
+                # a real fix should be done in the mmcv.imrescale in the future
+                new_h, new_w = img.shape[:2]
+                h, w = results['img'].shape[:2]
+                w_scale = new_w / w
+                h_scale = new_h / h
+            else:
+                raise RuntimeError
+            results['img'] = img
+            results['img_shape'] = img.shape[:2]
+            results['scale_factor'] = (w_scale, h_scale)
+            results['keep_ratio'] = self.keep_ratio
+
+    def _resize_seg(self, results: dict) -> None:
+        """Resize semantic segmentation map with ``results['scale']``."""
+        if results.get('gt_seg_map', None) is not None:
+            if self.keep_ratio:
+                gt_seg = resize_image_with_aspect_ocv(results['gt_seg_map'], self.scale, cv2.INTER_LINEAR)
+            else:
+                raise RuntimeError
+
+            results['gt_seg_map'] = gt_seg
 
 
 class MMCVTransformLib:
