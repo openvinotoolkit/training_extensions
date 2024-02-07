@@ -10,7 +10,6 @@ from collections import defaultdict
 from typing import Generic
 
 import torch
-from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision.ops import batched_nms
 
@@ -22,18 +21,6 @@ from otx.core.data.entity.instance_segmentation import (
 )
 
 
-def search_by_key(d: DictConfig, key: str) -> DictConfig:
-    """Search a key in a nested dictionary."""
-    if key in d:
-        return d[key]
-    for v in d.values():
-        if isinstance(v, DictConfig):
-            value = search_by_key(v, key)
-            if key in value:
-                return value
-    return DictConfig({})
-
-
 class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
     """Base class for tile merge.
 
@@ -42,8 +29,6 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         iou_threshold (float, optional): IoU threshold for non-maximum suppression. Defaults to 0.45.
         max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 100.
 
-    TODO (Eugene): Find a way to configure tile merge parameters(score_thres, max_num, etc) from tile config.
-    # https://github.com/openvinotoolkit/datumaro/pull/1194
     """
 
     def __init__(
@@ -101,32 +86,9 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
             masks = torch.stack([masks[idx] for idx in keep]).to_dense()
         return bboxes, labels, scores, masks
 
-    @classmethod
-    def from_config(cls, img_infos: list[ImageInfo], config: DictConfig) -> TileMerge:
-        """Create a tile merge instance from a configuration.
-
-        Args:
-            img_infos (list[ImageInfo]): Original image information before tiling.
-            config (DictConfig): Model configuration.
-
-        Returns:
-            TileMerge: Tile merge instance.
-        """
-        raise NotImplementedError
-
 
 class DetectionTileMerge(TileMerge):
     """Detection tile merge."""
-
-    @classmethod
-    def from_config(cls, img_infos: list[ImageInfo], config: DictConfig) -> DetectionTileMerge:
-        """Create a tile merge instance from a configuration."""
-        test_cfg = search_by_key(config, "test_cfg")
-        nms = search_by_key(test_cfg, "nms")
-        iou_threshold = nms.get("iou_threshold", 0.45)
-        max_num_instances = test_cfg.get("max_per_img", 100)
-
-        return cls(img_infos, iou_threshold, max_num_instances)
 
     def merge(
         self,
@@ -220,18 +182,6 @@ class DetectionTileMerge(TileMerge):
 
 class InstanceSegTileMerge(TileMerge):
     """Instance segmentation tile merge."""
-
-    @classmethod
-    def from_config(cls, img_infos: list[ImageInfo], config: DictConfig) -> InstanceSegTileMerge:
-        """Create a tile merge instance from a configuration."""
-        test_cfg = search_by_key(config, "test_cfg")
-        rcnn = search_by_key(test_cfg, "rcnn")
-        nms = search_by_key(rcnn, "nms")
-
-        iou_threshold = nms.get("iou_threshold", 0.45)
-        max_num_instances = rcnn.get("max_per_img", 100)
-
-        return cls(img_infos, iou_threshold, max_num_instances)
 
     def merge(
         self,

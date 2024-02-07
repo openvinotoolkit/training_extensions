@@ -295,6 +295,12 @@ class OTXCLI:
             self.datamodule = self.get_config_value(self.config_init, "data")
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
 
+            if self.datamodule.config.tile_config.enable_tiler:
+                if not hasattr(self.model, "tile_config"):
+                    msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
+                    raise AttributeError(msg)
+                self.model.tile_config = self.datamodule.config.tile_config
+
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
                 model=self.model,
@@ -432,3 +438,7 @@ class OTXCLI:
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
+
+
+if __name__ == "__main__":
+    OTXCLI()

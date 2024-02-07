@@ -67,6 +67,8 @@ class TilerConfig:
     enable_tiler: bool = False
     tile_size: tuple[int, int] = (400, 400)
     overlap: float = 0.2
+    iou_threshold: float = 0.45
+    max_num_instances: int = 100
 
 
 @dataclass
