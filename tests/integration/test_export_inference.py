@@ -53,7 +53,6 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "instance_segmentation": "test/map_50",
 }
 
-breakpoint()
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_export_infer(
