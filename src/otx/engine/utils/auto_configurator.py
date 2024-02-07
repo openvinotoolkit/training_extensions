@@ -104,29 +104,6 @@ def configure_task(data_root: PathLike) -> OTXTaskType:
     return TASK_PER_DATA_FORMAT[data_format][0]
 
 
-def get_num_classes_from_meta_info(task: OTXTaskType, meta_info: LabelInfo) -> int:
-    """Get the number of classes from the meta information.
-
-    Args:
-        task (OTXTaskType): The current task type.
-        meta_info (LabelInfo): The meta information about the labels.
-
-    Returns:
-        int: The number of classes.
-    """
-    num_classes = len(meta_info.label_names)
-    # Check background class
-    if task in (OTXTaskType.SEMANTIC_SEGMENTATION):
-        has_background = False
-        for label in meta_info.label_names:
-            if label.lower() == "background":
-                has_background = True
-                break
-        if not has_background:
-            num_classes += 1
-    return num_classes
-
-
 class AutoConfigurator:
     """This Class is used to configure the OTXDataModule, OTXModel, Optimizer, and Scheduler with OTX Default.
 
@@ -267,7 +244,7 @@ class AutoConfigurator:
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
         if meta_info is not None:
-            num_classes = get_num_classes_from_meta_info(self.task, meta_info)
+            num_classes = meta_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])

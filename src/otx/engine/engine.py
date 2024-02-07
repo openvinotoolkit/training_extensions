@@ -23,7 +23,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -576,7 +576,7 @@ class Engine:
             ),
         )
         # Model
-        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        num_classes = datamodule.meta_info.num_classes
         config["model"]["init_args"]["num_classes"] = num_classes
         model = instantiate_class(args=(), init=config.pop("model"))
         optimizer = partial_instantiate_class(init=config.pop("optimizer", None))

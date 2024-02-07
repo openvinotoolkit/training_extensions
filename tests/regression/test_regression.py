@@ -115,6 +115,7 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -123,12 +124,14 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_classification/multiclass_CUB_medium"),
             data_format="imagenet_with_subset_dirs",
             num_classes=67,
+            extra_overrides={},
         ),
         DatasetTestCase(
             name=f"multiclass_food101_large",
             data_root=Path("multiclass_classification/multiclass_food101_large"),
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
+            extra_overrides={},
         )
     ]
 
@@ -178,6 +181,7 @@ class TestMultilabelCls(BaseTest):
             data_root=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
             data_format="datumaro",
             num_classes=3,
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -186,12 +190,14 @@ class TestMultilabelCls(BaseTest):
             data_root=Path("multilabel_classification/multilabel_CUB_medium"),
             data_format="datumaro",
             num_classes=68,
+            extra_overrides={},
         ),
         DatasetTestCase(
             name=f"multilabel_food101_large",
             data_root=Path("multilabel_classification/multilabel_food101_large"),
             data_format="datumaro",
             num_classes=21,
+            extra_overrides={},
         )
     ]
 
@@ -378,6 +384,7 @@ class TestSemanticSegmentation(BaseTest):
             data_root=Path("semantic_seg/kvasir_small") / f"{idx}",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -386,12 +393,14 @@ class TestSemanticSegmentation(BaseTest):
             data_root=Path("semantic_seg/kvasir_medium"),
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
+            extra_overrides={},
         ),
         DatasetTestCase(
             name="kvasir_large",
             data_root=Path("semantic_seg/kvasir_large"),
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
+            extra_overrides={},
         )
     ]
 
@@ -502,6 +511,7 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -510,12 +520,14 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
+            extra_overrides={},
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root=Path("visual_prompting/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
+            extra_overrides={},
         )
     ]
 
