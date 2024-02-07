@@ -9,18 +9,43 @@ from __future__ import annotations
 from typing import Callable
 
 import torch
-from datumaro import Image
+from datumaro import DatasetSubset, Image
 
-from otx.core.data.dataset.base import OTXDataset
+from otx.core.data.dataset.base import OTXDataset, Transforms
 from otx.core.data.entity.anomaly import (
     AnomalyClassificationDataBatch,
     AnomalyClassificationDataItem,
 )
 from otx.core.data.entity.base import ImageInfo
+from otx.core.data.mem_cache import MemCacheHandlerBase
+from otx.core.types.image import ImageColorChannel
+from otx.core.types.task import OTXTaskType
 
 
-class AnomalyClassificationDataset(OTXDataset[AnomalyClassificationDataItem]):
+class AnomalyDataset(OTXDataset):
     """OTXDataset class for anomaly classification task."""
+
+    def __init__(
+        self,
+        task_type: OTXTaskType,
+        dm_subset: DatasetSubset,
+        transforms: Transforms,
+        mem_cache_handler: MemCacheHandlerBase = ...,
+        mem_cache_img_max_size: tuple[int, int] | None = None,
+        max_refetch: int = 1000,
+        image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
+        stack_images: bool = True,
+    ) -> None:
+        self.task_type = task_type
+        super().__init__(
+            dm_subset,
+            transforms,
+            mem_cache_handler,
+            mem_cache_img_max_size,
+            max_refetch,
+            image_color_channel,
+            stack_images,
+        )
 
     def _get_item_impl(self, index: int) -> AnomalyClassificationDataItem | None:
         datumaro_item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)

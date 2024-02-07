@@ -3,6 +3,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .classification import AnomalyClassificationDataset
+from .dataset import AnomalyDataset
 
-__all__ = ["AnomalyClassificationDataset", "AnomalySegmentationDataset"]
+__all__ = ["AnomalyDataset"]

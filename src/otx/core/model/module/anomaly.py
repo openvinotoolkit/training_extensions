@@ -5,27 +5,25 @@
 from __future__ import annotations
 
 import importlib
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
+from anomalib import TaskType
 from anomalib.callbacks.metrics import _MetricsCallback
 from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
 from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.callbacks.thresholding import _ThresholdCallback
-from lightning import LightningModule, Trainer
 from lightning.pytorch.callbacks.callback import Callback
-from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 from otx.core.data.entity.anomaly.classification import AnomalyClassificationDataBatch, AnomalyClassificationPrediction
 from otx.core.model.entity.anomaly import OTXAnomalyModel
 from otx.core.model.module.base import OTXLitModule
-from otx.core.types.export import OTXExportFormatType
-from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
     from anomalib.models import AnomalyModule
+    from lightning import LightningModule, Trainer
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 
 class _RouteCallback(Callback):
@@ -152,7 +150,17 @@ class OTXAnomalyLitModel(OTXLitModule):
         """
         # assign OTXModel's torch model to AnomalyModule's torch model
         self.anomaly_lightning_model.model = self.model.model
+
+        if hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
+            if hasattr(self.trainer.datamodule.config, "test_subset"):
+                self.model.transforms = self.trainer.datamodule.config.test_subset.transforms
+            elif hasattr(self.trainer.datamodule.config, "val_subset"):
+                self.model.transforms = self.trainer.datamodule.config.val_subset.transforms
+
+        self._set_metrics_in_torch()
+
         self.anomaly_lightning_model.log = self.log
+        self.anomaly_lightning_model.trainer = self.trainer
         return super().setup(stage)
 
     def training_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int) -> torch.Tensor:
@@ -165,6 +173,21 @@ class OTXAnomalyLitModel(OTXLitModule):
         """Route validation step to anomalib's lightning model's validation step."""
         inputs = self._customize_inputs(inputs)
         return self.anomaly_lightning_model.validation_step(inputs, batch_idx, **kwargs)
+
+    def on_validation_end(self) -> None:
+        self.anomaly_lightning_model.on_validation_end()
+        # assign the updated values to the OTX model
+        self._set_metrics_in_torch()
+
+    def _set_metrics_in_torch(self):
+        self.model.pixel_threshold = self.anomaly_lightning_model.pixel_threshold.value.cpu().numpy().tolist()
+        self.model.image_threshold = self.anomaly_lightning_model.image_threshold.value.cpu().numpy().tolist()
+        self.model.min_val = (
+            self.anomaly_lightning_model.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
+        )
+        self.model.max_val = (
+            self.anomaly_lightning_model.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
+        )
 
     def test_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int = 0, **kwargs: Any) -> ...:
         """Route test step to anomalib's lightning model's test step."""
@@ -193,16 +216,21 @@ class OTXAnomalyLitModel(OTXLitModule):
                 _PostProcessorCallback(),
                 _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
                 _ThresholdCallback(threshold="F1AdaptiveThreshold"),
-                _MetricsCallback(),  # TODO add image and pixel metrics
+                _MetricsCallback(
+                    task=TaskType.CLASSIFICATION,
+                    image_metrics=["AUROC", "F1Score"],
+                ),  # TODO add image and pixel metrics
             ],
         )
 
     def forward(self, inputs: AnomalyClassificationDataBatch) -> AnomalyClassificationPrediction:
+        """Wrap forward method of the Anomalib model."""
         inputs: torch.Tensor = self._customize_inputs()
         outputs = self.anomaly_lightning_model.forward(inputs)
         return self._customize_outputs(outputs=outputs, inputs=inputs)
 
     def state_dict(self) -> dict[str, Any]:
+        """Set keys of state_dict to allow correct loading of the model."""
         state_dict = super().state_dict()
         state_dict["anomaly_lightning_model_class"] = self.anomaly_lightning_model.__class__.__name__
 
@@ -221,6 +249,10 @@ class OTXAnomalyLitModel(OTXLitModule):
         return state_dict
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+        """Load state_dict and initialize the Anomalib model.
+
+        Also assigns the keys that were removed when saving the state_dict to save disk space.
+        """
         anomaly_lightning_module = ckpt["state_dict"].pop("anomaly_lightning_model_class")
         self._setup_anomalib_lightning_model(name=anomaly_lightning_module)
         # extract anomaly_lightning_model's state_dict from ckpt and load it
@@ -256,15 +288,5 @@ class OTXAnomalyLitModel(OTXLitModule):
         outputs: Any,
         inputs: AnomalyClassificationDataBatch,
     ) -> AnomalyClassificationPrediction:
-        # TODO
-        ...
-
-    def export(
-        self,
-        output_dir: Path,
-        base_name: str,
-        export_format: OTXExportFormatType,
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> Path:
         # TODO
         ...
