@@ -305,7 +305,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
                     "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float32),
                     "has_mask_input": torch.tensor([[1]], dtype=torch.float32),
-                    "orig_size": torch.randint(low=256, high=2048, size=(1, 2), dtype=torch.float)
+                    "orig_size": torch.randint(low=256, high=2048, size=(1, 2), dtype=torch.int64)
                 }
                 output_names = ["upscaled_masks", "iou_predictions", "low_res_masks"]
                 model_to_export = self.model
@@ -667,7 +667,7 @@ class ZeroShotTask(InferenceTask):
                     "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
                     "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float32),
                     "has_mask_input": torch.tensor([[1]], dtype=torch.float32),
-                    "orig_size": torch.randint(low=256, high=2048, size=(1, 2), dtype=torch.float)
+                    "orig_size": torch.randint(low=256, high=2048, size=(1, 2), dtype=torch.int64)
                 }
                 output_names = ["upscaled_masks", "iou_predictions", "low_res_masks"]
                 model_to_export = self.model

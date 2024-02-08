@@ -202,6 +202,7 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         self.visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
             "otx.algorithms.visual_prompting.tasks.openvino.model_wrappers.Decoder", autospec=True
         )
+        self.visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.3
         self.visual_prompting_ov_inferencer.model["decoder"]._apply_coords.return_value = np.array([[1, 1]])
 
     @e2e_pytest_unit
@@ -243,14 +244,14 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         "postprocess_output,infer_sync_output,expected",
         [
             (
-                (np.ones((1, 1)), np.ones((3, 3)), 0.9),
-                {"iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
-                {"iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
+                (np.ones((1, 1)), np.ones((3, 3))),
+                {"upscaled_masks": np.ones((3, 3)), "iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
+                {"masks": np.ones((3, 3))},
             ),
             (
-                (np.zeros((2, 2)), np.zeros((3, 3)), 0.0),
-                {"iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
-                {"iou_predictions": 0.0, "low_res_masks": np.zeros((2, 2))},
+                (np.zeros((2, 2)), np.zeros((3, 3))),
+                {"upscaled_masks": np.zeros((3, 3)), "iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
+                {"masks": np.zeros((3, 3))},
             ),
         ],
     )
@@ -281,17 +282,15 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             original_size=np.array([3, 3]),
         )
 
-        assert np.all(result["iou_predictions"] == expected["iou_predictions"])
-        assert np.all(result["low_res_masks"] == expected["low_res_masks"])
+        assert np.all(result["masks"] == expected["masks"])
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
-        "high_res_masks,expected_masks,expected_scores",
+        "masks,expected_masks",
         [
             (
                 np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[..., None], 4, axis=-1),
-                np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_),
-                0.9,
+                np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_)
             ),
             (
                 np.concatenate(
@@ -301,25 +300,21 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
                     ),
                     axis=-1,
                 ),
-                np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_),
-                0.8,
+                np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_)
             ),
-            (np.zeros((3, 3, 4)), np.zeros((3, 3)), 0.0),
+            (np.zeros((3, 3, 4)), np.zeros((3, 3))),
         ],
     )
-    def test_postprocess_masks(self, high_res_masks: np.ndarray, expected_masks: np.ndarray, expected_scores: float):
+    def test_postprocess_masks(self, masks: np.ndarray, expected_masks: np.ndarray):
         """Test _postprocess_masks."""
-        self.visual_prompting_ov_inferencer.model["decoder"].resize_and_crop.return_value = high_res_masks
         self.visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.0
         self.visual_prompting_ov_inferencer.model["decoder"].image_size = 3
 
-        _, result_masks, result_scores = self.visual_prompting_ov_inferencer._postprocess_masks(
-            logits=np.empty((1, 4, 2, 2)), scores=np.array([[0.5, 0.7, 0.8, 0.9]]), original_size=np.array([3, 3])
-        )
+        _, result_masks = self.visual_prompting_ov_inferencer._postprocess_masks(
+            masks=masks, logits=np.empty((1, 4, 2, 2)), scores=np.array([[0.5, 0.7, 0.8, 0.9]]))
 
         assert result_masks.shape == (3, 3)
         assert np.all(result_masks == expected_masks)
-        assert result_scores == expected_scores
 
 
 class TestOTXOpenVinoDataLoader:

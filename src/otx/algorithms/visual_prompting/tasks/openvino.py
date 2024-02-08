@@ -176,12 +176,11 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         soft_predictions: List[np.ndarray] = []
         for prompt in prompts:
             label = prompt.pop("label")
-            orig_size = prompt.pop("orig_size")
             prompt.update(image_embeddings)
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(prompt)
-            metadata = {"label": label, "original_size": orig_size}
+            metadata = {"label": label}
 
             # set annotation for eval
             annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
@@ -378,42 +377,40 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             elif i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks, iou_predictions = self._postprocess_masks(
-                    logits, scores, original_size, is_single=True  # noqa: F821
-                )
+                mask_input, masks = self._postprocess_masks(masks, logits, scores, is_single=True)
                 if masks.sum() == 0:
-                    return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
+                    return {"masks": masks}
 
                 has_mask_input = self.has_mask_inputs[1]
 
             elif i == 2:
                 # Cascaded Post-refinement-2
-                mask_input, masks, iou_predictions = self._postprocess_masks(
-                    logits, scores, original_size  # noqa: F821
-                )
+                mask_input, masks = self._postprocess_masks(masks, logits, scores)
                 if masks.sum() == 0:
-                    return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
+                    return {"masks": masks}
 
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 box_coords = self.model["decoder"]._apply_coords(
                     np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size
                 )
-                inputs["point_coords"] = np.concatenate((inputs["point_coords"], box_coords), axis=1)
-                inputs["point_labels"] = np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1)
+                inputs.update({
+                    "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
+                    "point_labels": np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1),
+                })
 
             inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})
             prediction = self.model["decoder"].infer_sync(inputs)
-            scores, logits = prediction["iou_predictions"], prediction["low_res_masks"]
+            upscaled_masks, scores, logits = prediction["upscaled_masks"], prediction["iou_predictions"], prediction["low_res_masks"]
+            masks = upscaled_masks > self.model["decoder"].mask_threshold
 
-        return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
+        _, masks = self._postprocess_masks(masks, logits, scores)
+        return {"masks": masks}
 
     def _postprocess_masks(
-        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray, is_single: bool = False
+        self, masks: np.ndarray, logits: np.ndarray, scores: np.ndarray, is_single: bool = False
     ) -> Tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
-        high_res_masks = self.model["decoder"].resize_and_crop(logits[0].transpose(1, 2, 0), original_size)
-        masks = high_res_masks > self.model["decoder"].mask_threshold
         masks = masks.transpose(2, 0, 1)[None]
 
         if is_single:
@@ -430,10 +427,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             if len(scores[0]) == 0:
                 # all predicted masks were zero masks, ignore them.
-                return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
+                return None, np.zeros(masks.shape[-2:])
 
             best_idx = np.argmax(scores[0])
-        return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
+        return logits[:, [best_idx]], masks[0, best_idx]
 
     def __inspect_overlapping_areas(
         self,

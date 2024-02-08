@@ -353,7 +353,7 @@ class TestZeroShotTask:
                 "point_labels": np.random.randint(low=0, high=4, size=(1, 2)).astype(np.float32),
                 "mask_input": np.random.randn(1, 1, *mask_input_size).astype(np.float32),
                 "has_mask_input": np.array([[1]], dtype=np.float32),
-                "orig_size": np.random.randint(low=256, high=2048, size=(1, 2)).astype(np.float32),
+                "orig_size": np.random.randint(low=256, high=2048, size=(1, 2)).astype(np.int64),
             },
         }
         onnx_outputs = {

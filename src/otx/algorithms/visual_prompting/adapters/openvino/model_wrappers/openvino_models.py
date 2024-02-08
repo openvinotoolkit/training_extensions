@@ -94,7 +94,7 @@ class Decoder(SegmentationModel):
         return parameters
 
     def _get_outputs(self):
-        return "low_res_masks"
+        return "upscaled_masks"
 
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Preprocess prompts."""
@@ -111,7 +111,7 @@ class Decoder(SegmentationModel):
                     # TODO (sungchul): how to generate mask_input and has_mask_input
                     "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
                     "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                    "orig_size": np.array(inputs["original_size"], dtype=np.float32).reshape((-1, 2)),
+                    "orig_size": np.array(inputs["original_size"], dtype=np.int64).reshape((-1, 2)),
                     "label": label,
                 }
             )
@@ -159,7 +159,6 @@ class Decoder(SegmentationModel):
             return np.tanh(x * 0.5) * 0.5 + 0.5  # to avoid overflow
 
         soft_prediction = outputs[self.output_blob_name].squeeze()
-        soft_prediction = self.resize_and_crop(soft_prediction, meta["original_size"][0])
         soft_prediction = sigmoid(soft_prediction)
         meta["soft_prediction"] = soft_prediction
 
@@ -173,43 +172,3 @@ class Decoder(SegmentationModel):
         meta["label"].probability = probability
 
         return hard_prediction, soft_prediction
-
-    def resize_and_crop(self, soft_prediction: np.ndarray, original_size: np.ndarray) -> np.ndarray:
-        """Resize and crop soft prediction.
-
-        Args:
-            soft_prediction (np.ndarray): Predicted soft prediction with HxW shape.
-            original_size (np.ndarray): The original image size.
-
-        Returns:
-            final_soft_prediction (np.ndarray): Resized and cropped soft prediction for the original image.
-        """
-        resized_soft_prediction = cv2.resize(
-            soft_prediction, (self.image_size, self.image_size), 0, 0, interpolation=cv2.INTER_LINEAR
-        )
-
-        prepadded_size = self.get_padded_size(original_size, self.image_size).astype(np.int64)
-        resized_cropped_soft_prediction = resized_soft_prediction[: prepadded_size[0], : prepadded_size[1], ...]
-
-        original_size = original_size.astype(np.int64)
-        h, w = original_size
-        final_soft_prediction = cv2.resize(
-            resized_cropped_soft_prediction, (w, h), 0, 0, interpolation=cv2.INTER_LINEAR
-        )
-        return final_soft_prediction
-
-    def get_padded_size(self, original_size: np.ndarray, longest_side: int) -> np.ndarray:
-        """Get padded size from original size and longest side of the image.
-
-        Args:
-            original_size (np.ndarray): The original image size with shape Bx2.
-            longest_side (int): The size of the longest side.
-
-        Returns:
-            transformed_size (np.ndarray): The transformed image size with shape Bx2.
-        """
-        original_size = original_size.astype(np.float32)
-        scale = longest_side / np.max(original_size)
-        transformed_size = scale * original_size
-        transformed_size = np.floor(transformed_size + 0.5).astype(np.int64)
-        return transformed_size

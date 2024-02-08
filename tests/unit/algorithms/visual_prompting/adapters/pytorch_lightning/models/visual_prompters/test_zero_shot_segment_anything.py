@@ -74,13 +74,13 @@ class TestPromptGetter:
         assert self.prompt_getter.reference_prompts[3].sum() == 9
 
     @e2e_pytest_unit
-    def test_forward(self, mocker) -> None:
+    @pytest.mark.parametrize("result_point_selection", [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])])
+    def test_forward(self, mocker, result_point_selection: torch.Tensor) -> None:
         """Test forward."""
         mocker.patch.object(
             self.prompt_getter,
             "get_prompt_candidates",
-            return_value=(torch.tensor([[[0, 0, 0.5], [1, 1, 0.7]]]), torch.tensor([[[2, 2]]])),
-        )
+            return_value=(result_point_selection, torch.zeros(1, 2)))
         image_embeddings = torch.ones(1, 4, 4, 4)
         self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
         original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
@@ -88,17 +88,18 @@ class TestPromptGetter:
         total_points_scores, total_bg_coords = self.prompt_getter(
             image_embeddings=image_embeddings, original_size=original_size
         )
-
+        
         assert total_points_scores.shape[0] == 1
         assert total_bg_coords.shape[0] == 1
 
     @e2e_pytest_unit
-    def test_get_prompt_candidates(self, mocker) -> None:
+    @pytest.mark.parametrize("result_point_selection", [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])])
+    def test_get_prompt_candidates(self, mocker, result_point_selection: torch.Tensor) -> None:
         """Test get_prompt_candidates."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
-        mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
+        mocker.patch.object(self.prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
         image_embeddings = torch.ones(1, 4, 4, 4)
         self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
         label = torch.tensor([[0]], dtype=torch.int64)
@@ -110,8 +111,8 @@ class TestPromptGetter:
             image_embeddings=image_embeddings, label=label, original_size=original_size
         )
 
-        assert points_scores == "points_scores"
-        assert bg_coords == "bg_coords"
+        assert torch.all(points_scores == result_point_selection)
+        assert torch.all(bg_coords == torch.zeros(1, 2))
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(

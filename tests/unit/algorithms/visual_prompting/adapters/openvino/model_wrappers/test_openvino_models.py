@@ -79,7 +79,7 @@ class TestDecoder:
         """Test _get_outputs."""
         results = self.decoder._get_outputs()
 
-        assert "low_res_masks" == results
+        assert "upscaled_masks" == results
 
     @e2e_pytest_unit
     def test_preprocess(self):
@@ -142,27 +142,3 @@ class TestDecoder:
         returned_value = self.decoder.postprocess(outputs=fake_output, meta=fake_metadata)
 
         assert isinstance(returned_value, tuple)
-        assert np.all(returned_value[0].shape == fake_metadata["original_size"])
-        assert np.all(returned_value[1].shape == fake_metadata["original_size"])
-
-    @e2e_pytest_unit
-    def test_resize_and_crop(self, mocker):
-        """Test resize_and_crop."""
-        mocker.patch.object(self.decoder, "get_padded_size", return_value=np.array((6, 6)))
-
-        masks = np.zeros((2, 2))
-        orig_size = np.array((8, 8))
-
-        results = self.decoder.resize_and_crop(masks, orig_size)
-
-        assert results.shape == tuple(orig_size)
-
-    @e2e_pytest_unit
-    def test_get_padded_size(self):
-        """Test get_padded_size."""
-        original_size = np.array((2, 4))
-        longest_side = 6
-
-        results = self.decoder.get_padded_size(original_size, longest_side)
-
-        assert np.all(results == np.array((3, 6)))
