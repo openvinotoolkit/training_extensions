@@ -4,6 +4,7 @@
 """OTX utility functions."""
 
 import signal
+from decimal import Decimal
 from functools import partial
 from typing import Callable, Any
 
@@ -44,3 +45,15 @@ def set_using_comma_seperated_key(key: str, val: Any, target) -> None:
         target[splited_key[-1]] = val
     else:
         setattr(target, splited_key[-1], val)
+
+
+def get_decimal_point(num: float) -> int:
+    """Find a decimal point from the given float.
+
+    Args:
+        num (float): float to find a decimal point from.
+
+    Returns:
+        int: decimal point.
+    """
+    return abs(Decimal(str(num)).as_tuple().exponent)

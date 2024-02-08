@@ -107,15 +107,10 @@ class Engine:
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
-        self.work_dir = work_dir
+        self._cache = TrainerArgumentsCache(**kwargs)
         self.checkpoint = checkpoint
-        self.device = DeviceConfig(accelerator=device)
-        self._cache = TrainerArgumentsCache(
-            default_root_dir=self.work_dir,
-            accelerator=self.device.accelerator,
-            devices=self.device.devices,
-            **kwargs,
-        )
+        self.work_dir = work_dir
+        self.device = device
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
@@ -141,6 +136,24 @@ class Engine:
         self.scheduler: LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
+
+    @property
+    def work_dir(self) -> PathLike:
+        return self._work_dir
+
+    @work_dir.setter
+    def work_dir(self, val: PathLike) -> None:
+        self._work_dir = val
+        self._cache.update(default_root_dir=val)
+
+    @property
+    def device(self) -> DeviceConfig:
+        return self._device
+
+    @device.setter
+    def device(self, val: DeviceType) -> None:
+        self._device = DeviceConfig(accelerator=val)
+        self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 
     _EXPORTED_MODEL_BASE_NAME = "exported_model"
 
