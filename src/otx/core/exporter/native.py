@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging as log
 import tempfile
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
 import onnx
 import openvino
@@ -32,9 +32,8 @@ class OTXNativeModelExporter(OTXModelExporter):
         metadata: dict[tuple[str, str], str] | None = None,
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
-        custom_forward: Callable | None = None,
     ) -> None:
-        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata, custom_forward)
+        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata)
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
 

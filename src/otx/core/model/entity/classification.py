@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 
@@ -28,7 +28,9 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
+    from mmpretrain.models import ImageClassifier
     from mmpretrain.models.utils import ClsDataPreprocessor
+    from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
@@ -82,16 +84,19 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         """Clear all history of explain records."""
         self.explain_hook.reset()
 
-    def get_custom_forward(self):
+    def _get_forward_with_auxiliaries(self) -> Callable | None:
         from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 
         head_forward_fn = self.head_forward_fn
         num_classes = self.num_classes
         optimize_gap = self.has_gap
 
-        def custom_forward(
-            self, inputs: torch.Tensor, data_samples: Optional[List[DataSample]] = None, mode: str = "tensor"
-        ):
+        def forward_with_auxiliaries(
+            self: ImageClassifier,
+            inputs: torch.Tensor,
+            data_samples: list[DataSample] | None = None,  # noqa: ARG001
+            mode: str = "tensor",  # noqa: ARG001
+        ) -> dict:
             x = self.backbone(inputs)
             backbone_feat = x
 
@@ -105,9 +110,12 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             if self.with_neck:
                 x = self.neck(x)
 
-            return self.head(x) if self.with_head else x, saliency_maps
+            return {
+                "logits": self.head(x) if self.with_head else x,
+                "saliency_map": saliency_maps,
+            }
 
-        return custom_forward
+        return forward_with_auxiliaries
 
 
 class OTXMulticlassClsModel(

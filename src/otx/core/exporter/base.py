@@ -8,10 +8,9 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-import types
 from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
 from otx.core.exporter.exportable_code import demo
@@ -49,7 +48,6 @@ class OTXModelExporter:
         pad_value: int = 0,
         swap_rgb: bool = False,
         metadata: dict[tuple[str, str], str] | None = None,
-        custom_forward: Callable | None = None,
     ) -> None:
         self.input_size = input_size
         self.mean = mean
@@ -58,7 +56,6 @@ class OTXModelExporter:
         self.pad_value = pad_value
         self.swap_rgb = swap_rgb
         self.metadata = metadata
-        self.custom_forward = custom_forward
 
     def export(
         self,
@@ -67,7 +64,6 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        dump_auxiliaries: bool = False,
     ) -> Path:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
@@ -77,15 +73,10 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            dump_auxiliaries (bool): Flag to return "feature_vector" and "saliency_map". Defaults to False.
 
         Returns:
             Path: path to the exported model
         """
-        if dump_auxiliaries:
-            self._patch_model(model)
-            self._update_output_names()
-
         if export_format == OTXExportFormatType.OPENVINO:
             return self.to_openvino(model, output_dir, base_model_name, precision)
         if export_format == OTXExportFormatType.ONNX:
@@ -272,15 +263,3 @@ class OTXModelExporter:
             onnx_model = float16.convert_float_to_float16(onnx_model)
 
         return onnx_model
-
-    def _patch_model(self, model):
-        if self.custom_forward:
-            funcType = types.MethodType
-            model.forward = funcType(self.custom_forward, model)
-
-    def _update_output_names(self):
-        if "output_names" not in self.onnx_export_configuration:
-            self.onnx_export_configuration["output_names"] = ["logits", "saliency_map"]
-        else:
-            if "saliency_map" not in self.onnx_export_configuration["output_names"]:
-                self.onnx_export_configuration["output_names"].append("saliency_map")

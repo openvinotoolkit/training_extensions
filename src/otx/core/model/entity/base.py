@@ -6,9 +6,10 @@
 from __future__ import annotations
 
 import json
+import types
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
 
 import numpy as np
 import openvino
@@ -51,6 +52,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+        self.original_model_forward = None
 
     @property
     def label_info(self) -> LabelInfo:
@@ -211,10 +213,20 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            dump_auxiliaries (bool): Flag to return "feature_vector" and "saliency_map". Defaults to False.
+
         Returns:
             Path: path to the exported model.
         """
-        return self._exporter.export(self.model, output_dir, base_name, export_format, precision, dump_auxiliaries)
+        exporter = self._exporter
+        if dump_auxiliaries:
+            self._reset_model_forward()
+            if hasattr(exporter, "onnx_export_configuration"):
+                self._update_onnx_output_names(exporter.onnx_export_configuration)
+        export_result = exporter.export(self.model, output_dir, base_name, export_format, precision)
+        if dump_auxiliaries:
+            self._restore_model_forward()
+        return export_result
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -249,13 +261,12 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             ("model_info", "label_ids"): all_label_ids.strip(),
             ("model_info", "optimization_config"): json.dumps(optimization_config),
         }
-        parameters["custom_forward"] = self.get_custom_forward()
 
         return parameters
 
-    def get_custom_forward(self):
-        """Returns custom forward function, that dumps auxiliary outputs: feature vector and saliency map."""
-        return
+    def _get_forward_with_auxiliaries(self) -> Callable | None:
+        """Returns updated forward function, that dumps auxiliary outputs: feature vector and saliency map."""
+        return None
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
@@ -268,6 +279,33 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     @property
     def _optimization_config(self) -> dict[str, str]:
         return {}
+
+    def _reset_model_forward(self) -> None:
+        forward_with_auxiliaries = self._get_forward_with_auxiliaries()
+        if forward_with_auxiliaries is None:
+            msg = "forward_with_auxiliaries needs to be implemented for dumping auxiliaries."
+            raise NotImplementedError(msg)
+
+        self.original_model_forward = self.model.forward
+
+        func_type = types.MethodType
+        self.model.forward = func_type(forward_with_auxiliaries, self.model)
+
+    def _restore_model_forward(self) -> None:
+        if not self.original_model_forward:
+            msg = "original_model_forward is None."
+            raise RuntimeError(msg)
+
+        func_type = types.MethodType
+        self.model.forward = func_type(self.original_model_forward, self.model)
+        self.original_model_forward = None
+
+    @staticmethod
+    def _update_onnx_output_names(onnx_export_configuration: dict) -> None:
+        if "output_names" not in onnx_export_configuration:
+            onnx_export_configuration["output_names"] = ["logits", "saliency_map"]
+        elif "saliency_map" not in onnx_export_configuration["output_names"]:
+            onnx_export_configuration["output_names"].append("saliency_map")
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
