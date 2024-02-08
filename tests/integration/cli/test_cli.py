@@ -182,6 +182,41 @@ def test_otx_e2e(
 
     assert (tmp_path_test / "outputs").exists()
 
+    # 5) otx export with XAI
+    if "_cls" not in task or "dino" in model_name or "deit" in model_name:
+        return
+
+    format_to_file = {
+        "ONNX": "exported_model.onnx",
+        "OPENVINO": "exported_model.xml",
+        "EXPORTABLE_CODE": "exportable_code.zip",
+    }
+
+    tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
+    for fmt in format_to_file:
+        command_cfg = [
+            "otx",
+            "export",
+            "--config",
+            recipe,
+            "--data_root",
+            fxt_target_dataset_per_task[task],
+            "--engine.work_dir",
+            str(tmp_path_test / "outputs"),
+            *fxt_cli_override_command_per_task[task],
+            "--checkpoint",
+            str(ckpt_files[-1]),
+            "--export_format",
+            f"{fmt}",
+            "--dump_auxiliaries",
+            "True",
+        ]
+
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+        assert (tmp_path_test / "outputs").exists()
+        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
+
 
 @pytest.mark.parametrize("recipe", RECIPE_LIST)
 def test_otx_explain_e2e(
