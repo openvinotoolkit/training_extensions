@@ -61,7 +61,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     def label_info(self, label_info: LabelInfo | list[str]) -> None:
         """Set this model label information."""
         if isinstance(label_info, list):
-            label_info = LabelInfo(label_names=label_info)
+            label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
 
         old_num_classes = self._label_info.num_classes
         new_num_classes = label_info.num_classes

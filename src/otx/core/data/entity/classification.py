@@ -288,16 +288,9 @@ class HLabelInfo:
             put_key_values(single_label_ctoi, class_to_idx)
             return class_to_idx
 
-        # NOTE, this information needs for the correct prediction from Model API side.
-        # However, need to check the correct format. <- TODO(sungman)
-        def get_label_tree_edges(dm_label_groups: list[LabelCategories.LabelGroup]) -> list[list[str]]:
+        def get_label_tree_edges(dm_label_items: list[LabelCategories]) -> list[list[str]]:
             """Get label tree edges information. Each edges represent [child, parent]."""
-            return [
-                [label, label_group.name]
-                for label_group in dm_label_groups
-                for label in label_group.labels
-                if len(label_group.labels) > 1
-            ]
+            return [[item.name, item.parent] for item in dm_label_items if item.parent != ""]
 
         all_groups = [label_group.labels for label_group in dm_label_categories.label_groups]
 
@@ -317,7 +310,7 @@ class HLabelInfo:
             class_to_group_idx=merged_class_to_idx,
             all_groups=all_groups,
             label_to_idx=dm_label_categories._indices,  # noqa: SLF001
-            label_tree_edges=get_label_tree_edges(dm_label_categories.label_groups),
+            label_tree_edges=get_label_tree_edges(dm_label_categories.items),
             empty_multiclass_head_indices=[],  # consider the label removing case
         )
 
