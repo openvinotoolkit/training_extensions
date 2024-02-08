@@ -4,9 +4,13 @@
 """Tile Adaptor for OTX."""
 from __future__ import annotations
 
-import numpy as np
 import logging as log
-from otx.core.config import TileConfig
+from typing import Any
+
+import numpy as np
+from datumaro import Bbox, Dataset, DatasetSubset
+
+from otx.core.config.data import TileConfig
 
 
 def compute_robust_statistics(values: np.array) -> dict[str, float]:
@@ -59,15 +63,20 @@ def compute_robust_scale_statistics(values: np.array) -> dict[str, float]:
 
     stat = compute_robust_statistics(np.log(values))
     stat = {k: float(np.exp(v)) for k, v in stat.items()}
-    stat["std"] = float(np.std(values))  # Normal scale std is better for understanding
+    # Normal scale std is easier to understand
+    stat["std"] = float(np.std(values))
     return stat
 
 
-def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False, max_samples=1000) -> Dict[str, Any]:
+def compute_robust_dataset_statistics(
+    dataset: DatasetSubset,
+    ann_stat: bool = False,
+    max_samples: int = 1000,
+) -> dict[str, Any]:
     """Computes robust statistics of image & annotation sizes.
 
     Args:
-        dataset (DatasetEntity): Input dataset.
+        dataset (DatasetSubset): Input dataset.
         ann_stat (bool, optional): Whether to compute annotation size statistics. Defaults to False.
         max_samples (int, optional): Maximum number of dataset subsamples to analyze. Defaults to 1000.
 
@@ -85,35 +94,34 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False, ma
     if len(dataset) == 0 or max_samples <= 0:
         return stat
 
-    max_image_samples = min(max_samples, len(dataset))
-    image_indices = np.random.permutation(len(dataset))[:max_image_samples]
+    data_ids = [item.id for item in dataset]
+    if len(dataset) > max_samples:
+        log.warning(f"Too many samples. Only use first {max_samples} samples.")
+        rng = np.random.default_rng()
+        data_ids = rng.choice(data_ids, max_samples, replace=False)
 
     image_sizes = []
-    for i in image_indices:
-        data = dataset[int(i)]
-        image_sizes.append(np.sqrt(data.width * data.height))
+    for idx in data_ids:
+        data = dataset.get(id=idx, subset=dataset.name)
+        height, width = data.media.size
+        image_sizes.append(np.sqrt(width * height))
     stat["image"] = compute_robust_scale_statistics(np.array(image_sizes))
 
     if ann_stat:
         stat["annotation"] = {}
         num_per_images: list[int] = []
         size_of_shapes: list[float] = []
-        for i in image_indices:
-            data = dataset[int(i)]
-            annotations = data.get_annotations()
+        for idx in data_ids:
+            data = dataset.get(id=idx, subset=dataset.name)
+            annotations = [anno for anno in data.annotations if isinstance(anno, Bbox)]
             num_per_images.append(len(annotations))
 
             if len(size_of_shapes) >= max_samples:
                 continue
 
-            image_area = data.width * data.height
-
-            def scale_of(ann):
-                return np.sqrt(image_area * ann.shape.get_area())
-
             size_of_shapes.extend(
-                filter(lambda x: x >= 1, map(scale_of, annotations))
-            )  # Filter out shapes smaller than 1 pixel as outlier
+                filter(lambda x: x >= 1, [np.sqrt(anno.get_area()) for anno in annotations]),
+            )
 
         stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
         stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes))
@@ -121,58 +129,44 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False, ma
     return stat
 
 
-def adapt_tile_config(tile_config: TileConfig, dataset: DatasetEntity):
+def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
     """Config tile parameters.
 
     Adapt based on annotation statistics.
     i.e. tile size, tile overlap, ratio and max objects per sample
 
     Args:
-        tile_config (BaseTilingParameters): tiling parameters of the model
-        dataset (DatasetEntity): training dataset
+        tile_config (TileConfig): tiling parameters of the model
+        dataset (Dataset): Datumaro dataset including all subsets
     """
+    if (train_dataset := dataset.subsets().get("train")) is not None:
+        stat = compute_robust_dataset_statistics(train_dataset, ann_stat=True)
+        max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
+        avg_size = stat["annotation"]["size_of_shape"]["avg"]
+        min_size = stat["annotation"]["size_of_shape"]["robust_min"]
+        max_size = stat["annotation"]["size_of_shape"]["robust_max"]
+        log.info(f"----> [stat] scale avg: {avg_size}")
+        log.info(f"----> [stat] scale min: {min_size}")
+        log.info(f"----> [stat] scale max: {max_size}")
 
-    stat = compute_robust_dataset_statistics(dataset, ann_stat=True)
-    max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
-    avg_size = stat["annotation"]["size_of_shape"]["avg"]
-    min_size = stat["annotation"]["size_of_shape"]["robust_min"]
-    max_size = stat["annotation"]["size_of_shape"]["robust_max"]
-    log.info(f"----> [stat] scale avg: {avg_size}")
-    log.info(f"----> [stat] scale min: {min_size}")
-    log.info(f"----> [stat] scale max: {max_size}")
+        object_size = avg_size
 
-    object_size = avg_size
+        log.info("[Adaptive tiling pararms]")
+        object_tile_ratio = tile_config.object_tile_ratio
+        tile_size = int(object_size / object_tile_ratio)
+        tile_overlap = max_size / tile_size
+        log.info(f"----> avg_object_size: {object_size}")
+        log.info(f"----> max_object_size: {max_size}")
+        log.info(f"----> object_tile_ratio: {object_tile_ratio}")
+        log.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+        log.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
 
-    log.info("[Adaptive tiling pararms]")
-    object_tile_ratio = tile_config.object_tile_ratio
-    tile_size = int(object_size / object_tile_ratio)
-    tile_overlap = max_size / tile_size
-    log.info(f"----> avg_object_size: {object_size}")
-    log.info(f"----> max_object_size: {max_size}")
-    log.info(f"----> object_tile_ratio: {object_tile_ratio}")
-    log.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
-    log.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
+        if tile_overlap >= 0.9:
+            # Use the average object area if the tile overlap is too large to prevent 0 stride.
+            tile_overlap = object_size / tile_size
+            log.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
 
-    # TODO [Eugene]: Need to discuss how we add parameter validators to dataclass config
-    # if tile_overlap >= tile_config.tile_overlap["max_value"]:
-    #     # Use the average object area if the tile overlap is too large to prevent 0 stride.
-    #     tile_overlap = object_size / tile_size
-    #     log.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
-
-    # # validate parameters are in range
-    # tile_size = max(
-    #     tile_config.get_metadata("tile_size")["min_value"],
-    #     min(tile_config.get_metadata("tile_size")["max_value"], tile_size),
-    # )
-    # tile_overlap = max(
-    #     tile_config.get_metadata("tile_overlap")["min_value"],
-    #     min(tile_config.get_metadata("tile_overlap")["max_value"], tile_overlap),
-    # )
-    # max_num_objects = max(
-    #     tile_config.get_metadata("tile_max_number")["min_value"],
-    #     min(tile_config.get_metadata("tile_max_number")["max_value"], max_num_objects),
-    # )
-
-    tile_config.tile_size = tile_size
-    tile_config.tile_max_number = max_num_objects
-    tile_config.tile_overlap = tile_overlap
+        # TODO(Eugene): how to validate parameters? dataclass? pydantic?
+        tile_config.tile_size = (tile_size, tile_size)
+        tile_config.max_num_instances = max_num_objects
+        tile_config.overlap = tile_overlap

@@ -65,12 +65,13 @@ class TileConfig:
     """DTO for tiler configuration."""
 
     enable_tiler: bool = False
+    enable_adaptive_tiling: bool = True
     tile_size: tuple[int, int] = (400, 400)
     overlap: float = 0.2
     iou_threshold: float = 0.45
     max_num_instances: int = 1500
-    enable_adaptive_tiling: bool = True
     object_tile_ratio: float = 0.03
+    tile_sampling_ratio: float = 1.0
 
 
 @dataclass

@@ -21,6 +21,7 @@ from otx.core.data.mem_cache import (
     parse_mem_cache_size_to_int,
 )
 from otx.core.data.pre_filtering import pre_filtering
+from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -56,7 +57,7 @@ class OTXDataModule(LightningDataModule):
         if self.task != "H_LABEL_CLS":
             dataset = pre_filtering(dataset, self.config.data_format)
         if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
-            patch_tiling(config.tile_config, dataset=dataset)
+            adapt_tile_config(config.tile_config, dataset=dataset)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,

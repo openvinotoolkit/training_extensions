@@ -35,7 +35,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         self,
         img_infos: list[ImageInfo],
         iou_threshold: float = 0.45,
-        max_num_instances: int = 100,
+        max_num_instances: int = 500,
     ) -> None:
         self.img_infos = img_infos
         self.iou_threshold = iou_threshold
@@ -207,7 +207,7 @@ class InstanceSegTileMerge(TileMerge):
                 tile_preds.scores,
                 tile_preds.masks,
             ):
-                keep_indices = tile_masks.sum((1, 2)) > 0
+                keep_indices = tile_masks.to_sparse().sum((1, 2)).to_dense() > 0
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
                 _bboxes = tile_bboxes[keep_indices]
                 _labels = tile_labels[keep_indices]

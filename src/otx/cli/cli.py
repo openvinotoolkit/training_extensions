@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
@@ -295,12 +296,6 @@ class OTXCLI:
             self.datamodule = self.get_config_value(self.config_init, "data")
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
 
-            if self.datamodule.config.tile_config.enable_tiler:
-                if not hasattr(self.model, "tile_config"):
-                    msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
-                    raise AttributeError(msg)
-                self.model.tile_config = self.datamodule.config.tile_config
-
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
                 model=self.model,
@@ -340,6 +335,16 @@ class OTXCLI:
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+
+        # Update tile config due to adaptive tiling
+        if self.datamodule.config.tile_config.enable_tiler:
+            if not hasattr(model, "tile_config"):
+                msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
+                raise AttributeError(msg)
+            model.tile_config = self.datamodule.config.tile_config
+            self.config[self.subcommand].data.config.tile_config.update(
+                Namespace(dataclasses.asdict(model.tile_config)),
+            )
 
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
