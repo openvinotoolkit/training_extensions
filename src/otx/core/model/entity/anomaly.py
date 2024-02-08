@@ -82,6 +82,7 @@ class _AnomalyModelExporter(OTXModelExporter):
             ("model_info", "image_shape"): model_info.image_shape,
             ("model_info", "labels"): "Normal Anomaly",
             ("model_info", "model_type"): "AnomalyDetection",
+            ("model_info", "task"): model_info.task.value,
         }
         super().__init__(
             input_size=(1, 3, *model_info.image_shape),
