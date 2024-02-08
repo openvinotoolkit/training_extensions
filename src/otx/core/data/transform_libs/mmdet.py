@@ -205,6 +205,7 @@ class PackDetInputs(MMDetPackDetInputs):
 
     def convert_bboxes(self, original_bboxes: torch.Tensor, img_shape: tuple[int, int]) -> tv_tensors.BoundingBoxes:
         """Convert bounding boxes to tv_tensors.BoundingBoxes format."""
+        print(img_shape, "tb")
         return tv_tensors.BoundingBoxes(
             original_bboxes.float(),
             format=tv_tensors.BoundingBoxFormat.XYXY,

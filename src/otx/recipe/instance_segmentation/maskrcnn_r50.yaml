@@ -75,7 +75,7 @@ overrides:
           - type: LoadImageFromFile
             backend_args: null
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
               - 1024
               - 1024

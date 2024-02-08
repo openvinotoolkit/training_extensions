@@ -150,6 +150,7 @@ class OTXDataModule(LightningDataModule):
         """Get test dataloader."""
         config = self.config.test_subset
         dataset = self._get_dataset(config.subset_name)
+        #type(dataset).__len__ = lambda self: 50
 
         return DataLoader(
             dataset=dataset,

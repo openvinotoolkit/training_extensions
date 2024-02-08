@@ -59,10 +59,14 @@ class ResizeWithAspectMAPI(MMCVResize):
 
         if results.get('img', None) is not None:
             if self.keep_ratio:
-                #img = resize_image_with_aspect_ocv(results['img'], self.scale)
-                #h, w = results['img'].shape[:2]
-                #scale = min(self.scale[1] / h, self.scale[0] / w)
-                #w_scale, h_scale = scale, scale
+                #img = resize_image_letterbox_ocv(results['img'], self.scale)
+                img = resize_image_with_aspect_ocv(results['img'], self.scale)
+                h, w = results['img'].shape[:2]
+                nh, nw = img.shape[:2]
+                scale = min(self.scale[1] / h, self.scale[0] / w)
+                w_scale, h_scale = scale, scale
+                dw = (w - nw) // 2
+                dh = (h - nh) // 2
                 """
                 scale_factor = min(max_long_edge / max(h, w),
                            max_short_edge / min(h, w))
@@ -70,7 +74,6 @@ class ResizeWithAspectMAPI(MMCVResize):
                 results['scale'],
                 w, h = size
                 return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
-                """
 
                 img, scale_factor = mmcv.imrescale(
                     results['img'],
@@ -84,22 +87,56 @@ class ResizeWithAspectMAPI(MMCVResize):
                 h, w = results['img'].shape[:2]
                 w_scale = new_w / w
                 h_scale = new_h / h
+                """
+                print(img.shape)
             else:
                 raise RuntimeError
+
             results['img'] = img
             results['img_shape'] = img.shape[:2]
             results['scale_factor'] = (w_scale, h_scale)
             results['keep_ratio'] = self.keep_ratio
+            #results['kp_shift'] = (dw, dh)
 
-    def _resize_seg(self, results: dict) -> None:
+    def _resize_segg(self, results: dict) -> None:
         """Resize semantic segmentation map with ``results['scale']``."""
         if results.get('gt_seg_map', None) is not None:
+            exit(0)
             if self.keep_ratio:
-                gt_seg = resize_image_with_aspect_ocv(results['gt_seg_map'], self.scale, cv2.INTER_LINEAR)
+                gt_seg = resize_image_letterbox_ocv(results['gt_seg_map'], self.scale, cv2.INTER_NEAREST)
             else:
                 raise RuntimeError
 
             results['gt_seg_map'] = gt_seg
+
+    def _resize_keypointss(self, results: dict) -> None:
+        """Resize keypoints with ``results['scale_factor']``."""
+        if results.get('gt_keypoints', None) is not None:
+            exit(0)
+            keypoints = results['gt_keypoints']
+
+            keypoints[:, :, :2] = keypoints[:, :, :2] * np.array(
+                results['scale_factor']) + np.array(results['kp_shift'])
+            if self.clip_object_border:
+                keypoints[:, :, 0] = np.clip(keypoints[:, :, 0], 0,
+                                             results['img_shape'][1])
+                keypoints[:, :, 1] = np.clip(keypoints[:, :, 1], 0,
+                                             results['img_shape'][0])
+            results['gt_keypoints'] = keypoints
+
+    def _resize_bboxess(self, results: dict) -> None:
+        """Resize bounding boxes with ``results['scale_factor']``."""
+        if results.get('gt_bboxes', None) is not None:
+            bboxes = results['gt_bboxes'] * np.tile(
+                np.array(results['scale_factor']), 2)
+            print(bboxes)# + np.tile(np.array(results['kp_shift']), 2)
+            exit(0)
+            if self.clip_object_border:
+                bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0,
+                                          results['img_shape'][1])
+                bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0,
+                                          results['img_shape'][0])
+            results['gt_bboxes'] = bboxes
 
 
 class MMCVTransformLib:
