@@ -251,8 +251,6 @@
 <span class="c1"># See the License for the specific language governing permissions</span>
 <span class="c1"># and limitations under the License.</span>
 
-<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">maxsize</span>
-
 <span class="kn">from</span> <span class="nn">attr</span> <span class="kn">import</span> <span class="n">attrs</span>
 
 <span class="kn">from</span> <span class="nn">otx.algorithms.anomaly.configs.base.configuration_enums</span> <span class="kn">import</span> <span class="p">(</span>
@@ -334,7 +332,7 @@
             <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of data samples used for post-training optimization&quot;</span><span class="p">,</span>
             <span class="n">default_value</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
             <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">max_value</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="BaseAnomalyConfig.NNCFOptimization"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.configs.base.configuration.html#otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.NNCFOptimization">[docs]</a>    <span class="nd">@attrs</span>

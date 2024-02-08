@@ -252,8 +252,6 @@
 <span class="c1"># and limitations under the License.</span>
 
 
-<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">maxsize</span>
-
 <span class="kn">from</span> <span class="nn">attr</span> <span class="kn">import</span> <span class="n">attrs</span>
 
 <span class="kn">from</span> <span class="nn">otx.algorithms.common.configs</span> <span class="kn">import</span> <span class="p">(</span>
@@ -339,7 +337,7 @@
             <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of data samples used for post-training optimization&quot;</span><span class="p">,</span>
             <span class="n">default_value</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
             <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">max_value</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">preset</span> <span class="o">=</span> <span class="n">selectable</span><span class="p">(</span>
