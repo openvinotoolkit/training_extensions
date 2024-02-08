@@ -8,6 +8,26 @@ import pytest
 from mmengine.config import Config as MMConfig
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--open-subprocess",
+        action="store_true",
+        help="Open subprocess for each CLI integration test case. "
+        "This option can be used for easy memory management "
+        "while running consecutive multiple tests (default: false).",
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_open_subprocess(request: pytest.FixtureRequest) -> bool:
+    """Open subprocess for each CLI integration test case.
+
+    This option can be used for easy memory management
+    while running consecutive multiple tests (default: false).
+    """
+    return request.config.getoption("--open-subprocess")
+
+
 @pytest.fixture(scope="session")
 def fxt_asset_dir() -> Path:
     return Path(__file__).parent.parent / "assets"
@@ -28,6 +48,7 @@ def fxt_target_dataset_per_task() -> dict:
         "multi_label_cls": "tests/assets/multilabel_classification",
         "h_label_cls": "tests/assets/hlabel_classification",
         "detection": "tests/assets/car_tree_bug",
+        "rotated_detection": "tests/assets/car_tree_bug",
         "instance_segmentation": "tests/assets/car_tree_bug",
         "semantic_segmentation": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "action_classification": "tests/assets/action_classification_dataset/",
@@ -40,26 +61,31 @@ def fxt_target_dataset_per_task() -> dict:
 @pytest.fixture()
 def fxt_cli_override_command_per_task() -> dict:
     return {
-        "multi_class_cls": ["--model.num_classes", "2"],
-        "multi_label_cls": ["--model.num_classes", "2"],
+        "multi_class_cls": [],
+        "multi_label_cls": [],
         "h_label_cls": [
-            "--model.num_classes",
-            "7",
             "--model.num_multiclass_heads",
             "2",
             "--model.num_multilabel_classes",
             "3",
         ],
-        "detection": ["--model.num_classes", "3"],
-        "instance_segmentation": ["--model.num_classes", "3"],
-        "semantic_segmentation": ["--model.num_classes", "2"],
-        "action_classification": ["--model.num_classes", "2"],
+        "detection": [],
+        "rotated_detection": [],
+        "instance_segmentation": [],
+        "semantic_segmentation": [],
+        "action_classification": [],
         "action_detection": [
-            "--model.num_classes",
-            "5",
             "--model.topk",
             "3",
         ],
         "visual_prompting": [],
-        "zero_shot_visual_prompting": [],
+        "zero_shot_visual_prompting": [
+            "--max_epochs",
+            "1",
+            "--disable-infer-num-classes",
+        ],
+        "tile": [
+            "--data.config.tile_config.grid_size",
+            "[1,1]",
+        ],
     }

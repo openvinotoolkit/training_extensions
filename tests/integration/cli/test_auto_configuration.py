@@ -3,32 +3,11 @@
 
 
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
-from otx.cli import main
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
-
-# [TODO]: Please Remove this with auto num_classes update feature in CLI
-@pytest.fixture()
-def fxt_cli_override_command_per_task() -> dict:
-    return {
-        "multi_class_cls": ["--model.num_classes", "2"],
-        "multi_label_cls": ["--model.num_classes", "2"],
-        "detection": ["--model.num_classes", "3"],
-        "instance_segmentation": ["--model.num_classes", "3"],
-        "semantic_segmentation": ["--model.num_classes", "2"],
-        "action_classification": ["--model.num_classes", "2"],
-        "action_detection": [
-            "--model.num_classes",
-            "5",
-            "--model.topk",
-            "3",
-        ],
-        "visual_prompting": [],
-        "zero_shot_visual_prompting": ["--max_epochs", "1"],
-    }
+from tests.integration.cli.utils import run_main
 
 
 @pytest.mark.parametrize("task", [task.value.lower() for task in DEFAULT_CONFIG_PER_TASK])
@@ -38,6 +17,7 @@ def test_otx_cli_auto_configuration(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ) -> None:
     """Test the OTX auto configuration with CLI.
 
@@ -69,8 +49,7 @@ def test_otx_cli_auto_configuration(
         *fxt_cli_override_command_per_task[task],
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()

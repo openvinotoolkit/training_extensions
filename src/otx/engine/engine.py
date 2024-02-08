@@ -1,12 +1,12 @@
-"""Module for OTX engine components."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""Module for OTX engine components."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import torch
 from lightning import Trainer, seed_everything
@@ -23,13 +23,13 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
-    from lightning.pytorch.utilities.types import EVAL_DATALOADERS
+    from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
 
 
@@ -38,6 +38,7 @@ LITMODULE_PER_TASK = {
     OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
     OTXTaskType.H_LABEL_CLS: "otx.core.model.module.classification.OTXHlabelClsLitModule",
     OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
+    OTXTaskType.ROTATED_DETECTION: "otx.core.model.module.rotated_detection.OTXRotatedDetLitModule",
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
@@ -151,7 +152,7 @@ class Engine:
         self,
         max_epochs: int = 10,
         seed: int | None = None,
-        deterministic: bool = False,
+        deterministic: bool | Literal["warn"] = False,
         precision: _PRECISION_INPUT | None = "32",
         val_check_interval: int | float | None = None,
         callbacks: list[Callback] | Callback | None = None,
@@ -164,7 +165,9 @@ class Engine:
         Args:
             max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
             seed (int | None, optional): The random seed. Defaults to None.
-            deterministic (bool | None, optional): Whether to enable deterministic behavior. Defaults to False.
+            deterministic (bool | Literal["warn"]): Whether to enable deterministic behavior.
+            Also, can be set to `warn` to avoid failures, because some operations don't
+            support deterministic mode. Defaults to False.
             precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
             val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
@@ -330,7 +333,7 @@ class Engine:
             1. you can pick a model.
                 ```python
                 otx predict
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
                     --checkpoint <CKPT_PATH, str>
                 ```
             2. If you have a ready configuration file, run it like this.
@@ -343,13 +346,22 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
+        if datamodule is None:
+            datamodule = self.datamodule
+        lit_module.meta_info = datamodule.meta_info
 
         self._build_trainer(**kwargs)
+
+        checkpoint_path: str | None = None
+        if checkpoint is not None:
+            checkpoint_path = str(checkpoint)
+        elif self.checkpoint is not None:
+            checkpoint_path = str(self.checkpoint)
 
         return self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=str(checkpoint) if checkpoint is not None else self.checkpoint,
+            ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
 
@@ -377,11 +389,17 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. To export a model, run
+            1. To export a model with default setting (OPENVINO, FP32), run
                 ```python
                 otx export
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str> --export_precision FP32 --export_format ONNX
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
+            2. To export a model with precision FP16 and format ONNX, run
+                ```python
+                otx export
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
@@ -395,7 +413,8 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
+            self.model.label_info = lit_module.meta_info
+
             lit_module.load_state_dict(loaded_checkpoint)
 
             return self.model.export(
@@ -407,6 +426,48 @@ class Engine:
 
         msg = "To make export, checkpoint must be specified."
         raise RuntimeError(msg)
+
+    def optimize(
+        self,
+        datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
+        max_data_subset_size: int | None = None,
+    ) -> Path:
+        """Applies NNCF.PTQ to the underlying models (now works only for OV models).
+
+        PTQ performs int-8 quantization on the input model, so the resulting model
+        comes in mixed precision (some operations, however, remain in FP32).
+
+        Args:
+            datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
+            max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
+            used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
+            default settings.
+
+        Returns:
+            Path: path to the optimized model.
+
+        Example:
+            >>> engine.optimize(
+            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint/path>,
+            ... )
+        CLI Usage:
+            To optimize a model, run
+                ```python
+                otx optimize
+                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
+                    --model.model_name=<PATH_TO_IR_XML, str>
+                ```
+        """
+        ptq_config = {}
+        if max_data_subset_size is not None:
+            ptq_config["subset_size"] = max_data_subset_size
+
+        return self.model.optimize(
+            Path(self.work_dir),
+            datamodule if datamodule is not None else self.datamodule,
+            ptq_config,
+        )
 
     def explain(
         self,
@@ -432,8 +493,16 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     explain_config=ExplainConfig(),
             ... )
+
+        CLI Usage:
+            1. To run XAI using the specified model, run
+                ```python
+                otx explain
+                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
+                    --checkpoint <CKPT_PATH, str>
+                ```
         """
-        import cv2
+        from otx.algo.utils.xai_utils import get_processed_saliency_maps
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
@@ -452,16 +521,20 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
-        self.trainer.predict(
+        predictions = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
-        # Optimize for memory <- TODO(negvet)
-        saliency_maps = self.trainer.model.model.explain_hook.records
-        # Temporary saving saliency map for image 0, class 0 (for tests)
-        cv2.imwrite(str(Path(self.work_dir) / "saliency_map.tiff"), saliency_maps[0][0])
-        return saliency_maps
+
+        explain_hook = self.trainer.model.model.explain_hook
+
+        return get_processed_saliency_maps(
+            explain_hook,
+            explain_config,
+            predictions,
+            Path(self.work_dir),
+        )
 
     @classmethod
     def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
@@ -502,7 +575,7 @@ class Engine:
             ),
         )
         # Model
-        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        num_classes = datamodule.meta_info.num_classes
         config["model"]["init_args"]["num_classes"] = num_classes
         model = instantiate_class(args=(), init=config.pop("model"))
         optimizer = partial_instantiate_class(init=config.pop("optimizer", None))

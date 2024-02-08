@@ -8,7 +8,7 @@ from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.engine import Engine
-from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, get_num_classes_from_meta_info
+from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 
 @pytest.mark.parametrize("task", [task.value.lower() for task in DEFAULT_CONFIG_PER_TASK])
@@ -43,7 +43,7 @@ def test_auto_configuration(task: str, tmp_path: Path, fxt_accelerator: str, fxt
 
     default_config = get_configuration(DEFAULT_CONFIG_PER_TASK[task_type])
     default_config["data"]["config"]["data_root"] = data_root
-    num_classes = get_num_classes_from_meta_info(task=task_type, meta_info=engine.datamodule.meta_info)
+    num_classes = engine.datamodule.meta_info.num_classes
 
     default_config["model"]["init_args"]["num_classes"] = num_classes
 

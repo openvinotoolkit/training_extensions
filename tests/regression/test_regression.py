@@ -115,7 +115,7 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -124,14 +124,14 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_classification/multiclass_CUB_medium"),
             data_format="imagenet_with_subset_dirs",
             num_classes=67,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         ),
         DatasetTestCase(
             name=f"multiclass_food101_large",
             data_root=Path("multiclass_classification/multiclass_food101_large"),
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         )
     ]
 
@@ -181,7 +181,7 @@ class TestMultilabelCls(BaseTest):
             data_root=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
             data_format="datumaro",
             num_classes=3,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -190,14 +190,14 @@ class TestMultilabelCls(BaseTest):
             data_root=Path("multilabel_classification/multilabel_CUB_medium"),
             data_format="datumaro",
             num_classes=68,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         ),
         DatasetTestCase(
             name=f"multilabel_food101_large",
             data_root=Path("multilabel_classification/multilabel_food101_large"),
             data_format="datumaro",
             num_classes=21,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         )
     ]
 
@@ -248,7 +248,6 @@ class TestHlabelCls(BaseTest):
             data_format="datumaro",
             num_classes=6,
             extra_overrides={
-                "max_epochs": "20",
                 "model.num_multiclass_heads": "3",
                 "model.num_multilabel_classes": "0",
             },
@@ -261,7 +260,6 @@ class TestHlabelCls(BaseTest):
             data_format="datumaro",
             num_classes=102,
             extra_overrides={
-                "max_epochs": "20",
                 "model.num_multiclass_heads": "23",
                 "model.num_multilabel_classes": "0",
             },
@@ -318,7 +316,7 @@ class TestObjectDetection(BaseTest):
             data_root=Path("detection/pothole_small") / f"{idx}",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"max_epochs": "40", "deterministic": "True"},
+            extra_overrides={"deterministic": "True"},
         )
         for idx in range(1, 4)
     ] + [
@@ -327,14 +325,14 @@ class TestObjectDetection(BaseTest):
             data_root=Path("detection/pothole_medium"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"max_epochs": "40", "deterministic": "True"}
+            extra_overrides={"deterministic": "True"}
         ),
         DatasetTestCase(
             name="vitens_large",
             data_root=Path("detection/vitens_large"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"max_epochs": "40", "deterministic": "True"}
+            extra_overrides={"deterministic": "True"}
         )
     ]
 
@@ -386,7 +384,7 @@ class TestSemanticSegmentation(BaseTest):
             data_root=Path("semantic_seg/kvasir_small") / f"{idx}",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"max_epochs": "40"},
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -395,14 +393,14 @@ class TestSemanticSegmentation(BaseTest):
             data_root=Path("semantic_seg/kvasir_medium"),
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"max_epochs": "40"}
+            extra_overrides={},
         ),
         DatasetTestCase(
             name="kvasir_large",
             data_root=Path("semantic_seg/kvasir_large"),
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            extra_overrides={"max_epochs": "40"}
+            extra_overrides={},
         )
     ]
 
@@ -450,7 +448,7 @@ class TestInstanceSegmentation(BaseTest):
             data_root=Path("instance_seg/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"max_epochs": "20", "deterministic": "True"},
+            extra_overrides={"deterministic": "True"},
         )
         for idx in range(1, 4)
     ] + [
@@ -459,14 +457,14 @@ class TestInstanceSegmentation(BaseTest):
             data_root=Path("instance_seg/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={"max_epochs": "20", "deterministic": "True"}
+            extra_overrides={"deterministic": "True"}
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root=Path("instance_seg/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"max_epochs": "20", "deterministic": "True"}
+            extra_overrides={"deterministic": "True"}
         )
     ]
 
@@ -513,7 +511,7 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"max_epochs": "20"},
+            extra_overrides={},
         )
         for idx in range(1, 4)
     ] + [
@@ -522,15 +520,63 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={"max_epochs": "20"}
+            extra_overrides={},
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root=Path("visual_prompting/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"max_epochs": "20"}
+            extra_overrides={},
         )
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )
+        
+        
+class TestZeroShotVisualPrompting(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="zero_shot_visual_prompting", name="sam_tiny_vit"),
+        ModelTestCase(task="zero_shot_visual_prompting", name="sam_vit_b"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [
+        DatasetTestCase(
+            name="coco_car_person_medium_datumaro",
+            data_root=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
+            data_format="datumaro",
+            num_classes=2,
+            extra_overrides={"max_epochs": "1"}
+        ),
     ]
 
     @pytest.mark.parametrize(

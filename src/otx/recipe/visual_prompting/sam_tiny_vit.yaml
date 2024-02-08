@@ -32,6 +32,10 @@ callback_monitor: val/Dice
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
   data:
     task: VISUAL_PROMPTING
     config:

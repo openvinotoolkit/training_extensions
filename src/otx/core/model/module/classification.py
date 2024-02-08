@@ -85,7 +85,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
         if not isinstance(preds, MulticlassClsBatchPredEntity):
             raise TypeError(preds)
-
         self.val_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
@@ -121,7 +120,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
 
 class OTXMultilabelClsLitModule(OTXLitModule):
@@ -141,7 +140,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
         )
         self.num_labels = otx_model.num_classes
-
         self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
         self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
 
@@ -210,7 +208,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -328,7 +326,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
+        return "val/accuracy"
 
     @property
     def meta_info(self) -> LabelInfo:

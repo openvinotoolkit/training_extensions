@@ -134,10 +134,63 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
+            # This is a feature to handle the callbacks & logger override for user-convinience
+            list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
+            list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
             cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
+
+
+def list_override(configs: Namespace, key: str, overrides: list) -> None:
+    """Overrides the nested list type in the given configs with the provided override_list.
+
+    Args:
+        configs (Namespace): The configuration object containing the key.
+        key (str): key of the configs want to override.
+        overrides (list): The list of dictionary item to override the existing ones.
+
+    Example:
+        >>> configs = [
+        ...     ...
+        ...     Namespace(
+        ...         class_path='lightning.pytorch.callbacks.EarlyStopping',
+        ...         init_args=Namespace(patience=10, ...),
+        ...     ),
+        ...     ...
+        ... ]
+        >>> override_callbacks = [
+        ...     ...
+        ...     {
+        ...         'class_path': 'lightning.pytorch.callbacks.EarlyStopping',
+        ...         'init_args': {'patience': 3},
+        ...     },
+        ...     ...
+        ... ]
+        >>> list_override(configs=configs, key="callbacks", overrides=override_callbacks)
+        >>> configs = [
+        ...     ...
+        ...     Namespace(
+        ...         class_path='lightning.pytorch.callbacks.EarlyStopping',
+        ...         init_args=Namespace(patience=3, ...),
+        ...     ),
+        ...     ...
+        ... ]
+    """
+    if key not in configs:
+        return
+    for target in overrides:
+        class_path = target.get("class_path", None)
+        if class_path is None:
+            msg = "class_path is required in the override list."
+            raise ValueError(msg)
+
+        item = next((item for item in configs[key] if item["class_path"] == class_path), None)
+        if item is not None:
+            Namespace(item).update(target)
+        else:
+            configs[key].append(dict_to_namespace(target))
 
 
 # [FIXME] harimkang: have to see if there's a better way to do it. (For now, Added 2 lines to existing function)
@@ -179,7 +232,9 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
         with change_to_path_dir(default_config_file), parser_context(parent_parser=self):
             cfg_file = self._load_config_parser_mode(default_config_file.get_content(), key=key)
             cfg = self.merge_config(cfg_file, cfg)
-            overrides = cfg.__dict__.pop("overrides", None)
+            overrides = cfg.__dict__.pop("overrides", {})
+            list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
+            list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
             if overrides is not None:
                 cfg.update(overrides)
             try:
@@ -245,7 +300,7 @@ def get_configuration(config_path: str | Path) -> dict:
     logger.info(f"{config_path} is loaded.")
 
     # Remove unnecessary cli arguments for API usage
-    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume"]
+    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume", "disable_infer_num_classes"]
     logger.warning(f"The corresponding keys in config are not used.: {cli_args}")
     for arg in cli_args:
         config.pop(arg, None)

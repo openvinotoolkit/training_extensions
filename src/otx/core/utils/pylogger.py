@@ -1,5 +1,3 @@
-"""Pylogger for OTX logger."""
-
 # MIT License
 
 # Copyright (c) 2023 Intel Corporation
@@ -24,6 +22,8 @@
 # SOFTWARE.
 #
 # This source code is borrowed from https://github.com/ashleve/lightning-hydra-template
+#
+"""Pylogger for OTX logger."""
 
 import logging
 

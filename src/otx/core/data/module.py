@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """LightningDataModule extension for OTX."""
+
 from __future__ import annotations
 
 import logging as log
@@ -19,6 +20,7 @@ from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
     parse_mem_cache_size_to_int,
 )
+from otx.core.data.pre_filtering import pre_filtering
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -51,6 +53,8 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        if self.task != "H_LABEL_CLS":
+            dataset = pre_filtering(dataset, self.config.data_format)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,

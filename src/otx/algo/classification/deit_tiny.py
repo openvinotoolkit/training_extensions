@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """DeitTiny model implementation."""
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
 import torch
 
@@ -63,6 +67,11 @@ class ExplainableDeit(ExplainableOTXClsModel):
         if isinstance(logit, list):
             logit = torch.from_numpy(np.array(logit))
         return logit
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for DeitTinyForMultilabelCls."""
+        return {"model_type": "transformer"}
 
 
 class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):

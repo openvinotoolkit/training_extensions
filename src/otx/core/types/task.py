@@ -27,6 +27,7 @@ class OTXTaskType(str, Enum):
 
     # Detection
     DETECTION = "DETECTION"
+    ROTATED_DETECTION = "ROTATED_DETECTION"
     DETECTION_SEMI_SL = "DETECTION_SEMI_SL"
 
     # Segmentation

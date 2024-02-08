@@ -113,7 +113,7 @@ class OTXDatasetFactory:
 
             return OTXDetectionDataset(**common_kwargs)
 
-        if task == OTXTaskType.INSTANCE_SEGMENTATION:
+        if task in [OTXTaskType.ROTATED_DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]:
             from .dataset.instance_segmentation import OTXInstanceSegDataset
 
             # NOTE: DataModuleConfig does not have include_polygons attribute

@@ -13,12 +13,13 @@ optimizer:
     weight_decay: 0.0001
 
 scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
   init_args:
-    mode: min
+    warmup_steps: 0
+    mode: max
     factor: 0.5
     patience: 1
-    monitor: train/loss
+    monitor: val/accuracy
 
 engine:
   task: H_LABEL_CLS
