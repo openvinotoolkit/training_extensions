@@ -59,6 +59,9 @@ class AnomalyDataset(OTXDataset):
         img = datumaro_item.media_as(Image)
         # returns image in RGB format if self.image_color_channel is RGB
         img_data, img_shape = self._get_img_data_and_shape(img)
+        # Note: This assumes that the dataset is in MVTec format.
+        # We can't use datumaro label id as it returns some number like 3 for good from which it is hard to infer
+        # whether the image is Anomalous or Normal. Because it leads to other questions like what do numbers 0,1,2 mean?
         label: torch.LongTensor = (
             torch.tensor(0.0, dtype=torch.long) if "good" in datumaro_item.id else torch.tensor(1.0, dtype=torch.long)
         )
@@ -76,6 +79,7 @@ class AnomalyDataset(OTXDataset):
             )
         elif self.task_type == OTXTaskType.ANOMALY_SEGMENTATION:
             # Note: this part of code is brittle. Ideally Datumaro should return masks
+            # Another major problem with this is that it assumes that the dataset passed is in MVTec format
             mask_file_path = (
                 Path("/".join(datumaro_item.media.path.split("/")[:-3]))
                 / "ground_truth"
@@ -118,6 +122,7 @@ class AnomalyDataset(OTXDataset):
                 ),
                 label=label,
                 boxes=boxes[0],
+                # mask is used for pixel-level metric computation. We can't assume that this will always be available
                 mask=mask,
             )
         else:
@@ -129,7 +134,8 @@ class AnomalyDataset(OTXDataset):
         """Collection function to collect SegDataEntity into SegBatchDataEntity in data loader."""
         if self.task_type == OTXTaskType.ANOMALY_CLASSIFICATION:
             return AnomalyClassificationDataBatch.collate_fn
-        elif self.task_type == OTXTaskType.ANOMALY_SEGMENTATION:
+        if self.task_type == OTXTaskType.ANOMALY_SEGMENTATION:
             return AnomalySegmentationDataBatch.collate_fn
-        elif self.task_type == OTXTaskType.ANOMALY_DETECTION:
+        if self.task_type == OTXTaskType.ANOMALY_DETECTION:
             return AnomalyDetectionDataBatch.collate_fn
+        raise NotImplementedError(f"Task {self.task_type} is not supported yet.")

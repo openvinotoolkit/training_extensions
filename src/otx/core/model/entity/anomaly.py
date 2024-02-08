@@ -5,17 +5,32 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import onnx
 import openvino
 import torch
+from anomalib import TaskType
 from torch import nn
 
+from otx.core.data.dataset.base import LabelInfo
+from otx.core.data.entity.anomaly import (
+    AnomalyClassificationBatchPrediction,
+    AnomalyDetectionDataBatch,
+    AnomalySegmentationDataBatch,
+)
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.types.precision import OTXPrecisionType
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from openvino.model_api.models import Model
+    from openvino.model_api.models.anomaly import AnomalyResult
+    from torchvision.transforms.v2 import Transform
 
 
 class _AnomalibLightningArgsCache:
@@ -37,62 +52,44 @@ class _AnomalibLightningArgsCache:
         return self._args
 
 
+@dataclass
+class _OVModelInfo:
+    """OpenVINO model information."""
+
+    image_shape: Sequence[int] = (256, 256)
+    image_threshold: float = 0.5
+    pixel_threshold: float = 0.5
+    task: TaskType = TaskType.CLASSIFICATION
+    mean_values: Sequence[float] = (0.0, 0.0, 0.0)
+    scale_values: Sequence[float] = (1.0, 1.0, 1.0)
+    normalization_scale: float = 1.0
+    orig_height: int = 256
+    orig_width: int = 256
+
+
 class _AnomalyModelExporter(OTXModelExporter):
     def __init__(
         self,
-        transforms: nn.Sequential,
-        min_val: float,
-        max_val: float,
-        image_threshold: float = 0.5,
-        pixel_threshold: float = 0.5,
+        model_info: _OVModelInfo,
     ) -> None:
-        super().__init__()
-        self.transforms: dict[str, int | list[float]] = self._convert_transforms_to_dict(transforms)
-        self.pixel_threshold: float = pixel_threshold
-        self.image_threshold: float = image_threshold
-        self.min_val: float = min_val
-        self.max_val: float = max_val
-
-    def _convert_transforms_to_dict(self, transforms: nn.Sequential) -> dict[str, int | list[float]]:
-        """Converts transforms to a dictionary."""
-        transform_dict = {}
-        for transform in transforms:
-            name = transform.__class__.__name__
-            # Need to revisit this. It is redundant with image_shape
-            if "Resize" in name:
-                transform_dict["orig_height"] = transform.size
-                transform_dict["orig_width"] = transform.size
-            elif "Normalize" in name:
-                # should be float and in range [0-255]
-                transform_dict["mean_values"] = transform.mean
-                transform_dict["std_values"] = transform.std
-        return transform_dict
-
-    def _get_onnx_metadata(self) -> dict[str, float]:
-        """Get metadata from the anomalib model."""
-        return {
-            "image_threshold": self.image_threshold,
-            "pixel_threshold": self.pixel_threshold,
-            "min": self.min_val,
-            "max": self.max_val,
-        }
-
-    def _get_openvino_metadata(self) -> dict[tuple[str, str], float | list[float]] | str:
-        onnx_metadata = self._get_onnx_metadata()
+        self.model_info = model_info
         metadata = {
-            ("model_info", "image_threshold"): onnx_metadata["image_threshold"],
-            ("model_info", "pixel_threshold"): onnx_metadata["pixel_threshold"],
-            ("model_info", "normalization_scale"): onnx_metadata["max"] - onnx_metadata["min"],
-            ("model_info", "reverse_input_channels"): True,  # convert BGR to RGB in modelAPI
-            ("model_info", "model_type"): "AnomalyDetection",
+            ("model_info", "image_threshold"): model_info.image_threshold,
+            ("model_info", "pixel_threshold"): model_info.pixel_threshold,
+            ("model_info", "normalization_scale"): model_info.normalization_scale,
+            ("model_info", "orig_height"): model_info.orig_height,
+            ("model_info", "orig_width"): model_info.orig_width,
+            ("model_info", "image_shape"): model_info.image_shape,
             ("model_info", "labels"): "Normal Anomaly",
-            ("model_info", "image_shape"): [self.transforms["orig_height"], self.transforms["orig_width"]],
-            ("model_info", "task"): "classification",  # TODO(ashwinvaiday17): Make this dynamic
+            ("model_info", "model_type"): "AnomalyDetection",
         }
-        # TODO add transform metadata
-        for key, value in self.transforms.items():
-            metadata[("model_info", key)] = value
-        return metadata
+        super().__init__(
+            input_size=(1, 3, *model_info.image_shape),
+            mean=model_info.mean_values,
+            std=model_info.scale_values,
+            swap_rgb=True,  # set reverse input channels to True
+            metadata=metadata,
+        )
 
     def to_openvino(
         self,
@@ -101,14 +98,13 @@ class _AnomalyModelExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
     ) -> Path:
-        height, width = self.transforms["orig_height"], self.transforms["orig_width"]
         save_path = str(output_dir / f"{base_model_name}.xml")
-        metadata = self._get_openvino_metadata()
         exported_model = openvino.convert_model(
             input_model=model,
-            example_input=torch.rand(1, 3, height, width).to(next(model.parameters()).device),
+            example_input=torch.rand(self.input_size),
+            input=(openvino.runtime.PartialShape(self.input_size)),
         )
-        exported_model = _AnomalyModelExporter._embed_openvino_ir_metadata(exported_model, metadata)
+        exported_model = self._postprocess_openvino_model(exported_model)
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
         return Path(save_path)
 
@@ -120,11 +116,12 @@ class _AnomalyModelExporter(OTXModelExporter):
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
     ) -> Path:
-        height, width = self.transforms["orig_height"], self.transforms["orig_width"]
         save_path = str(output_dir / f"{base_model_name}.onnx")
         torch.onnx.export(
             model=model,
-            args=(torch.rand(1, 3, height, width)).to(next(model.parameters()).device),
+            args=(torch.rand(1, 3, self.model_info.orig_height, self.model_info.orig_width)).to(
+                next(model.parameters()).device,
+            ),
             f=save_path,
             opset_version=14,
             dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
@@ -132,13 +129,7 @@ class _AnomalyModelExporter(OTXModelExporter):
             output_names=["output"],
         )
         onnx_model = onnx.load(save_path)
-        if embed_metadata:
-            metadata = self._get_onnx_metadata()
-            onnx_model = _AnomalyModelExporter._embed_onnx_metadata(onnx_model, metadata)
-        if precision == OTXPrecisionType.FP16:
-            from onnxconverter_common import float16
-
-            onnx_model = float16.convert_float_to_float16(onnx_model)
+        onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
         onnx.save(onnx_model, save_path)
         return Path(save_path)
 
@@ -151,68 +142,57 @@ class OTXAnomalyModel(OTXModel):
         super().__init__(num_classes=2)
         # This cache is used to get params from the OTX model and pass it into Anomalib Lightning module
         self.anomalib_lightning_args = _AnomalibLightningArgsCache()
-        self._transforms = None
-        self._image_threshold = None
-        self._pixel_threshold = None
-        self._min = None
-        self._max = None
+        self.model_info = _OVModelInfo()
+
+    def extract_model_info_from_transforms(self, transforms: list[Transform]) -> None:
+        """Stores values from transforms to ``self.model_info``."""
+        for transform in transforms:
+            name = transform.__class__.__name__
+            # Need to revisit this. It is redundant with image_shape
+            if "Resize" in name:
+                self.model_info.orig_height = transform.size
+                self.model_info.orig_width = transform.size
+                self.model_info.image_shape = [transform.size, transform.size]
+            elif "Normalize" in name:
+                # should be float and in range [0-255]
+                self.model_info.mean_values = transform.mean
+                self.model_info.scale_values = transform.std
 
     @property
-    def transforms(self) -> nn.Sequential:
-        """Get the transforms."""
-        if self._transforms:
-            return self._transforms
-        msg = "Transforms are not set. Ensure that the model is trained or that the weights are loaded correctly."
-        raise ValueError(msg)
-
-    @transforms.setter
-    def transforms(self, transforms: list[transforms]) -> None:
-        """Set the transforms."""
-        self._transforms = nn.Sequential(*transforms)
+    def _exporter(self) -> OTXModelExporter:
+        """Get the model exporter."""
+        return _AnomalyModelExporter(
+            model_info=self.model_info,
+        )
 
     @property
-    def image_threshold(self) -> float:
-        if self._image_threshold:
-            return self._image_threshold
-        msg = "Image threshold is not set. Ensure that the model is trained or that the weights are loaded correctly."
+    def task_type(self) -> TaskType:
+        if self._task_type:
+            return self._task_type
+        msg = "Task type is not set."
         raise ValueError(msg)
 
-    @image_threshold.setter
-    def image_threshold(self, image_threshold: float) -> None:
-        self._image_threshold = image_threshold
+    @task_type.setter
+    def task_type(self, task_type: TaskType) -> None:
+        self._task_type = task_type
 
     @property
-    def pixel_threshold(self) -> float:
-        if self._pixel_threshold:
-            return self._pixel_threshold
-        msg = "Pixel threshold is not set. Ensure that the model is trained or that the weights are loaded correctly."
-        raise ValueError(msg)
+    def label_info(self) -> LabelInfo:
+        """Get this model label information."""
+        return self._label_info
 
-    @pixel_threshold.setter
-    def pixel_threshold(self, pixel_threshold: float) -> None:
-        self._pixel_threshold = pixel_threshold
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set this model label information.
 
-    @property
-    def min_val(self) -> float:
-        if self._min:
-            return self._min
-        msg = "Min is not set. Ensure that the model is trained or that the weights are loaded correctly."
-        raise ValueError(msg)
-
-    @min_val.setter
-    def min_val(self, min_val: float) -> None:
-        self._min = min_val
-
-    @property
-    def max_val(self) -> float:
-        if self._max:
-            return self._max
-        msg = "Max is not set. Ensure that the model is trained or that the weights are loaded correctly."
-        raise ValueError(msg)
-
-    @max_val.setter
-    def max_val(self, max_val: float) -> None:
-        self._max = max_val
+        It changes the number of classes to 2 and sets the labels as Normal and Anomaly.
+        This is because Datumaro returns multiple classes from the dataset. If self.label_info != 2,
+        then It will call self._reset_prediction_layer() to reset the prediction layer. Which is not required.
+        """
+        if isinstance(label_info, list) and len(label_info) > 2:
+            self._label_info = LabelInfo(label_names=["Normal", "Anomaly"], label_groups=[["Normal", "Anomaly"]])
+        else:
+            self._label_info = label_info
 
     def _customize_inputs(self, *_, **__) -> None:
         """Input customization is done through the lightning module."""
@@ -227,13 +207,50 @@ class OTXAnomalyModel(OTXModel):
         """
         return self.model(input_tensor)
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Get the model exporter."""
-        return _AnomalyModelExporter(
-            transforms=self.transforms,
-            min_val=self.min_val,
-            max_val=self.max_val,
-            image_threshold=self.image_threshold,
-            pixel_threshold=self.pixel_threshold,
+
+class OVAnomalyModel(OVModel):
+    def __init__(
+        self,
+        model_name: str,
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+        num_classes: int = 2,  # Unused as the model is always 2 classes but needed for kwargs
+    ) -> None:
+        super().__init__(
+            num_classes=2,
+            model_name=model_name,
+            model_type="AnomalyDetection",
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
         )
+
+    def _create_model(self) -> Model:
+        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from openvino.model_api.models import AnomalyDetection
+
+        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.use_throughput_mode:
+            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
+
+        model_adapter = OpenvinoAdapter(
+            create_core(),
+            self.model_name,
+            max_num_requests=self.num_requests,
+            plugin_config=plugin_config,
+        )
+        return AnomalyDetection.create_model(
+            model=model_adapter,
+            model_type=self.model_type,
+            configuration=self.model_api_configuration,
+        )
+
+    def _customize_outputs(
+        self,
+        outputs: list[AnomalyResult],
+        inputs: AnomalyClassificationBatchPrediction | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+    ) -> list[AnomalyResult]:
+        return outputs
