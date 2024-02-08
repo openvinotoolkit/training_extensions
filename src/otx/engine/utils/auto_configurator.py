@@ -293,3 +293,23 @@ class AutoConfigurator:
             model_name=model_name,
             num_classes=meta_info.num_classes,
         )
+
+    def get_ov_datamodule(self) -> OTXDataModule:
+        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
+
+        Returns:
+            OTXDataModule: An instance of OTXDataModule.
+        """
+        config = self._load_default_config(model_name="openvino_model")
+        config["data"]["config"]["data_root"] = self.data_root
+        data_config = config["data"]["config"].copy()
+        return OTXDataModule(
+            task=self.config["data"]["task"],
+            config=DataModuleConfig(
+                train_subset=SubsetConfig(**data_config.pop("train_subset")),
+                val_subset=SubsetConfig(**data_config.pop("val_subset")),
+                test_subset=SubsetConfig(**data_config.pop("test_subset")),
+                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                **data_config,
+            ),
+        )
