@@ -29,6 +29,11 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: otx.algo.callbacks.EarlyStopping
+      init_args:
+        patience: 8
   data:
     task: H_LABEL_CLS
     config:

@@ -29,3 +29,8 @@ engine:
 callback_monitor: val/mIoU
 
 data: ../_base_/data/mmseg_base.yaml
+overrides:
+  callbacks:
+    - class_path: otx.algo.callbacks.EarlyStopping
+      init_args:
+        patience: 8
