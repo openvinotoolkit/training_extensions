@@ -27,7 +27,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
     Args:
         img_infos (list[ImageInfo]): Original image information before tiling.
         iou_threshold (float, optional): IoU threshold for non-maximum suppression. Defaults to 0.45.
-        max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 100.
+        max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 500.
 
     """
 
@@ -83,7 +83,8 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         labels = labels[keep]
         scores = scores[keep]
         if masks is not None and len(masks) > 0:
-            masks = torch.stack([masks[idx] for idx in keep]).to_dense()
+            # coalesce sparse tensors to prevent them from growing too large.
+            masks = torch.stack([masks[idx] for idx in keep]).coalesce().to_dense()
         return bboxes, labels, scores, masks
 
 

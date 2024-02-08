@@ -167,6 +167,7 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
             log.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
 
         # TODO(Eugene): how to validate parameters? dataclass? pydantic?
+        # https://github.com/openvinotoolkit/training_extensions/pull/2903
         tile_config.tile_size = (tile_size, tile_size)
         tile_config.max_num_instances = max_num_objects
         tile_config.overlap = tile_overlap
