@@ -181,11 +181,11 @@ class AutoConfigurator:
             dict: The loaded configuration.
 
         Raises:
-            ValueError: If the task is not supported for auto-configuration.
+            ValueError: If the task doesn't supported for auto-configuration.
         """
         config_file = DEFAULT_CONFIG_PER_TASK.get(self.task, None)
         if config_file is None:
-            msg = f"{self.task} is not support Auto-Configuration."
+            msg = f"{self.task} doesn't support Auto-Configuration."
             raise ValueError(msg)
         if model_name is not None:
             model_path = str(config_file).split("/")
