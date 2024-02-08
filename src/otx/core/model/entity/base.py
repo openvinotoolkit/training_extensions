@@ -223,7 +223,9 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             self._reset_model_forward()
             if hasattr(exporter, "onnx_export_configuration"):
                 self._update_onnx_output_names(exporter.onnx_export_configuration)
+
         export_result = exporter.export(self.model, output_dir, base_name, export_format, precision)
+
         if dump_auxiliaries:
             self._restore_model_forward()
         return export_result
@@ -302,10 +304,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
 
     @staticmethod
     def _update_onnx_output_names(onnx_export_configuration: dict) -> None:
-        if "output_names" not in onnx_export_configuration:
-            onnx_export_configuration["output_names"] = ["logits", "saliency_map"]
-        elif "saliency_map" not in onnx_export_configuration["output_names"]:
-            onnx_export_configuration["output_names"].append("saliency_map")
+        pass
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):

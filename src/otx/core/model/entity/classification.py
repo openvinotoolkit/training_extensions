@@ -117,6 +117,13 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
 
         return forward_with_auxiliaries
 
+    @staticmethod
+    def _update_onnx_output_names(onnx_export_configuration: dict) -> None:
+        if "output_names" not in onnx_export_configuration:
+            onnx_export_configuration["output_names"] = ["logits", "saliency_map"]
+        elif "saliency_map" not in onnx_export_configuration["output_names"]:
+            onnx_export_configuration["output_names"].append("saliency_map")
+
 
 class OTXMulticlassClsModel(
     ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, T_OTXTileBatchDataEntity],
