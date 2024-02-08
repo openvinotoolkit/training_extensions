@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torchvision import tv_tensors
 
-from otx.core.config.data import TilerConfig
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
@@ -34,7 +34,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
 
     def __init__(self, *arg, **kwargs) -> None:
         super().__init__(*arg, **kwargs)
-        self.tile_config = TilerConfig()
+        self.tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
         """Unpack detection tiles.

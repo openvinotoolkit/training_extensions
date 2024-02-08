@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torchvision import tv_tensors
 
-from otx.core.config.data import TilerConfig
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -39,7 +39,7 @@ class OTXInstanceSegModel(
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.tile_config = TilerConfig()
+        self.tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -251,7 +251,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 tv_tensors.BoundingBoxes(
                     output.pred_instances.bboxes,
                     format="XYXY",
-                    canvas_size=output.img_shape,
+                    canvas_size=output.ori_shape,
                 ),
             )
             output_masks = tv_tensors.Mask(

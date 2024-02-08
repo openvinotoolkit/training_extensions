@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Union
 import datumaro
 from lightning.pytorch.cli import instantiate_class
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.types.task import OTXTaskType
@@ -223,7 +223,7 @@ class AutoConfigurator:
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),
                 test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )

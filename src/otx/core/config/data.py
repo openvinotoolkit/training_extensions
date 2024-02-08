@@ -61,14 +61,16 @@ class SubsetConfig:
 
 
 @dataclass
-class TilerConfig:
+class TileConfig:
     """DTO for tiler configuration."""
 
     enable_tiler: bool = False
     tile_size: tuple[int, int] = (400, 400)
     overlap: float = 0.2
     iou_threshold: float = 0.45
-    max_num_instances: int = 100
+    max_num_instances: int = 1500
+    enable_adaptive_tiling: bool = True
+    object_tile_ratio: float = 0.03
 
 
 @dataclass
@@ -90,7 +92,7 @@ class DataModuleConfig:
     val_subset: SubsetConfig
     test_subset: SubsetConfig
 
-    tile_config: TilerConfig = field(default_factory=lambda: TilerConfig())
+    tile_config: TileConfig = field(default_factory=lambda: TileConfig())
     vpm_config: VisualPromptingConfig = field(default_factory=lambda: VisualPromptingConfig())
 
     mem_cache_size: str = "1GB"

@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging as log
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -37,7 +38,7 @@ from .base import OTXDataset
 if TYPE_CHECKING:
     from datumaro.components.media import BboxIntCoords
 
-    from otx.core.config.data import TilerConfig
+    from otx.core.config.data import TileConfig
     from otx.core.data.dataset.detection import OTXDetectionDataset
     from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
     from otx.core.data.entity.base import OTXDataEntity
@@ -76,7 +77,7 @@ class OTXTileTransform(Tile):
         self._tile_size = tile_size
 
     def _extract_rois(self, image: Image) -> list[BboxIntCoords]:
-        """Extracts ROIs from the given image.
+        """Extracts Tile ROIs from the given image.
 
         Args:
             image (Image): Full image.
@@ -88,11 +89,11 @@ class OTXTileTransform(Tile):
             msg = "Image size is None"
             raise ValueError(msg)
 
-        max_h, max_w = image.size
+        img_h, img_w = image.size
         tile_h, tile_w = self._tile_size
         h_ovl, w_ovl = self._overlap
         stride_h, stride_w = int(tile_h * (1 - h_ovl)), int(tile_w * (1 - w_ovl))
-        n_row, n_col = (max_h + stride_h - 1) // stride_h, (max_w + stride_w - 1) // stride_w
+        n_row, n_col = (img_h + stride_h - 1) // stride_h, (img_w + stride_w - 1) // stride_w
 
         rois: list[BboxIntCoords] = []
 
@@ -103,8 +104,10 @@ class OTXTileTransform(Tile):
 
                 c_x, c_y, w, h = x1y1x2y2_to_cxcywh(x1, y1, x2, y2)
                 x1, y1, x2, y2 = cxcywh_to_x1y1x2y2(c_x, c_y, w, h)
-                x1, y1, x2, y2 = clip_x1y1x2y2(x1, y1, x2, y2, max_w, max_h)
+                x1, y1, x2, y2 = clip_x1y1x2y2(x1, y1, x2, y2, img_w, img_h)
                 rois += [x1y1x2y2_to_xywh(x1, y1, x2, y2)]
+        log.info(f"image: {img_h}x{img_w} ~ tile_size: {self._tile_size}")
+        log.info(f"{n_row}x{n_col} tiles -> {len(rois)} tiles")
         return rois
 
 
@@ -116,7 +119,7 @@ class OTXTileDatasetFactory:
         cls,
         task: OTXTaskType,
         dataset: OTXDataset,
-        tile_config: TilerConfig,
+        tile_config: TileConfig,
     ) -> OTXTileDataset:
         """Create a tile dataset based on the task type and subset type.
 
@@ -151,7 +154,7 @@ class OTXTileDataset(OTXDataset):
         tile_config (TilerConfig): Tile configuration.
     """
 
-    def __init__(self, dataset: OTXDataset, tile_config: TilerConfig) -> None:
+    def __init__(self, dataset: OTXDataset, tile_config: TileConfig) -> None:
         super().__init__(
             dataset.dm_subset,
             dataset.transforms,
@@ -221,7 +224,7 @@ class OTXTileTrainDataset(OTXTileDataset):
         tile_config (TilerConfig): Tile configuration.
     """
 
-    def __init__(self, dataset: OTXDataset, tile_config: TilerConfig) -> None:
+    def __init__(self, dataset: OTXDataset, tile_config: TileConfig) -> None:
         dm_dataset = dataset.dm_subset.as_dataset()
         dm_dataset = dm_dataset.transform(
             OTXTileTransform,
@@ -246,7 +249,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
         tile_config (TilerConfig): Tile configuration.
     """
 
-    def __init__(self, dataset: OTXDetectionDataset, tile_config: TilerConfig) -> None:
+    def __init__(self, dataset: OTXDetectionDataset, tile_config: TileConfig) -> None:
         super().__init__(dataset, tile_config)
 
     @property
@@ -337,7 +340,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
         tile_config (TilerConfig): Tile configuration.
     """
 
-    def __init__(self, dataset: OTXInstanceSegDataset, tile_config: TilerConfig) -> None:
+    def __init__(self, dataset: OTXInstanceSegDataset, tile_config: TileConfig) -> None:
         super().__init__(dataset, tile_config)
 
     @property

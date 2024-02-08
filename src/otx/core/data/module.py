@@ -55,6 +55,8 @@ class OTXDataModule(LightningDataModule):
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
         if self.task != "H_LABEL_CLS":
             dataset = pre_filtering(dataset, self.config.data_format)
+        if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
+            patch_tiling(config.tile_config, dataset=dataset)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
