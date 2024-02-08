@@ -304,7 +304,7 @@ class AutoConfigurator:
         config["data"]["config"]["data_root"] = self.data_root
         data_config = config["data"]["config"].copy()
         return OTXDataModule(
-            task=self.config["data"]["task"],
+            task=config["data"]["task"],
             config=DataModuleConfig(
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),

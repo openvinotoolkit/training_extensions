@@ -586,6 +586,7 @@ class Engine:
 
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
+        engine_config["data_root"] = data_root
         return cls(
             datamodule=datamodule,
             model=model,
