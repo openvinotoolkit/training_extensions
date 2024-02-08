@@ -231,7 +231,7 @@ class OTXCLI:
             if "callbacks" in added_arguments:
                 sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
                 sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
-            if "checkpoint" in added_arguments and "--model.model_name" not in sys.argv:
+            if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
                 # This is code for an OVModel that uses checkpoint in model.model_name.
                 sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
 
