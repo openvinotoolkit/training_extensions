@@ -37,6 +37,7 @@ class OTXModelExporter:
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
         metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
+        output_names (list[str] | None, optional): Names for model's outputs, which would be embedded into resulting model.
     """
 
     def __init__(
@@ -48,6 +49,7 @@ class OTXModelExporter:
         pad_value: int = 0,
         swap_rgb: bool = False,
         metadata: dict[tuple[str, str], str] | None = None,
+        output_names: list[str] | None = None
     ) -> None:
         self.input_size = input_size
         self.mean = mean
@@ -56,6 +58,7 @@ class OTXModelExporter:
         self.pad_value = pad_value
         self.swap_rgb = swap_rgb
         self.metadata = metadata
+        self.output_names = output_names
 
     def export(
         self,
@@ -237,9 +240,16 @@ class OTXModelExporter:
         return extra_data
 
     def _postprocess_openvino_model(self, exported_model: openvino.Model) -> openvino.Model:
-        # workaround for OVC's bug: single output doesn't have a name in OV model
-        if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
-            exported_model.outputs[0].tensor.set_names({"output1"})
+        if self.output_names is not None:
+            if len(self.output_names) != len(exported_model.outputs):
+                msg = "The number of outputs in the exported model doesn't match with exporter parameters"
+                raise RuntimeError(msg)
+            for i, name in enumerate(self.output_names):
+                exported_model.outputs[i].tensor.set_names({name})
+        else:
+            # workaround for OVC's bug: single output doesn't have a name in OV model
+            if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
+                exported_model.outputs[0].tensor.set_names({"output1"})
 
         if self.metadata is not None:
             export_metadata = self._extend_model_metadata(self.metadata)
