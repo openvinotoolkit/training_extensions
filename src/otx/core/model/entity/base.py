@@ -218,10 +218,18 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        if dump_auxiliaries:
-            self.register_explain_hook()
 
-        return self._exporter.export(self._exportable_model, output_dir, base_name, export_format, precision)
+        hook_created = False
+        if dump_auxiliaries and self.explain_hook is None:
+            self.register_explain_hook()
+            hook_created = True
+
+        exported_path = self._exporter.export(self._exportable_model, output_dir, base_name, export_format, precision)
+
+        if hook_created:
+            self.remove_explain_hook()
+
+        return exported_path
 
     @property
     def _exportable_model(self) -> nn.Module:
