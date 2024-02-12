@@ -243,6 +243,9 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
             dataloader_idx: the index of the dataloader
 
         """
+        if self.model_name == "OVAnomalyModel":
+            return  # Ignore when it is an OpenVINO model.
+
         # Since outputs need to be replaced inplace, we can't change the datatype of outputs.
         # That's why outputs is cleared and replaced with the new outputs. The problem with this is that
         # Instead of ``engine.test()`` returning [BatchPrediction,...], it returns
@@ -258,6 +261,9 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         **kwargs,
     ) -> T_OTXBatchPredEntity:
         """Route predict step to anomalib's lightning model's predict step."""
+        if self.model_name == "OVAnomalyModel":
+            return self.forward(inputs)
+
         _inputs = self._customize_inputs(inputs)
         return self.anomaly_lightning_model.predict_step(_inputs, batch_idx, **kwargs)
 
@@ -277,6 +283,9 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
             dataloader_idx: the index of the dataloader
 
         """
+        if self.model_name == "OVAnomalyModel":
+            return  # Ignore when it is an OpenVINO model.
+
         # Since outputs need to be replaced inplace, we can't change the datatype of outputs.
         # That's why outputs is cleared and replaced with the new outputs. The problem with this is that
         # Instead of ``engine.predict()`` returning [BatchPrediction,...], it returns
@@ -287,20 +296,21 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
 
     def on_predict_end(self) -> None:
         """Redirect ``on_prediction_end``."""
+        if self.model_name == "OVAnomalyModel":
+            return  # Ignore when it is an OpenVINO model.
         self.anomaly_lightning_model.on_predict_end()
 
-    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]]:
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]] | None:  # type: ignore[override]
         """Configure optimizers for Anomalib models.
 
         If the anomalib lightning model supports optimizers, return the optimizer.
         Else don't return optimizer even if it is configured in the OTX model.
         """
-        optimizer = None
-        lr_scheduler_configs: list[dict] = []
+        # [TODO](ashwinvaidya17): Revisit this method
         if self.anomaly_lightning_model.configure_optimizers() and self.optimizer:
-            optimizer = self.optimizer
+            return self.optimizer
         # The provided model does not require optimization
-        return [optimizer], lr_scheduler_configs
+        return None
 
     def configure_callbacks(self) -> Callback | None:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
@@ -326,11 +336,13 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | AnomalyResult:
         """Wrap forward method of the Anomalib model."""
-        _inputs: torch.Tensor = self._customize_inputs(inputs)
         if self.model_name == "OVAnomalyModel":
-            return self.model(inputs)
-        outputs = self.anomaly_lightning_model.forward(_inputs)
-        return self._customize_outputs(outputs=outputs, inputs=inputs)
+            outputs = self.model(inputs)
+        else:
+            _inputs: dict = self._customize_inputs(inputs)
+            outputs = self.anomaly_lightning_model.forward(_inputs)
+            outputs = self._customize_outputs(outputs=outputs, inputs=inputs)
+        return outputs
 
     def state_dict(self) -> dict[str, Any]:
         """Set keys of state_dict to allow correct loading of the model."""
