@@ -21,13 +21,12 @@ from otx.core.data.entity.anomaly import (
     AnomalyDetectionBatchPrediction,
     AnomalySegmentationBatchPrediction,
 )
+from otx.core.data.entity.base import T_OTXBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from openvino.model_api.models import Model
     from openvino.model_api.models.anomaly import AnomalyResult
     from torchvision.transforms.v2 import Transform
@@ -40,7 +39,7 @@ class _AnomalibLightningArgsCache:
     lightning model.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._args: dict[str, Any] = {}
 
     def update(self, **kwargs) -> None:
@@ -56,12 +55,12 @@ class _AnomalibLightningArgsCache:
 class _OVModelInfo:
     """OpenVINO model information."""
 
-    image_shape: Sequence[int] = (256, 256)
+    image_shape: tuple[int, int] = (256, 256)
     image_threshold: float = 0.5
     pixel_threshold: float = 0.5
     task: TaskType = TaskType.CLASSIFICATION
-    mean_values: Sequence[float] = (0.0, 0.0, 0.0)
-    scale_values: Sequence[float] = (1.0, 1.0, 1.0)
+    mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0)
     normalization_scale: float = 1.0
     orig_height: int = 256
     orig_width: int = 256
@@ -153,7 +152,7 @@ class OTXAnomalyModel(OTXModel):
             if "Resize" in name:
                 self.model_info.orig_height = transform.size
                 self.model_info.orig_width = transform.size
-                self.model_info.image_shape = [transform.size, transform.size]
+                self.model_info.image_shape = (transform.size, transform.size)
             elif "Normalize" in name:
                 # should be float and in range [0-255]
                 self.model_info.mean_values = transform.mean
@@ -184,22 +183,28 @@ class OTXAnomalyModel(OTXModel):
         return self._label_info
 
     @label_info.setter
-    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def label_info(self, value: LabelInfo | list[str]) -> None:
         """Set this model label information.
 
         It changes the number of classes to 2 and sets the labels as Normal and Anomaly.
         This is because Datumaro returns multiple classes from the dataset. If self.label_info != 2,
         then It will call self._reset_prediction_layer() to reset the prediction layer. Which is not required.
         """
-        if isinstance(label_info, list) and len(label_info) > 2:
+        if isinstance(value, list):
+            # value can be greater than 2 as datumaro returns all anomalous categories separately
             self._label_info = LabelInfo(label_names=["Normal", "Anomaly"], label_groups=[["Normal", "Anomaly"]])
         else:
-            self._label_info = label_info
+            self._label_info = value
 
-    def _customize_inputs(self, *_, **__) -> None:
+    def _customize_inputs(self, inputs: Any) -> dict[str, Any]:  # noqa: ANN401
         """Input customization is done through the lightning module."""
+        return inputs
 
-    def _customize_outputs(self, *_, **__) -> None:
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: T_OTXBatchDataEntity,
+    ) -> None:
         """Output customization is done through the lightning module."""
 
     def forward(self, input_tensor: torch.Tensor) -> torch.Tensor:
@@ -211,6 +216,11 @@ class OTXAnomalyModel(OTXModel):
 
 
 class OVAnomalyModel(OVModel):
+    """OTXModel that contains modelAPI's AnomalyModel as its model.
+
+    This uses the inferencer from modelAPI to generate result.
+    """
+
     def __init__(
         self,
         model_name: str,

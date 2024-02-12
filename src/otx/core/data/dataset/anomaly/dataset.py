@@ -24,7 +24,7 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationDataItem,
 )
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.mem_cache import MemCacheHandlerBase
+from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.task import OTXTaskType
 
@@ -37,7 +37,7 @@ class AnomalyDataset(OTXDataset):
         task_type: OTXTaskType,
         dm_subset: DatasetSubset,
         transforms: Transforms,
-        mem_cache_handler: MemCacheHandlerBase = ...,
+        mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
@@ -65,7 +65,7 @@ class AnomalyDataset(OTXDataset):
         label: torch.LongTensor = (
             torch.tensor(0.0, dtype=torch.long) if "good" in datumaro_item.id else torch.tensor(1.0, dtype=torch.long)
         )
-
+        item: AnomalyClassificationDataItem | AnomalySegmentationDataItem | AnomalyDetectionDataItem
         if self.task_type == OTXTaskType.ANOMALY_CLASSIFICATION:
             item = AnomalyClassificationDataItem(
                 image=img_data,
@@ -126,8 +126,12 @@ class AnomalyDataset(OTXDataset):
                 mask=mask,
             )
         else:
-            raise NotImplementedError(f"Task {self.task_type} is not supported yet.")
-        return self._apply_transforms(item)
+            msg = f"Task {self.task_type} is not supported yet."
+            raise NotImplementedError(msg)
+        # without ignore the following error is returned
+        # Incompatible return value type (got "Any | None", expected
+        # "AnomalyClassificationDataItem | AnomalySegmentationDataBatch")
+        return self._apply_transforms(item)  # type: ignore[return-value]
 
     @property
     def collate_fn(self) -> Callable:
@@ -138,4 +142,5 @@ class AnomalyDataset(OTXDataset):
             return AnomalySegmentationDataBatch.collate_fn
         if self.task_type == OTXTaskType.ANOMALY_DETECTION:
             return AnomalyDetectionDataBatch.collate_fn
-        raise NotImplementedError(f"Task {self.task_type} is not supported yet.")
+        msg = f"Task {self.task_type} is not supported yet."
+        raise NotImplementedError(msg)

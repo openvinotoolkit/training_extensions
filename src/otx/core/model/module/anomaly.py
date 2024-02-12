@@ -15,8 +15,6 @@ from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormal
 from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.callbacks.thresholding import _ThresholdCallback
 from lightning.pytorch.callbacks.callback import Callback
-from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.anomaly import (
@@ -46,15 +44,15 @@ class _RouteCallback(Callback):
     def _call_on_anomalib_model(
         self,
         hook_name: str,
-        pl_module: OTXAnomalyLitModel,
-        **kwargs: Any,
+        pl_module: LightningModule,
+        **kwargs,
     ) -> None:
         anomalib_module = pl_module.anomaly_lightning_model
         for callback in self.callbacks:
             if hasattr(callback, hook_name):
                 getattr(callback, hook_name)(pl_module=anomalib_module, **kwargs)
 
-    def setup(self, trainer: Trainer, pl_module: OTXAnomalyLitModel, stage: str) -> None:
+    def setup(self, trainer: Trainer, pl_module: LightningModule, stage: str) -> None:
         self._call_on_anomalib_model(hook_name="setup", pl_module=pl_module, trainer=trainer, stage=stage)
 
     def on_validation_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
@@ -92,7 +90,7 @@ class _RouteCallback(Callback):
         self,
         trainer: Trainer,
         pl_module: LightningModule,
-        outputs: Any,
+        outputs: dict,
         batch: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
         batch_idx: int,
         dataloader_idx: int = 0,
@@ -154,7 +152,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         self.model_name = self.model.__class__.__name__
         self._setup_anomalib_lightning_model(name=self.model_name)
 
-    def _setup_anomalib_lightning_model(self, name: str | None = None) -> None:
+    def _setup_anomalib_lightning_model(self, name: str) -> None:
         """Initializes the Anomalib lightning model."""
         if name == "OVAnomalyModel":
             return  # Ignore loading the lightning model when it is an OpenVINO model.
@@ -187,17 +185,16 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         self.anomaly_lightning_model.trainer = self.trainer
         return super().setup(stage)
 
-    def training_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int) -> torch.Tensor:
+    def training_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int) -> torch.Tensor:  # type: ignore[override]
         """Route training step to anomalib's lightning model's training step."""
-        inputs = self._customize_inputs(inputs)
-        # inputs = self._customize_inputs(inputs)
-        return self.anomaly_lightning_model.training_step(inputs, batch_idx)
+        _inputs = self._customize_inputs(inputs)
+        return self.anomaly_lightning_model.training_step(_inputs, batch_idx)
 
-    def validation_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int = 0, **kwargs) -> ...:
+    def validation_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int = 0, **kwargs) -> STEP_OUTPUT:
         """Route validation step to anomalib's lightning model's validation step."""
-        inputs = self._customize_inputs(inputs)
+        _inputs = self._customize_inputs(inputs)
         # no need to customize outputs for validation step
-        return self.anomaly_lightning_model.validation_step(inputs, batch_idx, **kwargs)
+        return self.anomaly_lightning_model.validation_step(_inputs, batch_idx, **kwargs)
 
     def on_validation_end(self) -> None:
         """Call anomaly_lightning_model's on_validation_end."""
@@ -261,8 +258,8 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         **kwargs,
     ) -> T_OTXBatchPredEntity:
         """Route predict step to anomalib's lightning model's predict step."""
-        inputs = self._customize_inputs(inputs)
-        return self.anomaly_lightning_model.predict_step(inputs, batch_idx, **kwargs)
+        _inputs = self._customize_inputs(inputs)
+        return self.anomaly_lightning_model.predict_step(_inputs, batch_idx, **kwargs)
 
     def on_predict_batch_end(
         self,
@@ -292,15 +289,18 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         """Redirect ``on_prediction_end``."""
         self.anomaly_lightning_model.on_predict_end()
 
-    def configure_optimizers(self) -> dict[str, Any] | None:
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]]:
         """Configure optimizers for Anomalib models.
 
         If the anomalib lightning model supports optimizers, return the optimizer.
         Else don't return optimizer even if it is configured in the OTX model.
         """
+        optimizer = None
+        lr_scheduler_configs: list[dict] = []
         if self.anomaly_lightning_model.configure_optimizers() and self.optimizer:
-            return {"optimizer": self.optimizer}
-        return None
+            optimizer = self.optimizer
+        # The provided model does not require optimization
+        return [optimizer], lr_scheduler_configs
 
     def configure_callbacks(self) -> Callback | None:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
@@ -326,10 +326,10 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | AnomalyResult:
         """Wrap forward method of the Anomalib model."""
-        inputs: torch.Tensor = self._customize_inputs()
+        _inputs: torch.Tensor = self._customize_inputs(inputs)
         if self.model_name == "OVAnomalyModel":
             return self.model(inputs)
-        outputs = self.anomaly_lightning_model.forward(inputs)
+        outputs = self.anomaly_lightning_model.forward(_inputs)
         return self._customize_outputs(outputs=outputs, inputs=inputs)
 
     def state_dict(self) -> dict[str, Any]:
