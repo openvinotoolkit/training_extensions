@@ -203,6 +203,10 @@ class OTXTileDataset(OTXDataset):
             threshold_drop_ann=0.5,
         )
 
+        if self.dm_subset.name == "val":
+            # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
+            tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
+
         tile_entities: list[OTXDataEntity] = []
         tile_attrs: list[dict] = []
         for tile in tile_ds:
@@ -243,7 +247,7 @@ class OTXTileTrainDataset(OTXTileDataset):
 
     def sample_subset(self) -> DatasetSubset:
         """Randomly sample dataset items."""
-        if self.tile_config.sampling_ratio < 1:
+        if self.tile_config.sampling_ratio < 1.0:
             dm_dataset = self.dm_subset.as_dataset()
             dm_dataset.transform(RandomSampler, count=int(len(self.dm_subset) * self.tile_config.sampling_ratio))
             return DatasetSubset(dm_dataset, self.dm_subset.name)
