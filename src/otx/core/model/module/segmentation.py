@@ -80,7 +80,7 @@ class OTXSegmentationLitModule(OTXLitModule):
                 log.debug("Cannot log Tensor which is not scalar")
                 return
             self.log(
-                f"{key}/{type(self.val_metric).__name__}",
+                f"{key}/{type(meter).__name__}",
                 results,
                 sync_dist=True,
                 prog_bar=True,
