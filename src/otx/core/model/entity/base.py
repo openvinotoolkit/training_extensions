@@ -6,10 +6,9 @@
 from __future__ import annotations
 
 import json
-import types
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Generic, NamedTuple
 
 import numpy as np
 import openvino
@@ -218,7 +217,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-
         hook_created = False
         if dump_auxiliaries and self.explain_hook is None:
             self.register_explain_hook()
@@ -272,10 +270,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
 
         return parameters
 
-    def _get_forward_with_auxiliaries(self) -> Callable | None:
-        """Returns updated forward function, that dumps auxiliary outputs: feature vector and saliency map."""
-        return None
-
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
 
@@ -287,30 +281,6 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
     @property
     def _optimization_config(self) -> dict[str, str]:
         return {}
-
-    def _reset_model_forward(self) -> None:
-        forward_with_auxiliaries = self._get_forward_with_auxiliaries()
-        if forward_with_auxiliaries is None:
-            msg = "forward_with_auxiliaries needs to be implemented for dumping auxiliaries."
-            raise NotImplementedError(msg)
-
-        self.original_model_forward = self.model.forward
-
-        func_type = types.MethodType
-        self.model.forward = func_type(forward_with_auxiliaries, self.model)
-
-    def _restore_model_forward(self) -> None:
-        if not self.original_model_forward:
-            msg = "original_model_forward is None."
-            raise RuntimeError(msg)
-
-        func_type = types.MethodType
-        self.model.forward = func_type(self.original_model_forward, self.model)
-        self.original_model_forward = None
-
-    @staticmethod
-    def _update_onnx_output_names(onnx_export_configuration: dict) -> None:
-        pass
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
