@@ -5,8 +5,6 @@ model:
     async_inference: True
     use_throughput_mode: False
 
-
-
 engine:
   task: ANOMALY_CLASSIFICATION
   device: cpu

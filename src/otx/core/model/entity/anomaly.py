@@ -18,8 +18,8 @@ from torch import nn
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.anomaly import (
     AnomalyClassificationBatchPrediction,
-    AnomalyDetectionDataBatch,
-    AnomalySegmentationDataBatch,
+    AnomalyDetectionBatchPrediction,
+    AnomalySegmentationBatchPrediction,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
@@ -168,6 +168,7 @@ class OTXAnomalyModel(OTXModel):
 
     @property
     def task_type(self) -> TaskType:
+        """Return task type in Anomalib's format."""
         if self._task_type:
             return self._task_type
         msg = "Task type is not set."
@@ -252,6 +253,8 @@ class OVAnomalyModel(OVModel):
     def _customize_outputs(
         self,
         outputs: list[AnomalyResult],
-        inputs: AnomalyClassificationBatchPrediction | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        inputs: AnomalyClassificationBatchPrediction
+        | AnomalyDetectionBatchPrediction
+        | AnomalySegmentationBatchPrediction,
     ) -> list[AnomalyResult]:
         return outputs

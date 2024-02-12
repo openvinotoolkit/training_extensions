@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import importlib
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
@@ -15,9 +16,18 @@ from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.callbacks.thresholding import _ThresholdCallback
 from lightning.pytorch.callbacks.callback import Callback
 from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 from otx.core.data.dataset.base import LabelInfo
-from otx.core.data.entity.anomaly.classification import AnomalyClassificationDataBatch, AnomalyClassificationPrediction
+from otx.core.data.entity.anomaly import (
+    AnomalyClassificationBatchPrediction,
+    AnomalyClassificationDataBatch,
+    AnomalyDetectionBatchPrediction,
+    AnomalyDetectionDataBatch,
+    AnomalySegmentationBatchPrediction,
+    AnomalySegmentationDataBatch,
+)
+from otx.core.data.entity.base import T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.model.entity.anomaly import OTXAnomalyModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -26,6 +36,7 @@ if TYPE_CHECKING:
     from lightning import LightningModule, Trainer
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.utilities.types import STEP_OUTPUT
+    from openvino.model_api.models.anomaly import AnomalyResult
 
 
 class _RouteCallback(Callback):
@@ -54,7 +65,7 @@ class _RouteCallback(Callback):
         trainer: Trainer,
         pl_module: LightningModule,
         outputs: STEP_OUTPUT,
-        batch: Any,
+        batch: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -81,8 +92,8 @@ class _RouteCallback(Callback):
         self,
         trainer: Trainer,
         pl_module: LightningModule,
-        outputs: STEP_OUTPUT,
-        batch: Any,
+        outputs: Any,
+        batch: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -103,8 +114,10 @@ class _RouteCallback(Callback):
         self,
         trainer: Trainer,
         pl_module: LightningModule,
-        outputs: Any,
-        batch: Any,
+        outputs: dict,
+        batch: AnomalyClassificationBatchPrediction
+        | AnomalySegmentationBatchPrediction
+        | AnomalyDetectionBatchPrediction,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -119,7 +132,7 @@ class _RouteCallback(Callback):
         )
 
 
-class OTXBaseAnomalyLitModel(OTXLitModule):
+class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
     """Anomaly OTX Lightning model.
 
     Used to wrap all the Anomaly models in OTX.
@@ -139,7 +152,15 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
         self.task_type = task_type
         self._meta_info: LabelInfo
         self.model_name = self.model.__class__.__name__
+        self._post_processing_callback: _PostProcessorCallback = None
         self._setup_anomalib_lightning_model(name=self.model_name)
+
+    @property
+    def post_processing_callback(self) -> _PostProcessorCallback:
+        if self._post_processing_callback:
+            return self._post_processing_callback
+        msg = "PostProcessorCallback has not been assigned yet."
+        raise AttributeError(msg)
 
     def _setup_anomalib_lightning_model(self, name: str | None = None) -> None:
         """Initializes the Anomalib lightning model."""
@@ -183,6 +204,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
     def validation_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int = 0, **kwargs: Any) -> ...:
         """Route validation step to anomalib's lightning model's validation step."""
         inputs = self._customize_inputs(inputs)
+        # no need to customize outputs for validation step
         return self.anomaly_lightning_model.validation_step(inputs, batch_idx, **kwargs)
 
     def on_validation_end(self) -> None:
@@ -201,18 +223,79 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
         max_val = self.anomaly_lightning_model.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
         self.model.model_info.normalization_scale = max_val - min_val
 
-    def test_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int = 0, **kwargs: Any) -> ...:
-        """Route test step to anomalib's lightning model's test step."""
+    def test_step(
+        self,
+        inputs: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        batch_idx: int = 0,
+        **kwargs,
+    ) -> AnomalyClassificationBatchPrediction | AnomalyDetectionBatchPrediction | AnomalySegmentationBatchPrediction:
+        """Route test step to Anomalib's lightning model's test step."""
         if self.model_name == "OVAnomalyModel":
             return self.model(inputs)
-        else:
-            inputs = self._customize_inputs(inputs)
-            return self.anomaly_lightning_model.test_step(inputs, batch_idx, **kwargs)
 
-    def predict_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int = 0, **kwargs: Any) -> ...:
+        dict_inputs = self._customize_inputs(inputs)
+        return self.anomaly_lightning_model.test_step(dict_inputs, batch_idx, **kwargs)
+
+    def on_test_batch_end(
+        self,
+        outputs: dict,
+        batch: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> None:
+        """Called in the test loop after the batch.
+
+        Args:
+            outputs: The outputs of test_step(x)
+            batch: The batched data as it is returned by the test DataLoader.
+            batch_idx: the index of the batch
+            dataloader_idx: the index of the dataloader
+
+        """
+        # Since outputs need to be replaced inplace, we can't change the datatype of outputs.
+        # That's why outputs is cleared and replaced with the new outputs. The problem with this is that
+        # Instead of ``engine.test()`` returning [BatchPrediction,...], it returns
+        # [{prediction: BatchPrediction}, {...}, ...]
+        _outputs = self._customize_outputs(outputs, batch)
+        outputs.clear()
+        outputs.update({"prediction": _outputs})
+
+    def predict_step(
+        self,
+        inputs: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        batch_idx: int = 0,
+        **kwargs,
+    ) -> AnomalyClassificationBatchPrediction | AnomalyDetectionBatchPrediction | AnomalySegmentationBatchPrediction:
         """Route predict step to anomalib's lightning model's predict step."""
         inputs = self._customize_inputs(inputs)
         return self.anomaly_lightning_model.predict_step(inputs, batch_idx, **kwargs)
+
+    def on_predict_batch_end(
+        self,
+        outputs: dict,
+        batch: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> None:
+        """Called in the predict loop after the batch.
+
+        Args:
+            outputs: The outputs of predict_step(x)
+            batch: The batched data as it is returned by the prediction DataLoader.
+            batch_idx: the index of the batch
+            dataloader_idx: the index of the dataloader
+
+        """
+        # Since outputs need to be replaced inplace, we can't change the datatype of outputs.
+        # That's why outputs is cleared and replaced with the new outputs. The problem with this is that
+        # Instead of ``engine.predict()`` returning [BatchPrediction,...], it returns
+        # [{prediction: BatchPrediction}, {...}, ...]
+        _outputs = self._customize_outputs(outputs, batch)
+        outputs.clear()
+        outputs.update({"prediction": _outputs})
+
+    def on_predict_end(self) -> None:
+        self.anomaly_lightning_model.on_predict_end()
 
     def configure_optimizers(self) -> dict[str, Any] | None:
         """Configure optimizers for Anomalib models.
@@ -230,9 +313,10 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
             return None
         image_metrics = ["AUROC", "F1Score"]
         pixel_metrics = image_metrics if self.task_type != TaskType.CLASSIFICATION else None
+        self._post_processing_callback = _PostProcessorCallback()
         return _RouteCallback(
             [
-                _PostProcessorCallback(),
+                self.post_processing_callback,
                 _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
                 _ThresholdCallback(threshold="F1AdaptiveThreshold"),
                 _MetricsCallback(
@@ -243,9 +327,19 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
             ],
         )
 
-    def forward(self, inputs: AnomalyClassificationDataBatch) -> AnomalyClassificationPrediction:
+    def forward(
+        self,
+        inputs: AnomalyClassificationDataBatch,
+    ) -> (
+        AnomalyClassificationBatchPrediction
+        | AnomalySegmentationBatchPrediction
+        | AnomalyDetectionBatchPrediction
+        | AnomalyResult
+    ):
         """Wrap forward method of the Anomalib model."""
         inputs: torch.Tensor = self._customize_inputs()
+        if self.model_name == "OVAnomalyModel":
+            return self.model(inputs)
         outputs = self.anomaly_lightning_model.forward(inputs)
         return self._customize_outputs(outputs=outputs, inputs=inputs)
 
@@ -273,12 +367,15 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
 
         Also assigns the keys that were removed when saving the state_dict to save disk space.
         """
-        anomaly_lightning_module = ckpt["state_dict"].pop("anomaly_lightning_model_class")
+        # When engine.predict is called, "state_dict" is passed to the model instead of the entire checkpoint
+        # Hence we need ``ckpt.get``
+        ckpt = ckpt.get("state_dict", ckpt)
+        anomaly_lightning_module = ckpt.pop("anomaly_lightning_model_class")
         self._setup_anomalib_lightning_model(name=anomaly_lightning_module)
         # extract anomaly_lightning_model's state_dict from ckpt and load it
-        anomaly_lightning_module_keys = [key for key in ckpt["state_dict"] if key.startswith("anomaly_lightning_model")]
+        anomaly_lightning_module_keys = [key for key in ckpt if key.startswith("anomaly_lightning_model")]
         anomaly_lightning_module_state_dict = {}
-        for key, value in ckpt["state_dict"].items():
+        for key, value in ckpt.items():
             if key in anomaly_lightning_module_keys:
                 anomaly_lightning_module_state_dict[key.split("anomaly_lightning_model.")[1]] = value
 
@@ -287,17 +384,28 @@ class OTXBaseAnomalyLitModel(OTXLitModule):
         # restore keys for model.model
         for key in anomaly_lightning_module_keys:
             if key.startswith("anomaly_lightning_model.model"):
-                ckpt["state_dict"][f"model.model.{key.split('anomaly_lightning_model.model.')[1]}"] = ckpt[
-                    "state_dict"
-                ][key]
+                ckpt[f"model.model.{key.split('anomaly_lightning_model.model.')[1]}"] = ckpt[key]
 
         # remove extra info keys
         extra_info_keys = ("image_threshold_class", "pixel_threshold_class", "normalization_class", "_is_fine_tuned")
         for key in extra_info_keys:
-            if f"anomaly_lightning_model.{key}" in ckpt["state_dict"]:
-                ckpt["state_dict"].pop(f"anomaly_lightning_model.{key}")
+            if f"anomaly_lightning_model.{key}" in ckpt:
+                ckpt.pop(f"anomaly_lightning_model.{key}")
 
         return super().load_state_dict(ckpt, *args, **kwargs)
+
+    @abstractmethod
+    def _customize_inputs(self, inputs: T_OTXBatchDataEntity) -> dict[str, Any]:  # anomalib model inputs
+        """Customize inputs for the model."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def _customize_outputs(
+        self,
+        outputs: dict,
+        inputs: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+    ) -> T_OTXBatchPredEntity:
+        raise NotImplementedError
 
 
 class OTXAnomalyClassificationLitModel(OTXBaseAnomalyLitModel):
@@ -314,6 +422,21 @@ class OTXAnomalyClassificationLitModel(OTXBaseAnomalyLitModel):
         """Customize inputs for the model."""
         return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
 
+    def _customize_outputs(
+        self,
+        outputs: dict,
+        inputs: AnomalyClassificationDataBatch,
+    ) -> AnomalyClassificationBatchPrediction:
+        return AnomalyClassificationBatchPrediction(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["label"],
+            # Note: this is the anomalous score. It should be inverted to report Normal score
+            scores=outputs["pred_scores"],
+            anomaly_maps=outputs["anomaly_maps"],
+        )
+
 
 class OTXAnomalySegmentationLitModel(OTXBaseAnomalyLitModel):
     def __init__(
@@ -328,6 +451,22 @@ class OTXAnomalySegmentationLitModel(OTXBaseAnomalyLitModel):
     def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
         """Customize inputs for the model."""
         return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
+
+    def _customize_outputs(
+        self,
+        outputs: dict,
+        inputs: AnomalySegmentationDataBatch,
+    ) -> AnomalySegmentationBatchPrediction:
+        return AnomalySegmentationBatchPrediction(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["label"],
+            # Note: this is the anomalous score. It should be inverted to report Normal score
+            scores=outputs["pred_scores"],
+            anomaly_maps=outputs["anomaly_maps"],
+            masks=outputs["mask"],
+        )
 
 
 class OTXAnomalyDetectionLitModel(OTXBaseAnomalyLitModel):
@@ -348,3 +487,18 @@ class OTXAnomalyDetectionLitModel(OTXBaseAnomalyLitModel):
             "mask": inputs.masks,
             "boxes": inputs.boxes,
         }
+
+    def _customize_outputs(self, outputs: dict, inputs: AnomalyDetectionDataBatch) -> AnomalyDetectionBatchPrediction:
+        return AnomalyDetectionBatchPrediction(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["label"],
+            # Note: this is the anomalous score. It should be inverted to report Normal score
+            scores=outputs["pred_scores"],
+            anomaly_maps=outputs["anomaly_maps"],
+            masks=outputs["mask"],
+            boxes=outputs["pred_boxes"],
+            box_scores=outputs["box_scores"],
+            box_labels=outputs["box_labels"],
+        )
