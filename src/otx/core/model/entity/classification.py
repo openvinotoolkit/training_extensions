@@ -6,9 +6,10 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
+from torch import nn
 
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
@@ -28,18 +29,20 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
-    from mmpretrain.models import ImageClassifier
     from mmpretrain.models.utils import ClsDataPreprocessor
-    from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
-    from torch import nn
 
+    from otx.algo.hooks.recording_forward_hook import BaseRecordingForwardHook
     from otx.core.data.entity.classification import HLabelInfo
 
 
 class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """OTX classification model which can attach a XAI hook."""
+
+    def __init__(self, num_classes: int) -> None:
+        super().__init__(num_classes)
+        self.explain_hook: BaseRecordingForwardHook | None = None
 
     @property
     def has_gap(self) -> bool:
@@ -77,45 +80,45 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
 
     def remove_explain_hook_handle(self) -> None:
         """Removes explain hook from the model."""
-        if self.explain_hook.handle is not None:
+        if self.explain_hook is not None and self.explain_hook.handle is not None:
             self.explain_hook.handle.remove()
+
+    def remove_explain_hook(self) -> None:
+        """Removes explain hook completely."""
+        self.remove_explain_hook_handle()
+        self.explain_hook = None
 
     def reset_explain_hook(self) -> None:
         """Clear all history of explain records."""
-        self.explain_hook.reset()
+        if self.explain_hook is not None:
+            self.explain_hook.reset()
 
-    def _get_forward_with_auxiliaries(self) -> Callable | None:
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+    @property
+    def _exportable_model(self) -> nn.Module:
+        """nn.Module which will be passed to the exporter."""
+        if self.explain_hook is not None:
 
-        head_forward_fn = self.head_forward_fn
-        num_classes = self.num_classes
-        optimize_gap = self.has_gap
+            class ModelWithExplainOutput(nn.Module):
+                def __init__(self, model: nn.Module, hook: BaseRecordingForwardHook) -> None:
+                    super().__init__()
+                    self.model = model
+                    self.hook = hook
+                    self.hook.reset()
 
-        def forward_with_auxiliaries(
-            self: ImageClassifier,
-            inputs: torch.Tensor,
-            data_samples: list[DataSample] | None = None,  # noqa: ARG001
-            mode: str = "tensor",  # noqa: ARG001
-        ) -> dict:
-            x = self.backbone(inputs)
-            backbone_feat = x
+                def forward(self, x: torch.Tensor) -> tuple:
+                    logits = self.model(x)
+                    if isinstance(self.hook.last_raw_record, torch.Tensor):
+                        saliency_maps = self.hook.last_raw_record.clone()
+                    else:
+                        self.hook.reset()
+                        msg = "Export with explain failed: hook.last_raw_record should be a torch.Tensor"
+                        raise TypeError(msg)
+                    self.hook.reset()
+                    return logits, saliency_maps
 
-            hook = ReciproCAMHook(
-                head_forward_fn,
-                num_classes=num_classes,
-                optimize_gap=optimize_gap,
-            )
-            saliency_maps = hook.func(backbone_feat)
+            return ModelWithExplainOutput(super()._exportable_model, self.explain_hook)
 
-            if self.with_neck:
-                x = self.neck(x)
-
-            return {
-                "logits": self.head(x) if self.with_head else x,
-                "saliency_map": saliency_maps,
-            }
-
-        return forward_with_auxiliaries
+        return super()._exportable_model
 
     @staticmethod
     def _update_onnx_output_names(onnx_export_configuration: dict) -> None:
@@ -123,6 +126,15 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
             onnx_export_configuration["output_names"] = ["logits", "saliency_map"]
         elif "saliency_map" not in onnx_export_configuration["output_names"]:
             onnx_export_configuration["output_names"].append("saliency_map")
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        if self.explain_hook is not None:
+            parameters["output_names"] = ["logits", "saliency_maps"]
+
+        return parameters
 
 
 class OTXMulticlassClsModel(

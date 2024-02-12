@@ -26,17 +26,24 @@ class BaseRecordingForwardHook:
     def __init__(self, head_forward_fn: Callable | None = None, normalize: bool = True) -> None:
         self._head_forward_fn = head_forward_fn
         self.handle: RemovableHandle | None = None
-        self._records: list[torch.Tensor] = []
+        self._records: list[np.ndarray] = []
         self._norm_saliency_maps = normalize
+        self._last_raw_record: torch.Tensor | np.ndarray | None = None
 
     @property
-    def records(self) -> list[torch.Tensor]:
+    def records(self) -> list[np.ndarray]:
         """Return records."""
         return self._records
+
+    @property
+    def last_raw_record(self) -> torch.Tensor | np.ndarray | None:
+        """Return the raw record from the last forward call."""
+        return self._last_raw_record
 
     def reset(self) -> None:
         """Clear all history of records."""
         self._records.clear()
+        self._last_raw_record = None
 
     def func(self, feature_map: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
         """This method get the feature vector or saliency map from the output of the module.
@@ -61,9 +68,13 @@ class BaseRecordingForwardHook:
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
             tensors_np = tensors.detach().cpu().numpy()
+            self._last_raw_record = tensors.detach().cpu()
         elif isinstance(tensors, np.ndarray):
             tensors_np = tensors
+            self._last_raw_record = tensors
         else:
+            self._torch_to_cpu_from_list(tensors)
+            self._last_raw_record = tensors
             self._torch_to_numpy_from_list(tensors)
             tensors_np = tensors
 
@@ -77,6 +88,14 @@ class BaseRecordingForwardHook:
                 if not isinstance(x, torch.Tensor):
                     x = torch.tensor(x)
         return x
+
+    def _torch_to_cpu_from_list(self, tensor_list: list[torch.Tensor | None]) -> None:
+        for i in range(len(tensor_list)):
+            tensor = tensor_list[i]
+            if isinstance(tensor, list):
+                self._torch_to_numpy_from_list(tensor)
+            elif isinstance(tensor, torch.Tensor):
+                tensor_list[i] = tensor.detach().cpu()
 
     def _torch_to_numpy_from_list(self, tensor_list: list[torch.Tensor | None]) -> None:
         for i in range(len(tensor_list)):

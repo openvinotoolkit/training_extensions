@@ -32,7 +32,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         metadata: dict[tuple[str, str], str] | None = None,
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
-        output_names: list[str] | None = None
+        output_names: list[str] | None = None,
     ) -> None:
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata, output_names)
         self.via_onnx = via_onnx

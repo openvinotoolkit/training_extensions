@@ -31,13 +31,14 @@ class OTXModelExporter:
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
         resize_mode (Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"], optional):
-            A resize type for model preprocess. "standard" resizes iamges without keeping ratio.
+            A resize type for model preprocess. "standard" resizes images without keeping ratio.
             "fit_to_window" resizes images while keeping ratio.
             "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
         metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
-        output_names (list[str] | None, optional): Names for model's outputs, which would be embedded into resulting model.
+        output_names (list[str] | None, optional): Names for model's outputs, which would be
+        embedded into resulting model.
     """
 
     def __init__(
@@ -49,7 +50,7 @@ class OTXModelExporter:
         pad_value: int = 0,
         swap_rgb: bool = False,
         metadata: dict[tuple[str, str], str] | None = None,
-        output_names: list[str] | None = None
+        output_names: list[str] | None = None,
     ) -> None:
         self.input_size = input_size
         self.mean = mean
@@ -246,10 +247,9 @@ class OTXModelExporter:
                 raise RuntimeError(msg)
             for i, name in enumerate(self.output_names):
                 exported_model.outputs[i].tensor.set_names({name})
-        else:
+        elif len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
             # workaround for OVC's bug: single output doesn't have a name in OV model
-            if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
-                exported_model.outputs[0].tensor.set_names({"output1"})
+            exported_model.outputs[0].tensor.set_names({"output1"})
 
         if self.metadata is not None:
             export_metadata = self._extend_model_metadata(self.metadata)

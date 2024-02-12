@@ -218,17 +218,15 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        exporter = self._exporter
         if dump_auxiliaries:
-            self._reset_model_forward()
-            if hasattr(exporter, "onnx_export_configuration"):
-                self._update_onnx_output_names(exporter.onnx_export_configuration)
+            self.register_explain_hook()
 
-        export_result = exporter.export(self.model, output_dir, base_name, export_format, precision)
+        return self._exporter.export(self._exportable_model, output_dir, base_name, export_format, precision)
 
-        if dump_auxiliaries:
-            self._restore_model_forward()
-        return export_result
+    @property
+    def _exportable_model(self) -> nn.Module:
+        """nn.Module which will be passed to the exporter."""
+        return self.model
 
     @property
     def _exporter(self) -> OTXModelExporter:
