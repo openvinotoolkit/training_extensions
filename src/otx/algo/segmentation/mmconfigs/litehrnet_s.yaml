@@ -87,11 +87,14 @@ decode_head:
     - 0
     - 1
     - 2
-  input_transform: resize_concat
-  channels: 420
+  input_transform: "multiple_select"
+  channels: 60
   kernel_size: 1
   num_convs: 1
   concat_input: false
+  enable_aggregator: True
+  aggregator_merge_norm: None
+  aggregator_use_concat: False
   dropout_ratio: -1
   num_classes: 2
   norm_cfg:

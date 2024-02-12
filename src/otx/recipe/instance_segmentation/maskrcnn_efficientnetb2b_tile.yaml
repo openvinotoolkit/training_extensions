@@ -1,0 +1,96 @@
+model:
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
+  init_args:
+    num_classes: 80
+    variant: efficientnetb2b
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.007
+    momentum: 0.9
+    weight_decay: 0.001
+
+scheduler:
+  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
+  init_args:
+    warmup_steps: 100
+    mode: max
+    factor: 0.5
+    patience: 5
+    monitor: val/map_50
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
+  gradient_clip_val: 35.0
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      tile_config:
+        enable_tiler: true
+      include_polygons: true
+      train_subset:
+        num_workers: 4
+        batch_size: 4
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: Resize
+            keep_ratio: true
+            scale:
+              - 640
+              - 640
+          - type: RandomFlip
+            prob: 0.5
+          - type: PackDetInputs
+      val_subset:
+        num_workers: 4
+        batch_size: 1
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            keep_ratio: true
+            scale:
+              - 640
+              - 640
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
+      test_subset:
+        num_workers: 4
+        batch_size: 1
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            keep_ratio: true
+            scale:
+              - 640
+              - 640
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor

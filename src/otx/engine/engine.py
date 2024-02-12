@@ -1,7 +1,7 @@
-"""Module for OTX engine components."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""Module for OTX engine components."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -38,6 +38,7 @@ LITMODULE_PER_TASK = {
     OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
     OTXTaskType.H_LABEL_CLS: "otx.core.model.module.classification.OTXHlabelClsLitModule",
     OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
+    OTXTaskType.ROTATED_DETECTION: "otx.core.model.module.rotated_detection.OTXRotatedDetLitModule",
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
@@ -408,7 +409,8 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
+            self.model.label_info = lit_module.meta_info
+
             lit_module.load_state_dict(loaded_checkpoint)
 
             return self.model.export(
@@ -521,10 +523,10 @@ class Engine:
             ckpt_path=ckpt_path,
         )
 
-        # Optimize for memory <- TODO(negvet)
-        raw_saliency_maps = self.trainer.model.model.explain_hook.records
+        explain_hook = self.trainer.model.model.explain_hook
+
         return get_processed_saliency_maps(
-            raw_saliency_maps,
+            explain_hook,
             explain_config,
             predictions,
             Path(self.work_dir),
@@ -569,7 +571,7 @@ class Engine:
             ),
         )
         # Model
-        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        num_classes = datamodule.meta_info.num_classes
         config["model"]["init_args"]["num_classes"] = num_classes
         model = instantiate_class(args=(), init=config.pop("model"))
         optimizer = partial_instantiate_class(init=config.pop("optimizer", None))

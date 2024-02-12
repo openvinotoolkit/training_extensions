@@ -13,7 +13,6 @@ from otx.engine.utils.auto_configurator import (
     DEFAULT_CONFIG_PER_TASK,
     AutoConfigurator,
     configure_task,
-    get_num_classes_from_meta_info,
 )
 
 
@@ -45,29 +44,6 @@ def test_configure_task_with_unsupported_data_format(tmp_path: Path) -> None:
     # Test the configure_task function with an unsupported data format
     with pytest.raises(ValueError, match="Can't find proper task."):
         configure_task(data_root)
-
-
-@pytest.mark.parametrize(
-    "task",
-    [task for task in DEFAULT_CONFIG_PER_TASK if task != OTXTaskType.SEMANTIC_SEGMENTATION],
-)
-def test_get_num_classes_from_meta_info(task: OTXTaskType) -> None:
-    # Test the get_num_classes_from_meta_info function
-    meta_info = LabelInfo(label_names=["class1", "class2", "class3"])
-    num_classes = get_num_classes_from_meta_info(task, meta_info)
-    assert num_classes == 3
-
-
-@pytest.mark.parametrize("has_background", [True, False])
-def test_get_num_classes_from_meta_info_with_no_background(has_background: bool) -> None:
-    # Test the get_num_classes_from_meta_info function with no background class
-    task = OTXTaskType.SEMANTIC_SEGMENTATION
-    label_names = ["class1", "class2", "class3"]
-    if has_background:
-        label_names = ["background", *label_names]
-    meta_info = LabelInfo(label_names)
-    num_classes = get_num_classes_from_meta_info(task, meta_info)
-    assert num_classes == 4
 
 
 class TestAutoConfigurator:
@@ -139,7 +115,8 @@ class TestAutoConfigurator:
         assert model.num_classes == 1000
 
         # With meta_info
-        meta_info = LabelInfo(label_names=["class1", "class2", "class3"])
+        label_names = ["class1", "class2", "class3"]
+        meta_info = LabelInfo(label_names=label_names, label_groups=[label_names])
         model = auto_configurator.get_model(meta_info=meta_info)
         assert isinstance(model, OTXModel)
         assert model.num_classes == 3
