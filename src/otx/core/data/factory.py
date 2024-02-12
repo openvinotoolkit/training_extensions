@@ -65,7 +65,7 @@ class OTXDatasetFactory:
     """Factory class for OTXDataset."""
 
     @classmethod
-    def create(
+    def create(  # noqa: PLR0911 # ignore too many return statements
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DatasetSubset,
