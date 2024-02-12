@@ -44,7 +44,7 @@ class AnomalyDataModule(OTXDataModule):
         train_subset_config = SubsetConfig(
             batch_size=train_batch_size,
             subset_name="train",
-            transforms=train_transforms,
+            transforms=train_transforms,  # type: ignore[arg-type]
             transform_lib_type=train_transform_lib_type,
             num_workers=train_num_workers,
         )
@@ -52,7 +52,7 @@ class AnomalyDataModule(OTXDataModule):
         val_subset_config = SubsetConfig(
             batch_size=val_batch_size,
             subset_name="test",  # use test as validation
-            transforms=val_transforms,
+            transforms=val_transforms,  # type: ignore[arg-type]
             transform_lib_type=val_transform_lib_type,
             num_workers=val_num_workers,
         )
@@ -61,7 +61,7 @@ class AnomalyDataModule(OTXDataModule):
         test_subset_config = SubsetConfig(
             batch_size=test_batch_size,
             subset_name="test",
-            transforms=test_transforms,
+            transforms=test_transforms,  # type: ignore[arg-type]
             transform_lib_type=test_transform_lib_type,
             num_workers=test_num_workers,
         )
