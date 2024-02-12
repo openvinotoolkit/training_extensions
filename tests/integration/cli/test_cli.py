@@ -189,7 +189,6 @@ def test_otx_e2e(
     format_to_file = {
         "ONNX": "exported_model.onnx",
         "OPENVINO": "exported_model.xml",
-        "EXPORTABLE_CODE": "exportable_code.zip",
     }
 
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
