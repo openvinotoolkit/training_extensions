@@ -54,13 +54,7 @@ class ChainExecutor:
             new_objects = []
             for item, parent_annotation in current_objects:
                 predictions, frame_meta = model.core_model(item)
-                if model.model_parameters["hierarchical"]:
-                    hierarchical_info = model.model_parameters["multihead_class_info"]
-                else:
-                    hierarchical_info = None
-                annotation_scene = self.converters[index].convert_to_annotation(
-                    predictions, frame_meta, hierarchical_info
-                )
+                annotation_scene = self.converters[index].convert_to_annotation(predictions, frame_meta)
                 for annotation in annotation_scene.annotations:
                     new_item, item_annotation = self.crop(item, parent_annotation, annotation)
                     new_objects.append((new_item, item_annotation))

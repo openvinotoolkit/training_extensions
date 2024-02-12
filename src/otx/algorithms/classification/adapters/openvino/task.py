@@ -125,7 +125,11 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         self.model = Model.create_model(model_adapter, "otx_classification", self.configuration, preload=True)
 
-        self.converter = ClassificationToAnnotationConverter(self.label_schema)
+        if self.model.get("hierarchical", False):
+            hierarchical_info = self.model.hierarchical_info["cls_heads_info"]
+        else:
+            hierarchical_info = None
+        self.converter = ClassificationToAnnotationConverter(self.label_schema, hierarchical_info)
         self.callback_exceptions: List[Exception] = []
         self.model.inference_adapter.set_callback(self._async_callback)
 
@@ -151,10 +155,6 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         """Post-process function of OpenVINO Classification Inferencer."""
 
         classification = self.model.postprocess(prediction, metadata)
-        if self.model.hierarchical:
-            hierarchical_info = self.model.hierarchical_info["cls_heads_info"]
-            return self.converter.convert_to_annotation(classification, metadata, hierarchical_info)
-
         return self.converter.convert_to_annotation(classification, metadata)
 
     def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, np.ndarray, Any]:

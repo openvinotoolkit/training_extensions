@@ -749,7 +749,10 @@ class TestSegmentationToAnnotation:
                 labels=other_non_empty_labels,
             )
             label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
-            converter = ClassificationToAnnotationConverter(label_schema=label_schema)
+            hierarchical_info = {"label_to_idx": {label_0_1.name: 0, label_0_1_1.name: 1, label_0_2.name: 2}}
+            converter = ClassificationToAnnotationConverter(
+                label_schema=label_schema, hierarchical_info=hierarchical_info
+            )
             assert not converter.empty_label
             assert converter.label_schema == label_schema
             assert converter.hierarchical
@@ -840,12 +843,12 @@ class TestSegmentationToAnnotation:
             label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
 
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
-            converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = [(2, 0.9), (1, 0.8)]
             hierarchical_info = {"label_to_idx": {label_0_1.name: 0, label_0_1_1.name: 1, label_0_2.name: 2}}
-            predictions_to_annotations = converter.convert_to_annotation(
-                predictions, hierarchical_info=hierarchical_info
+            converter = ClassificationToAnnotationConverter(
+                label_schema=label_schema, hierarchical_info=hierarchical_info
             )
+            predictions = [(2, 0.9), (1, 0.8)]
+            predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 predictions_to_annotations.annotations[0],

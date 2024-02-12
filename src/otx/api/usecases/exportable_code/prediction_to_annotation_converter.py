@@ -172,7 +172,11 @@ def create_converter(
     elif converter_type == Domain.SEGMENTATION:
         converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
-        converter = ClassificationToAnnotationConverter(labels)
+        if configuration.get("hierarchical", False):
+            hierarchical_info = configuration["multihead_class_info"]
+        else:
+            hierarchical_info = None
+        converter = ClassificationToAnnotationConverter(labels, hierarchical_info)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_DETECTION:
@@ -269,9 +273,10 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
     Args:
         labels (LabelSchemaEntity): Label Schema containing the label info of the task
+        hierarchical_info (Dict): Info from model.hierarchical_info["cls_heads_info"]
     """
 
-    def __init__(self, label_schema: LabelSchemaEntity):
+    def __init__(self, label_schema: LabelSchemaEntity, hierarchical_info: Optional[Dict] = None):
         if len(label_schema.get_labels(False)) == 1:
             self.labels = label_schema.get_labels(include_empty=True)
         else:
@@ -285,32 +290,26 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
         self.label_schema = label_schema
 
+        if self.hierarchical:
+            self.labels = get_hierarchical_label_list(hierarchical_info, self.labels)
+
     def convert_to_annotation(
-        self,
-        predictions: List[Tuple[int, float]],
-        metadata: Optional[Dict] = None,
-        hierarchical_info: Optional[Dict] = None,
+        self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
             predictions (tuple): Raw predictions from the model.
             metadata (Dict[str, Any]): Variable containing metadata information.
-            hierarchical_info (Dict): Info from model.hierarchical_info["cls_heads_info"]
 
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         labels = []
-
+        for index, score in predictions:
+            labels.append(ScoredLabel(self.labels[index], float(score)))
         if self.hierarchical:
-            hierarch_labels = get_hierarchical_label_list(hierarchical_info, self.labels)
-            for index, score in predictions:
-                labels.append(ScoredLabel(hierarch_labels[index], float(score)))
             labels = self.label_schema.resolve_labels_probabilistic(labels)
-        else:
-            for index, score in predictions:
-                labels.append(ScoredLabel(self.labels[index], float(score)))
 
         if not labels and self.empty_label:
             labels = [ScoredLabel(self.empty_label, probability=1.0)]
