@@ -29,6 +29,8 @@ callback_monitor: val/map_50
 data: ../_base_/data/mmdet_base.yaml
 overrides:
   gradient_clip_val: 35.0
+  callbacks:
+    - class_path: otx.algo.callbacks.tile_sampling_hook.TileSamplingHook
   data:
     config:
       tile_config:

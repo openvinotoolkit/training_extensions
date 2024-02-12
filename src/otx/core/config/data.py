@@ -71,7 +71,7 @@ class TileConfig:
     iou_threshold: float = 0.45
     max_num_instances: int = 1500
     object_tile_ratio: float = 0.03
-    tile_sampling_ratio: float = 1.0
+    sampling_ratio: float = 1.0
 
 
 @dataclass
