@@ -8,7 +8,7 @@ import logging as log
 from typing import Any
 
 import numpy as np
-from datumaro import Bbox, Dataset, DatasetSubset
+from datumaro import Bbox, Dataset, DatasetSubset, Polygon
 
 from otx.core.config.data import TileConfig
 
@@ -95,10 +95,10 @@ def compute_robust_dataset_statistics(
         return stat
 
     data_ids = [item.id for item in dataset]
-    if len(dataset) > max_samples:
-        log.warning(f"Too many samples. Only use first {max_samples} samples.")
-        rng = np.random.default_rng()
-        data_ids = rng.choice(data_ids, max_samples, replace=False)
+    max_image_samples = min(max_samples, len(dataset))
+    # NOTE: current OTX does not set seed globally
+    rng = np.random.default_rng(42)
+    data_ids = rng.choice(data_ids, max_image_samples, replace=False)[:max_image_samples]
 
     image_sizes = []
     for idx in data_ids:
@@ -110,21 +110,33 @@ def compute_robust_dataset_statistics(
     if ann_stat:
         stat["annotation"] = {}
         num_per_images: list[int] = []
-        size_of_shapes: list[float] = []
+        size_of_box_shapes: list[float] = []
+        size_of_polygon_shapes: list[float] = []
         for idx in data_ids:
             data = dataset.get(id=idx, subset=dataset.name)
-            annotations = [anno for anno in data.annotations if isinstance(anno, Bbox)]
-            num_per_images.append(len(annotations))
+            annotations: dict[str, list] = {"boxes": [], "polygons": []}
+            for ann in data.annotations:
+                if isinstance(ann, Bbox):
+                    annotations["boxes"].append(ann)
+                elif isinstance(ann, Polygon):
+                    annotations["polygons"].append(ann)
 
-            if len(size_of_shapes) >= max_samples:
+            num_per_images.append(max(len(annotations["boxes"]), len(annotations["polygons"])))
+
+            if len(size_of_box_shapes) >= max_samples or len(size_of_polygon_shapes) >= max_samples:
                 continue
 
-            size_of_shapes.extend(
-                filter(lambda x: x >= 1, [np.sqrt(anno.get_area()) for anno in annotations]),
+            size_of_box_shapes.extend(
+                filter(lambda x: x >= 1, [np.sqrt(anno.get_area()) for anno in annotations["boxes"]]),
+            )
+            size_of_polygon_shapes.extend(
+                filter(lambda x: x >= 1, [np.sqrt(anno.get_area()) for anno in annotations["polygons"]]),
             )
 
         stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes))
+        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(
+            np.array(size_of_polygon_shapes) if len(size_of_polygon_shapes) else np.array(size_of_box_shapes),
+        )
 
     return stat
 
@@ -149,24 +161,22 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
         log.info(f"----> [stat] scale min: {min_size}")
         log.info(f"----> [stat] scale max: {max_size}")
 
-        object_size = avg_size
-
         log.info("[Adaptive tiling pararms]")
         object_tile_ratio = tile_config.object_tile_ratio
-        tile_size = int(object_size / object_tile_ratio)
+        tile_size = int(avg_size / object_tile_ratio)
         tile_overlap = max_size / tile_size
-        log.info(f"----> avg_object_size: {object_size}")
+        log.info(f"----> avg_object_size: {avg_size}")
         log.info(f"----> max_object_size: {max_size}")
         log.info(f"----> object_tile_ratio: {object_tile_ratio}")
-        log.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+        log.info(f"----> tile_size: {avg_size} / {object_tile_ratio} = {tile_size}")
         log.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
 
         if tile_overlap >= 0.9:
             # Use the average object area if the tile overlap is too large to prevent 0 stride.
-            tile_overlap = object_size / tile_size
-            log.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
+            tile_overlap = avg_size / tile_size
+            log.info(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = {tile_overlap}")
 
-        # TODO(Eugene): how to validate parameters? dataclass? pydantic?
+        # TODO(Eugene): how to validate lower/upper_bound? dataclass? pydantic?
         # https://github.com/openvinotoolkit/training_extensions/pull/2903
         tile_config.tile_size = (tile_size, tile_size)
         tile_config.max_num_instances = max_num_objects
