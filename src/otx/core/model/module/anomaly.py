@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import importlib
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Generic, Sequence
 
 import torch
 from anomalib import TaskType
@@ -132,7 +132,7 @@ class _RouteCallback(Callback):
         )
 
 
-class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
+class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_OTXBatchDataEntity]):
     """Anomaly OTX Lightning model.
 
     Used to wrap all the Anomaly models in OTX.
@@ -152,15 +152,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
         self.task_type = task_type
         self._meta_info: LabelInfo
         self.model_name = self.model.__class__.__name__
-        self._post_processing_callback: _PostProcessorCallback = None
         self._setup_anomalib_lightning_model(name=self.model_name)
-
-    @property
-    def post_processing_callback(self) -> _PostProcessorCallback:
-        if self._post_processing_callback:
-            return self._post_processing_callback
-        msg = "PostProcessorCallback has not been assigned yet."
-        raise AttributeError(msg)
 
     def _setup_anomalib_lightning_model(self, name: str | None = None) -> None:
         """Initializes the Anomalib lightning model."""
@@ -195,24 +187,26 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
         self.anomaly_lightning_model.trainer = self.trainer
         return super().setup(stage)
 
-    def training_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int) -> torch.Tensor:
+    def training_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int) -> torch.Tensor:
         """Route training step to anomalib's lightning model's training step."""
         inputs = self._customize_inputs(inputs)
         # inputs = self._customize_inputs(inputs)
         return self.anomaly_lightning_model.training_step(inputs, batch_idx)
 
-    def validation_step(self, inputs: AnomalyClassificationDataBatch, batch_idx: int = 0, **kwargs: Any) -> ...:
+    def validation_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int = 0, **kwargs) -> ...:
         """Route validation step to anomalib's lightning model's validation step."""
         inputs = self._customize_inputs(inputs)
         # no need to customize outputs for validation step
         return self.anomaly_lightning_model.validation_step(inputs, batch_idx, **kwargs)
 
     def on_validation_end(self) -> None:
+        """Call anomaly_lightning_model's on_validation_end."""
         self.anomaly_lightning_model.on_validation_end()
         # assign the updated values to the OTX model
         self._set_metrics_in_torch()
 
-    def _set_metrics_in_torch(self):
+    def _set_metrics_in_torch(self) -> None:
+        """This is needed for OpenVINO export."""
         self.model.model_info.pixel_threshold = (
             self.anomaly_lightning_model.pixel_threshold.value.cpu().numpy().tolist()
         )
@@ -225,10 +219,10 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
 
     def test_step(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        inputs: T_OTXBatchDataEntity,
         batch_idx: int = 0,
         **kwargs,
-    ) -> AnomalyClassificationBatchPrediction | AnomalyDetectionBatchPrediction | AnomalySegmentationBatchPrediction:
+    ) -> T_OTXBatchPredEntity:
         """Route test step to Anomalib's lightning model's test step."""
         if self.model_name == "OVAnomalyModel":
             return self.model(inputs)
@@ -239,7 +233,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
     def on_test_batch_end(
         self,
         outputs: dict,
-        batch: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        batch: T_OTXBatchDataEntity,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -262,10 +256,10 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
 
     def predict_step(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        inputs: T_OTXBatchDataEntity,
         batch_idx: int = 0,
         **kwargs,
-    ) -> AnomalyClassificationBatchPrediction | AnomalyDetectionBatchPrediction | AnomalySegmentationBatchPrediction:
+    ) -> T_OTXBatchPredEntity:
         """Route predict step to anomalib's lightning model's predict step."""
         inputs = self._customize_inputs(inputs)
         return self.anomaly_lightning_model.predict_step(inputs, batch_idx, **kwargs)
@@ -273,7 +267,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
     def on_predict_batch_end(
         self,
         outputs: dict,
-        batch: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        batch: T_OTXBatchDataEntity,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -295,6 +289,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
         outputs.update({"prediction": _outputs})
 
     def on_predict_end(self) -> None:
+        """Redirect ``on_prediction_end``."""
         self.anomaly_lightning_model.on_predict_end()
 
     def configure_optimizers(self) -> dict[str, Any] | None:
@@ -313,10 +308,9 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
             return None
         image_metrics = ["AUROC", "F1Score"]
         pixel_metrics = image_metrics if self.task_type != TaskType.CLASSIFICATION else None
-        self._post_processing_callback = _PostProcessorCallback()
         return _RouteCallback(
             [
-                self.post_processing_callback,
+                _PostProcessorCallback(),
                 _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
                 _ThresholdCallback(threshold="F1AdaptiveThreshold"),
                 _MetricsCallback(
@@ -329,13 +323,8 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
 
     def forward(
         self,
-        inputs: AnomalyClassificationDataBatch,
-    ) -> (
-        AnomalyClassificationBatchPrediction
-        | AnomalySegmentationBatchPrediction
-        | AnomalyDetectionBatchPrediction
-        | AnomalyResult
-    ):
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | AnomalyResult:
         """Wrap forward method of the Anomalib model."""
         inputs: torch.Tensor = self._customize_inputs()
         if self.model_name == "OVAnomalyModel":
@@ -403,12 +392,16 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC):
     def _customize_outputs(
         self,
         outputs: dict,
-        inputs: AnomalyClassificationDataBatch | AnomalyDetectionDataBatch | AnomalySegmentationDataBatch,
+        inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity:
         raise NotImplementedError
 
 
-class OTXAnomalyClassificationLitModel(OTXBaseAnomalyLitModel):
+class OTXAnomalyClassificationLitModel(
+    OTXBaseAnomalyLitModel[AnomalyClassificationBatchPrediction, AnomalyClassificationDataBatch],
+):
+    """OTX Anomaly Classification lightning model."""
+
     def __init__(
         self,
         otx_model: OTXAnomalyModel,
@@ -438,7 +431,11 @@ class OTXAnomalyClassificationLitModel(OTXBaseAnomalyLitModel):
         )
 
 
-class OTXAnomalySegmentationLitModel(OTXBaseAnomalyLitModel):
+class OTXAnomalySegmentationLitModel(
+    OTXBaseAnomalyLitModel[AnomalySegmentationBatchPrediction, AnomalySegmentationDataBatch],
+):
+    """OTX Anomaly Segmentation lightning model."""
+
     def __init__(
         self,
         otx_model: OTXAnomalyModel,
@@ -448,7 +445,7 @@ class OTXAnomalySegmentationLitModel(OTXBaseAnomalyLitModel):
     ):
         super().__init__(otx_model, torch_compile, optimizer, scheduler, task_type=TaskType.SEGMENTATION)
 
-    def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
+    def _customize_inputs(self, inputs: AnomalySegmentationDataBatch) -> dict[str, Any]:  # anomalib model inputs
         """Customize inputs for the model."""
         return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
 
@@ -469,7 +466,11 @@ class OTXAnomalySegmentationLitModel(OTXBaseAnomalyLitModel):
         )
 
 
-class OTXAnomalyDetectionLitModel(OTXBaseAnomalyLitModel):
+class OTXAnomalyDetectionLitModel(
+    OTXBaseAnomalyLitModel[AnomalyDetectionBatchPrediction, AnomalyDetectionDataBatch],
+):
+    """OTX Anomaly Detection lightning model."""
+
     def __init__(
         self,
         otx_model: OTXAnomalyModel,
@@ -479,7 +480,7 @@ class OTXAnomalyDetectionLitModel(OTXBaseAnomalyLitModel):
     ):
         super().__init__(otx_model, torch_compile, optimizer, scheduler, task_type=TaskType.DETECTION)
 
-    def _customize_inputs(self, inputs: AnomalyClassificationDataBatch) -> dict[str, Any]:  # anomalib model inputs
+    def _customize_inputs(self, inputs: AnomalyDetectionDataBatch) -> dict[str, Any]:  # anomalib model inputs
         """Customize inputs for the model."""
         return {
             "image": inputs.images,
