@@ -595,7 +595,6 @@ class OTXBatchPredEntity(OTXBatchDataEntity):
     """Data entity to represent model output predictions."""
 
     scores: list[np.ndarray] | list[Tensor]
-    # explain_results: list[np.ndarray] | list[Tensor] | None = None
 
 
 T_OTXBatchLossEntity = TypeVar(
