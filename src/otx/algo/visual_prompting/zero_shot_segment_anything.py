@@ -201,6 +201,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 log.warning(f"{condition}(=False) must be set to True, changed.")
                 kwargs[condition] = True
 
+        self.is_cascade = kwargs.pop("is_cascade", True)
         super().__init__(*args, **kwargs)
 
         self.prompt_getter = PromptGetter(image_size=self.image_size)
@@ -362,6 +363,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         reference_feats: Tensor,
         used_indices: set[int],
         ori_shapes: list[Tensor],
+        is_cascade: bool = False,
     ) -> list[list[defaultdict[int, list[Tensor]]]]:
         """Zero-shot inference with reference features.
 
@@ -372,6 +374,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             reference_feats (Tensor): Reference features for target prediction.
             used_indices (set[int]): To check which indices of reference features are validate.
             ori_shapes (list[Tensor]): Original image size.
+            is_cascade (bool): Whether use cascade inference. Defaults to False.
 
         Returns:
             (list[list[defaultdict[int, list[Tensor]]]]): List of predicted masks and used points.
@@ -421,6 +424,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         point_coords=point_coords,
                         point_labels=point_labels,
                         ori_shape=ori_shape,
+                        is_cascade=is_cascade,
                     )
                     predicted_masks[label].append(mask * point_score[2])
                     used_points[label].append(point_score)
@@ -663,6 +667,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             "reference_feats": self.model.reference_info["reference_feats"],
             "used_indices": self.model.reference_info["used_indices"],
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
+            "is_cascade": self.model.is_cascade,
         }
 
     def _customize_outputs(  # type: ignore[override]

@@ -85,7 +85,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
         if not isinstance(preds, MulticlassClsBatchPredEntity):
             raise TypeError(preds)
-
         self.val_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
@@ -141,7 +140,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
         )
         self.num_labels = otx_model.num_classes
-
         self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
         self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
 

@@ -28,6 +28,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
+  gradient_clip_val: 35.0
   data:
     task: INSTANCE_SEGMENTATION
     config:

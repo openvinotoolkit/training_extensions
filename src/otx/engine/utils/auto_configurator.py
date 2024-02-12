@@ -1,8 +1,7 @@
-"""Auto-Configurator class & util functions for OTX Auto-Configuration."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
+"""Auto-Configurator class & util functions for OTX Auto-Configuration."""
 
 from __future__ import annotations
 
@@ -36,6 +35,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "otx_efficientnet_b0.yaml",
     OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0_light.yaml",
     OTXTaskType.DETECTION: RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
+    OTXTaskType.ROTATED_DETECTION: RECIPE_PATH / "rotated_detection" / "maskrcnn_r50.yaml",
     OTXTaskType.SEMANTIC_SEGMENTATION: RECIPE_PATH / "semantic_segmentation" / "litehrnet_18.yaml",
     OTXTaskType.INSTANCE_SEGMENTATION: RECIPE_PATH / "instance_segmentation" / "maskrcnn_r50.yaml",
     OTXTaskType.ACTION_CLASSIFICATION: RECIPE_PATH / "action" / "action_classification" / "x3d.yaml",
@@ -47,8 +47,18 @@ DEFAULT_CONFIG_PER_TASK = {
 TASK_PER_DATA_FORMAT = {
     "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS],
     "datumaro": [OTXTaskType.MULTI_LABEL_CLS],
-    "coco_instances": [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.VISUAL_PROMPTING],
-    "coco": [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.VISUAL_PROMPTING],
+    "coco_instances": [
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
+        OTXTaskType.VISUAL_PROMPTING,
+    ],
+    "coco": [
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
+        OTXTaskType.VISUAL_PROMPTING,
+    ],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "ava": [OTXTaskType.ACTION_DETECTION],
@@ -81,29 +91,6 @@ def configure_task(data_root: PathLike) -> OTXTaskType:
             f"Found multiple tasks with {data_format}: {TASK_PER_DATA_FORMAT[data_format]}. We will use the first one.",
         )
     return TASK_PER_DATA_FORMAT[data_format][0]
-
-
-def get_num_classes_from_meta_info(task: OTXTaskType, meta_info: LabelInfo) -> int:
-    """Get the number of classes from the meta information.
-
-    Args:
-        task (OTXTaskType): The current task type.
-        meta_info (LabelInfo): The meta information about the labels.
-
-    Returns:
-        int: The number of classes.
-    """
-    num_classes = len(meta_info.label_names)
-    # Check background class
-    if task in (OTXTaskType.SEMANTIC_SEGMENTATION):
-        has_background = False
-        for label in meta_info.label_names:
-            if label.lower() == "background":
-                has_background = True
-                break
-        if not has_background:
-            num_classes += 1
-    return num_classes
 
 
 class AutoConfigurator:
@@ -246,7 +233,7 @@ class AutoConfigurator:
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
         if meta_info is not None:
-            num_classes = get_num_classes_from_meta_info(self.task, meta_info)
+            num_classes = meta_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])

@@ -1,0 +1,115 @@
+model:
+  class_path: otx.algo.detection.yolox.YoloX
+  init_args:
+    num_classes: 80
+    variant: s
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0001
+
+scheduler:
+  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
+  init_args:
+    warmup_steps: 3
+    mode: max
+    factor: 0.5
+    patience: 5
+    monitor: val/map_50
+
+engine:
+  task: DETECTION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
+  gradient_clip_val: 35.0
+  data:
+    config:
+      tile_config:
+        enable_tiler: true
+      image_color_channel: BGR
+      train_subset:
+        num_workers: 4
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+            to_float32: true
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: YOLOXHSVRandomAug
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: True
+          - type: RandomFlip
+            prob: 0.5
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - flip_direction
+              - scale_factor
+              - gt_ann_ids
+              - flip
+              - ignored_labels
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
+      val_subset:
+        num_workers: 4
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+            to_float32: true
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: True
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - scale_factor
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape
+      test_subset:
+        num_workers: 4
+        batch_size: 8
+        transforms:
+          - type: LoadImageFromFile
+            to_float32: true
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: True
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+          - type: PackDetInputs
+            meta_keys:
+              - ori_filename
+              - scale_factor
+              - ori_shape
+              - filename
+              - img_shape
+              - pad_shape

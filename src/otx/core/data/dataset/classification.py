@@ -120,6 +120,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         # Hlabel classification used HLabelMetaInfo to insert the HLabelInfo.
         self.meta_info = HLabelMetaInfo(
             label_names=[category.name for category in self.dm_categories],
+            label_groups=[label_group.labels for label_group in self.dm_categories.label_groups],
             hlabel_info=HLabelInfo.from_dm_label_groups(self.dm_categories),
         )
 

@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
 """DINO-V2 model for the OTX classification."""
 
 from __future__ import annotations
@@ -15,6 +15,8 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
 )
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.classification import OTXMulticlassClsModel
 from otx.core.utils.config import inplace_num_classes
 
@@ -115,6 +117,30 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
             scores=scores,
             labels=labels,
         )
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        export_params: dict[str, Any] = {}
+
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = (1, 3, 224, 224)
+        export_params["onnx_export_configuration"] = None
+        export_params["mean"] = [123.675, 116.28, 103.53]
+        export_params["std"] = [58.395, 57.12, 57.375]
+
+        parent_parameters = super()._export_parameters
+        parent_parameters.update(export_params)
+
+        return parent_parameters
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
 
     @property
     def _optimization_config(self) -> dict[str, Any]:

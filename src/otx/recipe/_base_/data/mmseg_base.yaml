@@ -34,7 +34,7 @@ config:
   val_subset:
     subset_name: val
     num_workers: 4
-    batch_size: 1
+    batch_size: 8
     transform_lib_type: MMSEG
     transforms:
       - type: LoadImageFromFile
@@ -49,7 +49,7 @@ config:
   test_subset:
     subset_name: test
     num_workers: 4
-    batch_size: 1
+    batch_size: 8
     transform_lib_type: MMSEG
     transforms:
       - type: LoadImageFromFile
