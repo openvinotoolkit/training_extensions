@@ -12,6 +12,7 @@ import numpy as np
 from openvino.model_api.models import utils
 from openvino.model_api.models.utils import AnomalyResult
 
+from otx.algorithms.classification.utils import get_hierarchical_label_list
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -285,22 +286,31 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_schema = label_schema
 
     def convert_to_annotation(
-        self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
+        self,
+        predictions: List[Tuple[int, float]],
+        metadata: Optional[Dict] = None,
+        hierarchical_info: Optional[Dict] = None,
     ) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
             predictions (tuple): Raw predictions from the model.
             metadata (Dict[str, Any]): Variable containing metadata information.
+            hierarchical_info (Dict): Info from model.hierarchical_info["cls_heads_info"]
 
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         labels = []
-        for index, score in predictions:
-            labels.append(ScoredLabel(self.labels[index], float(score)))
+
         if self.hierarchical:
+            hierarch_labels = get_hierarchical_label_list(hierarchical_info, self.labels)
+            for index, score in predictions:
+                labels.append(ScoredLabel(hierarch_labels[index], float(score)))
             labels = self.label_schema.resolve_labels_probabilistic(labels)
+        else:
+            for index, score in predictions:
+                labels.append(ScoredLabel(self.labels[index], float(score)))
 
         if not labels and self.empty_label:
             labels = [ScoredLabel(self.empty_label, probability=1.0)]

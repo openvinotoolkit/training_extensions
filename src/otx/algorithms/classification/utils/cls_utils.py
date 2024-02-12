@@ -18,8 +18,9 @@
 
 import json
 from operator import itemgetter
-from typing import Any, Dict
+from typing import Any, Dict, List
 
+from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 
@@ -51,8 +52,8 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
     for j, group in enumerate(single_label_groups):
         class_to_idx[group[0]] = (len(exclusive_groups), j)
 
-    all_labels = label_schema.get_labels(include_empty=False)
-    label_to_idx = {lbl.name: i for i, lbl in enumerate(all_labels)}
+    # Idx of label corresponds to model output
+    label_to_idx = {lbl: i for i, lbl in enumerate(class_to_idx.keys())}
 
     mixed_cls_heads_info = {
         "num_multiclass_heads": len(exclusive_groups),
@@ -123,22 +124,16 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     return mapi_config
 
 
-def get_hierarchical_label_list(hierarchical_info, labels):
+def get_hierarchical_label_list(hierarchical_info: Dict, labels: List) -> List[LabelEntity]:
     """Return hierarchical labels list which is adjusted to model outputs classes."""
-    hierarchical_labels = []
-    for head_idx in range(hierarchical_info["num_multiclass_heads"]):
-        logits_begin, logits_end = hierarchical_info["head_idx_to_logits_range"][str(head_idx)]
-        for logit in range(0, logits_end - logits_begin):
-            label_str = hierarchical_info["all_groups"][head_idx][logit]
-            label_idx = hierarchical_info["label_to_idx"][label_str]
-            hierarchical_labels.append(labels[label_idx])
 
-    if hierarchical_info["num_multilabel_classes"]:
-        logits_begin = hierarchical_info["num_single_label_classes"]
-        logits_end = len(labels)
-        for logit_idx, logit in enumerate(range(0, logits_end - logits_begin)):
-            label_str_idx = hierarchical_info["num_multiclass_heads"] + logit_idx
-            label_str = hierarchical_info["all_groups"][label_str_idx][0]
-            label_idx = hierarchical_info["label_to_idx"][label_str]
-            hierarchical_labels.append(labels[label_idx])
+    # Create the list of Label Entities (took from "labels")
+    # corresponding to names and order in "label_to_idx"
+    label_to_idx = hierarchical_info["label_to_idx"]
+    hierarchical_labels = []
+    for label_str, _ in label_to_idx.items():
+        for label_entity in labels:
+            if label_entity.name == label_str:
+                hierarchical_labels.append(label_entity)
+                break
     return hierarchical_labels
