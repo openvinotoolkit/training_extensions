@@ -82,7 +82,11 @@ class AsyncExecutor:
                 [[pred.id, pred.score, *[pred.xmin, pred.ymin, pred.xmax, pred.ymax]] for pred in predictions.objects]
             )
             predictions.shape = len(predictions), 6
-        annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
+        if self.model.hierarchical:
+            hierarchical_info = self.model.hierarchical_info["cls_heads_info"]
+        else:
+            hierarchical_info = None
+        annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta, hierarchical_info)
         current_frame = frame_meta["frame"]
         output = self.visualizer.draw(current_frame, annotation_scene, frame_meta)
         return output

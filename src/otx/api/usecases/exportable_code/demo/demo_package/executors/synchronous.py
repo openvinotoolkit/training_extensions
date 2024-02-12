@@ -34,12 +34,16 @@ class SyncExecutor:
         """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
         saved_frames = []
+        if self.model.model_parameters["hierarchical"]:
+            hierarchical_info = self.model.model_parameters["multihead_class_info"]
+        else:
+            hierarchical_info = None
 
         for frame in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
             start_time = time.perf_counter()
             predictions, frame_meta = self.model(frame)
-            annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
+            annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta, hierarchical_info)
             output = self.visualizer.draw(frame, annotation_scene, frame_meta)
             self.visualizer.show(output)
             if self.visualizer.output:
