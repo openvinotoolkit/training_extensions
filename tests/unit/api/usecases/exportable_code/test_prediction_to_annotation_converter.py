@@ -842,7 +842,10 @@ class TestSegmentationToAnnotation:
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             predictions = [(2, 0.9), (1, 0.8)]
-            predictions_to_annotations = converter.convert_to_annotation(predictions)
+            hierarchical_info = {"label_to_idx": {label_0_1.name: 0, label_0_1_1.name: 1, label_0_2.name: 2}}
+            predictions_to_annotations = converter.convert_to_annotation(
+                predictions, hierarchical_info=hierarchical_info
+            )
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 predictions_to_annotations.annotations[0],
