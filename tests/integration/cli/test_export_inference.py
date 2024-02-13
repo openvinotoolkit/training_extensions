@@ -91,9 +91,7 @@ def test_otx_export_infer(
     ):
         pytest.skip("To prevent memory bug from aborting integration test, test single model per task.")
     elif "tile" in recipe:
-        pytest.skip("Exporting tiling model isn't suppored yet.")
-    elif "otx_dino_v2_linear_probe" in recipe:
-        pytest.skip("Test pipeline is different between torch and ov model.")  # NOTE Enable test after making them same
+        pytest.skip("Exporting models with tiling isn't supported yet.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
     # 1) otx train

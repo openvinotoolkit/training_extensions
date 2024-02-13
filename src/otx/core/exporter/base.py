@@ -31,7 +31,7 @@ class OTXModelExporter:
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
         resize_mode (Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"], optional):
-            A resize type for model preprocess. "standard" resizes iamges without keeping ratio.
+            A resize type for model preprocess. "standard" resizes images without keeping ratio.
             "fit_to_window" resizes images while keeping ratio.
             "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
         pad_value (int, optional): Padding value. Defaults to 0.
