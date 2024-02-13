@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import torch
-from lightning import Callback, Trainer, seed_everything
+from lightning import Trainer, seed_everything
 
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
