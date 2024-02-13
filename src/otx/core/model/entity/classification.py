@@ -498,6 +498,26 @@ class OVMulticlassClassificationModel(
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str = "Classification",
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = False,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+
     def _customize_outputs(
         self,
         outputs: list[ClassificationResult],
@@ -528,7 +548,7 @@ class OVHlabelClassificationModel(
         self,
         num_classes: int,
         model_name: str,
-        model_type: str,
+        model_type: str = "Classification",
         async_inference: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
@@ -590,7 +610,7 @@ class OVMultilabelClassificationModel(
         self,
         num_classes: int,
         model_name: str,
-        model_type: str,
+        model_type: str = "Classification",
         async_inference: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
