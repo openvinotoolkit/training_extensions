@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from collections import OrderedDict, defaultdict
+import os
 from copy import deepcopy
 from itertools import product
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
@@ -54,7 +55,8 @@ class PromptGetter(nn.Module):
     ) -> Tuple[Tensor, Tensor]:
         """Get prompt candidates."""
         device = image_embedding.device
-        threshold = threshold.to(device)
+        threshold = threshold.squeeze().to(device)
+        num_bg_points = num_bg_points.squeeze()
 
         total_points_scores: Tensor = torch.zeros(used_indices.max() + 1, 0, 3, device=device)
         total_bg_coords: Tensor = torch.zeros(used_indices.max() + 1, num_bg_points, 2, device=device)
@@ -85,12 +87,12 @@ class PromptGetter(nn.Module):
         image_embedding: Tensor,
         reference_feat: Tensor,
         original_size: Tensor,
-        threshold: Tensor = torch.as_tensor([[0.0]], dtype=torch.float32),
-        num_bg_points: Tensor = torch.as_tensor([[1]], dtype=torch.int64),
+        threshold: Union[Tensor, float] = 0.,
+        num_bg_points: Union[Tensor, int] = 1,
         device: Union[torch.device, str] = torch.device("cpu"),
     ) -> Tuple[Tensor, Tensor]:
         """Get prompt candidates from given reference and target features."""
-        assert original_size.dim() == 2 and threshold.dim() == 2 and num_bg_points.dim() == 2
+        assert original_size.dim() == 2
 
         target_feat = image_embedding.squeeze()
         c_feat, h_feat, w_feat = target_feat.shape
@@ -115,14 +117,14 @@ class PromptGetter(nn.Module):
         self,
         mask_sim: Tensor,
         original_size: Tensor,
-        threshold: Tensor,
-        num_bg_points: Tensor = torch.as_tensor([[1]], dtype=torch.int64),
+        threshold: Union[Tensor, float] = 0.,
+        num_bg_points: Union[Tensor, int] = 1,
     ) -> Tuple[Tensor, Tensor]:
         """Select point used as point prompts."""
         _, w_sim = mask_sim.shape
 
         # Top-last point selection
-        bg_indices = mask_sim.flatten().topk(num_bg_points[0, 0], largest=False)[1]
+        bg_indices = mask_sim.flatten().topk(num_bg_points, largest=False)[1]
         bg_x = (bg_indices // w_sim).unsqueeze(0)
         bg_y = bg_indices - bg_x * w_sim
         bg_coords = torch.cat((bg_y, bg_x), dim=0).permute(1, 0)
@@ -483,11 +485,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 has_mask_input = self.has_mask_inputs[1].to(self.device)
                 coords = torch.nonzero(masks)
                 y, x = coords[:, 0], coords[:, 1]
-                box_coords = ResizeLongestSide.apply_coords(
+                box_coords = self._preprocess_coords(
                     torch.as_tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
                     original_size[0],
-                    self.config.model.image_size,
-                )
+                    self.config.model.image_size)
                 point_coords = torch.cat((point_coords, box_coords), dim=1)
                 point_labels = torch.cat((point_labels, self.point_labels_box.to(self.device)), dim=1)
 
