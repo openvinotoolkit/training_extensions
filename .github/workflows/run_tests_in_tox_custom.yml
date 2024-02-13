@@ -1,0 +1,77 @@
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.10"
+      toxenv-pyver:
+        description: "[py38, py39, py310]"
+        type: string
+        default: "py310"
+      toxenv-task:
+        description: "[all, act, ano, cls, det, seg, iseg]"
+        type: string
+        default: "all"
+      tests-dir:
+        type: string
+        default: ""
+      timeout-minutes:
+        type: number
+        default: 720
+      upload-artifact:
+        type: boolean
+        default: false
+      runs-on:
+        type: string
+        default: "['self-hosted', 'Linux', 'X64', 'dev']"
+      task:
+        type: string
+        default: "undefined"
+      artifact-prefix:
+        type: string
+        default: "test-results"
+      toxenv-ptver:
+        type: string
+        default: "pt1"
+      container-options:
+        type: string
+        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  run_tests_on_custom:
+    # tricky workaround to pass list from the string input type
+    # https://github.com/orgs/community/discussions/11692
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    container:
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
+      options: ${{ inputs.container-options }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Run Tests
+        env:
+          MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
+          GH_CTX_REF_NAME: ${{ github.ref_name }}
+          GH_CTX_SHA: ${{ github.sha  }}
+        run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }} -- ${{ inputs.tests-dir }}
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifact-prefix }}-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}
+          path: |
+            .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}.csv
+            .tox/tests-reg_${{ inputs.task }}*.csv
+            .tox/perf-*.csv
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ inputs.upload-artifact && always() }}
