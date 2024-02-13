@@ -309,7 +309,7 @@ class AutoConfigurator:
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),
                 test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )
