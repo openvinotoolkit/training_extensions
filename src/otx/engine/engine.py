@@ -238,7 +238,6 @@ class Engine:
             **fit_kwargs,
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
         return self.trainer.callback_metrics
 
     def test(
