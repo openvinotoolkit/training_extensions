@@ -120,13 +120,6 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
 
         return super()._exportable_model
 
-    @staticmethod
-    def _update_onnx_output_names(onnx_export_configuration: dict) -> None:
-        if "output_names" not in onnx_export_configuration:
-            onnx_export_configuration["output_names"] = ["logits", "saliency_map"]
-        elif "saliency_map" not in onnx_export_configuration["output_names"]:
-            onnx_export_configuration["output_names"].append("saliency_map")
-
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
