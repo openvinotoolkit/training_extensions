@@ -97,9 +97,10 @@ class Engine:
             work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
-            optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
-            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None, optional): The optimizer for the engine.
                 Defaults to None.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None, optional):
+                The learning rate scheduler for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
@@ -675,8 +676,8 @@ class Engine:
 
         Args:
             model (OTXModel): The OTXModel instance.
-            optimizer (OptimizerCallable): The optimizer callable.
-            scheduler (LRSchedulerCallable): The learning rate scheduler callable.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
 
         Returns:
             OTXLitModule: The built LightningModule instance.
