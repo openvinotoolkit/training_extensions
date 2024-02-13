@@ -185,6 +185,7 @@ class MockScoredLabel:
     def __init__(self, label: int, name: str = "background"):
         self.name = name
         self.id_ = label
+        self.id = label
 
 
 class MockPromptGetter(nn.Module):

@@ -643,12 +643,16 @@ class ZeroShotTask(InferenceTask):
             elif module == "visual_prompting_prompt_getter":
                 dummy_inputs = {
                     "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "reference_feats": torch.randn(1, 1, 256, dtype=torch.float32),
+                    "used_indices": torch.as_tensor([[0]], dtype=torch.int64),
                     "original_size": torch.randint(low=0, high=image_size * 2, size=(1, 2), dtype=torch.int64),
                     "threshold": torch.tensor([[0.1]], dtype=torch.float32),
                     "num_bg_points": torch.randint(low=1, high=image_size, size=(1, 1), dtype=torch.int64),
                 }
                 output_names = ["total_points_scores", "total_bg_coords"]
                 dynamic_axes = {
+                    "reference_feats": {0: "num_labels"},
+                    "used_indices": {1: "num_labels"},
                     "total_points_scores": {0: "num_labels", 1: "num_points"},
                     "total_bg_coords": {0: "num_labels", 1: "num_points"},
                 }
@@ -706,13 +710,6 @@ class ZeroShotTask(InferenceTask):
         logger.info("Saving the model weights and reference features.")
 
         model_info = self.model.state_dict()
-        # TODO (sungchul): is there more efficient way not to manually add properties?
-        model_info.update(
-            {
-                "prompt_getter.reference_feats": self.model.prompt_getter.reference_feats,
-                "prompt_getter.reference_prompts": self.model.prompt_getter.reference_prompts,
-            }
-        )
 
         buffer = io.BytesIO()
         torch.save(model_info, buffer)

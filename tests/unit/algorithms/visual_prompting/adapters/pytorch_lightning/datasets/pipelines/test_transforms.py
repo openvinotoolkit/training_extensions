@@ -31,7 +31,6 @@ def test_collate_fn():
             "points": [],
             "gt_masks": [Tensor([1, 2, 3])],
             "original_size": np.array([1, 3]),
-            "padding": [],
             "path": [],
             "labels": [],
         },
@@ -42,7 +41,6 @@ def test_collate_fn():
             "points": [],
             "gt_masks": [Tensor([4, 5, 6])],
             "original_size": np.array([1, 3]),
-            "padding": [],
             "path": [],
             "labels": [],
         },
@@ -56,7 +54,6 @@ def test_collate_fn():
         "original_size": [Tensor([1, 3]), Tensor([1, 3])],
         "path": [[], []],
         "labels": [[], []],
-        "padding": [[], []],
     }
 
     results = collate_fn(batch)
@@ -73,7 +70,6 @@ def test_collate_fn():
         assert torch.all(r == e)
     assert results["path"] == expected["path"]
     assert results["labels"] == expected["labels"]
-    assert results["padding"] == expected["padding"]
 
 
 class TestPad:
@@ -88,22 +84,21 @@ class TestPad:
                     bboxes=[[1, 1, 3, 3]],
                     points=[[1, 1, 2, 2]],
                 ),
-                ((0, 0, 0, 2), (3, 6, 6), [(4, 6)], [[1, 1, 3, 3]], [[1, 1, 2, 2]]),
+                ((3, 6, 6), [(4, 6)], [[1, 1, 3, 3]], [[1, 1, 2, 2]]),
             ),
             (
                 dict(images=torch.zeros((3, 4, 6)), gt_masks=[torch.zeros((4, 6))], bboxes=[[1, 1, 3, 3]], points=None),
-                ((0, 0, 0, 2), (3, 6, 6), [(4, 6)], [[1, 1, 3, 3]], None),
+                ((3, 6, 6), [(4, 6)], [[1, 1, 3, 3]], None),
             ),
         ],
     )
     def test_call(self, item: Dict[str, Any], expected: Tuple[Any]):
         """Test __call__."""
         pad_transform = Pad()
-        expected_padding, expected_images_shape, expected_gt_masks_shape, expected_bboxes, expected_points = expected
+        expected_images_shape, expected_gt_masks_shape, expected_bboxes, expected_points = expected
 
         result = pad_transform(item)
 
-        assert result["padding"] == expected_padding
         assert result["images"].shape == expected_images_shape
         assert len(result["gt_masks"]) == len(expected_gt_masks_shape)
         assert all(gt_mask.shape == shape for gt_mask, shape in zip(result["gt_masks"], expected_gt_masks_shape))

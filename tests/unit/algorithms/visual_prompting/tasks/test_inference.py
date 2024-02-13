@@ -379,10 +379,9 @@ class TestZeroShotTask:
         mocker_otx_model = mocker.patch("otx.api.entities.model.ModelEntity")
         mocker_io_bytes_io = mocker.patch("io.BytesIO")
         mocker_torch_save = mocker.patch("torch.save")
+        mocker.patch.object(self.zero_shot_task.model, "state_dict", return_value={"reference_info.reference_feats": None})
 
-        self.zero_shot_task.model.prompt_getter = mocker.MagicMock()
-        self.zero_shot_task.model.prompt_getter.reference_feats.return_value = "reference_feats"
-        self.zero_shot_task.model.prompt_getter.reference_prompts.return_value = "reference_prompts"
+        self.zero_shot_task.model.reference_info = "reference_info"
 
         self.zero_shot_task.save_model(mocker_otx_model)
 

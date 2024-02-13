@@ -43,7 +43,6 @@ def collate_fn(batch: List[Any]) -> Dict:
     points = None  # TBD
     gt_masks = _convert_empty_to_none("gt_masks", torch.int32)
     original_size = _convert_empty_to_none("original_size")
-    padding = [item["padding"] for item in batch]
     path = [item["path"] for item in batch]
     labels = [item["labels"] for item in batch]
     if gt_masks:
@@ -56,7 +55,6 @@ def collate_fn(batch: List[Any]) -> Dict:
             "original_size": original_size,
             "path": path,
             "labels": labels,
-            "padding": padding,
         }
     return {
         "index": -1,
@@ -67,7 +65,6 @@ def collate_fn(batch: List[Any]) -> Dict:
         "original_size": [],
         "path": [],
         "labels": [],
-        "padding": [],
     }
 
 
@@ -89,7 +86,6 @@ class Pad:
         pad_h = max_dim - h
         padding = (0, 0, pad_w, pad_h)
 
-        item["padding"] = padding
         item["images"] = pad(item["images"], padding, fill=0, padding_mode="constant")
 
         return item
