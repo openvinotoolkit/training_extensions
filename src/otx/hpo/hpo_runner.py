@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Callable, Literal
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
-from otx.utils import append_signal_handler
+from otx.utils import append_main_proc_signal_handler
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -77,8 +77,8 @@ class HpoLoop:
         )
         self._main_pid = os.getpid()
 
-        append_signal_handler(signal.SIGINT, self._terminate_signal_handler)
-        append_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
+        append_main_proc_signal_handler(signal.SIGINT, self._terminate_signal_handler)
+        append_main_proc_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
 
     def run(self) -> None:
         """Run a HPO loop."""
@@ -184,13 +184,9 @@ class HpoLoop:
             process = trial.process
             if process.is_alive():
                 logger.info(f"Kill child process {process.pid}")
-                process.kill()
+                process.terminate()
 
     def _terminate_signal_handler(self, signum: Signals, frame_) -> None:  # noqa: ANN001
-        # This code prevents child processses from being killed unintentionally by proccesses forked from main process
-        if self._main_pid != os.getpid():
-            return
-
         self._terminate_all_running_processes()
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}

@@ -3,6 +3,6 @@
 #
 """Utility files."""
 
-from .utils import append_signal_handler
+from .utils import append_signal_handler, append_main_proc_signal_handler
 
-__all__ = ["append_signal_handler"]
+__all__ = ["append_signal_handler", "append_main_proc_signal_handler"]
