@@ -1,33 +1,27 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import numpy as np
 import pytest
-from otx.core.data.module import OTXDataModule
+from datumaro import Dataset as DmDataset
+from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
     TileConfig,
     VisualPromptingConfig,
 )
-from datumaro import Dataset as DmDataset
-from otx.core.types.task import OTXTaskType
-from otx.core.utils.config import mmconfig_dict_to_dict
-from omegaconf import DictConfig
-import numpy as np
 from otx.core.data.dataset.tile import OTXTileTransform
-
-
-if TYPE_CHECKING:
-    from mmengine.config import Config as MMConfig
+from otx.core.data.entity.detection import DetBatchDataEntity
+from otx.core.data.entity.tile import TileBatchDetDataEntity
+from otx.core.data.module import OTXDataModule
+from otx.core.types.task import OTXTaskType
 
 
 class TestOTXTiling:
     @pytest.fixture()
-    def fxt_mmcv_det_transform_config(self, fxt_rtmdet_tiny_config: MMConfig) -> list[DictConfig]:
-        return [
-            DictConfig(cfg) for cfg in mmconfig_dict_to_dict(fxt_rtmdet_tiny_config.train_pipeline)
-        ]
+    def fxt_mmcv_det_transform_config(self) -> list[DictConfig]:
+        mmdet_base = OmegaConf.load("src/otx/recipe/_base_/data/mmdet_base.yaml")
+        return mmdet_base.config.train_subset.transforms
 
     @pytest.fixture()
     def fxt_det_data_config(self, fxt_asset_dir, fxt_mmcv_det_transform_config) -> OTXDataModule:
@@ -69,7 +63,7 @@ class TestOTXTiling:
         height, width = first_item.media.data.shape[:2]
 
         rng = np.random.default_rng()
-        tile_size = rng.integers(low=100, high=500, size=(2, ))
+        tile_size = rng.integers(low=100, high=500, size=(2,))
         overlap = rng.random(2)
         threshold_drop_ann = rng.random()
         tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
@@ -97,14 +91,15 @@ class TestOTXTiling:
         tile_datamodule.prepare_data()
 
         assert tile_datamodule.config.tile_config.tile_size == (6750, 6750), "Tile size should be [6750, 6750]"
-        assert pytest.approx(tile_datamodule.config.tile_config.overlap, rel=1e-3) == 0.03608, "Overlap should be 0.03608"
+        assert (
+            pytest.approx(tile_datamodule.config.tile_config.overlap, rel=1e-3) == 0.03608
+        ), "Overlap should be 0.03608"
         assert tile_datamodule.config.tile_config.max_num_instances == 3, "Max num instances should be 3"
 
     def test_tile_sampler(self, fxt_det_data_config):
         rng = np.random.default_rng()
         fxt_det_data_config.tile_config.enable_tiler = True
         fxt_det_data_config.tile_config.enable_adaptive_tiling = False
-        fxt_det_data_config.tile_config.sampling_ratio = 1.0
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
             config=fxt_det_data_config,
@@ -119,5 +114,30 @@ class TestOTXTiling:
             config=fxt_det_data_config,
         )
         sampled_tile_datamodule.prepare_data()
+        sampled_count = int(len(tile_datamodule.subsets["train"]) * fxt_det_data_config.tile_config.sampling_ratio)
+        assert sampled_count == len(sampled_tile_datamodule.subsets["train"])
 
-        assert len(tile_datamodule.subsets["train"]) * fxt_det_data_config.tile_config.sampling_ratio == len(sampled_tile_datamodule.subsets["train"])
+    def test_train_dataloader(self, fxt_det_data_config) -> None:
+        # Enable tile adapter
+        fxt_det_data_config.tile_config.enable_tiler = True
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.train_dataloader():
+            assert isinstance(batch, DetBatchDataEntity)
+
+    def test_val_dataloader(self, fxt_det_data_config) -> None:
+        # Enable tile adapter
+        fxt_det_data_config.tile_config.enable_tiler = True
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.val_dataloader():
+            assert isinstance(batch, TileBatchDetDataEntity)
+
+    def test_tile_merge(self):
+        pytest.skip("Not implemented yet")
