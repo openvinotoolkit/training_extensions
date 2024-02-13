@@ -7,16 +7,24 @@ model:
     layers: ["layer1", "layer2", "layer3"]
     backbone: "resnet18"
 
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.4
+    momentum: 0.9
+    dampening: 0
+    weight_decay: 0.001
+
 engine:
   task: ANOMALY_CLASSIFICATION
   device: auto
 
-callback_monitor: step
+callback_monitor: train_loss_epoch # val loss is not available as there is no validation set from default dataloader
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
-  num_sanity_val_steps: 0
+  limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers
   data:
     task: ANOMALY_CLASSIFICATION
     config:
@@ -25,7 +33,7 @@ overrides:
         use_bbox: True
         use_point: False
       train_subset:
-        batch_size: 1
+        batch_size: 32
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
@@ -42,7 +50,7 @@ overrides:
               mean: [123.675, 116.28, 103.53]
               std: [58.395, 57.12, 57.375]
       val_subset:
-        batch_size: 1
+        batch_size: 32
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
@@ -59,7 +67,7 @@ overrides:
               mean: [123.675, 116.28, 103.53]
               std: [58.395, 57.12, 57.375]
       test_subset:
-        batch_size: 1
+        batch_size: 32
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge

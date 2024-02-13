@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import importlib
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Generic, Sequence
 
 import torch
 from anomalib import TaskType
@@ -33,8 +33,10 @@ if TYPE_CHECKING:
     from anomalib.models import AnomalyModule
     from lightning import LightningModule, Trainer
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from lightning.pytorch.core.optimizer import LightningOptimizer
     from lightning.pytorch.utilities.types import STEP_OUTPUT
     from openvino.model_api.models.anomaly import AnomalyResult
+    from torch.optim.optimizer import Optimizer
 
 
 class _RouteCallback(Callback):
@@ -161,6 +163,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         )
         model_class = getattr(module, f"{name.title()}")
         self.anomaly_lightning_model = model_class(**self.model.anomalib_lightning_args.get())
+        self.automatic_optimization = self.anomaly_lightning_model.automatic_optimization
 
     def setup(self, stage: str) -> None:
         """Assign OTXModel's torch model to AnomalyModule's torch model.
@@ -307,8 +310,9 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         Else don't return optimizer even if it is configured in the OTX model.
         """
         # [TODO](ashwinvaidya17): Revisit this method
-        if self.anomaly_lightning_model.configure_optimizers() and self.optimizer:
-            return self.optimizer
+        if self.anomaly_lightning_model.configure_optimizers() and self.optimizer and self.model.trainable_model:
+            params = getattr(self.anomaly_lightning_model.model, self.model.trainable_model).parameters()
+            return self.optimizer(params=params)
         # The provided model does not require optimization
         return None
 
@@ -330,6 +334,16 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
                 ),
             ],
         )
+
+    def optimizer_step(
+        self,
+        epoch: int,
+        batch_idx: int,
+        optimizer: Optimizer | LightningOptimizer,
+        optimizer_closure: Callable[[], Any] | None = None,
+    ) -> None:
+        """Route optimizer step to anomalib's lightning model's optimizer step."""
+        return self.anomaly_lightning_model.optimizer_step(epoch, batch_idx, optimizer, optimizer_closure)
 
     def forward(
         self,

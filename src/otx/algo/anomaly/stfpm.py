@@ -23,6 +23,7 @@ class STFPM(OTXAnomalyModel):
         layers: Sequence[str],
         input_size: tuple[int, int],
         backbone: str = "resnet18",
+        num_classes: int = 2,  # unused as we need only two classes. Kept to match required params.
     ) -> None:
         self.input_size = input_size
         self._layers = layers
@@ -39,3 +40,8 @@ class STFPM(OTXAnomalyModel):
         from anomalib.models.image.stfpm.torch_model import STFPMModel
 
         return STFPMModel(layers=self._layers, input_size=self.input_size, backbone=self.backbone)
+
+    @property
+    def trainable_model(self) -> str:
+        """Used by configure optimizer."""
+        return "student_model"

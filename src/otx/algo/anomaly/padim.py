@@ -24,6 +24,7 @@ class Padim(OTXAnomalyModel):
         backbone: str = "resnet18",
         pre_trained: bool = True,
         n_features: int | None = None,
+        num_classes: int = 2,  # unused as we need only two classes. Kept to match required params.
     ) -> None:
         self.input_size = input_size
         self._layers = layers

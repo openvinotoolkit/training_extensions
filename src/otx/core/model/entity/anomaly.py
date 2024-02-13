@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractproperty
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -87,7 +88,7 @@ class _AnomalyModelExporter(OTXModelExporter):
             input_size=(1, 3, *model_info.image_shape),
             mean=model_info.mean_values,
             std=model_info.scale_values,
-            swap_rgb=True,  # set reverse input channels to True
+            swap_rgb=False,  # default value. Ideally, modelAPI should pass RGB inputs after the pre-processing step
             metadata=metadata,
         )
 
@@ -134,7 +135,7 @@ class _AnomalyModelExporter(OTXModelExporter):
         return Path(save_path)
 
 
-class OTXAnomalyModel(OTXModel):
+class OTXAnomalyModel(OTXModel, ABC):
     """Base Anomaly OTX Model."""
 
     def __init__(self) -> None:
@@ -195,6 +196,18 @@ class OTXAnomalyModel(OTXModel):
             self._label_info = LabelInfo(label_names=["Normal", "Anomaly"], label_groups=[["Normal", "Anomaly"]])
         else:
             self._label_info = value
+
+    @abstractproperty
+    def trainable_model(self) -> str | None:
+        """Use this to return the name of the model that needs to be trained.
+
+        This might not be the cleanest solution.
+
+        Some models have multiple architectures and only one of them needs to be trained.
+        However the optimizer is configured in the Anomalib's lightning model. This can be used
+        to inform the OTX lightning model which model to train.
+        """
+        return None
 
     def _customize_inputs(self, inputs: Any) -> dict[str, Any]:  # noqa: ANN401
         """Input customization is done through the lightning module."""

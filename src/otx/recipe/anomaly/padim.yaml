@@ -13,13 +13,12 @@ engine:
   task: ANOMALY_CLASSIFICATION
   device: auto
 
-callback_monitor: step
+callback_monitor: step # this has no effect as Padim does not need to be trained
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 1
-  val_check_interval: 1.0
-  num_sanity_val_steps: 0
+  limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers
   data:
     task: ANOMALY_CLASSIFICATION
     config:
@@ -28,7 +27,7 @@ overrides:
         use_bbox: True
         use_point: False
       train_subset:
-        batch_size: 1
+        batch_size: 32
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
@@ -45,7 +44,7 @@ overrides:
               mean: [123.675, 116.28, 103.53]
               std: [58.395, 57.12, 57.375]
       val_subset:
-        batch_size: 1
+        batch_size: 32
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
@@ -62,7 +61,7 @@ overrides:
               mean: [123.675, 116.28, 103.53]
               std: [58.395, 57.12, 57.375]
       test_subset:
-        batch_size: 1
+        batch_size: 32
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
