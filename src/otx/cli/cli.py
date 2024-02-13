@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 from warnings import warn
 
 import yaml
@@ -167,7 +167,7 @@ class OTXCLI:
             nested_key="optimizer",
             **optim_kwargs,
         )
-        scheduler_type = (LRScheduler, ReduceLROnPlateau, list[LRScheduler | ReduceLROnPlateau])
+        scheduler_type = (LRScheduler, ReduceLROnPlateau, list[Union[LRScheduler, ReduceLROnPlateau]])
         parser.add_subclass_arguments(
             baseclass=scheduler_type,
             nested_key="scheduler",
