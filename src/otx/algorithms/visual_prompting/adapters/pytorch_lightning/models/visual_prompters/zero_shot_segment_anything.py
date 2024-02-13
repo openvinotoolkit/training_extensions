@@ -221,7 +221,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def set_empty_reference_info(self) -> None:
         """Set empty reference information."""
         reference_feats: Parameter = Parameter(torch.as_tensor([], dtype=torch.float32), requires_grad=False)
-        used_indices: Parameter = Parameter(torch.as_tensor([], dtype=torch.int64), requires_grad=False)
+        used_indices: Parameter = Parameter(torch.as_tensor([[]], dtype=torch.int64), requires_grad=False)
         self.reference_info = ParameterDict(
             {
                 "reference_feats": reference_feats,
@@ -233,7 +233,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def initialize_reference_info(self, largest_label: int) -> None:
         """Initialize reference information."""
         self.reference_info["reference_feats"] = Parameter(torch.zeros(largest_label + 1, 1, 256), requires_grad=False)
-        self.reference_info["used_indices"] = Parameter(torch.as_tensor([], dtype=torch.int64), requires_grad=False)
+        self.reference_info["used_indices"] = Parameter(torch.as_tensor([[]], dtype=torch.int64), requires_grad=False)
         self.is_reference_info_empty = False
         
     def expand_reference_info(self, new_largest_label: int) -> None:
@@ -328,16 +328,20 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 default_threshold_reference -= 0.05
 
             self.reference_info["reference_feats"][int(label.id)] = ref_feat.detach().cpu()
-            self.reference_info["used_indices"] = Parameter(torch.cat((self.reference_info["used_indices"], torch.as_tensor([int(label.id)]))), requires_grad=False)
+            self.reference_info["used_indices"] = Parameter(torch.cat((self.reference_info["used_indices"], torch.as_tensor([[int(label.id)]])), dim=1), requires_grad=False)
             ref_masks[int(label.id)] = ref_mask.detach().cpu()
             
-        self.reference_info["used_indices"] = Parameter(self.reference_info["used_indices"].unsqueeze(0), requires_grad=False)
         if return_outputs:
             return self.reference_info, ref_masks
 
     @torch.no_grad()
     def infer(
-        self, images: Tensor, original_size: Tensor
+        self,
+        images: Tensor,
+        reference_feats: Tensor,
+        used_indices: Tensor,
+        original_size: Tensor,
+        is_cascade: bool = False,
     ) -> List[List[DefaultDict[int, List[Tensor]]]]:
         """Zero-shot inference with reference features.
 
@@ -345,7 +349,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             images (Tensor): Given images for target results.
+            reference_feats (Tensor): Reference features for target prediction.
+            used_indices (Tensor): To check which indices of reference features are validate.
             original_size (Tensor): Original image size.
+            is_cascade (bool): Whether use cascade inference. Defaults to False.
 
         Returns:
             (List[List[DefaultDict[int, List[Tensor]]]]): Target results.
@@ -363,7 +370,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
             image_embedding = self.image_encoder(images)
 
             total_points_scores, total_bg_coords = self.prompt_getter(
-                image_embedding=image_embedding, original_size=original_size
+                image_embedding=image_embedding,
+                reference_feats=reference_feats,
+                used_indices=used_indices,
+                original_size=original_size
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
@@ -382,9 +392,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         continue
 
                     point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
-                    point_coords = ResizeLongestSide.apply_coords(
-                        point_coords, original_size[0], self.config.model.image_size
-                    )
+                    point_coords = self._preprocess_coords(point_coords, original_size[0], self.config.model.image_size)
                     point_labels = torch.as_tensor(
                         [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
                     ).unsqueeze(0)
@@ -393,22 +401,23 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         point_coords=point_coords,
                         point_labels=point_labels,
                         original_size=original_size,
+                        is_cascade=is_cascade,
                     )
                     predicted_masks[label].append((mask * points_score[2]).detach().cpu())
                     used_points[label].append(points_score.detach().cpu())
 
             # check overlapping area between different label masks
-            self.__inspect_overlapping_areas(predicted_masks, used_points)
+            self._inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
 
-    def __inspect_overlapping_areas(
+    def _inspect_overlapping_areas(
         self,
         predicted_masks: Dict[int, List[Tensor]],
         used_points: Dict[int, List[Tensor]],
         threshold_iou: float = 0.8,
     ):
-        def __calculate_mask_iou(mask1: Tensor, mask2: Tensor):
+        def _calculate_mask_iou(mask1: Tensor, mask2: Tensor):
             assert mask1.ndim == 2 and mask2.ndim == 2
             intersection = torch.logical_and(mask1, mask2).sum().item()
             union = torch.logical_or(mask1, mask2).sum().item()
@@ -426,17 +435,17 @@ class ZeroShotSegmentAnything(SegmentAnything):
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
                     else:
                         overlapped_label.append(im)
 
-            for im in overlapped_label[::-1]:
+            for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
                 used_points[label].pop(im)
 
-            for jm in overlapped_other_label[::-1]:
+            for jm in sorted(list(set(overlapped_other_label)), reverse=True):
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
 
@@ -514,7 +523,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def predict_step(self, batch, batch_idx):
         """Predict step for `infer`."""
-        results = self.infer(images=batch["images"], original_size=batch.get("original_size")[0].unsqueeze(0))
+        results = self.infer(
+            images=batch["images"],
+            reference_feats=self.reference_info["reference_feats"],
+            used_indices=self.reference_info["used_indices"],
+            original_size=batch.get("original_size")[0].unsqueeze(0))
         return [result[0] for result in results]  # tmp: only mask
 
     def _preprocess_prompts(
@@ -554,6 +567,30 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x[0].id_))  # type: ignore[assignment]
         return processed_prompts
+    
+    def _preprocess_coords(
+        self,
+        coords: Tensor,
+        ori_shape: Union[list[int], tuple[int, int], Tensor],
+        target_length: int,
+    ) -> Tensor:
+        """Expects a torch tensor of length 2 in the final dimension.
+
+        Requires the original image size in (H, W) format.
+
+        Args:
+            coords (Tensor): Coordinates tensor.
+            ori_shape (Union[list[int], tuple[int, int], Tensor]): Original size of image.
+            target_length (int): The length of the longest side of the image.
+
+        Returns:
+            (Tensor): Resized coordinates.
+        """
+        old_h, old_w = ori_shape
+        new_h, new_w = self.get_prepadded_size(ori_shape, target_length)
+        coords[..., 0] = coords[..., 0] * (new_w / old_w)
+        coords[..., 1] = coords[..., 1] * (new_h / old_h)
+        return coords
 
     def _generate_masked_features(
         self,

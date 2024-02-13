@@ -124,17 +124,17 @@ class TestZeroShotSegmentAnything:
         [
             None,
             {
-                "reference_info": nn.ParameterDict({
-                    "reference_feats": "reference_feats",
-                    "used_indices": "used_indices"})
+                "reference_info.reference_feats": torch.zeros(1),
+                "reference_info.used_indices": torch.zeros(1, dtype=torch.int64),
             },
         ],
     )
     def test_init(self, set_zero_shot_segment_anything, state_dict: Optional[Dict[str, Any]]) -> None:
         """Test __init__."""
         if state_dict is not None:
-            zero_shot_segment_anything_for_init_weights = set_zero_shot_segment_anything()
-            state_dict.update(zero_shot_segment_anything_for_init_weights.state_dict())
+            zero_shot_segment_anything_for_init_weights = set_zero_shot_segment_anything().state_dict()
+            zero_shot_segment_anything_for_init_weights.update(state_dict)
+            state_dict = zero_shot_segment_anything_for_init_weights
         
         zero_shot_segment_anything = set_zero_shot_segment_anything(state_dict=state_dict)
 
@@ -143,8 +143,11 @@ class TestZeroShotSegmentAnything:
         assert zero_shot_segment_anything.config.model.freeze_mask_decoder
 
         if state_dict:
-            zero_shot_segment_anything.reference_info.reference_feats = "reference_feats"
-            zero_shot_segment_anything.reference_info.used_indices = "used_indices"
+            assert zero_shot_segment_anything.reference_info.reference_feats == torch.zeros(1)
+            assert zero_shot_segment_anything.reference_info.used_indices == torch.zeros(1, dtype=torch.int64)
+
+        assert zero_shot_segment_anything.reference_info.reference_feats.dtype == torch.float32
+        assert zero_shot_segment_anything.reference_info.used_indices.dtype == torch.int64
 
     @e2e_pytest_unit
     def test_set_default_config(self, set_zero_shot_segment_anything) -> None:
@@ -196,19 +199,124 @@ class TestZeroShotSegmentAnything:
         )
 
         zero_shot_segment_anything = set_zero_shot_segment_anything()
-        zero_shot_segment_anything.reference_info.reference_feats = torch.rand(1, 1, 256)
-        zero_shot_segment_anything.reference_info.used_indices = {0}
+        reference_feats = nn.Parameter(torch.rand(1, 1, 256), requires_grad=False)
+        used_indices = nn.Parameter(torch.as_tensor([[0]], dtype=torch.int64), requires_grad=False)
         mocker.patch.object(
             SegmentAnything, "forward", return_value=(torch.ones(1, 4, 4, 4), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
         )
 
         total_results = zero_shot_segment_anything.infer(
-            images=torch.ones((1, 3, 4, 4)), original_size=torch.tensor([[4, 4]], dtype=torch.int64)
+            images=torch.ones((1, 3, 4, 4)), 
+            reference_feats=reference_feats,
+            used_indices=used_indices,
+            original_size=torch.tensor([[4, 4]], dtype=torch.int64)
         )
 
         for i, results in enumerate(total_results[0]):
             for _, result in results.items():
                 assert torch.equal(result[0], expected[i])
+                
+    @e2e_pytest_unit
+    def test_inspect_overlapping_areas(self, mocker, set_zero_shot_segment_anything) -> None:
+        """Test _inspect_overlapping_areas."""
+        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        predicted_masks = {
+            0: [
+                torch.tensor(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                    ],
+                ),
+            ],
+            1: [
+                torch.tensor(
+                    [
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 1, 1],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                    ],
+                ),
+                torch.tensor(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+            ],
+        }
+        used_points = {
+            0: [
+                torch.tensor([0, 0, 0.5]),  # to be removed
+                torch.tensor([2, 2, 0.5]),
+                torch.tensor([1, 4, 0.5]),
+            ],
+            1: [
+                torch.tensor([3, 0, 0.5]),
+                torch.tensor([4, 4, 0.5]),
+                torch.tensor([1, 4, 0.3]),  # to be removed
+                torch.tensor([0, 0, 0.7]),
+            ],
+        }
+
+        zero_shot_segment_anything._inspect_overlapping_areas(predicted_masks, used_points, threshold_iou=0.5)
+
+        assert len(predicted_masks[0]) == 2
+        assert len(predicted_masks[1]) == 3
+        assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
+        assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
 
     @e2e_pytest_unit
     def test_predict_masks(self, mocker, set_zero_shot_segment_anything) -> None:
