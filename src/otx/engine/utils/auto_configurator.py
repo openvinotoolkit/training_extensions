@@ -249,30 +249,24 @@ class AutoConfigurator:
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
-    def get_optimizer(self) -> list[OptimizerCallable] | OptimizerCallable | None:
+    def get_optimizer(self) -> list[OptimizerCallable] | None:
         """Returns the optimizer callable based on the configuration.
 
         Returns:
-            OptimizerCallable | None: The optimizer callable.
+            list[OptimizerCallable] | None: The optimizer callable.
         """
         optimizer_config = self.config.get("optimizer", None)
         logger.warning(f"Set Default Optimizer: {optimizer_config}")
-        if isinstance(optimizer_config, list):
-            optimizers = [partial_instantiate_class(init=_opt) for _opt in optimizer_config]
-            return [opt for opt in optimizers if opt is not None]
         return partial_instantiate_class(init=optimizer_config)
 
-    def get_scheduler(self) -> list[LRSchedulerCallable] | LRSchedulerCallable | None:
+    def get_scheduler(self) -> list[LRSchedulerCallable] | None:
         """Returns the instantiated scheduler based on the configuration.
 
         Returns:
-            LRSchedulerCallable | None: The instantiated scheduler.
+            list[LRSchedulerCallable] | None: The instantiated scheduler.
         """
         scheduler_config = self.config.get("scheduler", None)
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
-        if isinstance(scheduler_config, list):
-            schedulers = [partial_instantiate_class(init=scheduler) for scheduler in scheduler_config]
-            return [scheduler for scheduler in schedulers if scheduler is not None]
         return partial_instantiate_class(init=scheduler_config)
 
     def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:

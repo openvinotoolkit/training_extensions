@@ -347,11 +347,11 @@ class OTXCLI:
 
         optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", Namespace())
         optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
-        optimizers = [partial_instantiate_class(namespace_to_dict(_opt)) for _opt in optimizer_kwargs]
+        optimizers = partial_instantiate_class([namespace_to_dict(_opt) for _opt in optimizer_kwargs])
 
         scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", Namespace())
         scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
-        schedulers = [partial_instantiate_class(namespace_to_dict(_sch)) for _sch in scheduler_kwargs]
+        schedulers = partial_instantiate_class([namespace_to_dict(_sch) for _sch in scheduler_kwargs])
 
         return model, optimizers, schedulers
 
