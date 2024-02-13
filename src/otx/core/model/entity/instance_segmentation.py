@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -17,9 +18,11 @@ from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchPredEntity,
 )
 from otx.core.data.entity.tile import TileBatchInstSegDataEntity
+from otx.core.exporter.base import OTXModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import InstanceSegTileMerge
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -65,6 +68,30 @@ class OTXInstanceSegModel(
             polygons=[pred_entity.polygons for pred_entity in pred_entities],
         )
 
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "MaskRCNN",
+                ("model_info", "task_type"): "instance_segmentation",
+                ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
+                ("model_info", "iou_threshold"): str(0.5),
+            },
+        )
+
+        # Instance segmentation needs to add empty label
+        all_labels = "otx_empty_lbl "
+        all_label_ids = "None "
+        for lbl in self.label_info.label_names:
+            all_labels += lbl.replace(" ", "_") + " "
+            all_label_ids += lbl.replace(" ", "_") + " "
+
+        parameters["metadata"][("model_info", "labels")] = all_labels.strip()
+        parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
+        return parameters
+
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     """OTX Instance Segmentation model which can attach a XAI hook."""
@@ -94,13 +121,40 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
+        self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(num_classes=num_classes)
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Parameters for an exporter."""
+        if self.image_size is None:
+            error_msg = "self.image_size shouldn't be None to use mmdeploy."
+            raise ValueError(error_msg)
+
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["model_builder"] = self._create_model
+        export_params["model_cfg"] = copy(self.config)
+        export_params["test_pipeline"] = self._make_fake_test_pipeline()
+
+        return export_params
 
     def _create_model(self) -> nn.Module:
         from .utils.mmdet import create_model
 
         model, self.classification_layers = create_model(self.config, self.load_from)
         return model
+
+    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
+        return [
+            {"type": "LoadImageFromFile", "backend_args": None},
+            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
+            {"type": "LoadAnnotations", "with_bbox": True, "with_mask": True},
+            {
+                "type": "PackDetInputs",
+                "meta_keys": ["img_idimg_path", "ori_shape", "img_shape", "scale_factor"],
+            },
+        ]
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
         from mmdet.structures import DetDataSample
@@ -209,6 +263,13 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             labels=labels,
         )
 
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        from otx.core.exporter.mmdeploy import MMdeployExporter
+
+        return MMdeployExporter(**self._export_parameters)
+
 
 class OVInstanceSegmentationModel(
     OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
@@ -218,6 +279,26 @@ class OVInstanceSegmentationModel(
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX detection model compatible for OTX testing pipeline.
     """
+
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str = "MaskRCNN",
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
 
     def _customize_outputs(
         self,
@@ -244,7 +325,7 @@ class OVInstanceSegmentationModel(
             )
             scores.append(torch.tensor([output.score for output in output_objects]))
             masks.append(torch.tensor([output.mask for output in output_objects]))
-            labels.append(torch.tensor([output.id for output in output_objects]))
+            labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         return InstanceSegBatchPredEntity(
             batch_size=len(outputs),

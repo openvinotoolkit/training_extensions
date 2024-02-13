@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics import JaccardIndex
+from torchmetrics import Dice
 
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
@@ -43,12 +43,18 @@ class OTXSegmentationLitModule(OTXLitModule):
         )
         num_classes = otx_model.num_classes
         if num_classes is None:
-            msg = """JaccardIndex metric cannot be used with num_classes = None.
+            msg = """Dice metric cannot be used with num_classes = None.
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
-        
-        self.val_metric = val_metric 
-        self.test_metric = test_metric 
+
+        metric_params = {
+            # a hack to use ignore_index in Dice metric
+            "num_classes": num_classes + 1,
+            "ignore_index": num_classes,
+        }
+
+        self.val_metric = Dice(**metric_params)
+        self.test_metric = Dice(**metric_params)
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -66,7 +72,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.test_metric, "test")
 
-    def _log_metrics(self, meter: JaccardIndex, key: str) -> None:
+    def _log_metrics(self, meter: Dice, key: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -77,7 +83,7 @@ class OTXSegmentationLitModule(OTXLitModule):
                 log.debug("Cannot log Tensor which is not scalar")
                 return
             self.log(
-                f"{key}/mIoU",
+                f"{key}/{type(meter).__name__}",
                 results,
                 sync_dist=True,
                 prog_bar=True,
@@ -131,4 +137,4 @@ class OTXSegmentationLitModule(OTXLitModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return "val/mIoU"
+        return "val/Dice"

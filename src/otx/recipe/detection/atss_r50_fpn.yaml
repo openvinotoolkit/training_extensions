@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.detection.atss.ATSS
+  class_path: otx.algo.detection.atss.ATSSR50FPN
   init_args:
     num_classes: 1000
-    variant: r50_fpn
 
 optimizer:
   class_path: torch.optim.Adam

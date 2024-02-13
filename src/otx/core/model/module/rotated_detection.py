@@ -7,8 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
+from otx.algo.instance_segmentation.otx_instseg_evaluation import (
+    OTXMaskRLEMeanAveragePrecision,
+)
 from otx.core.model.entity.rotated_detection import OTXRotatedDetModel
 from otx.core.model.module.instance_segmentation import OTXInstanceSegLitModule
 

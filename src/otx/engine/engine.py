@@ -15,7 +15,7 @@ from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
 from otx.core.types.export import OTXExportFormatType
@@ -23,7 +23,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -241,7 +241,6 @@ class Engine:
             **fit_kwargs,
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
         return self.trainer.callback_metrics
 
     def test(
@@ -280,20 +279,26 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        model = self.model
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
+        if is_ir_ckpt and not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
             test_metric=test_metric
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
-        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
-        if checkpoint is not None:
+        if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
 
@@ -415,7 +420,8 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
+            self.model.label_info = lit_module.meta_info
+
             lit_module.load_state_dict(loaded_checkpoint)
 
             return self.model.export(
@@ -576,7 +582,7 @@ class Engine:
             ),
         )
         # Model
-        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        num_classes = datamodule.meta_info.num_classes
         config["model"]["init_args"]["num_classes"] = num_classes
         model = instantiate_class(args=(), init=config.pop("model"))
         optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
@@ -584,6 +590,7 @@ class Engine:
 
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
+        engine_config["data_root"] = data_root
         return cls(
             datamodule=datamodule,
             model=model,

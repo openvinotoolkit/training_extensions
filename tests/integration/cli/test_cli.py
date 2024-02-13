@@ -5,11 +5,11 @@
 import importlib
 import inspect
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import yaml
-from otx.cli import main
+
+from tests.integration.cli.utils import run_main
 
 # This assumes have OTX installed in environment.
 otx_module = importlib.import_module("otx")
@@ -117,6 +117,7 @@ def otx_e2e(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ) -> None:
     """
     Test OTX CLI e2e commands.
@@ -134,6 +135,7 @@ def otx_e2e(
         None
     """
     task = recipe.split("/")[-2]
+    tile_param = fxt_cli_override_command_per_task["tile"] if "tile" in recipe else []
     model_name = recipe.split("/")[-1].split(".")[0]
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
@@ -154,10 +156,10 @@ def otx_e2e(
         "--max_epochs",
         "2",
         *fxt_cli_override_command_per_task[task],
+        *tile_param,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     if task in ("zero_shot_visual_prompting"):
         pytest.skip("Full CLI test is not applicable to this task.")
@@ -194,8 +196,7 @@ def otx_e2e(
         str(ckpt_files[-1]),
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
     assert (tmp_path_test / "outputs" / "csv").exists()
@@ -238,26 +239,19 @@ def otx_e2e(
             f"{fmt}",
         ]
 
-        with patch("sys.argv", command_cfg):
-            main()
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         assert (tmp_path_test / "outputs").exists()
         assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
-    task = recipe.split("/")[-2]
-    tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    if "_cls" in recipe:
-        export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
-    else:
-        export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
     exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
 
     command_cfg = [
         "otx",
         "test",
         "--config",
-        export_test_recipe,
+        recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
@@ -265,12 +259,11 @@ def otx_e2e(
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
-        "--model.model_name",
+        "--checkpoint",
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
 
@@ -282,6 +275,7 @@ def test_otx_explain_e2e(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ) -> None:
     """
     Test OTX CLI explain e2e command.
@@ -327,8 +321,7 @@ def test_otx_explain_e2e(
         *fxt_cli_override_command_per_task[task],
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_explain / "outputs").exists()
     assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
@@ -348,7 +341,12 @@ def test_otx_explain_e2e(
 
 
 @pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
-def test_otx_ov_test(recipe: str, tmp_path: Path, fxt_target_dataset_per_task: dict) -> None:
+def test_otx_ov_test(
+    recipe: str,
+    tmp_path: Path,
+    fxt_target_dataset_per_task: dict,
+    fxt_open_subprocess: bool,
+) -> None:
     """
     Test OTX CLI e2e commands.
 
@@ -385,8 +383,7 @@ def test_otx_ov_test(recipe: str, tmp_path: Path, fxt_target_dataset_per_task: d
         "--disable-infer-num-classes",
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
     assert (tmp_path_test / "outputs" / "csv").exists()

@@ -231,6 +231,9 @@ class OTXCLI:
             if "callbacks" in added_arguments:
                 sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
                 sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
+            if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
+                # This is code for an OVModel that uses checkpoint in model.model_name.
+                sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
 
             # Load default subcommand config file
             default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
@@ -358,11 +361,10 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         from otx.core.model.entity.base import OTXModel
-        from otx.engine.utils.auto_configurator import get_num_classes_from_meta_info
 
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = get_num_classes_from_meta_info(task=self.datamodule.task, meta_info=self.datamodule.meta_info)
+            num_classes = self.datamodule.meta_info.num_classes
             if num_classes != model_config.init_args.num_classes:
                 warning_msg = (
                     f"The `num_classes` in dataset is {num_classes} "

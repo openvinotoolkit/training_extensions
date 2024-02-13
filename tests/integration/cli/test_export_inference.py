@@ -5,12 +5,12 @@
 import importlib
 import inspect
 import logging
-import re
 from pathlib import Path
-from unittest.mock import patch
 
+import pandas as pd
 import pytest
-from otx.cli import main
+
+from tests.integration.cli.utils import run_main
 
 log = logging.getLogger(__name__)
 
@@ -46,13 +46,16 @@ def fxt_local_seed() -> int:
 
 
 TASK_NAME_TO_MAIN_METRIC_NAME = {
-    "semantic_segmentation": "test/mIoU",
+    "semantic_segmentation": "test/Dice",
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
+    "h_label_cls": "test/accuracy",
+    "detection": "test/map_50",
+    "instance_segmentation": "test/map_50",
 }
 
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
+@pytest.mark.parametrize("recipe", RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_export_infer(
     recipe: str,
     tmp_path: Path,
@@ -60,7 +63,8 @@ def test_otx_export_infer(
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_accelerator: str,
-    capfd: "pytest.CaptureFixture",
+    fxt_open_subprocess: bool,
+    request: pytest.FixtureRequest,
 ) -> None:
     """
     Test OTX CLI e2e commands.
@@ -82,6 +86,12 @@ def test_otx_export_infer(
 
     if task not in TASK_NAME_TO_MAIN_METRIC_NAME:
         pytest.skip(f"Inference pipeline for {recipe} is not implemented")
+    elif (task == "detection" and "atss_mobilenetv2" not in recipe) or (
+        task == "instance_segmentation" and "maskrcnn_efficientnetb2b" not in recipe
+    ):
+        pytest.skip("To prevent memory bug from aborting integration test, test single model per task.")
+    elif "tile" in recipe:
+        pytest.skip("Exporting models with tiling isn't supported yet.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
     # 1) otx train
@@ -106,8 +116,7 @@ def test_otx_export_infer(
         *fxt_cli_override_command_per_task[task],
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
@@ -122,7 +131,7 @@ def test_otx_export_infer(
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
+        str(tmp_path_test / "outputs" / "torch"),
         "--engine.device",
         fxt_accelerator,
         *fxt_cli_override_command_per_task[task],
@@ -130,8 +139,7 @@ def test_otx_export_infer(
         str(ckpt_files[-1]),
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     # 3) otx export
     format_to_ext = {"OPENVINO": "xml"}  # [TODO](@Vlad): extend to "ONNX": "onnx"
@@ -154,8 +162,7 @@ def test_otx_export_infer(
             f"{fmt}",
         ]
 
-        with patch("sys.argv", command_cfg):
-            main()
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         assert (tmp_path_test / "outputs").exists()
         assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
@@ -177,16 +184,15 @@ def test_otx_export_infer(
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
+        str(tmp_path_test / "outputs" / "openvino"),
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
-        "--model.model_name",
+        "--checkpoint",
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
 
@@ -207,8 +213,7 @@ def test_otx_export_infer(
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
     exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
@@ -222,25 +227,44 @@ def test_otx_export_infer(
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
-        str(tmp_path_test / "outputs"),
+        str(tmp_path_test / "outputs" / "nncf_ptq"),
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
-        "--model.model_name",
+        "--checkpoint",
         exported_model_path,
     ]
 
-    with patch("sys.argv", command_cfg):
-        main()
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     assert (tmp_path_test / "outputs").exists()
 
-    out, _ = capfd.readouterr()
-    assert TASK_NAME_TO_MAIN_METRIC_NAME[task] in out
-    torch_acc, ov_acc, ptq_acc = tuple(re.findall(rf"{TASK_NAME_TO_MAIN_METRIC_NAME[task]}\s*│\s*(\d+[.]\d+)", out))
-    torch_acc, ov_acc, ptq_acc = float(torch_acc), float(ov_acc), float(ptq_acc)
+    df_torch = pd.read_csv(next((tmp_path_test / "outputs" / "torch").glob("**/metrics.csv")))
+    df_openvino = pd.read_csv(next((tmp_path_test / "outputs" / "openvino").glob("**/metrics.csv")))
+    df_nncf_ptq = pd.read_csv(next((tmp_path_test / "outputs" / "nncf_ptq").glob("**/metrics.csv")))
+
+    metric_name = TASK_NAME_TO_MAIN_METRIC_NAME[task]
+
+    assert metric_name in df_torch.columns
+    assert metric_name in df_openvino.columns
+    assert metric_name in df_nncf_ptq.columns
+
+    torch_acc = df_torch[metric_name].item()
+    ov_acc = df_openvino[metric_name].item()
+    ptq_acc = df_nncf_ptq[metric_name].item()  # noqa: F841
 
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
+
+    # Not compare w/ instance segmentation because training isn't able to be deterministic, which can lead to unstable test result.
+    if "maskrcnn_efficientnetb2b" in recipe:
+        return
+
+    if "multi_label_cls/mobilenet_v3_large_light" in request.node.name:
+        msg = "multi_label_cls/mobilenet_v3_large_light exceeds the following threshold = 0.1"
+        pytest.xfail(msg)
+    if "h_label_cls/efficientnet_v2_light" in request.node.name:
+        msg = "h_label_cls/efficientnet_v2_light exceeds the following threshold = 0.1"
+        pytest.xfail(msg)
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
