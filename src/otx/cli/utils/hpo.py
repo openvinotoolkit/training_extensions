@@ -473,7 +473,7 @@ class HpoRunner:
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
 
-        if self._update_hpo_progress is not None:
+        if self._progress_updater_callback is not None:
             progress_updater_thread = Thread(target=self._update_hpo_progress, args=[hpo_algo], daemon=True)
             progress_updater_thread.start()
 
