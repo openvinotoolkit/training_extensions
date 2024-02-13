@@ -104,9 +104,10 @@ class AdaptiveTrainScheduling(Callback):
             config.frequency = saved_frequency
 
         for config in lr_configs:
-            if hasattr(config, "frequency"):
+            if hasattr(config, "frequency") and hasattr(config, "interval") and config.interval == "epoch":
+                scheduler_name = config.scheduler.__class__.__name__
                 msg = (
-                    "The frequency of LRscheduler will be changed due to the effect of adaptive interval: "
+                    f"The frequency of {scheduler_name} will be changed due to the effect of adaptive interval: "
                     f"{config.frequency} --> {adaptive_interval}."
                 )
                 log.warning(msg)

@@ -27,6 +27,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
+  max_epochs: 100
   data:
     task: ROTATED_DETECTION
     config:
