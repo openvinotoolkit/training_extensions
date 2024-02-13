@@ -20,12 +20,12 @@ scheduler:
     mode: max
     factor: 0.5
     patience: 5
-    monitor: val/mIoU
+    monitor: val/Dice
 
 engine:
   task: SEMANTIC_SEGMENTATION
   device: auto
 
-callback_monitor: val/mIoU
+callback_monitor: val/Dice
 
 data: ../_base_/data/mmseg_base.yaml

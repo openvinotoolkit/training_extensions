@@ -75,7 +75,7 @@ class OTXNativeModelExporter(OTXModelExporter):
 
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
-        log.info("Coverting to OpenVINO is done.")
+        log.info("Converting to OpenVINO is done.")
 
         return Path(save_path)
 
@@ -109,6 +109,6 @@ class OTXNativeModelExporter(OTXModelExporter):
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
 
         onnx.save(onnx_model, save_path)
-        log.info("Coverting to ONNX is done.")
+        log.info("Converting to ONNX is done.")
 
         return Path(save_path)

@@ -41,7 +41,7 @@ class MMdeployExporter(OTXModelExporter):
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
         resize_mode (Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"], optional):
-            A resize type for model preprocess. "standard" resizes iamges without keeping ratio.
+            A resize type for model preprocess. "standard" resizes images without keeping ratio.
             "fit_to_window" resizes images while keeping ratio.
             "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
         pad_value (int, optional): Padding value. Defaults to 0.
@@ -110,7 +110,7 @@ class MMdeployExporter(OTXModelExporter):
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
         onnx_path.unlink()
-        log.info("Coverting to OpenVINO is done.")
+        log.info("Converting to OpenVINO is done.")
 
         return Path(save_path)
 
@@ -141,7 +141,7 @@ class MMdeployExporter(OTXModelExporter):
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
 
         onnx.save(onnx_model, str(save_path))
-        log.info("Coverting to ONNX is done.")
+        log.info("Converting to ONNX is done.")
 
         return save_path
 

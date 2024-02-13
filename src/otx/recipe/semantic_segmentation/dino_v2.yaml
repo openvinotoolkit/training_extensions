@@ -23,7 +23,7 @@ engine:
   task: SEMANTIC_SEGMENTATION
   device: auto
 
-callback_monitor: val/mIoU
+callback_monitor: val/Dice
 
 data: ../_base_/data/mmseg_base.yaml
 overrides:

@@ -159,6 +159,26 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
     and create the OTX segmentation model compatible for OTX testing pipeline.
     """
 
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str = "Segmentation",
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+
     def _customize_outputs(
         self,
         outputs: list[ImageResultWithSoftPrediction],
