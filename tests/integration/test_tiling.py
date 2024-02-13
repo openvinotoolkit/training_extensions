@@ -1,0 +1,123 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pytest
+from otx.core.data.module import OTXDataModule
+from otx.core.config.data import (
+    DataModuleConfig,
+    SubsetConfig,
+    TileConfig,
+    VisualPromptingConfig,
+)
+from datumaro import Dataset as DmDataset
+from otx.core.types.task import OTXTaskType
+from otx.core.utils.config import mmconfig_dict_to_dict
+from omegaconf import DictConfig
+import numpy as np
+from otx.core.data.dataset.tile import OTXTileTransform
+
+
+if TYPE_CHECKING:
+    from mmengine.config import Config as MMConfig
+
+
+class TestOTXTiling:
+    @pytest.fixture()
+    def fxt_mmcv_det_transform_config(self, fxt_rtmdet_tiny_config: MMConfig) -> list[DictConfig]:
+        return [
+            DictConfig(cfg) for cfg in mmconfig_dict_to_dict(fxt_rtmdet_tiny_config.train_pipeline)
+        ]
+
+    @pytest.fixture()
+    def fxt_det_data_config(self, fxt_asset_dir, fxt_mmcv_det_transform_config) -> OTXDataModule:
+        data_root = fxt_asset_dir / "car_tree_bug"
+
+        batch_size = 8
+        num_workers = 0
+        return DataModuleConfig(
+            data_format="coco_instances",
+            data_root=data_root,
+            train_subset=SubsetConfig(
+                subset_name="train",
+                batch_size=batch_size,
+                num_workers=num_workers,
+                transform_lib_type="MMDET",
+                transforms=fxt_mmcv_det_transform_config,
+            ),
+            val_subset=SubsetConfig(
+                subset_name="val",
+                batch_size=batch_size,
+                num_workers=num_workers,
+                transform_lib_type="MMDET",
+                transforms=fxt_mmcv_det_transform_config,
+            ),
+            test_subset=SubsetConfig(
+                subset_name="test",
+                batch_size=batch_size,
+                num_workers=num_workers,
+                transform_lib_type="MMDET",
+                transforms=fxt_mmcv_det_transform_config,
+            ),
+            tile_config=TileConfig(),
+            vpm_config=VisualPromptingConfig(),
+        )
+
+    def test_tile_transform(self):
+        dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
+        first_item = next(iter(dataset), None)
+        height, width = first_item.media.data.shape[:2]
+
+        rng = np.random.default_rng()
+        tile_size = rng.integers(low=100, high=500, size=(2, ))
+        overlap = rng.random(2)
+        threshold_drop_ann = rng.random()
+        tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
+        tiled_dataset.transform(
+            OTXTileTransform,
+            tile_size=tile_size,
+            overlap=overlap,
+            threshold_drop_ann=threshold_drop_ann,
+        )
+
+        h_stride = int((1 - overlap[0]) * tile_size[0])
+        w_stride = int((1 - overlap[1]) * tile_size[1])
+        num_tile_rows = (height + h_stride - 1) // h_stride
+        num_tile_cols = (width + w_stride - 1) // w_stride
+        assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
+
+    def test_adaptive_tiling(self, fxt_det_data_config):
+        # Enable tile adapter
+        fxt_det_data_config.tile_config.enable_tiler = True
+        fxt_det_data_config.tile_config.enable_adaptive_tiling = True
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+        tile_datamodule.prepare_data()
+
+        assert tile_datamodule.config.tile_config.tile_size == (6750, 6750), "Tile size should be [6750, 6750]"
+        assert pytest.approx(tile_datamodule.config.tile_config.overlap, rel=1e-3) == 0.03608, "Overlap should be 0.03608"
+        assert tile_datamodule.config.tile_config.max_num_instances == 3, "Max num instances should be 3"
+
+    def test_tile_sampler(self, fxt_det_data_config):
+        rng = np.random.default_rng()
+        fxt_det_data_config.tile_config.enable_tiler = True
+        fxt_det_data_config.tile_config.enable_adaptive_tiling = False
+        fxt_det_data_config.tile_config.sampling_ratio = 1.0
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+        tile_datamodule.prepare_data()
+
+        fxt_det_data_config.tile_config.enable_tiler = True
+        fxt_det_data_config.tile_config.enable_adaptive_tiling = False
+        fxt_det_data_config.tile_config.sampling_ratio = rng.random()
+        sampled_tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+        sampled_tile_datamodule.prepare_data()
+
+        assert len(tile_datamodule.subsets["train"]) * fxt_det_data_config.tile_config.sampling_ratio == len(sampled_tile_datamodule.subsets["train"])
