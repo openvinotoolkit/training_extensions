@@ -37,7 +37,7 @@ class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
     ):
         if num_warmup_steps > 0:
             msg = f"num_warmup_steps should be > 0, got {num_warmup_steps}"
-            ValueError(msg)
+            raise ValueError(msg)
         self.num_warmup_steps = num_warmup_steps
         self.interval = interval
         super().__init__(optimizer, lambda step: min(step / num_warmup_steps, 1.0))

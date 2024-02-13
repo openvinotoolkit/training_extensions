@@ -14,7 +14,7 @@ optimizer:
 scheduler:
   - class_path: otx.core.model.module.base.LinearWarmupScheduler
     init_args:
-      num_warmup_steps: 0
+      num_warmup_steps: 100
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
     init_args:
       mode: max
