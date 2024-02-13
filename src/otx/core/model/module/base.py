@@ -12,7 +12,6 @@ import torch
 from lightning import LightningModule
 from torch import Tensor
 
-from otx.algo.schedulers.warmup_schedulers import BaseWarmupScheduler
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchLossEntity,
@@ -34,11 +33,13 @@ class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
         self,
         optimizer: torch.optim.Optimizer,
         num_warmup_steps: int = 1000,
+        interval: str = "step",
     ):
         if num_warmup_steps > 0:
             msg = f"num_warmup_steps should be > 0, got {num_warmup_steps}"
             ValueError(msg)
         self.num_warmup_steps = num_warmup_steps
+        self.interval = interval
         super().__init__(optimizer, lambda step: min(step / num_warmup_steps, 1.0))
 
 
@@ -50,8 +51,8 @@ class OTXLitModule(LightningModule):
         *,
         otx_model: OTXModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__()
 
@@ -110,7 +111,7 @@ class OTXLitModule(LightningModule):
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
 
-    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]]:
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict]]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
 
         Normally you'd need one. But in the case of GANs or similar you might have multiple.
@@ -120,34 +121,26 @@ class OTXLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
         """
-        optimizer = (
-            self.hparams.optimizer(params=self.parameters())
-            if callable(self.hparams.optimizer)
-            else self.hparams.optimizer
-        )
 
-        scheduler = (
-            self.hparams.scheduler(optimizer=optimizer) if callable(self.hparams.scheduler) else self.hparams.scheduler
-        )
+        def ensure_list(item: Any) -> list:  # noqa: ANN401
+            return item if isinstance(item, list) else [item]
 
-        lr_scheduler_configs = []
-        if isinstance(scheduler, BaseWarmupScheduler) and scheduler.warmup_steps > 0:
-            lr_scheduler_configs += [
-                {
-                    "scheduler": LinearWarmupScheduler(optimizer, num_warmup_steps=scheduler.warmup_steps),
-                    "interval": "step",
-                },
-            ]
-        lr_scheduler_configs += [
-            {
-                "scheduler": scheduler,
-                "monitor": self.lr_scheduler_monitor_key,
-                "interval": "epoch",
-                "frequency": self.trainer.check_val_every_n_epoch,
-            },
+        optimizers = [
+            optimizer(params=self.parameters()) if callable(optimizer) else optimizer
+            for optimizer in ensure_list(self.hparams.optimizer)
         ]
 
-        return [optimizer], lr_scheduler_configs
+        lr_schedulers = []
+        for scheduler_config in ensure_list(self.hparams.scheduler):
+            scheduler = scheduler_config(optimizers[0]) if callable(scheduler_config) else scheduler_config
+            lr_scheduler_config = {"scheduler": scheduler}
+            if hasattr(scheduler, "interval"):
+                lr_scheduler_config["interval"] = scheduler.interval
+            if hasattr(scheduler, "monitor"):
+                lr_scheduler_config["monitor"] = scheduler.monitor
+            lr_schedulers.append(lr_scheduler_config)
+
+        return optimizers, lr_schedulers
 
     def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
         """Register self.model's load_state_dict_pre_hook.

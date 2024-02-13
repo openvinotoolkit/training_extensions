@@ -10,13 +10,15 @@ optimizer:
     weight_decay: 0.05
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 10
-    mode: max
-    factor: 0.5
-    patience: 1
-    monitor: val/accuracy
+  - class_path: otx.core.model.module.base.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 10
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 1
+      monitor: val/accuracy
 
 engine:
   task: MULTI_LABEL_CLS

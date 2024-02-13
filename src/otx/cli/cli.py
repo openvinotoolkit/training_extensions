@@ -156,18 +156,20 @@ class OTXCLI:
             sub_configs=True,
         )
         # Optimizer & Scheduler Settings
-        from lightning.pytorch.cli import LRSchedulerTypeTuple
+        from lightning.pytorch.cli import ReduceLROnPlateau
         from torch.optim import Optimizer
+        from torch.optim.lr_scheduler import LRScheduler
 
         optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
         scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
         parser.add_subclass_arguments(
-            baseclass=(Optimizer,),
+            baseclass=(Optimizer, list[Optimizer]),
             nested_key="optimizer",
             **optim_kwargs,
         )
+        scheduler_type = (LRScheduler, ReduceLROnPlateau, list[LRScheduler | ReduceLROnPlateau])
         parser.add_subclass_arguments(
-            baseclass=LRSchedulerTypeTuple,
+            baseclass=scheduler_type,
             nested_key="scheduler",
             **scheduler_kwargs,
         )
@@ -341,11 +343,17 @@ class OTXCLI:
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
 
-        optimizer_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "optimizer", Namespace()))
-        scheduler_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "scheduler", Namespace()))
         from otx.core.utils.instantiators import partial_instantiate_class
 
-        return model, partial_instantiate_class(optimizer_kwargs), partial_instantiate_class(scheduler_kwargs)
+        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", Namespace())
+        optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
+        optimizers = [partial_instantiate_class(namespace_to_dict(_opt)) for _opt in optimizer_kwargs]
+
+        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", Namespace())
+        scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
+        schedulers = [partial_instantiate_class(namespace_to_dict(_sch)) for _sch in scheduler_kwargs]
+
+        return model, optimizers, schedulers
 
     def get_config_value(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Retrieves the value of a configuration key from the given config object.

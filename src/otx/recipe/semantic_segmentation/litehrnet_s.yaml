@@ -14,13 +14,15 @@ optimizer:
     weight_decay: 0.0
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 100
-    mode: max
-    factor: 0.5
-    patience: 5
-    monitor: val/mIoU
+  - class_path: otx.core.model.module.base.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 100
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 5
+      monitor: val/mIoU
 
 engine:
   task: SEMANTIC_SEGMENTATION

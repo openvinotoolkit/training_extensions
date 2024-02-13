@@ -83,8 +83,8 @@ class Engine:
         work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
-        optimizer: OptimizerCallable | None = None,
-        scheduler: LRSchedulerCallable | None = None,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None = None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
@@ -132,10 +132,10 @@ class Engine:
                 meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: OptimizerCallable | None = (
+        self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
-        self.scheduler: LRSchedulerCallable | None = (
+        self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
@@ -668,8 +668,8 @@ class Engine:
     def _build_lightning_module(
         self,
         model: OTXModel,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
