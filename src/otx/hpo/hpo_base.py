@@ -33,13 +33,12 @@ class HpoBase(ABC):
         search_space (dict[str, dict[str, Any]]): hyper parameter search space to find.
         save_path (str | None, optional): path where result of HPO is saved.
         mode ("max" | "min", optional): One of {min, max}. Determines whether objective is
-                                        minimizing or maximizing the metric attribute.
+                                        minimizing or maximizing the score.
         num_trials (int | None, optional): How many training to conduct for HPO.
         num_workers (int, optional): How many trains are executed in parallel.
         num_full_iterations (int, optional): epoch for traninig after HPO.
         non_pure_train_ratio (float, optional): ratio of validation time to (train time + validation time)
         full_dataset_size (int, optional): train dataset size
-        metric (str, optional): Which score metric to use.
         expected_time_ratio (int | float | None, optional): Time to use for HPO.
                                                             If HPO is configured automatically,
                                                             HPO use time about exepected_time_ratio *
@@ -68,7 +67,6 @@ class HpoBase(ABC):
         num_full_iterations: int | float = 1,
         non_pure_train_ratio: float = 0.2,
         full_dataset_size: int = 0,
-        metric: str = "mAP",
         expected_time_ratio: int | float | None = None,
         maximum_resource: int | float | None = None,
         subset_ratio: float | int | None = None,
@@ -114,7 +112,6 @@ class HpoBase(ABC):
         self.min_subset_size = min_subset_size
         self.resume = resume
         self.hpo_status: dict = {}
-        self.metric = metric
         self.acceptable_additional_time_ratio = acceptable_additional_time_ratio
         if prior_hyper_parameters is None:
             prior_hyper_parameters = []

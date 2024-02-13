@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+from copy import copy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -967,7 +968,9 @@ class HyperBand(HpoBase):
 
         if best_trial is None:
             return None
-        return {"id": best_trial.id, "config": best_trial.configuration}
+        config  = copy(best_trial.configuration)
+        config.pop("iterations")
+        return {"id": best_trial.id, "configuration": config}
 
     def print_result(self) -> None:
         """Print a ASHA result."""

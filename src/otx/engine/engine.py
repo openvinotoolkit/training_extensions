@@ -22,10 +22,9 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.utils.utils import set_using_comma_seperated_key
 
 from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
-from .utils.hpo import execute_hpo
+from .utils.hpo import execute_hpo, update_hyper_parameter
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -225,17 +224,12 @@ class Engine:
                 ```
         """
         if run_hpo:
-            temp = locals()
-            temp_kwargs = temp.pop("kwargs", {})
-            temp.update(temp_kwargs)
-            temp["engine"] = self
-            del temp["self"]
-            del temp["run_hpo"]
-            best_hp = execute_hpo(**temp)
-            for key, val in best_hp.items():
-                set_using_comma_seperated_key(key, val, self)
-
-            breakpoint()
+            best_config, best_trial_weight = execute_hpo(**self._prepare_hpo_args(locals()))
+            if best_config is not None:
+                update_hyper_parameter(self, best_config)
+            if best_trial_weight is not None:
+                self.checkpoint = best_trial_weight
+                resume = True
 
         lit_module = self._build_lightning_module(
             model=self.model,
@@ -271,6 +265,15 @@ class Engine:
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
         return self.trainer.callback_metrics
+
+    @staticmethod
+    def _prepare_hpo_args(all_args: dict[str, Any]) -> dict[str, Any]:
+        all_args.update(all_args.pop("kwargs", {}))
+        all_args["engine"] = all_args["self"]
+        del all_args["self"]
+        del all_args["run_hpo"]
+
+        return all_args
 
     def test(
         self,
