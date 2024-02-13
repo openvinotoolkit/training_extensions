@@ -44,7 +44,6 @@ def test_otx_e2e(
         None
     """
     task = recipe.split("/")[-2]
-    tile_param = fxt_cli_override_command_per_task["tile"] if "tile" in recipe else []
     model_name = recipe.split("/")[-1].split(".")[0]
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
@@ -65,7 +64,6 @@ def test_otx_e2e(
         "--max_epochs",
         "2",
         *fxt_cli_override_command_per_task[task],
-        *tile_param,
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
