@@ -1,31 +1,27 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Components to execute HPO."""
+"""Components to run HPO."""
 
 from __future__ import annotations
 
 import time
-import json
 import logging
 import yaml
 from threading import Thread
 from pathlib import Path
 from functools import partial
 from typing import TYPE_CHECKING, Any, Callable
-from tempfile import TemporaryDirectory
 
 import torch
-from lightning import Callback
-from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 
-from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
-from otx.utils.utils import get_using_comma_seperated_key, set_using_comma_seperated_key, get_decimal_point
-from otx.hpo import run_hpo_loop, HyperBand, TrialStatus
+from otx.utils.utils import get_using_comma_seperated_key, get_decimal_point
+from otx.hpo import run_hpo_loop, HyperBand
+
+from .hpo_trial import run_hpo_trial
+from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
 
 if TYPE_CHECKING:
-    from lightning import Trainer, LightningModule
-
     from otx.engine.engine import Engine
     from otx.hpo.hpo_base import HpoBase
 
@@ -45,7 +41,23 @@ def execute_hpo(
     hpo_cfg_file: str | Path | None = None,
     progress_update_callback: Callable[[int | float], None] | None = None,
     **train_args
-) -> None:
+) -> tuple[dict[str, Any] | None, Path | None]:
+    """Execute HPO.
+
+    Args:
+        engine (Engine): engine instnace.
+        max_epochs (int): max epochs to train.
+        hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
+        hpo_cfg_file (str | Path | None, optional):
+            HPO configuration file. If it isn't given, default setting wil be used.
+        progress_update_callback (Callable[[int | float], None] | None, optional):
+            callback to update progress. Defaults to None.
+
+    Returns:
+        tuple[dict[str, Any] | None, Path | None]:
+            best hyper parameters and model weight trained with best hyper parameters. If it doesn't exist,
+            return None.
+    """
     hpo_workdir = Path(engine.work_dir) / "hpo"
     hpo_workdir.mkdir(exist_ok=True)
     hpo_configurator = HPOConfigurator(
@@ -78,8 +90,8 @@ def execute_hpo(
         best_hpo_weight = None
     else:
         best_config = best_trial["configuration"]
-        if (trial_file := _find_trial_file(hpo_workdir, best_trial["id"])) is not None:
-            best_hpo_weight = _get_best_hpo_weight(_get_hpo_weight_dir(hpo_workdir, best_trial["id"]), trial_file)
+        if (trial_file := find_trial_file(hpo_workdir, best_trial["id"])) is not None:
+            best_hpo_weight = get_best_hpo_weight(get_hpo_weight_dir(hpo_workdir, best_trial["id"]), trial_file)
 
     hpo_algo.print_result()
     _remove_unused_model_weights(hpo_workdir, best_hpo_weight)
@@ -88,11 +100,21 @@ def execute_hpo(
 
 
 class HPOConfigurator:
+    """HPO configurator. Prepare a configuration and provide an HPO algorithm based on the configuration.
+
+    Args:
+        engine (Engine): engine instance.
+        max_epoch (int): max epochs to train.
+        hpo_time_ratio (int): time ratio to use for HPO compared to training time. Defaults to 4.
+        hpo_workdir (Path | None, optional): HPO work directory. Defaults to None.
+        hpo_cfg_file (str | Path | None, optional):
+            HPO configuration file. If it isn't given, default setting wil be used. Defaults to None.
+    """
     def __init__(
         self,
         engine: Engine,
         max_epoch: int,
-        hpo_time_ratio: int,
+        hpo_time_ratio: int = 4,
         hpo_workdir: Path | None = None,
         hpo_cfg_file: str | Path | None = None,
     ):
@@ -105,6 +127,7 @@ class HPOConfigurator:
 
     @property
     def hpo_config(self) -> dict[str, Any]:
+        """Configuration for HPO algorithm."""
         if self._hpo_config is None:
             if self._hpo_cfg_file is None:
                 hpo_config = {}
@@ -194,19 +217,14 @@ class HPOConfigurator:
                 raise ValueError(error_msg)
 
     def get_hpo_algo(self):
+        """Get HPO algorithm based on prepared configuration."""
         if not self.hpo_config["search_space"]:
             logger.warning("There is no hyper parameter to optimize.")
             return None
         return HyperBand(**self.hpo_config)
 
 
-def _update_hpo_progress(progress_update_callback, hpo_algo: HpoBase):
-    """Function for a thread to report a HPO progress regularly.
-
-    Args:
-        hpo_algo (HpoBase): HPO algorithm class
-    """
-
+def _update_hpo_progress(progress_update_callback: Callable[[int | float], None], hpo_algo: HpoBase) -> None:
     while True:
         if hpo_algo.is_done():
             break
@@ -214,165 +232,7 @@ def _update_hpo_progress(progress_update_callback, hpo_algo: HpoBase):
         time.sleep(1)
 
 
-def run_hpo_trial(
-    hp_config: dict[str, Any],
-    report_func: Callable,
-    hpo_workdir: Path,
-    engine: Engine,
-    callbacks: list[Callback] | Callback | None = None,
-    **train_args,
-) -> None:
-    trial_id = hp_config["id"]
-    hpo_weight_dir = _get_hpo_weight_dir(hpo_workdir, trial_id)
-
-    _set_trial_hyper_parameter(hp_config["configuration"], engine, train_args)
-
-    if (checkpoint := _find_last_weight(hpo_weight_dir)) is not None:
-        engine.checkpoint = checkpoint
-        train_args["resume"] = True
-
-    callbacks = _register_hpo_callback(report_func, callbacks)
-    _set_to_validate_every_epoch(callbacks, train_args)
-
-    with TemporaryDirectory(prefix="OTX-HPO-") as temp_dir:
-        _change_work_dir(callbacks, engine, temp_dir)
-        engine.train(callbacks=callbacks, **train_args)
-
-        _keep_best_and_last_weight(Path(temp_dir), hpo_workdir, trial_id)
-
-    report_func(0, 0, done=True)
-
-
-def _get_hpo_weight_dir(hpo_workdir: Path, trial_id: str) -> Path:
-    hpo_weight_dir: Path = hpo_workdir / "weight" / trial_id
-    if not hpo_weight_dir.exists():
-        hpo_weight_dir.mkdir(parents=True)
-    return hpo_weight_dir
-
-
-def _set_trial_hyper_parameter(hyper_parameter: dict[str, Any], engine: Engine, train_args: dict[str, Any]) -> None:
-    train_args["max_epochs"] = round(hyper_parameter.pop("iterations"))
-    update_hyper_parameter(engine, hyper_parameter)
-
-
-def _find_last_weight(weight_dir: Path) -> Path | None:
-    return _find_file_recursively(weight_dir, "last.ckpt")
-
-    
-def _find_file_recursively(directory: Path, file_name: str) -> Path | None:
-    if found_file := list(directory.rglob(file_name)):
-        return found_file[0]
-    return None
-
-
-def _register_hpo_callback(report_func: Callable, callbacks: list[Callback] | Callback | None) -> list[Callback]:
-    if isinstance(callbacks, Callback):
-        callbacks = [callbacks]
-    elif callbacks is None:
-        callbacks = []
-    callbacks.append(HPOCallback(report_func, get_metric(callbacks)))
-    return callbacks
-
-
-class HPOCallback(Callback):
-    """Timer for logging iteration time for train, val, and test phases."""
-
-    def __init__(self, report_func: Callable[[float | int, float | int], TrialStatus], metric: str):
-        super().__init__()
-        self._report_func = report_func
-        self.metric = metric
-
-    def on_train_epoch_end(self, trainer: Trainer, pl_module_: LightningModule) -> None:
-        epoch = trainer.current_epoch + 1
-        score = trainer.callback_metrics.get(self.metric)
-        if (score := trainer.callback_metrics.get(self.metric)) is not None:
-            if self._report_func(score=score.item(), progress=epoch) == TrialStatus.STOP:
-                trainer.should_stop = True
-
-
-def _set_to_validate_every_epoch(callbacks: list[Callback], train_args: dict[str, Any]) -> None:
-    for callback in callbacks:
-        if isinstance(callback, AdaptiveTrainScheduling):
-            callback.max_interval = 1
-            break
-    else:        
-        train_args["check_val_every_n_epoch"] = 1
-
-
-def _change_work_dir(callbacks: list[Callback], engine: Engine, work_dir: str) -> None:
-    for callback in callbacks:
-        if isinstance(callback, ModelCheckpoint):
-            callback.dirpath = work_dir
-            break
-    engine.work_dir = work_dir
-
-
-def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id: str):
-    last_weight = _find_last_weight(trial_work_dir)
-    if (trial_file := _find_trial_file(hpo_workdir, trial_id)) is not None:
-        best_weight = _get_best_hpo_weight(trial_work_dir, trial_file)
-    else:
-        best_weight = None
-
-    for ckpt_file in [best_weight, last_weight]:
-        if ckpt_file is not None:
-            ckpt_file.replace(hpo_workdir / "weight" / trial_id / ckpt_file.name)
-
-
-def _find_trial_file(hpo_dir: Path, trial_id: str) -> Path | None:
-    return _find_file_recursively(hpo_dir, f"{trial_id}.json")
-
-
-def _get_best_hpo_weight(weight_dir: Path, trial_file: Path) -> Path | None:
-    """Get best model weight path of the HPO trial.
-
-    Args:
-        weight_dir (Path): directory where model weeights are saved.
-        trial_file (Path): json format trial file which stores trial record.
-
-    Returns:
-        Optional[str]: best HPO model weight
-    """
-    if not trial_file.exists():
-        return None
-
-    with trial_file.open("r") as f:
-        trial_output = json.load(f)
-
-    best_epochs = []
-    best_score = None
-    for eph, score in trial_output["score"].items():
-        eph = str(int(eph) - 1)  # lightning uses index starting from 0
-        if best_score is None:
-            best_score = score
-            best_epochs.append(eph)
-        elif best_score < score:
-            best_score = score
-            best_epochs = [eph]
-        elif best_score == score:
-            best_epochs.append(eph)
-
-    for best_epoch in best_epochs:
-        if (best_weight_path := _find_file_recursively(weight_dir, f"epoch_*{best_epoch}.ckpt")) is not None:
-            return best_weight_path
-
-    return None
-
-
 def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None):
     for weight in hpo_workdir.rglob("*.ckpt"):
         if weight != best_hpo_weight:
             weight.unlink()
-
-
-def get_metric(callbacks: list[Callback]) -> str:
-    for callback in callbacks:
-        if isinstance(callback, ModelCheckpoint):
-            return callback.monitor
-    error_msg = "Failed to find a metric. There is no ModelCheckpoint in callback list."
-    raise RuntimeError(error_msg)
-
-
-def update_hyper_parameter(engine: Engine, hyper_parameter: dict[str, Any]) -> None:
-    for key, val in hyper_parameter.items():
-        set_using_comma_seperated_key(key, val, engine)
