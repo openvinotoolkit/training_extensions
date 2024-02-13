@@ -172,7 +172,7 @@ def create_converter(
     elif converter_type == Domain.SEGMENTATION:
         converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
-        if configuration.get("hierarchical", False):
+        if configuration is not None and configuration.get("hierarchical", False):
             hierarchical_info = configuration["multihead_class_info"]
         else:
             hierarchical_info = None

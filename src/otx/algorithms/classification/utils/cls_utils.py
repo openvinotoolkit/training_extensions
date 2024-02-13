@@ -105,9 +105,13 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     mapi_config[("model_info", "hierarchical")] = str(inference_config["hierarchical"])
     mapi_config[("model_info", "output_raw_scores")] = str(True)
 
+    label_entities = label_schema.get_labels(include_empty=False)
+    if inference_config["hierarchical"]:
+        label_entities = get_hierarchical_label_list(inference_config["multihead_class_info"], label_entities)
+
     all_labels = ""
     all_label_ids = ""
-    for lbl in label_schema.get_labels(include_empty=False):
+    for lbl in label_entities:
         all_labels += lbl.name.replace(" ", "_") + " "
         all_label_ids += f"{lbl.id_} "
 
