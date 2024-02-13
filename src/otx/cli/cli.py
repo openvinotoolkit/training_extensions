@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import dataclasses
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
@@ -339,16 +338,6 @@ class OTXCLI:
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
-        # Update tile config due to adaptive tiling
-        if self.datamodule.config.tile_config.enable_tiler:
-            if not hasattr(model, "tile_config"):
-                msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
-                raise AttributeError(msg)
-            model.tile_config = self.datamodule.config.tile_config
-            self.config[self.subcommand].data.config.tile_config.update(
-                Namespace(dataclasses.asdict(model.tile_config)),
-            )
-
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
 
@@ -445,7 +434,3 @@ class OTXCLI:
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
-
-
-if __name__ == "__main__":
-    OTXCLI()
