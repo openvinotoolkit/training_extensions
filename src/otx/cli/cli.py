@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 from warnings import warn
 
 import yaml
@@ -163,13 +163,12 @@ class OTXCLI:
         optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
         scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
         parser.add_subclass_arguments(
-            baseclass=(Optimizer, list[Optimizer]),
+            baseclass=(Optimizer, list),
             nested_key="optimizer",
             **optim_kwargs,
         )
-        scheduler_type = (LRScheduler, ReduceLROnPlateau, list[Union[LRScheduler, ReduceLROnPlateau]])
         parser.add_subclass_arguments(
-            baseclass=scheduler_type,
+            baseclass=(LRScheduler, ReduceLROnPlateau, list),
             nested_key="scheduler",
             **scheduler_kwargs,
         )
@@ -345,13 +344,13 @@ class OTXCLI:
 
         from otx.core.utils.instantiators import partial_instantiate_class
 
-        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", Namespace())
+        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
         optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
-        optimizers = partial_instantiate_class([namespace_to_dict(_opt) for _opt in optimizer_kwargs if _opt])
+        optimizers = partial_instantiate_class([_opt for _opt in optimizer_kwargs if _opt])
 
-        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", Namespace())
+        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
         scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
-        schedulers = partial_instantiate_class([namespace_to_dict(_sch) for _sch in scheduler_kwargs if _sch])
+        schedulers = partial_instantiate_class([_sch for _sch in scheduler_kwargs if _sch])
 
         return model, optimizers, schedulers
 
@@ -365,8 +364,10 @@ class OTXCLI:
 
         Returns:
             Any: The value of the configuration key, or the default value if the key is not found.
+                if the value is a Namespace, it is converted to a dictionary.
         """
-        return config.get(str(self.subcommand), config).get(key, default)
+        result = config.get(str(self.subcommand), config).get(key, default)
+        return namespace_to_dict(result) if isinstance(result, Namespace) else result
 
     def get_subcommand_parser(self, subcommand: str | None) -> ArgumentParser:
         """Returns the argument parser for the specified subcommand.
