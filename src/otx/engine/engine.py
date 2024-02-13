@@ -15,7 +15,7 @@ from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
 from otx.core.types.export import OTXExportFormatType
@@ -238,7 +238,6 @@ class Engine:
             **fit_kwargs,
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
         return self.trainer.callback_metrics
 
     def test(
@@ -276,19 +275,25 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        model = self.model
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
+        if is_ir_ckpt and not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
-        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
-        if checkpoint is not None:
+        if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
 
@@ -580,6 +585,7 @@ class Engine:
 
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
+        engine_config["data_root"] = data_root
         return cls(
             datamodule=datamodule,
             model=model,
