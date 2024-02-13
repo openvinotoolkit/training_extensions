@@ -6,20 +6,20 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING, Any, Callable
 
 from lightning import Callback
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 
 from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
-from otx.utils.utils import set_using_comma_seperated_key
 from otx.hpo import TrialStatus
+from otx.utils.utils import set_using_comma_seperated_key
 
-from .utils import find_trial_file, find_file_recursively, get_best_hpo_weight, get_hpo_weight_dir
+from .utils import find_file_recursively, find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
 
 if TYPE_CHECKING:
-    from lightning import Trainer, LightningModule
+    from lightning import LightningModule, Trainer
 
     from otx.engine.engine import Engine
 
@@ -32,6 +32,7 @@ def update_hyper_parameter(engine: Engine, hyper_parameter: dict[str, Any]) -> N
 
 class HPOCallback(Callback):
     """HPO callback class. It reports a score to HPO algo every epoch."""
+
     def __init__(self, report_func: Callable[[float | int, float | int], TrialStatus], metric: str):
         super().__init__()
         self._report_func = report_func
@@ -115,7 +116,7 @@ def _set_to_validate_every_epoch(callbacks: list[Callback], train_args: dict[str
         if isinstance(callback, AdaptiveTrainScheduling):
             callback.max_interval = 1
             break
-    else:        
+    else:
         train_args["check_val_every_n_epoch"] = 1
 
 
@@ -125,6 +126,7 @@ def _change_work_dir(callbacks: list[Callback], engine: Engine, work_dir: str) -
             callback.dirpath = work_dir
             break
     engine.work_dir = work_dir
+
 
 def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id: str):
     last_weight = _find_last_weight(trial_work_dir)

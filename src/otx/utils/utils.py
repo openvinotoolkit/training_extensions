@@ -3,17 +3,18 @@
 
 """OTX utility functions."""
 
-import signal
 import os
-from decimal import Decimal
+import signal
 from dataclasses import dataclass
-from typing import Callable, Any
+from decimal import Decimal
+from typing import Any, Callable
 
 
 @dataclass
 class SigHandler:
     handler: Callable
     pid: int
+
 
 _SIGNAL_HANDLERS: dict[signal.Signals, list] = {}
 

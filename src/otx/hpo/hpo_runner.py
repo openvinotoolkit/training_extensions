@@ -11,7 +11,6 @@ import os
 import queue
 import signal
 import time
-import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
@@ -125,7 +124,11 @@ class HpoLoop:
                 self._train_func,
                 trial.get_train_configuration(),
                 partial(
-                    _report_score, recv_queue=trial_queue, send_queue=self._report_queue, uid=uid, trial_id=trial.id
+                    _report_score,
+                    recv_queue=trial_queue,
+                    send_queue=self._report_queue,
+                    uid=uid,
+                    trial_id=trial.id,
                 ),
             ),
         )
@@ -209,17 +212,19 @@ def _report_score(
     done: bool = False,
 ) -> TrialStatus:
     logger.debug(
-        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, pid : {os.getpid()}, done : {done}"
+        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, pid : {os.getpid()}, done : {done}",
     )
     try:
-        send_queue.put_nowait({
-            "score": score,
-            "progress": progress,
-            "uid": uid,
-            "trial_id" : trial_id,
-            "pid": os.getpid(),
-            "done": done
-        })
+        send_queue.put_nowait(
+            {
+                "score": score,
+                "progress": progress,
+                "uid": uid,
+                "trial_id": trial_id,
+                "pid": os.getpid(),
+                "done": done,
+            }
+        )
     except ValueError:
         return TrialStatus.STOP
 

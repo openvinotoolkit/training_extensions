@@ -5,18 +5,18 @@
 
 from __future__ import annotations
 
-import time
 import logging
-import yaml
-from threading import Thread
-from pathlib import Path
+import time
 from functools import partial
+from pathlib import Path
+from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
+import yaml
 
-from otx.utils.utils import get_using_comma_seperated_key, get_decimal_point
-from otx.hpo import run_hpo_loop, HyperBand
+from otx.hpo import HyperBand, run_hpo_loop
+from otx.utils.utils import get_decimal_point, get_using_comma_seperated_key
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
@@ -28,9 +28,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 AVAILABLE_HP_NAME_MAP = {
-    "data.config.train_subset.batch_size" : "datamodule.config.train_subset.batch_size",
-    "optimizer" : "optimizer.keywords",
-    "scheduler" : "scheduler.keywords",
+    "data.config.train_subset.batch_size": "datamodule.config.train_subset.batch_size",
+    "optimizer": "optimizer.keywords",
+    "scheduler": "scheduler.keywords",
 }
 
 
@@ -40,7 +40,7 @@ def execute_hpo(
     hpo_time_ratio: int = 4,
     hpo_cfg_file: str | Path | None = None,
     progress_update_callback: Callable[[int | float], None] | None = None,
-    **train_args
+    **train_args,
 ) -> tuple[dict[str, Any] | None, Path | None]:
     """Execute HPO.
 
@@ -65,7 +65,7 @@ def execute_hpo(
         max_epochs,
         hpo_time_ratio,
         hpo_workdir,
-        hpo_cfg_file
+        hpo_cfg_file,
     )
     hpo_algo = hpo_configurator.get_hpo_algo()
 
@@ -110,6 +110,7 @@ class HPOConfigurator:
         hpo_cfg_file (str | Path | None, optional):
             HPO configuration file. If it isn't given, default setting wil be used. Defaults to None.
     """
+
     def __init__(
         self,
         engine: Engine,
@@ -138,8 +139,8 @@ class HPOConfigurator:
                 with self._hpo_cfg_file.open("r") as f:
                     hpo_config = yaml.safe_load(f)
 
-            train_dataset_size = len(self._engine.datamodule.subsets['train'])
-            val_dataset_size = len(self._engine.datamodule.subsets['val'])
+            train_dataset_size = len(self._engine.datamodule.subsets["train"])
+            val_dataset_size = len(self._engine.datamodule.subsets["val"])
 
             hpo_config["save_path"] = str(self._hpo_workdir)
             hpo_config["num_full_iterations"] = self._max_epoch
@@ -147,7 +148,7 @@ class HPOConfigurator:
             hpo_config["non_pure_train_ratio"] = val_dataset_size / (train_dataset_size + val_dataset_size)
             hpo_config["expected_time_ratio"] = self._hpo_time_ratio
             hpo_config["asynchronous_bracket"] = True
-            hpo_config["asynchronous_sha"] = torch.cuda.device_count() != 1,
+            hpo_config["asynchronous_sha"] = (torch.cuda.device_count() != 1,)
 
             if "search_space" not in hpo_config:  # optimize lr and bs as default
                 hpo_config["search_space"] = self._get_default_search_space(train_dataset_size)
@@ -157,7 +158,7 @@ class HPOConfigurator:
 
             if "prior_hyper_parameters" not in hpo_config:  # default hp is tried at first
                 hpo_config["prior_hyper_parameters"] = {
-                    hp : get_using_comma_seperated_key(hp, self._engine) for hp in hpo_config["search_space"].keys()
+                    hp: get_using_comma_seperated_key(hp, self._engine) for hp in hpo_config["search_space"].keys()
                 }
 
             self._hpo_config = hpo_config
@@ -171,15 +172,15 @@ class HPOConfigurator:
         cur_lr = self._engine.optimizer.keywords["lr"]
         min_lr = cur_lr / 10
         search_space["optimizer.keywords.lr"] = {
-            "type" : "qloguniform",
+            "type": "qloguniform",
             "min": min_lr,
             "max": min(cur_lr * 10, 0.1),
-            "step": 10 ** -get_decimal_point(min_lr)
+            "step": 10 ** -get_decimal_point(min_lr),
         }
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
-            "type" : "qloguniform",
+            "type": "qloguniform",
             "min": cur_bs // 2,
             "max": min(cur_bs * 2, train_dataset_size),
             "step": 2,

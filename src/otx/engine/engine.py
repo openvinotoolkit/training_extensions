@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import torch
-from lightning import Trainer, seed_everything, Callback
+from lightning import Callback, Trainer, seed_everything
 
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
@@ -23,12 +23,11 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .utils.auto_configurator import AutoConfigurator, PathLike
 from .utils.hpo import execute_hpo, update_hyper_parameter
 
 if TYPE_CHECKING:
     from lightning import Callback
-
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS

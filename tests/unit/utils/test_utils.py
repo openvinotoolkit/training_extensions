@@ -1,10 +1,9 @@
 import signal
-import os
 from contextlib import contextmanager
 from copy import copy
 
 from otx.utils import utils as target_file
-from otx.utils.utils import append_signal_handler, append_main_proc_signal_handler
+from otx.utils.utils import append_main_proc_signal_handler, append_signal_handler
 
 
 @contextmanager
