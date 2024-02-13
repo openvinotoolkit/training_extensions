@@ -194,6 +194,9 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+    if "tile" in recipe:
+        pytest.skip("Explain is not supported for tiling yet.")
+
     import cv2
     import numpy as np
 
