@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
 import torch
 
 from otx.core.data.dataset.classification import HLabelMetaInfo
@@ -559,7 +560,7 @@ class OVHlabelClassificationModel(
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
         model_api_configuration = model_api_configuration if model_api_configuration else {}
-        model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
+        model_api_configuration.update({"hierarchical": True, "output_raw_scores": True})
         super().__init__(
             num_classes,
             model_name,
@@ -574,7 +575,7 @@ class OVHlabelClassificationModel(
         """Set hierarchical information in model head.
 
         Since OV IR model consist of all required hierarchy information,
-        this method serves as placehloder
+        this method serves as placeholder
         """
         if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
             msg = "OpenVINO IR model should have hierarchical config embedded in rt_info of the model"
@@ -585,15 +586,40 @@ class OVHlabelClassificationModel(
         outputs: list[ClassificationResult],
         inputs: HlabelClsBatchDataEntity,
     ) -> HlabelClsBatchPredEntity:
-        pred_labels = [torch.tensor([label[0] for label in out.top_labels], dtype=torch.long) for out in outputs]
-        pred_scores = [torch.tensor([label[2] for label in out.top_labels]) for out in outputs]
+        all_pred_labels = []
+        all_pred_scores = []
+        for output in outputs:
+            logits = output.raw_scores
+            predicted_labels = []
+            predicted_scores = []
+            cls_heads_info = self.model.hierarchical_info["cls_heads_info"]
+            for i in range(cls_heads_info["num_multiclass_heads"]):
+                logits_begin, logits_end = cls_heads_info["head_idx_to_logits_range"][str(i)]
+                head_logits = logits[logits_begin:logits_end]
+                j = np.argmax(head_logits)
+                predicted_labels.append(j)
+                predicted_scores.append(head_logits[j])
+
+            if cls_heads_info["num_multilabel_classes"]:
+                logits_begin = cls_heads_info["num_single_label_classes"]
+                head_logits = logits[logits_begin:]
+
+                for i in range(head_logits.shape[0]):
+                    predicted_scores.append(head_logits[i])
+                    if head_logits[i] > self.model.confidence_threshold:
+                        predicted_labels.append(1)
+                    else:
+                        predicted_labels.append(0)
+
+            all_pred_labels.append(torch.tensor(predicted_labels, dtype=torch.long))
+            all_pred_scores.append(torch.tensor(predicted_scores))
 
         return HlabelClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=pred_scores,
-            labels=pred_labels,
+            scores=all_pred_scores,
+            labels=all_pred_labels,
         )
 
 
