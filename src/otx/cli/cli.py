@@ -14,7 +14,6 @@ from warnings import warn
 import yaml
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
 from rich.console import Console
-from torchmetrics import Metric
 
 from otx import OTX_LOGO, __version__
 from otx.cli.utils.help_formatter import CustomHelpFormatter
@@ -327,6 +326,7 @@ class OTXCLI:
         Args:
             metric_config (Namespace): The metric configuration.
         """
+        from torchmetrics import Metric
         # Parses the Metric separately to update num_classes.
         metric_parser = ArgumentParser()
 
