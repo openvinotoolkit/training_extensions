@@ -26,13 +26,7 @@ scheduler:
     patience: 10
     monitor: train/loss
 
-val_metric:
-  class_path: torchmetrics.classification.accuracy.Accuracy
-  init_args:
-    task: multiclass
-    num_classes: 1000
-
-test_metric:
+metric:
   class_path: torchmetrics.classification.accuracy.Accuracy
   init_args:
     task: multiclass
@@ -47,6 +41,11 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
   data:
     config:
       train_subset:

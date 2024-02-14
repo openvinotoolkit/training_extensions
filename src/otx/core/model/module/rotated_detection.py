@@ -26,16 +26,14 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
         self,
         otx_model: OTXRotatedDetModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric | None = None,
-        test_metric: Metric | None = None
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric = OTXMaskRLEMeanAveragePrecision
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
-            val_metric=val_metric,
-            test_metric=test_metric
+            metric=metric,
         )

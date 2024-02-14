@@ -37,10 +37,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         self,
         otx_model: OTXVisualPromptingModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric | None = None,
-        test_metric: Metric | None = None # TODO(sungmanc), will consider the dict metric config. # noqa : TD003
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric = MeanMetric #TODO (sungmanc) :dictionary metric will be supported # noqa: TD003
     ):
         super().__init__(
             otx_model=otx_model,

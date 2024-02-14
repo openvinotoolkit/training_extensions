@@ -18,13 +18,7 @@ scheduler:
     patience: 10
     monitor: train/loss
 
-val_metric:
-  class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
-  init_args:
-    box_format: xyxy
-    iou_type: bbox
-
-test_metric:
+metric:
   class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
   init_args:
     box_format: xyxy

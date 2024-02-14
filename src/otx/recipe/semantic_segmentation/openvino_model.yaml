@@ -16,20 +16,6 @@ optimizer:
 scheduler:
   class_path: torch.optim.lr_scheduler.PolynomialLR
 
-val_metric:
-  class_path: torchmetrics.classification.jaccard.JaccardIndex
-  init_args:
-    task: multiclass
-    num_classes: 19
-    ignore_index: 255
-
-test_metric:
-  class_path: torchmetrics.classification.jaccard.JaccardIndex
-  init_args:
-    task: multiclass
-    num_classes: 19
-    ignore_index: 255
-
 engine:
   task: SEMANTIC_SEGMENTATION
   device: cpu

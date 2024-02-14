@@ -9,22 +9,14 @@ optimizer:
     lr: 0.0049
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
   init_args:
-    warmup_steps: 0
     mode: max
     factor: 0.5
     patience: 1
     monitor: val/accuracy
 
-val_metric:
-  class_path: torchmetrics.classification.accuracy.MultilabelAccuracy
-  init_args:
-    num_labels: 1000
-    threshold: 0.5
-    average: micro
-
-test_metric:
+metric:
   class_path: torchmetrics.classification.accuracy.MultilabelAccuracy
   init_args:
     num_labels: 1000
@@ -39,6 +31,11 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
   data:
     task: MULTI_LABEL_CLS
     config:

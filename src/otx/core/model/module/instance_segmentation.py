@@ -33,11 +33,9 @@ class OTXInstanceSegLitModule(OTXLitModule):
         self,
         otx_model: ExplainableOTXInstanceSegModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric | None = None,
-        test_metric: Metric | None = None
-        
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric = OTXMaskRLEMeanAveragePrecision
     ):
         super().__init__(
             otx_model=otx_model,
@@ -45,26 +43,25 @@ class OTXInstanceSegLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        self.val_metric = val_metric
-        self.test_metric = test_metric
+        self.metric = metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
+        self.metric.reset()
 
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
+        self.metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-        self.val_metric.reset()
+        self._log_metrics(self.metric, "val")
+        self.metric.reset()
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
-        self.test_metric.reset()
+        self._log_metrics(self.metric, "test")
+        self.metric.reset()
 
     def _log_metrics(self, meter: OTXMaskRLEMeanAveragePrecision, subset_name: str) -> None:
         results = meter.compute()
@@ -105,7 +102,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         if not isinstance(preds, InstanceSegBatchPredEntity):
             raise TypeError(preds)
 
-        self.val_metric.update(
+        self.metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 
@@ -179,7 +176,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         if not isinstance(preds, InstanceSegBatchPredEntity):
             raise TypeError(preds)
 
-        self.test_metric.update(
+        self.metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 

@@ -32,6 +32,7 @@ class TestAdaptiveTrainScheduling:
 
         mock_lr_scheduler_config = MagicMock(spec=LRSchedulerConfig)
         mock_lr_scheduler_config.frequency = 1
+        mock_lr_scheduler_config.interval = "epoch"
         mock_trainer.lr_scheduler_configs = [mock_lr_scheduler_config]
 
         with caplog.at_level(log.WARNING):

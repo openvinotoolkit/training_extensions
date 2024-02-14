@@ -12,22 +12,17 @@ optimizer:
     weight_decay: 0.05
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 10
-    mode: max
-    factor: 0.5
-    patience: 1
-    monitor: val/accuracy
+  - class_path: otx.core.model.module.base.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 10
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 1
+      monitor: val/accuracy
 
-val_metric:
-  class_path: otx.algo.classification.metrics.hlabel_accuracy.HLabelAccuracy
-  init_args:
-    num_multiclass_heads: 0
-    num_multilabel_classes: 0
-    head_idx_to_logits_range: null
-
-test_metric:
+metric:
   class_path: otx.algo.classification.metrics.hlabel_accuracy.HLabelAccuracy
   init_args:
     num_multiclass_heads: 0
@@ -42,6 +37,11 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
   data:
     task: H_LABEL_CLS
     config:

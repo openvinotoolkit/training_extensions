@@ -30,10 +30,9 @@ class OTXSegmentationLitModule(OTXLitModule):
         self,
         otx_model: OTXSegmentationModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        val_metric: Metric | None = None,
-        test_metric: Metric | None = None
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric = Dice
     ):
         super().__init__(
             otx_model=otx_model,
@@ -47,30 +46,23 @@ class OTXSegmentationLitModule(OTXLitModule):
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
 
-        metric_params = {
-            # a hack to use ignore_index in Dice metric
-            "num_classes": num_classes + 1,
-            "ignore_index": num_classes,
-        }
-
-        self.val_metric = Dice(**metric_params)
-        self.test_metric = Dice(**metric_params)
+        self.metric = metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
+        self.metric.reset()
 
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
+        self.metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
+        self._log_metrics(self.metric, "val")
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
+        self._log_metrics(self.metric, "test")
 
     def _log_metrics(self, meter: Dice, key: str) -> None:
         results = meter.compute()
@@ -105,7 +97,7 @@ class OTXSegmentationLitModule(OTXLitModule):
 
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
         for prediction in predictions:
-            self.val_metric.update(**prediction)
+            self.metric.update(**prediction)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -132,7 +124,7 @@ class OTXSegmentationLitModule(OTXLitModule):
             raise TypeError(preds)
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
         for prediction in predictions:
-            self.test_metric.update(**prediction)
+            self.metric.update(**prediction)
 
     @property
     def lr_scheduler_monitor_key(self) -> str:

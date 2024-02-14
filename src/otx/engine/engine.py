@@ -84,8 +84,8 @@ class Engine:
         work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
-        optimizer: OptimizerCallable | None = None,
-        scheduler: LRSchedulerCallable | None = None,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None = None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
@@ -98,9 +98,10 @@ class Engine:
             work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
-            optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
-            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None, optional): The optimizer for the engine.
                 Defaults to None.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None, optional):
+                The learning rate scheduler for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
@@ -133,10 +134,10 @@ class Engine:
                 meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: OptimizerCallable | None = (
+        self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
-        self.scheduler: LRSchedulerCallable | None = (
+        self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
@@ -156,7 +157,7 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
-        val_metric: Metric | None = None,
+        metric: Metric | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -211,7 +212,7 @@ class Engine:
             model=self.model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
-            val_metric=val_metric,
+            metric=metric,
         )
         lit_module.meta_info = self.datamodule.meta_info
 
@@ -247,7 +248,7 @@ class Engine:
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
-        test_metric: Metric | None = None,
+        metric: Metric | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -292,7 +293,7 @@ class Engine:
             model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
-            test_metric=test_metric
+            metric=metric
         )
         lit_module.meta_info = datamodule.meta_info
 
@@ -672,19 +673,16 @@ class Engine:
     def _build_lightning_module(
         self,
         model: OTXModel,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
-        val_metric: Metric | None = None,
-        test_metric: Metric | None = None
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
+        metric: Metric | None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
         Args:
             model (OTXModel): The OTXModel instance.
-            optimizer (OptimizerCallable): The optimizer callable.
-            scheduler (LRSchedulerCallable): The learning rate scheduler callable.
-            val_metric (Metric | None): The validation metric, it could be None when export, predict..
-            test_metric (Metric | None): The test metric, it could be None when export, predict..
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
 
         Returns:
             OTXLitModule: The built LightningModule instance.
@@ -697,6 +695,5 @@ class Engine:
             optimizer=optimizer,
             scheduler=scheduler,
             torch_compile=False,
-            val_metric=val_metric,
-            test_metric=test_metric
+            metric=metric,
         )

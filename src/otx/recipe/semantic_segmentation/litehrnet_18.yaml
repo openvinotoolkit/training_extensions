@@ -14,27 +14,21 @@ optimizer:
     weight_decay: 0.0
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 100
-    mode: max
-    factor: 0.5
-    patience: 5
-    monitor: val/Dice
+  - class_path: otx.core.model.module.base.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 100
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 5
+      monitor: val/Dice
 
-val_metric:
-  class_path: torchmetrics.classification.jaccard.JaccardIndex
+metric:
+  class_path: torchmetrics.Dice
   init_args:
-    task: multiclass
-    num_classes: 2
-    ignore_index: 255
-
-test_metric:
-  class_path: torchmetrics.classification.jaccard.JaccardIndex
-  init_args:
-    task: multiclass
-    num_classes: 2
-    ignore_index: 255
+    num_classes: 3
+    ignore_index: 2
 
 engine:
   task: SEMANTIC_SEGMENTATION
@@ -43,3 +37,6 @@ engine:
 callback_monitor: val/Dice
 
 data: ../_base_/data/mmseg_base.yaml
+
+overrides:
+  max_epochs: 300
