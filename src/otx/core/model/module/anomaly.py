@@ -150,8 +150,8 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         self,
         otx_model: OTXAnomalyModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
+        optimizer: list[OptimizerCallable] | OptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable,
         task_type: TaskType,
     ):
         super().__init__(otx_model=otx_model, torch_compile=torch_compile, optimizer=optimizer, scheduler=scheduler)
@@ -319,8 +319,14 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         """
         # [TODO](ashwinvaidya17): Revisit this method
         if self.anomaly_lightning_model.configure_optimizers() and self.optimizer and self.model.trainable_model:
+            optimizer = self.optimizer
+            if isinstance(optimizer, list):
+                if len(optimizer) > 1:
+                    msg = "Only one optimizer should be passed"
+                    raise ValueError(msg)
+                optimizer = optimizer[0]
             params = getattr(self.anomaly_lightning_model.model, self.model.trainable_model).parameters()
-            return self.optimizer(params=params)
+            return optimizer(params=params)
         # The provided model does not require optimization
         return None
 
