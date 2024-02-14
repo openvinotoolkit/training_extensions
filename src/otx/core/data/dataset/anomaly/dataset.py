@@ -54,7 +54,10 @@ class AnomalyDataset(OTXDataset):
             stack_images,
         )
 
-    def _get_item_impl(self, index: int) -> AnomalyClassificationDataItem | AnomalySegmentationDataBatch:
+    def _get_item_impl(
+        self,
+        index: int,
+    ) -> AnomalyClassificationDataItem | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch:
         datumaro_item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = datumaro_item.media_as(Image)
         # returns image in RGB format if self.image_color_channel is RGB
@@ -128,9 +131,10 @@ class AnomalyDataset(OTXDataset):
         else:
             msg = f"Task {self.task_type} is not supported yet."
             raise NotImplementedError(msg)
+
         # without ignore the following error is returned
         # Incompatible return value type (got "Any | None", expected
-        # "AnomalyClassificationDataItem | AnomalySegmentationDataBatch")
+        # "AnomalyClassificationDataItem | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch")
         return self._apply_transforms(item)  # type: ignore[return-value]
 
     @property

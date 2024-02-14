@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractproperty
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -135,7 +134,7 @@ class _AnomalyModelExporter(OTXModelExporter):
         return Path(save_path)
 
 
-class OTXAnomalyModel(OTXModel, ABC):
+class OTXAnomalyModel(OTXModel):
     """Base Anomaly OTX Model."""
 
     def __init__(self) -> None:
@@ -197,7 +196,7 @@ class OTXAnomalyModel(OTXModel, ABC):
         else:
             self._label_info = value
 
-    @abstractproperty
+    @property
     def trainable_model(self) -> str | None:
         """Use this to return the name of the model that needs to be trained.
 

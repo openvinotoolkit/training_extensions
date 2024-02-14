@@ -40,6 +40,14 @@ if TYPE_CHECKING:
 
 
 class _RouteCallback(Callback):
+    """Routes the calls with Anomalib's lightning model as the parameter instead of OTXLightning model.
+
+    The callbacks necessary to train the Anomalib model are initialized by the Anomalib's Engine. To ensure
+    that the OTXLightning model is trained correctly, the ``configure_optimizer`` of AnomalyOTXLightning model returns
+    the necessary callback. Since these callbacks are attached to the OTX Trainer, they are called with OTXLightning
+    model as the parameter. This class overrides the parameter with Anomalib's lightning model.
+    """
+
     def __init__(self, callbacks: Sequence[Callback]):
         self.callbacks = callbacks
 
