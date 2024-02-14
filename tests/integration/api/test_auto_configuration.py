@@ -11,22 +11,27 @@ from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 
-@pytest.mark.parametrize("task", [task.value.lower() for task in DEFAULT_CONFIG_PER_TASK])
-def test_auto_configuration(task: str, tmp_path: Path, fxt_accelerator: str, fxt_target_dataset_per_task: dict) -> None:
+def test_auto_configuration(
+    task: OTXTaskType,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+) -> None:
     """Test the auto configuration functionality.
 
     Args:
-        task (str): The task for which auto configuration is being tested.
+        task (OTXTaskType): The task for which auto configuration is being tested.
         tmp_path (Path): The temporary path for storing training data.
         fxt_accelerator (str): The accelerator used for training.
         fxt_target_dataset_per_task (dict): A dictionary mapping tasks to target datasets.
     """
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
     tmp_path_train = tmp_path / f"auto_train_{task}"
-    data_root = fxt_target_dataset_per_task[task]
-    task_type = OTXTaskType(task.upper())
+    data_root = fxt_target_dataset_per_task[task.lower()]
     engine = Engine(
         data_root=data_root,
-        task=task_type,
+        task=task,
         work_dir=tmp_path_train,
         device=fxt_accelerator,
     )
@@ -36,12 +41,12 @@ def test_auto_configuration(task: str, tmp_path: Path, fxt_accelerator: str, fxt
     assert isinstance(engine.datamodule, OTXDataModule)
 
     # Check Auto-Configurator task
-    assert engine._auto_configurator.task == task_type
+    assert engine._auto_configurator.task == task
 
     # Check Default Configuration
     from otx.cli.utils.jsonargparse import get_configuration
 
-    default_config = get_configuration(DEFAULT_CONFIG_PER_TASK[task_type])
+    default_config = get_configuration(DEFAULT_CONFIG_PER_TASK[task])
     default_config["data"]["config"]["data_root"] = data_root
     num_classes = engine.datamodule.meta_info.num_classes
 

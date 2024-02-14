@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import importlib
-import inspect
 import logging
 from pathlib import Path
 
@@ -13,13 +11,6 @@ import pytest
 from tests.integration.cli.utils import run_main
 
 log = logging.getLogger(__name__)
-
-# This assumes have OTX installed in environment.
-otx_module = importlib.import_module("otx")
-RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
-RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in p.parts]
-RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
-RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
 
 def _check_relative_metric_diff(ref: float, value: float, eps: float) -> None:
@@ -55,7 +46,6 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
 }
 
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_export_infer(
     recipe: str,
     tmp_path: Path,
