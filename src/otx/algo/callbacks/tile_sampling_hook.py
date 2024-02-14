@@ -5,7 +5,7 @@
 from lightning import Callback, LightningModule, Trainer
 
 
-class TileSamplingHook(Callback):
+class TileSamplingCallback(Callback):
     """Hook to sample tiles from the training dataset."""
 
     def on_train_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
