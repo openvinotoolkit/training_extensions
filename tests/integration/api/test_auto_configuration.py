@@ -55,7 +55,7 @@ def test_auto_configuration(
     assert engine._auto_configurator.config == default_config
 
     train_metric = engine.train(max_epochs=default_config.get("max_epochs", 2))
-    if task != "zero_shot_visual_prompting":
+    if task.lower() != "zero_shot_visual_prompting":
         assert len(train_metric) > 0
 
     test_metric = engine.test()

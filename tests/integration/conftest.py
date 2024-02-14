@@ -109,12 +109,15 @@ def pytest_generate_tests(metafunc):
             ids=lambda x: "/".join(Path(x).parts[-2:]),
         )
     if "ov_recipe" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "ov_recipe",
-            metafunc.config.RECIPE_OV_LIST,
-            scope="session",
-            ids=lambda x: "/".join(Path(x).parts[-2:]),
-        )
+        if metafunc.config.RECIPE_OV_LIST:
+            metafunc.parametrize(
+                "ov_recipe",
+                metafunc.config.RECIPE_OV_LIST,
+                scope="session",
+                ids=lambda x: "/".join(Path(x).parts[-2:]),
+            )
+        else:
+            pytest.skip("No OpenVINO recipe found for the task.")
 
 
 @pytest.fixture(scope="session")

@@ -82,7 +82,7 @@ jobs:
     name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
     concurrency:
-      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}
+      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
       cancel-in-progress: true
     steps:
       - name: Checkout repository
