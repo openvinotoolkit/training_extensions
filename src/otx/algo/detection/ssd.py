@@ -163,4 +163,4 @@ class SSD(MMDetCompatibleModel):
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
-        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
+        return OTXv1Helper.load_ssd_ckpt(state_dict, add_prefix)

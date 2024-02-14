@@ -171,10 +171,9 @@ class OTXLitModule(LightningModule):
         load_state_pre_hook for smart weight loading will be registered.
         """
         if is_ckpt_from_otx_v1(ckpt):
-            model_state_dict = ckpt["model"]["state_dict"]
             msg = "The checkpoint comes from OTXv1, checkpoint keys will be updated automatically."
             warnings.warn(msg, stacklevel=2)
-            state_dict = self.model.load_from_otx_v1_ckpt(model_state_dict)
+            state_dict = self.model.load_from_otx_v1_ckpt(ckpt)
         elif is_ckpt_for_finetuning(ckpt):
             state_dict = ckpt["state_dict"]
         else:
