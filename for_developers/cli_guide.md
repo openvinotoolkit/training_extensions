@@ -203,6 +203,24 @@ Override Parameters
 otx train ... --model.num_classes <num-classes> --max_epochs <max-epochs>
 ```
 
+Testing with checkpoint
+
+```console
+otx test ... --checkpoint <checkpoint-path>
+```
+
+Export to OpenVINO IR model or ONNX (Default="OPENVINO")
+
+```console
+otx export ... --checkpoint <checkpoint-path> --export_format <export-format>
+```
+
+Testing with Exported model output
+
+```console
+otx test ... --checkpoint <checkpoint-path-IR-xml-or-onnx>
+```
+
 ## How to write OTX Configuration (recipe)
 
 ### Configuration

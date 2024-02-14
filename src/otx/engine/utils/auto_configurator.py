@@ -16,6 +16,7 @@ from lightning.pytorch.cli import instantiate_class
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
+from otx.core.model.entity.base import OVModel
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
@@ -65,6 +66,16 @@ TASK_PER_DATA_FORMAT = {
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "ava": [OTXTaskType.ACTION_DETECTION],
+}
+
+OVMODEL_PER_TASK = {
+    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.entity.classification.OVMulticlassClassificationModel",
+    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.entity.classification.OVMultilabelClassificationModel",
+    OTXTaskType.H_LABEL_CLS: "otx.core.model.entity.classification.OVHlabelClassificationModel",
+    OTXTaskType.DETECTION: "otx.core.model.entity.detection.OVDetectionModel",
+    OTXTaskType.ROTATED_DETECTION: "otx.core.model.entity.rotated_detection.OVRotatedDetectionModel",
+    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel",
+    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.entity.segmentation.OVSegmentationModel",
 }
 
 
@@ -173,11 +184,11 @@ class AutoConfigurator:
             dict: The loaded configuration.
 
         Raises:
-            ValueError: If the task is not supported for auto-configuration.
+            ValueError: If the task doesn't supported for auto-configuration.
         """
         config_file = DEFAULT_CONFIG_PER_TASK.get(self.task, None)
         if config_file is None:
-            msg = f"{self.task} is not support Auto-Configuration."
+            msg = f"{self.task} doesn't support Auto-Configuration."
             raise ValueError(msg)
         if model_name is not None:
             model_path = str(config_file).split("/")
@@ -241,22 +252,67 @@ class AutoConfigurator:
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
-    def get_optimizer(self) -> OptimizerCallable | None:
+    def get_optimizer(self) -> list[OptimizerCallable] | None:
         """Returns the optimizer callable based on the configuration.
 
         Returns:
-            OptimizerCallable | None: The optimizer callable.
+            list[OptimizerCallable] | None: The optimizer callable.
         """
         optimizer_config = self.config.get("optimizer", None)
         logger.warning(f"Set Default Optimizer: {optimizer_config}")
         return partial_instantiate_class(init=optimizer_config)
 
-    def get_scheduler(self) -> LRSchedulerCallable | None:
+    def get_scheduler(self) -> list[LRSchedulerCallable] | None:
         """Returns the instantiated scheduler based on the configuration.
 
         Returns:
-            LRSchedulerCallable | None: The instantiated scheduler.
+            list[LRSchedulerCallable] | None: The instantiated scheduler.
         """
         scheduler_config = self.config.get("scheduler", None)
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
         return partial_instantiate_class(init=scheduler_config)
+
+    def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
+        """Retrieves the OVModel instance based on the given model name and label information.
+
+        Args:
+            model_name (str): The name of the model.
+            meta_info (LabelInfo): The label information.
+
+        Returns:
+            OVModel: The OVModel instance.
+
+        Raises:
+            NotImplementedError: If the OVModel for the given task is not supported.
+        """
+        class_path = OVMODEL_PER_TASK.get(self.task, None)
+        if class_path is None:
+            msg = f"{self.task} is not support OVModel."
+            raise NotImplementedError(msg)
+        class_module, class_name = class_path.rsplit(".", 1)
+        module = __import__(class_module, fromlist=[class_name])
+        ov_model = getattr(module, class_name)
+        return ov_model(
+            model_name=model_name,
+            num_classes=meta_info.num_classes,
+        )
+
+    def get_ov_datamodule(self) -> OTXDataModule:
+        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
+
+        Returns:
+            OTXDataModule: An instance of OTXDataModule.
+        """
+        config = self._load_default_config(model_name="openvino_model")
+        config["data"]["config"]["data_root"] = self.data_root
+        data_config = config["data"]["config"].copy()
+        return OTXDataModule(
+            task=config["data"]["task"],
+            config=DataModuleConfig(
+                train_subset=SubsetConfig(**data_config.pop("train_subset")),
+                val_subset=SubsetConfig(**data_config.pop("val_subset")),
+                test_subset=SubsetConfig(**data_config.pop("test_subset")),
+                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                **data_config,
+            ),
+        )

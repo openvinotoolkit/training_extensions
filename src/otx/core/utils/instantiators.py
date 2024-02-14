@@ -66,24 +66,29 @@ def instantiate_loggers(logger_cfg: list | None) -> list[Logger]:
     return logger
 
 
-def partial_instantiate_class(init: dict | None) -> partial | None:
+def partial_instantiate_class(init: list | dict | None) -> list[partial] | None:
     """Partially instantiates a class with the given initialization arguments.
 
     Copy from lightning.pytorch.cli.instantiate_class and modify it to use partial.
 
     Args:
-        init (dict): A dictionary containing the initialization arguments.
-            It should have the following keys:
+        init (list | dict | None): A dictionary containing the initialization arguments.
+            It should have the following each keys:
             - "init_args" (dict): A dictionary of keyword arguments to be passed to the class constructor.
             - "class_path" (str): The fully qualified path of the class to be instantiated.
 
     Returns:
-        partial: A partial object representing the partially instantiated class.
+        list[partial] | None: A partial object representing the partially instantiated class.
     """
     if not init:
         return None
-    kwargs = init.get("init_args", {})
-    class_module, class_name = init["class_path"].rsplit(".", 1)
-    module = __import__(class_module, fromlist=[class_name])
-    args_class = getattr(module, class_name)
-    return partial(args_class, **kwargs)
+    if not isinstance(init, list):
+        init = [init]
+    items: list[partial] = []
+    for item in init:
+        kwargs = item.get("init_args", {})
+        class_module, class_name = item["class_path"].rsplit(".", 1)
+        module = __import__(class_module, fromlist=[class_name])
+        args_class = getattr(module, class_name)
+        items.append(partial(args_class, **kwargs))
+    return items

@@ -36,6 +36,11 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
   data:
     config:
       train_subset:
@@ -92,9 +97,6 @@ overrides:
             to_rgb: true
             type: Normalize
           - backend: cv2
-            edge: short
-            scale: 256
-            type: ResizeEdge
-          - crop_size: 224
-            type: CenterCrop
+            scale: 224
+            type: Resize
           - type: PackInputs
