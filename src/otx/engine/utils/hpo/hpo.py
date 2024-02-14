@@ -67,7 +67,9 @@ def execute_hpo(
         hpo_workdir,
         hpo_cfg_file,
     )
-    hpo_algo = hpo_configurator.get_hpo_algo()
+    if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
+        logger.warning("HPO is skipped.")
+        return None, None
 
     if progress_update_callback is not None:
         Thread(target=_update_hpo_progress, args=[progress_update_callback, hpo_algo], daemon=True).start()
@@ -130,30 +132,37 @@ class HPOConfigurator:
     def hpo_config(self) -> dict[str, Any]:
         """Configuration for HPO algorithm."""
         if self._hpo_config is None:
-            if self._hpo_cfg_file is None:
-                hpo_config = {}
-            elif not self._hpo_cfg_file.exists():
-                hpo_config = {}
-                logger.warning("HPO configuration file doesn't exist.")
-            else:
-                with self._hpo_cfg_file.open("r") as f:
-                    hpo_config = yaml.safe_load(f)
-
             train_dataset_size = len(self._engine.datamodule.subsets["train"])
             val_dataset_size = len(self._engine.datamodule.subsets["val"])
 
-            hpo_config["save_path"] = str(self._hpo_workdir)
-            hpo_config["num_full_iterations"] = self._max_epoch
-            hpo_config["full_dataset_size"] = train_dataset_size
-            hpo_config["non_pure_train_ratio"] = val_dataset_size / (train_dataset_size + val_dataset_size)
-            hpo_config["expected_time_ratio"] = self._hpo_time_ratio
-            hpo_config["asynchronous_bracket"] = True
-            hpo_config["asynchronous_sha"] = (torch.cuda.device_count() != 1,)
+            hpo_config = {
+                "save_path" : str(self._hpo_workdir),
+                "num_full_iterations" : self._max_epoch,
+                "full_dataset_size" : train_dataset_size,
+                "non_pure_train_ratio" : val_dataset_size / (train_dataset_size + val_dataset_size),
+                "expected_time_ratio" : self._hpo_time_ratio,
+                "asynchronous_bracket" : True,
+                "asynchronous_sha" : (torch.cuda.device_count() != 1),
+            }
+
+            if self._hpo_cfg_file is not None:
+                if not self._hpo_cfg_file.exists():
+                    logger.warning("HPO configuration file doesn't exist.")
+                else:
+                    with self._hpo_cfg_file.open("r") as f:
+                        hpo_config.update(yaml.safe_load(f))
 
             if "search_space" not in hpo_config:
-                hpo_config["search_space"] = self._get_default_search_space(train_dataset_size)
+                hpo_config["search_space"] = self._get_default_search_space()
             else:
                 self._align_hp_name(hpo_config["search_space"])
+
+            if (  # align batch size to train set size
+                "datamodule.config.train_subset.batch_size" in hpo_config["search_space"] and
+                hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] > train_dataset_size
+            ):
+                hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = train_dataset_size
+
             self._remove_wrong_search_space(hpo_config["search_space"])
 
             if "prior_hyper_parameters" not in hpo_config:  # default hyper parameters are tried first
@@ -165,7 +174,7 @@ class HPOConfigurator:
 
         return self._hpo_config
 
-    def _get_default_search_space(self, train_dataset_size: int) -> dict[str, Any]:
+    def _get_default_search_space(self) -> dict[str, Any]:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
@@ -182,7 +191,7 @@ class HPOConfigurator:
         search_space["datamodule.config.train_subset.batch_size"] = {
             "type": "qloguniform",
             "min": cur_bs // 2,
-            "max": min(cur_bs * 2, train_dataset_size),
+            "max": cur_bs * 2,
             "step": 2,
         }
 
@@ -208,7 +217,8 @@ class HPOConfigurator:
         for hp_name in list(search_space.keys()):
             for valid_hp in AVAILABLE_HP_NAME_MAP:
                 if valid_hp in hp_name:
-                    search_space[AVAILABLE_HP_NAME_MAP[hp_name]] = search_space.pop(hp_name)
+                    new_hp_name = hp_name.replace(valid_hp, AVAILABLE_HP_NAME_MAP[valid_hp])
+                    search_space[new_hp_name] = search_space.pop(hp_name)
                     break
             else:
                 error_msg = (

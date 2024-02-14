@@ -58,6 +58,7 @@ def get_best_hpo_weight(weight_dir: Path, trial_file: Path) -> Path | None:
         elif best_score == score:
             best_epochs.append(eph)
 
+    best_epochs.sort(key=int, reverse=True)
     for best_epoch in best_epochs:
         if (best_weight_path := find_file_recursively(weight_dir, f"epoch_*{best_epoch}.ckpt")) is not None:
             return best_weight_path
