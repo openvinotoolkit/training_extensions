@@ -22,8 +22,8 @@ from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 
 if TYPE_CHECKING:
-    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
 
 class OTXInstanceSegLitModule(OTXLitModule):
@@ -35,7 +35,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = OTXMaskRLEMeanAveragePrecision
+        metric: Metric = OTXMaskRLEMeanAveragePrecision,
     ):
         super().__init__(
             otx_model=otx_model,

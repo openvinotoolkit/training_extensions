@@ -41,9 +41,9 @@ class HLabelAccuracy(Metric):
         self.num_multilabel_classes = num_multilabel_classes
         self.threshold_multilabel = threshold_multilabel
 
-    def set_hlabel_accuracy_from_head_logits_info(self, head_logits_info: dict[str, tuple[int, int]]):
+    def set_hlabel_accuracy_from_head_logits_info(self, head_logits_info: dict[str, tuple[int, int]]) -> None:
         """Set the hlabel accuracy by using the head_logits_info."""
-        # Multiclass classification accuracy 
+        # Multiclass classification accuracy
         self.multiclass_head_accuracy: list[Accuracy] = [
             Accuracy(
                 task="multiclass",
@@ -59,7 +59,7 @@ class HLabelAccuracy(Metric):
                 threshold=0.5,
                 average="macro",
             )
-    
+
     def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> nn.Module:
         self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]  # noqa: SLF001
         if self.num_multilabel_classes > 0:

@@ -27,11 +27,11 @@ from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
-    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
+    from torchmetrics import Metric
 
 
 LITMODULE_PER_TASK = {
@@ -173,7 +173,7 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
-            metric (Metric | None): The metric for the validation and test. It could be None at the export, predict, etc.
+            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -258,7 +258,7 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
-            metric (Metric | None): The metric for the validation and test. It could be None at the export, predict, etc.
+            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -295,7 +295,7 @@ class Engine:
             model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
-            metric=metric
+            metric=metric,
         )
         lit_module.meta_info = datamodule.meta_info
 
@@ -685,7 +685,7 @@ class Engine:
             model (OTXModel): The OTXModel instance.
             optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
-            metric (Metric | None): The metric for the validation and test. It could be None at the export, predict, etc.
+            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
 
         Returns:
             OTXLitModule: The built LightningModule instance.

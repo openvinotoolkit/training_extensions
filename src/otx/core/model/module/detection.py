@@ -32,7 +32,7 @@ class OTXDetectionLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = MeanAveragePrecision
+        metric: Metric = MeanAveragePrecision,
     ):
         super().__init__(
             otx_model=otx_model,

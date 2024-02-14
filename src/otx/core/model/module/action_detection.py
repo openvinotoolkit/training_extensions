@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.data.entity.action_detection import (
     ActionDetBatchDataEntity,
@@ -18,9 +19,8 @@ from otx.core.model.entity.action_detection import OTXActionDetModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
-    from torchmetrics import Metric
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
 
 class OTXActionDetLitModule(OTXLitModule):
@@ -32,7 +32,7 @@ class OTXActionDetLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = MeanAveragePrecision
+        metric: Metric = MeanAveragePrecision,
     ):
         super().__init__(
             otx_model=otx_model,

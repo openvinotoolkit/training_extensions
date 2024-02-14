@@ -25,7 +25,6 @@ metric:
     threshold: 0.5
     average: micro
 
-
 engine:
   task: MULTI_LABEL_CLS
   device: auto

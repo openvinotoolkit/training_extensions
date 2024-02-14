@@ -28,7 +28,6 @@ metric:
     task: multiclass
     num_classes: 1000
 
-
 engine:
   task: MULTI_CLASS_CLS
   device: auto

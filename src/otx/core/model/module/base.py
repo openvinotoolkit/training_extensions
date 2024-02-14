@@ -203,7 +203,7 @@ class OTXLitModule(LightningModule):
     @property
     def lr_scheduler_monitor_key(self) -> str:
         """Metric name that the learning rate scheduler monitor."""
-        return self.scheduler.monitor
+        return self.scheduler[-1].monitor
 
     @property
     def label_info(self) -> LabelInfo:

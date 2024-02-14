@@ -26,8 +26,8 @@ from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
-    from torchmetrics import Metric
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
 
 class OTXVisualPromptingLitModule(OTXLitModule):
@@ -39,7 +39,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = MeanMetric #TODO (sungmanc) :dictionary metric will be supported # noqa: TD003
+        metric: Metric = MeanMetric,  # TODO (sungmanc): dictionary metric will be supported # noqa: TD003
     ):
         super().__init__(
             otx_model=otx_model,

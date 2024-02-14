@@ -297,18 +297,18 @@ class OTXCLI:
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
             metric_config = self.config[self.subcommand].pop("metric")
-            
+
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.datamodule = self.get_config_value(self.config_init, "data")
-            
+
             # Instantiate the model and needed components
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
-            
-            # Instantiate the metric with changing the num_classes 
+
+            # Instantiate the metric with changing the num_classes
             metric = self.instantiate_metric(metric_config)
             if metric:
-                self.config_init[self.subcommand]['metric'] = metric
+                self.config_init[self.subcommand]["metric"] = metric
 
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
@@ -318,20 +318,27 @@ class OTXCLI:
                 datamodule=self.datamodule,
                 **engine_kwargs,
             )
-            
+
     def instantiate_metric(self, metric_config: Namespace) -> Metric | None:
+        """Instantiate the metric based on the metric_config.
+
+        It also pathces the num_classes according to the model classes information.
+
+        Args:
+            metric_config (Namespace): The metric configuration.
+        """
         # Parses the Metric separately to update num_classes.
         metric_parser = ArgumentParser()
-        
+
         if metric_config:
             self._patch_metric_num_classes(self.model, metric_config)
             metric_parser.add_subclass_arguments(Metric, "metric", required=False, fail_untyped=False)
-            return metric_parser.instantiate_classes(Namespace(metric=metric_config)).get("metric")        
-        
+            return metric_parser.instantiate_classes(Namespace(metric=metric_config)).get("metric")
+
         msg = "The configuration of metric is None."
         warn(msg, stacklevel=2)
-    
-    
+        return None
+
     def instantiate_model(self, model_config: Namespace) -> tuple:
         """Instantiate the model based on the subcommand.
 
@@ -357,7 +364,7 @@ class OTXCLI:
                 )
                 warn(warning_msg, stacklevel=0)
                 model_config.init_args.num_classes = num_classes
-                
+
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
@@ -441,18 +448,16 @@ class OTXCLI:
 
     def _patch_metric_num_classes(self, model: Namespace, metric_config: Namespace) -> None:
         """Patch the num_classes of the torchmetrics."""
-        
         if metric_config.init_args.get("num_labels"):
             metric_config.init_args.num_labels = self.model.num_classes
         elif metric_config.init_args.get("num_classes"):
             metric_config.init_args.num_classes = self.model.num_classes
-        
+
         # H-label classification
         if hasattr(model, "num_multiclass_heads") and hasattr(model, "num_multilabel_classes"):
             metric_config.init_args.num_multiclass_heads = model.num_multiclass_heads
             metric_config.init_args.num_multilabel_classes = model.num_multilabel_classes
-        
-                 
+
     def run(self) -> None:
         """Executes the specified subcommand.
 

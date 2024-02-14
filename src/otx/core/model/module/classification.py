@@ -27,6 +27,7 @@ from otx.core.model.module.base import OTXLitModule
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
+
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -134,7 +135,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        self.metric = metric 
+        self.metric = metric
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -208,7 +209,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = HLabelAccuracy
+        metric: Metric = HLabelAccuracy,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -216,7 +217,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
         )
-        
+
         self.metric = metric
 
     def _set_hlabel_setup(self) -> None:
@@ -234,7 +235,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
-        
+
         self.metric.num_multiclass_heads = self.num_multiclass_heads
         self.metric.num_multilabel_classes = self.num_multilabel_classes
         self.metric.set_hlabel_accuracy_from_head_logits_info(self.hlabel_info.head_idx_to_logits_range)
