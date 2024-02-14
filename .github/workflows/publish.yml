@@ -79,6 +79,6 @@ jobs:
         if: ${{ steps.check-tag.outputs.match == '' }}
         uses: pypa/gh-action-pypi-publish@22b4d1f12511f2696162c08546dafbaa903448a2 # v1.7.1
         with:
-          password: ${{ secrets.TESTPYPI_API_TOKEN }}
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           verbose: true
