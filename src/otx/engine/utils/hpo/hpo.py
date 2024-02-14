@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import torch
 import yaml
 
+from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
 
@@ -58,6 +59,10 @@ def execute_hpo(
             best hyper parameters and model weight trained with best hyper parameters. If it doesn't exist,
             return None.
     """
+    if engine.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:  # type: ignore[has-type]
+        logger.warning("Zero shot visual prompting task doesn't support HPO.")
+        return None, None
+
     hpo_workdir = Path(engine.work_dir) / "hpo"
     hpo_workdir.mkdir(exist_ok=True)
     hpo_configurator = HPOConfigurator(
