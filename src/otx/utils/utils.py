@@ -3,23 +3,30 @@
 
 """OTX utility functions."""
 
+from __future__ import annotations
+
 import os
 import signal
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
+
+if TYPE_CHECKING:
+    from types import FrameType
 
 
 @dataclass
 class SigHandler:
+    """Signal handler dataclass having handler function and pid which registers the handler."""
+
     handler: Callable
     pid: int
 
 
-_SIGNAL_HANDLERS: dict[signal.Signals, list] = {}
+_SIGNAL_HANDLERS: dict[int, list] = {}
 
 
-def append_signal_handler(sig_num: signal.Signals, sig_handler: Callable) -> None:
+def append_signal_handler(sig_num: int, sig_handler: Callable) -> None:
     """Append the handler for a signal. The function appended at last is called first.
 
     Args:
@@ -29,7 +36,7 @@ def append_signal_handler(sig_num: signal.Signals, sig_handler: Callable) -> Non
     _register_signal_handler(sig_num, sig_handler, -1)
 
 
-def append_main_proc_signal_handler(sig_num: signal.Signals, sig_handler: Callable) -> None:
+def append_main_proc_signal_handler(sig_num: int, sig_handler: Callable) -> None:
     """Append the handler for a signal triggered only by main process. The function appended at last is called first.
 
     It's almost same as append_signal_handler except that handler will be executed only by signal to
@@ -42,7 +49,7 @@ def append_main_proc_signal_handler(sig_num: signal.Signals, sig_handler: Callab
     _register_signal_handler(sig_num, sig_handler, os.getpid())
 
 
-def _register_signal_handler(sig_num: signal.Signals, sig_handler: Callable, pid: int) -> None:
+def _register_signal_handler(sig_num: int, sig_handler: Callable, pid: int) -> None:
     if sig_num not in _SIGNAL_HANDLERS:
         old_sig_handler = signal.getsignal(sig_num)
         _SIGNAL_HANDLERS[sig_num] = [old_sig_handler]
@@ -51,7 +58,7 @@ def _register_signal_handler(sig_num: signal.Signals, sig_handler: Callable, pid
     _SIGNAL_HANDLERS[sig_num].insert(0, SigHandler(sig_handler, pid))
 
 
-def _run_signal_handlers(sig_num: signal.Signals, frame) -> None:
+def _run_signal_handlers(sig_num: int, frame: FrameType | None) -> None:
     pid = os.getpid()
     for handler in _SIGNAL_HANDLERS[sig_num]:
         if handler == signal.SIG_DFL:
@@ -64,14 +71,34 @@ def _run_signal_handlers(sig_num: signal.Signals, frame) -> None:
             handler(sig_num, frame)
 
 
-def get_using_comma_seperated_key(key: str, target) -> Any:
+def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401
+    """Get values of attribute in target object using dot delimited key.
+
+    For example, if key is "a.b.c", then get a value of 'target.a.b.c'.
+    target should be object having attributes or dictionary.
+
+    Args:
+        key (str): dot delimited key.
+        val (Any): value to set.
+        target (Any): target to set value to.
+    """
     splited_key = key.split(".")
     for each_key in splited_key:
         target = target[each_key] if isinstance(target, dict) else getattr(target, each_key)
     return target
 
 
-def set_using_comma_seperated_key(key: str, val: Any, target) -> None:
+def set_using_dot_delimited_key(key: str, val: Any, target: Any) -> None:  # noqa: ANN401
+    """Set values to attribute in target object using dot delimited key.
+
+    For example, if key is "a.b.c", then value is set at 'target.a.b.c'.
+    target should be object having attributes or dictionary.
+
+    Args:
+        key (str): dot delimited key.
+        val (Any): value to set.
+        target (Any): target to set value to.
+    """
     splited_key = key.split(".")
     for each_key in splited_key[:-1]:
         target = target[each_key] if isinstance(target, dict) else getattr(target, each_key)
@@ -91,4 +118,7 @@ def get_decimal_point(num: float) -> int:
     Returns:
         int: decimal point.
     """
-    return abs(Decimal(str(num)).as_tuple().exponent)
+    if isinstance((exponent := Decimal(str(num)).as_tuple().exponent), int):
+        return abs(exponent)
+    error_msg = f"Can't get an exponent from {num}."
+    raise ValueError(error_msg)

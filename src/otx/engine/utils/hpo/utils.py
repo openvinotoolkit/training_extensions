@@ -6,7 +6,10 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def find_file_recursively(directory: Path, file_name: str) -> Path | None:
@@ -47,8 +50,8 @@ def get_best_hpo_weight(weight_dir: Path, trial_file: Path) -> Path | None:
 
     best_epochs = []
     best_score = None
-    for eph, score in trial_output["score"].items():
-        eph = str(int(eph) - 1)  # lightning uses index starting from 0
+    for epoch, score in trial_output["score"].items():
+        eph = str(int(epoch) - 1)  # lightning uses index starting from 0
         if best_score is None:
             best_score = score
             best_epochs.append(eph)

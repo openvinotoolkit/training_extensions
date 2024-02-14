@@ -16,7 +16,7 @@ import torch
 import yaml
 
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_comma_seperated_key
+from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, remove_unused_files
@@ -136,13 +136,13 @@ class HPOConfigurator:
             val_dataset_size = len(self._engine.datamodule.subsets["val"])
 
             hpo_config = {
-                "save_path" : str(self._hpo_workdir),
-                "num_full_iterations" : self._max_epoch,
-                "full_dataset_size" : train_dataset_size,
-                "non_pure_train_ratio" : val_dataset_size / (train_dataset_size + val_dataset_size),
-                "expected_time_ratio" : self._hpo_time_ratio,
-                "asynchronous_bracket" : True,
-                "asynchronous_sha" : (torch.cuda.device_count() != 1),
+                "save_path": str(self._hpo_workdir),
+                "num_full_iterations": self._max_epoch,
+                "full_dataset_size": train_dataset_size,
+                "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
+                "expected_time_ratio": self._hpo_time_ratio,
+                "asynchronous_bracket": True,
+                "asynchronous_sha": (torch.cuda.device_count() != 1),
             }
 
             if self._hpo_cfg_file is not None:
@@ -158,16 +158,21 @@ class HPOConfigurator:
                 self._align_hp_name(hpo_config["search_space"])
 
             if (  # align batch size to train set size
-                "datamodule.config.train_subset.batch_size" in hpo_config["search_space"] and
-                hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] > train_dataset_size
+                "datamodule.config.train_subset.batch_size" in hpo_config["search_space"]
+                and hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] > train_dataset_size
             ):
+                logger.info(
+                    "Max value of batch size in HPO search space is lower than train dataset size. "
+                    "Decrease it to train dataset size.",
+                )
                 hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = train_dataset_size
 
             self._remove_wrong_search_space(hpo_config["search_space"])
 
             if "prior_hyper_parameters" not in hpo_config:  # default hyper parameters are tried first
                 hpo_config["prior_hyper_parameters"] = {
-                    hp: get_using_comma_seperated_key(hp, self._engine) for hp in hpo_config["search_space"].keys()
+                    hp: get_using_dot_delimited_key(hp, self._engine)
+                    for hp in hpo_config["search_space"].keys()  # noqa: SIM118
                 }
 
             self._hpo_config = hpo_config
@@ -178,7 +183,7 @@ class HPOConfigurator:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
-        cur_lr = self._engine.optimizer.keywords["lr"]
+        cur_lr = self._engine.optimizer.keywords["lr"]  # type: ignore[union-attr]
         min_lr = cur_lr / 10
         search_space["optimizer.keywords.lr"] = {
             "type": "qloguniform",
@@ -227,7 +232,7 @@ class HPOConfigurator:
                 )
                 raise ValueError(error_msg)
 
-    def get_hpo_algo(self) -> HpoBase:
+    def get_hpo_algo(self) -> HpoBase | None:
         """Get HPO algorithm based on prepared configuration."""
         if not self.hpo_config["search_space"]:
             logger.warning("There is no hyper parameter to optimize.")

@@ -108,7 +108,7 @@ class Engine:
         self._cache = TrainerArgumentsCache(**kwargs)
         self.checkpoint = checkpoint
         self.work_dir = work_dir
-        self.device = device
+        self.device = device  # type: ignore[assignment]
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
@@ -137,6 +137,7 @@ class Engine:
 
     @property
     def work_dir(self) -> PathLike:
+        """Work directory."""
         return self._work_dir
 
     @work_dir.setter
@@ -146,6 +147,7 @@ class Engine:
 
     @property
     def device(self) -> DeviceConfig:
+        """Device engine uses."""
         return self._device
 
     @device.setter

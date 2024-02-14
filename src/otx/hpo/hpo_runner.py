@@ -212,7 +212,8 @@ def _report_score(
     done: bool = False,
 ) -> TrialStatus:
     logger.debug(
-        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, pid : {os.getpid()}, done : {done}",
+        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, "
+        f"pid : {os.getpid()}, done : {done}",
     )
     try:
         send_queue.put_nowait(
@@ -223,7 +224,7 @@ def _report_score(
                 "trial_id": trial_id,
                 "pid": os.getpid(),
                 "done": done,
-            }
+            },
         )
     except ValueError:
         return TrialStatus.STOP

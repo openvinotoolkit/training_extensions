@@ -302,7 +302,7 @@ class MemCacheHandlerSingleton:
             raise MemCacheHandlerError(msg)
 
         # Should delete if receive sigint to gracefully terminate
-        def _new_handler(signum, frame) -> None:  # noqa: ANN001
+        def _new_handler(signum_, frame_) -> None:  # noqa: ARG001, ANN001
             instance.shutdown()
 
         append_signal_handler(signal.SIGINT, _new_handler)

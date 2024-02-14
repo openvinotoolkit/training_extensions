@@ -14,7 +14,7 @@ from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 
 from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from otx.hpo import TrialStatus
-from otx.utils.utils import set_using_comma_seperated_key
+from otx.utils.utils import set_using_dot_delimited_key
 
 from .utils import find_file_recursively, find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, remove_unused_files
 
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 def update_hyper_parameter(engine: Engine, hyper_parameter: dict[str, Any]) -> None:
     """Update hyper parameter in the engine."""
     for key, val in hyper_parameter.items():
-        set_using_comma_seperated_key(key, val, engine)
+        set_using_dot_delimited_key(key, val, engine)
 
 
 class HPOCallback(Callback):
@@ -40,14 +40,14 @@ class HPOCallback(Callback):
 
     def on_train_epoch_end(self, trainer: Trainer, pl_module_: LightningModule) -> None:
         """Report scores if score exists at the end of each epoch."""
-        if (score := trainer.callback_metrics.get(self.metric)) is not None:
-            if self._report_func(score=score.item(), progress=trainer.current_epoch + 1) == TrialStatus.STOP:
-                trainer.should_stop = True
+        score = trainer.callback_metrics.get(self.metric)
+        if score is not None and self._report_func(score.item(), trainer.current_epoch + 1) == TrialStatus.STOP:
+            trainer.should_stop = True
 
 
 def run_hpo_trial(
     hp_config: dict[str, Any],
-    report_func: Callable[[int|float, int|float, bool], None],
+    report_func: Callable[[int | float, int | float, bool], None],
     hpo_workdir: Path,
     engine: Engine,
     callbacks: list[Callback] | Callback | None = None,
@@ -81,7 +81,7 @@ def run_hpo_trial(
 
         _keep_best_and_last_weight(Path(temp_dir), hpo_workdir, trial_id)
 
-    report_func(0, 0, done=True)
+    report_func(0, 0, done=True)  # type: ignore[call-arg]
 
 
 def _set_trial_hyper_parameter(hyper_parameter: dict[str, Any], engine: Engine, train_args: dict[str, Any]) -> None:
