@@ -45,23 +45,23 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
         return True
 
-    @property
-    def backbone(self) -> nn.Module:
-        """Returns model's backbone. Can be redefined at the model's level."""
-        if backbone := getattr(self.model, "backbone", None):
-            return backbone
-        raise ValueError
+    # @property
+    # def backbone(self) -> nn.Module:
+    #     """Returns model's backbone. Can be redefined at the model's level."""
+    #     if backbone := getattr(self.model, "backbone", None):
+    #         return backbone
+    #     raise ValueError
 
-    def register_explain_hook(self) -> None:
-        """Register explain hook at the model backbone output."""
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+    # def register_explain_hook(self) -> None:
+    #     """Register explain hook at the model backbone output."""
+    #     from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 
-        self.explain_hook = ReciproCAMHook.create_and_register_hook(
-            self.backbone,
-            self.head_forward_fn,
-            num_classes=self.num_classes,
-            optimize_gap=self.has_gap,
-        )
+    #     self.explain_hook = ReciproCAMHook.create_and_register_hook(
+    #         self.backbone,
+    #         self.head_forward_fn,
+    #         num_classes=self.num_classes,
+    #         optimize_gap=self.has_gap,
+    #     )
 
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
@@ -74,14 +74,66 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         output = neck(x)
         return head([output])
 
-    def remove_explain_hook_handle(self) -> None:
-        """Removes explain hook from the model."""
-        if self.explain_hook.handle is not None:
-            self.explain_hook.handle.remove()
+    # def remove_explain_hook_handle(self) -> None:
+    #     """Removes explain hook from the model."""
+    #     if self.explain_hook.handle is not None:
+    #         self.explain_hook.handle.remove()
 
-    def reset_explain_hook(self) -> None:
-        """Clear all history of explain records."""
-        self.explain_hook.reset()
+    # def reset_explain_hook(self) -> None:
+    #     """Clear all history of explain records."""
+    #     self.explain_hook.reset()
+
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        self.model.explain_fn = self.get_explain_fn()
+
+        # If customize_inputs is overridden
+        outputs = (
+            self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
+            if self._customize_inputs != OTXModel._customize_inputs
+            else self.model(inputs)
+        )
+        return (
+            self._customize_outputs(outputs, inputs)
+            if self._customize_outputs != OTXModel._customize_outputs
+            else outputs
+        )
+
+    @staticmethod
+    def _forward_explain_image_classifier(
+        self: ImageClassifier,
+        inputs: torch.Tensor,
+        data_samples: list[DataSample] | None = None,  # noqa: ARG001
+        mode: str = "tensor",  # noqa: ARG001
+    ) -> dict:
+        """
+        Forward func of the ImageClassifier instance, which located in is in OTXModel().model.
+        """
+        x = self.backbone(inputs)
+        backbone_feat = x
+
+        saliency_map = self.explain_fn(backbone_feat)
+
+        if self.with_neck:
+            x = self.neck(x)
+
+        logits = self.head(x) if self.with_head else x
+        return {
+            "logits": logits,
+            "saliency_map": saliency_map,
+        }
+
+    def get_explain_fn(self):
+        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+        explainer = ReciproCAMHook(
+            self.head_forward_fn,
+            num_classes=self.num_classes,
+            optimize_gap=self.has_gap,
+        )
+        return explainer.func
 
 
 class OTXMulticlassClsModel(

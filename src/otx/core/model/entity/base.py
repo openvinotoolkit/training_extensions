@@ -51,6 +51,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+        self.explain_mode = False
 
     @property
     def label_info(self) -> LabelInfo:
@@ -119,6 +120,25 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )
+
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        raise NotImplementedError
+
+    def get_explain_fn(self):
+        raise NotImplementedError
+
+    def _reset_model_forward(self) -> None:
+        import types
+
+        self.model.explain_fn = self.get_explain_fn()
+        forward_with_explain = self._forward_explain_image_classifier
+
+        func_type = types.MethodType
+        self.model.forward = func_type(forward_with_explain, self.model)
 
     def forward_tiles(self, inputs: T_OTXTileBatchDataEntity) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function for tile task."""
@@ -213,6 +233,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
+        if self.explain_mode:
+            self._reset_model_forward()
+            # revert back
+
         return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
 
     @property

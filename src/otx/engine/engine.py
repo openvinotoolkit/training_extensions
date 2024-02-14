@@ -353,6 +353,9 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        if True:
+            lit_module.model.explain_mode = True
+
         self._build_trainer(**kwargs)
 
         checkpoint_path: str | None = None
@@ -419,6 +422,9 @@ class Engine:
             self.model.label_info = lit_module.meta_info
 
             lit_module.load_state_dict(loaded_checkpoint)
+
+            if True:
+                self.model.explain_mode = True
 
             return self.model.export(
                 output_dir=Path(self.work_dir),

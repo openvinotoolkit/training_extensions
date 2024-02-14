@@ -217,4 +217,6 @@ class OTXLitModule(LightningModule):
 
     def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward pass."""
+        if self.model.explain_mode:
+            return self.model.forward_explain(*args, **kwargs)
         return self.model.forward(*args, **kwargs)
