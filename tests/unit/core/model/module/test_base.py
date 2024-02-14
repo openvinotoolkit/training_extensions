@@ -8,8 +8,8 @@ from __future__ import annotations
 from unittest.mock import MagicMock, create_autospec
 
 import pytest
+from lightning.pytorch.cli import ReduceLROnPlateau
 from lightning.pytorch.trainer import Trainer
-from otx.algo.schedulers.warmup_schedulers import WarmupReduceLROnPlateau
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import LinearWarmupScheduler, OTXLitModule
 from torch.optim import Optimizer
@@ -33,14 +33,19 @@ class TestOTXLitModule:
         return optimizer_factory
 
     @pytest.fixture()
-    def mock_scheduler(self) -> WarmupReduceLROnPlateau:
-        scheduler = MagicMock(spec=WarmupReduceLROnPlateau)
-        scheduler.warmup_steps = 10
+    def mock_scheduler(self) -> list[LinearWarmupScheduler | ReduceLROnPlateau]:
+        scheduler_object_1 = MagicMock()
+        warmup_scheduler = MagicMock(spec=LinearWarmupScheduler)
+        warmup_scheduler.num_warmup_steps = 10
+        warmup_scheduler.interval = "step"
+        scheduler_object_1.return_value = warmup_scheduler
 
-        def scheduler_factory(*args, **kargs) -> WarmupReduceLROnPlateau:  # noqa: ARG001
-            return scheduler
+        scheduler_object_2 = MagicMock()
+        lr_scheduler = MagicMock(spec=ReduceLROnPlateau)
+        lr_scheduler.monitor = "val/loss"
+        scheduler_object_2.return_value = lr_scheduler
 
-        return scheduler_factory
+        return [scheduler_object_1, scheduler_object_2]
 
     def test_configure_optimizers(self, mock_otx_model, mock_optimizer, mock_scheduler) -> None:
         module = OTXLitModule(
@@ -61,7 +66,3 @@ class TestOTXLitModule:
 
         assert "scheduler" in lr_schedulers[1]
         assert "monitor" in lr_schedulers[1]
-        assert "interval" in lr_schedulers[1]
-        assert "frequency" in lr_schedulers[1]
-
-        assert lr_schedulers[1]["frequency"] == 2
