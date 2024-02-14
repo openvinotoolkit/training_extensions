@@ -33,7 +33,7 @@ overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
   callbacks:
-    - class_path: otx.algo.callbacks.tile_sampling_hook.TileSamplingHook
+    - class_path: otx.algo.callbacks.tile_sampling_hook.TileSamplingCallback
   data:
     task: INSTANCE_SEGMENTATION
     config:
