@@ -6,7 +6,16 @@ from lightning import Callback, LightningModule, Trainer
 
 
 class TileSamplingCallback(Callback):
-    """Hook to sample tiles from the training dataset."""
+    """Hook to sample tiles from the training dataset.
+
+    Training models with tiles typically consumes a significant amount of time,
+    mainly because large amount of tiles generated from large images.
+    To mitigate this, OTX provides a sampling method for the entire tile dataset,
+    which aims to expedite training.
+
+    Notably, the tile sampling hook selects tiles at the beginning of each epoch,
+    ensuring that the model is trained on a diverse range of tile samples.
+    """
 
     def on_train_epoch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Sample tiles from the training dataset when the epoch starts.
