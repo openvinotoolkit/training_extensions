@@ -16,10 +16,10 @@ import torch
 import yaml
 
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key
+from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
 
 from .hpo_trial import run_hpo_trial
-from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, remove_unused_files
+from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
 
 if TYPE_CHECKING:
     from otx.engine.engine import Engine
@@ -247,4 +247,4 @@ def _update_hpo_progress(progress_update_callback: Callable[[int | float], None]
 
 
 def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None) -> None:
-    remove_unused_files(hpo_workdir, "*.ckpt", best_hpo_weight)
+    remove_matched_files(hpo_workdir, "*.ckpt", best_hpo_weight)

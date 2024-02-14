@@ -8,15 +8,10 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
+from otx.utils.utils import find_file_recursively
+
 if TYPE_CHECKING:
     from pathlib import Path
-
-
-def find_file_recursively(directory: Path, file_name: str) -> Path | None:
-    """Find the file from the direcotry recursively."""
-    if found_file := list(directory.rglob(file_name)):
-        return found_file[0]
-    return None
 
 
 def find_trial_file(hpo_workdir: Path, trial_id: str) -> Path | None:
@@ -83,16 +78,3 @@ def get_hpo_weight_dir(hpo_workdir: Path, trial_id: str) -> Path:
     if not hpo_weight_dir.exists():
         hpo_weight_dir.mkdir(parents=True)
     return hpo_weight_dir
-
-
-def remove_unused_files(directory: Path, pattern: str, file_to_leave: Path | None = None) -> None:
-    """Remove all files macthing to pattern except file_to_leave.
-
-    Args:
-        directory (Path): direcetory to find files to remove.
-        pattern (str): pattern to match a file name.
-        file_not_to_remove (Path | None, optional): files to leave. Defaults to None.
-    """
-    for weight in directory.rglob(pattern):
-        if weight != file_to_leave:
-            weight.unlink()

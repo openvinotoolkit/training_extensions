@@ -14,9 +14,9 @@ from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 
 from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from otx.hpo import TrialStatus
-from otx.utils.utils import set_using_dot_delimited_key
+from otx.utils.utils import find_file_recursively, remove_matched_files, set_using_dot_delimited_key
 
-from .utils import find_file_recursively, find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, remove_unused_files
+from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
 
 if TYPE_CHECKING:
     from lightning import LightningModule, Trainer
@@ -132,7 +132,7 @@ def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id
     _move_all_ckpt(trial_work_dir, weight_dir)
     if (trial_file := find_trial_file(hpo_workdir, trial_id)) is not None:
         best_weight = get_best_hpo_weight(weight_dir, trial_file)
-        remove_unused_files(weight_dir, "epoch_*.ckpt", best_weight)
+        remove_matched_files(weight_dir, "epoch_*.ckpt", best_weight)
 
 
 def _move_all_ckpt(src: Path, dest: Path) -> None:
