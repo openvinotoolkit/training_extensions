@@ -69,7 +69,7 @@ jobs:
       matrix:
         include:
           - task: "MULTI_CLASS_CLS"
-          - task: "MULTI_LABLE_CLS"
+          - task: "MULTI_LABEL_CLS"
           - task: "H_LABEL_CLS"
           - task: "DETECTION"
           - task: "ROTATED_DETECTION"
