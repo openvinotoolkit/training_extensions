@@ -28,7 +28,6 @@ metric:
   init_args:
     num_multiclass_heads: 0
     num_multilabel_classes: 0
-    head_idx_to_logits_range: null
 
 engine:
   task: H_LABEL_CLS

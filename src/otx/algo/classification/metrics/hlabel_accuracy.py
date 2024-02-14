@@ -29,7 +29,6 @@ class HLabelAccuracy(Metric):
         self,
         num_multiclass_heads: int,
         num_multilabel_classes: int,
-        head_idx_to_logits_range: dict[str, tuple[int, int]],
         threshold_multilabel: float = 0.5,
     ):
         super().__init__()
@@ -41,32 +40,26 @@ class HLabelAccuracy(Metric):
 
         self.num_multilabel_classes = num_multilabel_classes
         self.threshold_multilabel = threshold_multilabel
-        self.head_idx_to_logits_range = head_idx_to_logits_range
 
-        # Multiclass classification accuracy will be defined later
+    def set_hlabel_accuracy_from_head_logits_info(self, head_logits_info: dict[str, tuple[int, int]]):
+        """Set the hlabel accuracy by using the head_logits_info."""
+        # Multiclass classification accuracy 
         self.multiclass_head_accuracy: list[Accuracy] = [
             Accuracy(
                 task="multiclass",
                 num_classes=int(head_range[1] - head_range[0]),
             )
-            for head_range in self.head_idx_to_logits_range.values()
+            for head_range in head_logits_info.values()
         ]
 
         # Multilabel classification accuracy metrics
-        if num_multilabel_classes > 0:
+        if self.num_multilabel_classes > 0:
             self.multilabel_accuracy = MultilabelAccuracy(
                 num_labels=self.num_multilabel_classes,
                 threshold=0.5,
                 average="macro",
             )
-
-    def _metric_to_device(self, metric: Metric, device: str) -> None:
-        """One time update the device of metric."""
-        self.flag = False
-        if not self.flag:
-            metric.to(device)
-            self.flag = True
-
+    
     def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> nn.Module:
         self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]  # noqa: SLF001
         if self.num_multilabel_classes > 0:

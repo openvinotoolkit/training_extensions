@@ -125,8 +125,3 @@ class OTXSegmentationLitModule(OTXLitModule):
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
         for prediction in predictions:
             self.metric.update(**prediction)
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/Dice"

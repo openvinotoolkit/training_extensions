@@ -109,8 +109,3 @@ class OTXActionClsLitModule(OTXLitModule):
         self.metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"

@@ -116,11 +116,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"
-
 
 class OTXMultilabelClsLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX multi-label classification task."""
@@ -203,11 +198,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
 
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"
-
 
 class OTXHlabelClsLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX H-label classification task."""
@@ -228,7 +218,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
         )
         
         self.metric = metric
-        self.metric = metric
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
@@ -245,14 +234,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
-
-        self.metric.num_multiclass_heads = self.num_multiclass_heads
-        self.metric.num_multilabel_classes = self.num_multilabel_classes
-        self.metric.head_idx_to_logits_range = self.hlabel_info.head_idx_to_logits_range
         
         self.metric.num_multiclass_heads = self.num_multiclass_heads
         self.metric.num_multilabel_classes = self.num_multilabel_classes
-        self.metric.head_idx_to_logits_range = self.hlabel_info.head_idx_to_logits_range
+        self.metric.set_hlabel_accuracy_from_head_logits_info(self.hlabel_info.head_idx_to_logits_range)
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -321,11 +306,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
         )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"
 
     @property
     def meta_info(self) -> LabelInfo:

@@ -14,6 +14,7 @@ from warnings import warn
 import yaml
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_to_dict
 from rich.console import Console
+from torchmetrics import Metric
 
 from otx import OTX_LOGO, __version__
 from otx.cli.utils.help_formatter import CustomHelpFormatter
@@ -295,9 +296,7 @@ class OTXCLI:
         if self.subcommand in self.engine_subcommands():
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
-            
-            val_metric_config = self.config[self.subcommand].pop("val_metric")
-            test_metric_config = self.config[self.subcommand].pop("test_metric")
+            metric_config = self.config[self.subcommand].pop("metric")
             
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
@@ -307,16 +306,9 @@ class OTXCLI:
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
             
             # Instantiate the metric with changing the num_classes 
-            val_metric, test_metric = self.instantiate_metric(
-                metric_config={
-                    "val": val_metric_config,
-                    "test": test_metric_config
-                }
-            )
-            if val_metric: 
-                self.config_init[self.subcommand]['val_metric'] = val_metric
-            if test_metric:
-                self.config_init[self.subcommand]['test_metric'] = test_metric
+            metric = self.instantiate_metric(metric_config)
+            if metric:
+                self.config_init[self.subcommand]['metric'] = metric
 
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
@@ -327,26 +319,17 @@ class OTXCLI:
                 **engine_kwargs,
             )
             
-    def instantiate_metric(self, metric_config: dict[str, Namespace]) -> tuple:
+    def instantiate_metric(self, metric_config: Namespace) -> Metric | None:
         # Parses the Metric separately to update num_classes.
-        from torchmetrics import Metric
         metric_parser = ArgumentParser()
         
-        val_metric_config = metric_config["val"]
-        test_metric_config = metric_config["test"]
+        if metric_config:
+            self._patch_metric_num_classes(self.model, metric_config)
+            metric_parser.add_subclass_arguments(Metric, "metric", required=False, fail_untyped=False)
+            return metric_parser.instantiate_classes(Namespace(metric=metric_config)).get("metric")        
         
-        num_classes = self.model.num_classes
-        val_metric, test_metric = None, None
-        if val_metric_config:
-            self._patch_metric_num_classes(num_classes, val_metric_config)
-            metric_parser.add_subclass_arguments(Metric, "val_metric", required=False, fail_untyped=False)
-            val_metric = metric_parser.instantiate_classes(Namespace(val_metric=val_metric_config)).get("val_metric")
-        if test_metric_config:
-            self._patch_metric_num_classes(num_classes, test_metric_config)
-            metric_parser.add_subclass_arguments(Metric, "test_metric", required=False, fail_untyped=False)
-            test_metric = metric_parser.instantiate_classes(Namespace(test_metric=test_metric_config)).get("test_metric")
-        
-        return (val_metric, test_metric)
+        msg = "The configuration of metric is None."
+        warn(msg, stacklevel=2)
     
     
     def instantiate_model(self, model_config: Namespace) -> tuple:
@@ -456,16 +439,19 @@ class OTXCLI:
 
             seed_everything(seed, workers=True)
 
-    def _patch_metric_num_classes(self, num_classes: int, metric_config: Namespace) -> None:
+    def _patch_metric_num_classes(self, model: Namespace, metric_config: Namespace) -> None:
         """Patch the num_classes of the torchmetrics."""
-        metric_import_lib = metric_config.class_path.split('.')[0]
-        if metric_import_lib != "torchmetrics":
-            return 
         
         if metric_config.init_args.get("num_labels"):
-            metric_config.init_args.num_labels = num_classes
+            metric_config.init_args.num_labels = self.model.num_classes
         elif metric_config.init_args.get("num_classes"):
-            metric_config.init_args.num_classes = num_classes
+            metric_config.init_args.num_classes = self.model.num_classes
+        
+        # H-label classification
+        if hasattr(model, "num_multiclass_heads") and hasattr(model, "num_multilabel_classes"):
+            metric_config.init_args.num_multiclass_heads = model.num_multiclass_heads
+            metric_config.init_args.num_multilabel_classes = model.num_multilabel_classes
+        
                  
     def run(self) -> None:
         """Executes the specified subcommand.

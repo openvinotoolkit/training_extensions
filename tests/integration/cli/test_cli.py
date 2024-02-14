@@ -48,8 +48,9 @@ def test_classification(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 @parametrize_by_task('detection')
 def test_detection(
@@ -58,8 +59,9 @@ def test_detection(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 @parametrize_by_task('instance_segmentation')
 def test_instance_segmentation(
@@ -68,8 +70,9 @@ def test_instance_segmentation(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 @parametrize_by_task('rotated_detection')
 def test_rotated_detection(
@@ -78,8 +81,9 @@ def test_rotated_detection(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 @parametrize_by_task('semantic_segmentation')
 def test_semantic_segmentation(
@@ -88,8 +92,9 @@ def test_semantic_segmentation(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 @parametrize_by_task('visual_prompting')
 def test_visual_prompting(
@@ -98,8 +103,9 @@ def test_visual_prompting(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 @parametrize_by_task('zero_shot_visual_prompting')
 def test_zero_shot_visual_prompting(
@@ -108,8 +114,9 @@ def test_zero_shot_visual_prompting(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
 ):
-    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task)
+    otx_e2e(recipe, tmp_path, fxt_accelerator, fxt_target_dataset_per_task, fxt_cli_override_command_per_task, fxt_open_subprocess)
 
 def otx_e2e(
     recipe: str,
