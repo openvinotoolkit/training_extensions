@@ -23,6 +23,7 @@ from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
+    from torchmetrics import Metric
 
 _ENGINE_AVAILABLE = True
 try:
@@ -327,6 +328,7 @@ class OTXCLI:
             metric_config (Namespace): The metric configuration.
         """
         from torchmetrics import Metric
+
         # Parses the Metric separately to update num_classes.
         metric_parser = ArgumentParser()
 
