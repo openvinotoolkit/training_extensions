@@ -16,7 +16,7 @@ from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from otx.hpo import TrialStatus
 from otx.utils.utils import set_using_comma_seperated_key
 
-from .utils import find_file_recursively, find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
+from .utils import find_file_recursively, find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, remove_unused_files
 
 if TYPE_CHECKING:
     from lightning import LightningModule, Trainer
@@ -128,12 +128,13 @@ def _change_work_dir(work_dir: str, callbacks: list[Callback], engine: Engine) -
 
 
 def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id: str) -> None:
-    last_weight = _find_last_weight(trial_work_dir)
+    weight_dir = get_hpo_weight_dir(hpo_workdir, trial_id)
+    _move_all_ckpt(trial_work_dir, weight_dir)
     if (trial_file := find_trial_file(hpo_workdir, trial_id)) is not None:
-        best_weight = get_best_hpo_weight(trial_work_dir, trial_file)
-    else:
-        best_weight = None
+        best_weight = get_best_hpo_weight(weight_dir, trial_file)
+        remove_unused_files(weight_dir, "epoch_*.ckpt", best_weight)
 
-    for ckpt_file in [best_weight, last_weight]:
-        if ckpt_file is not None:
-            ckpt_file.replace(get_hpo_weight_dir(hpo_workdir, trial_id) / ckpt_file.name)
+
+def _move_all_ckpt(src: Path, dest: Path) -> None:
+    for ckpt_file in src.rglob("*.ckpt"):
+        ckpt_file.replace(dest / ckpt_file.name)
