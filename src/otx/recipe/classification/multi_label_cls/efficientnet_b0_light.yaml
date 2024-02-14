@@ -9,9 +9,8 @@ optimizer:
     lr: 0.0049
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
   init_args:
-    warmup_steps: 0
     mode: max
     factor: 0.5
     patience: 1
@@ -25,6 +24,11 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
   data:
     task: MULTI_LABEL_CLS
     config:

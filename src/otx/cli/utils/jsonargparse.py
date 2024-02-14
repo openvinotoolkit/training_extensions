@@ -178,7 +178,7 @@ def list_override(configs: Namespace, key: str, overrides: list) -> None:
         ...     ...
         ... ]
     """
-    if key not in configs:
+    if key not in configs or configs[key] is None:
         return
     for target in overrides:
         class_path = target.get("class_path", None)
