@@ -30,16 +30,10 @@ class STFPM(OTXAnomalyModel):
         self.backbone = backbone
         super().__init__()
 
-        self.anomalib_lightning_args.update(
-            input_size=self.input_size,
-            layers=self._layers,
-            backbone=self.backbone,
-        )
-
     def _create_model(self) -> nn.Module:
-        from anomalib.models.image.stfpm.torch_model import STFPMModel
+        from anomalib.models.image.stfpm.lightning_model import Stfpm
 
-        return STFPMModel(layers=self._layers, input_size=self.input_size, backbone=self.backbone)
+        return Stfpm(layers=self._layers, input_size=self.input_size, backbone=self.backbone)
 
     @property
     def trainable_model(self) -> str:

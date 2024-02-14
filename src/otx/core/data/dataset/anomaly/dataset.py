@@ -13,7 +13,7 @@ import torch
 from anomalib.data.utils import masks_to_boxes
 from datumaro import DatasetSubset, Image
 from torchvision import io
-from torchvision.tv_tensors import BoundingBoxes, Mask
+from torchvision.tv_tensors import BoundingBoxes, BoundingBoxFormat, Mask
 
 from otx.core.data.dataset.base import OTXDataset, Transforms
 from otx.core.data.entity.anomaly import (
@@ -125,7 +125,7 @@ class AnomalyDataset(OTXDataset):
                     image_color_channel=self.image_color_channel,
                 ),
                 label=label,
-                boxes=BoundingBoxes(boxes[0]),
+                boxes=BoundingBoxes(boxes[0], format=BoundingBoxFormat.XYXY, canvas_size=img_shape),
                 # mask is used for pixel-level metric computation. We can't assume that this will always be available
                 mask=Mask(mask),
             )

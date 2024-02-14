@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
-import importlib
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Generic, Sequence
 
@@ -30,7 +29,6 @@ from otx.core.model.entity.anomaly import OTXAnomalyModel
 from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
-    from anomalib.models import AnomalyModule
     from lightning import LightningModule, Trainer
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.core.optimizer import LightningOptimizer
@@ -57,7 +55,7 @@ class _RouteCallback(Callback):
         pl_module: LightningModule,
         **kwargs,
     ) -> None:
-        anomalib_module = pl_module.anomaly_lightning_model
+        anomalib_module = pl_module.model.model
         for callback in self.callbacks:
             if hasattr(callback, hook_name):
                 getattr(callback, hook_name)(pl_module=anomalib_module, **kwargs)
@@ -155,23 +153,17 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         task_type: TaskType,
     ):
         super().__init__(otx_model=otx_model, torch_compile=torch_compile, optimizer=optimizer, scheduler=scheduler)
-        self.anomaly_lightning_model: AnomalyModule
         self.model: OTXAnomalyModel
         self.task_type = task_type
         self._meta_info: LabelInfo
         self.model_name = self.model.__class__.__name__
-        self._setup_anomalib_lightning_model(name=self.model_name)
+        self._setup_anomalib_lightning_model()
 
-    def _setup_anomalib_lightning_model(self, name: str) -> None:
+    def _setup_anomalib_lightning_model(self) -> None:
         """Initializes the Anomalib lightning model."""
-        if name == "OVAnomalyModel":
+        if self.model_name == "OVAnomalyModel":
             return  # Ignore loading the lightning model when it is an OpenVINO model.
-        module = importlib.import_module(
-            f"anomalib.models.image.{name.lower()}.lightning_model",
-        )
-        model_class = getattr(module, f"{name.title()}")
-        self.anomaly_lightning_model = model_class(**self.model.anomalib_lightning_args.get())
-        self.automatic_optimization = self.anomaly_lightning_model.automatic_optimization
+        self.automatic_optimization = self.model.model.automatic_optimization
 
     def setup(self, stage: str) -> None:
         """Assign OTXModel's torch model to AnomalyModule's torch model.
@@ -180,8 +172,6 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         """
         if self.model_name == "OVAnomalyModel":
             return None
-        # assign OTXModel's torch model to AnomalyModule's torch model
-        self.anomaly_lightning_model.model = self.model.model
         self.model.task_type = self.task_type
 
         if hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
@@ -192,37 +182,33 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
 
         self._set_metrics_in_torch()
 
-        self.anomaly_lightning_model.log = self.log
-        self.anomaly_lightning_model.trainer = self.trainer
+        self.model.model.log = self.log
+        self.model.model.trainer = self.trainer
         return super().setup(stage)
 
     def training_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int) -> torch.Tensor:  # type: ignore[override]
         """Route training step to anomalib's lightning model's training step."""
         _inputs = self._customize_inputs(inputs)
-        return self.anomaly_lightning_model.training_step(_inputs, batch_idx)
+        return self.model.model.training_step(_inputs, batch_idx)
 
     def validation_step(self, inputs: T_OTXBatchDataEntity, batch_idx: int = 0, **kwargs) -> STEP_OUTPUT:
         """Route validation step to anomalib's lightning model's validation step."""
         _inputs = self._customize_inputs(inputs)
         # no need to customize outputs for validation step
-        return self.anomaly_lightning_model.validation_step(_inputs, batch_idx, **kwargs)
+        return self.model.model.validation_step(_inputs, batch_idx, **kwargs)
 
     def on_validation_end(self) -> None:
         """Call anomaly_lightning_model's on_validation_end."""
-        self.anomaly_lightning_model.on_validation_end()
+        self.model.model.on_validation_end()
         # assign the updated values to the OTX model
         self._set_metrics_in_torch()
 
     def _set_metrics_in_torch(self) -> None:
         """This is needed for OpenVINO export."""
-        self.model.model_info.pixel_threshold = (
-            self.anomaly_lightning_model.pixel_threshold.value.cpu().numpy().tolist()
-        )
-        self.model.model_info.image_threshold = (
-            self.anomaly_lightning_model.image_threshold.value.cpu().numpy().tolist()
-        )
-        min_val = self.anomaly_lightning_model.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
-        max_val = self.anomaly_lightning_model.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
+        self.model.model_info.pixel_threshold = self.model.model.pixel_threshold.value.cpu().numpy().tolist()
+        self.model.model_info.image_threshold = self.model.model.image_threshold.value.cpu().numpy().tolist()
+        min_val = self.model.model.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
+        max_val = self.model.model.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
         self.model.model_info.normalization_scale = max_val - min_val
 
     def test_step(
@@ -236,7 +222,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
             return self.model(inputs)
 
         dict_inputs = self._customize_inputs(inputs)
-        return self.anomaly_lightning_model.test_step(dict_inputs, batch_idx, **kwargs)
+        return self.model.model.test_step(dict_inputs, batch_idx, **kwargs)
 
     def on_test_batch_end(
         self,
@@ -276,7 +262,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
             return self.forward(inputs)
 
         _inputs = self._customize_inputs(inputs)
-        return self.anomaly_lightning_model.predict_step(_inputs, batch_idx, **kwargs)
+        return self.model.model.predict_step(_inputs, batch_idx, **kwargs)
 
     def on_predict_batch_end(
         self,
@@ -309,7 +295,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         """Redirect ``on_prediction_end``."""
         if self.model_name == "OVAnomalyModel":
             return  # Ignore when it is an OpenVINO model.
-        self.anomaly_lightning_model.on_predict_end()
+        self.model.model.on_predict_end()
 
     def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]] | None:  # type: ignore[override]
         """Configure optimizers for Anomalib models.
@@ -318,14 +304,14 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         Else don't return optimizer even if it is configured in the OTX model.
         """
         # [TODO](ashwinvaidya17): Revisit this method
-        if self.anomaly_lightning_model.configure_optimizers() and self.optimizer and self.model.trainable_model:
+        if self.model.model.configure_optimizers() and self.optimizer and self.model.trainable_model:
             optimizer = self.optimizer
             if isinstance(optimizer, list):
                 if len(optimizer) > 1:
                     msg = "Only one optimizer should be passed"
                     raise ValueError(msg)
                 optimizer = optimizer[0]
-            params = getattr(self.anomaly_lightning_model.model, self.model.trainable_model).parameters()
+            params = getattr(self.model.model.model, self.model.trainable_model).parameters()
             return optimizer(params=params)
         # The provided model does not require optimization
         return None
@@ -357,7 +343,7 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         optimizer_closure: Callable[[], Any] | None = None,
     ) -> None:
         """Route optimizer step to anomalib's lightning model's optimizer step."""
-        return self.anomaly_lightning_model.optimizer_step(epoch, batch_idx, optimizer, optimizer_closure)
+        return self.model.model.optimizer_step(epoch, batch_idx, optimizer, optimizer_closure)
 
     def forward(
         self,
@@ -368,23 +354,18 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
             outputs = self.model(inputs)
         else:
             _inputs: dict = self._customize_inputs(inputs)
-            outputs = self.anomaly_lightning_model.forward(_inputs)
+            outputs = self.model.model.forward(_inputs)
             outputs = self._customize_outputs(outputs=outputs, inputs=inputs)
         return outputs
 
     def state_dict(self) -> dict[str, Any]:
         """Set keys of state_dict to allow correct loading of the model."""
         state_dict = super().state_dict()
-        state_dict["anomaly_lightning_model_class"] = self.anomaly_lightning_model.__class__.__name__
-
-        # remove model.model from state_dict as it is already present in anomaly_lightning_model.model
-        # this saves space
-        state_dict = {key: value for key, value in state_dict.items() if not key.startswith("model.model")}
         # reorder keys
         extra_info_keys = ("image_threshold_class", "pixel_threshold_class", "normalization_class")
         for key in extra_info_keys:
             if key in state_dict:
-                state_dict[f"anomaly_lightning_model.{key}"] = state_dict[key]
+                state_dict[f"model.model.{key}"] = state_dict[key]
         for key in extra_info_keys:
             if key in state_dict:
                 state_dict.pop(key)
@@ -399,27 +380,22 @@ class OTXBaseAnomalyLitModel(OTXLitModule, ABC, Generic[T_OTXBatchPredEntity, T_
         # When engine.predict is called, "state_dict" is passed to the model instead of the entire checkpoint
         # Hence we need ``ckpt.get``
         ckpt = ckpt.get("state_dict", ckpt)
-        anomaly_lightning_module = ckpt.pop("anomaly_lightning_model_class")
-        self._setup_anomalib_lightning_model(name=anomaly_lightning_module)
+
+        self._setup_anomalib_lightning_model()
         # extract anomaly_lightning_model's state_dict from ckpt and load it
-        anomaly_lightning_module_keys = [key for key in ckpt if key.startswith("anomaly_lightning_model")]
+        anomaly_lightning_module_keys = [key for key in ckpt if key.startswith("model.model")]
         anomaly_lightning_module_state_dict = {}
         for key, value in ckpt.items():
             if key in anomaly_lightning_module_keys:
-                anomaly_lightning_module_state_dict[key.split("anomaly_lightning_model.")[1]] = value
+                anomaly_lightning_module_state_dict[key.split("model.model.")[1]] = value
 
-        self.anomaly_lightning_model.load_state_dict(anomaly_lightning_module_state_dict)
-
-        # restore keys for model.model
-        for key in anomaly_lightning_module_keys:
-            if key.startswith("anomaly_lightning_model.model"):
-                ckpt[f"model.model.{key.split('anomaly_lightning_model.model.')[1]}"] = ckpt[key]
+        self.model.model.load_state_dict(anomaly_lightning_module_state_dict)
 
         # remove extra info keys
         extra_info_keys = ("image_threshold_class", "pixel_threshold_class", "normalization_class", "_is_fine_tuned")
         for key in extra_info_keys:
-            if f"anomaly_lightning_model.{key}" in ckpt:
-                ckpt.pop(f"anomaly_lightning_model.{key}")
+            if f"model.model.{key}" in ckpt:
+                ckpt.pop(f"model.model.{key}")
 
         return super().load_state_dict(ckpt, *args, **kwargs)
 

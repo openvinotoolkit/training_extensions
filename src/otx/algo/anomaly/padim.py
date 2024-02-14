@@ -33,18 +33,10 @@ class Padim(OTXAnomalyModel):
         self.n_features = n_features
         super().__init__()
 
-        self.anomalib_lightning_args.update(
-            input_size=self.input_size,
-            layers=self._layers,
-            backbone=self.backbone,
-            pre_trained=self.pre_trained,
-            n_features=self.n_features,
-        )
-
     def _create_model(self) -> nn.Module:
-        from anomalib.models.image.padim.torch_model import PadimModel
+        from anomalib.models.image.padim.lightning_model import Padim
 
-        return PadimModel(
+        return Padim(
             input_size=self.input_size,
             layers=self._layers,
             backbone=self.backbone,

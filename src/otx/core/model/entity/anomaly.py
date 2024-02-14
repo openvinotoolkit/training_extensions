@@ -32,25 +32,6 @@ if TYPE_CHECKING:
     from torchvision.transforms.v2 import Transform
 
 
-class _AnomalibLightningArgsCache:
-    """Caches args for the anomalib lightning module.
-
-    This is needed as the arguments are passed to the OTX model. These are saved and used by the OTX anomaly
-    lightning model.
-    """
-
-    def __init__(self) -> None:
-        self._args: dict[str, Any] = {}
-
-    def update(self, **kwargs) -> None:
-        """Add args to cache."""
-        self._args.update(kwargs)
-
-    def get(self) -> dict[str, Any]:
-        """Get cached args."""
-        return self._args
-
-
 @dataclass
 class _OVModelInfo:
     """OpenVINO model information."""
@@ -101,7 +82,7 @@ class _AnomalyModelExporter(OTXModelExporter):
     ) -> Path:
         save_path = str(output_dir / f"{base_model_name}.xml")
         exported_model = openvino.convert_model(
-            input_model=model,
+            input_model=model.model,
             example_input=torch.rand(self.input_size),
             input=(openvino.runtime.PartialShape(self.input_size)),
         )
@@ -119,7 +100,7 @@ class _AnomalyModelExporter(OTXModelExporter):
     ) -> Path:
         save_path = str(output_dir / f"{base_model_name}.onnx")
         torch.onnx.export(
-            model=model,
+            model=model.model,
             args=(torch.rand(1, 3, self.model_info.orig_height, self.model_info.orig_width)).to(
                 next(model.parameters()).device,
             ),
@@ -141,9 +122,8 @@ class OTXAnomalyModel(OTXModel):
     def __init__(self) -> None:
         self.model: nn.Module
         super().__init__(num_classes=2)
-        # This cache is used to get params from the OTX model and pass it into Anomalib Lightning module
-        self.anomalib_lightning_args = _AnomalibLightningArgsCache()
         self.model_info = _OVModelInfo()
+        self.task_type: TaskType | None = None
 
     def extract_model_info_from_transforms(self, transforms: list[Transform]) -> None:
         """Stores values from transforms to ``self.model_info``."""
@@ -151,9 +131,10 @@ class OTXAnomalyModel(OTXModel):
             name = transform.__class__.__name__
             # Need to revisit this. It is redundant with image_shape
             if "Resize" in name:
-                self.model_info.orig_height = transform.size
-                self.model_info.orig_width = transform.size
-                self.model_info.image_shape = (transform.size, transform.size)
+                self.model_info.orig_height = transform.size[0] if isinstance(transform.size, list) else transform.size
+                self.model_info.orig_width = transform.size[0] if isinstance(transform.size, list) else transform.size
+                # [TODO] revisit this and see if it is necessary in modelAPI
+                self.model_info.image_shape = (self.model_info.orig_height, self.model_info.orig_width)
             elif "Normalize" in name:
                 # should be float and in range [0-255]
                 self.model_info.mean_values = transform.mean
@@ -165,18 +146,6 @@ class OTXAnomalyModel(OTXModel):
         return _AnomalyModelExporter(
             model_info=self.model_info,
         )
-
-    @property
-    def task_type(self) -> TaskType:
-        """Return task type in Anomalib's format."""
-        if self._task_type:
-            return self._task_type
-        msg = "Task type is not set."
-        raise ValueError(msg)
-
-    @task_type.setter
-    def task_type(self, task_type: TaskType) -> None:
-        self._task_type = task_type
 
     @property
     def label_info(self) -> LabelInfo:
@@ -225,7 +194,7 @@ class OTXAnomalyModel(OTXModel):
 
         Overrides the base forward as input and output customization occurs from the lightning model.
         """
-        return self.model(input_tensor)
+        return self.model.model(input_tensor)
 
 
 class OVAnomalyModel(OVModel):
