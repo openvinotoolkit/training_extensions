@@ -110,11 +110,11 @@ def set_using_dot_delimited_key(key: str, val: Any, target: Any) -> None:  # noq
         setattr(target, splited_key[-1], val)
 
 
-def get_decimal_point(num: float) -> int:
+def get_decimal_point(num: int | float) -> int:
     """Find a decimal point from the given float.
 
     Args:
-        num (float): float to find a decimal point from.
+        num (int | float): float to find a decimal point from.
 
     Returns:
         int: decimal point.
