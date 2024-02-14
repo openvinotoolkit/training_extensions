@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from otx.core.model.entity.anomaly import OTXAnomalyModel
 
 if TYPE_CHECKING:
-    from torch import nn
+    from anomalib.models import AnomalyModule
 
 
 class Padim(OTXAnomalyModel):
@@ -33,7 +33,7 @@ class Padim(OTXAnomalyModel):
         self.n_features = n_features
         super().__init__()
 
-    def _create_model(self) -> nn.Module:
+    def _create_model(self) -> AnomalyModule:
         from anomalib.models.image.padim.lightning_model import Padim
 
         return Padim(

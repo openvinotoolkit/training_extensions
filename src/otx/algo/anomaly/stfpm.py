@@ -12,7 +12,7 @@ from otx.core.model.entity.anomaly import OTXAnomalyModel
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from torch import nn
+    from anomalib.models import AnomalyModule
 
 
 class STFPM(OTXAnomalyModel):
@@ -30,7 +30,7 @@ class STFPM(OTXAnomalyModel):
         self.backbone = backbone
         super().__init__()
 
-    def _create_model(self) -> nn.Module:
+    def _create_model(self) -> AnomalyModule:
         from anomalib.models.image.stfpm.lightning_model import Stfpm
 
         return Stfpm(layers=self._layers, input_size=self.input_size, backbone=self.backbone)
