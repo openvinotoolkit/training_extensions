@@ -6,9 +6,16 @@ from copy import copy
 from pathlib import Path
 
 import pytest
-
 from otx.utils import utils as target_file
-from otx.utils.utils import append_main_proc_signal_handler, append_signal_handler, get_using_dot_delimited_key, set_using_dot_delimited_key, get_decimal_point, find_file_recursively, remove_matched_files
+from otx.utils.utils import (
+    append_main_proc_signal_handler,
+    append_signal_handler,
+    find_file_recursively,
+    get_decimal_point,
+    get_using_dot_delimited_key,
+    remove_matched_files,
+    set_using_dot_delimited_key,
+)
 
 
 @contextmanager
@@ -64,10 +71,10 @@ def test_append_main_proc_signal_handler(mocker):
         assert spy_signal.call_args == ((signal.SIGTERM, signal.SIG_DFL),)
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_obj(mocker):
     target = mocker.MagicMock()
-    target.a.b.c = {"d" : mocker.MagicMock()}
+    target.a.b.c = {"d": mocker.MagicMock()}
     target.a.b.c["d"].e = 1
     return target
 
@@ -122,8 +129,8 @@ def make_dir_and_file(dir_path: Path, file_path: str | Path) -> Path:
 
     return file
 
-    
-@pytest.fixture
+
+@pytest.fixture()
 def temporary_dir_w_some_txt(tmp_path):
     some_txt = ["a/b/c/d.txt", "1/2/3/4.txt", "e.txt", "f/g.txt", "5/6/7.txt"]
     for file_path in some_txt:
