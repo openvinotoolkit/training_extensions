@@ -128,12 +128,12 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     return mapi_config
 
 
-def get_hierarchical_label_list(hierarchical_info: Dict, labels: List) -> List[LabelEntity]:
+def get_hierarchical_label_list(hierarchical_cls_heads_info: Dict, labels: List) -> List[LabelEntity]:
     """Return hierarchical labels list which is adjusted to model outputs classes."""
 
     # Create the list of Label Entities (took from "labels")
     # corresponding to names and order in "label_to_idx"
-    label_to_idx = hierarchical_info["label_to_idx"]
+    label_to_idx = hierarchical_cls_heads_info["label_to_idx"]
     hierarchical_labels = []
     for label_str, _ in label_to_idx.items():
         for label_entity in labels:
