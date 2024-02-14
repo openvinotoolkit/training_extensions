@@ -154,19 +154,13 @@ def test_otx_e2e(
         assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
-    task = recipe.split("/")[-2]
-    tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    if "_cls" in recipe:
-        export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
-    else:
-        export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
     exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
 
     command_cfg = [
         "otx",
         "test",
         "--config",
-        export_test_recipe,
+        recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
@@ -174,7 +168,7 @@ def test_otx_e2e(
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
-        "--model.model_name",
+        "--checkpoint",
         exported_model_path,
     ]
 

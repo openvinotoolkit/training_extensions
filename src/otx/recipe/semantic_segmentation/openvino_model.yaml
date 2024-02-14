@@ -20,7 +20,7 @@ engine:
   task: SEMANTIC_SEGMENTATION
   device: cpu
 
-callback_monitor: val/mIoU
+callback_monitor: val/Dice
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:

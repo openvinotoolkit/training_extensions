@@ -14,10 +14,10 @@ optimizer:
 scheduler:
   class_path: lightning.pytorch.cli.ReduceLROnPlateau
   init_args:
-    mode: min
+    mode: max
     factor: 0.5
     patience: 1
-    monitor: train/loss
+    monitor: val/accuracy
 
 engine:
   task: MULTI_CLASS_CLS
@@ -26,3 +26,10 @@ engine:
 callback_monitor: val/accuracy
 
 data: ../../_base_/data/mmpretrain_base.yaml
+
+overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 3
