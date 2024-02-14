@@ -49,9 +49,9 @@ def execute_hpo(
         max_epochs (int): max epochs to train.
         hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
         hpo_cfg_file (str | Path | None, optional):
-            HPO configuration file. If it isn't given, default setting wil be used.
+            HPO configuration file. If it isn't given, default setting will be used.
         progress_update_callback (Callable[[int | float], None] | None, optional):
-            callback to update progress. Defaults to None.
+            callback to update progress. If it's given, it's called with progress every second. Defaults to None.
 
     Returns:
         tuple[dict[str, Any] | None, Path | None]:
@@ -108,7 +108,7 @@ class HPOConfigurator:
         hpo_time_ratio (int): time ratio to use for HPO compared to training time. Defaults to 4.
         hpo_workdir (Path | None, optional): HPO work directory. Defaults to None.
         hpo_cfg_file (str | Path | None, optional):
-            HPO configuration file. If it isn't given, default setting wil be used. Defaults to None.
+            HPO configuration file. If it isn't given, default setting will be used. Defaults to None.
     """
 
     def __init__(
@@ -118,7 +118,7 @@ class HPOConfigurator:
         hpo_time_ratio: int = 4,
         hpo_workdir: Path | None = None,
         hpo_cfg_file: str | Path | None = None,
-    ):
+    ) -> None:
         self._engine = engine
         self._max_epoch = max_epoch
         self._hpo_time_ratio = hpo_time_ratio
@@ -150,13 +150,13 @@ class HPOConfigurator:
             hpo_config["asynchronous_bracket"] = True
             hpo_config["asynchronous_sha"] = (torch.cuda.device_count() != 1,)
 
-            if "search_space" not in hpo_config:  # optimize lr and bs as default
+            if "search_space" not in hpo_config:
                 hpo_config["search_space"] = self._get_default_search_space(train_dataset_size)
             else:
                 self._align_hp_name(hpo_config["search_space"])
             self._remove_wrong_search_space(hpo_config["search_space"])
 
-            if "prior_hyper_parameters" not in hpo_config:  # default hp is tried at first
+            if "prior_hyper_parameters" not in hpo_config:  # default hyper parameters are tried first
                 hpo_config["prior_hyper_parameters"] = {
                     hp: get_using_comma_seperated_key(hp, self._engine) for hp in hpo_config["search_space"].keys()
                 }
@@ -189,7 +189,7 @@ class HPOConfigurator:
         return search_space
 
     @staticmethod
-    def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]):
+    def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:
         for hp_name, config in list(search_space.items()):
             if config["type"] == "choice":
                 if not config["choice_list"]:
@@ -217,7 +217,7 @@ class HPOConfigurator:
                 )
                 raise ValueError(error_msg)
 
-    def get_hpo_algo(self):
+    def get_hpo_algo(self) -> HpoBase:
         """Get HPO algorithm based on prepared configuration."""
         if not self.hpo_config["search_space"]:
             logger.warning("There is no hyper parameter to optimize.")
@@ -226,14 +226,12 @@ class HPOConfigurator:
 
 
 def _update_hpo_progress(progress_update_callback: Callable[[int | float], None], hpo_algo: HpoBase) -> None:
-    while True:
-        if hpo_algo.is_done():
-            break
+    while not hpo_algo.is_done():
         progress_update_callback(hpo_algo.get_progress() * 100)
         time.sleep(1)
 
 
-def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None):
+def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None) -> None:
     for weight in hpo_workdir.rglob("*.ckpt"):
         if weight != best_hpo_weight:
             weight.unlink()

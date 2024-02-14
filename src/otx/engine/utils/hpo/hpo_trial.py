@@ -31,25 +31,23 @@ def update_hyper_parameter(engine: Engine, hyper_parameter: dict[str, Any]) -> N
 
 
 class HPOCallback(Callback):
-    """HPO callback class. It reports a score to HPO algo every epoch."""
+    """HPO callback class which reports a score to HPO algorithm every epoch."""
 
-    def __init__(self, report_func: Callable[[float | int, float | int], TrialStatus], metric: str):
+    def __init__(self, report_func: Callable[[float | int, float | int], TrialStatus], metric: str) -> None:
         super().__init__()
         self._report_func = report_func
         self.metric = metric
 
     def on_train_epoch_end(self, trainer: Trainer, pl_module_: LightningModule) -> None:
         """Report scores if score exists at the end of each epoch."""
-        epoch = trainer.current_epoch + 1
-        score = trainer.callback_metrics.get(self.metric)
         if (score := trainer.callback_metrics.get(self.metric)) is not None:
-            if self._report_func(score=score.item(), progress=epoch) == TrialStatus.STOP:
+            if self._report_func(score=score.item(), progress=trainer.current_epoch + 1) == TrialStatus.STOP:
                 trainer.should_stop = True
 
 
 def run_hpo_trial(
     hp_config: dict[str, Any],
-    report_func: Callable,
+    report_func: Callable[[int|float, int|float, bool], None],
     hpo_workdir: Path,
     engine: Engine,
     callbacks: list[Callback] | Callback | None = None,
@@ -62,7 +60,8 @@ def run_hpo_trial(
         report_func (Callable): function to report score.
         hpo_workdir (Path): HPO work directory.
         engine (Engine): engine instance.
-        callbacks (list[Callback] | Callback | None, optional): callbacks used in a train. Defaults to None.
+        callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
+        train_args: Arugments for 'engine.train'.
     """
     trial_id = hp_config["id"]
     hpo_weight_dir = get_hpo_weight_dir(hpo_workdir, trial_id)
@@ -77,7 +76,7 @@ def run_hpo_trial(
     _set_to_validate_every_epoch(callbacks, train_args)
 
     with TemporaryDirectory(prefix="OTX-HPO-") as temp_dir:
-        _change_work_dir(callbacks, engine, temp_dir)
+        _change_work_dir(temp_dir, callbacks, engine)
         engine.train(callbacks=callbacks, **train_args)
 
         _keep_best_and_last_weight(Path(temp_dir), hpo_workdir, trial_id)
@@ -120,7 +119,7 @@ def _set_to_validate_every_epoch(callbacks: list[Callback], train_args: dict[str
         train_args["check_val_every_n_epoch"] = 1
 
 
-def _change_work_dir(callbacks: list[Callback], engine: Engine, work_dir: str) -> None:
+def _change_work_dir(work_dir: str, callbacks: list[Callback], engine: Engine) -> None:
     for callback in callbacks:
         if isinstance(callback, ModelCheckpoint):
             callback.dirpath = work_dir
@@ -128,7 +127,7 @@ def _change_work_dir(callbacks: list[Callback], engine: Engine, work_dir: str) -
     engine.work_dir = work_dir
 
 
-def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id: str):
+def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id: str) -> None:
     last_weight = _find_last_weight(trial_work_dir)
     if (trial_file := find_trial_file(hpo_workdir, trial_id)) is not None:
         best_weight = get_best_hpo_weight(trial_work_dir, trial_file)
@@ -137,4 +136,4 @@ def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id
 
     for ckpt_file in [best_weight, last_weight]:
         if ckpt_file is not None:
-            ckpt_file.replace(hpo_workdir / "weight" / trial_id / ckpt_file.name)
+            ckpt_file.replace(get_hpo_weight_dir(hpo_workdir, trial_id) / ckpt_file.name)
