@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
@@ -29,11 +29,11 @@ if TYPE_CHECKING:
 
 
 class OTXDetectionModel(
-    OTXModel[DetBatchDataEntity, DetBatchPredEntity, T_OTXBatchPredEntityWithXAI, TileBatchDetDataEntity],
+    OTXModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI, TileBatchDetDataEntity],
 ):
     """Base class for the detection models used in OTX."""
 
-    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity | T_OTXBatchPredEntityWithXAI:
+    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity | DetBatchPredEntityWithXAI:
         """Unpack detection tiles.
 
         Args:
@@ -42,7 +42,7 @@ class OTXDetectionModel(
         Returns:
             DetBatchPredEntity: Merged detection prediction.
         """
-        tile_preds: list[DetBatchPredEntity | T_OTXBatchPredEntityWithXAI] = []
+        tile_preds: list[DetBatchPredEntity | DetBatchPredEntityWithXAI] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = DetectionTileMerge(inputs.imgs_info)
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
@@ -278,7 +278,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         return MMdeployExporter(**self._export_parameters)
 
 
-class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
+class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI]):
     """Object detection model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -309,7 +309,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, T_OTXBatc
         self,
         outputs: list[DetectionResult],
         inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+    ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         # add label index
         bboxes = []
         scores = []
@@ -334,6 +334,21 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, T_OTXBatc
                 labels.append(torch.tensor([output.id - 1 for output in output_objects]))
             else:
                 labels.append(torch.tensor([output.id for output in output_objects]))
+
+        if outputs and outputs[0].saliency_map.size != 1:
+            predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
+
+            return DetBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
 
         return DetBatchPredEntity(
             batch_size=len(outputs),
