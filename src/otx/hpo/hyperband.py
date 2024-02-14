@@ -969,7 +969,8 @@ class HyperBand(HpoBase):
         if best_trial is None:
             return None
         config = copy(best_trial.configuration)
-        config.pop("iterations")
+        if "iterations" in config:
+            config.pop("iterations")
         return {"id": best_trial.id, "configuration": config}
 
     def print_result(self) -> None:
