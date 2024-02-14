@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
@@ -32,7 +32,12 @@ if TYPE_CHECKING:
 
 
 class OTXInstanceSegModel(
-    OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, TileBatchInstSegDataEntity],
+    OTXModel[
+        InstanceSegBatchDataEntity,
+        InstanceSegBatchPredEntity,
+        T_OTXBatchPredEntityWithXAI,
+        TileBatchInstSegDataEntity,
+    ],
 ):
     """Base class for the Instance Segmentation models used in OTX."""
 
@@ -45,7 +50,7 @@ class OTXInstanceSegModel(
         Returns:
             InstanceSegBatchPredEntity: Merged instance segmentation prediction.
         """
-        tile_preds: list[InstanceSegBatchPredEntity] = []
+        tile_preds: list[InstanceSegBatchPredEntity | T_OTXBatchPredEntityWithXAI] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = InstanceSegTileMerge(inputs.imgs_info)
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
@@ -272,7 +277,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
 
 class OVInstanceSegmentationModel(
-    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
+    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, Any],
 ):
     """Instance segmentation model compatible for OpenVINO IR inference.
 

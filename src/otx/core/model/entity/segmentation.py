@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -25,7 +25,9 @@ if TYPE_CHECKING:
     from torch import nn
 
 
-class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
+class OTXSegmentationModel(
+    OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+):
     """Base class for the detection models used in OTX."""
 
     @property
@@ -152,7 +154,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         return OTXNativeModelExporter(**self._export_parameters)
 
 
-class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
+class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
     """Semantic segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository

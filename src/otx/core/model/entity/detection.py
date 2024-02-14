@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
@@ -28,10 +28,12 @@ if TYPE_CHECKING:
     from otx.core.exporter.base import OTXModelExporter
 
 
-class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
+class OTXDetectionModel(
+    OTXModel[DetBatchDataEntity, DetBatchPredEntity, T_OTXBatchPredEntityWithXAI, TileBatchDetDataEntity],
+):
     """Base class for the detection models used in OTX."""
 
-    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
+    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity | T_OTXBatchPredEntityWithXAI:
         """Unpack detection tiles.
 
         Args:
@@ -40,7 +42,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         Returns:
             DetBatchPredEntity: Merged detection prediction.
         """
-        tile_preds: list[DetBatchPredEntity] = []
+        tile_preds: list[DetBatchPredEntity | T_OTXBatchPredEntityWithXAI] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = DetectionTileMerge(inputs.imgs_info)
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
@@ -276,7 +278,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         return MMdeployExporter(**self._export_parameters)
 
 
-class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
+class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
     """Object detection model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository

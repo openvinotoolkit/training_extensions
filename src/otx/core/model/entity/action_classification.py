@@ -11,7 +11,7 @@ from otx.core.data.entity.action_classification import (
     ActionClsBatchDataEntity,
     ActionClsBatchPredEntity,
 )
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.config import inplace_num_classes
@@ -21,7 +21,9 @@ if TYPE_CHECKING:
     from torch import nn
 
 
-class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, T_OTXTileBatchDataEntity]):
+class OTXActionClsModel(
+    OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+):
     """Base class for the action classification models used in OTX."""
 
 

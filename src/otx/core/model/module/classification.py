@@ -18,8 +18,10 @@ from otx.core.data.entity.classification import (
     HlabelClsBatchPredEntity,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
+    MulticlassClsBatchPredEntityWithXAI,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
+    MultilabelClsBatchPredEntityWithXAI,
 )
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
@@ -91,7 +93,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: MulticlassClsBatchPredEntity,
+        preds: MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI,
         inputs: MulticlassClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         pred = torch.tensor(preds.labels)
@@ -110,7 +112,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MulticlassClsBatchPredEntity):
+        if not isinstance(preds, MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI):
             raise TypeError(preds)
 
         self.test_metric.update(
@@ -172,7 +174,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MultilabelClsBatchPredEntity):
+        if not isinstance(preds, MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -181,7 +183,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: MultilabelClsBatchPredEntity,
+        preds: MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI,
         inputs: MultilabelClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         return {

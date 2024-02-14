@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections import defaultdict
-from typing import Generic
+from typing import Any, Generic
 
 import torch
 from torchvision import tv_tensors
@@ -75,7 +75,7 @@ class DetectionTileMerge(TileMerge):
 
     def merge(
         self,
-        batch_tile_preds: list[DetBatchPredEntity],
+        batch_tile_preds: list[DetBatchPredEntity | Any],
         batch_tile_attrs: list[list[dict]],
     ) -> list[DetPredEntity]:
         """Merge batch tile predictions to a list of full-size prediction data entities.
@@ -175,7 +175,7 @@ class InstanceSegTileMerge(TileMerge):
 
     def merge(
         self,
-        batch_tile_preds: list[InstanceSegBatchPredEntity],
+        batch_tile_preds: list[InstanceSegBatchPredEntity | Any],
         batch_tile_attrs: list[list[dict]],
     ) -> list[InstanceSegPredEntity]:
         """Merge inst-seg tile predictions to one single prediction.
