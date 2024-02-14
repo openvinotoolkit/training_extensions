@@ -59,6 +59,7 @@ class _OVModelInfo:
     image_threshold: float = 0.5
     pixel_threshold: float = 0.5
     task: TaskType = TaskType.CLASSIFICATION
+    # the actual values for mean and scale should be in range 0-255
     mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0)
     scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0)
     normalization_scale: float = 1.0

@@ -11,7 +11,7 @@ engine:
 
 callback_monitor: val/accuracy
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../../_base_/data/torchvision_base.yaml
 
 overrides:
   data:

@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 import torch
 from torchvision import tv_tensors
-from torchvision.transforms.functional import resize
 
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
@@ -61,7 +60,7 @@ class AnomalySegmentationDataBatch(OTXBatchDataEntity):
             images=images,
             imgs_info=batch.imgs_info,
             labels=[entity.label for entity in entities],
-            masks=torch.vstack([resize(entity.mask, size=[images.shape[2], images.shape[3]]) for entity in entities]),
+            masks=torch.vstack([entity.mask for entity in entities]),
         )
 
     def pin_memory(self) -> AnomalySegmentationDataBatch:
@@ -82,5 +81,3 @@ class AnomalySegmentationBatchPrediction(AnomalySegmentationDataBatch, OTXBatchP
     """Anomaly classification batch prediction."""
 
     anomaly_maps: torch.Tensor
-    # Note: ideally this should be anomalous_scores but it is now used to shadow the scores in OTXBatchPredEntity
-    scores: torch.bool

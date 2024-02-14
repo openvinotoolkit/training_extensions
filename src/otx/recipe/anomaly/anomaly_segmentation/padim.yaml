@@ -15,7 +15,7 @@ engine:
 
 callback_monitor: step # this has no effect as Padim does not need to be trained
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 1
   limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers

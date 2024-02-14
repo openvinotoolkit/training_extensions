@@ -21,7 +21,7 @@ engine:
 
 callback_monitor: train_loss_epoch # val loss is not available as there is no validation set from default dataloader
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
   limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers

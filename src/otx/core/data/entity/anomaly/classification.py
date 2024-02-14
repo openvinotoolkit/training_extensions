@@ -87,5 +87,3 @@ class AnomalyClassificationBatchPrediction(AnomalyClassificationDataBatch, OTXBa
     """Anomaly classification batch prediction."""
 
     anomaly_maps: torch.Tensor
-    # Note: ideally this should be anomalous_scores but it is now used to shadow the scores in OTXBatchPredEntity
-    scores: torch.bool
