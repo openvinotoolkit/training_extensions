@@ -124,9 +124,19 @@ class TestAutoConfigurator:
     def test_get_optimizer(self) -> None:
         task = OTXTaskType.SEMANTIC_SEGMENTATION
         auto_configurator = AutoConfigurator(task=task)
-        assert callable(auto_configurator.get_optimizer())
+        optimizer = auto_configurator.get_optimizer()
+        if isinstance(optimizer, list):
+            for opt in optimizer:
+                assert callable(opt)
+        else:
+            assert callable(optimizer)
 
     def test_get_scheduler(self) -> None:
         task = OTXTaskType.INSTANCE_SEGMENTATION
         auto_configurator = AutoConfigurator(task=task)
-        assert callable(auto_configurator.get_scheduler())
+        scheduler = auto_configurator.get_scheduler()
+        if isinstance(scheduler, list):
+            for sch in scheduler:
+                assert callable(sch)
+        else:
+            assert callable(scheduler)

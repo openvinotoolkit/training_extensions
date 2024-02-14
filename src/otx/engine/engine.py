@@ -83,8 +83,8 @@ class Engine:
         work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
-        optimizer: OptimizerCallable | None = None,
-        scheduler: LRSchedulerCallable | None = None,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None = None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
@@ -97,9 +97,10 @@ class Engine:
             work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
-            optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
-            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None, optional): The optimizer for the engine.
                 Defaults to None.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None, optional):
+                The learning rate scheduler for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
@@ -132,10 +133,10 @@ class Engine:
                 meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: OptimizerCallable | None = (
+        self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
-        self.scheduler: LRSchedulerCallable | None = (
+        self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
@@ -667,15 +668,15 @@ class Engine:
     def _build_lightning_module(
         self,
         model: OTXModel,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
         Args:
             model (OTXModel): The OTXModel instance.
-            optimizer (OptimizerCallable): The optimizer callable.
-            scheduler (LRSchedulerCallable): The learning rate scheduler callable.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
 
         Returns:
             OTXLitModule: The built LightningModule instance.
