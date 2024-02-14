@@ -207,6 +207,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
                 scores=scores,
                 labels=labels,
                 saliency_maps=explain_results,
+                feature_vectors=[],
             )
 
         return MulticlassClsBatchPredEntity(
@@ -356,6 +357,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                 scores=scores,
                 labels=labels,
                 saliency_maps=explain_results,
+                feature_vectors=[],
             )
 
         return MultilabelClsBatchPredEntity(
@@ -525,6 +527,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 scores=scores,
                 labels=labels,
                 saliency_maps=explain_results,
+                feature_vectors=[],
             )
 
         return HlabelClsBatchPredEntity(
@@ -594,6 +597,7 @@ class OVMulticlassClassificationModel(
 
         if outputs and outputs[0].saliency_map.size != 0:
             predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
             return MulticlassClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -601,6 +605,7 @@ class OVMulticlassClassificationModel(
                 scores=pred_scores,
                 labels=pred_labels,
                 saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
             )
 
         return MulticlassClsBatchPredEntity(
@@ -692,6 +697,7 @@ class OVHlabelClassificationModel(
 
         if outputs and outputs[0].saliency_map.size != 1:
             predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
             return HlabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -699,6 +705,7 @@ class OVHlabelClassificationModel(
                 scores=all_pred_scores,
                 labels=all_pred_labels,
                 saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
             )
 
         return HlabelClsBatchPredEntity(
@@ -750,6 +757,7 @@ class OVMultilabelClassificationModel(
 
         if outputs and outputs[0].saliency_map.size != 1:
             predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
             return MultilabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -757,6 +765,7 @@ class OVMultilabelClassificationModel(
                 scores=pred_scores,
                 labels=[],
                 saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
             )
 
         return MultilabelClsBatchPredEntity(

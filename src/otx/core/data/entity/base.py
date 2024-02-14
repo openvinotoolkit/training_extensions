@@ -510,7 +510,8 @@ class OTXPredEntity(OTXDataEntity):
 class OTXPredEntityWithXAI(OTXPredEntity):
     """Data entity to represent model output prediction with explanations."""
 
-    saliency_maps: np.ndarray | Tensor
+    saliency_map: np.ndarray | Tensor
+    feature_vector: np.ndarray | list
 
 
 T_OTXBatchDataEntity = TypeVar(
@@ -615,6 +616,7 @@ class OTXBatchPredEntityWithXAI(OTXBatchPredEntity):
     """Data entity to represent model output predictions with explanations."""
 
     saliency_maps: list[np.ndarray] | list[Tensor]
+    feature_vectors: list[np.ndarray] | list[Tensor]
 
 
 T_OTXBatchLossEntity = TypeVar(
