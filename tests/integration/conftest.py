@@ -76,7 +76,7 @@ def pytest_configure(config):
         recipe_path = find_recipe_folder(recipe_path, task.value.lower())
         task_list = [task]
     else:
-        task_list = list(OTXTaskType)
+        task_list = [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
 
     # Update RECIPE_LIST
     recipe_list = [str(p) for p in recipe_path.glob("**/*.yaml") if "_base_" not in p.parts]

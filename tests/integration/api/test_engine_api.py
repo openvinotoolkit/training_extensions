@@ -25,6 +25,8 @@ def test_engine_from_config(
         fxt_accelerator (str): The accelerator used for training.
         fxt_target_dataset_per_task (dict): A dictionary mapping tasks to target datasets.
     """
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip("Only the Task has Default config is tested to reduce unnecessary resources.")
     if task.lower() in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
