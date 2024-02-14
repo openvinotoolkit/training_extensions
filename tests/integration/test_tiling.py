@@ -102,24 +102,26 @@ class TestOTXTiling:
 
     def test_tile_sampler(self, fxt_det_data_config):
         rng = np.random.default_rng()
+
         fxt_det_data_config.tile_config.enable_tiler = True
         fxt_det_data_config.tile_config.enable_adaptive_tiling = False
+        fxt_det_data_config.tile_config.sampling_ratio = rng.random()
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
             config=fxt_det_data_config,
         )
         tile_datamodule.prepare_data()
-
-        fxt_det_data_config.tile_config.enable_tiler = True
-        fxt_det_data_config.tile_config.enable_adaptive_tiling = False
-        fxt_det_data_config.tile_config.sampling_ratio = rng.random()
-        sampled_tile_datamodule = OTXDataModule(
-            task=OTXTaskType.DETECTION,
-            config=fxt_det_data_config,
+        sampled_count = max(
+            1,
+            int(len(tile_datamodule._get_dataset("train")) * fxt_det_data_config.tile_config.sampling_ratio),
         )
-        sampled_tile_datamodule.prepare_data()
-        sampled_count = int(len(tile_datamodule.subsets["train"]) * fxt_det_data_config.tile_config.sampling_ratio)
-        assert sampled_count == len(sampled_tile_datamodule.subsets["train"])
+
+        count = 0
+        for batch in tile_datamodule.train_dataloader():
+            count += batch.batch_size
+            assert isinstance(batch, DetBatchDataEntity)
+
+        assert sampled_count == count, "Sampled count should be equal to the count of the dataloader batch size"
 
     def test_train_dataloader(self, fxt_det_data_config) -> None:
         # Enable tile adapter

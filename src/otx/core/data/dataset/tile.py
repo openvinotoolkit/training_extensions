@@ -12,7 +12,6 @@ import numpy as np
 import torch
 from datumaro import Bbox, DatasetItem, DatasetSubset, Image, Polygon
 from datumaro import Dataset as DmDataset
-from datumaro.plugins.sampler.random_sampler import RandomSampler
 from datumaro.plugins.tiling import Tile
 from datumaro.plugins.tiling.util import (
     clip_x1y1x2y2,
@@ -238,20 +237,10 @@ class OTXTileTrainDataset(OTXTileDataset):
             threshold_drop_ann=0.5,
         )
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
-        self.dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
-        self.tile_config = tile_config
-        sampled_subset = self.sample_subset()
-        dataset.dm_subset = sampled_subset
-        dataset.ids = [item.id for item in sampled_subset]
+        dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
+        dataset.dm_subset = dm_subset
+        dataset.ids = [item.id for item in dm_subset]
         super().__init__(dataset, tile_config)
-
-    def sample_subset(self) -> DatasetSubset:
-        """Randomly sample dataset items."""
-        if self.tile_config.sampling_ratio < 1.0:
-            dm_dataset = self.dm_subset.as_dataset()
-            dm_dataset.transform(RandomSampler, count=int(len(self.dm_subset) * self.tile_config.sampling_ratio))
-            return DatasetSubset(dm_dataset, self.dm_subset.name)
-        return self.dm_subset
 
 
 class OTXTileDetTestDataset(OTXTileDataset):
