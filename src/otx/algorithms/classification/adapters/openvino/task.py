@@ -126,7 +126,11 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         self.model = Model.create_model(model_adapter, "otx_classification", self.configuration, preload=True)
 
-        self.converter = ClassificationToAnnotationConverter(self.label_schema)
+        if self.model.hierarchical:
+            hierarchical_cls_heads_info = self.model.hierarchical_info["cls_heads_info"]
+        else:
+            hierarchical_cls_heads_info = None
+        self.converter = ClassificationToAnnotationConverter(self.label_schema, hierarchical_cls_heads_info)
         self.callback_exceptions: List[Exception] = []
         self.model.inference_adapter.set_callback(self._async_callback)
 

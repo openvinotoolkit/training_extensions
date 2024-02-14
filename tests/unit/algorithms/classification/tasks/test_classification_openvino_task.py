@@ -81,6 +81,7 @@ class TestOpenVINOClassificationInferencer:
         }
         fake_metadata = {"original_shape": (254, 320, 3), "resized_shape": (224, 224, 3)}
         self.cls_ov_inferencer.model.postprocess.return_value = [[0, 0.87], [1, 0.13]]
+        self.cls_ov_inferencer.model.hierarchical = False
         returned_value = self.cls_ov_inferencer.post_process(fake_prediction, fake_metadata)
 
         assert len(returned_value.annotations[0].get_labels()) > 0
