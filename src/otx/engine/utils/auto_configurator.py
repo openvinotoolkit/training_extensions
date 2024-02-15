@@ -276,13 +276,14 @@ class AutoConfigurator:
         Returns:
             Metric | None: The instantiated metric.
         """
-        metric_config = self.config.get("metric", None)
-        logger.warning(f"Set Default Metric: {metric_config}")
+        if self.task in DEFAULT_CONFIG_PER_TASK:
+            metric_config = self.config.get("metric", None)
+            logger.warning(f"Set Default Metric: {metric_config}")
 
-        # Currently, single metric only available.
-        if metric_config:
-            metric = partial_instantiate_class(init=metric_config)
-            return metric[0] if isinstance(metric, list) else metric
+            # Currently, single metric only available.
+            if metric_config:
+                metric = partial_instantiate_class(init=metric_config)
+                return metric[0] if isinstance(metric, list) else metric
 
         return None
 

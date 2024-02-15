@@ -248,6 +248,16 @@ class OTXHlabelClsLitModule(OTXLitModule):
             else metric
         )
 
+        # Temporary, TODO (sungmanc)
+        # OTX can't support the auto-configuration for the H-label classification
+        # Therefore, default metric can be None and it cause the error
+        # This is the workaround
+        if self.metric is None:
+            self.metric = HLabelAccuracy(
+                num_multiclass_heads=self.model.num_multiclass_heads,
+                num_multilabel_classes=self.model.num_multilabel_classes,
+            )
+
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
             msg = f"The type of self.meta_info should be HLabelMetaInfo, got {type(self.meta_info)}."
