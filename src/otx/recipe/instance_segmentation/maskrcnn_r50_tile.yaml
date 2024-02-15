@@ -37,6 +37,7 @@ overrides:
     config:
       tile_config:
         enable_tiler: true
+        enable_adaptive_tiling: true
       include_polygons: true
       train_subset:
         num_workers: 4

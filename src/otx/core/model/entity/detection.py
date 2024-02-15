@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torchvision import tv_tensors
 
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
@@ -31,6 +32,10 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
     """Base class for the detection models used in OTX."""
 
+    def __init__(self, *arg, **kwargs) -> None:
+        super().__init__(*arg, **kwargs)
+        self.tile_config = TileConfig()
+
     def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
         """Unpack detection tiles.
 
@@ -42,7 +47,11 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         """
         tile_preds: list[DetBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
-        merger = DetectionTileMerge(inputs.imgs_info)
+        merger = DetectionTileMerge(
+            inputs.imgs_info,
+            self.tile_config.iou_threshold,
+            self.tile_config.max_num_instances,
+        )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):

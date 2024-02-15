@@ -12,6 +12,7 @@ import numpy as np
 import torch
 from torchvision import tv_tensors
 
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -36,6 +37,10 @@ class OTXInstanceSegModel(
 ):
     """Base class for the Instance Segmentation models used in OTX."""
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.tile_config = TileConfig()
+
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
 
@@ -47,7 +52,11 @@ class OTXInstanceSegModel(
         """
         tile_preds: list[InstanceSegBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
-        merger = InstanceSegTileMerge(inputs.imgs_info)
+        merger = InstanceSegTileMerge(
+            inputs.imgs_info,
+            self.tile_config.iou_threshold,
+            self.tile_config.max_num_instances,
+        )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
@@ -242,7 +251,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 tv_tensors.BoundingBoxes(
                     output.pred_instances.bboxes,
                     format="XYXY",
-                    canvas_size=output.img_shape,
+                    canvas_size=output.ori_shape,
                 ),
             )
             output_masks = tv_tensors.Mask(

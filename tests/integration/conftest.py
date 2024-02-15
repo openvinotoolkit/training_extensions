@@ -159,8 +159,4 @@ def fxt_cli_override_command_per_task() -> dict:
             "1",
             "--disable-infer-num-classes",
         ],
-        "tile": [
-            "--data.config.tile_config.grid_size",
-            "[1,1]",
-        ],
     }
