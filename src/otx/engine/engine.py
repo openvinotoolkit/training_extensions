@@ -135,26 +135,6 @@ class Engine:
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
-    @property
-    def work_dir(self) -> PathLike:
-        """Work directory."""
-        return self._work_dir
-
-    @work_dir.setter
-    def work_dir(self, val: PathLike) -> None:
-        self._work_dir = val
-        self._cache.update(default_root_dir=val)
-
-    @property
-    def device(self) -> DeviceConfig:
-        """Device engine uses."""
-        return self._device
-
-    @device.setter
-    def device(self, val: DeviceType) -> None:
-        self._device = DeviceConfig(accelerator=val)
-        self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
-
     _EXPORTED_MODEL_BASE_NAME = "exported_model"
 
     # ------------------------------------------------------------------------ #
@@ -633,6 +613,26 @@ class Engine:
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
     # ------------------------------------------------------------------------ #
+
+    @property
+    def work_dir(self) -> PathLike:
+        """Work directory."""
+        return self._work_dir
+
+    @work_dir.setter
+    def work_dir(self, val: PathLike) -> None:
+        self._work_dir = val
+        self._cache.update(default_root_dir=val)
+
+    @property
+    def device(self) -> DeviceConfig:
+        """Device engine uses."""
+        return self._device
+
+    @device.setter
+    def device(self, val: DeviceType) -> None:
+        self._device = DeviceConfig(accelerator=val)
+        self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 
     @property
     def trainer(self) -> Trainer:
