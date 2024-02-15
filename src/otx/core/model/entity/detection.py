@@ -226,7 +226,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+    ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
 
         if self.training:
@@ -260,6 +260,21 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                 ),
             )
             labels.append(output.pred_instances.labels)
+
+        if hasattr(self, "explain_hook"):
+            hook_records = self.explain_hook.records
+            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+
+            return DetBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_maps=explain_results,
+                feature_vectors=[],
+            )
 
         return DetBatchPredEntity(
             batch_size=len(outputs),

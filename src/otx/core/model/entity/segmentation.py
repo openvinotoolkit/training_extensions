@@ -4,6 +4,7 @@
 """Class definition for detection model entity used in OTX."""
 
 from __future__ import annotations
+import copy
 
 from typing import TYPE_CHECKING, Any
 
@@ -106,7 +107,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+    ) -> SegBatchPredEntity | SegBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmseg.structures import SegDataSample
 
         if self.training:
@@ -125,6 +126,20 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             if not isinstance(output, SegDataSample):
                 raise TypeError(output)
             masks.append(output.pred_sem_seg.data)
+
+        if hasattr(self, "explain_hook"):
+            hook_records = self.explain_hook.records
+            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+
+            return SegBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=[],
+                masks=masks,
+                saliency_maps=explain_results,
+                feature_vectors=[],
+            )
 
         return SegBatchPredEntity(
             batch_size=len(outputs),
