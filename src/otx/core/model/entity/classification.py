@@ -6,7 +6,8 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any
+import types
+from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 import torch
@@ -29,7 +30,9 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
+    from mmpretrain.models import ImageClassifier
     from mmpretrain.models.utils import ClsDataPreprocessor
+    from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
@@ -45,24 +48,6 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
         return True
 
-    # @property
-    # def backbone(self) -> nn.Module:
-    #     """Returns model's backbone. Can be redefined at the model's level."""
-    #     if backbone := getattr(self.model, "backbone", None):
-    #         return backbone
-    #     raise ValueError
-
-    # def register_explain_hook(self) -> None:
-    #     """Register explain hook at the model backbone output."""
-    #     from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
-
-    #     self.explain_hook = ReciproCAMHook.create_and_register_hook(
-    #         self.backbone,
-    #         self.head_forward_fn,
-    #         num_classes=self.num_classes,
-    #         optimize_gap=self.has_gap,
-    #     )
-
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward. Can be redefined at the model's level."""
@@ -74,15 +59,6 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         output = neck(x)
         return head([output])
 
-    # def remove_explain_hook_handle(self) -> None:
-    #     """Removes explain hook from the model."""
-    #     if self.explain_hook.handle is not None:
-    #         self.explain_hook.handle.remove()
-
-    # def reset_explain_hook(self) -> None:
-    #     """Clear all history of explain records."""
-    #     self.explain_hook.reset()
-
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
@@ -93,12 +69,16 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         # If customize_inputs is overridden
         outputs = (
             self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
-            if self._customize_inputs != OTXModel._customize_inputs
+            if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
             else self.model(inputs)
         )
+
+        # before merging https://github.com/openvinotoolkit/training_extensions/pull/2913
+        outputs = outputs["logits"]
+
         return (
             self._customize_outputs(outputs, inputs)
-            if self._customize_outputs != OTXModel._customize_outputs
+            if self._customize_outputs != ExplainableOTXClsModel._customize_outputs
             else outputs
         )
 
@@ -106,12 +86,10 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
     def _forward_explain_image_classifier(
         self: ImageClassifier,
         inputs: torch.Tensor,
-        data_samples: list[DataSample] | None = None,  # noqa: ARG001
-        mode: str = "tensor",  # noqa: ARG001
+        data_samples: list[DataSample] | None = None,
+        mode: str = "tensor",
     ) -> dict:
-        """
-        Forward func of the ImageClassifier instance, which located in is in OTXModel().model.
-        """
+        """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
         x = self.backbone(inputs)
         backbone_feat = x
 
@@ -120,20 +98,53 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
         if self.with_neck:
             x = self.neck(x)
 
-        logits = self.head(x) if self.with_head else x
+        if mode == "tensor":
+            logits = self.head(x) if self.with_head else x
+        elif mode == "predict":
+            logits = self.head.predict(x, data_samples)
+        else:
+            msg = f'Invalid mode "{mode}".'
+            raise RuntimeError(msg)
+
         return {
             "logits": logits,
             "saliency_map": saliency_map,
         }
 
-    def get_explain_fn(self):
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
         from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+
         explainer = ReciproCAMHook(
             self.head_forward_fn,
             num_classes=self.num_classes,
             optimize_gap=self.has_gap,
         )
         return explainer.func
+
+    def _reset_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
+
+        self.model.explain_fn = self.get_explain_fn()
+        forward_with_explain = self._forward_explain_image_classifier
+
+        self.original_model_forward = self.model.forward
+
+        func_type = types.MethodType
+        self.model.forward = func_type(forward_with_explain, self.model)
+
+    def _restore_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
+
+        if not self.original_model_forward:
+            msg = "Original model forward was not saved."
+            raise RuntimeError(msg)
+
+        func_type = types.MethodType
+        self.model.forward = func_type(self.original_model_forward, self.model)
+        self.original_model_forward = None
 
 
 class OTXMulticlassClsModel(
@@ -251,6 +262,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
+        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
 
         return export_params
 

@@ -312,6 +312,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         return_predictions: bool | None = None,
+        explain: bool = False,
         **kwargs,
     ) -> list | None:
         """Run predictions using the specified model and data.
@@ -320,6 +321,7 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             return_predictions (bool | None, optional): Whether to return the predictions or not.
+            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -330,6 +332,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ...     return_predictions=True,
+            ...     explain=True,
             ... )
 
         CLI Usage:
@@ -353,8 +356,7 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
-        if True:
-            lit_module.model.explain_mode = True
+        lit_module.model.explain_mode = explain
 
         self._build_trainer(**kwargs)
 
@@ -376,6 +378,7 @@ class Engine:
         checkpoint: str | Path | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        explain: bool = False,
     ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
@@ -383,6 +386,7 @@ class Engine:
             checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
+            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
 
         Returns:
             Path: Path to the exported model.
@@ -392,6 +396,7 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     export_format=OTXExportFormatType.OPENVINO,
             ...     export_precision=OTXExportPrecisionType.FP32,
+            ...     explain=True,
             ... )
 
         CLI Usage:
@@ -423,8 +428,7 @@ class Engine:
 
             lit_module.load_state_dict(loaded_checkpoint)
 
-            if True:
-                self.model.explain_mode = True
+            self.model.explain_mode = explain
 
             return self.model.export(
                 output_dir=Path(self.work_dir),
