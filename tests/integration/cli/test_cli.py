@@ -10,6 +10,11 @@ import yaml
 from tests.integration.cli.utils import run_main
 
 
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_e2e(
     recipe: str,
     tmp_path: Path,
@@ -167,6 +172,11 @@ def test_otx_e2e(
     assert (tmp_path_test / "outputs").exists()
 
 
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_explain_e2e(
     recipe: str,
     tmp_path: Path,
@@ -238,6 +248,11 @@ def test_otx_explain_e2e(
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
 
 
+# @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
+@pytest.mark.parametrize(
+    "ov_recipe",
+    pytest.RECIPE_OV_LIST,
+)
 def test_otx_ov_test(
     ov_recipe: str,
     tmp_path: Path,

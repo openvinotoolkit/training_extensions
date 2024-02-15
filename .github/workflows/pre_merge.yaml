@@ -68,17 +68,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: "MULTI_CLASS_CLS"
-          - task: "MULTI_LABEL_CLS"
-          - task: "H_LABEL_CLS"
-          - task: "DETECTION"
-          - task: "ROTATED_DETECTION"
-          - task: "INSTANCE_SEGMENTATION"
-          - task: "SEMANTIC_SEGMENTATION"
-          - task: "ACTION_CLASSIFICATION"
-          - task: "ACTION_DETECTION"
-          - task: "VISUAL_PROMPTING"
-          - task: "ZERO_SHOT_VISUAL_PROMPTING"
+          - task: "action"
+          - task: "classification"
+          - task: "detection"
+          - task: "instance_segmentation"
+          - task: "semantic_segmentation"
+          - task: "visual_prompting"
     name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
     concurrency:

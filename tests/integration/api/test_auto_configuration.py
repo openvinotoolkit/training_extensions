@@ -11,6 +11,7 @@ from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_auto_configuration(
     task: OTXTaskType,
     tmp_path: Path,
@@ -54,7 +55,8 @@ def test_auto_configuration(
 
     assert engine._auto_configurator.config == default_config
 
-    train_metric = engine.train(max_epochs=default_config.get("max_epochs", 2))
+    max_epochs = 2 if task.lower() != "zero_shot_visual_prompting" else 1
+    train_metric = engine.train(max_epochs=max_epochs)
     if task.lower() != "zero_shot_visual_prompting":
         assert len(train_metric) > 0
 

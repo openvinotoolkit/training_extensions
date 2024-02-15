@@ -46,6 +46,11 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
 }
 
 
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_export_infer(
     recipe: str,
     tmp_path: Path,

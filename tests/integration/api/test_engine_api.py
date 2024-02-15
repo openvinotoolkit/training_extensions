@@ -11,6 +11,7 @@ from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_PER_TASK
 
 
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_engine_from_config(
     task: OTXTaskType,
     tmp_path: Path,

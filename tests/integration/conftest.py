@@ -23,8 +23,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--task",
         action="store",
-        default=None,
-        type=OTXTaskType,
+        default="all",
+        type=str,
         help="Task type of OTX to use integration test.",
     )
 
@@ -57,6 +57,18 @@ def find_recipe_folder(base_path: Path, folder_name: str) -> Path:
     raise FileNotFoundError(msg)
 
 
+def get_task_list(task: str) -> list[OTXTaskType]:
+    if task == "all":
+        return [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
+    if task == "classification":
+        return [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS]
+    if task == "action":
+        return [OTXTaskType.ACTION_CLASSIFICATION, OTXTaskType.ACTION_DETECTION]
+    if task == "visual_prompting":
+        return [OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING]
+    return [OTXTaskType(task.upper())]
+
+
 def pytest_configure(config):
     """Configure pytest options and set task, recipe, and recipe_ov lists.
 
@@ -72,52 +84,23 @@ def pytest_configure(config):
     otx_module = importlib.import_module("otx")
     # Modify RECIPE_PATH based on the task
     recipe_path = Path(inspect.getfile(otx_module)).parent / "recipe"
-    if task is not None:
-        recipe_path = find_recipe_folder(recipe_path, task.value.lower())
-        task_list = [task]
-    else:
-        task_list = [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
+    task_list = get_task_list(task.lower())
+    recipe_dir = [find_recipe_folder(recipe_path, task_type.value.lower()) for task_type in task_list]
 
     # Update RECIPE_LIST
-    recipe_list = [str(p) for p in recipe_path.glob("**/*.yaml") if "_base_" not in p.parts]
-    recipe_ov_list = [str(p) for p in recipe_path.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
-    recipe_list = set(recipe_list) - set(recipe_ov_list)
+    target_recipe_list = []
+    target_ov_recipe_list = []
+    for task_recipe_dir in recipe_dir:
+        recipe_list = [str(p) for p in task_recipe_dir.glob("**/*.yaml") if "_base_" not in p.parts]
+        recipe_ov_list = [str(p) for p in task_recipe_dir.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
+        recipe_list = set(recipe_list) - set(recipe_ov_list)
 
-    config.TASK_LIST = task_list
-    config.RECIPE_LIST = recipe_list
-    config.RECIPE_OV_LIST = recipe_ov_list
+        target_recipe_list.extend(recipe_list)
+        target_ov_recipe_list.extend(recipe_ov_list)
 
-
-def pytest_generate_tests(metafunc):
-    """Generate test cases for pytest based on the provided fixtures.
-
-    This is to ensure that they behave separately per task.
-
-    Args:
-        metafunc: The metafunc object containing information about the test function.
-
-    Returns:
-        None
-    """
-    if "task" in metafunc.fixturenames:
-        metafunc.parametrize("task", metafunc.config.TASK_LIST, scope="session")
-    if "recipe" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "recipe",
-            metafunc.config.RECIPE_LIST,
-            scope="session",
-            ids=lambda x: "/".join(Path(x).parts[-2:]),
-        )
-    if "ov_recipe" in metafunc.fixturenames:
-        if metafunc.config.RECIPE_OV_LIST:
-            metafunc.parametrize(
-                "ov_recipe",
-                metafunc.config.RECIPE_OV_LIST,
-                scope="session",
-                ids=lambda x: "/".join(Path(x).parts[-2:]),
-            )
-        else:
-            pytest.skip("No OpenVINO recipe found for the task.")
+    pytest.TASK_LIST = task_list
+    pytest.RECIPE_LIST = target_recipe_list
+    pytest.RECIPE_OV_LIST = target_ov_recipe_list
 
 
 @pytest.fixture(scope="session")
