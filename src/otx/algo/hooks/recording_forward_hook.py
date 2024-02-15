@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Callable, Sequence
 import numpy as np
 import torch
 
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI
 
 if TYPE_CHECKING:
     from torch.utils.hooks import RemovableHandle
@@ -409,7 +409,11 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         """Create this object and register it to the module forward hook."""
         return cls(num_classes)
 
-    def func(self, preds: list[InstanceSegBatchPredEntity], _: int = -1) -> list[np.array]:
+    def func(
+        self,
+        preds: list[InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI],
+        _: int = -1,
+    ) -> list[np.array]:
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
@@ -428,7 +432,11 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         return batch_saliency_maps
 
     @classmethod
-    def average_and_normalize(cls, pred: InstanceSegBatchPredEntity, num_classes: int) -> np.array:
+    def average_and_normalize(
+        cls,
+        pred: InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI,
+        num_classes: int,
+    ) -> np.array:
         """Average and normalize masks in prediction per-class.
 
         Args:
