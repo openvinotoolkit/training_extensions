@@ -328,15 +328,13 @@ class OTXCLI:
         Args:
             metric_config (Namespace): The metric configuration.
         """
-        from torchmetrics import Metric
-
-        # Parses the Metric separately to update num_classes.
-        metric_parser = ArgumentParser()
+        from otx.core.utils.instantiators import partial_instantiate_class
 
         if metric_config and self.subcommand in ["train", "test"]:
             self._patch_metric_num_classes(self.model, metric_config)
-            metric_parser.add_subclass_arguments(Metric, "metric", required=False, fail_untyped=False)
-            return metric_parser.instantiate_classes(Namespace(metric=metric_config)).get("metric")
+            metric_kwargs = self.get_config_value(metric_config, "metric")
+            metric = partial_instantiate_class(metric_kwargs)
+            return metric[0] if isinstance(metric, list) else metric
 
         msg = "The configuration of metric is None."
         warn(msg, stacklevel=2)
