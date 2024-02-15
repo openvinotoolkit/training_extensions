@@ -12,7 +12,7 @@ from torchvision import tv_tensors
 
 from otx.core.types.task import OTXTaskType
 
-from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
+from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXBatchPredEntityWithXAI, OTXDataEntity, OTXPredEntity
 
 if TYPE_CHECKING:
     from datumaro import Polygon
@@ -44,6 +44,11 @@ class InstanceSegDataEntity(OTXDataEntity):
 @dataclass
 class InstanceSegPredEntity(InstanceSegDataEntity, OTXPredEntity):
     """Data entity to represent the detection model output prediction."""
+
+
+@dataclass
+class InstanceSegPredEntityWithXAI(InstanceSegDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent the detection model output prediction with explanation."""
 
 
 @dataclass
@@ -100,3 +105,8 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
 @dataclass
 class InstanceSegBatchPredEntity(InstanceSegBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for instance segmentation task."""
+
+
+@dataclass
+class InstanceSegBatchPredEntityWithXAI(InstanceSegBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for instance segmentation task with explanations."""

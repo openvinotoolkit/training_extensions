@@ -5,12 +5,13 @@
 
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -25,7 +26,9 @@ if TYPE_CHECKING:
     from torch import nn
 
 
-class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
+class OTXSegmentationModel(
+    OTXModel[SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+):
     """Base class for the detection models used in OTX."""
 
     @property
@@ -104,7 +107,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+    ) -> SegBatchPredEntity | SegBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmseg.structures import SegDataSample
 
         if self.training:
@@ -123,6 +126,20 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             if not isinstance(output, SegDataSample):
                 raise TypeError(output)
             masks.append(output.pred_sem_seg.data)
+
+        if hasattr(self, "explain_hook"):
+            hook_records = self.explain_hook.records
+            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+
+            return SegBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=[],
+                masks=masks,
+                saliency_maps=explain_results,
+                feature_vectors=[],
+            )
 
         return SegBatchPredEntity(
             batch_size=len(outputs),
@@ -152,7 +169,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         return OTXNativeModelExporter(**self._export_parameters)
 
 
-class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
+class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI]):
     """Semantic segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -183,11 +200,22 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         self,
         outputs: list[ImageResultWithSoftPrediction],
         inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | OTXBatchLossEntity:
-        # add label index
+    ) -> SegBatchPredEntity | SegBatchPredEntityWithXAI | OTXBatchLossEntity:
+        if outputs and outputs[0].saliency_map.size != 1:
+            predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
+            return SegBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=[],
+                masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
 
         return SegBatchPredEntity(
-            batch_size=1,
+            batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],

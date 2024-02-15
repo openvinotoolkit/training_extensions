@@ -16,6 +16,7 @@ from otx.algo.instance_segmentation.otx_instseg_evaluation import (
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
+    InstanceSegBatchPredEntityWithXAI,
 )
 from otx.core.model.entity.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.model.module.base import OTXLitModule
@@ -99,7 +100,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, InstanceSegBatchPredEntity):
+        if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -108,7 +109,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: InstanceSegBatchPredEntity,
+        preds: InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI,
         inputs: InstanceSegBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         """Convert the prediction entity to the format that the metric can compute and cache the ground truth.
@@ -173,7 +174,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, InstanceSegBatchPredEntity):
+        if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(
