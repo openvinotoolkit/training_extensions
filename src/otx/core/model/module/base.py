@@ -111,6 +111,8 @@ class OTXLitModule(LightningModule):
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
 
+        self.model.setup_callback(self.trainer)
+
     def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict]]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
 

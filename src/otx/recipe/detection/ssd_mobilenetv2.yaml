@@ -30,8 +30,6 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
-  callbacks:
-    - class_path: otx.algo.callbacks.adaptive_anchor_generator.AdaptiveAnchorGenerator
   gradient_clip_val: 35.0
   data:
     config:
