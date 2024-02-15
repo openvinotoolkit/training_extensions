@@ -331,7 +331,6 @@ class OTXCLI:
         from otx.core.utils.instantiators import partial_instantiate_class
 
         if metric_config and self.subcommand in ["train", "test"]:
-            self._patch_metric_num_classes(self.model, metric_config)
             metric_kwargs = self.get_config_value(metric_config, "metric")
             metric = partial_instantiate_class(metric_kwargs)
             return metric[0] if isinstance(metric, list) else metric
@@ -456,30 +455,6 @@ class OTXCLI:
             from lightning import seed_everything
 
             seed_everything(seed, workers=True)
-
-    def _patch_metric_num_classes(self, model: Namespace, metric_config: Namespace) -> None:
-        """Patch the num_classes of the torchmetrics."""
-        if metric_config.init_args.get("num_labels"):
-            metric_config.init_args.num_labels = self.model.num_classes
-        elif metric_config.init_args.get("num_classes"):
-            metric_config.init_args.num_classes = self.model.num_classes
-
-        # H-label classification
-        if hasattr(model, "num_multiclass_heads") and hasattr(model, "num_multilabel_classes"):
-            metric_config.init_args.num_multiclass_heads = model.num_multiclass_heads
-            metric_config.init_args.num_multilabel_classes = model.num_multilabel_classes
-
-        # For the dice metric
-        if metric_config.class_path == "torchmetrics.Dice":
-            num_classes = metric_config.init_args.num_classes
-            msg = (
-                "Dice metric is founded, num_classes and ignore_label will be updated."
-                f"num_classes: {num_classes} -> {num_classes+1}"
-                f"ignore_index: {num_classes}"
-            )
-            metric_config.init_args.ignore_index = num_classes
-            metric_config.init_args.num_classes += 1
-            warn(msg, stacklevel=2)
 
     def run(self) -> None:
         """Executes the specified subcommand.
