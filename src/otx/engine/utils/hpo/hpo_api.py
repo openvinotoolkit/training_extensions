@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import torch
 import yaml
 
+from otx.core.config.hpo import HpoConfig
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
@@ -38,8 +39,7 @@ AVAILABLE_HP_NAME_MAP = {
 def execute_hpo(
     engine: Engine,
     max_epochs: int,
-    hpo_time_ratio: int = 4,
-    hpo_cfg_file: str | Path | None = None,
+    hpo_config: HpoConfig | None = None,
     progress_update_callback: Callable[[int | float], None] | None = None,
     **train_args,
 ) -> tuple[dict[str, Any] | None, Path | None]:
@@ -68,9 +68,8 @@ def execute_hpo(
     hpo_configurator = HPOConfigurator(
         engine,
         max_epochs,
-        hpo_time_ratio,
         hpo_workdir,
-        hpo_cfg_file,
+        hpo_config,
     )
     if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
         logger.warning("HPO is skipped.")
@@ -122,16 +121,13 @@ class HPOConfigurator:
         self,
         engine: Engine,
         max_epoch: int,
-        hpo_time_ratio: int = 4,
         hpo_workdir: Path | None = None,
-        hpo_cfg_file: str | Path | None = None,
+        hpo_config: HpoConfig | None = None,
     ) -> None:
         self._engine = engine
         self._max_epoch = max_epoch
-        self._hpo_time_ratio = hpo_time_ratio
         self._hpo_workdir = hpo_workdir if hpo_workdir is not None else Path(engine.work_dir) / "hpo"
-        self._hpo_cfg_file: Path | None = Path(hpo_cfg_file) if isinstance(hpo_cfg_file, str) else hpo_cfg_file
-        self._hpo_config: dict[str, Any] | None = None
+        self._hpo_config: dict[str, Any] | None = hpo_config
 
     @property
     def hpo_config(self) -> dict[str, Any]:

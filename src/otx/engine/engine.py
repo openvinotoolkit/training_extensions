@@ -14,6 +14,7 @@ from lightning import Trainer, seed_everything
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
@@ -611,9 +612,9 @@ class Engine:
         return self._work_dir
 
     @work_dir.setter
-    def work_dir(self, val: PathLike) -> None:
-        self._work_dir = val
-        self._cache.update(default_root_dir=val)
+    def work_dir(self, work_dir: PathLike) -> None:
+        self._work_dir = work_dir
+        self._cache.update(default_root_dir=work_dir)
 
     @property
     def device(self) -> DeviceConfig:
@@ -621,8 +622,8 @@ class Engine:
         return self._device
 
     @device.setter
-    def device(self, val: DeviceType) -> None:
-        self._device = DeviceConfig(accelerator=val)
+    def device(self, device: DeviceType) -> None:
+        self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 
     @property
