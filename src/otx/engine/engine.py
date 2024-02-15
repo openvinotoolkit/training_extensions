@@ -205,7 +205,7 @@ class Engine:
                 ```
         """
         if run_hpo:
-            best_config, best_trial_weight = execute_hpo(**self._prepare_hpo_args(locals()))
+            best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
                 update_hyper_parameter(self, best_config)
             if best_trial_weight is not None:
@@ -246,15 +246,6 @@ class Engine:
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
         return self.trainer.callback_metrics
-
-    @staticmethod
-    def _prepare_hpo_args(all_args: dict[str, Any]) -> dict[str, Any]:
-        all_args.update(all_args.pop("kwargs", {}))
-        all_args["engine"] = all_args["self"]
-        del all_args["self"]
-        del all_args["run_hpo"]
-
-        return all_args
 
     def test(
         self,

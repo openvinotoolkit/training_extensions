@@ -86,7 +86,7 @@ def execute_hpo(
             hpo_workdir=hpo_workdir,
             engine=engine,
             max_epochs=max_epochs,
-            **train_args,
+            **_adjust_train_args(train_args),
         ),
         "gpu" if torch.cuda.is_available() else "cpu",
     )
@@ -249,6 +249,14 @@ def _update_hpo_progress(progress_update_callback: Callable[[int | float], None]
     while not hpo_algo.is_done():
         progress_update_callback(hpo_algo.get_progress() * 100)
         time.sleep(1)
+
+
+def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
+    train_args.update(train_args.pop("kwargs", {}))
+    train_args.pop("self", None)
+    train_args.pop("run_hpo", None)
+
+    return train_args
 
 
 def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None) -> None:
