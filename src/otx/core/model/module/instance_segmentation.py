@@ -100,7 +100,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI):
+        if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -174,7 +174,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI):
+        if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(

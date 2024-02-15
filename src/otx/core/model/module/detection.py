@@ -89,7 +89,7 @@ class OTXDetectionLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, DetBatchPredEntity | DetBatchPredEntityWithXAI):
+        if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -132,7 +132,7 @@ class OTXDetectionLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, DetBatchPredEntity | DetBatchPredEntityWithXAI):
+        if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(

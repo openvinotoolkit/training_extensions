@@ -86,7 +86,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI):
+        if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
         self.val_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
@@ -113,7 +113,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI):
+        if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(
@@ -175,7 +175,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI):
+        if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -201,7 +201,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI):
+        if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(
@@ -287,7 +287,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI):
+        if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -319,7 +319,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI):
+        if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(

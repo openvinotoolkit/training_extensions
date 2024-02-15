@@ -98,7 +98,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, SegBatchPredEntity | SegBatchPredEntityWithXAI):
+        if not isinstance(preds, (SegBatchPredEntity, SegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
@@ -126,7 +126,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         :param batch_idx: The index of the current batch.
         """
         preds = self.model(inputs)
-        if not isinstance(preds, SegBatchPredEntity | SegBatchPredEntityWithXAI):
+        if not isinstance(preds, (SegBatchPredEntity, SegBatchPredEntityWithXAI)):
             raise TypeError(preds)
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
         for prediction in predictions:
