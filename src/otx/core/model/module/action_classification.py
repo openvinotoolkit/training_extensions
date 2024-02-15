@@ -4,6 +4,7 @@
 """Class definition for action classification lightning module used in OTX."""
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -46,7 +47,7 @@ class OTXActionClsLitModule(OTXLitModule):
                 task="multiclass",
                 num_classes=self.model.num_classes,
             )
-            if callable(metric)
+            if isinstance(metric, partial)
             else metric
         )
 

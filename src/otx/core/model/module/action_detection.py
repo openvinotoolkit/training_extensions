@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging as log
+from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -47,7 +48,7 @@ class OTXActionDetLitModule(OTXLitModule):
                 box_format=metric.keywords["box_format"],
                 iou_type=metric.keywords["iou_type"],
             )
-            if callable(metric)
+            if isinstance(metric, partial)
             else metric
         )
 

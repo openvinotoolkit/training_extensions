@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging as log
+from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -52,7 +53,7 @@ class OTXSegmentationLitModule(OTXLitModule):
                 num_classes=self.model.num_classes + 1,
                 ignore_index=self.model.num_classes,
             )
-            if callable(metric)
+            if isinstance(metric, partial)
             else metric
         )
 
