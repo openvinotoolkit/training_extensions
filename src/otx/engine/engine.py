@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.module import OTXDataModule
@@ -583,7 +583,7 @@ class Engine:
                 train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
                 val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
                 test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
-                tile_config=TilerConfig(**data_config["config"].pop("tile_config", {})),
+                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
                 **data_config["config"],
             ),
         )

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, RandomSampler
 
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.dataset.tile import OTXTileDatasetFactory
@@ -21,6 +21,7 @@ from otx.core.data.mem_cache import (
     parse_mem_cache_size_to_int,
 )
 from otx.core.data.pre_filtering import pre_filtering
+from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -55,6 +56,8 @@ class OTXDataModule(LightningDataModule):
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
         if self.task != "H_LABEL_CLS":
             dataset = pre_filtering(dataset, self.config.data_format)
+        if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
+            adapt_tile_config(config.tile_config, dataset=dataset)
 
         config_mapping = {
             self.config.train_subset.subset_name: self.config.train_subset,
@@ -121,15 +124,28 @@ class OTXDataModule(LightningDataModule):
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
 
-        return DataLoader(
-            dataset=dataset,
-            batch_size=config.batch_size,
-            shuffle=True,
-            num_workers=config.num_workers,
-            pin_memory=True,
-            collate_fn=dataset.collate_fn,
-            persistent_workers=config.num_workers > 0,
-        )
+        common_args = {
+            "dataset": dataset,
+            "batch_size": config.batch_size,
+            "num_workers": config.num_workers,
+            "pin_memory": True,
+            "collate_fn": dataset.collate_fn,
+            "persistent_workers": config.num_workers > 0,
+        }
+
+        tile_config = self.config.tile_config
+        if tile_config.enable_tiler and tile_config.sampling_ratio < 1:
+            num_samples = max(1, int(len(dataset) * tile_config.sampling_ratio))
+            log.info(f"Using tiled sampling with {num_samples} samples")
+            common_args.update(
+                {
+                    "shuffle": False,
+                    "sampler": RandomSampler(dataset, num_samples=num_samples),
+                },
+            )
+        else:
+            common_args["shuffle"] = True
+        return DataLoader(**common_args)
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
