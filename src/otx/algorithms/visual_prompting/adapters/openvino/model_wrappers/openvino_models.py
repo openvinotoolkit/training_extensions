@@ -98,6 +98,9 @@ class Decoder(SegmentationModel):
         preload: bool = False,
     ):
         super().__init__(model_adapter, configuration, preload)
+        
+        self.mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
+        self.has_mask_input = np.zeros((1, 1), dtype=np.float32)
 
     @classmethod
     def parameters(cls):  # noqa: D102
@@ -112,22 +115,25 @@ class Decoder(SegmentationModel):
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Preprocess prompts."""
         processed_prompts = []
-        # TODO (sungchul): process points
-        for bbox, label in zip(inputs["bboxes"], inputs["labels"]):
-            # TODO (sungchul): add condition to check whether using bbox or point
-            point_coords = self._apply_coords(bbox.reshape(-1, 2, 2), inputs["original_size"])
-            point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
-            processed_prompts.append(
-                {
-                    "point_coords": point_coords,
-                    "point_labels": point_labels,
-                    # TODO (sungchul): how to generate mask_input and has_mask_input
-                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                    "orig_size": np.array(inputs["original_size"], dtype=np.int64).reshape((-1, 2)),
-                    "label": label,
-                }
-            )
+        for prompt_name in ["bboxes", "points"]:
+            for prompt, label in zip(inputs.get(prompt_name), inputs["labels"].get(prompt_name, [])):
+                if prompt_name == "bboxes":
+                    point_coords = self._apply_coords(prompt.reshape(-1, 2, 2), inputs["original_size"])
+                    point_labels = np.array([2, 3], dtype=np.float32).reshape(-1, 2)
+                else:
+                    point_coords = self._apply_coords(prompt.reshape(-1, 1, 2), inputs["original_size"])
+                    point_labels = np.array([1], dtype=np.float32).reshape(-1, 1)
+
+                processed_prompts.append(
+                    {
+                        "point_coords": point_coords,
+                        "point_labels": point_labels,
+                        "mask_input": self.mask_input,
+                        "has_mask_input": self.has_mask_input,
+                        "orig_size": np.asarray(inputs["original_size"], dtype=np.int64).reshape(-1, 2),
+                        "label": label,
+                    }
+                )
         return processed_prompts
 
     def _apply_coords(self, coords: np.ndarray, original_size: Union[List[int], Tuple[int, int]]) -> np.ndarray:

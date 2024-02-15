@@ -351,7 +351,7 @@ class TestSegmentAnything:
         images = torch.zeros((1, 3, 4, 4))
         bboxes = torch.zeros((1))
 
-        results = sam.forward_train(images=images, bboxes=bboxes, points=None)
+        results = sam.forward_train(images=images, bboxes=bboxes, points=[None])
         pred_masks, ious = results
 
         assert len(bboxes) == len(pred_masks) == len(ious)
@@ -378,7 +378,7 @@ class TestSegmentAnything:
             images=torch.ones((1, 3, 4, 4)),
             gt_masks=[torch.Tensor([[0, 1, 1, 0] for _ in range(4)]).to(torch.int32)],
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
-            points=[],
+            points=[None],
             padding=[[0, 0, 0, 0]],
             original_size=[[4, 4]],
         )
@@ -420,7 +420,7 @@ class TestSegmentAnything:
             images=torch.ones((1, 3, 4, 4)),
             gt_masks=[torch.Tensor([[0, 1, 1, 0] for _ in range(4)]).to(torch.int32)],
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
-            points=[],
+            points=[None],
             path=None,
             labels=None,
             padding=[0],
@@ -471,7 +471,7 @@ class TestSegmentAnything:
         batch = dict(
             images=torch.zeros((1, 3, 4, 4)),
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
-            points=[],
+            points=[None],
             path=None,
             labels=None,
             padding=[0],

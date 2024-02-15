@@ -149,11 +149,15 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         self.transform = get_transform()  # TODO (sungchul): insert args
 
     def pre_process(
-        self, dataset_item: DatasetItemEntity, extra_processing: bool = False
+        self, dataset_item: DatasetItemEntity, extra_processing: bool = False, use_bbox: bool = False, use_point: bool = False,
     ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
+        if use_bbox and use_point:
+            logger.warning("If both use_bbox and use_point are set, bboxes and points will be generated randomly.")
+            
+        prob = 1. if not use_point else 0. if not use_bbox and use_point else 0.5
         images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
-        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
+        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels, prob=prob)
         prompts = self.model["decoder"].preprocess(prompts, meta)
         return images, meta, prompts  # type: ignore
 

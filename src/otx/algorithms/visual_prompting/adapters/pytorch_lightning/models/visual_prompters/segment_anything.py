@@ -386,23 +386,30 @@ class SegmentAnything(LightningModule):
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
-        for embedding, bbox in zip(image_embeddings, bboxes):
-            sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                points=points,
-                boxes=bbox,
-                masks=masks,
-            )
+        for idx, embedding in enumerate(image_embeddings):
+            low_res_masks, iou_predictions = [], []
+            for idx_prompt, prompt in enumerate([bboxes[idx], points[idx]]):
+                if prompt is None:
+                    continue
+                
+                sparse_embeddings, dense_embeddings = self.prompt_encoder(
+                    points=(prompt.unsqueeze(1), torch.ones(len(prompt), 1, device=prompt.device)) if idx_prompt == 1 else None,
+                    boxes=prompt if idx_prompt == 0 else None,
+                    masks=None,
+                )
+                
+                _low_res_masks, _iou_predictions = self.mask_decoder(
+                    image_embeddings=embedding.unsqueeze(0),
+                    image_pe=self.prompt_encoder.get_dense_pe(),
+                    sparse_prompt_embeddings=sparse_embeddings,
+                    dense_prompt_embeddings=dense_embeddings,
+                    multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better. # noqa: E501
+                )
+                low_res_masks.append(_low_res_masks)
+                iou_predictions.append(_iou_predictions)
 
-            low_res_masks, iou_predictions = self.mask_decoder(
-                image_embeddings=embedding.unsqueeze(0),
-                image_pe=self.prompt_encoder.get_dense_pe(),
-                sparse_prompt_embeddings=sparse_embeddings,
-                dense_prompt_embeddings=dense_embeddings,
-                multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better.
-            )
-
-            pred_masks.append(low_res_masks)
-            ious.append(iou_predictions)
+            pred_masks.append(torch.cat(low_res_masks, dim=0))
+            ious.append(torch.cat(iou_predictions, dim=0))
 
         return pred_masks, ious
 

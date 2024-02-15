@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 
 import pytest
 import torch
@@ -21,53 +21,97 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 @e2e_pytest_unit
-def test_collate_fn():
+@pytest.mark.parametrize("batch,expected",[
+    (
+        [
+            {
+                "index": 0,
+                "images": Tensor([1, 2, 3]),
+                "bboxes": Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]),
+                "points": torch.zeros((0, 2)),
+                "gt_masks": [Tensor([1, 2, 3])],
+                "original_size": Tensor([1, 3]),
+                "path": [],
+                "labels": [],
+            },
+            {
+                "index": 1,
+                "images": Tensor([4, 5, 6]),
+                "bboxes": Tensor([[9, 10, 11, 12]]),
+                "points": torch.zeros((0, 2)),
+                "gt_masks": [Tensor([4, 5, 6])],
+                "original_size": Tensor([1, 3]),
+                "path": [],
+                "labels": [],
+            },
+        ],
+        {
+            "index": [0, 1],
+            "images": Tensor([[1, 2, 3], [4, 5, 6]]),
+            "bboxes": [Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), Tensor([[9, 10, 11, 12]])],
+            "points": [None, None],
+            "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
+            "original_size": [Tensor([1, 3]), Tensor([1, 3])],
+            "path": [[], []],
+            "labels": [[], []],
+        }
+    ),
+    (
+        [
+            {
+                "index": 0,
+                "images": Tensor([1, 2, 3]),
+                "bboxes": torch.zeros((0, 4)),
+                "points": Tensor([[1, 1]]),
+                "gt_masks": [Tensor([1, 2, 3])],
+                "original_size": Tensor([1, 3]),
+                "path": [],
+                "labels": [],
+            },
+            {
+                "index": 1,
+                "images": Tensor([4, 5, 6]),
+                "bboxes": torch.zeros((0, 4)),
+                "points": Tensor([[2, 2]]),
+                "gt_masks": [Tensor([4, 5, 6])],
+                "original_size": Tensor([1, 3]),
+                "path": [],
+                "labels": [],
+            },
+        ],
+        {
+            "index": [0, 1],
+            "images": Tensor([[1, 2, 3], [4, 5, 6]]),
+            "bboxes": [None, None],
+            "points": [Tensor([[1, 1]]), Tensor([[2, 2]])],
+            "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
+            "original_size": [Tensor([1, 3]), Tensor([1, 3])],
+            "path": [[], []],
+            "labels": [[], []],
+        }
+    )
+])
+def test_collate_fn(batch: List[Dict[str, Any]], expected: Dict[str, Any]):
     """Test collate_fn."""
-    batch = [
-        {
-            "index": 0,
-            "images": Tensor([1, 2, 3]),
-            "bboxes": np.array([[1, 2, 3, 4], [5, 6, 7, 8]]),
-            "points": [],
-            "gt_masks": [Tensor([1, 2, 3])],
-            "original_size": np.array([1, 3]),
-            "path": [],
-            "labels": [],
-        },
-        {
-            "index": 1,
-            "images": Tensor([4, 5, 6]),
-            "bboxes": np.array([[9, 10, 11, 12]]),
-            "points": [],
-            "gt_masks": [Tensor([4, 5, 6])],
-            "original_size": np.array([1, 3]),
-            "path": [],
-            "labels": [],
-        },
-    ]
-    expected = {
-        "index": [0, 1],
-        "images": Tensor([[1, 2, 3], [4, 5, 6]]),
-        "bboxes": [Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), Tensor([[9, 10, 11, 12]])],
-        "points": None,
-        "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
-        "original_size": [Tensor([1, 3]), Tensor([1, 3])],
-        "path": [[], []],
-        "labels": [[], []],
-    }
-
     results = collate_fn(batch)
 
     assert results["index"] == expected["index"]
     assert torch.all(results["images"] == expected["images"])
     for r, e in zip(results["bboxes"], expected["bboxes"]):
-        assert torch.all(r == e)
-    assert results["points"] == expected["points"]
+        if r is not None and e is not None:
+            assert torch.all(r == e)
+
+    for r, e in zip(results["points"], expected["points"]):
+        if r is not None and e is not None:
+            assert torch.all(r == e)
+
     assert len(results["gt_masks"]) == len(expected["gt_masks"])
     for r, e in zip(results["gt_masks"], expected["gt_masks"]):
         assert torch.all(r == e)
+
     for r, e in zip(results["original_size"], expected["original_size"]):
         assert torch.all(r == e)
+
     assert results["path"] == expected["path"]
     assert results["labels"] == expected["labels"]
 

@@ -38,8 +38,7 @@ class ResizeLongestSide:
         )
         item["gt_masks"] = [torch.as_tensor(gt_mask) for gt_mask in item["gt_masks"]]
         item["bboxes"] = self.apply_boxes(item["bboxes"], item["original_size"], self.target_length)
-        if item["points"]:
-            item["points"] = self.apply_coords(item["points"], item["original_size"], self.target_length)
+        item["points"] = self.apply_coords(item["points"], item["original_size"], self.target_length)
         return item
 
     @classmethod
@@ -78,9 +77,9 @@ class ResizeLongestSide:
         old_h, old_w = original_size
         new_h, new_w = cls.get_preprocess_shape(original_size[0], original_size[1], target_length)
         if isinstance(coords, np.ndarray):
-            coords = coords.astype(float)
+            coords = coords.astype(np.float32)
         else:
-            coords = coords.to(torch.float)
+            coords = coords.to(torch.float32)
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
