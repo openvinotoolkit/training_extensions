@@ -11,6 +11,7 @@ from typing import Generic
 
 import torch
 from torchvision import tv_tensors
+from torchvision.ops import batched_nms
 
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetBatchPredEntityWithXAI, DetPredEntity
@@ -26,21 +27,19 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
 
     Args:
         img_infos (list[ImageInfo]): Original image information before tiling.
-        score_thres (float, optional): Score threshold to filter out low score predictions. Defaults to 0.1.
-        max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 100.
+        iou_threshold (float, optional): IoU threshold for non-maximum suppression. Defaults to 0.45.
+        max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 500.
 
-    TODO (Eugene): Find a way to configure tile merge parameters(score_thres, max_num, etc) from tile config.
-    # https://github.com/openvinotoolkit/datumaro/pull/1194
     """
 
     def __init__(
         self,
         img_infos: list[ImageInfo],
-        score_thres: float = 0.25,
-        max_num_instances: int = 100,
+        iou_threshold: float = 0.45,
+        max_num_instances: int = 500,
     ) -> None:
         self.img_infos = img_infos
-        self.score_thres = score_thres
+        self.iou_threshold = iou_threshold
         self.max_num_instances = max_num_instances
 
     @abstractmethod
@@ -70,6 +69,25 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         """
         raise NotImplementedError
 
+    def nms_postprocess(
+        self,
+        bboxes: torch.Tensor,
+        scores: torch.Tensor,
+        labels: torch.Tensor,
+        masks: None | list[torch.Tensor] = None,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, None | torch.Tensor]:
+        """Non-maximum suppression and post-process."""
+        keep = batched_nms(bboxes, scores, labels, self.iou_threshold)
+        if len(keep) > self.max_num_instances:
+            keep = keep[: self.max_num_instances]
+        bboxes = bboxes[keep]
+        labels = labels[keep]
+        scores = scores[keep]
+        if masks is not None and len(masks) > 0:
+            # coalesce sparse tensors to prevent them from growing too large.
+            masks = torch.stack([masks[idx] for idx in keep]).coalesce().to_dense()
+        return bboxes, labels, scores, masks
+
 
 class DetectionTileMerge(TileMerge):
     """Detection tile merge."""
@@ -97,15 +115,9 @@ class DetectionTileMerge(TileMerge):
                 tile_preds.labels,
                 tile_preds.scores,
             ):
-                keep_indices = tile_scores > self.score_thres
-                keep_indices = keep_indices.nonzero(as_tuple=True)[0]
-                _bboxes = tile_bboxes[keep_indices]
-                _labels = tile_labels[keep_indices]
-                _scores = tile_scores[keep_indices]
-
                 offset_x, offset_y, _, _ = tile_attr["roi"]
-                _bboxes[:, 0::2] += offset_x
-                _bboxes[:, 1::2] += offset_y
+                tile_bboxes[:, 0::2] += offset_x
+                tile_bboxes[:, 1::2] += offset_y
 
                 tile_id = tile_attr["tile_id"]
                 if tile_id not in img_ids:
@@ -116,9 +128,9 @@ class DetectionTileMerge(TileMerge):
                     DetPredEntity(
                         image=torch.empty(tile_img_info.ori_shape),
                         img_info=tile_img_info,
-                        bboxes=_bboxes,
-                        labels=_labels,
-                        score=_scores,
+                        bboxes=tile_bboxes,
+                        labels=tile_labels,
+                        score=tile_scores,
                     ),
                 )
         return [
@@ -151,12 +163,11 @@ class DetectionTileMerge(TileMerge):
         labels = torch.stack(labels) if len(labels) > 0 else torch.empty((0,), device=img_info.device)
         scores = torch.stack(scores) if len(scores) > 0 else torch.empty((0,), device=img_info.device)
 
-        sort_inds = torch.argsort(scores, descending=True)
-        if len(sort_inds) > self.max_num_instances:
-            sort_inds = sort_inds[: self.max_num_instances]
-        bboxes = bboxes[sort_inds]
-        labels = labels[sort_inds]
-        scores = scores[sort_inds]
+        bboxes, labels, scores, _ = self.nms_postprocess(
+            bboxes,
+            scores,
+            labels,
+        )
 
         return DetPredEntity(
             image=torch.empty(img_size),
@@ -198,7 +209,7 @@ class InstanceSegTileMerge(TileMerge):
                 tile_preds.scores,
                 tile_preds.masks,
             ):
-                keep_indices = (tile_scores > self.score_thres) & (tile_masks.sum((1, 2)) > 0)
+                keep_indices = tile_masks.to_sparse().sum((1, 2)).to_dense() > 0
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
                 _bboxes = tile_bboxes[keep_indices]
                 _labels = tile_labels[keep_indices]
@@ -265,18 +276,9 @@ class InstanceSegTileMerge(TileMerge):
         bboxes = torch.stack(bboxes) if len(bboxes) > 0 else torch.empty((0, 4), device=img_info.device)
         labels = torch.stack(labels) if len(labels) > 0 else torch.empty((0,), device=img_info.device)
         scores = torch.stack(scores) if len(scores) > 0 else torch.empty((0,), device=img_info.device)
+        masks = masks if len(masks) > 0 else torch.empty((0, *img_size))
 
-        sort_inds = torch.argsort(scores, descending=True)
-        if len(sort_inds) > self.max_num_instances:
-            sort_inds = sort_inds[: self.max_num_instances]
-
-        bboxes = bboxes[sort_inds]
-        labels = labels[sort_inds]
-        scores = scores[sort_inds]
-        masks = (
-            torch.stack([masks[idx] for idx in sort_inds]).to_dense() if len(masks) > 0 else torch.empty((0, *img_size))
-        )
-
+        bboxes, labels, scores, masks = self.nms_postprocess(bboxes, scores, labels, masks)
         return InstanceSegPredEntity(
             image=torch.empty(img_size),
             img_info=img_info,
