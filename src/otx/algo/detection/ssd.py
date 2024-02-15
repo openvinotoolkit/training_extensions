@@ -28,7 +28,7 @@ class SSD(MMDetCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
         self.image_size = (1, 3, 864, 864)
-        self._register_load_state_dict_pre_hook(self.set_anchors_hook)
+        self._register_load_state_dict_pre_hook(self._set_anchors_hook)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
@@ -152,7 +152,7 @@ class SSD(MMDetCompatibleModel):
 
         return export_params
 
-    def set_anchors_hook(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
+    def _set_anchors_hook(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
         """Pre hook for pop anchor statistics from checkpoint state_dict."""
         anchors = state_dict.pop("model.model.anchors", None)
         if anchors is not None:

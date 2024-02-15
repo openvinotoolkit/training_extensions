@@ -44,11 +44,15 @@ class AdaptiveAnchorGenerator(Callback):
         """Get new anchors for SSD from OTXDataset."""
         from mmdet.datasets.transforms import Resize
 
-        target_wh = (864, 864)
+        target_wh = None
         if isinstance(dataset.transforms, list):
             for transform in dataset.transforms:
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
+        if target_wh is None:
+            target_wh = (864, 864)
+            msg = f"Cannot get target_wh from the dataset. Assign it with the default value: {target_wh}"
+            logger.warning(msg)
         group_as = [len(width) for width in anchor_generator.widths]
         wh_stats = self._get_sizes_from_dataset_entity(dataset, list(target_wh))
 
