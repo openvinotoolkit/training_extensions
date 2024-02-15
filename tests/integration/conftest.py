@@ -25,7 +25,7 @@ def fxt_open_subprocess(request: pytest.FixtureRequest) -> bool:
     This option can be used for easy memory management
     while running consecutive multiple tests (default: false).
     """
-    return request.config.getoption("--open-subprocess")
+    return request.config.getoption("--open-subprocess", False)
 
 
 @pytest.fixture(scope="session")
