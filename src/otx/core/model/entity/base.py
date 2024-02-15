@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import torch
+    from lightning import Trainer
 
     from otx.core.data.module import OTXDataModule
 
@@ -51,6 +52,13 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+
+    def setup_callback(self, trainer: Trainer) -> None:
+        """Callback for setup OTX Model.
+
+        Args:
+            trainer(Trainer): Lightning trainer contains OTXLitModule and OTXDatamodule.
+        """
 
     @property
     def label_info(self) -> LabelInfo:

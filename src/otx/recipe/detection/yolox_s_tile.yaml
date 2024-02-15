@@ -12,13 +12,15 @@ optimizer:
     weight_decay: 0.0001
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 3
-    mode: max
-    factor: 0.5
-    patience: 5
-    monitor: val/map_50
+  - class_path: otx.core.model.module.base.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 3
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 5
+      monitor: val/map_50
 
 engine:
   task: DETECTION
@@ -33,6 +35,7 @@ overrides:
     config:
       tile_config:
         enable_tiler: true
+        enable_adaptive_tiling: true
       image_color_channel: BGR
       train_subset:
         num_workers: 4

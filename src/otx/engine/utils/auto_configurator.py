@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Union
 import datumaro
 from lightning.pytorch.cli import instantiate_class
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OVModel
@@ -211,7 +211,7 @@ class AutoConfigurator:
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),
                 test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )
@@ -249,21 +249,21 @@ class AutoConfigurator:
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
-    def get_optimizer(self) -> OptimizerCallable | None:
+    def get_optimizer(self) -> list[OptimizerCallable] | None:
         """Returns the optimizer callable based on the configuration.
 
         Returns:
-            OptimizerCallable | None: The optimizer callable.
+            list[OptimizerCallable] | None: The optimizer callable.
         """
         optimizer_config = self.config.get("optimizer", None)
         logger.warning(f"Set Default Optimizer: {optimizer_config}")
         return partial_instantiate_class(init=optimizer_config)
 
-    def get_scheduler(self) -> LRSchedulerCallable | None:
+    def get_scheduler(self) -> list[LRSchedulerCallable] | None:
         """Returns the instantiated scheduler based on the configuration.
 
         Returns:
-            LRSchedulerCallable | None: The instantiated scheduler.
+            list[LRSchedulerCallable] | None: The instantiated scheduler.
         """
         scheduler_config = self.config.get("scheduler", None)
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
@@ -309,7 +309,7 @@ class AutoConfigurator:
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),
                 test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )
