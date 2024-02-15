@@ -15,8 +15,8 @@ dataset:
       - 57.12
       - 57.375
   offset_bbox: 0
-  generate_point: false
-  generate_bbox: false
+  use_point: false
+  use_bbox: false
 
 model:
   name: SAM
@@ -36,6 +36,7 @@ model:
   # zero-shot
   default_threshold_reference: 0.3
   default_threshold_target: 0.65
+  save_outputs: True
 
 # PL Trainer Args. Don't add extra parameter here.
 trainer:

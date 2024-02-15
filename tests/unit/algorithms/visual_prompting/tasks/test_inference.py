@@ -343,6 +343,8 @@ class TestZeroShotTask:
             },
             "visual_prompting_prompt_getter": {
                 "image_embeddings": np.random.randn(1, embed_dim, *embed_size).astype(dtype=np.float32),
+                "reference_feats": np.random.randn(1, 1, 256).astype(dtype=np.float32),
+                "used_indices": np.array([[0]], dtype=np.int64),
                 "original_size": np.random.randint(low=0, high=image_size * 2, size=(1, 2), dtype=np.int64),
                 "threshold": np.array([[0.1]], dtype=np.float32),
                 "num_bg_points": np.random.randint(low=1, high=image_size, size=(1, 1), dtype=np.int64),
@@ -379,7 +381,7 @@ class TestZeroShotTask:
         mocker_otx_model = mocker.patch("otx.api.entities.model.ModelEntity")
         mocker_io_bytes_io = mocker.patch("io.BytesIO")
         mocker_torch_save = mocker.patch("torch.save")
-        mocker.patch.object(self.zero_shot_task.model, "state_dict", return_value={"reference_info.reference_feats": None})
+        mocker.patch.object(self.zero_shot_task.model, "state_dict", return_value={"reference_info.reference_feats": None, "reference_info.used_indices": None})
 
         self.zero_shot_task.model.reference_info = "reference_info"
 

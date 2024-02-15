@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional
 from collections import OrderedDict
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 import torch
+import numpy as np
 from torch import nn
 from omegaconf import DictConfig
 
@@ -105,7 +106,7 @@ class TestPromptGetter:
 class TestZeroShotSegmentAnything:
     @pytest.fixture
     def set_zero_shot_segment_anything(self, monkeypatch):
-        def zero_shot_segment_anything(state_dict: Optional[OrderedDict] = None):
+        def zero_shot_segment_anything(manual_config_update: Optional[Dict] = None, state_dict: Optional[OrderedDict] = None):
             monkeypatch.setattr(
                 "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMImageEncoder",
                 MockImageEncoder,
@@ -114,7 +115,7 @@ class TestZeroShotSegmentAnything:
                 "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMMaskDecoder",
                 MockMaskDecoder,
             )
-            return ZeroShotSegmentAnything(state_dict=state_dict)
+            return ZeroShotSegmentAnything(manual_config_update=manual_config_update, state_dict=state_dict)
 
         return zero_shot_segment_anything
 
@@ -123,18 +124,15 @@ class TestZeroShotSegmentAnything:
         "state_dict",
         [
             None,
-            {
-                "reference_info.reference_feats": torch.zeros(1),
-                "reference_info.used_indices": torch.zeros(1, dtype=torch.int64),
-            },
+            {},
         ],
     )
     def test_init(self, set_zero_shot_segment_anything, state_dict: Optional[Dict[str, Any]]) -> None:
         """Test __init__."""
         if state_dict is not None:
-            zero_shot_segment_anything_for_init_weights = set_zero_shot_segment_anything().state_dict()
-            zero_shot_segment_anything_for_init_weights.update(state_dict)
-            state_dict = zero_shot_segment_anything_for_init_weights
+            state_dict = set_zero_shot_segment_anything().state_dict()
+            state_dict.pop("reference_info.reference_feats")
+            state_dict.pop("reference_info.used_indices")
         
         zero_shot_segment_anything = set_zero_shot_segment_anything(state_dict=state_dict)
 
@@ -143,8 +141,8 @@ class TestZeroShotSegmentAnything:
         assert zero_shot_segment_anything.config.model.freeze_mask_decoder
 
         if state_dict:
-            assert zero_shot_segment_anything.reference_info.reference_feats == torch.zeros(1)
-            assert zero_shot_segment_anything.reference_info.used_indices == torch.zeros(1, dtype=torch.int64)
+            assert zero_shot_segment_anything.reference_info.reference_feats is not None
+            assert zero_shot_segment_anything.reference_info.used_indices is not None
 
         assert zero_shot_segment_anything.reference_info.reference_feats.dtype == torch.float32
         assert zero_shot_segment_anything.reference_info.used_indices.dtype == torch.int64
@@ -171,7 +169,7 @@ class TestZeroShotSegmentAnything:
     @e2e_pytest_unit
     def test_learn(self, mocker, set_zero_shot_segment_anything) -> None:
         """Test learn."""
-        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        zero_shot_segment_anything = set_zero_shot_segment_anything(manual_config_update={"model.image_size": 4})
         mocker.patch.object(
             zero_shot_segment_anything,
             "_predict_masks",
@@ -179,12 +177,15 @@ class TestZeroShotSegmentAnything:
         )
         mocker.patch.object(zero_shot_segment_anything, "_generate_masked_features", return_value=torch.ones(1, 256))
 
-        processed_prompts = {MockScoredLabel(label=0, name="label"): [{"box": torch.tensor([[0, 0, 1, 1]])}]}
-        zero_shot_segment_anything.learn(
-            images=torch.ones((1, 3, 4, 4)),
-            processed_prompts=processed_prompts,
-            original_size=torch.tensor((4, 4)),
-        )
+        batch = [{
+            "images": np.ones((4, 4, 3), dtype=np.uint8),
+            "gt_masks": np.ones((4, 4), dtype=np.uint8),
+            "bboxes": np.array([[0, 0, 1, 1]], dtype=np.float32),
+            "points": np.zeros((0, 2), dtype=np.float32),
+            "labels": {"bboxes": [MockScoredLabel(label=0, name="label")]},
+            "original_size": np.array([4, 4], dtype=np.int64)
+        }]
+        zero_shot_segment_anything.learn(batch=batch, reset_feat=True)
 
         assert zero_shot_segment_anything.reference_info.reference_feats.shape == (1, 1, 256)
         assert zero_shot_segment_anything.reference_info.used_indices == torch.as_tensor([0])
@@ -198,18 +199,22 @@ class TestZeroShotSegmentAnything:
             MockPromptGetter,
         )
 
-        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        zero_shot_segment_anything = set_zero_shot_segment_anything(manual_config_update={"model.image_size": 4})
         reference_feats = nn.Parameter(torch.rand(1, 1, 256), requires_grad=False)
         used_indices = nn.Parameter(torch.as_tensor([[0]], dtype=torch.int64), requires_grad=False)
         mocker.patch.object(
             SegmentAnything, "forward", return_value=(torch.ones(1, 4, 4, 4), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
         )
 
+        batch = [{
+            "images": np.ones((4, 4, 3), dtype=np.uint8),
+            "gt_masks": np.ones((4, 4), dtype=np.uint8),
+            "original_size": np.array([4, 4], dtype=np.int64)
+        }]
         total_results = zero_shot_segment_anything.infer(
-            images=torch.ones((1, 3, 4, 4)), 
+            batch=batch,
             reference_feats=reference_feats,
             used_indices=used_indices,
-            original_size=torch.tensor([[4, 4]], dtype=torch.int64)
         )
 
         for i, results in enumerate(total_results[0]):
@@ -332,28 +337,27 @@ class TestZeroShotSegmentAnything:
             image_embeddings=torch.rand(1),
             point_coords=torch.rand(1, 2, 2),
             point_labels=torch.randint(low=0, high=2, size=(1, 2)),
-            original_size=torch.tensor([[8, 8]], dtype=torch.int64),
+            original_size=torch.tensor([8, 8], dtype=torch.int64),
         )
         assert mask.shape == (8, 8)
 
     @e2e_pytest_unit
     def test_preprocess_prompts(self, set_zero_shot_segment_anything) -> None:
-        """Test _preprocess_prompts.
-
-        TODO (sungchul)
-        - get inputs grouped as label and prompts
-        - use points and annotations.
-        """
+        """Test _preprocess_prompts."""
         zero_shot_segment_anything = set_zero_shot_segment_anything()
-        bboxes = [torch.tensor([0, 0, 1, 1])]
-        labels = [MockScoredLabel(label=1)]
-        processed_prompts = zero_shot_segment_anything._preprocess_prompts(
-            bboxes=bboxes,
-            labels=labels,
-        )
-
-        # processed_prompts = {labels[0]: [{"box": torch.tensor([[0, 0, 1, 1]])}]}
-        assert torch.equal(processed_prompts[labels[0]][0].get("box")[0], bboxes[0])
+        transformed_batch = {
+            "bboxes": torch.tensor([[0, 0, 1, 1]]),
+            "points": torch.tensor([[2, 2]]),
+            "labels": {"bboxes": [MockScoredLabel(label=1)], "points": [MockScoredLabel(label=1)]}
+        }
+        processed_prompts = zero_shot_segment_anything._preprocess_prompts(transformed_batch)
+        
+        for prompts in processed_prompts.values():
+            for prompt in prompts:
+                if "bboxes" in prompt:
+                    prompt["bboxes"]["point_coords"].shape == (1, 2, 2)
+                elif "points" in prompt:
+                    prompt["points"]["point_coords"].shape == (1, 1, 2)
 
     @e2e_pytest_unit
     def test_generate_masked_features(self, set_zero_shot_segment_anything) -> None:

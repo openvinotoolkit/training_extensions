@@ -710,6 +710,8 @@ class ZeroShotTask(InferenceTask):
         logger.info("Saving the model weights and reference features.")
 
         model_info = self.model.state_dict()
+        model_info.pop("reference_info.reference_feats")
+        model_info.pop("reference_info.used_indices")
 
         buffer = io.BytesIO()
         torch.save(model_info, buffer)

@@ -286,7 +286,7 @@ class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
 
         prompts = self.get_prompts(dataset_item, self.labels, self.prob)
         item.update({**prompts, "path": dataset_item.media.path})
-        item = self.transform(item)
+            
         return item
 
 
@@ -413,7 +413,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             shuffle=True,
             batch_size=self.config.train_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
         )
 
     def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -427,7 +427,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.val_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
         )
 
     def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -441,7 +441,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.test_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
         )
 
     def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -455,5 +455,5 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             shuffle=False,
             batch_size=1,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
         )

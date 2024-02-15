@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 import numpy as np
 import pytest
@@ -82,17 +82,42 @@ class TestDecoder:
         assert "upscaled_masks" == results
 
     @e2e_pytest_unit
-    def test_preprocess(self):
+    @pytest.mark.parametrize("prompts,expected",
+    [
+        (
+            {
+                "bboxes": [np.array([[1, 1], [2, 2]])],
+                "points": [],
+                "labels": {"bboxes": [1]},
+                "original_size": (4, 4)
+            },
+            {
+                "point_coords": (1, 2, 2),
+                "point_labels": (1, 2),
+            }
+        ),
+        (
+            {
+                "bboxes": [],
+                "points": [np.array([[1, 1]])],
+                "labels": {"points": [1]},
+                "original_size": (4, 4)
+            },
+            {
+                "point_coords": (1, 1, 2),
+                "point_labels": (1, 1),
+            }
+        )
+    ])
+    def test_preprocess(self, prompts: Dict[str, Any], expected: Dict[str, Any]):
         """Test preprocess"""
-        prompts = {"bboxes": [np.array([[1, 1], [2, 2]])], "labels": [1], "original_size": (4, 4)}
-
         results = self.decoder.preprocess(prompts, {})
 
         assert isinstance(results, list)
         assert "point_coords" in results[0]
-        assert results[0]["point_coords"].shape == (1, 2, 2)
+        assert results[0]["point_coords"].shape == expected["point_coords"]
         assert "point_labels" in results[0]
-        assert results[0]["point_labels"].shape == (1, 2)
+        assert results[0]["point_labels"].shape == expected["point_labels"]
         assert "mask_input" in results[0]
         assert "has_mask_input" in results[0]
         assert "orig_size" in results[0]
