@@ -42,8 +42,16 @@ class OTXInstanceSegLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
-        self.metric = metric
+        self.metric = (
+            metric(
+                box_format=metric.keywords["box_format"],
+                iou_type=metric.keywords["iou_type"],
+            )
+            if callable(metric)
+            else metric
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

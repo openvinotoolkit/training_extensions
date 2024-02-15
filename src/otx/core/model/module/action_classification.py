@@ -38,9 +38,17 @@ class OTXActionClsLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
 
-        self.metric = metric
+        self.metric = (
+            metric(
+                task="multiclass",
+                num_classes=self.model.num_classes,
+            )
+            if callable(metric)
+            else metric
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

@@ -39,6 +39,7 @@ class OTXSegmentationLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
         num_classes = otx_model.num_classes
         if num_classes is None:
@@ -46,7 +47,14 @@ class OTXSegmentationLitModule(OTXLitModule):
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
 
-        self.metric = metric
+        self.metric = (
+            metric(
+                num_classes=self.model.num_classes + 1,
+                ignore_index=self.model.num_classes,
+            )
+            if callable(metric)
+            else metric
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""

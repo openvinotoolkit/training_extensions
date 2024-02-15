@@ -47,8 +47,17 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
-        self.metric = metric
+
+        self.metric = (
+            metric(
+                task="multiclass",
+                num_classes=self.model.num_classes,
+            )
+            if callable(metric)
+            else metric
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -134,8 +143,18 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
-        self.metric = metric
+
+        self.metric = (
+            metric(
+                num_labels=self.model.num_classes,
+                threshold=metric.keywords["threshold"],
+                average=metric.keywords["average"],
+            )
+            if callable(metric)
+            else metric
+        )
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
@@ -216,9 +235,17 @@ class OTXHlabelClsLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
 
-        self.metric = metric
+        self.metric = (
+            metric(
+                num_multiclass_heads=self.model.num_multiclass_heads,
+                num_multilabel_classes=self.model.num_multilabel_classes,
+            )
+            if callable(metric)
+            else metric
+        )
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):

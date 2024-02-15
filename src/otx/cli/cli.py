@@ -332,7 +332,7 @@ class OTXCLI:
         # Parses the Metric separately to update num_classes.
         metric_parser = ArgumentParser()
 
-        if metric_config:
+        if metric_config and self.subcommand in ["train", "test"]:
             self._patch_metric_num_classes(self.model, metric_config)
             metric_parser.add_subclass_arguments(Metric, "metric", required=False, fail_untyped=False)
             return metric_parser.instantiate_classes(Namespace(metric=metric_config)).get("metric")
@@ -459,6 +459,18 @@ class OTXCLI:
         if hasattr(model, "num_multiclass_heads") and hasattr(model, "num_multilabel_classes"):
             metric_config.init_args.num_multiclass_heads = model.num_multiclass_heads
             metric_config.init_args.num_multilabel_classes = model.num_multilabel_classes
+
+        # For the dice metric
+        if metric_config.class_path == "torchmetrics.Dice":
+            num_classes = metric_config.init_args.num_classes
+            msg = (
+                "Dice metric is founded, num_classes and ignore_label will be updated."
+                f"num_classes: {num_classes} -> {num_classes+1}"
+                f"ignore_index: {num_classes}"
+            )
+            metric_config.init_args.ignore_index = num_classes
+            metric_config.init_args.num_classes += 1
+            warn(msg, stacklevel=2)
 
     def run(self) -> None:
         """Executes the specified subcommand.

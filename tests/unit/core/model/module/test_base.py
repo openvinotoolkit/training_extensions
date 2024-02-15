@@ -53,6 +53,7 @@ class TestOTXLitModule:
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
+            metric=MagicMock()
         )
 
         module.trainer = MagicMock(spec=Trainer)

@@ -22,6 +22,7 @@ from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
     from otx.core.data.dataset.base import LabelInfo
 
@@ -53,6 +54,7 @@ class OTXLitModule(LightningModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric,
     ):
         super().__init__()
 
@@ -60,6 +62,8 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
+
+        self.metric = metric
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt

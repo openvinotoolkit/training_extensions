@@ -209,6 +209,8 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
+        metric = metric if metric is not None else self._auto_configurator.get_metric()
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -291,6 +293,7 @@ class Engine:
             datamodule = self._auto_configurator.get_ov_datamodule()
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
 
+        metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
             model=model,
             optimizer=self.optimizer,
@@ -594,6 +597,8 @@ class Engine:
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
         engine_config["data_root"] = data_root
+        engine_config.pop("metric", None)  # Remove the metric config
+
         return cls(
             datamodule=datamodule,
             model=model,

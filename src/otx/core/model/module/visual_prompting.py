@@ -46,6 +46,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
         self.set_metrics()
 
