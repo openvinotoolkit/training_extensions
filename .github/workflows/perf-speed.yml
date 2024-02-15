@@ -33,6 +33,34 @@ on:
           - export
           - optimize
         default: optimize
+      artifact-prefix:
+        type: string
+        default: perf-speed-benchmark
+  workflow_call:
+    inputs:
+      model-type:
+        type: string
+        description: Model type to run benchmark [default, all]
+        default: default
+      data-size:
+        type: string
+        description: Dataset size to run benchmark [small, medium, large, all]
+        default: medium
+      num-repeat:
+        type: number
+        description: Overrides default per-data-size number of repeat setting
+        default: 1
+      num-epoch:
+        type: number
+        description: Overrides default per-model number of epoch setting
+        default: 3
+      eval-upto:
+        type: string
+        description: The last operation to evaluate. 'optimize' means all [train, export, optimize]
+        default: optimize
+      artifact-prefix:
+        type: string
+        default: perf-speed-benchmark
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -59,4 +87,4 @@ jobs:
       task: all
       timeout-minutes: 8640
       upload-artifact: true
-      artifact-prefix: perf-speed-benchmark
+      artifact-prefix: ${{ inputs.artifact-prefix }}
