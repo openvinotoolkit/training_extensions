@@ -14,6 +14,7 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
+from lightning.pytorch.cli import OptimizerCallable
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.types.task import OTXTaskType
@@ -177,14 +178,11 @@ class HPOConfigurator:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
-        cur_lr = self._engine.optimizer.keywords["lr"]  # type: ignore[union-attr]
-        min_lr = cur_lr / 10
-        search_space["optimizer.keywords.lr"] = {
-            "type": "qloguniform",
-            "min": min_lr,
-            "max": min(cur_lr * 10, 0.1),
-            "step": 10 ** -get_decimal_point(min_lr),
-        }
+        if isinstance(self._engine.optimizer, list):
+            for i, optimizer in enumerate(self._engine.optimizer):
+                search_space[f"optimizer.{i}.keywords.lr"] = self._make_lr_search_space(optimizer)
+        elif isinstance(self._engine.optimizer, OptimizerCallable):
+            search_space["optimizer.keywords.lr"] = self._make_lr_search_space(self._engine.optimizer)
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
@@ -195,6 +193,17 @@ class HPOConfigurator:
         }
 
         return search_space
+
+    @staticmethod
+    def _make_lr_search_space(optimizer: OptimizerCallable) -> dict[str, Any]:
+        cur_lr = optimizer.keywords["lr"]  # type: ignore[union-attr]
+        min_lr = cur_lr / 10
+        return {
+            "type": "qloguniform",
+            "min": min_lr,
+            "max": min(cur_lr * 10, 0.1),
+            "step": 10 ** -get_decimal_point(min_lr),
+        }
 
     @staticmethod
     def _align_hp_name(search_space: dict[str, Any]) -> None:

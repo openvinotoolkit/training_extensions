@@ -16,18 +16,18 @@ from otx.utils.utils import (
 def fake_obj(mocker):
     target = mocker.MagicMock()
     target.a.b.c = {"d": mocker.MagicMock()}
-    target.a.b.c["d"].e = 1
+    target.a.b.c["d"].e = [0, 1, 2]
     return target
 
 
 def test_get_using_dot_delimited_key(fake_obj):
-    assert get_using_dot_delimited_key("a.b.c.d.e", fake_obj) == 1
+    assert get_using_dot_delimited_key("a.b.c.d.e.2", fake_obj) == 2
 
 
 def test_set_using_dot_delimited_key(fake_obj):
     expected_val = 2
-    set_using_dot_delimited_key("a.b.c.d.e", expected_val, fake_obj)
-    assert fake_obj.a.b.c["d"].e == expected_val
+    set_using_dot_delimited_key("a.b.c.d.e.0", expected_val, fake_obj)
+    assert fake_obj.a.b.c["d"].e[0] == expected_val
 
 
 @pytest.mark.parametrize(("val", "decimal_point"), [(0.001, 3), (-0.0001, 4), (1, 0), (100, 0), (-2, 0)])
