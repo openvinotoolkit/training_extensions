@@ -14,6 +14,7 @@ from lightning import Trainer, seed_everything
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
@@ -152,8 +153,7 @@ class Engine:
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
         run_hpo: bool = False,
-        hpo_time_ratio: int = 4,
-        hpo_cfg_file: str | Path | None = None,
+        hpo_config: HpoConfig | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -169,6 +169,8 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
+            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
+            hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -205,6 +207,8 @@ class Engine:
                 ```
         """
         if run_hpo:
+            if hpo_config is None:
+                hpo_config = HpoConfig()
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
                 update_hyper_parameter(self, best_config)

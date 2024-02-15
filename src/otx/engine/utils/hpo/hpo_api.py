@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import time
 from functools import partial
@@ -13,8 +14,8 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
-import yaml
 
+from otx.core.config.hpo import HpoConfig
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
@@ -38,8 +39,7 @@ AVAILABLE_HP_NAME_MAP = {
 def execute_hpo(
     engine: Engine,
     max_epochs: int,
-    hpo_time_ratio: int = 4,
-    hpo_cfg_file: str | Path | None = None,
+    hpo_config: HpoConfig | None = None,
     progress_update_callback: Callable[[int | float], None] | None = None,
     **train_args,
 ) -> tuple[dict[str, Any] | None, Path | None]:
@@ -48,9 +48,7 @@ def execute_hpo(
     Args:
         engine (Engine): engine instnace.
         max_epochs (int): max epochs to train.
-        hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
-        hpo_cfg_file (str | Path | None, optional):
-            HPO configuration file. If it isn't given, default setting will be used.
+        hpo_config (HpoConfig | None, optional): Configuration for HPO.
         progress_update_callback (Callable[[int | float], None] | None, optional):
             callback to update progress. If it's given, it's called with progress every second. Defaults to None.
 
@@ -68,9 +66,8 @@ def execute_hpo(
     hpo_configurator = HPOConfigurator(
         engine,
         max_epochs,
-        hpo_time_ratio,
         hpo_workdir,
-        hpo_cfg_file,
+        hpo_config,
     )
     if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
         logger.warning("HPO is skipped.")
@@ -112,77 +109,69 @@ class HPOConfigurator:
     Args:
         engine (Engine): engine instance.
         max_epoch (int): max epochs to train.
-        hpo_time_ratio (int): time ratio to use for HPO compared to training time. Defaults to 4.
         hpo_workdir (Path | None, optional): HPO work directory. Defaults to None.
-        hpo_cfg_file (str | Path | None, optional):
-            HPO configuration file. If it isn't given, default setting will be used. Defaults to None.
+        hpo_config (HpoConfig | None, optional): Configuration for HPO.
     """
 
     def __init__(
         self,
         engine: Engine,
         max_epoch: int,
-        hpo_time_ratio: int = 4,
         hpo_workdir: Path | None = None,
-        hpo_cfg_file: str | Path | None = None,
+        hpo_config: HpoConfig | None = None,
     ) -> None:
         self._engine = engine
         self._max_epoch = max_epoch
-        self._hpo_time_ratio = hpo_time_ratio
         self._hpo_workdir = hpo_workdir if hpo_workdir is not None else Path(engine.work_dir) / "hpo"
-        self._hpo_cfg_file: Path | None = Path(hpo_cfg_file) if isinstance(hpo_cfg_file, str) else hpo_cfg_file
-        self._hpo_config: dict[str, Any] | None = None
+        self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
 
     @property
     def hpo_config(self) -> dict[str, Any]:
         """Configuration for HPO algorithm."""
-        if self._hpo_config is None:
-            train_dataset_size = len(self._engine.datamodule.subsets["train"])
-            val_dataset_size = len(self._engine.datamodule.subsets["val"])
-
-            hpo_config = {
-                "save_path": str(self._hpo_workdir),
-                "num_full_iterations": self._max_epoch,
-                "full_dataset_size": train_dataset_size,
-                "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
-                "expected_time_ratio": self._hpo_time_ratio,
-                "asynchronous_bracket": True,
-                "asynchronous_sha": (torch.cuda.device_count() != 1),
-            }
-
-            if self._hpo_cfg_file is not None:
-                if not self._hpo_cfg_file.exists():
-                    logger.warning("HPO configuration file doesn't exist.")
-                else:
-                    with self._hpo_cfg_file.open("r") as f:
-                        hpo_config.update(yaml.safe_load(f))
-
-            if "search_space" not in hpo_config:
-                hpo_config["search_space"] = self._get_default_search_space()
-            else:
-                self._align_hp_name(hpo_config["search_space"])
-
-            if (  # align batch size to train set size
-                "datamodule.config.train_subset.batch_size" in hpo_config["search_space"]
-                and hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] > train_dataset_size
-            ):
-                logger.info(
-                    "Max value of batch size in HPO search space is lower than train dataset size. "
-                    "Decrease it to train dataset size.",
-                )
-                hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = train_dataset_size
-
-            self._remove_wrong_search_space(hpo_config["search_space"])
-
-            if "prior_hyper_parameters" not in hpo_config:  # default hyper parameters are tried first
-                hpo_config["prior_hyper_parameters"] = {
-                    hp: get_using_dot_delimited_key(hp, self._engine)
-                    for hp in hpo_config["search_space"].keys()  # noqa: SIM118
-                }
-
-            self._hpo_config = hpo_config
-
         return self._hpo_config
+
+    @hpo_config.setter
+    def hpo_config(self, hpo_config: HpoConfig | None) -> None:
+        train_dataset_size = len(self._engine.datamodule.subsets["train"])
+        val_dataset_size = len(self._engine.datamodule.subsets["val"])
+
+        self._hpo_config: dict[str, Any] = {  # default setting
+            "save_path": str(self._hpo_workdir),
+            "num_full_iterations": self._max_epoch,
+            "full_dataset_size": train_dataset_size,
+            "non_pure_train_ratio": val_dataset_size / (train_dataset_size + val_dataset_size),
+            "asynchronous_bracket": True,
+            "asynchronous_sha": (torch.cuda.device_count() != 1),
+        }
+
+        if hpo_config is not None:
+            self._hpo_config.update(
+                {key: val for key, val in dataclasses.asdict(hpo_config).items() if val is not None},
+            )
+
+        if "search_space" not in self._hpo_config:
+            self._hpo_config["search_space"] = self._get_default_search_space()
+        else:
+            self._align_hp_name(self._hpo_config["search_space"])
+
+        if (  # align batch size to train set size
+            "datamodule.config.train_subset.batch_size" in self._hpo_config["search_space"]
+            and self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]
+            > train_dataset_size
+        ):
+            logger.info(
+                "Max value of batch size in HPO search space is lower than train dataset size. "
+                "Decrease it to train dataset size.",
+            )
+            self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = train_dataset_size
+
+        self._remove_wrong_search_space(self._hpo_config["search_space"])
+
+        if "prior_hyper_parameters" not in self._hpo_config:  # default hyper parameters are tried first
+            self._hpo_config["prior_hyper_parameters"] = {
+                hp: get_using_dot_delimited_key(hp, self._engine)
+                for hp in self._hpo_config["search_space"].keys()  # noqa: SIM118
+            }
 
     def _get_default_search_space(self) -> dict[str, Any]:
         """Set learning rate and batch size as search space."""
@@ -208,21 +197,6 @@ class HPOConfigurator:
         return search_space
 
     @staticmethod
-    def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:
-        for hp_name, config in list(search_space.items()):
-            if config["type"] == "choice":
-                if not config["choice_list"]:
-                    search_space.pop(hp_name)
-                    logger.warning(f"choice_list is empty. {hp_name} is excluded from HPO serach space.")
-            elif config["max"] < config["min"] + config.get("step", 0):
-                search_space.pop(hp_name)
-                if "step" in config:
-                    reason_to_exclude = "max is smaller than sum of min and step"
-                else:
-                    reason_to_exclude = "max is smaller than min"
-                logger.warning(f"{reason_to_exclude}. {hp_name} is excluded from HPO serach space.")
-
-    @staticmethod
     def _align_hp_name(search_space: dict[str, Any]) -> None:
         for hp_name in list(search_space.keys()):
             for valid_hp in AVAILABLE_HP_NAME_MAP:
@@ -236,6 +210,21 @@ class HPOConfigurator:
                     f"Please choose one from {','.join(AVAILABLE_HP_NAME_MAP)}."
                 )
                 raise ValueError(error_msg)
+
+    @staticmethod
+    def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:
+        for hp_name, config in list(search_space.items()):
+            if config["type"] == "choice":
+                if not config["choice_list"]:
+                    search_space.pop(hp_name)
+                    logger.warning(f"choice_list is empty. {hp_name} is excluded from HPO serach space.")
+            elif config["max"] < config["min"] + config.get("step", 0):
+                search_space.pop(hp_name)
+                if "step" in config:
+                    reason_to_exclude = "max is smaller than sum of min and step"
+                else:
+                    reason_to_exclude = "max is smaller than min"
+                logger.warning(f"{reason_to_exclude}. {hp_name} is excluded from HPO serach space.")
 
     def get_hpo_algo(self) -> HpoBase | None:
         """Get HPO algorithm based on prepared configuration."""
