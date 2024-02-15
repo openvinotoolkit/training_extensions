@@ -4,8 +4,8 @@
 """Class definition for detection model entity used in OTX."""
 
 from __future__ import annotations
-import copy
 
+import copy
 from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors

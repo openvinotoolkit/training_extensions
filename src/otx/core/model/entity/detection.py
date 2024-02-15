@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from copy import copy
+import copy
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -164,7 +164,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         export_params = super()._export_parameters
         export_params.update(get_mean_std_from_data_processing(self.config))
         export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
+        export_params["model_cfg"] = copy.copy(self.config)
         export_params["test_pipeline"] = self._make_fake_test_pipeline()
 
         return export_params
