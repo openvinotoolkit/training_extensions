@@ -29,8 +29,8 @@ class Point:
     __slots__ = ["x", "y"]
 
     def __init__(self, x: float, y: float):
-        self.x = np.clip(x, a_min=0.0, a_max=1.0)
-        self.y = np.clip(y, a_min=0.0, a_max=1.0)
+        self.x = x
+        self.y = y
 
     def __repr__(self):
         """String representation of the point."""
