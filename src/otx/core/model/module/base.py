@@ -26,23 +26,6 @@ if TYPE_CHECKING:
     from otx.core.data.dataset.base import LabelInfo
 
 
-class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
-    """Linear Warmup scheduler."""
-
-    def __init__(
-        self,
-        optimizer: torch.optim.Optimizer,
-        num_warmup_steps: int = 1000,
-        interval: str = "step",
-    ):
-        if not num_warmup_steps > 0:
-            msg = f"num_warmup_steps should be > 0, got {num_warmup_steps}"
-            raise ValueError(msg)
-        self.num_warmup_steps = num_warmup_steps
-        self.interval = interval
-        super().__init__(optimizer, lambda step: min(step / num_warmup_steps, 1.0))
-
-
 class OTXLitModule(LightningModule):
     """Base class for the lightning module used in OTX."""
 
