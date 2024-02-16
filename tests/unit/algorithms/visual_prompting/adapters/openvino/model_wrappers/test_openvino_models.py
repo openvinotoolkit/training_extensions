@@ -56,13 +56,13 @@ class TestPromptGetter:
 
         assert params.get("sim_threshold").default_value == 0.5
         assert params.get("num_bg_points").default_value == 1
-        
+
     @e2e_pytest_unit
     def test_get_inputs(self, mocker):
         """Test _get_inputs."""
         mocker.patch.object(ImageModel, "__init__")
         prompt_getter = PromptGetter("adapter")
-        
+
         prompt_getter.inputs = {
             "image_embeddings": np.ones((1, 4, 4, 3)),
             "reference_feats": np.ones((2, 1, 256)),
@@ -102,33 +102,30 @@ class TestDecoder:
         assert "upscaled_masks" == results
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("prompts,expected",
-    [
-        (
-            {
-                "bboxes": [np.array([[1, 1], [2, 2]])],
-                "points": [],
-                "labels": {"bboxes": [1]},
-                "original_size": (4, 4)
-            },
-            {
-                "point_coords": (1, 2, 2),
-                "point_labels": (1, 2),
-            }
-        ),
-        (
-            {
-                "bboxes": [],
-                "points": [np.array([[1, 1]])],
-                "labels": {"points": [1]},
-                "original_size": (4, 4)
-            },
-            {
-                "point_coords": (1, 1, 2),
-                "point_labels": (1, 1),
-            }
-        )
-    ])
+    @pytest.mark.parametrize(
+        "prompts,expected",
+        [
+            (
+                {
+                    "bboxes": [np.array([[1, 1], [2, 2]])],
+                    "points": [],
+                    "labels": {"bboxes": [1]},
+                    "original_size": (4, 4),
+                },
+                {
+                    "point_coords": (1, 2, 2),
+                    "point_labels": (1, 2),
+                },
+            ),
+            (
+                {"bboxes": [], "points": [np.array([[1, 1]])], "labels": {"points": [1]}, "original_size": (4, 4)},
+                {
+                    "point_coords": (1, 1, 2),
+                    "point_labels": (1, 1),
+                },
+            ),
+        ],
+    )
     def test_preprocess(self, prompts: Dict[str, Any], expected: Dict[str, Any]):
         """Test preprocess"""
         results = self.decoder.preprocess(prompts, {})

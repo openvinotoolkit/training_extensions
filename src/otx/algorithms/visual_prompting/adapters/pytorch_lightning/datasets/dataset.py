@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, Dict, List, Optional, Union
+from collections import defaultdict
+from typing import Any, DefaultDict, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -31,7 +32,6 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
     ResizeLongestSide,
     collate_fn,
 )
-from collections import defaultdict
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
@@ -158,7 +158,7 @@ class OTXVisualPromptingDataset(Dataset):
         self.transform = get_transform(image_size, mean, std)
         self.offset_bbox = offset_bbox
         self.labels = dataset.get_labels()
-        
+
         if not use_bbox and not use_point:
             # if both are False, use bbox as default
             use_bbox = True
@@ -179,7 +179,12 @@ class OTXVisualPromptingDataset(Dataset):
         return len(self.dataset)
 
     @staticmethod
-    def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity], prob: float = 1., mode: Subset = Subset.TESTING) -> Dict[str, Any]:
+    def get_prompts(
+        dataset_item: DatasetItemEntity,
+        dataset_labels: List[LabelEntity],
+        prob: float = 1.0,
+        mode: Subset = Subset.TESTING,
+    ) -> Dict[str, Any]:
         """Get propmts from dataset_item.
 
         Args:
@@ -195,7 +200,7 @@ class OTXVisualPromptingDataset(Dataset):
         bboxes: List[np.ndarray] = []
         points: List[np.ndarray] = []
         gt_masks: List[np.ndarray] = []
-        labels: defaultdict[str, List[ScoredLabel]] = defaultdict(list)
+        labels: DefaultDict[str, List[ScoredLabel]] = defaultdict(list)
         for annotation in dataset_item.get_annotations(labels=dataset_labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Image):
                 # use mask as-is
@@ -286,7 +291,7 @@ class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
 
         prompts = self.get_prompts(dataset_item, self.labels, self.prob)
         item.update({**prompts, "path": dataset_item.media.path})
-            
+
         return item
 
 
@@ -388,7 +393,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 image_size=image_size,
                 mean=mean,
                 std=std,
-                **self.kwargs
+                **self.kwargs,
             )
 
     def summary(self):
@@ -402,58 +407,66 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 num_items,
             )
 
-    def train_dataloader(self) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
+    def train_dataloader(self) -> DataLoader:
         """Train Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
+            DataLoader: Train dataloader.
         """
         return DataLoader(
             self.train_dataset,
             shuffle=True,
             batch_size=self.config.train_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )
 
-    def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def val_dataloader(self) -> DataLoader:
         """Validation Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader]]: Validation Dataloader.
+            DataLoader: Validation Dataloader.
         """
         return DataLoader(
             self.val_dataset,
             shuffle=False,
             batch_size=self.config.val_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )
 
-    def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def test_dataloader(self) -> DataLoader:
         """Test Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader]]: Test Dataloader.
+            DataLoader: Test Dataloader.
         """
         return DataLoader(
             self.test_dataset,
             shuffle=False,
             batch_size=self.config.test_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )
 
-    def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def predict_dataloader(self) -> DataLoader:
         """Predict Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader]]: Predict Dataloader.
+            DataLoader: Predict Dataloader.
         """
         return DataLoader(
             self.predict_dataset,
             shuffle=False,
             batch_size=1,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn if self.train_type != TrainType.Zeroshot else lambda x: x,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )

@@ -6,11 +6,10 @@ reference: https://github.com/facebookresearch/segment-anything
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-#
 
-import re
+
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from omegaconf import DictConfig
@@ -139,6 +138,7 @@ class SegmentAnything(LightningModule):
         Args:
             state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
         """
+
         def skip_unused_parameters(state_dict):
             if self.config.model.backbone == "tiny_vit":
                 for key in [
@@ -149,7 +149,7 @@ class SegmentAnything(LightningModule):
                 ]:
                     if key in state_dict:
                         state_dict.pop(key)
-        
+
         if state_dict:
             # state_dict from args.load_from
             skip_unused_parameters(state_dict)
@@ -326,7 +326,7 @@ class SegmentAnything(LightningModule):
         iou_preds = iou_preds[torch.arange(masks.shape[0]), best_idx].unsqueeze(1)
 
         return masks, iou_preds
-    
+
     @classmethod
     def postprocess_masks(cls, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
         """Postprocess the predicted masks.
@@ -342,7 +342,7 @@ class SegmentAnything(LightningModule):
         """
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
-        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)
+        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
         masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
 
         orig_size = orig_size.to(torch.int64)
@@ -391,13 +391,15 @@ class SegmentAnything(LightningModule):
             for idx_prompt, prompt in enumerate([bboxes[idx], points[idx]]):
                 if prompt is None:
                     continue
-                
+
                 sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                    points=(prompt.unsqueeze(1), torch.ones(len(prompt), 1, device=prompt.device)) if idx_prompt == 1 else None,
+                    points=(prompt.unsqueeze(1), torch.ones(len(prompt), 1, device=prompt.device))
+                    if idx_prompt == 1
+                    else None,
                     boxes=prompt if idx_prompt == 0 else None,
                     masks=None,
                 )
-                
+
                 _low_res_masks, _iou_predictions = self.mask_decoder(
                     image_embeddings=embedding.unsqueeze(0),
                     image_pe=self.prompt_encoder.get_dense_pe(),
@@ -439,9 +441,7 @@ class SegmentAnything(LightningModule):
 
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
         for i, (pred_mask, gt_mask, iou_prediction) in enumerate(zip(pred_masks, gt_masks, iou_predictions)):
-            pred_mask = self.postprocess_masks(
-                pred_mask, self.config.model.image_size, batch["original_size"][i]
-            )
+            pred_mask = self.postprocess_masks(pred_mask, self.config.model.image_size, batch["original_size"][i])
             pred_mask = pred_mask.sigmoid().squeeze(1)
             self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
             self.train_metrics["train_F1"].update(pred_mask, gt_mask)
@@ -497,9 +497,7 @@ class SegmentAnything(LightningModule):
 
         pred_masks, _ = self.forward_train(images, bboxes, points)
         for i, (pred_mask, gt_mask) in enumerate(zip(pred_masks, gt_masks)):
-            pred_mask = self.postprocess_masks(
-                pred_mask, self.config.model.image_size, batch["original_size"][i]
-            )
+            pred_mask = self.postprocess_masks(pred_mask, self.config.model.image_size, batch["original_size"][i])
             pred_mask = pred_mask.sigmoid().squeeze(1)
             for k, v in self.val_metrics.items():
                 v.update(pred_mask, gt_mask)

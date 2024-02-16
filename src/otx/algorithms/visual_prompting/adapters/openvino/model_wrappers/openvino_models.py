@@ -62,7 +62,7 @@ class PromptGetter(ImageModel):
     """PromptGetter class for zero-shot visual prompting of openvino model wrapper."""
 
     __model__ = "prompt_getter"
-    
+
     def __init__(self, inference_adapter, configuration=None, preload=False):
         super().__init__(inference_adapter, configuration, preload)
 
@@ -73,7 +73,7 @@ class PromptGetter(ImageModel):
         parameters.update({"sim_threshold": NumericalValue(value_type=float, default_value=0.5, min=0, max=1)})
         parameters.update({"num_bg_points": NumericalValue(value_type=int, default_value=1, min=0, max=1024)})
         return parameters
-    
+
     def _get_inputs(self):
         """Defines the model inputs for images and additional info."""
         image_blob_names, image_info_blob_names = [], []
@@ -83,9 +83,7 @@ class PromptGetter(ImageModel):
             else:
                 image_info_blob_names.append(name)
         if not image_blob_names:
-            self.raise_error(
-                "Failed to identify the input for the image: no 4D input layer found"
-            )
+            self.raise_error("Failed to identify the input for the image: no 4D input layer found")
         return image_blob_names, image_info_blob_names
 
 
@@ -101,7 +99,7 @@ class Decoder(SegmentationModel):
         preload: bool = False,
     ):
         super().__init__(model_adapter, configuration, preload)
-        
+
         self.mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
         self.has_mask_input = np.zeros((1, 1), dtype=np.float32)
 

@@ -490,9 +490,7 @@ class TestSegmentAnything:
             (6, torch.tensor((8, 8)), (1, 8, 8)),
         ],
     )
-    def test_postprocess_masks(
-        self, input_size: int, original_size: Tuple[int], expected: Tuple[int]
-    ) -> None:
+    def test_postprocess_masks(self, input_size: int, original_size: Tuple[int], expected: Tuple[int]) -> None:
         """Test postprocess_masks."""
         sam = SegmentAnything(config=self.base_config)
         masks = torch.zeros((1, 1, 4, 4))
@@ -500,7 +498,7 @@ class TestSegmentAnything:
         results = sam.postprocess_masks(masks, input_size, original_size)
 
         assert results.shape[1:] == expected
-        
+
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "input_image_size,expected",

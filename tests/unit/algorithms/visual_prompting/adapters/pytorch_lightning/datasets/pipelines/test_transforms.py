@@ -21,76 +21,79 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 @e2e_pytest_unit
-@pytest.mark.parametrize("batch,expected",[
-    (
-        [
+@pytest.mark.parametrize(
+    "batch,expected",
+    [
+        (
+            [
+                {
+                    "index": 0,
+                    "images": Tensor([1, 2, 3]),
+                    "bboxes": Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]),
+                    "points": torch.zeros((0, 2)),
+                    "gt_masks": [Tensor([1, 2, 3])],
+                    "original_size": Tensor([1, 3]),
+                    "path": [],
+                    "labels": [],
+                },
+                {
+                    "index": 1,
+                    "images": Tensor([4, 5, 6]),
+                    "bboxes": Tensor([[9, 10, 11, 12]]),
+                    "points": torch.zeros((0, 2)),
+                    "gt_masks": [Tensor([4, 5, 6])],
+                    "original_size": Tensor([1, 3]),
+                    "path": [],
+                    "labels": [],
+                },
+            ],
             {
-                "index": 0,
-                "images": Tensor([1, 2, 3]),
-                "bboxes": Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]),
-                "points": torch.zeros((0, 2)),
-                "gt_masks": [Tensor([1, 2, 3])],
-                "original_size": Tensor([1, 3]),
-                "path": [],
-                "labels": [],
+                "index": [0, 1],
+                "images": Tensor([[1, 2, 3], [4, 5, 6]]),
+                "bboxes": [Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), Tensor([[9, 10, 11, 12]])],
+                "points": [None, None],
+                "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
+                "original_size": [Tensor([1, 3]), Tensor([1, 3])],
+                "path": [[], []],
+                "labels": [[], []],
             },
+        ),
+        (
+            [
+                {
+                    "index": 0,
+                    "images": Tensor([1, 2, 3]),
+                    "bboxes": torch.zeros((0, 4)),
+                    "points": Tensor([[1, 1]]),
+                    "gt_masks": [Tensor([1, 2, 3])],
+                    "original_size": Tensor([1, 3]),
+                    "path": [],
+                    "labels": [],
+                },
+                {
+                    "index": 1,
+                    "images": Tensor([4, 5, 6]),
+                    "bboxes": torch.zeros((0, 4)),
+                    "points": Tensor([[2, 2]]),
+                    "gt_masks": [Tensor([4, 5, 6])],
+                    "original_size": Tensor([1, 3]),
+                    "path": [],
+                    "labels": [],
+                },
+            ],
             {
-                "index": 1,
-                "images": Tensor([4, 5, 6]),
-                "bboxes": Tensor([[9, 10, 11, 12]]),
-                "points": torch.zeros((0, 2)),
-                "gt_masks": [Tensor([4, 5, 6])],
-                "original_size": Tensor([1, 3]),
-                "path": [],
-                "labels": [],
+                "index": [0, 1],
+                "images": Tensor([[1, 2, 3], [4, 5, 6]]),
+                "bboxes": [None, None],
+                "points": [Tensor([[1, 1]]), Tensor([[2, 2]])],
+                "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
+                "original_size": [Tensor([1, 3]), Tensor([1, 3])],
+                "path": [[], []],
+                "labels": [[], []],
             },
-        ],
-        {
-            "index": [0, 1],
-            "images": Tensor([[1, 2, 3], [4, 5, 6]]),
-            "bboxes": [Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), Tensor([[9, 10, 11, 12]])],
-            "points": [None, None],
-            "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
-            "original_size": [Tensor([1, 3]), Tensor([1, 3])],
-            "path": [[], []],
-            "labels": [[], []],
-        }
-    ),
-    (
-        [
-            {
-                "index": 0,
-                "images": Tensor([1, 2, 3]),
-                "bboxes": torch.zeros((0, 4)),
-                "points": Tensor([[1, 1]]),
-                "gt_masks": [Tensor([1, 2, 3])],
-                "original_size": Tensor([1, 3]),
-                "path": [],
-                "labels": [],
-            },
-            {
-                "index": 1,
-                "images": Tensor([4, 5, 6]),
-                "bboxes": torch.zeros((0, 4)),
-                "points": Tensor([[2, 2]]),
-                "gt_masks": [Tensor([4, 5, 6])],
-                "original_size": Tensor([1, 3]),
-                "path": [],
-                "labels": [],
-            },
-        ],
-        {
-            "index": [0, 1],
-            "images": Tensor([[1, 2, 3], [4, 5, 6]]),
-            "bboxes": [None, None],
-            "points": [Tensor([[1, 1]]), Tensor([[2, 2]])],
-            "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
-            "original_size": [Tensor([1, 3]), Tensor([1, 3])],
-            "path": [[], []],
-            "labels": [[], []],
-        }
-    )
-])
+        ),
+    ],
+)
 def test_collate_fn(batch: List[Dict[str, Any]], expected: Dict[str, Any]):
     """Test collate_fn."""
     results = collate_fn(batch)

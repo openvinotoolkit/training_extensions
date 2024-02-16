@@ -381,7 +381,11 @@ class TestZeroShotTask:
         mocker_otx_model = mocker.patch("otx.api.entities.model.ModelEntity")
         mocker_io_bytes_io = mocker.patch("io.BytesIO")
         mocker_torch_save = mocker.patch("torch.save")
-        mocker.patch.object(self.zero_shot_task.model, "state_dict", return_value={"reference_info.reference_feats": None, "reference_info.used_indices": None})
+        mocker.patch.object(
+            self.zero_shot_task.model,
+            "state_dict",
+            return_value={"reference_info.reference_feats": None, "reference_info.used_indices": None},
+        )
 
         self.zero_shot_task.model.reference_info = "reference_info"
 

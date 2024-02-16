@@ -19,8 +19,9 @@ class SAMImageEncoder(nn.Module):
     Args:
         config (DictConfig): Config for image encoder.
     """
-    
+
     def __new__(cls, config: DictConfig):
+        """Initialize SAM image encoder to the target backbone."""
         if "tiny_vit" == config.backbone:
             return build_tiny_vit(config.image_size)
         elif "vit" in config.backbone:

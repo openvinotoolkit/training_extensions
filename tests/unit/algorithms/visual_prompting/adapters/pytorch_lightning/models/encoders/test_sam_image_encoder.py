@@ -25,9 +25,10 @@ class TestSAMImageEncoder:
     @pytest.fixture()
     def config(self, mocker) -> DictConfig:
         return DictConfig(dict(image_size=1024))
-        
+
     @e2e_pytest_unit
-    @pytest.mark.parametrize("backbone,expected",
+    @pytest.mark.parametrize(
+        "backbone,expected",
         [
             ("tiny_vit", "TinyViT"),
             ("vit_b", "ViT"),

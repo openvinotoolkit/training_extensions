@@ -45,33 +45,43 @@ class TestPromptGetter:
         assert self.prompt_getter.default_threshold_target == 0.7
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("result_point_selection", [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])])
+    @pytest.mark.parametrize(
+        "result_point_selection",
+        [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])],
+    )
     def test_forward(self, mocker, result_point_selection: torch.Tensor) -> None:
         """Test forward."""
         mocker.patch.object(
-            self.prompt_getter,
-            "get_prompt_candidates",
-            return_value=(result_point_selection, torch.zeros(1, 2)))
+            self.prompt_getter, "get_prompt_candidates", return_value=(result_point_selection, torch.zeros(1, 2))
+        )
         image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feats = torch.rand(1, 1, 4)
         used_indices = torch.as_tensor([[0]])
         original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
 
         total_points_scores, total_bg_coords = self.prompt_getter(
-            image_embeddings=image_embeddings, reference_feats=reference_feats, used_indices=used_indices, original_size=original_size
+            image_embeddings=image_embeddings,
+            reference_feats=reference_feats,
+            used_indices=used_indices,
+            original_size=original_size,
         )
-        
+
         assert total_points_scores.shape[0] == 1
         assert total_bg_coords.shape[0] == 1
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("result_point_selection", [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])])
+    @pytest.mark.parametrize(
+        "result_point_selection",
+        [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])],
+    )
     def test_get_prompt_candidates(self, mocker, result_point_selection: torch.Tensor) -> None:
         """Test get_prompt_candidates."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
-        mocker.patch.object(self.prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
+        mocker.patch.object(
+            self.prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2))
+        )
         image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feat = torch.rand(1, 4)
         original_size = torch.tensor(
@@ -89,9 +99,13 @@ class TestPromptGetter:
     @pytest.mark.parametrize(
         "mask_sim,expected",
         [
-            (torch.arange(0.1, 1.0, 0.1).reshape(3, 3), torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]])),
-            (torch.zeros(3, 3), torch.tensor([[-1, -1, -1]]))
-        ])
+            (
+                torch.arange(0.1, 1.0, 0.1).reshape(3, 3),
+                torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]),
+            ),
+            (torch.zeros(3, 3), torch.tensor([[-1, -1, -1]])),
+        ],
+    )
     def test_point_selection(self, mask_sim: torch.Tensor, expected: torch.Tensor) -> None:
         """Test _point_selection."""
         points_scores, bg_coords = self.prompt_getter._point_selection(
@@ -106,7 +120,9 @@ class TestPromptGetter:
 class TestZeroShotSegmentAnything:
     @pytest.fixture
     def set_zero_shot_segment_anything(self, monkeypatch):
-        def zero_shot_segment_anything(manual_config_update: Optional[Dict] = None, state_dict: Optional[OrderedDict] = None):
+        def zero_shot_segment_anything(
+            manual_config_update: Optional[Dict] = None, state_dict: Optional[OrderedDict] = None
+        ):
             monkeypatch.setattr(
                 "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMImageEncoder",
                 MockImageEncoder,
@@ -133,7 +149,7 @@ class TestZeroShotSegmentAnything:
             state_dict = set_zero_shot_segment_anything().state_dict()
             state_dict.pop("reference_info.reference_feats")
             state_dict.pop("reference_info.used_indices")
-        
+
         zero_shot_segment_anything = set_zero_shot_segment_anything(state_dict=state_dict)
 
         assert zero_shot_segment_anything.config.model.freeze_image_encoder
@@ -177,14 +193,16 @@ class TestZeroShotSegmentAnything:
         )
         mocker.patch.object(zero_shot_segment_anything, "_generate_masked_features", return_value=torch.ones(1, 256))
 
-        batch = [{
-            "images": np.ones((4, 4, 3), dtype=np.uint8),
-            "gt_masks": np.ones((4, 4), dtype=np.uint8),
-            "bboxes": np.array([[0, 0, 1, 1]], dtype=np.float32),
-            "points": np.zeros((0, 2), dtype=np.float32),
-            "labels": {"bboxes": [MockScoredLabel(label=0, name="label")]},
-            "original_size": np.array([4, 4], dtype=np.int64)
-        }]
+        batch = [
+            {
+                "images": np.ones((4, 4, 3), dtype=np.uint8),
+                "gt_masks": np.ones((4, 4), dtype=np.uint8),
+                "bboxes": np.array([[0, 0, 1, 1]], dtype=np.float32),
+                "points": np.zeros((0, 2), dtype=np.float32),
+                "labels": {"bboxes": [MockScoredLabel(label=0, name="label")]},
+                "original_size": np.array([4, 4], dtype=np.int64),
+            }
+        ]
         zero_shot_segment_anything.learn(batch=batch, reset_feat=True)
 
         assert zero_shot_segment_anything.reference_info.reference_feats.shape == (1, 1, 256)
@@ -203,14 +221,18 @@ class TestZeroShotSegmentAnything:
         reference_feats = nn.Parameter(torch.rand(1, 1, 256), requires_grad=False)
         used_indices = nn.Parameter(torch.as_tensor([[0]], dtype=torch.int64), requires_grad=False)
         mocker.patch.object(
-            SegmentAnything, "forward", return_value=(torch.ones(1, 4, 4, 4), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+            SegmentAnything,
+            "forward",
+            return_value=(torch.ones(1, 4, 4, 4), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4)),
         )
 
-        batch = [{
-            "images": np.ones((4, 4, 3), dtype=np.uint8),
-            "gt_masks": np.ones((4, 4), dtype=np.uint8),
-            "original_size": np.array([4, 4], dtype=np.int64)
-        }]
+        batch = [
+            {
+                "images": np.ones((4, 4, 3), dtype=np.uint8),
+                "gt_masks": np.ones((4, 4), dtype=np.uint8),
+                "original_size": np.array([4, 4], dtype=np.int64),
+            }
+        ]
         total_results = zero_shot_segment_anything.infer(
             batch=batch,
             reference_feats=reference_feats,
@@ -220,11 +242,13 @@ class TestZeroShotSegmentAnything:
         for i, results in enumerate(total_results[0]):
             for _, result in results.items():
                 assert torch.equal(result[0], expected[i])
-                
+
     @e2e_pytest_unit
     def test_inspect_overlapping_areas(self, mocker, set_zero_shot_segment_anything) -> None:
         """Test _inspect_overlapping_areas."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         predicted_masks = {
             0: [
@@ -327,7 +351,9 @@ class TestZeroShotSegmentAnything:
     def test_predict_masks(self, mocker, set_zero_shot_segment_anything) -> None:
         """Test _predict_masks."""
         mocker.patch.object(
-            SegmentAnything, "forward", return_value=(torch.ones(1, 4, 8, 8), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+            SegmentAnything,
+            "forward",
+            return_value=(torch.ones(1, 4, 8, 8), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4)),
         )
 
         zero_shot_segment_anything = set_zero_shot_segment_anything()
@@ -348,10 +374,10 @@ class TestZeroShotSegmentAnything:
         transformed_batch = {
             "bboxes": torch.tensor([[0, 0, 1, 1]]),
             "points": torch.tensor([[2, 2]]),
-            "labels": {"bboxes": [MockScoredLabel(label=1)], "points": [MockScoredLabel(label=1)]}
+            "labels": {"bboxes": [MockScoredLabel(label=1)], "points": [MockScoredLabel(label=1)]},
         }
         processed_prompts = zero_shot_segment_anything._preprocess_prompts(transformed_batch)
-        
+
         for prompts in processed_prompts.values():
             for prompt in prompts:
                 if "bboxes" in prompt:
