@@ -62,6 +62,9 @@ class PromptGetter(ImageModel):
     """PromptGetter class for zero-shot visual prompting of openvino model wrapper."""
 
     __model__ = "prompt_getter"
+    
+    def __init__(self, inference_adapter, configuration=None, preload=False):
+        super().__init__(inference_adapter, configuration, preload)
 
     @classmethod
     def parameters(cls) -> Dict[str, Any]:  # noqa: D102
@@ -187,7 +190,7 @@ class Decoder(SegmentationModel):
             blur_strength=self.blur_strength,
         )
 
-        probability = max(min(float(outputs["iou_predictions"]), 1.0), 0.0)
+        probability = max(min(float(outputs["scores"]), 1.0), 0.0)
         meta["label"].probability = probability
 
         return hard_prediction, soft_prediction

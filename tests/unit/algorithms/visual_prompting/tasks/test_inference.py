@@ -343,8 +343,8 @@ class TestZeroShotTask:
             },
             "visual_prompting_prompt_getter": {
                 "image_embeddings": np.random.randn(1, embed_dim, *embed_size).astype(dtype=np.float32),
-                "reference_feats": np.random.randn(1, 1, 256).astype(dtype=np.float32),
-                "used_indices": np.array([[0]], dtype=np.int64),
+                "reference_feats": np.random.randn(2, 1, 256).astype(dtype=np.float32),
+                "used_indices": np.array([[0, 1]], dtype=np.int64),
                 "original_size": np.random.randint(low=0, high=image_size * 2, size=(1, 2), dtype=np.int64),
                 "threshold": np.array([[0.1]], dtype=np.float32),
                 "num_bg_points": np.random.randint(low=1, high=image_size, size=(1, 1), dtype=np.int64),

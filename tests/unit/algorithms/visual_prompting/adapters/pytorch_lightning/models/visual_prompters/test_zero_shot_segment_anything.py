@@ -52,13 +52,13 @@ class TestPromptGetter:
             self.prompt_getter,
             "get_prompt_candidates",
             return_value=(result_point_selection, torch.zeros(1, 2)))
-        image_embedding = torch.ones(1, 4, 4, 4)
+        image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feats = torch.rand(1, 1, 4)
         used_indices = torch.as_tensor([[0]])
         original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
 
         total_points_scores, total_bg_coords = self.prompt_getter(
-            image_embedding=image_embedding, reference_feats=reference_feats, used_indices=used_indices, original_size=original_size
+            image_embeddings=image_embeddings, reference_feats=reference_feats, used_indices=used_indices, original_size=original_size
         )
         
         assert total_points_scores.shape[0] == 1
@@ -72,14 +72,14 @@ class TestPromptGetter:
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
         mocker.patch.object(self.prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
-        image_embedding = torch.ones(1, 4, 4, 4)
+        image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feat = torch.rand(1, 4)
         original_size = torch.tensor(
             [[self.prompt_getter.image_size, self.prompt_getter.image_size]], dtype=torch.int64
         )
 
         points_scores, bg_coords = self.prompt_getter.get_prompt_candidates(
-            image_embedding=image_embedding, reference_feat=reference_feat, original_size=original_size
+            image_embeddings=image_embeddings, reference_feat=reference_feat, original_size=original_size
         )
 
         assert torch.all(points_scores == result_point_selection)

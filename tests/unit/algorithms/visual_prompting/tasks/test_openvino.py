@@ -193,24 +193,24 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         visual_prompting_hparams = self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
         label_schema = self.task_environment.label_schema
 
-        self.visual_prompting_ov_inferencer = OpenVINOZeroShotVisualPromptingInferencer(
+        self.zero_shot_visual_prompting_ov_inferencer = OpenVINOZeroShotVisualPromptingInferencer(
             visual_prompting_hparams,
             label_schema,
             {"image_encoder": "", "prompt_getter": "", "decoder": ""},
             {"image_encoder": "", "prompt_getter": "", "decoder": ""},
         )
-        self.visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
+        self.zero_shot_visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
             "otx.algorithms.visual_prompting.tasks.openvino.model_wrappers.Decoder", autospec=True
         )
-        self.visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.3
-        self.visual_prompting_ov_inferencer.model["decoder"]._apply_coords.return_value = np.array([[1, 1]])
+        self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.3
+        self.zero_shot_visual_prompting_ov_inferencer.model["decoder"]._apply_coords.return_value = np.array([[1, 1]])
 
     @e2e_pytest_unit
     def test_predict(self, mocker):
         """Test predict."""
         mocker_pre_process = mocker.patch.object(
             OpenVINOZeroShotVisualPromptingInferencer,
-            "pre_process",
+            "pre_process_image_encoder",
             return_value=(torch.zeros((1, 3, 2, 2)), {"original_shape": (4, 4, 1)}),
         )
         mocker_forward = mocker.patch.object(
@@ -223,15 +223,13 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             "forward_prompt_getter",
             return_value={"total_points_scores": np.array([[[1, 1, 1]]]), "total_bg_coords": np.array([[[2, 2]]])},
         )
-        mocker_forward_decoder = mocker.patch.object(
-            OpenVINOZeroShotVisualPromptingInferencer, "forward_decoder", return_value=None
-        )
+        mocker_forward_decoder = mocker.patch.object(OpenVINOZeroShotVisualPromptingInferencer, "forward_decoder", return_value={})
         mocker_post_process = mocker.patch.object(
             OpenVINOZeroShotVisualPromptingInferencer, "post_process", return_value=(self.fake_annotation, None, None)
         )
         fake_input = mocker.Mock(spec=DatasetItemEntity)
 
-        returned_value = self.visual_prompting_ov_inferencer.predict(fake_input)
+        returned_value = self.zero_shot_visual_prompting_ov_inferencer.predict(fake_input)
 
         mocker_pre_process.assert_called_once()
         mocker_forward.assert_called_once()
@@ -246,12 +244,12 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             (
                 (np.ones((1, 1)), np.ones((3, 3))),
                 {"upscaled_masks": np.ones((3, 3)), "iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
-                {"masks": np.ones((3, 3))},
+                {"upscaled_masks": np.ones((3, 3))},
             ),
             (
                 (np.zeros((2, 2)), np.zeros((3, 3))),
                 {"upscaled_masks": np.zeros((3, 3)), "iou_predictions": np.array([[0.9]]), "low_res_masks": np.ones((1, 1, 2, 2))},
-                {"masks": np.zeros((3, 3))},
+                {"upscaled_masks": np.zeros((3, 3))},
             ),
         ],
     )
@@ -264,16 +262,16 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
     ):
         """Test forward_decoder."""
         mocker.patch.object(
-            self.visual_prompting_ov_inferencer.model["decoder"], "infer_sync", return_value=infer_sync_output
+            self.zero_shot_visual_prompting_ov_inferencer.model["decoder"], "infer_sync", return_value=infer_sync_output
         )
         mocker.patch.object(
-            self.visual_prompting_ov_inferencer.model["decoder"],
+            self.zero_shot_visual_prompting_ov_inferencer.model["decoder"],
             "_apply_coords",
             return_value=np.array([[[1, 1]]], dtype=np.float32),
         )
-        mocker.patch.object(self.visual_prompting_ov_inferencer, "_postprocess_masks", return_value=postprocess_output)
+        mocker.patch.object(self.zero_shot_visual_prompting_ov_inferencer, "_postprocess_masks", return_value=postprocess_output)
 
-        result = self.visual_prompting_ov_inferencer.forward_decoder(
+        result = self.zero_shot_visual_prompting_ov_inferencer.forward_decoder(
             inputs={
                 "image_embeddings": np.empty((1, 4, 2, 2)),
                 "point_coords": np.array([[[1, 1]]], dtype=np.float32),
@@ -282,39 +280,139 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             original_size=np.array([3, 3]),
         )
 
-        assert np.all(result["masks"] == expected["masks"])
+        assert np.all(result["upscaled_masks"] == expected["upscaled_masks"])
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "masks,expected_masks",
         [
             (
-                np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[..., None], 4, axis=-1),
+                np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[None], 4, axis=0)[None],
                 np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_)
             ),
             (
                 np.concatenate(
                     (
-                        np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[..., None], 3, axis=-1),
-                        np.zeros((3, 3, 1)),
+                        np.repeat(np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])[None], 3, axis=0)[None],
+                        np.zeros((1, 1, 3, 3)),
                     ),
-                    axis=-1,
+                    axis=1,
                 ),
                 np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool_)
             ),
-            (np.zeros((3, 3, 4)), np.zeros((3, 3))),
+            (np.zeros((1, 4, 3, 3)), np.zeros((3, 3))),
         ],
     )
     def test_postprocess_masks(self, masks: np.ndarray, expected_masks: np.ndarray):
         """Test _postprocess_masks."""
-        self.visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.0
-        self.visual_prompting_ov_inferencer.model["decoder"].image_size = 3
+        self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.0
+        self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].image_size = 3
 
-        _, result_masks = self.visual_prompting_ov_inferencer._postprocess_masks(
+        _, result_masks = self.zero_shot_visual_prompting_ov_inferencer._postprocess_masks(
             masks=masks, logits=np.empty((1, 4, 2, 2)), scores=np.array([[0.5, 0.7, 0.8, 0.9]]))
 
         assert result_masks.shape == (3, 3)
         assert np.all(result_masks == expected_masks)
+        
+    @e2e_pytest_unit
+    def test_inspect_overlapping_areas(self) -> None:
+        """Test _inspect_overlapping_areas."""
+        predicted_masks = {
+            0: [
+                np.array(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                        [0, 1, 1, 1, 0, 0],
+                    ],
+                ),
+            ],
+            1: [
+                np.array(
+                    [
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 1, 1],
+                    ],
+                ),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0],
+                    ],
+                ),
+                np.array(
+                    [
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [1, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ],
+                ),
+            ],
+        }
+        used_points = {
+            0: [
+                np.array([0, 0, 0.5]),  # to be removed
+                np.array([2, 2, 0.5]),
+                np.array([1, 4, 0.5]),
+            ],
+            1: [
+                np.array([3, 0, 0.5]),
+                np.array([4, 4, 0.5]),
+                np.array([1, 4, 0.3]),  # to be removed
+                np.array([0, 0, 0.7]),
+            ],
+        }
+
+        self.zero_shot_visual_prompting_ov_inferencer._inspect_overlapping_areas(predicted_masks, used_points, predicted_masks.copy(), threshold_iou=0.5)
+
+        assert len(predicted_masks[0]) == 1
+        assert len(predicted_masks[1]) == 2
+        assert all(np.array([2, 2, 0.5]) == used_points[0][0])
+        assert all(np.array([0, 0, 0.7]) == used_points[1][2])
 
 
 class TestOTXOpenVinoDataLoader:

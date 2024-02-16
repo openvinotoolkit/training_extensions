@@ -8,7 +8,7 @@ import os
 import json
 from copy import deepcopy
 from itertools import product
-import ast
+import pickle
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -49,7 +49,7 @@ class PromptGetter(nn.Module):
 
     def forward(
         self,
-        image_embedding: Tensor,
+        image_embeddings: Tensor,
         reference_feats: Tensor,
         used_indices: Tensor,
         original_size: Tensor,
@@ -57,7 +57,7 @@ class PromptGetter(nn.Module):
         num_bg_points: Tensor = torch.as_tensor([[1]], dtype=torch.int64),
     ) -> Tuple[Tensor, Tensor]:
         """Get prompt candidates."""
-        device = image_embedding.device
+        device = image_embeddings.device
         original_size = original_size.squeeze()
         threshold = threshold.squeeze().to(device)
         num_bg_points = num_bg_points.squeeze()
@@ -66,7 +66,7 @@ class PromptGetter(nn.Module):
         total_bg_coords: Tensor = torch.zeros(used_indices.max() + 1, num_bg_points, 2, device=device)
         for label in used_indices[0]:
             points_scores, bg_coords = self.get_prompt_candidates(
-                image_embedding=image_embedding,
+                image_embeddings=image_embeddings,
                 reference_feat=reference_feats[label],
                 original_size=original_size,
                 threshold=threshold,
@@ -88,7 +88,7 @@ class PromptGetter(nn.Module):
 
     def get_prompt_candidates(
         self,
-        image_embedding: Tensor,
+        image_embeddings: Tensor,
         reference_feat: Tensor,
         original_size: Tensor,
         threshold: Union[Tensor, float] = 0.,
@@ -96,7 +96,7 @@ class PromptGetter(nn.Module):
         device: Union[torch.device, str] = torch.device("cpu"),
     ) -> Tuple[Tensor, Tensor]:
         """Get prompt candidates from given reference and target features."""
-        target_feat = image_embedding.squeeze()
+        target_feat = image_embeddings.squeeze()
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
@@ -395,9 +395,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
             images = tb["images"].unsqueeze(0).to(self.device)
             original_size = torch.as_tensor(tb["original_size"])
             
-            image_embedding = self.image_encoder(images)
+            image_embeddings = self.image_encoder(images)
             total_points_scores, total_bg_coords = self.prompt_getter(
-                image_embedding=image_embedding,
+                image_embeddings=image_embeddings,
                 reference_feats=reference_feats,
                 used_indices=used_indices,
                 original_size=original_size)
@@ -423,7 +423,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
                     ).unsqueeze(0)
                     mask = self._predict_masks(
-                        image_embeddings=image_embedding,
+                        image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
                         original_size=original_size,
@@ -770,5 +770,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
             path_reference_info = self.path_reference_info.format(datetime.now().strftime("%Y%m%d-%H%M%S"))
             os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)
             torch.save(self.reference_info, path_reference_info)
+            pickle.dump({k: v.numpy() for k, v in self.reference_info.items()}, open(path_reference_info.replace(".pt", ".pickle"), "wb"))
             json.dump(repr(self.trainer.datamodule.train_dataset.dataset), open(path_reference_info.replace("reference_info.pt", "reference_meta.json"), "w"))
             logger.info(f"Saved reference info at {path_reference_info}")

@@ -56,6 +56,26 @@ class TestPromptGetter:
 
         assert params.get("sim_threshold").default_value == 0.5
         assert params.get("num_bg_points").default_value == 1
+        
+    @e2e_pytest_unit
+    def test_get_inputs(self, mocker):
+        """Test _get_inputs."""
+        mocker.patch.object(ImageModel, "__init__")
+        prompt_getter = PromptGetter("adapter")
+        
+        prompt_getter.inputs = {
+            "image_embeddings": np.ones((1, 4, 4, 3)),
+            "reference_feats": np.ones((2, 1, 256)),
+            "used_indices": np.array([[0, 1]], dtype=np.int64),
+            "original_size": np.array([[4, 4]], dtype=np.int64),
+            "threshold": np.array([[0.1]]),
+            "num_bg_points": np.array([[1]], dtype=np.int64),
+        }
+
+        returned_value = prompt_getter._get_inputs()
+
+        assert returned_value[0] == ["image_embeddings"]
+        assert returned_value[1] == ["reference_feats", "used_indices", "original_size", "threshold", "num_bg_points"]
 
 
 class TestDecoder:
@@ -162,7 +182,7 @@ class TestDecoder:
         self.decoder.output_blob_name = "masks"
         self.decoder.soft_threshold = 0.5
         self.decoder.blur_strength = 2
-        fake_output = {"masks": np.ones((4, 4)), "iou_predictions": 0.1}
+        fake_output = {"masks": np.ones((4, 4)), "scores": 0.1}
         fake_metadata = {"original_size": np.array([[6, 6]]), "label": mocker.Mock(spec=LabelEntity)}
         returned_value = self.decoder.postprocess(outputs=fake_output, meta=fake_metadata)
 
