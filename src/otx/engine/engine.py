@@ -25,7 +25,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 from .utils.auto_configurator import AutoConfigurator, PathLike
-from .utils.hpo import execute_hpo, update_hyper_parameter
+from .hpo import execute_hpo, update_hyper_parameter
 
 if TYPE_CHECKING:
     from lightning import Callback
