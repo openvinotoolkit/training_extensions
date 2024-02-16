@@ -16,14 +16,14 @@ ALL_CLASSES_NAME = "All Classes"
 
 
 def intersection_box(
-    box1: tuple[float, float, float, float, str, float],
-    box2: tuple[float, float, float, float, str, float],
+    box1: tuple,
+    box2: tuple,
 ) -> tuple[float, float, float, float]:
     """Calculate the intersection box of two bounding boxes.
 
     Args:
-        box1 (tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
-        box2 (tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
+        box1 (tuple): (x1, y1, x2, y2, class, score)
+        box2 (tuple): (x1, y1, x2, y2, class, score)
 
     Returns:
         tuple[float, float, float, float]: (x_left, x_right, y_bottom, y_top)
@@ -36,14 +36,14 @@ def intersection_box(
 
 
 def bounding_box_intersection_over_union(
-    box1: tuple[float, float, float, float, str, float],
-    box2: tuple[float, float, float, float, str, float],
+    box1: tuple,
+    box2: tuple,
 ) -> float:
     """Calculate the Intersection over Union (IoU) of two bounding boxes.
 
     Args:
-        box1 (tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
-        box2 (tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
+        box1 (tuple): (x1, y1, x2, y2, class, score)
+        box2 (tuple): (x1, y1, x2, y2, class, score)
 
     Raises:
         ValueError: In case the IoU is outside of [0.0, 1.0]
@@ -68,8 +68,8 @@ def bounding_box_intersection_over_union(
 
 
 def get_iou_matrix(
-    ground_truth: list[tuple[float, float, float, float, str, float]],
-    predicted: list[tuple[float, float, float, float, str, float]],
+    ground_truth: list[tuple],
+    predicted: list[tuple],
 ) -> np.ndarray:
     """Constructs an iou matrix of shape [num_ground_truth_boxes, num_predicted_boxes].
 
@@ -77,12 +77,12 @@ def get_iou_matrix(
     An iou matrix corresponds to a single image
 
     Args:
-        ground_truth (list[tuple[float, float, float, float, str, float]]): list of ground truth boxes.
+        ground_truth (list[tuple]): list of ground truth boxes.
             Each box is a list of (x,y) coordinates and a label.
             a box: [x1: float, y1, x2, y2, class: str, score: float]
             boxes_per_image: [box1, box2, …]
             boxes1: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
-        predicted (list[tuple[float, float, float, float, str, float]]): list of predicted boxes.
+        predicted (list[tuple]): list of predicted boxes.
             Each box is a list of (x,y) coordinates and a label.
             a box: [x1: float, y1, x2, y2, class: str, score: float]
             boxes_per_image: [box1, box2, …]
@@ -223,11 +223,11 @@ class _FMeasureCalculator:
     """This class contains the functions to calculate FMeasure.
 
     Args:
-        ground_truth_boxes_per_image (list[list[tuple[float, float, float, float, str, float]]]):
+        ground_truth_boxes_per_image (list[list[tuple]]):
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
                 ground_truth_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
-        prediction_boxes_per_image (list[list[tuple[float, float, float, float, str, float]]]):
+        prediction_boxes_per_image (list[list[tuple]]):
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
                 predicted_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
@@ -235,8 +235,8 @@ class _FMeasureCalculator:
 
     def __init__(
         self,
-        ground_truth_boxes_per_image: list[list[tuple[float, float, float, float, str, float]]],
-        prediction_boxes_per_image: list[list[tuple[float, float, float, float, str, float]]],
+        ground_truth_boxes_per_image: list[list[tuple]],
+        prediction_boxes_per_image: list[list[tuple]],
     ):
         self.ground_truth_boxes_per_image = ground_truth_boxes_per_image
         self.prediction_boxes_per_image = prediction_boxes_per_image
@@ -479,7 +479,7 @@ class _FMeasureCalculator:
 
     @staticmethod
     def __get_critical_nms(
-        boxes_per_image: list[list[tuple[float, float, float, float, str, float]]],
+        boxes_per_image: list[list[tuple]],
         cross_class_nms: bool = False,
     ) -> list[list[float]]:
         """Return list of critical NMS values for each box in each image.
@@ -491,7 +491,7 @@ class _FMeasureCalculator:
         other box of the same class and higher confidence score.
 
         Args:
-            boxes_per_image (list[list[tuple[float, float, float, float, str, float]]]): list of predicted boxes per
+            boxes_per_image (list[list[tuple]]): list of predicted boxes per
                 image.
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
@@ -519,21 +519,21 @@ class _FMeasureCalculator:
 
     @staticmethod
     def __filter_nms(
-        boxes_per_image: list[list[tuple[float, float, float, float, str, float]]],
+        boxes_per_image: list[list[tuple]],
         critical_nms: list[list[float]],
         nms_threshold: float,
-    ) -> list[list[tuple[float, float, float, float, str, float]]]:
+    ) -> list[list[tuple]]:
         """Filters out predicted boxes whose critical nms is higher than the given nms_threshold.
 
         Args:
-            boxes_per_image (list[list[tuple[float, float, float, float, str, float]]]): list of boxes per image.
+            boxes_per_image (list[list[tuple]]): list of boxes per image.
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
             critical_nms (list[list[float]]): list of list of critical nms for each box in each image
             nms_threshold (float): NMS threshold used for filtering
 
         Returns:
-            list[list[tuple[float, float, float, float, str, float]]]: list of list of filtered boxes in each image
+            list[list[tuple]]: list of list of filtered boxes in each image
         """
         new_boxes_per_image = []
         for boxes, boxes_nms in zip(boxes_per_image, critical_nms):
@@ -546,17 +546,17 @@ class _FMeasureCalculator:
 
     @staticmethod
     def __filter_class(
-        boxes_per_image: list[list[tuple[float, float, float, float, str, float]]],
+        boxes_per_image: list[list[tuple]],
         class_name: str,
-    ) -> list[list[tuple[float, float, float, float, str, float]]]:
+    ) -> list[list[tuple]]:
         """Filters boxes to only keep members of one class.
 
         Args:
-            boxes_per_image (list[list[tuple[float, float, float, float, str, float]]]): a list of lists of boxes
+            boxes_per_image (list[list[tuple]]): a list of lists of boxes
             class_name (str): Name of the class for which the boxes are filtered
 
         Returns:
-            list[list[tuple[float, float, float, float, str, float]]]: a list of lists of boxes
+            list[list[tuple]]: a list of lists of boxes
         """
         filtered_boxes_per_image = []
         for boxes in boxes_per_image:
@@ -566,19 +566,19 @@ class _FMeasureCalculator:
 
     @staticmethod
     def __filter_confidence(
-        boxes_per_image: list[list[tuple[float, float, float, float, str, float]]],
+        boxes_per_image: list[list[tuple]],
         confidence_threshold: float,
-    ) -> list[list[tuple[float, float, float, float, str, float]]]:
+    ) -> list[list[tuple]]:
         """Filters boxes to only keep ones with higher confidence than a given confidence threshold.
 
         Args:
-            boxes_per_image (list[list[tuple[float, float, float, float, str, float]]]):
+            boxes_per_image (list[list[tuple]]):
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
             confidence_threshold (float): Confidence threshold
 
         Returns:
-            list[list[tuple[float, float, float, float, str, float]]]: Boxes with higher confidence than the given
+            list[list[tuple]]: Boxes with higher confidence than the given
                 threshold.
         """
         filtered_boxes_per_image = []
@@ -632,28 +632,34 @@ class FMeasure(Metric):
     to True.
 
     Args:
-        resultset (ResultSetEntity) :ResultSet entity used for calculating the F-Measure
+        num_classes (int): Number of classes of dataset.
         vary_confidence_threshold (bool): if True the maximal F-measure is determined by optimizing for different
             confidence threshold values Defaults to False.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
             values. Defaults to False.
         cross_class_nms (bool): Whether non-max suppression should be applied cross-class. If True this will eliminate
             boxes with sufficient overlap even if they are from different classes. Defaults to False.
-
-    Raises:
-        ValueError: if prediction dataset and ground truth dataset are empty
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.preds = []
-        self.targets = []
-        self.classes = ["0"]
+    def __init__(
+        self,
+        num_classes: int,
+        vary_confidence_threshold: bool = True,
+        vary_nms_threshold: bool = False,
+        cross_class_nms: bool = False,
+    ):
+        super().__init__()
+        self.vary_confidence_threshold = vary_confidence_threshold
+        self.vary_nms_threshold = vary_nms_threshold
+        self.cross_class_nms = cross_class_nms
+        self.preds: list[list[tuple]] = []
+        self.targets: list[list[tuple]] = []
+        self.classes = [str(idx) for idx in range(num_classes)]
 
-        self._f_measure_per_confidence = None
-        self._f_measure_per_nms = None
-        self._best_confidence_threshold = None
-        self._best_nms_threshold = None
+        self._f_measure_per_confidence: dict | None = None
+        self._f_measure_per_nms: dict | None = None
+        self._best_confidence_threshold: float | None = None
+        self._best_nms_threshold: float | None = None
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update total predictions and targets from given batch predicitons and targets."""
@@ -677,26 +683,23 @@ class FMeasure(Metric):
 
     def compute(self) -> dict:
         """Compute f1 score metric."""
-        vary_confidence_threshold = True
-        vary_nms_threshold = False
-        cross_class_nms = False
         boxes_pair = _FMeasureCalculator(self.targets, self.preds)
         result = boxes_pair.evaluate_detections(
-            result_based_nms_threshold=vary_nms_threshold,
+            result_based_nms_threshold=self.vary_nms_threshold,
             classes=self.classes,
-            cross_class_nms=cross_class_nms,
+            cross_class_nms=self.cross_class_nms,
         )
         self._f_measure = result.best_f_measure
         self._f_measure_per_label = {label: result.best_f_measure_per_class[label] for label in self.classes}
 
-        if vary_confidence_threshold:
+        if self.vary_confidence_threshold:
             self._f_measure_per_confidence = {
                 "xs": list(np.arange(*boxes_pair.confidence_range)),
                 "ys": result.per_confidence.all_classes_f_measure_curve,
             }
             self._best_confidence_threshold = result.per_confidence.best_threshold
 
-        if vary_nms_threshold and result.per_nms is not None:
+        if self.vary_nms_threshold and result.per_nms is not None:
             self._f_measure_per_nms = {
                 "xs": list(np.arange(*boxes_pair.nms_range)),
                 "ys": result.per_nms.all_classes_f_measure_curve,
