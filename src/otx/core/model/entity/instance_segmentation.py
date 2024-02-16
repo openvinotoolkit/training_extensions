@@ -5,14 +5,16 @@
 
 from __future__ import annotations
 
+import logging as log
 from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
+from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.core.config.data import TileConfig
+from otx.core.config.data import DataModuleConfig, TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -298,6 +300,7 @@ class OVInstanceSegmentationModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        datamodule_config: DataModuleConfig | None = None,
     ) -> None:
         super().__init__(
             num_classes,
@@ -308,6 +311,20 @@ class OVInstanceSegmentationModel(
             use_throughput_mode,
             model_api_configuration,
         )
+        self.datamodule_config = datamodule_config
+        if self.datamodule_config is not None:
+            tile_config = self.datamodule_config.tile_config
+            if tile_config.enable_tiler:
+                log.info(
+                    f"Enable tiler with tile size: {tile_config.tile_size} and overlap: {tile_config.overlap}",
+                )
+                tiler_config = {
+                    "tile_size": tile_config.tile_size[0],
+                    "tiles_overlap": tile_config.overlap,
+                    "max_pred_number": tile_config.max_num_instances,
+                }
+                execution_mode = "async" if self.async_inference else "sync"
+                self.model = InstanceSegmentationTiler(self.model, tiler_config, execution_mode)
 
     def _customize_outputs(
         self,
@@ -333,7 +350,8 @@ class OVInstanceSegmentationModel(
                 ),
             )
             scores.append(torch.tensor([output.score for output in output_objects]))
-            masks.append(torch.tensor([output.mask for output in output_objects]))
+            # NOTE: check if we can use ndarray without torch for OV, mask_utils.encode(np.ndarray) is much faster
+            masks.append(torch.tensor(np.stack([output.mask for output in output_objects])))
             labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         return InstanceSegBatchPredEntity(

@@ -269,7 +269,12 @@ class AutoConfigurator:
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
         return partial_instantiate_class(init=scheduler_config)
 
-    def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
+    def get_ov_model(
+        self,
+        model_name: str,
+        meta_info: LabelInfo,
+        datamodule_config: DataModuleConfig,
+    ) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.
 
         Args:
@@ -292,10 +297,14 @@ class AutoConfigurator:
         return ov_model(
             model_name=model_name,
             num_classes=meta_info.num_classes,
+            datamodule_config=datamodule_config,
         )
 
-    def get_ov_datamodule(self) -> OTXDataModule:
-        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
+    def get_ov_datamodule(self, datamodule_config: DataModuleConfig) -> OTXDataModule:
+        """Returns an instance of OTXDataModule with the configured data root.
+
+        Args:
+            datamodule_config (DataModuleConfig | None): The configuration for the data module.
 
         Returns:
             OTXDataModule: An instance of OTXDataModule.
@@ -303,6 +312,8 @@ class AutoConfigurator:
         config = self._load_default_config(model_name="openvino_model")
         config["data"]["config"]["data_root"] = self.data_root
         data_config = config["data"]["config"].copy()
+        # # TODO[Eugene]: why do I have to do this???
+        data_config["include_polygons"] = datamodule_config.include_polygons
         return OTXDataModule(
             task=config["data"]["task"],
             config=DataModuleConfig(

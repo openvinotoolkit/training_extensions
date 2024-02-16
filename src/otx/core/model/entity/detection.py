@@ -5,13 +5,15 @@
 
 from __future__ import annotations
 
+import logging as log
 from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import torch
+from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
-from otx.core.config.data import TileConfig
+from otx.core.config.data import DataModuleConfig, TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
@@ -301,6 +303,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        datamodule_config: DataModuleConfig | None = None,
     ) -> None:
         super().__init__(
             num_classes,
@@ -311,6 +314,18 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
             use_throughput_mode,
             model_api_configuration,
         )
+        self.datamodule_config = datamodule_config
+        if self.datamodule_config is not None:
+            tile_config = self.datamodule_config.tile_config
+            if tile_config.enable_tiler:
+                log.info(f"Enable tiler with tile size: {tile_config.tile_size} and overlap: {tile_config.overlap}")
+                tiler_config = {
+                    "tile_size": tile_config.tile_size[0],
+                    "tiles_overlap": tile_config.overlap,
+                    "max_pred_number": tile_config.max_num_instances,
+                }
+                execution_mode = "sync" if self.async_inference else "async"
+                self.model = DetectionTiler(self.model, tiler_config, execution_mode)
 
     def _customize_outputs(
         self,

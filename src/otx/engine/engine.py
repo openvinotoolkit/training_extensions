@@ -282,8 +282,12 @@ class Engine:
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
-            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+            datamodule = self._auto_configurator.get_ov_datamodule(self.datamodule.config)
+            model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                meta_info=datamodule.meta_info,
+                datamodule_config=self.datamodule.config,
+            )
 
         lit_module = self._build_lightning_module(
             model=model,

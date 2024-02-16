@@ -342,7 +342,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             output_dict[idx] = result
 
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
-        if self.async_inference:
+        # NOTE: tiler has its own async impl
+        if self.async_inference and not self.datamodule_config.tile_config.enable_tiler:
             output_dict: dict[int, NamedTuple] = {}
             self.model.set_callback(_callback)
             for idx, im in enumerate(numpy_inputs):
