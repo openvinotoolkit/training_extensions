@@ -178,7 +178,7 @@ class HpoLoop:
             process = trial.process
             if process.is_alive():
                 logger.info(f"Kill child process {process.pid}")
-                process.kill()
+                process.terminate()
 
     def _terminate_signal_handler(self, signum, _frame):
         # This code prevents child processses from being killed unintentionally by proccesses forked from main process
