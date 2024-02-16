@@ -185,6 +185,7 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(prompt)
+            prediction["scores"] = prediction["iou_predictions"]
             metadata = {"label": label}
 
             # set annotation for eval

@@ -64,7 +64,8 @@ class PromptGetter(nn.Module):
 
         total_points_scores: Tensor = torch.zeros(used_indices.max() + 1, 0, 3, device=device)
         total_bg_coords: Tensor = torch.zeros(used_indices.max() + 1, num_bg_points, 2, device=device)
-        for label in used_indices[0]:
+        for i in range(len(used_indices[0])):
+            label = used_indices[0][i]
             points_scores, bg_coords = self.get_prompt_candidates(
                 image_embeddings=image_embeddings,
                 reference_feat=reference_feats[label],
@@ -158,7 +159,7 @@ class PromptGetter(nn.Module):
         matched_grid = fg_coords_scores.unsqueeze(1) * matched_matrix.unsqueeze(-1)
 
         # sample the highest score one of the samples that are in the same grid
-        points_scores = matched_grid[matched_grid[..., -1].argsort(dim=0, descending=True)[0]].diagonal().T
+        points_scores = matched_grid[matched_grid[..., -1].topk(k=1, dim=0, largest=True)[1][0]].diagonal().T
 
         # sort by the highest score
         points_scores = points_scores[torch.argsort(points_scores[:, -1], descending=True)]
@@ -228,6 +229,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     "freeze_prompt_encoder": True,
                     "image_size": 1024,
                     "mask_threshold": 0.0,
+                    "return_single_mask": False,
+                    "use_stability_score": False,
+                    "stability_score_offset": 1.,
+                    "return_extra_metrics": False,
                 },
                 "dataset": {
                     "normalize": {
@@ -289,7 +294,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         processed_prompts = [self._preprocess_prompts(tb) for tb in transformed_batch]
         
         # initialize tensors to contain reference features and prompts
-        largest_label = max([int(label.id) for pp in processed_prompts for label in pp.keys()])
+        largest_label = max([label for pp in processed_prompts for label in pp.keys()])
         self.expand_reference_info(largest_label)
         # TODO(sungchul): consider who to handle multiple reference features, currently replace it
 
@@ -304,10 +309,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         
             ref_masks = torch.zeros(largest_label + 1, *map(int, original_size))
             for label, input_prompts in pp.items():
-                if label.name.lower() == "background":
-                    # skip background
-                    # TODO (sungchul): how to skip background class
-                    continue
+                # TODO (sungchul): how to skip background class
 
                 # generate reference mask
                 # TODO (sungchul): ensemble multi reference features (current : use merged masks)
@@ -356,9 +358,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     ref_feat = self._generate_masked_features(processed_embedding, ref_mask, default_threshold_reference)
                     default_threshold_reference -= 0.05
 
-                self.reference_info["reference_feats"][int(label.id)] = ref_feat.detach().cpu()
-                self.reference_info["used_indices"] = Parameter(torch.cat((self.reference_info["used_indices"], torch.as_tensor([[int(label.id)]])), dim=1), requires_grad=False)
-                ref_masks[int(label.id)] = ref_mask.detach().cpu()
+                self.reference_info["reference_feats"][label] = ref_feat.detach().cpu()
+                self.reference_info["used_indices"] = Parameter(torch.cat((self.reference_info["used_indices"], torch.as_tensor([[label]])), dim=1), requires_grad=False)
+                ref_masks[label] = ref_mask.detach().cpu()
             batch_ref_masks.append(ref_masks)
         return self.reference_info, batch_ref_masks
 
@@ -366,8 +368,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def infer(
         self, 
         batch: List[Dict[str, Any]],
-        reference_feats: Tensor,
-        used_indices: Tensor,
+        reference_feats: Union[np.ndarray, Tensor],
+        used_indices: Union[np.ndarray, Tensor],
         is_cascade: bool = False,
     ) -> List[List[DefaultDict[int, List[Tensor]]]]:
         """Zero-shot inference with reference features.
@@ -376,8 +378,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             batch (List[Dict[str, Any]]): List of dictionaries containing images and metas.
-            reference_feats (Tensor): Reference features for target prediction.
-            used_indices (Tensor): To check which indices of reference features are validate.
+            reference_feats (Union[np.ndarray, Tensor]): Reference features for target prediction. If it is np.ndarray, it will be converted to torch tensor.
+            used_indices (Union[np.ndarray, Tensor]): To check which indices of reference features are validate. If it is np.ndarray, it will be converted to torch tensor.
             is_cascade (bool): Whether use cascade inference. Defaults to False.
 
         Returns:
@@ -386,6 +388,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     1. Target images
                     2. Tuple of predicted masks and used points gotten by point selection
         """
+        if isinstance(reference_feats, np.ndarray):
+            reference_feats = torch.as_tensor(reference_feats, device=self.device)
+        if isinstance(used_indices, np.ndarray):
+            used_indices = torch.as_tensor(used_indices, device=self.device)
+
         # preprocess images and prompts
         transformed_batch = [self.transforms(b.copy()) for b in batch]
         
@@ -537,7 +544,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         results = self.infer(batch, self.reference_info["reference_feats"], self.reference_info["used_indices"])
         return [result[0] for result in results]  # tmp: only mask
 
-    def _preprocess_prompts(self, batch: Dict[str, Any]) -> Dict[ScoredLabel, List[Dict[str, Tensor]]]:
+    def _preprocess_prompts(self, batch: Dict[str, Any]) -> Dict[int, List[Dict[str, Tensor]]]:
         """Preprocess prompts.
 
         Currently, preprocessing for bounding boxes is only supported.
@@ -546,7 +553,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             batch (Dict[str, Any]): Dictionary containing data and prompts information.
 
         Returns:
-            (defaultdict[ScoredLabel, List[Dict[str, Tensor]]]): Processed and arranged each single prompt
+            (defaultdict[int, List[Dict[str, Tensor]]]): Processed and arranged each single prompt
                 using label information as keys. Unlike other prompts, `annotation` prompts will be aggregated
                 as single annotation.
         """
@@ -557,6 +564,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
             if prompts is None or len(prompts) == 0:
                 continue
             for prompt, label in zip(prompts, labels):
+                if isinstance(label, ScoredLabel):
+                    label = int(label.id_)
                 # TODO (sungchul): revisit annotations and polygons
                 if prompt_name == "annotations":
                     processed_prompts[label].append({prompt_name: torch.as_tensor(prompt, device=self.device)})
@@ -581,7 +590,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             "point_labels": torch.tensor([[1]], device=self.device),
                         }})
 
-        processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x[0].id_))
+        processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
         return processed_prompts
     
     def _preprocess_coords(
@@ -684,60 +693,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
             best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]
 
-    def _update_value(self, target: Dict[str, Any], key: str, value: Tensor) -> None:
-        """Update tensor to target dictionary.
-
-        Args:
-            target (Dict[str, Any]): Target dictionary to be updated.
-            key (str): Key to be used for update.
-            value (Tensor): Value to be used for update.
-        """
-        if key in target:
-            target[key] = torch.cat((target[key], value))
-        else:
-            target[key] = value
-
-    def _merge_prompts(
-        self,
-        label: ScoredLabel,
-        input_prompts: Dict[str, Tensor],
-        processed_prompts: Dict[ScoredLabel, List[Dict[str, Tensor]]],
-        use_only_background: bool = True,
-    ) -> Dict[str, Tensor]:
-        """Merge target prompt and other prompts.
-
-        Merge a foreground prompt and other prompts (background or prompts with other classes).
-
-        Args:
-            label (ScoredLabel): Label information. Background is 0 and other foregrounds are >= 0.
-            input_prompts (Dict[str, Tensor]): A foreground prompt to be merged with other prompts.
-            processed_prompts (Dict[ScoredLabel, List[Dict[str, Tensor]]]): The whole class-wise prompts
-                processed at _preprocess_prompts.
-            use_only_background (bool): Whether merging only background prompt, defaults to True.
-                It is applied to only point_coords.
-
-        Returns:
-            (Dict[str, Tensor]): Merged prompts.
-        """
-        merged_input_prompts = deepcopy(input_prompts)
-        for other_label, other_input_prompts in processed_prompts.items():
-            if other_label.id_ == label.id_:
-                continue
-            if (use_only_background and other_label.id_ == 0) or (not use_only_background):
-                # only add point (and scribble) prompts
-                # use_only_background=True -> background prompts are only added as background
-                # use_only_background=False -> other prompts are added as background
-                for other_input_prompt in other_input_prompts:
-                    if "point_coords" in other_input_prompt:
-                        # point, scribble
-                        self._update_value(merged_input_prompts, "point_coords", other_input_prompt.get("point_coords"))
-                        self._update_value(
-                            merged_input_prompts,
-                            "point_labels",
-                            torch.zeros_like(other_input_prompt.get("point_labels")),
-                        )
-        return merged_input_prompts
-
     def set_metrics(self) -> None:
         """Skip set_metrics unused in zero-shot learning."""
         pass
@@ -766,6 +721,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def training_epoch_end(self, outputs) -> None:
         """Called in the training loop at the very end of the epoch."""
+        self.reference_info["used_indices"] = Parameter(self.reference_info["used_indices"].unique().unsqueeze(0), requires_grad=False)
         if self.config.model.save_outputs:
             path_reference_info = self.path_reference_info.format(datetime.now().strftime("%Y%m%d-%H%M%S"))
             os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)

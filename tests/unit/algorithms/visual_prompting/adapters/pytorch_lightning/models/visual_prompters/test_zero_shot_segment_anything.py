@@ -404,29 +404,3 @@ class TestZeroShotSegmentAnything:
         _, result = zero_shot_segment_anything._postprocess_masks(masks, logits, scores)
 
         assert torch.equal(result, expected)
-
-    @e2e_pytest_unit
-    @pytest.mark.parametrize("use_only_background", [True, False])
-    def test_merge_prompts(self, set_zero_shot_segment_anything, use_only_background: bool) -> None:
-        """Test _merge_prompts."""
-        zero_shot_segment_anything = set_zero_shot_segment_anything()
-
-        input_prompts = {"point_coords": torch.tensor([1]), "point_labels": torch.tensor([1])}
-        processed_prompts = {
-            MockScoredLabel(label=0): [{"point_coords": torch.tensor([0]), "point_labels": torch.tensor([0])}],
-            MockScoredLabel(label=2): [{"point_coords": torch.tensor([2]), "point_labels": torch.tensor([1])}],
-        }
-
-        merged_input_prompts = zero_shot_segment_anything._merge_prompts(
-            label=MockScoredLabel(label=1),
-            input_prompts=input_prompts,
-            processed_prompts=processed_prompts,
-            use_only_background=use_only_background,
-        )
-
-        if use_only_background:
-            assert torch.equal(merged_input_prompts.get("point_coords"), torch.tensor([1, 0]))
-            assert torch.equal(merged_input_prompts.get("point_labels"), torch.tensor([1, 0]))
-        else:
-            assert torch.equal(merged_input_prompts.get("point_coords"), torch.tensor([1, 0, 2]))
-            assert torch.equal(merged_input_prompts.get("point_labels"), torch.tensor([1, 0, 0]))

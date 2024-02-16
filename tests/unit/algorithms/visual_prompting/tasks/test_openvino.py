@@ -138,7 +138,7 @@ class TestOpenVINOVisualPromptingInferencer:
             return_value={"image_embeddings": np.empty((4, 2, 2))},
         )
         mocker_forward_decoder = mocker.patch.object(
-            OpenVINOVisualPromptingInferencer, "forward_decoder", return_value=None
+            OpenVINOVisualPromptingInferencer, "forward_decoder", return_value={"iou_predictions": 0.1}
         )
         mocker_post_process = mocker.patch.object(
             OpenVINOVisualPromptingInferencer, "post_process", return_value=(self.fake_annotation, None, None)

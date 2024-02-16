@@ -17,6 +17,8 @@ from otx.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from unittest.mock import Mock
+from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.color import Color
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -184,8 +186,9 @@ class MockMaskDecoder(nn.Module):
 class MockScoredLabel:
     def __init__(self, label: int, name: str = "background"):
         self.name = name
-        self.id_ = label
-        self.id = label
+        self.label = Mock()
+        self.label.id_ = label
+        self.__class__ = ScoredLabel
 
 
 class MockPromptGetter(nn.Module):
