@@ -15,6 +15,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import numpy as np
 import psutil
 
+from otx.utils import append_signal_handler
+
 if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import Lock
@@ -300,13 +302,11 @@ class MemCacheHandlerSingleton:
             raise MemCacheHandlerError(msg)
 
         # Should delete if receive sigint to gracefully terminate
-        original_handler = signal.getsignal(signal.SIGINT)
-
-        def _new_handler(signum, frame) -> None:  # noqa: ANN001
-            original_handler(signum, frame)  # type: ignore[operator, misc]
+        def _new_handler(signum_, frame_) -> None:  # noqa: ARG001, ANN001
             instance.shutdown()
 
-        signal.signal(signal.SIGINT, _new_handler)
+        append_signal_handler(signal.SIGINT, _new_handler)
+        append_signal_handler(signal.SIGTERM, _new_handler)
 
         cls.instances.append(instance)
 

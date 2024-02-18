@@ -11,9 +11,10 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
@@ -23,6 +24,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
+from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
@@ -105,15 +107,10 @@ class Engine:
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
-        self.work_dir = work_dir
+        self._cache = TrainerArgumentsCache(**kwargs)
         self.checkpoint = checkpoint
-        self.device = DeviceConfig(accelerator=device)
-        self._cache = TrainerArgumentsCache(
-            default_root_dir=self.work_dir,
-            accelerator=self.device.accelerator,
-            devices=self.device.devices,
-            **kwargs,
-        )
+        self.work_dir = work_dir
+        self.device = device  # type: ignore[assignment]
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
@@ -156,6 +153,8 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
+        run_hpo: bool = False,
+        hpo_config: HpoConfig | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -171,6 +170,8 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
+            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
+            hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -206,6 +207,16 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
+        if run_hpo:
+            if hpo_config is None:
+                hpo_config = HpoConfig()
+            best_config, best_trial_weight = execute_hpo(engine=self, **locals())
+            if best_config is not None:
+                update_hyper_parameter(self, best_config)
+            if best_trial_weight is not None:
+                self.checkpoint = best_trial_weight
+                resume = True
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -573,7 +584,7 @@ class Engine:
                 train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
                 val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
                 test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
-                tile_config=TilerConfig(**data_config["config"].pop("tile_config", {})),
+                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
                 **data_config["config"],
             ),
         )
@@ -598,6 +609,26 @@ class Engine:
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
     # ------------------------------------------------------------------------ #
+
+    @property
+    def work_dir(self) -> PathLike:
+        """Work directory."""
+        return self._work_dir
+
+    @work_dir.setter
+    def work_dir(self, work_dir: PathLike) -> None:
+        self._work_dir = work_dir
+        self._cache.update(default_root_dir=work_dir)
+
+    @property
+    def device(self) -> DeviceConfig:
+        """Device engine uses."""
+        return self._device
+
+    @device.setter
+    def device(self, device: DeviceType) -> None:
+        self._device = DeviceConfig(accelerator=device)
+        self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 
     @property
     def trainer(self) -> Trainer:

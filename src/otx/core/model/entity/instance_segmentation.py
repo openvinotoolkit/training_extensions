@@ -12,10 +12,12 @@ import numpy as np
 import torch
 from torchvision import tv_tensors
 
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
+    InstanceSegBatchPredEntityWithXAI,
 )
 from otx.core.data.entity.tile import TileBatchInstSegDataEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -32,9 +34,18 @@ if TYPE_CHECKING:
 
 
 class OTXInstanceSegModel(
-    OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, TileBatchInstSegDataEntity],
+    OTXModel[
+        InstanceSegBatchDataEntity,
+        InstanceSegBatchPredEntity,
+        InstanceSegBatchPredEntityWithXAI,
+        TileBatchInstSegDataEntity,
+    ],
 ):
     """Base class for the Instance Segmentation models used in OTX."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -45,9 +56,13 @@ class OTXInstanceSegModel(
         Returns:
             InstanceSegBatchPredEntity: Merged instance segmentation prediction.
         """
-        tile_preds: list[InstanceSegBatchPredEntity] = []
+        tile_preds: list[InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
-        merger = InstanceSegTileMerge(inputs.imgs_info)
+        merger = InstanceSegTileMerge(
+            inputs.imgs_info,
+            self.tile_config.iou_threshold,
+            self.tile_config.max_num_instances,
+        )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
@@ -213,7 +228,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
+    ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
 
         if self.training:
@@ -242,7 +257,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 tv_tensors.BoundingBoxes(
                     output.pred_instances.bboxes,
                     format="XYXY",
-                    canvas_size=output.img_shape,
+                    canvas_size=output.ori_shape,
                 ),
             )
             output_masks = tv_tensors.Mask(
@@ -272,7 +287,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
 
 class OVInstanceSegmentationModel(
-    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
+    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI],
 ):
     """Instance segmentation model compatible for OpenVINO IR inference.
 
@@ -304,7 +319,7 @@ class OVInstanceSegmentationModel(
         self,
         outputs: list[InstanceSegmentationResult],
         inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
+    ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
         # add label index
         bboxes = []
         scores = []
@@ -326,6 +341,23 @@ class OVInstanceSegmentationModel(
             scores.append(torch.tensor([output.score for output in output_objects]))
             masks.append(torch.tensor([output.mask for output in output_objects]))
             labels.append(torch.tensor([output.id - 1 for output in output_objects]))
+
+        if outputs and outputs[0].saliency_map:
+            predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
+
+            return InstanceSegBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                masks=masks,
+                polygons=[],
+                labels=labels,
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
 
         return InstanceSegBatchPredEntity(
             batch_size=len(outputs),

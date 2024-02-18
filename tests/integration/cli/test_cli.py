@@ -2,24 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import importlib
-import inspect
 from pathlib import Path
 
 import pytest
 import yaml
+from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.integration.cli.utils import run_main
 
-# This assumes have OTX installed in environment.
-otx_module = importlib.import_module("otx")
-RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
-RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in p.parts]
-RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
-RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
-
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_e2e(
     recipe: str,
     tmp_path: Path,
@@ -44,7 +40,6 @@ def test_otx_e2e(
         None
     """
     task = recipe.split("/")[-2]
-    tile_param = fxt_cli_override_command_per_task["tile"] if "tile" in recipe else []
     model_name = recipe.split("/")[-1].split(".")[0]
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
@@ -65,7 +60,6 @@ def test_otx_e2e(
         "--max_epochs",
         "2",
         *fxt_cli_override_command_per_task[task],
-        *tile_param,
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
@@ -177,7 +171,11 @@ def test_otx_e2e(
     assert (tmp_path_test / "outputs").exists()
 
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_explain_e2e(
     recipe: str,
     tmp_path: Path,
@@ -196,6 +194,9 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+    if "tile" in recipe:
+        pytest.skip("Explain is not supported for tiling yet.")
+
     import cv2
     import numpy as np
 
@@ -249,9 +250,13 @@ def test_otx_explain_e2e(
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
 
 
-@pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
+# @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
+@pytest.mark.parametrize(
+    "ov_recipe",
+    pytest.RECIPE_OV_LIST,
+)
 def test_otx_ov_test(
-    recipe: str,
+    ov_recipe: str,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,
     fxt_open_subprocess: bool,
@@ -268,8 +273,8 @@ def test_otx_ov_test(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    task = ov_recipe.split("/")[-2]
+    model_name = ov_recipe.split("/")[-1].split(".")[0]
 
     if task in ["multi_label_cls", "instance_segmentation", "h_label_cls"]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
@@ -282,7 +287,7 @@ def test_otx_ov_test(
         "otx",
         "test",
         "--config",
-        recipe,
+        ov_recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--engine.work_dir",
@@ -298,3 +303,63 @@ def test_otx_ov_test(
     assert (tmp_path_test / "outputs" / "csv").exists()
     metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
     assert len(metric_result) > 0
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+def test_otx_hpo_e2e(
+    task: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+) -> None:
+    """
+    Test HPO e2e commands with default template of each task.
+
+    Args:
+        task (OTXTaskType): The task to run HPO with.
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+
+    task = task.lower()
+    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    tmp_path_hpo.mkdir(parents=True)
+
+    command_cfg = [
+        "otx",
+        "train",
+        "--task",
+        task.upper(),
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_hpo),
+        "--engine.device",
+        fxt_accelerator,
+        "--max_epochs",
+        "2",
+        "--run_hpo",
+        "true",
+        "--hpo_config.expected_time_ratio",
+        "2",
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
+    if task in ("zero_shot_visual_prompting"):
+        return
+
+    hpo_work_dor = tmp_path_hpo / "hpo"
+    assert hpo_work_dor.exists()
+    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
+    assert len(list(hpo_work_dor.rglob("*.ckpt"))) == 1

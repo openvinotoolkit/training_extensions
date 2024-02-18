@@ -5,14 +5,15 @@
 from pathlib import Path
 
 import pytest
+from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.integration.cli.utils import run_main
 
 
-@pytest.mark.parametrize("task", [task.value.lower() for task in DEFAULT_CONFIG_PER_TASK])
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_cli_auto_configuration(
-    task: str,
+    task: OTXTaskType,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -22,7 +23,7 @@ def test_otx_cli_auto_configuration(
     """Test the OTX auto configuration with CLI.
 
     Args:
-        task (str): The task to be performed.
+        task (OTXTaskType): The task to be performed.
         tmp_path (Path): The temporary path for storing outputs.
         fxt_accelerator (str): The accelerator to be used.
         fxt_target_dataset_per_task (dict): The target dataset per task.
@@ -30,14 +31,16 @@ def test_otx_cli_auto_configuration(
     Returns:
         None
     """
-    if task in ("action_classification"):
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task.lower() in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     tmp_path_train = tmp_path / f"otx_auto_train_{task}"
     command_cfg = [
         "otx",
         "train",
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        fxt_target_dataset_per_task[task.lower()],
         "--task",
         task.upper(),
         "--engine.work_dir",
@@ -46,7 +49,7 @@ def test_otx_cli_auto_configuration(
         fxt_accelerator,
         "--max_epochs",
         "2",
-        *fxt_cli_override_command_per_task[task],
+        *fxt_cli_override_command_per_task[task.lower()],
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)

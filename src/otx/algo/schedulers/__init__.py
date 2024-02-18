@@ -3,6 +3,6 @@
 #
 """Custom schedulers for the OTX2.0."""
 
-from .warmup_schedulers import WarmupReduceLROnPlateau
+from .warmup_schedulers import LinearWarmupScheduler
 
-__all__ = ["WarmupReduceLROnPlateau"]
+__all__ = ["LinearWarmupScheduler"]

@@ -15,8 +15,10 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
+    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
+    OTXPredEntityWithXAI,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
@@ -45,6 +47,11 @@ class MulticlassClsDataEntity(OTXDataEntity):
 @dataclass
 class MulticlassClsPredEntity(MulticlassClsDataEntity, OTXPredEntity):
     """Data entity to represent the multi-class classification model output prediction."""
+
+
+@dataclass
+class MulticlassClsPredEntityWithXAI(MulticlassClsDataEntity, OTXPredEntityWithXAI):
+    """Data entity to represent the multi-class classification model output prediction with explanations."""
 
 
 @dataclass
@@ -91,6 +98,11 @@ class MulticlassClsBatchPredEntity(MulticlassClsBatchDataEntity, OTXBatchPredEnt
     """Data entity to represent model output predictions for multi-class classification task."""
 
 
+@dataclass
+class MulticlassClsBatchPredEntityWithXAI(MulticlassClsBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for multi-class classification task with explanations."""
+
+
 @register_pytree_node
 @dataclass
 class MultilabelClsDataEntity(OTXDataEntity):
@@ -110,6 +122,11 @@ class MultilabelClsDataEntity(OTXDataEntity):
 @dataclass
 class MultilabelClsPredEntity(MultilabelClsDataEntity, OTXPredEntity):
     """Data entity to represent the multi-label classification model output prediction."""
+
+
+@dataclass
+class MultilabelClsPredEntityWithXAI(MultilabelClsDataEntity, OTXPredEntityWithXAI):
+    """Data entity to represent the multi-label classification model output prediction with explanations."""
 
 
 @dataclass
@@ -154,6 +171,11 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
 @dataclass
 class MultilabelClsBatchPredEntity(MultilabelClsBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for multi-label classification task."""
+
+
+@dataclass
+class MultilabelClsBatchPredEntityWithXAI(MultilabelClsBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for multi-label classification task with explanations."""
 
 
 @dataclass
@@ -338,6 +360,11 @@ class HlabelClsPredEntity(HlabelClsDataEntity, OTXPredEntity):
 
 
 @dataclass
+class HlabelClsPredEntityWithXAI(HlabelClsDataEntity, OTXPredEntityWithXAI):
+    """Data entity to represent the H-label classification model output prediction with explanation."""
+
+
+@dataclass
 class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
     """Data entity for H-label classification task.
 
@@ -374,3 +401,8 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
 @dataclass
 class HlabelClsBatchPredEntity(HlabelClsBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for H-label classification task."""
+
+
+@dataclass
+class HlabelClsBatchPredEntityWithXAI(HlabelClsBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for H-label classification task with explanations."""
