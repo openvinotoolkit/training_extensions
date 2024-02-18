@@ -6,6 +6,9 @@ on:
     # every 12AM on Sunday
     - cron: "0 0 * * 0"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Regression-Tests:
     strategy:

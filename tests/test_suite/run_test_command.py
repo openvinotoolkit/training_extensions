@@ -246,12 +246,15 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
     path_to_xml = os.path.join(save_path, "openvino.xml")
     assert os.path.exists(os.path.join(save_path, "label_schema.json"))
     if not is_onnx:
-        if "Visual_Prompting" in template.model_template_id:
+        if any(map(lambda x: x in template.model_template_id, ("Visual_Prompting", "Zero_Shot"))):
             path_to_xml = os.path.join(save_path, "visual_prompting_decoder.xml")
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.xml"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.bin"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.xml"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.bin"))
+            if "Zero_Shot" in template.model_template_id:
+                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.xml"))
+                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.bin"))
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
@@ -262,9 +265,11 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
                     xml_model = xml_stream.read()
                     assert f"{input_size[1]},{input_size[0]}" in xml_model
     else:
-        if "Visual_Prompting" in template.model_template_id:
+        if any(map(lambda x: x in template.model_template_id, ("Visual_Prompting", "Zero_Shot"))):
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.onnx"))
+            if "Zero_Shot" in template.model_template_id:
+                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.onnx"))
         else:
             path_to_onnx = os.path.join(save_path, "model.onnx")
             assert os.path.exists(path_to_onnx)
@@ -333,14 +338,16 @@ def otx_eval_openvino_testing(
     args,
     threshold=0.0,
     half_precision=False,
+    is_visual_prompting=False,
 ):
     template_work_dir = get_template_dir(template, root)
-    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    weights_file = "visual_prompting_decoder" if is_visual_prompting else "openvino"
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/{weights_file}.xml"
     output_path = f"{template_work_dir}/exported_{template.model_template_id}"
     perf_path = f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
 
     if half_precision:
-        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/openvino.xml"
+        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/{weights_file}.xml"
         output_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16"
         perf_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/performance.json"
 
@@ -612,17 +619,21 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
-    xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
-    if task_type == "visual_prompting":
+    if "visual_prompting" == task_type:
         xml_paths = [
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
         ]
+        if "zero_shot" in str(root):
+            xml_paths.append(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_prompt_getter.xml")
+    else:
+        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
+
     for xml_path in xml_paths:
         if not os.path.exists(xml_path):
             pytest.skip(reason=f"required file is not exist - {xml_path}")
 
-    if task_type == "visual_prompting":
+    if "visual_prompting" == task_type:
         paths_to_ref_data = [
             os.path.join(
                 otx_dir,
@@ -643,6 +654,18 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
                 "compressed_decoder.yml",
             ),
         ]
+        if "zero_shot" in str(root):
+            paths_to_ref_data.append(
+                os.path.join(
+                    otx_dir,
+                    "tests",
+                    "e2e/cli",
+                    task_type,
+                    "reference",
+                    template.model_template_id,
+                    "compressed_prompt_getter.yml",
+                )
+            )
     else:
         paths_to_ref_data = [
             os.path.join(
@@ -656,10 +679,10 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
-
-    weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     if is_visual_prompting:
         weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml"
+    else:
+        weights_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     if not os.path.exists(weights_path):
         pytest.skip(reason=f"required file is not exist - {weights_path}")
 

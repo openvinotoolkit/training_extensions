@@ -79,7 +79,7 @@ learning_parameters:
       time will be longer.
     editable: true
     header: Number of training iterations
-    max_value: 100000
+    max_value: 1000
     min_value: 1
     type: INTEGER
     ui_rules:
@@ -391,7 +391,7 @@ pot_parameters:
     description: Number of data samples used for post-training optimization
     editable: True
     header: Number of data samples
-    max_value: 100000
+    max_value: 1000
     min_value: 1
     type: INTEGER
     ui_rules:

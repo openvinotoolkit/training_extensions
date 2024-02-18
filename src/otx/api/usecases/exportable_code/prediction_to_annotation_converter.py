@@ -380,7 +380,7 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         assert predictions.pred_mask is not None
         assert predictions.anomaly_map is not None
         annotations = create_annotation_from_segmentation_map(
-            predictions.pred_mask, predictions.anomaly_map, self.label_map
+            predictions.pred_mask, predictions.anomaly_map / 255.0, self.label_map
         )
         if len(annotations) == 0:
             # TODO: add confidence to this label
@@ -466,7 +466,7 @@ class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=hard_prediction,
             soft_prediction=soft_prediction,
-            label_map={1: metadata["label"].label},
+            label_map={1: metadata["label"].label if isinstance(metadata["label"], ScoredLabel) else metadata["label"]},
         )
 
         return annotations

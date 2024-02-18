@@ -13,7 +13,7 @@ hyper_parameters:
       learning_rate_warmup_iters:
         default_value: 50
       num_iters:
-        default_value: 5000
+        default_value: 1000
       enable_early_stopping:
         default_value: false
       use_adaptive_interval:
