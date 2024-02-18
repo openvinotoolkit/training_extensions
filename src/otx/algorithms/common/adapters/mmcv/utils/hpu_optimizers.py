@@ -4,7 +4,6 @@ import inspect
 from typing import List
 
 import torch
-
 from mmcv.runner import OPTIMIZERS
 
 try:

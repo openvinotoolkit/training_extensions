@@ -4,11 +4,11 @@
 #
 
 import torch
+from mmcv.runner import force_fp32
 from mmdet.core import bbox_overlaps, distance2bbox, reduce_mean
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.vfnet_head import VFNetHead
 
-from mmcv.runner import force_fp32
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
     TrackingLossDynamicsMixIn,

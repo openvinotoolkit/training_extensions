@@ -14,12 +14,12 @@ from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
+from mmcv.runner import wrap_fp16_model
+from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmseg import __version__
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import collect_env
 
-from mmcv.runner import wrap_fp16_model
-from mmcv.utils import Config, ConfigDict, get_git_hash
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     BaseRecordingForwardHook,
     FeatureVectorHook,

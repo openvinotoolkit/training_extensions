@@ -19,14 +19,14 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import torch
+from mmcv.runner import BaseModule
+from mmcv.utils import Config
 from mmdeploy.apis import build_task_processor
 from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.apis.onnx import export
 from mmdeploy.backend.openvino.onnx2openvino import from_onnx
 from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
 
-from mmcv.runner import BaseModule
-from mmcv.utils import Config
 from otx.algorithms.action.adapters.mmaction.models import AVAFastRCNN
 
 

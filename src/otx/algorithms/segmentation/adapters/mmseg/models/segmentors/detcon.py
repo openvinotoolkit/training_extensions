@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.distributed as dist
+from mmcv.runner import load_checkpoint
 from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     SEGMENTORS,
     build_backbone,
@@ -23,7 +24,6 @@ from mmseg.models.builder import (  # pylint: disable=no-name-in-module
 from mmseg.ops import resize
 from torch import nn
 
-from mmcv.runner import load_checkpoint
 from otx.utils.logger import get_logger
 
 from .otx_encoder_decoder import OTXEncoderDecoder

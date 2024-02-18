@@ -9,9 +9,9 @@ import os
 from typing import Literal, Union, overload
 
 import torch
-
 from mmcv import Config
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
+
 from otx.algorithms.common.utils import is_hpu_available, is_xpu_available
 
 

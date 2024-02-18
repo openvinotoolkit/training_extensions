@@ -11,9 +11,8 @@ from typing import Any, Dict, List, Tuple, Union
 
 import torch
 from mmcls.models.builder import NECKS
-from torch import nn
-
 from mmcv.cnn import build_norm_layer, kaiming_init, normal_init
+from torch import nn
 
 
 @NECKS.register_module()

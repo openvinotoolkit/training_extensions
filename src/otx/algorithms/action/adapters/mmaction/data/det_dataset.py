@@ -20,14 +20,14 @@ from copy import copy, deepcopy
 from logging import Logger
 from typing import Any, Dict, List, Sequence, Tuple
 
+import mmcv
 import numpy as np
 from mmaction.core.evaluation.ava_utils import det2csv
 from mmaction.datasets.ava_dataset import AVADataset
 from mmaction.datasets.builder import DATASETS
 from mmaction.datasets.pipelines import Compose
-
-import mmcv
 from mmcv.utils import print_log
+
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
 from otx.api.entities.annotation import Annotation

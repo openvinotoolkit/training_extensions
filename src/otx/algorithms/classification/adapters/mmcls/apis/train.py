@@ -10,8 +10,8 @@ import torch
 from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distributed_model
-
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
+
 from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
 from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 

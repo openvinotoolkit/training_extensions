@@ -7,13 +7,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
+from mmcv.utils import Config
 from mmdet.core import bbox_cxcywh_to_xyxy, bbox_xyxy_to_cxcywh, multi_apply, reduce_mean
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads import DeformableDETRHead
 from mmdet.models.utils.transformer import inverse_sigmoid
 from torch import Tensor
 
-from mmcv.utils import Config
 from otx.algorithms.detection.adapters.mmdet.models.heads.detr_head import DETRHeadExtension
 from otx.algorithms.detection.adapters.mmdet.models.layers import CdnQueryGenerator
 

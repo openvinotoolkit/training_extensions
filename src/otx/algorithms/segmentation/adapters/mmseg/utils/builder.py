@@ -7,10 +7,9 @@ from copy import deepcopy
 from typing import Optional, Union
 
 import torch
-from mmseg.models.builder import MODELS
-
 from mmcv.runner import load_checkpoint
 from mmcv.utils import Config, ConfigDict
+from mmseg.models.builder import MODELS
 
 SCALAR_SCHEDULERS = MODELS
 

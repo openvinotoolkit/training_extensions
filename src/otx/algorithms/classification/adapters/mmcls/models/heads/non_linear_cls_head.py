@@ -7,9 +7,9 @@ import torch
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.cls_head import ClsHead
+from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
 
-from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from otx.algorithms.common.utils import cast_bf16_to_fp32
 
 

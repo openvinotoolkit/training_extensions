@@ -11,8 +11,8 @@ from typing import Any, Dict, Iterable, List, Optional
 import numpy as np
 import psutil
 import torch
-
 from mmcv.utils import ConfigDict
+
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (

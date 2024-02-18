@@ -10,8 +10,8 @@ from typing import List, Optional
 
 import numpy as np
 import torch
-
 from mmcv.utils import ConfigDict
+
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask

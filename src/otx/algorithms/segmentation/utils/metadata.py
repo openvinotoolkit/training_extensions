@@ -5,6 +5,7 @@
 
 
 from mmcv.utils import ConfigDict
+
 from otx.api.entities.label_schema import LabelSchemaEntity
 
 

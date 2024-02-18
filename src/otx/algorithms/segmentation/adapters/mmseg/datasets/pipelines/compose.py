@@ -8,10 +8,9 @@ from collections.abc import Sequence
 from copy import deepcopy
 
 import numpy as np
+from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
 from scipy.ndimage import gaussian_filter
-
-from mmcv.utils import build_from_cfg
 
 
 # pylint: disable=consider-using-f-string

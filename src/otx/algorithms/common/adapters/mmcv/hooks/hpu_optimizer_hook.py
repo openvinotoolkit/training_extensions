@@ -5,7 +5,6 @@
 #
 
 import habana_frameworks.torch.core as htcore
-
 from mmcv.runner import HOOKS, OptimizerHook
 
 

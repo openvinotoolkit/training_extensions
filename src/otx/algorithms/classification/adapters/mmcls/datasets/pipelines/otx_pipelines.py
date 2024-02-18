@@ -8,11 +8,11 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from mmcls.datasets import PIPELINES
 from mmcls.datasets.pipelines import Compose, Resize
+from mmcv.utils.registry import build_from_cfg
 from PIL import Image, ImageFilter
 from torchvision import transforms as T
 
 import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
-from mmcv.utils.registry import build_from_cfg
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.

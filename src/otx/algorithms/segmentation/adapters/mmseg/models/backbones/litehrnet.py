@@ -15,14 +15,10 @@ Modified from:
 #
 
 
+import mmcv
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
-from mmseg.models.builder import BACKBONES
-from torch import nn
-
-import mmcv
 from mmcv.cnn import (
     ConvModule,
     build_conv_layer,
@@ -32,6 +28,10 @@ from mmcv.cnn import (
 )
 from mmcv.runner import BaseModule, load_checkpoint
 from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
+from mmseg.models.builder import BACKBONES
+from torch import nn
+
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,

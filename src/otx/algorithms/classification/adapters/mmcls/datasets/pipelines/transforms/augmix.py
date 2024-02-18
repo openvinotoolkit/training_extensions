@@ -9,9 +9,9 @@ from copy import deepcopy
 
 import numpy as np
 from mmcls.datasets.builder import PIPELINES
+from mmcv.utils import ConfigDict
 from PIL import Image
 
-from mmcv.utils import ConfigDict
 from otx.algorithms.common.adapters.mmcv.pipelines.transforms.augments import (
     CythonAugments,
 )

@@ -4,12 +4,11 @@
 #
 
 import numpy as np
+from mmcv.utils import build_from_cfg
 from mmdet.datasets import PIPELINES
 from mmdet.datasets.pipelines.formatting import ImageToTensor, to_tensor
 from PIL import Image, ImageFilter
 from torchvision import transforms as T
-
-from mmcv.utils import build_from_cfg
 
 
 @PIPELINES.register_module()

@@ -6,11 +6,10 @@
 from typing import Dict, List, Tuple
 
 import torch
-from mmdet.core import bbox_cxcywh_to_xyxy, bbox_xyxy_to_cxcywh, multi_apply, reduce_mean
-from torch import Tensor
-
 from mmcv.runner import BaseModule
 from mmcv.utils import Config
+from mmdet.core import bbox_cxcywh_to_xyxy, bbox_xyxy_to_cxcywh, multi_apply, reduce_mean
+from torch import Tensor
 
 
 class DETRHeadExtension(BaseModule):

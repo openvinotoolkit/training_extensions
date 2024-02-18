@@ -19,11 +19,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-
 from mmcv import Config, ConfigDict
 from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
 from mmcv.utils.misc import import_modules_from_strings
 from mmcv.utils.path import check_file_exist
+
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import is_xpu_available
 from otx.api.entities.datasets import DatasetEntity

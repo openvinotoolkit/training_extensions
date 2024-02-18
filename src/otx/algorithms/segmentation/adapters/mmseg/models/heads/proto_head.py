@@ -7,12 +7,12 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 from einops import rearrange, repeat
+from mmcv.runner import force_fp32
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 from mmseg.models.losses import accuracy
 from torch import nn
 
-from mmcv.runner import force_fp32
 from otx.algorithms.segmentation.adapters.mmseg.models.losses import PixelPrototypeCELoss
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     ProjectionHead,

@@ -23,12 +23,11 @@ as it is and made some modifications & code cleaning.
 import inspect
 import os
 
+from mmcv.cnn import build_activation_layer, build_norm_layer
 from torch import nn
 from torch.hub import load_state_dict_from_url
 from torch.nn.modules.batchnorm import _BatchNorm
 from torchvision import models
-
-from mmcv.cnn import build_activation_layer, build_norm_layer
 
 from ..builder import TORCHVISION_BACKBONES
 

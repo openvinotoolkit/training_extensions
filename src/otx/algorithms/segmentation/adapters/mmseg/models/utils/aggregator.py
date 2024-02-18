@@ -5,9 +5,9 @@
 
 import torch
 import torch.nn.functional as F
+from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from torch import nn
 
-from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import normalize
 
 

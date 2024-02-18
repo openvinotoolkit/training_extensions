@@ -6,7 +6,6 @@
 
 import torch
 import torch.nn.functional as F
-
 from mmcv.ops import multi_scale_deform_attn
 
 

@@ -4,6 +4,7 @@
 #
 
 from mmcv.runner import HOOKS
+
 from otx.algorithms.common.adapters.mmcv.hooks.dual_model_ema_hook import (
     DualModelEMAHook,
 )

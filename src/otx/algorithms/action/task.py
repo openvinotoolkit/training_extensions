@@ -21,8 +21,8 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 
 import numpy as np
 import torch
-
 from mmcv.utils import ConfigDict
+
 from otx.algorithms.action.configs.base import ActionConfig
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (

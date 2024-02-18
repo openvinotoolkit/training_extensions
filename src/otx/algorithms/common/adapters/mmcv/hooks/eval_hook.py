@@ -5,11 +5,10 @@
 
 from os import path as osp
 
-import torch
-from torch.utils.data import DataLoader
-
 import mmcv
+import torch
 from mmcv.runner import HOOKS, EvalHook
+from torch.utils.data import DataLoader
 
 
 @HOOKS.register_module()

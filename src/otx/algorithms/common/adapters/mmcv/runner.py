@@ -22,10 +22,8 @@ import time
 import warnings
 from typing import List, Optional, Sequence
 
-import torch.distributed as dist
-from torch.utils.data.dataloader import DataLoader
-
 import mmcv
+import torch.distributed as dist
 from mmcv.runner import (
     RUNNERS,
     EpochBasedRunner,
@@ -34,6 +32,7 @@ from mmcv.runner import (
     get_dist_info,
 )
 from mmcv.runner.utils import get_host_info
+from torch.utils.data.dataloader import DataLoader
 
 
 # pylint: disable=too-many-instance-attributes, attribute-defined-outside-init

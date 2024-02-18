@@ -19,13 +19,13 @@ from copy import copy
 from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import numpy as np
+from mmcv import Config
+from mmcv.utils import print_log
 from mmdet.core import PolygonMasks
 from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
-from mmcv import Config
-from mmcv.utils import print_log
 from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.algorithms.detection.adapters.mmdet.evaluation import Evaluator
 from otx.api.entities.dataset_item import DatasetItemEntity

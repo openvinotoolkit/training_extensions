@@ -4,7 +4,6 @@
 #
 
 import torch
-
 from mmcv.runner import HOOKS, OptimizerHook
 
 

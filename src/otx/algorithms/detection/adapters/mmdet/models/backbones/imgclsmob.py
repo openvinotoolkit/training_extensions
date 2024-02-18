@@ -5,14 +5,14 @@
 
 import os
 
+from mmcv.cnn import build_activation_layer, build_norm_layer
+from mmcv.runner import get_dist_info
 from mmdet.models.builder import BACKBONES
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcv.cnn import build_activation_layer, build_norm_layer
-from mmcv.runner import get_dist_info
 from otx.utils.logger import get_logger
 
 # TODO: Need to fix pylint issues

@@ -14,9 +14,9 @@ Original papers:
 import os
 
 import timm
+from mmcv.runner import load_checkpoint
 from torch import nn
 
-from mmcv.runner import load_checkpoint
 from otx.utils.logger import get_logger
 
 from ..builder import BACKBONES

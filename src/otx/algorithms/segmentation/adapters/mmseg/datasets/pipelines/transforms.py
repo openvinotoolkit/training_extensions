@@ -7,17 +7,16 @@
 from copy import deepcopy
 from typing import Any, Dict, List
 
+import mmcv
 import numpy as np
+from mmcv.parallel import DataContainer as DC
+from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
 from mmseg.datasets.pipelines import Compose
 from mmseg.datasets.pipelines.formatting import to_tensor
 from PIL import Image
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
-
-import mmcv
-from mmcv.parallel import DataContainer as DC
-from mmcv.utils import build_from_cfg
 
 
 @PIPELINES.register_module(force=True)

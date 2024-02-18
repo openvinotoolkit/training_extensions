@@ -9,10 +9,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-from torch import distributed as dist
-
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
+from torch import distributed as dist
+
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_adaptive_interval_training,
     patch_early_stopping,

@@ -3,6 +3,7 @@ from typing import List
 
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
+
 from otx.utils.logger import get_logger
 
 logger = get_logger()

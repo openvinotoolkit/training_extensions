@@ -7,9 +7,8 @@ import torch
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import MultiLabelClsHead
-from torch import nn
-
 from mmcv.cnn import normal_init
+from torch import nn
 
 from .mixin import OTXHeadMixin
 

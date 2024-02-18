@@ -10,10 +10,9 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 from typing import Any, Dict
 
 import torch
+from mmcv.cnn import build_norm_layer, kaiming_init, normal_init
 from mmseg.models.builder import NECKS  # pylint: disable=no-name-in-module
 from torch import nn
-
-from mmcv.cnn import build_norm_layer, kaiming_init, normal_init
 
 
 @NECKS.register_module()

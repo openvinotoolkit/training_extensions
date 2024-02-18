@@ -16,9 +16,9 @@ import os
 
 import torch.nn.functional as F
 from mmcls.models.utils import make_divisible
+from mmcv.runner import load_checkpoint
 from torch import nn
 
-from mmcv.runner import load_checkpoint
 from otx.utils.logger import get_logger
 
 from ..builder import BACKBONES

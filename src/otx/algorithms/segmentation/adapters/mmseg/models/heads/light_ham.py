@@ -8,12 +8,11 @@
 
 import torch
 import torch.nn.functional as F
+from mmcv.cnn import ConvModule
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 from mmseg.ops import resize
 from torch import nn
-
-from mmcv.cnn import ConvModule
 
 
 class Matrix_Decomposition_2D_Base(nn.Module):

@@ -8,6 +8,7 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import Config, ConfigDict
+
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )

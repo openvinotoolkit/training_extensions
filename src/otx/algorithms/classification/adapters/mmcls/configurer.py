@@ -6,9 +6,9 @@
 from typing import Optional, Tuple
 
 import torch
-
 from mmcv import build_from_cfg
 from mmcv.utils import ConfigDict
+
 from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils import (
     patch_datasets,
