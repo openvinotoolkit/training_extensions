@@ -4,8 +4,9 @@
 #
 
 import torch
-from mmcv.runner import OPTIMIZERS
 from torch.optim.optimizer import Optimizer, required
+
+from mmcv.runner import OPTIMIZERS
 
 
 @OPTIMIZERS.register_module()

@@ -5,9 +5,9 @@
 
 from mmaction.models.builder import HEADS
 from mmaction.models.heads.base import BaseHead
-from mmcv.cnn import normal_init
 from torch import nn
 
+from mmcv.cnn import normal_init
 from otx.algorithms.action.adapters.mmaction.models.backbones.movinet import ConvBlock3D
 
 

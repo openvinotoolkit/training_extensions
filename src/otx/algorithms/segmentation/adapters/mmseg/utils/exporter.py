@@ -4,8 +4,8 @@
 #
 
 import numpy as np
-from mmcv.runner import wrap_fp16_model
 
+from mmcv.runner import wrap_fp16_model
 from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
 from otx.algorithms.common.adapters.mmdeploy.utils import sync_batchnorm_2_batchnorm
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor

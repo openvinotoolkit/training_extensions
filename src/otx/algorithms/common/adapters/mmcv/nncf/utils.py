@@ -9,11 +9,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from mmcv import Config
-from mmcv.parallel import DataContainer, collate, scatter
 from torch import nn
 from torch.utils.data import DataLoader
 
+from mmcv import Config
+from mmcv.parallel import DataContainer, collate, scatter
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils.builder import build_data_parallel
 from otx.algorithms.common.adapters.nncf.compression import (

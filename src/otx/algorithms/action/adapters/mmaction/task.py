@@ -28,10 +28,10 @@ from mmaction.apis import train_model
 from mmaction.datasets import build_dataloader, build_dataset
 from mmaction.models import build_model as build_videomodel
 from mmaction.utils import collect_env
-from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
-from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
 from torch import distributed as dist
 
+from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
+from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
 from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )

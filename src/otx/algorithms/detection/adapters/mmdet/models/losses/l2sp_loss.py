@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmcv.runner.checkpoint import _load_checkpoint
 from mmdet.models import LOSSES
 from torch import nn
+
+from mmcv.runner.checkpoint import _load_checkpoint
 
 # TODO: Need to fix pylint issues
 # pylint: disable=unused-argument

@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 from mmcv.runner.hooks import HOOKS, Hook
-
 from otx.utils.logger import get_logger
 
 logger = get_logger()

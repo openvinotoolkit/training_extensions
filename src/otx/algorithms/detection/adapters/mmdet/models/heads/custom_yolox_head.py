@@ -2,12 +2,12 @@
 
 import torch
 import torch.nn.functional as F
-from mmcv.runner import force_fp32
 from mmdet.core import multi_apply, reduce_mean
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.yolox_head import YOLOXHead
 from mmdet.models.losses.utils import weight_reduce_loss
 
+from mmcv.runner import force_fp32
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     TrackingLossDynamicsMixIn,
 )

@@ -18,10 +18,8 @@ import multiprocessing as mp
 import time
 from typing import Dict, List, Tuple, Union
 
-import mmcv
 import numpy as np
 import pycocotools.mask as mask_util
-from mmcv.utils import print_log
 from mmdet.core import BitmapMasks, PolygonMasks, eval_map
 from mmdet.core.evaluation import mean_ap
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
@@ -29,6 +27,8 @@ from mmdet.core.evaluation.class_names import get_classes
 from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
 
+import mmcv
+from mmcv.utils import print_log
 from otx.algorithms.common.utils.utils import is_hpu_available
 from otx.api.entities.label import Domain
 from otx.api.utils.time_utils import timeit

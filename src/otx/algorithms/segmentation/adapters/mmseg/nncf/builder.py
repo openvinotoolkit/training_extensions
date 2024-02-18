@@ -7,6 +7,7 @@ from functools import partial
 from typing import Optional, Union
 
 import torch
+
 from mmcv.parallel import DataContainer
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict

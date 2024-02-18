@@ -6,13 +6,13 @@
 from typing import Dict, List, Optional
 
 import torch
-from mmcv.runner import force_fp32
 from mmseg.models.decode_heads.fcn_head import FCNHead
 from mmseg.models.decode_heads.sep_aspp_head import DepthwiseSeparableASPPHead
 from mmseg.models.losses import accuracy
 from mmseg.ops import resize
 from torch import nn
 
+from mmcv.runner import force_fp32
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import IterativeAggregator
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,

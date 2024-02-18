@@ -4,7 +4,6 @@
 #
 
 from mmcv.runner.hooks import HOOKS, Hook
-
 from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
 
 

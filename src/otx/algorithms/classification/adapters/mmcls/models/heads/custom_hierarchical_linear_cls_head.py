@@ -6,8 +6,9 @@
 import torch
 from mmcls.models.builder import HEADS, build_loss
 from mmcls.models.heads import MultiLabelClsHead
-from mmcv.cnn import normal_init
 from torch import nn
+
+from mmcv.cnn import normal_init
 
 from .mixin import OTXHeadMixin
 

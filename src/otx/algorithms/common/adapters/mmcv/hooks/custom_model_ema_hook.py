@@ -9,7 +9,6 @@ from math import cos, pi
 from mmcv.parallel import is_module_wrapper
 from mmcv.runner import HOOKS, BaseRunner, Hook
 from mmcv.runner.hooks.ema import EMAHook
-
 from otx.utils.logger import get_logger
 
 logger = get_logger()

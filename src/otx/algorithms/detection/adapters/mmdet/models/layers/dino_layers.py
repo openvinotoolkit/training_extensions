@@ -9,12 +9,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
-from mmcv.cnn.bricks.registry import TRANSFORMER_LAYER_SEQUENCE
-from mmcv.runner import BaseModule
-from mmcv.utils import Config
 from mmdet.core import bbox_xyxy_to_cxcywh
 from mmdet.models.utils.transformer import DeformableDetrTransformerDecoder, inverse_sigmoid
 from torch import Tensor, nn
+
+from mmcv.cnn.bricks.registry import TRANSFORMER_LAYER_SEQUENCE
+from mmcv.runner import BaseModule
+from mmcv.utils import Config
 
 
 @TRANSFORMER_LAYER_SEQUENCE.register_module()

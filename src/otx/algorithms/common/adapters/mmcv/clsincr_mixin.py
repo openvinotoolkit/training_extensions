@@ -6,7 +6,6 @@
 from typing import List
 
 from mmcv.utils import ConfigDict
-
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import update_or_add_custom_hook
 
 

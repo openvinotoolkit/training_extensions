@@ -15,14 +15,14 @@
 # and limitations under the License.
 
 import torch
-from mmcv.runner import load_checkpoint
-from mmcv.utils import ConfigDict
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdet.models import DETECTORS
 from mmdet.models.builder import build_detector
 from mmdet.models.detectors import FastRCNN
 from torch import nn
 
+from mmcv.runner import load_checkpoint
+from mmcv.utils import ConfigDict
 from otx.algorithms.action.configs.detection.base.faster_rcnn_config import (
     faster_rcnn,
     faster_rcnn_pretrained,

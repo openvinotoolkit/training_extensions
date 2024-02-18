@@ -10,12 +10,13 @@ import math
 import warnings
 
 import torch
+from mmseg.models.builder import BACKBONES
+from torch import nn
+
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.utils.weight_init import constant_init, normal_init, trunc_normal_init
 from mmcv.runner import BaseModule
-from mmseg.models.builder import BACKBONES
-from torch import nn
 
 
 class Mlp(BaseModule):

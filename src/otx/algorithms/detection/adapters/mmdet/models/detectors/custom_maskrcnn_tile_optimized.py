@@ -7,11 +7,11 @@
 import numpy as np
 import torch
 from mmcls.models.necks.gap import GlobalAveragePooling
-from mmcv.cnn import ConvModule
-from mmcv.runner import auto_fp16
 from mmdet.models.builder import DETECTORS
 from torch import nn
 
+from mmcv.cnn import ConvModule
+from mmcv.runner import auto_fp16
 from otx.algorithms.common.adapters.mmdeploy import is_mmdeploy_enabled
 from otx.algorithms.common.adapters.nncf import no_nncf_trace
 

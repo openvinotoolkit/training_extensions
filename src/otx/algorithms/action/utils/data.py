@@ -19,8 +19,8 @@ from collections import defaultdict
 from typing import List, Optional
 
 import numpy as np
-from mmcv import ConfigDict
 
+from mmcv import ConfigDict
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,

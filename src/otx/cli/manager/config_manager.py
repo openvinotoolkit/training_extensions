@@ -30,6 +30,7 @@ from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
 from otx.utils.logger import get_logger
+from otx.utils.utils import add_suffix_to_filename
 
 logger = get_logger()
 

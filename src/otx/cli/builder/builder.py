@@ -23,11 +23,11 @@ import inspect
 from pathlib import Path
 from typing import Any, Dict, Union
 
-import mmcv
 import torch
-from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
+import mmcv
+from mmcv.utils import Registry, build_from_cfg
 from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.api.entities.model_template import TaskType

@@ -7,11 +7,12 @@ import copy
 import warnings
 
 import torch
+from torch import nn
+
 from mmcv.cnn import Linear, build_norm_layer
 from mmcv.cnn.bricks.registry import FEEDFORWARD_NETWORK, TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE
 from mmcv.cnn.bricks.transformer import FFN, BaseTransformerLayer, build_transformer_layer
 from mmcv.runner.base_module import BaseModule, Sequential
-from torch import nn
 
 
 @FEEDFORWARD_NETWORK.register_module()

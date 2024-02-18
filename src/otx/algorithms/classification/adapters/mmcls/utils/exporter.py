@@ -4,8 +4,8 @@
 #
 
 import numpy as np
-from mmcv.runner import wrap_fp16_model
 
+from mmcv.runner import wrap_fp16_model
 from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
 from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
 from otx.algorithms.common.adapters.mmdeploy.utils.utils import (

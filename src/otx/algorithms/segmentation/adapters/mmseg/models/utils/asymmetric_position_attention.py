@@ -8,8 +8,9 @@
 
 import torch
 import torch.nn.functional as F
-from mmcv.cnn import ConvModule
 from torch import nn
+
+from mmcv.cnn import ConvModule
 
 from .psp_layer import PSPModule
 

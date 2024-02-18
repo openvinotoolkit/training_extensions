@@ -7,11 +7,11 @@ from typing import Dict, List, Optional, Union
 
 import openvino.runtime as ov
 import torch
-from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
-from mmcv.runner import BaseModule
 from mmdet.models.builder import NECKS
 from torch import nn
 
+from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
+from mmcv.runner import BaseModule
 from otx.core.ov.models.mmov_model import MMOVModel
 
 # pylint: disable=too-many-arguments, too-many-locals

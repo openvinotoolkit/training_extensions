@@ -7,8 +7,9 @@
 #
 
 import torch.nn.functional as F
-from mmcv.cnn import ConvModule
 from torch import nn
+
+from mmcv.cnn import ConvModule
 
 
 class LocalAttentionModule(nn.Module):

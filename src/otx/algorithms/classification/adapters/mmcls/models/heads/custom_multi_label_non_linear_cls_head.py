@@ -6,8 +6,9 @@
 import torch
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import MultiLabelClsHead
-from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
+
+from mmcv.cnn import build_activation_layer, constant_init, normal_init
 
 from .custom_multi_label_linear_cls_head import AnglularLinear
 from .mixin import OTXHeadMixin

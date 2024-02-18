@@ -7,7 +7,6 @@ import copy
 import functools
 
 import cv2
-import mmcv
 import numpy as np
 import torch
 from mmdet.core import bbox2result, bbox2roi
@@ -16,6 +15,7 @@ from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
 from torch import distributed as dist
 
+import mmcv
 from otx.utils.logger import get_logger
 
 from .sam_detector_mixin import SAMDetectorMixin

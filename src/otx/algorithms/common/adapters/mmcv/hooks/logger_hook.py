@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import master_only
 from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
-
 from otx.utils.logger import get_logger
 
 logger = get_logger()

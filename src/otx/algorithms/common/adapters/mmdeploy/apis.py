@@ -11,9 +11,10 @@ from functools import partial
 from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-import mmcv
 import numpy as np
 import torch
+
+import mmcv
 from mmcv.parallel import collate, scatter
 
 from .utils.mmdeploy import (

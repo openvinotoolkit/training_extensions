@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmcv.runner import HOOKS, Hook
 from torch import nn
 
+from mmcv.runner import HOOKS, Hook
 from otx.utils.logger import get_logger
 
 logger = get_logger()

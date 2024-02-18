@@ -18,7 +18,6 @@ import math
 
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
-
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.utils.logger import get_logger
 

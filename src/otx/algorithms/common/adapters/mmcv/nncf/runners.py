@@ -10,7 +10,6 @@ from mmcv.runner import RUNNERS
 from mmcv.runner.hooks.evaluation import EvalHook
 from mmcv.runner.hooks.lr_updater import LrUpdaterHook
 from mmcv.runner.utils import get_host_info
-
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
 from otx.algorithms.common.adapters.mmcv.runner import EpochRunnerWithCancel
 from otx.algorithms.common.adapters.nncf import (

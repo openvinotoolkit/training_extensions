@@ -4,7 +4,6 @@
 #
 
 import torch
-from mmcv.runner import force_fp32
 from mmdet.core import (
     anchor_inside_flags,
     bbox_overlaps,
@@ -15,6 +14,7 @@ from mmdet.core import (
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.atss_head import ATSSHead
 
+from mmcv.runner import force_fp32
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
     TrackingLossDynamicsMixIn,

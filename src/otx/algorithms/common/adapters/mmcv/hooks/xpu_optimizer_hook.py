@@ -6,7 +6,6 @@
 from typing import Optional, Union
 
 from mmcv.runner.hooks import HOOKS, Fp16OptimizerHook
-
 from otx.algorithms.common.adapters.torch.amp import XPUGradScaler
 
 

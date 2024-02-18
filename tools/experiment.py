@@ -652,7 +652,11 @@ class ExpInfo:
         if self._commands is None:
             command = self._raw_command
             if isinstance(command, str):
+                command = [command]
+            command = self._replace_var_in_target(self.constants, command)
+            var_combinations = self._product_all_cases(self.variables, command)
             if not var_combinations:
+                self._commands = [Command(command=command)]
             else:
                 command_arr = []
                 for var_combination in var_combinations:

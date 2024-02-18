@@ -9,9 +9,10 @@ import torch
 import torch.nn.functional as F
 from einops import rearrange
 from mmaction.models.builder import BACKBONES
-from mmcv.utils import Config
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair, _triple
+
+from mmcv.utils import Config
 
 
 class Conv2dBNActivation(nn.Sequential):

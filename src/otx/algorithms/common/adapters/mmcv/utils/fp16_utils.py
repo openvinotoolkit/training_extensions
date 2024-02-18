@@ -7,10 +7,10 @@ from inspect import getfullargspec
 from typing import Callable, Iterable, Optional
 
 import torch
-from mmcv.runner.fp16_utils import cast_tensor_type
-from mmcv.utils import IS_NPU_AVAILABLE, TORCH_VERSION, digit_version
 from torch import nn
 
+from mmcv.runner.fp16_utils import cast_tensor_type
+from mmcv.utils import IS_NPU_AVAILABLE, TORCH_VERSION, digit_version
 from otx.algorithms.common.utils import is_xpu_available
 
 try:

@@ -7,6 +7,11 @@
 import os
 
 import torch
+from mmdet.core import DistEvalHook, EvalHook, build_optimizer
+from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
+from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
+from mmdet.utils.util_distribution import build_dp, dp_factory
+
 from mmcv.runner import (
     DistSamplerSeedHook,
     EpochBasedRunner,
@@ -14,11 +19,6 @@ from mmcv.runner import (
     build_runner,
     get_dist_info,
 )
-from mmdet.core import DistEvalHook, EvalHook, build_optimizer
-from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
-from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
-from mmdet.utils.util_distribution import build_dp, dp_factory
-
 from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
 from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 

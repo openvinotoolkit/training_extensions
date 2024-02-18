@@ -7,9 +7,9 @@ from copy import deepcopy
 from typing import Optional, Union
 
 import torch
+
 from mmcv.runner import load_checkpoint
 from mmcv.utils import Config, ConfigDict, get_logger
-
 from otx.utils.logger import LEVEL
 
 mmcls_logger = get_logger("mmcls")

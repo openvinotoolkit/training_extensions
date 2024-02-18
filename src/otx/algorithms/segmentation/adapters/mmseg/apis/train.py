@@ -7,16 +7,16 @@
 import os
 import warnings
 
-import mmcv
 import torch
-from mmcv.runner import HOOKS, DistSamplerSeedHook, EpochBasedRunner, build_runner
-from mmcv.utils import build_from_cfg
 from mmseg import digit_version
 from mmseg.core import DistEvalHook, EvalHook, build_optimizer
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import build_ddp, find_latest_checkpoint, get_root_logger
 from mmseg.utils.util_distribution import build_dp, dp_factory
 
+import mmcv
+from mmcv.runner import HOOKS, DistSamplerSeedHook, EpochBasedRunner, build_runner
+from mmcv.utils import build_from_cfg
 from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
 from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 

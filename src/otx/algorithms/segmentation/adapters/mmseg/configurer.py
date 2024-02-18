@@ -8,9 +8,9 @@ from collections import OrderedDict
 from typing import Any, Optional, Tuple
 
 import torch
+
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
-
 from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin

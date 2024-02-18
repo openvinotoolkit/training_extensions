@@ -7,6 +7,7 @@ from copy import deepcopy
 import numpy as np
 from mmcls.datasets.builder import PIPELINES
 from mmcls.datasets.pipelines import Compose, to_tensor
+
 from mmcv.utils import build_from_cfg
 
 

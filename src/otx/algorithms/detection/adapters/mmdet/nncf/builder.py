@@ -7,10 +7,10 @@ from functools import partial
 from typing import Optional, Union
 
 import torch
+
 from mmcv.parallel import DataContainer
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
-
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
