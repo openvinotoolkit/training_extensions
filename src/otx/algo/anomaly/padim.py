@@ -6,40 +6,38 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from anomalib.models.image import Padim as AnomalibPadim
 
-from otx.core.model.entity.anomaly import OTXAnomalyModel
-
-if TYPE_CHECKING:
-    from anomalib.models import AnomalyModule
+from otx.core.model.entity.base import OTXModel
+from otx.core.model.module.anomaly import OTXAnomaly
 
 
-class Padim(OTXAnomalyModel):
-    """Padim OTX model."""
+class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
+    """OTX Padim model.
+
+    Args:
+        input_size (tuple[int, int], optional): Input size. Defaults to (256, 256).
+        backbone (str, optional): Feature extractor backbone. Defaults to "resnet18".
+        layers (list[str], optional): Feature extractor layers. Defaults to ["layer1", "layer2", "layer3"].
+        pre_trained (bool, optional): Pretrained backbone. Defaults to True.
+        n_features (int | None, optional): Number of features. Defaults to None.
+    """
 
     def __init__(
         self,
-        input_size: tuple[int, int],
-        layers: list[str],
+        input_size: tuple[int, int] = (256, 256),
         backbone: str = "resnet18",
+        layers: list[str] = ["layer1", "layer2", "layer3"],  # noqa: B006
         pre_trained: bool = True,
         n_features: int | None = None,
-        num_classes: int = 2,  # unused as we need only two classes. Kept to match required params.
     ) -> None:
-        self.input_size = input_size
-        self._layers = layers
-        self.backbone = backbone
-        self.pre_trained = pre_trained
-        self.n_features = n_features
-        super().__init__()
-
-    def _create_model(self) -> AnomalyModule:
-        from anomalib.models.image.padim.lightning_model import Padim
-
-        return Padim(
-            input_size=self.input_size,
-            layers=self._layers,
-            backbone=self.backbone,
-            pre_trained=self.pre_trained,
-            n_features=self.n_features,
+        OTXAnomaly.__init__(self)
+        OTXModel.__init__(self, num_classes=2)
+        AnomalibPadim.__init__(
+            self,
+            input_size=input_size,
+            backbone=backbone,
+            layers=layers,
+            pre_trained=pre_trained,
+            n_features=n_features,
         )

@@ -18,9 +18,13 @@ from otx.core.data.entity.base import (
     OTXBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo
@@ -218,3 +222,22 @@ class OTXLitModule(LightningModule):
     def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward pass."""
         return self.model.forward(*args, **kwargs)
+
+    def export(
+        self,
+        output_dir: Path,
+        base_name: str,
+        export_format: OTXExportFormatType,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir (Path): directory for saving the exported model
+            base_name: (str): base name for the exported model file. Extension is defined by the target export format
+            export_format (OTXExportFormatType): format of the output model
+            precision (OTXExportPrecisionType): precision of the output model
+        Returns:
+            Path: path to the exported model.
+        """
+        return self.model.export(output_dir, base_name, export_format, precision)

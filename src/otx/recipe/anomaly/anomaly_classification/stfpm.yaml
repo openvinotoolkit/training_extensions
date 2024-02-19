@@ -25,6 +25,10 @@ data: ../../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
   limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 5
   data:
     task: ANOMALY_CLASSIFICATION
     config:

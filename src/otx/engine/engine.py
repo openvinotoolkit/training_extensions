@@ -43,9 +43,6 @@ LITMODULE_PER_TASK = {
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
     OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
-    OTXTaskType.ANOMALY_CLASSIFICATION: "otx.core.model.module.anomaly.OTXAnomalyClassificationLitModel",
-    OTXTaskType.ANOMALY_SEGMENTATION: "otx.core.model.module.anomaly.OTXAnomalySegmentationLitModel",
-    OTXTaskType.ANOMALY_DETECTION: "otx.core.model.module.anomaly.OTXAnomalyDetectionLitModel",
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
 }
@@ -423,7 +420,7 @@ class Engine:
 
             lit_module.load_state_dict(loaded_checkpoint)
 
-            return self.model.export(
+            return lit_module.export(
                 output_dir=Path(self.work_dir),
                 base_name=self._EXPORTED_MODEL_BASE_NAME,
                 export_format=export_format,
@@ -673,7 +670,7 @@ class Engine:
         model: OTXModel,
         optimizer: list[OptimizerCallable] | OptimizerCallable | None,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-    ) -> OTXLitModule:
+    ) -> OTXLitModule | OTXModel:
         """Builds a LightningModule for engine workflow.
 
         Args:
@@ -682,14 +679,34 @@ class Engine:
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
 
         Returns:
-            OTXLitModule: The built LightningModule instance.
+            OTXLitModule | OTXModel: The built LightningModule instance.
         """
-        class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
-        module = __import__(class_module, fromlist=[class_name])
-        lightning_module = getattr(module, class_name)
-        return lightning_module(
-            otx_model=model,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            torch_compile=False,
-        )
+        if self.task in (
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ):
+            model = self._get_anomaly_model(model, optimizer, scheduler)
+        else:
+            class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
+            module = __import__(class_module, fromlist=[class_name])
+            lightning_module = getattr(module, class_name)
+            model = lightning_module(
+                otx_model=model,
+                optimizer=optimizer,
+                scheduler=scheduler,
+                torch_compile=False,
+            )
+        return model
+
+    def _get_anomaly_model(
+        self,
+        model: OTXModel,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
+    ) -> OTXModel:
+        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
+        model.task = self.task
+        model.optimizer = optimizer
+        model.scheduler = scheduler
+        return model
