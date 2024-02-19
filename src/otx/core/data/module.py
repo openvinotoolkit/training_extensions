@@ -74,7 +74,11 @@ class OTXDataModule(LightningDataModule):
                     f"Current deveice type is {self.config.device!s}. auto_num_workers is skipped.",
                 )
             elif (num_workers := get_adaptive_num_workers()) is not None:
-                for subset_config in config_mapping.values():
+                for subset_name, subset_config in config_mapping.items():
+                    log.info(
+                        f"num_workers of {subset_name} subset is changed : "
+                        f"{subset_config.num_workers} -> {num_workers}",
+                    )
                     subset_config.num_workers = num_workers
 
         mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
