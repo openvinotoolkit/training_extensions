@@ -398,28 +398,28 @@ class TestSearchSpace:
 
     @staticmethod
     def add_uniform_search_space(search_space) -> None:
-        search_space["uniform_search_space"] = {"param_type": "uniform"}
+        search_space["uniform_search_space"] = {"type": "uniform"}
         search_space["uniform_search_space"].update({"min": 1, "max": 10})
 
     @staticmethod
     def add_quniform_search_space(search_space) -> None:
-        search_space["quniform_search_space"] = {"param_type": "quniform"}
+        search_space["quniform_search_space"] = {"type": "quniform"}
         search_space["quniform_search_space"].update({"min": 1, "max": 10, "step": 3})
 
     @staticmethod
     def add_loguniform_search_space(search_space) -> None:
-        search_space["loguniform_search_space"] = {"param_type": "loguniform"}
+        search_space["loguniform_search_space"] = {"type": "loguniform"}
         search_space["loguniform_search_space"].update({"min": 1, "max": 10, "log_base": 2})
 
     @staticmethod
     def add_qloguniform_search_space(search_space) -> None:
-        search_space["qloguniform_search_space"] = {"param_type": "qloguniform"}
+        search_space["qloguniform_search_space"] = {"type": "qloguniform"}
         search_space["qloguniform_search_space"].update({"min": 1, "max": 10, "step": 3, "log_base": 2})
 
     @staticmethod
     def add_choice_search_space(search_space) -> None:
         search_space["choice_search_space"] = {
-            "param_type": "choice",
+            "type": "choice",
             "choice_list": ["somevalue1", "somevalue2", "somevalue3"],
         }
 

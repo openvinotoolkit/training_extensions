@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.integration.cli.utils import run_main
 
@@ -302,3 +303,63 @@ def test_otx_ov_test(
     assert (tmp_path_test / "outputs" / "csv").exists()
     metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
     assert len(metric_result) > 0
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+def test_otx_hpo_e2e(
+    task: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+) -> None:
+    """
+    Test HPO e2e commands with default template of each task.
+
+    Args:
+        task (OTXTaskType): The task to run HPO with.
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+
+    task = task.lower()
+    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    tmp_path_hpo.mkdir(parents=True)
+
+    command_cfg = [
+        "otx",
+        "train",
+        "--task",
+        task.upper(),
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--engine.work_dir",
+        str(tmp_path_hpo),
+        "--engine.device",
+        fxt_accelerator,
+        "--max_epochs",
+        "2",
+        "--run_hpo",
+        "true",
+        "--hpo_config.expected_time_ratio",
+        "2",
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
+    if task in ("zero_shot_visual_prompting"):
+        return
+
+    hpo_work_dor = tmp_path_hpo / "hpo"
+    assert hpo_work_dor.exists()
+    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
+    assert len(list(hpo_work_dor.rglob("*.ckpt"))) == 1

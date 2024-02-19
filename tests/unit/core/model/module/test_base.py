@@ -10,8 +10,9 @@ from unittest.mock import MagicMock, create_autospec
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
 from lightning.pytorch.trainer import Trainer
+from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.model.entity.base import OTXModel
-from otx.core.model.module.base import LinearWarmupScheduler, OTXLitModule
+from otx.core.model.module.base import OTXLitModule
 from torch.optim import Optimizer
 
 

@@ -117,24 +117,30 @@ def test_otx_export_infer(
     assert len(ckpt_files) > 0
 
     # 2) otx test
-    tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
-        str(tmp_path_test / "outputs" / "torch"),
-        "--engine.device",
-        fxt_accelerator,
-        *fxt_cli_override_command_per_task[task],
-        "--checkpoint",
-        str(ckpt_files[-1]),
-    ]
+    def run_cli_test(test_recipe: str, checkpoint_path: str, work_dir: Path, device: str = fxt_accelerator) -> Path:
+        tmp_path_test = tmp_path / f"otx_test_{model_name}"
+        command_cfg = [
+            "otx",
+            "test",
+            "--config",
+            test_recipe,
+            "--data_root",
+            fxt_target_dataset_per_task[task],
+            "--engine.work_dir",
+            str(tmp_path_test / work_dir),
+            "--engine.device",
+            device,
+            *fxt_cli_override_command_per_task[task],
+            "--checkpoint",
+            checkpoint_path,
+        ]
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+        return tmp_path_test
+
+    tmp_path_test = run_cli_test(recipe, str(ckpt_files[-1]), Path("outputs") / "torch")
+
+    assert (tmp_path_test / "outputs").exists()
 
     # 3) otx export
     format_to_ext = {"OPENVINO": "xml"}  # [TODO](@Vlad): extend to "ONNX": "onnx"
@@ -171,24 +177,7 @@ def test_otx_export_infer(
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
     exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
 
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        export_test_recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
-        str(tmp_path_test / "outputs" / "openvino"),
-        "--engine.device",
-        "cpu",
-        *fxt_cli_override_command_per_task[task],
-        "--checkpoint",
-        exported_model_path,
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
+    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", "cpu")
     assert (tmp_path_test / "outputs").exists()
 
     # 5) test optimize
@@ -214,24 +203,7 @@ def test_otx_export_infer(
     exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
 
     # 6) test optimized model
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        export_test_recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
-        str(tmp_path_test / "outputs" / "nncf_ptq"),
-        "--engine.device",
-        "cpu",
-        *fxt_cli_override_command_per_task[task],
-        "--checkpoint",
-        exported_model_path,
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
+    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", "cpu")
     assert (tmp_path_test / "outputs").exists()
 
     df_torch = pd.read_csv(next((tmp_path_test / "outputs" / "torch").glob("**/metrics.csv")))

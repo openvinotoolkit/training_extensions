@@ -15,6 +15,7 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from otx.core.data.entity.detection import (
     DetBatchDataEntity,
     DetBatchPredEntity,
+    DetBatchPredEntityWithXAI,
 )
 from otx.core.model.entity.detection import ExplainableOTXDetModel
 from otx.core.model.module.base import OTXLitModule
@@ -98,7 +99,7 @@ class OTXDetectionLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, DetBatchPredEntity):
+        if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.metric.update(
@@ -107,7 +108,7 @@ class OTXDetectionLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: DetBatchPredEntity,
+        preds: DetBatchPredEntity | DetBatchPredEntityWithXAI,
         inputs: DetBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         return {
@@ -141,7 +142,7 @@ class OTXDetectionLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, DetBatchPredEntity):
+        if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.metric.update(

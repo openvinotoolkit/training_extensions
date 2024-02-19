@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Callable, Literal
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
-from otx.utils import append_signal_handler
+from otx.utils import append_main_proc_signal_handler
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -76,8 +76,8 @@ class HpoLoop:
         )
         self._main_pid = os.getpid()
 
-        append_signal_handler(signal.SIGINT, self._terminate_signal_handler)
-        append_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
+        append_main_proc_signal_handler(signal.SIGINT, self._terminate_signal_handler)
+        append_main_proc_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
 
     def run(self) -> None:
         """Run a HPO loop."""
@@ -123,14 +123,20 @@ class HpoLoop:
             args=(
                 self._train_func,
                 trial.get_train_configuration(),
-                partial(_report_score, recv_queue=trial_queue, send_queue=self._report_queue, uid=uid),
+                partial(
+                    _report_score,
+                    recv_queue=trial_queue,
+                    send_queue=self._report_queue,
+                    uid=uid,
+                    trial_id=trial.id,
+                ),
             ),
         )
+        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
+        process.start()
         os.environ.clear()
         for key, val in origin_env.items():
             os.environ[key] = val
-        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
-        process.start()
 
     def _remove_finished_process(self) -> None:
         trial_to_remove = []
@@ -150,14 +156,14 @@ class HpoLoop:
     def _get_reports(self) -> None:
         while not self._report_queue.empty():
             report = self._report_queue.get_nowait()
-            trial = self._running_trials[report["uid"]]
             trial_status = self._hpo_algo.report_score(
                 report["score"],
                 report["progress"],
-                trial.trial.id,
+                report["trial_id"],
                 report["done"],
             )
-            trial.queue.put_nowait(trial_status)
+            if report["uid"] in self._running_trials:
+                self._running_trials[report["uid"]].queue.put_nowait(trial_status)
 
         self._hpo_algo.save_results()
 
@@ -181,13 +187,9 @@ class HpoLoop:
             process = trial.process
             if process.is_alive():
                 logger.info(f"Kill child process {process.pid}")
-                process.kill()
+                process.terminate()
 
     def _terminate_signal_handler(self, signum: Signals, frame_) -> None:  # noqa: ANN001
-        # This code prevents child processses from being killed unintentionally by proccesses forked from main process
-        if self._main_pid != os.getpid():
-            return
-
         self._terminate_all_running_processes()
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}
@@ -206,11 +208,24 @@ def _report_score(
     recv_queue: multiprocessing.Queue,
     send_queue: multiprocessing.Queue,
     uid: Hashable,
+    trial_id: Hashable,
     done: bool = False,
 ) -> TrialStatus:
-    logger.debug(f"score : {score}, progress : {progress}, uid : {uid}, pid : {os.getpid()}, done : {done}")
+    logger.debug(
+        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, "
+        f"pid : {os.getpid()}, done : {done}",
+    )
     try:
-        send_queue.put_nowait({"score": score, "progress": progress, "uid": uid, "pid": os.getpid(), "done": done})
+        send_queue.put_nowait(
+            {
+                "score": score,
+                "progress": progress,
+                "uid": uid,
+                "trial_id": trial_id,
+                "pid": os.getpid(),
+                "done": done,
+            },
+        )
     except ValueError:
         return TrialStatus.STOP
 

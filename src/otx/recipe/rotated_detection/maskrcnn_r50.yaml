@@ -12,7 +12,7 @@ optimizer:
     weight_decay: 0.001
 
 scheduler:
-  - class_path: otx.core.model.module.base.LinearWarmupScheduler
+  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
     init_args:
       num_warmup_steps: 100
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
