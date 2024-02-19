@@ -351,6 +351,8 @@ class SegmentAnything(LightningModule):
 
     def get_prepadded_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
         """Get pre-padded size."""
+        input_image_size = input_image_size.to(torch.float32)
+        longest_side = torch.tensor(longest_side).to(torch.float32)
         scale = longest_side / torch.max(input_image_size)
         transformed_size = scale * input_image_size
         return torch.floor(transformed_size + 0.5).to(torch.int64)

@@ -172,23 +172,13 @@ class Decoder(SegmentationModel):
 
         Returns:
             hard_prediction (np.ndarray): The hard prediction.
-            soft_prediction (np.ndarray): Resized, cropped, and normalized soft prediction.
+            soft_prediction (np.ndarray): The soft prediction.
         """
-
-        def sigmoid(x):
-            return np.tanh(x * 0.5) * 0.5 + 0.5  # to avoid overflow
-
-        soft_prediction = outputs[self.output_blob_name].squeeze()
-        soft_prediction = sigmoid(soft_prediction)
-        meta["soft_prediction"] = soft_prediction
-
-        hard_prediction = create_hard_prediction_from_soft_prediction(
-            soft_prediction=soft_prediction,
-            soft_threshold=self.soft_threshold,
-            blur_strength=self.blur_strength,
-        )
-
         probability = max(min(float(outputs["scores"]), 1.0), 0.0)
+        hard_prediction = outputs[self.output_blob_name].squeeze() > self.mask_threshold
+        soft_prediction = hard_prediction * probability
+
+        meta["soft_prediction"] = soft_prediction
         meta["label"].probability = probability
 
         return hard_prediction, soft_prediction
