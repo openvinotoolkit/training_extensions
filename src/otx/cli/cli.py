@@ -217,6 +217,7 @@ class OTXCLI:
 
             sub_parser.link_arguments("data_root", "engine.data_root")
             sub_parser.link_arguments("data_root", "data.config.data_root")
+            sub_parser.link_arguments("engine.device", "data.config.device")
 
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
