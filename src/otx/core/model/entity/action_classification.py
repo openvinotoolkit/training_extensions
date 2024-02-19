@@ -13,18 +13,34 @@ from otx.core.data.entity.action_classification import (
 )
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
     from torch import nn
+
+    from otx.core.exporter.base import OTXModelExporter
 
 
 class OTXActionClsModel(
     OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
 ):
     """Base class for the action classification models used in OTX."""
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "Action Classification",
+                ("model_info", "task_type"): "action classification",
+            },
+        )
+        return parameters
 
 
 class MMActionCompatibleModel(OTXActionClsModel):
@@ -39,6 +55,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
+        self.image_size = (1, 1, 3, 8, 244, 244)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
@@ -105,3 +122,22 @@ class MMActionCompatibleModel(OTXActionClsModel):
             scores=scores,
             labels=labels,
         )
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = True
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
+
+        return export_params
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
