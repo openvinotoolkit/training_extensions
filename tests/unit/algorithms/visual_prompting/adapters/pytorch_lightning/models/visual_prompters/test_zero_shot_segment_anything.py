@@ -54,14 +54,10 @@ class TestPromptGetter:
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
-        mocker.patch.object(
-            prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2))
-        )
+        mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
         image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feat = torch.rand(1, 4)
-        original_size = torch.tensor(
-            [[prompt_getter.image_size, prompt_getter.image_size]], dtype=torch.int64
-        )
+        original_size = torch.tensor([[prompt_getter.image_size, prompt_getter.image_size]], dtype=torch.int64)
 
         points_scores, bg_coords = prompt_getter(
             image_embeddings=image_embeddings, reference_feat=reference_feat, original_size=original_size
@@ -69,7 +65,7 @@ class TestPromptGetter:
 
         assert torch.all(points_scores == result_point_selection)
         assert torch.all(bg_coords == torch.zeros(1, 2))
-        
+
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "result_point_selection",

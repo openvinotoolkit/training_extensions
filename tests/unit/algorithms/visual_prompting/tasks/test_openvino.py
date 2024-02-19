@@ -485,8 +485,14 @@ class TestOTXZeroShotOpenVinoDataLoader:
             dataset = generate_visual_prompting_dataset()
             dataset = dataset.get_subset(Subset.TRAINING)
             return OTXZeroShotOpenVinoDataLoader(
-                dataset, self.mocker_inferencer, module_name, output_model=output_model, reference_feats=np.zeros((1, 1, 1)), used_indices=np.array([[0]])
+                dataset,
+                self.mocker_inferencer,
+                module_name,
+                output_model=output_model,
+                reference_feats=np.zeros((1, 1, 1)),
+                used_indices=np.array([[0]]),
             )
+
         return _load_dataloader
 
     @pytest.fixture(autouse=True)

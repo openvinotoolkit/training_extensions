@@ -177,7 +177,7 @@ class TestDecoder:
     def test_postprocess(self, mocker):
         """Test postprocess."""
         self.decoder.output_blob_name = "upscaled_masks"
-        self.decoder.mask_threshold = 0.
+        self.decoder.mask_threshold = 0.0
         self.decoder.blur_strength = 2
         fake_output = {"upscaled_masks": np.ones((4, 4)), "scores": 0.1}
         fake_metadata = {"original_size": np.array([[6, 6]]), "label": mocker.Mock(spec=LabelEntity)}
