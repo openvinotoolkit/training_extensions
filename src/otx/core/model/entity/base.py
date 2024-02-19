@@ -57,7 +57,7 @@ class OTXModel(
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self.original_model_forward = None
-        self.explain_mode = False
+        self._explain_mode = False
 
     def setup_callback(self, trainer: Trainer) -> None:
         """Callback for setup OTX Model.
@@ -96,6 +96,16 @@ class OTXModel(
     def num_classes(self) -> int:
         """Returns model's number of classes. Can be redefined at the model's level."""
         return self.label_info.num_classes
+
+    @property
+    def explain_mode(self) -> bool:
+        """Get model explain mode."""
+        return self._explain_mode
+
+    @explain_mode.setter
+    def explain_mode(self, explain_mode: bool) -> None:
+        """Set model explain mode."""
+        self._explain_mode = explain_mode
 
     @abstractmethod
     def _create_model(self) -> nn.Module:
@@ -146,10 +156,10 @@ class OTXModel(
         raise NotImplementedError
 
     def _reset_model_forward(self) -> None:
-        raise NotImplementedError
+        pass
 
     def _restore_model_forward(self) -> None:
-        raise NotImplementedError
+        pass
 
     def forward_tiles(
         self,
