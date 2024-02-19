@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/perf-speed.yml
     with:
       model-type: default
-      data-size: small
+      data-size: medium
       num-repeat: 1
       num-epoch: 3
       eval-upto: optimize
@@ -25,7 +25,7 @@ jobs:
     uses: ./.github/workflows/perf-accuracy.yml
     with:
       model-type: default
-      data-size: small
+      data-size: all
       num-repeat: 0
       num-epoch: 0
       eval-upto: optimize
