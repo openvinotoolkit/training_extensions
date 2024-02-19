@@ -3,16 +3,19 @@ name: Build and upload to internal PyPI
 on:
   workflow_dispatch: # run on request (no need for PR)
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   build_wheels:
     name: Build wheels
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.13.1
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@0ecddd92b62987d7a2ae8911f4bb8ec9e2e4496a # v2.13.1
+      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           path: ./wheelhouse/*.whl
 
@@ -21,16 +24,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Set up Python 3.10
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
           python-version: "3.10"
       - name: Install pypa/build
-        run: python -m pip install build
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-publish-requirements.txt requirements/publish.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-publish-requirements.txt
+          rm /tmp/otx-publish-requirements.txt
       - name: Build sdist
         run: python -m build --sdist
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           path: dist/*.tar.gz
 
@@ -39,16 +46,23 @@ jobs:
     needs: [build_wheels, build_sdist]
     environment: pypi
     runs-on: [self-hosted, linux, x64, dev]
-    permissions: write-all
+    permissions:
+      packages: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
           python-version: "3.10"
       - name: Install dependencies
-        run: python -m pip install twine
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-publish-requirements.txt requirements/publish.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-publish-requirements.txt
+          rm /tmp/otx-publish-requirements.txt
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           # unpacks default artifact into dist/
           # if `name: artifact` is omitted, the action will create extra parent dir
@@ -56,7 +70,7 @@ jobs:
           path: dist
       - name: Check tag
         id: check-tag
-        uses: actions-ecosystem/action-regex-match@v2
+        uses: actions-ecosystem/action-regex-match@9e6c4fb3d5e898f505be7a1fb6e7b0a278f6665b # v2.0.2
         with:
           text: ${{ github.ref }}
           regex: '^refs/heads/releases/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+rc[0-9]+|rc[0-9]+)?$'
@@ -72,7 +86,7 @@ jobs:
         if: ${{ steps.check-tag.outputs.match == '' }}
         run: |
           export REPOSITORY_URL=https://test.pypi.org/legacy/
-          twine upload --verbose --repository-url $REPOSITORY_URL dist/* -u __token__ -p ${{ secrets.TESTPYPI_API_TOKEN }}
+          twine upload --verbose --repository-url $REPOSITORY_URL dist/* -u __token__ -p ${{ secrets.TEST_PYPI_API_TOKEN }}
       - name: Clean up dist
         if: ${{ always() }}
         run: |
