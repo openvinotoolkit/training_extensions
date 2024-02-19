@@ -204,6 +204,7 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         )
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.3
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"]._apply_coords.return_value = np.array([[1, 1]])
+        self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].output_blob_name = "upscaled_masks"
 
     @e2e_pytest_unit
     def test_predict(self, mocker):
@@ -221,10 +222,10 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         mocker_forward_decoder = mocker.patch.object(
             OpenVINOZeroShotVisualPromptingInferencer,
             "forward_prompt_getter",
-            return_value={"total_points_scores": np.array([[[1, 1, 1]]]), "total_bg_coords": np.array([[[2, 2]]])},
+            return_value=({0: np.array([[1, 1, 1]])}, {0: np.array([[2, 2]])}),
         )
         mocker_forward_decoder = mocker.patch.object(
-            OpenVINOZeroShotVisualPromptingInferencer, "forward_decoder", return_value={}
+            OpenVINOZeroShotVisualPromptingInferencer, "forward_decoder", return_value={"upscaled_masks": None}
         )
         mocker_post_process = mocker.patch.object(
             OpenVINOZeroShotVisualPromptingInferencer, "post_process", return_value=(self.fake_annotation, None, None)
@@ -421,11 +422,11 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         }
 
         self.zero_shot_visual_prompting_ov_inferencer._inspect_overlapping_areas(
-            predicted_masks, used_points, predicted_masks.copy(), threshold_iou=0.5
+            predicted_masks, used_points, threshold_iou=0.5
         )
 
-        assert len(predicted_masks[0]) == 1
-        assert len(predicted_masks[1]) == 2
+        assert len(predicted_masks[0]) == 2
+        assert len(predicted_masks[1]) == 3
         assert all(np.array([2, 2, 0.5]) == used_points[0][0])
         assert all(np.array([0, 0, 0.7]) == used_points[1][2])
 
@@ -484,9 +485,8 @@ class TestOTXZeroShotOpenVinoDataLoader:
             dataset = generate_visual_prompting_dataset()
             dataset = dataset.get_subset(Subset.TRAINING)
             return OTXZeroShotOpenVinoDataLoader(
-                dataset, self.mocker_inferencer, module_name, output_model=output_model
+                dataset, self.mocker_inferencer, module_name, output_model=output_model, reference_feats=np.zeros((1, 1, 1)), used_indices=np.array([[0]])
             )
-
         return _load_dataloader
 
     @pytest.fixture(autouse=True)
@@ -510,17 +510,14 @@ class TestOTXZeroShotOpenVinoDataLoader:
         setattr(dataloader, "target_length", 8)
         mocker.patch.object(
             dataloader.inferencer,
-            "pre_process",
+            "pre_process_image_encoder",
             return_value=({"images": np.zeros((1, 3, 4, 4), dtype=np.uint8)}, {"original_shape": (4, 4)}),
         )
         if module_name == "decoder":
             mocker.patch.object(
-                dataloader,
-                "prompt_getter",
-                return_value={
-                    "total_points_scores": [np.array([[0, 0, 0.5]])],
-                    "total_bg_coords": [np.array([[1, 1]])],
-                },
+                dataloader.inferencer,
+                "forward_prompt_getter",
+                return_value=({0: np.array([[0, 0, 0.5]])}, {0: np.array([[1, 1]])}),
             )
 
         results = dataloader.__getitem__(0)

@@ -176,10 +176,10 @@ class TestDecoder:
     @e2e_pytest_unit
     def test_postprocess(self, mocker):
         """Test postprocess."""
-        self.decoder.output_blob_name = "masks"
-        self.decoder.soft_threshold = 0.5
+        self.decoder.output_blob_name = "upscaled_masks"
+        self.decoder.mask_threshold = 0.
         self.decoder.blur_strength = 2
-        fake_output = {"masks": np.ones((4, 4)), "scores": 0.1}
+        fake_output = {"upscaled_masks": np.ones((4, 4)), "scores": 0.1}
         fake_metadata = {"original_size": np.array([[6, 6]]), "label": mocker.Mock(spec=LabelEntity)}
         returned_value = self.decoder.postprocess(outputs=fake_output, meta=fake_metadata)
 

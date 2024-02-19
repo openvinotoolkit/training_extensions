@@ -128,7 +128,7 @@ class PromptGetter(nn.Module):
 
         # to handle empty tensor
         len_fg_coords_scores = len(fg_coords_scores)
-        fg_coords_scores = F.pad(fg_coords_scores, (0, 0, 0, max(0, 10 - len_fg_coords_scores)), value=-1)
+        fg_coords_scores = F.pad(fg_coords_scores, (0, 0, 0, max(0, 1 - len_fg_coords_scores)), value=-1)
 
         ratio = self.image_size / original_size.max()
         width = (original_size[1] * ratio).to(torch.int64)

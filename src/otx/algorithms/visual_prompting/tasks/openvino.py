@@ -481,7 +481,6 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         self,
         predicted_masks: Dict[int, List[np.ndarray]],
         used_points: Dict[int, List[np.ndarray]],
-        # annotations: Dict[int, List[np.ndarray]],
         threshold_iou: float = 0.8,
     ):
         def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
@@ -511,12 +510,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
                 used_points[label].pop(im)
-                # annotations[label].pop(im)
 
             for jm in sorted(list(set(overlapped_other_label)), reverse=True):
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
-                # annotations[other_label].pop(jm)
 
     def predict(self, dataset_item: DatasetItemEntity) -> List[Annotation]:  # type: ignore
         """Perform a prediction for a given input image."""
