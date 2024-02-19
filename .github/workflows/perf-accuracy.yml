@@ -33,6 +33,37 @@ on:
           - export
           - optimize
         default: optimize
+      artifact-prefix:
+        type: string
+        default: perf-accuracy-benchmark
+  workflow_call:
+    inputs:
+      model-type:
+        type: string
+        description: Model type to run benchmark [default, all]
+        default: default
+      data-size:
+        type: string
+        description: Dataset size to run benchmark [small, medium, large, all]
+        default: all
+      num-repeat:
+        type: number
+        description: Overrides default per-data-size number of repeat setting
+        default: 0
+      num-epoch:
+        type: number
+        description: Overrides default per-model number of epoch setting
+        default: 0
+      eval-upto:
+        type: string
+        description: The last operation to evaluate. 'optimize' means all. [train,  export, optimize]
+        default: optimize
+      artifact-prefix:
+        type: string
+        default: perf-accuracy-benchmark
+
+# Declare default permissions as read only.
+permissions: read-all
 
 jobs:
   Perf-Accuracy-Benchmark:
@@ -70,4 +101,4 @@ jobs:
       task: ${{ matrix.task }}
       timeout-minutes: 8640
       upload-artifact: true
-      artifact-prefix: perf-accuracy-benchmark
+      artifact-prefix: ${{ inputs.perf-accuracy-benchmark }}

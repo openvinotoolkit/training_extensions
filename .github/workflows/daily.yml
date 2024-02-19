@@ -6,6 +6,9 @@ on:
     # every UTC 7PM from Mon to Fri
     - cron: "0 19 * * 1-5"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   E2E-tests:
     strategy:

@@ -33,15 +33,21 @@ on:
       toxenv-ptver:
         type: string
         default: "pt1"
+      container-options:
+        type: string
+        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
 
 # Declare default permissions as read only.
 permissions: read-all
 
 jobs:
-  run_tests_in_tox:
+  run_tests_on_custom:
     # tricky workaround to pass list from the string input type
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
+    container:
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
+      options: ${{ inputs.container-options }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository

@@ -4,22 +4,29 @@ on:
   release:
     types: [published]
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Build-Docs:
     runs-on: ubuntu-20.04
     permissions:
-      contents: write
+      pages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
           python-version: "3.10"
       - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
       - name: Build-Docs
         run: tox -e build-doc
       - name: Create gh-pages branch
@@ -62,7 +69,7 @@ jobs:
           git add ./stable ${{ env.RELEASE_VERSION }}
           git commit -m "Update documentation" -a || true
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@fcea09907c44d7a7a3331c9c04080d55d87c95fe # master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages

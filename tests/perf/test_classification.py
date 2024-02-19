@@ -52,7 +52,7 @@ class TestPerfSingleLabelClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
         """Benchmark accruacy metrics."""
         result = fxt_benchmark.run(
             model_id=fxt_model_id,
@@ -301,7 +301,7 @@ class TestPerfHierarchicalLabelClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_results: Callable):
+    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
         """Benchmark train time per iter / infer time per image."""
         fxt_benchmark.track_resources = True
         result = fxt_benchmark.run(
