@@ -58,9 +58,10 @@ jobs:
           python-version: ${{ inputs.python-version }}
       - name: Install dependencies
         run: |
-          pip install pip-tools==7.3.0
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
           pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
           pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
       - name: Run Tests
         env:
           MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
