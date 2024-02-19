@@ -310,13 +310,17 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         self, images: np.ndarray, reference_feats: np.ndarray, used_indices: np.ndarray
     ) -> Tuple[List[Any], DefaultDict[Any, Any], DefaultDict[Any, Any]]:
         """Perform a prediction for a given input image."""
+        points_score: np.ndarray
+
         # forward image encoder
         images, meta = self.pre_process_image_encoder(images)
         original_size = np.asarray([meta["original_shape"][:2]], dtype=np.int64)
         image_embeddings = self.forward_image_encoder(images)
 
         # get point candidates
-        total_points_scores, total_bg_coords = self.forward_prompt_getter(image_embeddings, reference_feats, used_indices, original_size)
+        total_points_scores, total_bg_coords = self.forward_prompt_getter(
+            image_embeddings, reference_feats, used_indices, original_size
+        )
 
         annotations: DefaultDict = defaultdict(list)
         predicted_masks: DefaultDict = defaultdict(list)
@@ -325,8 +329,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             points_scores = total_points_scores[label]
             bg_coords = total_bg_coords[label]
             for points_score in points_scores:
-                if points_score[-1] in [-1., 0.]:
+                if points_score[-1] in [-1.0, 0.0]:
                     continue
+
                 x, y = points_score[:2]
                 is_done = False
                 for pm in predicted_masks.get(label, []):
@@ -354,7 +359,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 used_points[label].append(points_score)
 
         self._inspect_overlapping_areas(predicted_masks, used_points)
-        
+
         for label, predictions in predicted_masks.items():
             if len(predictions) == 0:
                 continue
@@ -364,13 +369,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             }
             for prediction, used_point in zip(predictions, used_points[label]):
                 annotation, _, _ = self.post_process(
-                {
-                    self.model["decoder"].output_blob_name: prediction,
-                    "scores": used_point[-1]
-                },
-                metadata)
+                    {self.model["decoder"].output_blob_name: prediction, "scores": used_point[-1]}, metadata
+                )
                 annotations[label].extend(annotation)
-            
+
         return sum(annotations.values(), []), predicted_masks, used_points
 
     def forward_prompt_getter(
@@ -379,13 +381,13 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
         original_size: np.ndarray,
-    ) -> Dict[str, np.ndarray]:
+    ) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
         """Forward function of OpenVINO Visual Prompting Inferencer."""
         inputs = {
             "original_size": original_size,
             "threshold": np.array([[self.model["prompt_getter"].sim_threshold]], dtype=np.float32),
             "num_bg_points": np.array([[self.model["prompt_getter"].num_bg_points]], dtype=np.int64),
-            **image_embeddings
+            **image_embeddings,
         }
         total_points_scores: Dict[int, np.ndarray] = {}
         total_bg_coords: Dict[int, np.ndarray] = {}
@@ -393,10 +395,10 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             reference_feat = reference_feats[label]
             inputs["reference_feat"] = reference_feat
             outputs = self.model["prompt_getter"].infer_sync(inputs)
-            
+
             total_points_scores[label] = outputs["points_scores"]
             total_bg_coords[label] = outputs["bg_coords"]
-        
+
         return total_points_scores, total_bg_coords
 
     def forward_decoder(  # type: ignore
@@ -642,19 +644,20 @@ class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
             image_embeddings = self.image_encoder(images["images"])
             if self.module_name == "prompt_getter":
                 return {
-                    "reference_feat": self.reference_feats[self.used_indices[0][0]], # only use the first feature
+                    "reference_feat": self.reference_feats[self.used_indices[0][0]],  # only use the first feature
                     "original_size": original_size,
                     "threshold": np.array([[self.inferencer.model["prompt_getter"].sim_threshold]], dtype=np.float32),
                     "num_bg_points": np.array([[self.inferencer.model["prompt_getter"].num_bg_points]], dtype=np.int64),
-                    **image_embeddings
+                    **image_embeddings,
                 }
 
             total_points_scores, total_bg_coords = self.inferencer.forward_prompt_getter(
-                image_embeddings, self.reference_feats, self.used_indices, original_size)
-            
+                image_embeddings, self.reference_feats, self.used_indices, original_size
+            )
+
             # only use the first prompt
-            point_score = total_points_scores[0][0]
-            bg_coords = total_bg_coords[0]
+            point_score: np.ndarray = total_points_scores[0][0]
+            bg_coords: np.ndarray = total_bg_coords[0]
 
             x, y = point_score[:2]
             point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
