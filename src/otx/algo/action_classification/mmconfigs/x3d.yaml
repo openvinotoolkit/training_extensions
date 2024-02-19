@@ -15,13 +15,14 @@ cls_head:
 data_preprocessor:
   format_shape: NCTHW
   mean:
-    - 114.75
-    - 114.75
-    - 114.75
+    - 0.0
+    - 0.0
+    - 0.0
   std:
-    - 57.38
-    - 57.38
-    - 57.38
+    - 255.0
+    - 255.0
+    - 255.0
+  to_rgb: false
   type: ActionDataPreprocessor
 test_cfg: null
 train_cfg: null
