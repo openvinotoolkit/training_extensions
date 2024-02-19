@@ -349,6 +349,9 @@ class OTXCLI:
             self.config[self.subcommand].data.config.tile_config.update(
                 Namespace(dataclasses.asdict(model.tile_config)),
             )
+            # TODO(Eugene): Need to find a better way to configure image size for OV Models
+            # https://github.com/openvinotoolkit/training_extensions/pull/2925
+            model.image_size = (1, 3, 512, 512)
 
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
@@ -454,3 +457,7 @@ class OTXCLI:
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
+
+
+if __name__ == "__main__":
+    OTXCLI()

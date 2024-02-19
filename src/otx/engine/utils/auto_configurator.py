@@ -312,7 +312,8 @@ class AutoConfigurator:
         config = self._load_default_config(model_name="openvino_model")
         config["data"]["config"]["data_root"] = self.data_root
         data_config = config["data"]["config"].copy()
-        # # TODO[Eugene]: why do I have to do this???
+        # TODO(Eugene): why do I have to do this???
+        # https://github.com/openvinotoolkit/training_extensions/pull/2925
         data_config["include_polygons"] = datamodule_config.include_polygons
         return OTXDataModule(
             task=config["data"]["task"],
