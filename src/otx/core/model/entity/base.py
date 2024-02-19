@@ -137,7 +137,7 @@ class OTXModel(
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward explain function."""
         raise NotImplementedError
 

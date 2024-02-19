@@ -551,16 +551,15 @@ class Engine:
             ckpt_path=ckpt_path,
         )
 
-        # TMP: Just to make tests pass
-        import numpy as np
+        # # TMP: Just to make tests pass
+        # import numpy as np
 
-        dummy_explain_hook = type("Test", (object,), {})
-        dummy_explain_hook.records = [np.zeros((2, 7, 7), dtype=np.uint8)]  # type: ignore[attr-defined]
+        # dummy_explain_hook = type("Test", (object,), {})
+        # dummy_explain_hook.records = [np.zeros((2, 7, 7), dtype=np.uint8)]  # type: ignore[attr-defined]
 
         return get_processed_saliency_maps(
-            dummy_explain_hook,  # type: ignore[arg-type]
-            explain_config,
             predictions,
+            explain_config,
             Path(self.work_dir),
         )
 
