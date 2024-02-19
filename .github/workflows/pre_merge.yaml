@@ -68,12 +68,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "3.10"
-            tox-env: "py310"
-    name: Integration-Test-Py${{ matrix.python-version }}
+          - task: "action"
+          - task: "classification"
+          - task: "detection"
+          - task: "instance_segmentation"
+          - task: "semantic_segmentation"
+          - task: "visual_prompting"
+    name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
     concurrency:
-      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}
+      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
       cancel-in-progress: true
     steps:
       - name: Checkout repository
@@ -81,8 +85,8 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
       - name: Install tox
         run: python -m pip install tox
       - name: Run Integration Test
-        run: tox -vv -e integration-test
+        run: tox -vv -e integration-test-${{ matrix.task }}

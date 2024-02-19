@@ -67,8 +67,8 @@ def good_hyperband_args():
     with TemporaryDirectory() as tmp_dir:
         yield {
             "search_space": {
-                "hp1": {"param_type": "uniform", "max": 100, "min": 10},
-                "hp2": {"param_type": "qloguniform", "max": 1000, "min": 100, "step": 2, "log_base": 10},
+                "hp1": {"type": "uniform", "max": 100, "min": 10},
+                "hp2": {"type": "qloguniform", "max": 1000, "min": 100, "step": 2, "log_base": 10},
             },
             "save_path": tmp_dir,
             "mode": "max",
@@ -76,7 +76,6 @@ def good_hyperband_args():
             "num_full_iterations": 64,
             "non_pure_train_ratio": 0.2,
             "full_dataset_size": 100,
-            "metric": "mAP",
             "maximum_resource": 64,
             "minimum_resource": 1,
             "reduction_factor": 4,
@@ -659,7 +658,7 @@ class TestHyperBand:
     def test_get_best_config(self, hyper_band):
         max_score = 9999999
         trial = hyper_band.get_next_sample()
-        expected_configuration = {"id": trial.id, "config": trial.configuration}
+        expected_configuration = {"id": trial.id, "configuration": trial.configuration}
         hyper_band.report_score(score=max_score, resource=trial.iteration, trial_id=trial.id, done=False)
         hyper_band.report_score(score=max_score, resource=trial.iteration, trial_id=trial.id, done=True)
         while True:

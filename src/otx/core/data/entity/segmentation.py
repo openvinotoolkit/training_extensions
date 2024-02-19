@@ -9,7 +9,14 @@ from dataclasses import dataclass
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
+from otx.core.data.entity.base import (
+    OTXBatchDataEntity,
+    OTXBatchPredEntity,
+    OTXBatchPredEntityWithXAI,
+    OTXDataEntity,
+    OTXPredEntity,
+    OTXPredEntityWithXAI,
+)
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
@@ -33,6 +40,11 @@ class SegDataEntity(OTXDataEntity):
 @dataclass
 class SegPredEntity(SegDataEntity, OTXPredEntity):
     """Data entity to represent the segmentation model output prediction."""
+
+
+@dataclass
+class SegPredEntityWithXAI(SegDataEntity, OTXPredEntityWithXAI):
+    """Data entity to represent the segmentation model output prediction with explanation."""
 
 
 @dataclass
@@ -70,3 +82,8 @@ class SegBatchDataEntity(OTXBatchDataEntity[SegDataEntity]):
 @dataclass
 class SegBatchPredEntity(SegBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for segmentation task."""
+
+
+@dataclass
+class SegBatchPredEntityWithXAI(SegBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for segmentation task with explanations."""

@@ -14,6 +14,7 @@ from torchmetrics import Dice
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
     SegBatchPredEntity,
+    SegBatchPredEntityWithXAI,
 )
 from otx.core.model.entity.segmentation import OTXSegmentationModel
 from otx.core.model.module.base import OTXLitModule
@@ -97,7 +98,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, SegBatchPredEntity):
+        if not isinstance(preds, (SegBatchPredEntity, SegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
@@ -106,7 +107,7 @@ class OTXSegmentationLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: SegBatchPredEntity,
+        preds: SegBatchPredEntity | SegBatchPredEntityWithXAI,
         inputs: SegBatchDataEntity,
     ) -> list[dict[str, Tensor]]:
         return [
@@ -125,7 +126,7 @@ class OTXSegmentationLitModule(OTXLitModule):
         :param batch_idx: The index of the current batch.
         """
         preds = self.model(inputs)
-        if not isinstance(preds, SegBatchPredEntity):
+        if not isinstance(preds, (SegBatchPredEntity, SegBatchPredEntityWithXAI)):
             raise TypeError(preds)
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
         for prediction in predictions:

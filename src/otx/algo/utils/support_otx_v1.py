@@ -11,6 +11,7 @@ class OTXv1Helper:
     @staticmethod
     def load_common_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
         """Load the OTX1.x model checkpoints that don't need special handling."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             state_dict[add_prefix + key] = val
@@ -19,6 +20,7 @@ class OTXv1Helper:
     @staticmethod
     def load_cls_effnet_b0_ckpt(state_dict: dict, label_type: str, add_prefix: str = "") -> dict:
         """Load the OTX1.x efficientnet b0 classification checkpoints."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             if key.startswith("features."):
@@ -34,6 +36,7 @@ class OTXv1Helper:
     @staticmethod
     def load_cls_effnet_v2_ckpt(state_dict: dict, label_type: str, add_prefix: str = "") -> dict:
         """Load the OTX1.x efficientnet v2 classification checkpoints."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             if key.startswith("model.classifier."):
@@ -48,6 +51,7 @@ class OTXv1Helper:
     @staticmethod
     def load_cls_mobilenet_v3_ckpt(state_dict: dict, label_type: str, add_prefix: str = "") -> dict:
         """Load the OTX1.x mobilenet v3 classification checkpoints."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             if key.startswith("classifier."):
@@ -72,11 +76,18 @@ class OTXv1Helper:
     @staticmethod
     def load_det_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
         """Load the OTX1.x detection model checkpoints."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             if not key.startswith("ema_"):
                 state_dict[add_prefix + key] = val
         return state_dict
+
+    @staticmethod
+    def load_ssd_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
+        """Load OTX1.x SSD model checkpoints."""
+        state_dict["model"]["state_dict"]["anchors"] = state_dict.pop("anchors", None)
+        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 
     @staticmethod
     def load_iseg_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
@@ -86,6 +97,7 @@ class OTXv1Helper:
     @staticmethod
     def load_seg_segnext_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
         """Load the OTX1.x segnext segmentation checkpoints."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             if "ham.bases" not in key:
@@ -95,6 +107,7 @@ class OTXv1Helper:
     @staticmethod
     def load_seg_lite_hrnet_ckpt(state_dict: dict, add_prefix: str = "") -> dict:
         """Load the OTX1.x lite hrnet segmentation checkpoints."""
+        state_dict = state_dict["model"]["state_dict"]
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
             state_dict[add_prefix + key] = val

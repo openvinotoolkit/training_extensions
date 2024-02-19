@@ -276,7 +276,7 @@ class SearchSpace:
             arguemnt format is as bellow.
             {
                 "some_hyper_parameter_name" : {
-                    "param_type": type of search space of hyper parameter.
+                    "type": type of search space of hyper parameter.
                                   supported types: uniform, loguniform, quniform,
                                   qloguniform or choice
                     # At this point, there are two available formats.
@@ -310,7 +310,6 @@ class SearchSpace:
         self.search_space: dict[str, SingleSearchSpace] = {}
 
         for key, val in search_space.items():  # pylint: disable=too-many-nested-blocks
-            val["type"] = val.pop("param_type")
             self.search_space[key] = SingleSearchSpace(**val)
 
     def __getitem__(self, key: str) -> SingleSearchSpace:

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from otx.core.data.entity.base import T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -18,7 +19,12 @@ from otx.core.model.entity.base import OTXModel
 
 
 class OTXVisualPromptingModel(
-    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
+    OTXModel[
+        VisualPromptingBatchDataEntity,
+        VisualPromptingBatchPredEntity,
+        T_OTXBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """Base class for the visual prompting models used in OTX."""
 
@@ -27,7 +33,12 @@ class OTXVisualPromptingModel(
 
 
 class OTXZeroShotVisualPromptingModel(
-    OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
+    OTXModel[
+        ZeroShotVisualPromptingBatchDataEntity,
+        ZeroShotVisualPromptingBatchPredEntity,
+        T_OTXBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """Base class for the zero-shot visual prompting models used in OTX."""
 
