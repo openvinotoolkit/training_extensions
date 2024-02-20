@@ -11,17 +11,25 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 import torch
 from omegaconf import DictConfig
 
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import (
+    SegmentAnything,
+)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything import (
     PromptGetter,
     ZeroShotSegmentAnything,
 )
-from tests.unit.algorithms.visual_prompting.test_helpers import MockScoredLabel, MockImageEncoder, MockPromptGetter
+from tests.unit.algorithms.visual_prompting.test_helpers import (
+    MockScoredLabel,
+    MockImageEncoder,
+    MockPromptGetter,
+    MockMaskDecoder,
+)
 
 
 class TestPromptGetter:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.prompt_getter = PromptGetter(image_size=3)
+        self.prompt_getter = PromptGetter(image_size=3, downsizing=1)
 
     @e2e_pytest_unit
     def test_initialize(self) -> None:
@@ -46,47 +54,64 @@ class TestPromptGetter:
         self.prompt_getter.set_reference(
             label=MockScoredLabel(label=1),
             reference_feats=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
-            reference_prompts=torch.zeros((self.prompt_getter.image_size, self.prompt_getter.image_size)),
+            reference_prompts=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
         )
 
+        assert self.prompt_getter.reference_feats[0].sum() == 0
+        assert self.prompt_getter.reference_prompts[0].sum() == 0
         assert self.prompt_getter.reference_feats[1].sum() == 9
-        assert self.prompt_getter.reference_prompts[1].sum() == 0
+        assert self.prompt_getter.reference_prompts[1].sum() == 9
+
+        self.prompt_getter.set_reference(
+            label=MockScoredLabel(label=3),
+            reference_feats=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
+            reference_prompts=torch.ones((self.prompt_getter.image_size, self.prompt_getter.image_size)),
+        )
+
+        assert self.prompt_getter.reference_feats[2].sum() == 0
+        assert self.prompt_getter.reference_prompts[2].sum() == 0
+        assert self.prompt_getter.reference_feats[3].sum() == 9
+        assert self.prompt_getter.reference_prompts[3].sum() == 9
 
     @e2e_pytest_unit
     def test_forward(self, mocker) -> None:
         """Test forward."""
+        mocker.patch.object(
+            self.prompt_getter,
+            "get_prompt_candidates",
+            return_value=(torch.tensor([[[0, 0, 0.5], [1, 1, 0.7]]]), torch.tensor([[[2, 2]]])),
+        )
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
+        original_size = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
+
+        total_points_scores, total_bg_coords = self.prompt_getter(
+            image_embeddings=image_embeddings, original_size=original_size
+        )
+
+        assert total_points_scores.shape[0] == 1
+        assert total_bg_coords.shape[0] == 1
+
+    @e2e_pytest_unit
+    def test_get_prompt_candidates(self, mocker) -> None:
+        """Test get_prompt_candidates."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.ZeroShotSegmentAnything"
         )
         mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
-
-        image_embeddings = torch.rand(1, 2, self.prompt_getter.image_size, self.prompt_getter.image_size)
-        self.prompt_getter.reference_feats = {1: torch.rand(1, 2)}
-
-        prompts = self.prompt_getter(
-            image_embeddings=image_embeddings,
-            padding=(0, 0, 0, 0),
-            original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        self.prompt_getter.reference_feats = torch.rand(1, 1, 4)
+        label = torch.tensor([[0]], dtype=torch.int64)
+        original_size = torch.tensor(
+            [[self.prompt_getter.image_size, self.prompt_getter.image_size]], dtype=torch.int64
         )
 
-        assert 1 in prompts
-        assert prompts[1] == ("points_scores", "bg_coords")
-
-    @e2e_pytest_unit
-    def test_preprocess_target_feat(self) -> None:
-        """Test _preprocess_target_feat."""
-        old_target_feat = torch.arange(1, self.prompt_getter.image_size**2 + 1, dtype=torch.float).reshape(
-            1, 1, self.prompt_getter.image_size, self.prompt_getter.image_size
-        )
-        new_target_feat = self.prompt_getter._preprocess_target_feat(
-            target_feat=old_target_feat,
-            c_feat=1,
-            h_feat=self.prompt_getter.image_size,
-            w_feat=self.prompt_getter.image_size,
+        points_scores, bg_coords = self.prompt_getter.get_prompt_candidates(
+            image_embeddings=image_embeddings, label=label, original_size=original_size
         )
 
-        assert new_target_feat.sum() == 9
-        assert new_target_feat.shape == (1, self.prompt_getter.image_size**2)
+        assert points_scores == "points_scores"
+        assert bg_coords == "bg_coords"
 
     @e2e_pytest_unit
     def test_point_selection(self) -> None:
@@ -95,9 +120,8 @@ class TestPromptGetter:
 
         points_scores, bg_coords = self.prompt_getter._point_selection(
             mask_sim=mask_sim,
-            original_size=(self.prompt_getter.image_size, self.prompt_getter.image_size),
-            threshold=0.5,
-            downsizing=1,
+            original_size=torch.tensor([self.prompt_getter.image_size, self.prompt_getter.image_size]),
+            threshold=torch.tensor([[0.5]]),
         )
 
         assert torch.equal(points_scores, torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]))
@@ -111,6 +135,10 @@ class TestZeroShotSegmentAnything:
             monkeypatch.setattr(
                 "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMImageEncoder",
                 MockImageEncoder,
+            )
+            monkeypatch.setattr(
+                "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMMaskDecoder",
+                MockMaskDecoder,
             )
             return ZeroShotSegmentAnything(state_dict=state_dict)
 
@@ -164,12 +192,8 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         mocker.patch.object(
             zero_shot_segment_anything,
-            "_predict_mask",
-            return_value=(
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-                torch.tensor([1, 0, 0]),
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-            ),
+            "_predict_masks",
+            return_value=torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
         )
 
         processed_prompts = {MockScoredLabel(label=1, name="label"): [{"box": torch.tensor([[0, 0, 1, 1]])}]}
@@ -180,13 +204,11 @@ class TestZeroShotSegmentAnything:
             original_size=(8, 8),
         )
 
-        assert zero_shot_segment_anything.prompt_getter.reference_feats.get(1).shape == (1, 2)
-        assert zero_shot_segment_anything.prompt_getter.reference_prompts.get(1).shape == (8, 8)
+        assert zero_shot_segment_anything.prompt_getter.reference_feats.shape == (2, 1, 2)
+        assert zero_shot_segment_anything.prompt_getter.reference_prompts.shape == (2, 8, 8)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize(
-        "expected", [[torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]]), torch.tensor([0.0, 0.0, 0.5])]]
-    )
+    @pytest.mark.parametrize("expected", [[torch.ones((8, 8)) / 2, torch.tensor([0.0, 0.0, 0.5])]])
     def test_infer(self, monkeypatch, mocker, set_zero_shot_segment_anything, expected: torch.Tensor) -> None:
         """Test infer."""
         monkeypatch.setattr(
@@ -195,25 +217,38 @@ class TestZeroShotSegmentAnything:
         )
 
         zero_shot_segment_anything = set_zero_shot_segment_anything()
-        zero_shot_segment_anything.prompt_getter.reference_feats = {1: torch.rand((1, 2))}
-        zero_shot_segment_anything.prompt_getter.reference_prompts = {1: torch.zeros((8, 8))}
+        zero_shot_segment_anything.prompt_getter.reference_feats = torch.rand(1, 1, 4)
+        zero_shot_segment_anything.prompt_getter.reference_prompts = torch.zeros((8, 8))
         mocker.patch.object(
-            zero_shot_segment_anything,
-            "_predict_mask",
-            return_value=(
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-                torch.tensor([1, 0, 0]),
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-            ),
+            SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
         )
 
         total_results = zero_shot_segment_anything.infer(
-            images=torch.ones((1, 3, 8, 8)), padding=(0, 0, 0, 0), original_size=(8, 8)
+            images=torch.ones((1, 3, 8, 8)), original_size=torch.tensor([[8, 8]], dtype=torch.int64)
         )
 
         for i, results in enumerate(total_results[0]):
             for _, result in results.items():
                 assert torch.equal(result[0], expected[i])
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("is_postprocess", [True, False])
+    def test_predict_masks(self, mocker, set_zero_shot_segment_anything, is_postprocess: bool) -> None:
+        """Test _predict_masks."""
+        mocker.patch.object(
+            SegmentAnything, "forward", return_value=(torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4))
+        )
+
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        zero_shot_segment_anything.config.model.image_size = 6
+
+        mask = zero_shot_segment_anything._predict_masks(
+            image_embeddings=torch.rand(1),
+            point_coords=torch.rand(1, 2, 2),
+            point_labels=torch.randint(low=0, high=2, size=(1, 2)),
+            original_size=torch.tensor((8, 8), dtype=torch.int64),
+        )
+        assert mask.shape == (8, 8)
 
     @e2e_pytest_unit
     def test_preprocess_prompts(self, set_zero_shot_segment_anything) -> None:
@@ -248,17 +283,38 @@ class TestZeroShotSegmentAnything:
         assert masked_feat.shape == (1, 1)
 
     @e2e_pytest_unit
-    def test_preprocess_mask(self, set_zero_shot_segment_anything) -> None:
-        """Test _preprocess_mask."""
+    def test_preprocess_masks(self, set_zero_shot_segment_anything) -> None:
+        """Test _preprocess_masks."""
         zero_shot_segment_anything = set_zero_shot_segment_anything()
         zero_shot_segment_anything.config.model.image_size = 16
 
-        result = zero_shot_segment_anything._preprocess_mask(x=torch.ones(1, 1, 8, 8))
+        result = zero_shot_segment_anything._preprocess_masks(x=torch.ones(1, 1, 8, 8))
 
         assert result[:8, :8].sum() == 8**2
         assert result[:8, 8:].sum() == 0
         assert result[8:, :8].sum() == 0
         assert result[8:, 8:].sum() == 0
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "logits,expected",
+        [
+            (torch.ones(1, 4, 4, 4), torch.ones(4, 4, dtype=torch.bool)),
+            (torch.zeros(1, 4, 4, 4), torch.zeros(4, 4, dtype=torch.bool)),
+        ],
+    )
+    def test_postprocess_masks(
+        self, set_zero_shot_segment_anything, logits: torch.Tensor, expected: torch.Tensor
+    ) -> None:
+        """Test _postprocess_masks."""
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        zero_shot_segment_anything.config.model.image_size = 4
+        scores = torch.tensor([[0.0, 0.1, 0.2, 0.3]])
+        original_size = torch.tensor([4, 4], dtype=torch.int64)
+
+        _, result = zero_shot_segment_anything._postprocess_masks(logits, scores, original_size)
+
+        assert torch.equal(result, expected)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_only_background", [True, False])
@@ -285,37 +341,3 @@ class TestZeroShotSegmentAnything:
         else:
             assert torch.equal(merged_input_prompts.get("point_coords"), torch.tensor([1, 0, 2]))
             assert torch.equal(merged_input_prompts.get("point_labels"), torch.tensor([1, 0, 0]))
-
-    @e2e_pytest_unit
-    def test_predict_target_mask(self, mocker, set_zero_shot_segment_anything) -> None:
-        """Test _predict_target_mask."""
-        zero_shot_segment_anything = set_zero_shot_segment_anything()
-        mocker.patch.object(
-            zero_shot_segment_anything,
-            "_predict_mask",
-            return_value=(
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-                torch.tensor([1, 0, 0]),
-                torch.tensor([[[[0, 0, 0], [0, 1, 0], [0, 0, 0]]]]),
-            ),
-        )
-
-        mask = zero_shot_segment_anything._predict_target_mask(
-            image_embeddings=torch.rand(1), input_prompts={}, padding=(0, 0, 0, 0), original_size=(1, 1)
-        )
-
-        assert mask.shape == (3, 3)
-
-    @e2e_pytest_unit
-    def test_predict_mask(self, mocker, set_zero_shot_segment_anything) -> None:
-        """Test _predict_mask."""
-        zero_shot_segment_anything = set_zero_shot_segment_anything()
-        mocker.patch.object(zero_shot_segment_anything, "postprocess_masks", return_value=torch.Tensor([[1]]))
-
-        masks, scores, low_res_masks = zero_shot_segment_anything._predict_mask(
-            image_embeddings=torch.rand(1), input_prompts={}, padding=(0, 0, 0, 0), original_size=(1, 1)
-        )
-
-        assert masks.dtype == torch.bool
-        assert scores.shape[1] == 3
-        assert low_res_masks.shape[1] == 3

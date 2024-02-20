@@ -31,7 +31,10 @@ Arguments
 - -f / --file : Path to the YAML file describing the experiment setup. After all runs, results are aggregated and saved.
 - -d / --dryrun : Preview the experiment list before execution. Use with '-f / --file' argument.
 
-Sample Experiment Recipe YAML File:
+Both single experiment and multiple experiments are supported.
+Here is the example.
+
+Single Experiment Recipe YAML File:
 
     output_path: research_framework_demo/det_model_test
     constants: # value in constant can't have other constant or variable.
@@ -57,6 +60,39 @@ Sample Experiment Recipe YAML File:
         -  otx eval
             --test-data-roots ${dataset_path}/${dataset}
 
+Multiple Experiment Recipe YAML File:
+
+    output_path: research_framework_demo/cls_det_model_test
+    constants:
+        dataset_path: some_dataset_path
+    experiments:
+    - name det
+        constants:
+            model_dir: otx/src/otx/algorithms/detection/configs/detection
+        variables:
+            model:
+            - cspdarknet_yolox
+            - mobilenetv2_atss
+            dataset: diopsis/12
+        repeat: 2
+        command:
+            -  otx train ${model_dir}/${model}/template.yaml ...
+            -  otx eval ...
+    - name: cls
+        constants:
+            model_dir: otx/src/otx/algorithms/classification/configs
+            dataset_path: other_dataset_path
+        variables:
+        model:
+            - efficientnet_b0_cls_incr
+            - deit_tiny
+        dataset: cifar10_300
+        repeat: 2
+        command:
+            -  otx train ${model_dir}/${model}/template.yaml
+                --train-data-roots ${dataset_path}/${dataset} ...
+            -  otx eval ...
+
 Arguments for recipe
 
 - output_path (optional) : Output path where all experiment outputs are saved. Default is "./experiment\_{executed_time}"
@@ -68,6 +104,14 @@ Arguments for recipe
   For example, if two models and two dataset are given as variable, then total 4 cases will be run as experiment. Also key of each varaible will be row headers of experiment result table.
 - repeat (optional) : Number of times to run experiments. Repeated experiments have different random seeds in "otx train" command.
 - command (required) : Specifies the commands to run. Supports both single commands and lists of commands.
+- experiments (optional) :
+  To perform multiple experiments, the user is required to define a list of experiments in this section.
+  Each element in the list can contain all the keys mentioned above, excluding output_path.
+  The output path for each experiment is automatically set to output_path/name.
+  Values outside the experiment element, except for output_path and constants, will be disregarded.
+  If `constants` exsist at both upper most level and experiment element,
+  they're merged while experiment element takes precedence.
+  - name (required) : Specifies the unique name for the experiment. This name will be utilized as the directory name where the output of the experiment is stored.
 
 Upon completion of each experiment, the results are organized within the own workspace.
 Following the conclusion of all experiments, all experiment results are aggregated in two distinct formats:

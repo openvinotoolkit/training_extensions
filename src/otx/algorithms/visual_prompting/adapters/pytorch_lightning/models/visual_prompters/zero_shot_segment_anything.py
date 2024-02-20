@@ -5,14 +5,17 @@
 
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
-from typing import Any, DefaultDict, Dict, List, Optional, Tuple
+from itertools import product
+from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 
 import torch
 from omegaconf import DictConfig
 from torch import nn
 from torch.nn import functional as F
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
+    ResizeLongestSide,
+)
 from otx.api.entities.scored_label import ScoredLabel
 from otx.utils.logger import get_logger
 
@@ -27,15 +30,26 @@ class PromptGetter(nn.Module):
     default_threshold_reference = 0.3
     default_threshold_target = 0.65
 
-    def __init__(self, image_size: int) -> None:
+    def __init__(
+        self,
+        image_size: int,
+        reference_feats: Optional[torch.Tensor] = None,
+        reference_prompts: Optional[torch.Tensor] = None,
+        downsizing: int = 64,
+    ) -> None:
         super().__init__()
         self.image_size = image_size
-        self.initialize()
+        self.downsizing = downsizing
+        self.initialize(reference_feats, reference_prompts)
 
-    def initialize(self) -> None:
+        self.zero_tensor = torch.tensor(0)
+
+    def initialize(
+        self, reference_feats: Optional[torch.Tensor] = None, reference_prompts: Optional[torch.Tensor] = None
+    ) -> None:
         """Initialize reference features and prompts."""
-        self.reference_feats: Dict[int, torch.Tensor] = {}
-        self.reference_prompts: Dict[int, torch.Tensor] = {}
+        self.reference_feats = reference_feats
+        self.reference_prompts = reference_prompts
 
     def set_default_thresholds(self, default_threshold_reference: float, default_threshold_target: float) -> None:
         """Set default thresholds."""
@@ -44,75 +58,134 @@ class PromptGetter(nn.Module):
 
     def set_reference(self, label: ScoredLabel, reference_feats: torch.Tensor, reference_prompts: torch.Tensor) -> None:
         """Set reference features and prompts."""
-        self.reference_feats[int(label.id_)] = reference_feats
-        self.reference_prompts[int(label.id_)] = reference_prompts
+        if self.reference_feats is None:
+            self.reference_feats = torch.zeros_like(reference_feats).unsqueeze(0)
+        if self.reference_prompts is None:
+            self.reference_prompts = torch.zeros_like(reference_prompts).unsqueeze(0)
+
+        for idx in range(int(label.id_) + 1):
+            if idx == int(label.id_):
+                while self.reference_feats.shape[0] - 1 < idx:
+                    self.reference_feats = torch.cat(
+                        (self.reference_feats, torch.zeros_like(reference_feats).unsqueeze(0)), dim=0
+                    )
+                    self.reference_prompts = torch.cat(
+                        (self.reference_prompts, torch.zeros_like(reference_prompts).unsqueeze(0)), dim=0
+                    )
+                self.reference_feats[idx] = reference_feats
+                self.reference_prompts[idx] = reference_prompts
 
     def forward(
         self,
         image_embeddings: torch.Tensor,
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-    ) -> Dict[int, Tuple[torch.Tensor, torch.Tensor]]:
+        original_size: torch.Tensor,
+        threshold: torch.Tensor = torch.tensor([[0.0]], dtype=torch.float32),
+        num_bg_points: torch.Tensor = torch.tensor([[1]], dtype=torch.int64),
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get prompt candidates."""
+        total_points_scores: torch.Tensor
+        total_bg_coords: torch.Tensor
+
+        device = image_embeddings.device
+        threshold = threshold.to(device)
+        for label in torch.arange(self.reference_feats.shape[0]):
+            points_scores, bg_coords = self.get_prompt_candidates(
+                image_embeddings=image_embeddings,
+                label=label,
+                original_size=original_size,
+                threshold=threshold,
+                num_bg_points=num_bg_points,
+                device=device,
+            )
+            if label == 0:
+                total_points_scores = points_scores.unsqueeze(0)
+                total_bg_coords = bg_coords.unsqueeze(0)
+            else:
+                pad_size = torch.tensor(points_scores.shape[0] - total_points_scores.shape[1])
+                pad_tot = torch.max(self.zero_tensor, pad_size)
+                pad_cur = torch.max(self.zero_tensor, -pad_size)
+
+                total_points_scores = F.pad(total_points_scores, (0, 0, 0, pad_tot, 0, 0), value=-1)
+                points_scores = F.pad(points_scores, (0, 0, 0, pad_cur), value=-1)
+
+                total_points_scores = torch.cat((total_points_scores, points_scores.unsqueeze(0)), dim=0)
+                total_bg_coords = torch.cat((total_bg_coords, bg_coords.unsqueeze(0)), dim=0)
+
+        return total_points_scores, total_bg_coords
+
+    def get_prompt_candidates(
+        self,
+        image_embeddings: torch.Tensor,
+        label: torch.Tensor,
+        original_size: torch.Tensor,
+        threshold: torch.Tensor = torch.tensor([[0.0]], dtype=torch.float32),
+        num_bg_points: torch.Tensor = torch.tensor([[1]], dtype=torch.int64),
+        device: torch.device = torch.device("cpu"),
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Get prompt candidates from given reference and target features."""
+        assert original_size.dim() == 2 and threshold.dim() == 2 and num_bg_points.dim() == 2
+
         target_feat = image_embeddings.squeeze()
         c_feat, h_feat, w_feat = target_feat.shape
-        target_feat = self._preprocess_target_feat(target_feat, c_feat, h_feat, w_feat)
-
-        prompts = {}
-        for label, reference_feat in self.reference_feats.items():
-            sim = reference_feat.to(target_feat.device) @ target_feat
-            sim = sim.reshape(1, 1, h_feat, w_feat)
-            sim = ZeroShotSegmentAnything.postprocess_masks(
-                sim, (self.image_size, self.image_size), padding, original_size
-            ).squeeze()
-
-            # threshold = 0.85 * sim.max() if num_classes > 1 else self.default_threshold_target
-            threshold = self.default_threshold_target
-            points_scores, bg_coords = self._point_selection(sim, original_size, threshold)
-            if points_scores is None:
-                # skip if there is no point with score > threshold
-                continue
-            prompts[label] = (points_scores, bg_coords)
-        return prompts
-
-    def _preprocess_target_feat(self, target_feat: torch.Tensor, c_feat: int, h_feat: int, w_feat: int) -> torch.Tensor:
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
-        return target_feat
+
+        sim = self.reference_feats[label].to(device) @ target_feat
+        sim = sim.reshape(1, 1, h_feat, w_feat)
+        sim = ZeroShotSegmentAnything.mask_postprocessing(sim, self.image_size, original_size[0])
+
+        threshold = (threshold == 0) * self.default_threshold_target + threshold
+        points_scores, bg_coords = self._point_selection(
+            mask_sim=sim[0, 0],
+            original_size=original_size[0],
+            threshold=threshold,
+            num_bg_points=num_bg_points,
+        )
+
+        return points_scores, bg_coords
 
     def _point_selection(
         self,
         mask_sim: torch.Tensor,
-        original_size: Tuple[int, int],
-        threshold: float,
-        num_bg_points: int = 1,
-        downsizing: int = 16,
+        original_size: torch.Tensor,
+        threshold: torch.Tensor,
+        num_bg_points: torch.Tensor = torch.tensor([[1]], dtype=torch.int64),
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Select point used as point prompts."""
         _, w_sim = mask_sim.shape
 
         # Top-last point selection
-        bg_indices = mask_sim.flatten().topk(num_bg_points, largest=False)[1]
+        bg_indices = mask_sim.flatten().topk(num_bg_points[0, 0], largest=False)[1]
         bg_x = (bg_indices // w_sim).unsqueeze(0)
         bg_y = bg_indices - bg_x * w_sim
         bg_coords = torch.cat((bg_y, bg_x), dim=0).permute(1, 0)
-        bg_coords = bg_coords
+        bg_coords = bg_coords.to(torch.float32)
 
         point_coords = torch.where(mask_sim > threshold)
-        if len(point_coords[0]) == 0:
-            return None, None
-
         fg_coords_scores = torch.stack(point_coords[::-1] + (mask_sim[point_coords],), dim=0).T
 
-        max_len = max(original_size)
-        ratio = self.image_size / max_len
-        _, width = map(lambda x: int(x * ratio), original_size)
-        n_w = width // downsizing
+        ratio = self.image_size / original_size.max()
+        width = (original_size[1] * ratio).to(torch.int64)
+        n_w = width // self.downsizing
 
-        res = (fg_coords_scores[:, 1] * ratio // downsizing * n_w + fg_coords_scores[:, 0] * ratio // downsizing).to(
-            torch.int32
+        # get grid numbers
+        idx_grid = (
+            fg_coords_scores[:, 1] * ratio // self.downsizing * n_w + fg_coords_scores[:, 0] * ratio // self.downsizing
         )
-        points_scores = torch.stack([fg_coords_scores[res == r][0] for r in torch.unique(res)], dim=0)
+        idx_grid_unique = torch.unique(
+            idx_grid.to(torch.int64)
+        )  # unique op only supports INT64, INT8, FLOAT, STRING in ORT
+
+        # get matched indices
+        matched_matrix = idx_grid.unsqueeze(-1) == idx_grid_unique  # (totalN, uniqueN)
+
+        # sample fg_coords_scores matched by matched_matrix
+        matched_grid = fg_coords_scores.unsqueeze(1) * matched_matrix.unsqueeze(-1)
+
+        # sample the highest score one of the samples that are in the same grid
+        points_scores = matched_grid[matched_grid[..., -1].argsort(dim=0, descending=True)[0]].diagonal().T
+
+        # sort by the highest score
         points_scores = points_scores[torch.argsort(points_scores[:, -1], descending=True)]
 
         return points_scores, bg_coords
@@ -147,16 +220,18 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         super().__init__(config, state_dict)
 
-        self.prompt_getter = PromptGetter(image_size=config.model.image_size)
-        self.prompt_getter.initialize()
+        self.prompt_getter = PromptGetter(
+            image_size=config.model.image_size,
+            reference_feats=prompt_getter_reference_feats,
+            reference_prompts=prompt_getter_reference_prompts,
+        )
         self.prompt_getter.set_default_thresholds(
-            config.model.default_threshold_reference, config.model.default_threshold_target
+            default_threshold_reference=config.model.default_threshold_reference,
+            default_threshold_target=config.model.default_threshold_target,
         )
 
-        if prompt_getter_reference_feats:
-            self.prompt_getter.reference_feats = prompt_getter_reference_feats
-        if prompt_getter_reference_prompts:
-            self.prompt_getter.reference_prompts = prompt_getter_reference_prompts
+        self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
+        self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
 
     def set_default_config(self) -> DictConfig:
         """Set default config when using independently."""
@@ -181,8 +256,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self,
         images: torch.Tensor,
         processed_prompts: Dict[ScoredLabel, List[Dict[str, torch.Tensor]]],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
+        padding: Union[Tuple[int, ...], torch.Tensor],
+        original_size: torch.Tensor,
     ) -> None:
         """Get reference features.
 
@@ -194,8 +269,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
             images (torch.Tensor): Given images for reference features.
             processed_prompts (Dict[ScoredLabel, List[Dict[str, torch.Tensor]]]): The whole class-wise prompts
                 processed at _preprocess_prompts.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
+            padding (Union[Tuple[int, ...], torch.Tensor]): Padding size.
+            original_size (torch.Tensor): Original image size.
         """
         assert images.shape[0] == 1, "Only single batch is supported."
 
@@ -212,25 +287,43 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             # generate reference mask
             # TODO (sungchul): ensemble multi reference features (current : use merged masks)
-            reference_prompt = torch.zeros(original_size, dtype=torch.uint8, device=images.device)
+            reference_prompt = torch.zeros(*map(int, original_size), dtype=torch.uint8, device=self.device)
             for input_prompt in input_prompts:
                 if "annotation" in input_prompt:
                     # directly use annotation information as a mask
                     reference_prompt[input_prompt.get("annotation") == 1] += 1
                 else:
                     merged_input_prompts = self._merge_prompts(label, input_prompt, processed_prompts)
-                    masks, scores, logits = self._predict_mask(
+                    # TODO (sungchul): they must be processed in `_merge_prompts`
+                    # and it is required to be expanded to other prompts.
+                    point_coords = []
+                    point_labels = []
+                    if "box" in merged_input_prompts:
+                        for box in merged_input_prompts["box"]:
+                            point_coords.append(box[:2])
+                            point_labels.append(2)
+                            point_coords.append(box[2:])
+                            point_labels.append(3)
+
+                    if "points" in merged_input_prompts:
+                        raise NotImplementedError()
+
+                    if "annotations" in merged_input_prompts:
+                        raise NotImplementedError()
+
+                    point_coords = torch.stack(point_coords, dim=0).unsqueeze(0)
+                    point_labels = torch.tensor([point_labels], device=self.device)
+                    masks = self._predict_masks(
                         image_embeddings=image_embeddings,
-                        input_prompts=merged_input_prompts,
-                        padding=padding,
+                        point_coords=point_coords,
+                        point_labels=point_labels,
                         original_size=original_size,
-                        multimask_output=True,
+                        is_cascade=False,
                     )
-                    best_idx = torch.argmax(scores)
-                    reference_prompt[masks[0, best_idx]] += 1
+                    reference_prompt[masks] += 1
             reference_prompt = torch.clip(reference_prompt, 0, 1)
 
-            ref_mask = torch.tensor(reference_prompt, dtype=torch.float32)
+            ref_mask = reference_prompt.to(torch.float32)
             reference_feat = None
             default_threshold_reference = deepcopy(self.prompt_getter.default_threshold_reference)
             while reference_feat is None:
@@ -240,11 +333,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 )
                 default_threshold_reference -= 0.05
 
-            self.prompt_getter.set_reference(label, reference_feat.detach().cpu(), reference_prompt.detach().cpu())
+            self.prompt_getter.set_reference(label, reference_feat, reference_prompt)
 
     @torch.no_grad()
     def infer(
-        self, images: torch.Tensor, padding: Tuple[int, ...], original_size: Tuple[int, int]
+        self, images: torch.Tensor, original_size: torch.Tensor
     ) -> List[List[DefaultDict[int, List[torch.Tensor]]]]:
         """Zero-shot inference with reference features.
 
@@ -252,8 +345,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             images (torch.Tensor): Given images for target results.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
+            original_size (torch.Tensor): Original image size.
 
         Returns:
             (List[List[DefaultDict[int, List[torch.Tensor]]]]): Target results.
@@ -264,20 +356,21 @@ class ZeroShotSegmentAnything(SegmentAnything):
         assert images.shape[0] == 1, "Only single batch is supported."
 
         total_results = []
-        # num_classes = len(self.reference_feats.keys())
         for image in images:
             if image.ndim == 3:
                 image = image.unsqueeze(0)
 
             image_embeddings = self.image_encoder(images)
 
-            prompts = self.prompt_getter(
-                image_embeddings=image_embeddings, padding=padding, original_size=original_size
+            total_points_scores, total_bg_coords = self.prompt_getter(
+                image_embeddings=image_embeddings, original_size=original_size
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
-            for label, (points_scores, bg_coords) in prompts.items():
+            for label, (points_scores, bg_coords) in enumerate(zip(total_points_scores, total_bg_coords)):
                 for points_score in points_scores:
+                    if points_score[-1] == -1:
+                        continue
                     x, y = points_score[:2]
                     is_done = False
                     for pm in predicted_masks.get(label, []):
@@ -288,51 +381,117 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     if is_done:
                         continue
 
-                    mask, used_point_score = self(
-                        image_embeddings=image_embeddings,
-                        points_score=points_score,
-                        bg_coords=bg_coords,
-                        padding=padding,
-                        original_size=original_size,
+                    point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
+                    point_coords = ResizeLongestSide.apply_coords(
+                        point_coords, original_size[0], self.config.model.image_size
                     )
-                    predicted_masks[label].append(mask)
-                    used_points[label].append(used_point_score)
+                    point_labels = torch.tensor(
+                        [1] + [0] * len(bg_coords), dtype=torch.float32, device=self.device
+                    ).unsqueeze(0)
+                    mask = self._predict_masks(
+                        image_embeddings=image_embeddings,
+                        point_coords=point_coords,
+                        point_labels=point_labels,
+                        original_size=original_size[0],
+                    )
+                    predicted_masks[label].append((mask * points_score[2]).detach().cpu())
+                    used_points[label].append(points_score.detach().cpu())
 
+            # check overlapping area between different label masks
+            self.__inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
 
-    @torch.no_grad()
-    def forward(
+    def __inspect_overlapping_areas(
+        self,
+        predicted_masks: Dict[int, List[torch.Tensor]],
+        used_points: Dict[int, List[torch.Tensor]],
+        threshold_iou: float = 0.8,
+    ):
+        def __calculate_mask_iou(mask1: torch.Tensor, mask2: torch.Tensor):
+            assert mask1.ndim == 2 and mask2.ndim == 2
+            intersection = torch.logical_and(mask1, mask2).sum().item()
+            union = torch.logical_or(mask1, mask2).sum().item()
+
+            # Avoid division by zero
+            if union == 0:
+                return 0.0
+            iou = intersection / union
+            return iou
+
+        for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
+            if other_label <= label:
+                continue
+
+            overlapped_label = []
+            overlapped_other_label = []
+            for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
+                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        overlapped_other_label.append(jm)
+                    else:
+                        overlapped_label.append(im)
+
+            for im in overlapped_label[::-1]:
+                masks.pop(im)
+                used_points[label].pop(im)
+
+            for jm in overlapped_other_label[::-1]:
+                other_masks.pop(jm)
+                used_points[other_label].pop(jm)
+
+    def _predict_masks(
         self,
         image_embeddings: torch.Tensor,
-        points_score: torch.Tensor,
-        bg_coords: torch.Tensor,
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Predict point prompts and predicted masks.
+        point_coords: torch.Tensor,
+        point_labels: torch.Tensor,
+        original_size: torch.Tensor,
+        is_cascade: bool = True,
+    ) -> torch.Tensor:
+        """Predict target masks."""
+        logits: torch.Tensor
+        scores: torch.Tensor
+        for i in range(3):
+            if i == 0:
+                # First-step prediction
+                mask_input = torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device)
+                has_mask_input = self.has_mask_inputs[0].to(self.device)
 
-        Args:
-            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            points_score (torch.Tensor): Foreground point prompts from point selection algorithm.
-            bg_coords (torch.Tensor): Background point prompts from point selection algorithm.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
+            elif is_cascade and i == 1:
+                # Cascaded Post-refinement-1
+                mask_input, masks = self._postprocess_masks(logits, scores, original_size, is_single=True)  # noqa: F821
+                if masks.sum() == 0:
+                    return masks
 
-        Returns:
-            (Tuple[torch.Tensor, torch.Tensor]): Predicted masks and used points with corresponding score.
-        """
-        point_coords = torch.cat((points_score[:2].unsqueeze(0), bg_coords), dim=0).unsqueeze(0)
-        point_coords = ResizeLongestSide.apply_coords(point_coords, original_size, self.config.model.image_size)
-        point_labels = torch.tensor([1] + [0] * len(bg_coords), dtype=torch.int32).unsqueeze(0)
-        mask = self._predict_target_mask(
-            image_embeddings=image_embeddings,
-            input_prompts={"points": (point_coords, point_labels)},
-            padding=padding,
-            original_size=original_size,
-        )
+                has_mask_input = self.has_mask_inputs[1].to(self.device)
 
-        return mask.detach().cpu().to(torch.uint8), points_score.detach().cpu()
+            elif is_cascade and i == 2:
+                # Cascaded Post-refinement-2
+                mask_input, masks = self._postprocess_masks(logits, scores, original_size)  # noqa: F821
+                if masks.sum() == 0:
+                    return masks
+
+                has_mask_input = self.has_mask_inputs[1].to(self.device)
+                coords = torch.nonzero(masks)
+                y, x = coords[:, 0], coords[:, 1]
+                box_coords = ResizeLongestSide.apply_coords(
+                    torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=self.device),
+                    original_size,
+                    self.config.model.image_size,
+                )
+                point_coords = torch.cat((point_coords, box_coords), dim=1)
+                point_labels = torch.cat((point_labels, self.point_labels_box.to(self.device)), dim=1)
+
+            scores, logits = self(
+                image_embeddings=image_embeddings,
+                point_coords=point_coords,
+                point_labels=point_labels,
+                mask_input=mask_input,
+                has_mask_input=has_mask_input,
+            )
+
+        _, masks = self._postprocess_masks(logits, scores, original_size)
+        return masks
 
     def training_step(self, batch, batch_idx) -> None:
         """Training step for `learn`."""
@@ -355,9 +514,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def predict_step(self, batch, batch_idx):
         """Predict step for `infer`."""
-        results = self.infer(
-            images=batch["images"], padding=batch.get("padding")[0], original_size=batch.get("original_size")[0]
-        )
+        results = self.infer(images=batch["images"], original_size=batch.get("original_size")[0].unsqueeze(0))
         return [result[0] for result in results]  # tmp: only mask
 
     def _preprocess_prompts(
@@ -399,7 +556,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
         return processed_prompts
 
     def _generate_masked_features(
-        self, feats: torch.Tensor, masks: torch.Tensor, threshold_mask: float, padding: Optional[Tuple[int, ...]] = None
+        self,
+        feats: torch.Tensor,
+        masks: torch.Tensor,
+        threshold_mask: float,
+        padding: Optional[Union[Tuple[int, ...], torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, ...]:
         """Generate masked features.
 
@@ -407,7 +568,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             feats (torch.Tensor): Raw reference features. It will be filtered with masks.
             masks (torch.Tensor): Reference masks used to filter features.
             threshold_mask (float): Threshold to control masked region.
-            padding (Tuple[int, ...], optional): Padding size.
+            padding (Union[Tuple[int, ...], torch.Tensor], optional): Padding size.
 
         Returns:
             (torch.Tensor): Masked features.
@@ -422,7 +583,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         # Post-process masks
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=resized_size, mode="bilinear").squeeze()
-        masks = self._preprocess_mask(masks)
+        masks = self._preprocess_masks(masks)
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=feats.shape[0:2], mode="bilinear").squeeze()
 
         # Target feature extraction
@@ -436,7 +597,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         return masked_feat
 
-    def _preprocess_mask(self, x: torch.Tensor) -> torch.Tensor:
+    def _preprocess_masks(self, x: torch.Tensor) -> torch.Tensor:
         """Normalize pixel values and pad to a square input.
 
         Args:
@@ -451,6 +612,36 @@ class ZeroShotSegmentAnything(SegmentAnything):
         padw = self.config.model.image_size - w
         x = F.pad(x, (0, padw, 0, padh))
         return x
+
+    def _postprocess_masks(
+        self,
+        logits: torch.Tensor,
+        scores: torch.Tensor,
+        original_size: torch.Tensor,
+        is_single: bool = False,
+    ):
+        """Post-process masks for cascaded post-refinements."""
+        high_res_masks = self.mask_postprocessing(logits, self.config.model.image_size, original_size)
+        masks = high_res_masks > self.config.model.mask_threshold
+
+        if is_single:
+            best_idx = 0
+        else:
+            # skip the first index components
+            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+
+            # filter zero masks
+            while len(scores[0]) > 0 and masks[0, (best_idx := torch.argmax(scores[0]))].sum() == 0:
+                scores, masks, logits = map(
+                    lambda x: torch.cat((x[:, :best_idx], x[:, best_idx + 1 :]), dim=1), (scores, masks, logits)
+                )
+
+            if len(scores[0]) == 0:
+                # all predicted masks were zero masks, ignore them.
+                return None, torch.zeros((self.config.model.image_size, self.config.model.image_size), device="cpu")
+
+            best_idx = torch.argmax(scores[0])
+        return logits[:, best_idx], masks[0, best_idx]
 
     def _update_value(self, target: Dict[str, Any], key: str, value: torch.Tensor) -> None:
         """Update tensor to target dictionary.
@@ -505,98 +696,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             torch.zeros_like(other_input_prompt.get("point_labels")),
                         )
         return merged_input_prompts
-
-    def _predict_target_mask(
-        self,
-        image_embeddings: torch.Tensor,
-        input_prompts: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-    ) -> torch.Tensor:
-        """Predict target masks.
-
-        Args:
-            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            input_prompts (Dict[str, Tuple[torch.Tensor, torch.Tensor]]): Dictionary including point, box,
-                and mask prompts. index=1 of tuple is point labels which indicate whether foreground or background.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
-
-        Return:
-            (torch.Tensor): Predicted mask.
-        """
-        # First-step prediction
-        _, _, logits = self._predict_mask(
-            image_embeddings, input_prompts, padding, original_size, multimask_output=False
-        )
-        best_idx = 0
-
-        # Cascaded Post-refinement-1
-        input_prompts.update({"masks": logits[:, best_idx : best_idx + 1, :, :]})
-        masks, scores, logits = self._predict_mask(
-            image_embeddings, input_prompts, padding, original_size, multimask_output=True
-        )
-        best_idx = torch.argmax(scores)
-
-        # Cascaded Post-refinement-2
-        coords = torch.nonzero(masks[0, best_idx])
-        y, x = coords[:, 0], coords[:, 1]
-        x_min = x.min()
-        x_max = x.max()
-        y_min = y.min()
-        y_max = y.max()
-        input_prompts.update(
-            {
-                "masks": logits[:, best_idx : best_idx + 1, :, :],
-                "box": torch.tensor([x_min, y_min, x_max, y_max], device=logits.device),
-            }
-        )
-        masks, scores, _ = self._predict_mask(
-            image_embeddings, input_prompts, padding, original_size, multimask_output=True
-        )
-        best_idx = torch.argmax(scores)
-
-        return masks[0, best_idx]
-
-    def _predict_mask(
-        self,
-        image_embeddings: torch.Tensor,
-        input_prompts: Dict[str, torch.Tensor],
-        padding: Tuple[int, ...],
-        original_size: Tuple[int, int],
-        multimask_output: bool = True,
-    ) -> Tuple[torch.Tensor, ...]:
-        """Predict target masks.
-
-        Args:
-            image_embeddings (torch.Tensor): The image embedding with a batch index of length 1.
-            input_prompts (Dict[str, torch.Tensor]): Dictionary including point, box, and mask prompts.
-            padding (Tuple[int, ...]): Padding size.
-            original_size (Tuple[int, int]): Original image size.
-            multimask_output (bool): Whether getting multi mask outputs or not. Defaults to True.
-
-        Return:
-            (Tuple[torch.Tensor, ...]): Predicted mask, score, and logit.
-        """
-        sparse_embeddings, dense_embeddings = self.prompt_encoder(
-            points=input_prompts.get("points", None),
-            boxes=input_prompts.get("box", None),  # TODO (sungchul): change key box -> boxes to use **input_prompts
-            masks=input_prompts.get("masks", None),
-        )
-
-        low_res_masks, scores = self.mask_decoder(
-            image_embeddings=image_embeddings,
-            image_pe=self.prompt_encoder.get_dense_pe(),
-            sparse_prompt_embeddings=sparse_embeddings,
-            dense_prompt_embeddings=dense_embeddings,
-            multimask_output=multimask_output,
-        )
-        high_res_masks = self.postprocess_masks(
-            low_res_masks, (self.config.model.image_size, self.config.model.image_size), padding, original_size
-        )
-        masks = high_res_masks > self.config.model.mask_threshold
-
-        return masks, scores, low_res_masks
 
     def set_metrics(self) -> None:
         """Skip set_metrics unused in zero-shot learning."""

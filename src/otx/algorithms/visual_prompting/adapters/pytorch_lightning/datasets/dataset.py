@@ -207,7 +207,7 @@ class OTXVisualPromptingDataset(Dataset):
 
         bboxes = np.array(bboxes)
         return dict(
-            original_size=(height, width),
+            original_size=np.array((height, width), dtype=np.int64),
             gt_masks=gt_masks,
             bboxes=bboxes,
             points=points,  # TODO (sungchul): update point information
@@ -246,6 +246,20 @@ class OTXVisualPromptingDataset(Dataset):
 
 class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
     """Visual Prompting for Zero-shot learning Dataset Adaptor."""
+
+    def __init__(
+        self,
+        dataset: DatasetEntity,
+        image_size: int,
+        mean: List[float],
+        std: List[float],
+        generate_point: bool = False,
+        generate_bbox: bool = False,
+        **kwargs,
+    ) -> None:
+        super().__init__(dataset, image_size, mean, std, offset_bbox=0)
+        self.generate_point = generate_point
+        self.generate_bbox = generate_bbox
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
         """Get dataset item.
@@ -288,7 +302,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         self.config = config
         self.dataset = dataset
         self.train_type = train_type
-        # self.kwargs = {}
+        self.kwargs = {}
         if self.train_type == TrainType.Zeroshot:
             # check zero-shot configs
             if self.config.get("train_batch_size", 1) != 1:
@@ -300,12 +314,12 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 )
                 self.config["train_batch_size"] = 1
 
-            # self.kwargs.update(
-            #     {
-            #         "generate_point": self.config.get("generate_point", False),
-            #         "generate_bbox": self.config.get("generate_bbox", False),
-            #     }
-            # )
+            self.kwargs.update(
+                {
+                    "generate_point": self.config.get("generate_point", False),
+                    "generate_bbox": self.config.get("generate_bbox", False),
+                }
+            )
 
         self.train_otx_dataset: DatasetEntity
         self.val_otx_dataset: DatasetEntity
@@ -331,7 +345,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 mean=mean,
                 std=std,
                 offset_bbox=self.config.offset_bbox,
-                # **self.kwargs,
+                **self.kwargs,
             )
 
             # self.val_dataset = None
@@ -347,11 +361,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
 
         if stage == "predict":
             self.predict_dataset = self.DATASETS[self.train_type](
-                dataset=self.dataset,
-                image_size=image_size,
-                mean=mean,
-                std=std,
-                # **self.kwargs
+                dataset=self.dataset, image_size=image_size, mean=mean, std=std, **self.kwargs
             )
 
     def summary(self):

@@ -23,25 +23,26 @@ def collate_fn(batch: List[Any]) -> Dict:
         Dict: Collated batch data.
     """
 
-    def _convert_empty_to_none(x: str) -> List:
+    def _convert_empty_to_none(x: str, dtype: torch.dtype = torch.float32) -> List:
         """Convert empty list to None.
 
         Args:
             x (str): Key of batch data.
+            dtype (torch.dtype): Dtype to be applied to tensors.
 
         Returns:
             List: List of batch data.
         """
         func = torch.stack if x == "gt_masks" else torch.tensor
-        items = [func(item[x]) for item in batch if item[x] is not None]
+        items = [func(item[x]).to(dtype) for item in batch if item[x] is not None]
         return None if len(items) == 0 else items
 
     index = [item["index"] for item in batch]
     images = torch.stack([item["images"] for item in batch])
     bboxes = _convert_empty_to_none("bboxes")
     points = None  # TBD
-    gt_masks = _convert_empty_to_none("gt_masks")
-    original_size = [item["original_size"] for item in batch]
+    gt_masks = _convert_empty_to_none("gt_masks", torch.int32)
+    original_size = _convert_empty_to_none("original_size")
     padding = [item["padding"] for item in batch]
     path = [item["path"] for item in batch]
     labels = [item["labels"] for item in batch]
