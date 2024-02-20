@@ -240,7 +240,7 @@ class SegmentAnything(nn.Module):
         ious = []
         for idx, embedding in enumerate(image_embeddings):
             low_res_masks, iou_predictions = [], []
-            for prompt in [points[idx], bboxes[idx]]:
+            for prompt in [bboxes[idx], points[idx]]:
                 if prompt is None:
                     continue
 
