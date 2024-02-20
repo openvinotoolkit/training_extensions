@@ -355,7 +355,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
-            ov.serialize(compressed_model, xml_path)
+            ov.save_model(compressed_model, xml_path)
             self.__load_weights(path=xml_path, output_model=output_model, key="openvino.xml")
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
