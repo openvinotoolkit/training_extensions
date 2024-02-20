@@ -503,6 +503,8 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
     @e2e_pytest_unit
     def test_find_latest_reference_info(self, mocker):
         """Test _find_latest_reference_info."""
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.path.isdir", return_value=True)
+
         # there are some saved reference info
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.listdir", return_value=["1", "2"])
         results = self.zero_shot_visual_prompting_ov_inferencer._find_latest_reference_info()
@@ -516,6 +518,8 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
     @e2e_pytest_unit
     def test_get_reference_info(self, mocker):
         """Test _get_reference_info."""
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.path.isdir", return_value=True)
+
         # get previously saved reference info
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.listdir", return_value=["1", "2"])
         mocker.patch(

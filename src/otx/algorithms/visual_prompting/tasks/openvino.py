@@ -597,6 +597,8 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
     def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> Union[str, None]:
         """Find latest reference info to be used."""
+        if not os.path.isdir(root):
+            return None
         if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
             return stamps[0]
         return None
@@ -1082,7 +1084,8 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
         self,
         dataset: DatasetEntity,
         inference_parameters: Optional[InferenceParameters] = None,
-        path_reference_info: str = "vpm_zsl_reference_infos/{}/reference_info.pickle",
+        root: str = "vpm_zsl_reference_infos",
+        path_reference_info: str = "{}/reference_info.pickle",
     ) -> DatasetEntity:
         """Infer function of OpenVINOVisualPromptingTask.
 
@@ -1111,7 +1114,7 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
         if self.inferencer.reference_feats is None and self.inferencer.used_indices is None:
             # set reference_feats and used_indices from previously saved reference_info
             self.inferencer.reference_feats, self.inferencer.used_indices = self.inferencer._get_reference_info(
-                path_reference_info
+                root, path_reference_info
             )
             if self.inferencer.reference_feats is None and self.inferencer.used_indices is None:
                 # if they are empty, stop inference and return empty dataset
