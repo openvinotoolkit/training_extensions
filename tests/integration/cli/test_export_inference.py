@@ -224,7 +224,7 @@ def test_otx_export_infer(
         (p for p in torch_outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
         key=lambda p: p.stat().st_mtime,
     )
-    openvino_outputs_dir = tmp_path_test / "outputs" / "nncf_ptq"
+    openvino_outputs_dir = tmp_path_test / "outputs" / "openvino"
     openvino_latest_dir = max(
         (p for p in openvino_outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
         key=lambda p: p.stat().st_mtime,
