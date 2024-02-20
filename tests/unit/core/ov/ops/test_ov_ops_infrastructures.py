@@ -101,14 +101,12 @@ class TestConstantV0:
         assert not op.attrs.is_parameter
         assert isinstance(op.data, torch.Tensor)
 
-        """ This testcase is not valid anymore, because OV replaces it with a constant
-
         op_ov = ov.opset10.constant(self.data.numpy(), ov.Type.f32)
         data = ov.opset10.parameter([4, 512], ov.Type.f32)
         ov.opset10.matmul(data, op_ov, False, False)
         op = ConstantV0.from_ov(op_ov)
         assert isinstance(op, ConstantV0)
         assert op.attrs.shape == self.shape
-        assert op.attrs.is_parameter
+        # This testcase is not valid anymore, because OV replaces it with a constant
+        # assert op.attrs.is_parameter
         assert isinstance(op.data, torch.nn.parameter.Parameter)
-        """
