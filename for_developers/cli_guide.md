@@ -119,7 +119,7 @@ A better guide is provided by the documentation.
 │ Usage: otx [options] train [-h] [-c CONFIG] [--print_config [=flags]]                           │
 │                            [--data_root DATA_ROOT] [--task TASK]                                │
 │                            [--engine CONFIG]                                                    │
-│                            [--engine.work_dir WORK_DIR]                                         │
+│                            [--work_dir WORK_DIR]                                                │
 │                            [--engine.checkpoint CHECKPOINT]                                     │
 │                            [--engine.device {auto,gpu,cpu,tpu,ipu,hpu,mps}]                     │
 │                            [--model.help CLASS_PATH_OR_NAME]                                    │
@@ -312,4 +312,36 @@ overrides:
     - class_path: ligthning.pytorch.callbacks.EarlyStopping
       init_args:
         patience: 3
+```
+
+## How to use OTX Workspace
+
+If we run a typical Training example, we'll have a folder like the one below as output.
+
+```console
+otx-workspace/
+    .cache/                       # As of the last training, we have a .cache with path information for config and checkpoint.
+    20240000_000000/              # Deliverables from OTX CLI
+    20240000_000001/              # Deliverables from OTX CLI Second-Trial
+```
+
+OTX considers the folder with .cache to be the root of the entire Workspace.
+So this uses `.cache/configs.txt` as the default config, and the ckpt pass from `.cache/latest_checkpoint.txt` as a checkpoint as needed.
+
+Case 1: If a user specify an output `work_dir` (An already existing workspace)
+
+```console
+otx train --work_dir otx-workspace
+```
+
+This will then use the .cache in the otx-workspace for training.
+
+Case 2: if a user executes a command from within the otx-workspace
+
+```console
+cd otx-workspace
+
+otx train                         # Behave in the same way as the first training
+otx test                          # Perform a test with the config and checkpoint from the last training baseline.
+otx export                        # Perform a export with the config and checkpoint from the last training baseline.
 ```

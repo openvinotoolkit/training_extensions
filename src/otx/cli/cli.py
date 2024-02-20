@@ -19,6 +19,7 @@ from rich.console import Console
 from otx import OTX_LOGO, __version__
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
+from otx.cli.utils.workspace import Workspace
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
@@ -33,6 +34,19 @@ try:
     register_configs()
 except ImportError:
     _ENGINE_AVAILABLE = False
+
+
+def absolute_path(path: str | Path | None) -> str | None:
+    """Returns the absolute path of the given path.
+
+    Args:
+        path (str | Path | None): The path to be resolved.
+
+    Returns:
+        str | None: The absolute path of the given path, or None if the path is None.
+
+    """
+    return str(Path(path).resolve()) if path is not None else None
 
 
 class OTXCLI:
@@ -101,8 +115,13 @@ class OTXCLI:
         )
         parser.add_argument(
             "--data_root",
-            type=Optional[str],
+            type=absolute_path,
             help="Path to dataset root.",
+        )
+        parser.add_argument(
+            "--work_dir",
+            type=absolute_path,
+            help="Path to work directory. The default is created as otx-workspace.",
         )
         parser.add_argument(
             "--task",
@@ -127,7 +146,7 @@ class OTXCLI:
             "Setting this option to true will disable this behavior.",
             action="store_true",
         )
-        engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
+        engine_skip = {"model", "datamodule", "optimizer", "scheduler", "work_dir"}
         parser.add_class_arguments(
             Engine,
             "engine",
@@ -212,8 +231,14 @@ class OTXCLI:
             # If environment is not configured to use Engine, do not add a subcommand for Engine.
             return
         for subcommand in self.engine_subcommands():
-            parser_kwargs = self._set_default_config_from_auto_configurator()
+            # If already have a workspace or run it from the root of a workspace, utilize config and checkpoint in cache
+            root_dir = Path(sys.argv[sys.argv.index("--work_dir") + 1]) if "--work_dir" in sys.argv else Path.cwd()
+            self.cache_dir = root_dir / ".cache"
+
+            parser_kwargs = self._set_default_config()
             sub_parser = self.engine_subcommand_parser(**parser_kwargs)
+            sub_parser.add_class_arguments(Workspace, "workspace")
+            sub_parser.link_arguments("work_dir", "workspace.work_dir")
 
             sub_parser.link_arguments("data_root", "engine.data_root")
             sub_parser.link_arguments("data_root", "data.config.data_root")
@@ -228,14 +253,18 @@ class OTXCLI:
                 fail_untyped=False,
             )
 
-            if "logger" in added_arguments:
-                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
             if "callbacks" in added_arguments:
                 sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
-                sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
-            if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
-                # This is code for an OVModel that uses checkpoint in model.model_name.
-                sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
+                sub_parser.link_arguments("workspace.work_dir", "callbacks.init_args.dirpath", apply_on="instantiate")
+            if "logger" in added_arguments:
+                sub_parser.link_arguments("workspace.work_dir", "logger.init_args.save_dir", apply_on="instantiate")
+                sub_parser.link_arguments("workspace.work_dir", "logger.init_args.log_dir", apply_on="instantiate")
+            if "checkpoint" in added_arguments:
+                if "--checkpoint" in sys.argv:
+                    # This is code for an OVModel that uses checkpoint in model.model_name.
+                    sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
+                elif self.cache_dir.exists():
+                    self._load_cache_ckpt(parser=sub_parser)
 
             # Load default subcommand config file
             default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
@@ -248,8 +277,22 @@ class OTXCLI:
             self._subcommand_parsers[subcommand] = sub_parser
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)
 
-    def _set_default_config_from_auto_configurator(self) -> dict:
+    def _load_cache_ckpt(self, parser: ArgumentParser) -> None:
+        if (self.cache_dir / "latest_checkpoint.txt").exists():
+            with (self.cache_dir / "latest_checkpoint.txt").open("r") as f:
+                latest_checkpoint = f.read()
+            parser.set_defaults(checkpoint=latest_checkpoint)
+            warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)
+
+    def _set_default_config(self) -> dict:
         parser_kwargs = {}
+        if self.cache_dir.exists() and (self.cache_dir / "configs.txt").exists():
+            with (self.cache_dir / "configs.txt").open("r") as f:
+                config_file = f.read()
+            parser_kwargs["default_config_files"] = [str(config_file)]
+            warn(f"Load default config from {config_file}.", stacklevel=0)
+            return parser_kwargs
+
         data_root = None
         task = None
         if "--data_root" in sys.argv:
@@ -260,9 +303,12 @@ class OTXCLI:
         if enable_auto_config:
             from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
-            auto_configurator = AutoConfigurator(data_root=data_root, task=OTXTaskType(task))
+            auto_configurator = AutoConfigurator(
+                data_root=data_root,
+                task=OTXTaskType(task) if task is not None else task,
+            )
             config_file_path = DEFAULT_CONFIG_PER_TASK[auto_configurator.task]
-            parser_kwargs["default_config_files"] = [config_file_path]
+            parser_kwargs["default_config_files"] = [str(config_file_path)]
         return parser_kwargs
 
     def _set_extension_subcommands_parser(self, parser_subcommands: _ActionSubCommands) -> None:
@@ -297,6 +343,7 @@ class OTXCLI:
             # For num_classes update, Model is instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
             self.config_init = self.parser.instantiate_classes(self.config)
+            self.workspace = self.get_config_value(self.config_init, "workspace")
             self.datamodule = self.get_config_value(self.config_init, "data")
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
 
@@ -306,6 +353,7 @@ class OTXCLI:
                 optimizer=optimizer,
                 scheduler=scheduler,
                 datamodule=self.datamodule,
+                work_dir=self.workspace.work_dir,
                 **engine_kwargs,
             )
 
@@ -400,18 +448,41 @@ class OTXCLI:
             k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
         }
 
-    def save_config(self) -> None:
+    def save_config(self, work_dir: Path) -> None:
         """Save the configuration for the specified subcommand.
+
+        Args:
+            work_dir (Path): The working directory where the configuration file will be saved.
 
         The configuration is saved as a YAML file in the engine's working directory.
         """
+        # Change all Path-related values to absolute paths.
+        self.config[self.subcommand].pop("workspace", None)
         self.get_subcommand_parser(self.subcommand).save(
             cfg=self.config.get(str(self.subcommand), self.config),
-            path=Path(self.engine.work_dir) / "configs.yaml",
+            path=work_dir / "configs.yaml",
             overwrite=True,
             multifile=False,
             skip_check=True,
         )
+        # if train -> Update `.cache` folder
+        if self.subcommand == "train":
+            self.update_cache(work_dir=work_dir)
+
+    def update_cache(self, work_dir: Path) -> None:
+        """Update the cache directory with the latest configurations and checkpoint file.
+
+        Args:
+            work_dir (Path): The working directory where the configurations and checkpoint files are located.
+        """
+        cache_dir = work_dir.parent / ".cache"
+        cache_dir.mkdir(exist_ok=True)
+        with (cache_dir / "configs.txt").open("w") as f:
+            f.write(str((work_dir / "configs.yaml").resolve()))
+        checkpoint_dir = work_dir / "checkpoints"
+        latest_checkpoint_file = max(checkpoint_dir.glob("epoch_*.ckpt"), key=lambda p: p.stat().st_mtime)
+        with (cache_dir / "latest_checkpoint.txt").open("w") as f:
+            f.write(str(latest_checkpoint_file.resolve()))
 
     def set_seed(self) -> None:
         """Set the random seed for reproducibility.
@@ -442,15 +513,20 @@ class OTXCLI:
 
             list_models(print_table=True, **self.config[self.subcommand])
         elif self.subcommand in self.engine_subcommands():
+            result = None
             self.set_seed()
             self.instantiate_classes()
             fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
             try:
-                fn(**fn_kwargs)
+                result = fn(**fn_kwargs)
             except Exception:
                 self.console.print_exception(width=self.console.width)
-            self.save_config()
+            output_dir = self.engine.work_dir
+            if isinstance(result, Path):
+                # Update for export subcommand
+                output_dir = result.parent
+            self.save_config(work_dir=Path(output_dir))
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)

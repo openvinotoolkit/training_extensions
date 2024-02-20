@@ -43,7 +43,7 @@ def test_otx_cli_auto_configuration(
         fxt_target_dataset_per_task[task.lower()],
         "--task",
         task.upper(),
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -55,9 +55,14 @@ def test_otx_cli_auto_configuration(
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     # Currently, a simple output check
-    assert (tmp_path_train / "outputs").exists()
-    assert (tmp_path_train / "outputs" / "configs.yaml").exists()
-    assert (tmp_path_train / "outputs" / "csv").exists()
-    assert (tmp_path_train / "outputs" / "checkpoints").exists()
-    ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
+    outputs_dir = tmp_path_train / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "configs.yaml").exists()
+    assert (latest_dir / "csv").exists()
+    assert (latest_dir / "checkpoints").exists()
+    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
