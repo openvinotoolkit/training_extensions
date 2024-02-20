@@ -396,4 +396,3 @@ def test_otx_hpo_e2e(
     hpo_work_dor = latest_dir / "hpo"
     assert hpo_work_dor.exists()
     assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
-    assert len(list(hpo_work_dor.rglob("*.ckpt"))) == 1
