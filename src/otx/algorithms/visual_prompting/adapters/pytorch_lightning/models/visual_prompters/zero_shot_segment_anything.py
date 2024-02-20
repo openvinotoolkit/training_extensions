@@ -8,7 +8,7 @@ import os
 import pickle
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
-from datetime import datetime
+import time
 from itertools import product
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 
@@ -505,7 +505,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         masks: Tensor
         logits: Tensor
         scores: Tensor
-        for i in range(3):
+        num_iter = 3 if is_cascade else 1
+        for i in range(num_iter):
             if i == 0:
                 # First-step prediction
                 mask_input = torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device)
@@ -747,7 +748,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             self.reference_info["used_indices"].unique().unsqueeze(0), requires_grad=False
         )
         if self.config.model.save_outputs:
-            path_reference_info = self.path_reference_info.format(datetime.now().strftime("%Y%m%d-%H%M%S"))
+            path_reference_info = self.path_reference_info.format(time.strftime("%Y%m%d-%H%M%S"))
             os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)
             torch.save(self.reference_info, path_reference_info)
             pickle.dump(
@@ -758,4 +759,4 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 repr(self.trainer.datamodule.train_dataset.dataset),
                 open(path_reference_info.replace("reference_info.pt", "reference_meta.json"), "w"),
             )
-            logger.info(f"Saved reference info at {path_reference_info}")
+            logger.info(f"Saved reference info at {path_reference_info}.")

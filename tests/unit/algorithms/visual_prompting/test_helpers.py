@@ -184,10 +184,13 @@ class MockMaskDecoder(nn.Module):
 
 
 class MockScoredLabel:
-    def __init__(self, label: int, name: str = "background"):
+    def __init__(self, label: int, name: str = "background", probability: float = 0., label_source = None,):
         self.name = name
         self.label = Mock()
         self.label.id_ = label
+        self.label.id = label
+        self.probability = probability
+        self.label_source = label_source
         self.__class__ = ScoredLabel
 
 

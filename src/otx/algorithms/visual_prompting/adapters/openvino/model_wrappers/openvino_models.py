@@ -71,6 +71,7 @@ class PromptGetter(ImageModel):
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         parameters.update({"sim_threshold": NumericalValue(value_type=float, default_value=0.5, min=0, max=1)})
         parameters.update({"num_bg_points": NumericalValue(value_type=int, default_value=1, min=0, max=1024)})
+        parameters.update({"default_threshold_reference": NumericalValue(value_type=float, default_value=0.3, min=-1., max=1.)})
         return parameters
 
     def _get_inputs(self):
