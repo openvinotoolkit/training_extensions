@@ -710,7 +710,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_environment</span><span class="o">.</span><span class="n">save_initial_weight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_initial_model_weight_path</span><span class="p">())</span>
         <span class="n">hpo_algo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hpo_algo</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_hpo_progress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_progress_updater_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">progress_updater_thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_hpo_progress</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">hpo_algo</span><span class="p">],</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">progress_updater_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
