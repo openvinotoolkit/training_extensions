@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.detection.yolox.YoloX
+  class_path: otx.algo.detection.yolox.YoloXTiny
   init_args:
     num_classes: 80
-    variant: tiny
 
 optimizer:
   class_path: torch.optim.SGD
@@ -12,13 +11,15 @@ optimizer:
     weight_decay: 0.0001
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 3
-    mode: max
-    factor: 0.5
-    patience: 5
-    monitor: val/map_50
+  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 3
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 5
+      monitor: val/map_50
 
 engine:
   task: DETECTION

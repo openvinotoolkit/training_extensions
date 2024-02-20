@@ -11,11 +11,12 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.types.device import DeviceType
 from otx.core.types.export import OTXExportFormatType
@@ -23,7 +24,8 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .utils.auto_configurator import AutoConfigurator, PathLike, get_num_classes_from_meta_info
+from .hpo import execute_hpo, update_hyper_parameter
+from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -83,8 +85,8 @@ class Engine:
         work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
-        optimizer: OptimizerCallable | None = None,
-        scheduler: LRSchedulerCallable | None = None,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None = None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
@@ -97,22 +99,18 @@ class Engine:
             work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
-            optimizer (OptimizerCallable | None, optional): The optimizer for the engine. Defaults to None.
-            scheduler (LRSchedulerCallable | None, optional): The learning rate scheduler for the engine.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None, optional): The optimizer for the engine.
                 Defaults to None.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None, optional):
+                The learning rate scheduler for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
-        self.work_dir = work_dir
+        self._cache = TrainerArgumentsCache(**kwargs)
         self.checkpoint = checkpoint
-        self.device = DeviceConfig(accelerator=device)
-        self._cache = TrainerArgumentsCache(
-            default_root_dir=self.work_dir,
-            accelerator=self.device.accelerator,
-            devices=self.device.devices,
-            **kwargs,
-        )
+        self.work_dir = work_dir
+        self.device = device  # type: ignore[assignment]
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
@@ -132,10 +130,10 @@ class Engine:
                 meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: OptimizerCallable | None = (
+        self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
-        self.scheduler: LRSchedulerCallable | None = (
+        self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = (
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
@@ -155,6 +153,8 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
+        run_hpo: bool = False,
+        hpo_config: HpoConfig | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -170,6 +170,8 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
+            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
+            hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -205,6 +207,16 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
+        if run_hpo:
+            if hpo_config is None:
+                hpo_config = HpoConfig()
+            best_config, best_trial_weight = execute_hpo(engine=self, **locals())
+            if best_config is not None:
+                update_hyper_parameter(self, best_config)
+            if best_trial_weight is not None:
+                self.checkpoint = best_trial_weight
+                resume = True
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -238,7 +250,6 @@ class Engine:
             **fit_kwargs,
         )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
         return self.trainer.callback_metrics
 
     def test(
@@ -276,19 +287,25 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        model = self.model
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
+        if is_ir_ckpt and not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
-        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
-        if checkpoint is not None:
+        if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
 
@@ -410,7 +427,8 @@ class Engine:
             )
             loaded_checkpoint = torch.load(ckpt_path)
             lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            # self.model.label_info = lit_module.meta_info # this doesn't work for some models yet
+            self.model.label_info = lit_module.meta_info
+
             lit_module.load_state_dict(loaded_checkpoint)
 
             return self.model.export(
@@ -566,12 +584,12 @@ class Engine:
                 train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
                 val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
                 test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
-                tile_config=TilerConfig(**data_config["config"].pop("tile_config", {})),
+                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
                 **data_config["config"],
             ),
         )
         # Model
-        num_classes = get_num_classes_from_meta_info(data_config["task"], datamodule.meta_info)
+        num_classes = datamodule.meta_info.num_classes
         config["model"]["init_args"]["num_classes"] = num_classes
         model = instantiate_class(args=(), init=config.pop("model"))
         optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
@@ -579,6 +597,7 @@ class Engine:
 
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
+        engine_config["data_root"] = data_root
         return cls(
             datamodule=datamodule,
             model=model,
@@ -590,6 +609,26 @@ class Engine:
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
     # ------------------------------------------------------------------------ #
+
+    @property
+    def work_dir(self) -> PathLike:
+        """Work directory."""
+        return self._work_dir
+
+    @work_dir.setter
+    def work_dir(self, work_dir: PathLike) -> None:
+        self._work_dir = work_dir
+        self._cache.update(default_root_dir=work_dir)
+
+    @property
+    def device(self) -> DeviceConfig:
+        """Device engine uses."""
+        return self._device
+
+    @device.setter
+    def device(self, device: DeviceType) -> None:
+        self._device = DeviceConfig(accelerator=device)
+        self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 
     @property
     def trainer(self) -> Trainer:
@@ -660,15 +699,15 @@ class Engine:
     def _build_lightning_module(
         self,
         model: OTXModel,
-        optimizer: OptimizerCallable,
-        scheduler: LRSchedulerCallable,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
         Args:
             model (OTXModel): The OTXModel instance.
-            optimizer (OptimizerCallable): The optimizer callable.
-            scheduler (LRSchedulerCallable): The learning rate scheduler callable.
+            optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
+            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
 
         Returns:
             OTXLitModule: The built LightningModule instance.

@@ -8,10 +8,10 @@ from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.engine import Engine
-from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
+from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_PER_TASK
 
 
-@pytest.mark.parametrize("task", list(DEFAULT_CONFIG_PER_TASK))
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_engine_from_config(
     task: OTXTaskType,
     tmp_path: Path,
@@ -26,6 +26,8 @@ def test_engine_from_config(
         fxt_accelerator (str): The accelerator used for training.
         fxt_target_dataset_per_task (dict): A dictionary mapping tasks to target datasets.
     """
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip("Only the Task has Default config is tested to reduce unnecessary resources.")
     if task.lower() in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
@@ -47,3 +49,24 @@ def test_engine_from_config(
 
     test_metric = engine.test()
     assert len(test_metric) > 0
+
+    # A Task that doesn't have Export implemented yet.
+    # [TODO]: Enable should progress for all Tasks.
+    if task in [
+        OTXTaskType.ACTION_CLASSIFICATION,
+        OTXTaskType.ACTION_DETECTION,
+        OTXTaskType.H_LABEL_CLS,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.VISUAL_PROMPTING,
+        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING,
+    ]:
+        return
+
+    # Export IR Model
+    exported_model_path = engine.export()
+    assert exported_model_path.exists()
+
+    # Test with IR Model
+    if task in OVMODEL_PER_TASK:
+        test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
+        assert len(test_metric_from_ov_model) > 0

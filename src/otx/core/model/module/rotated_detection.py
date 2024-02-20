@@ -7,8 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
+from otx.algo.instance_segmentation.otx_instseg_evaluation import (
+    OTXMaskRLEMeanAveragePrecision,
+)
 from otx.core.model.entity.rotated_detection import OTXRotatedDetModel
 from otx.core.model.module.instance_segmentation import OTXInstanceSegLitModule
 
@@ -23,8 +25,8 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
         self,
         otx_model: OTXRotatedDetModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -33,5 +35,5 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
             scheduler=scheduler,
         )
 
-        self.val_metric = MeanAveragePrecision(iou_type="segm")
-        self.test_metric = MeanAveragePrecision(iou_type="segm")
+        self.val_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
+        self.test_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")

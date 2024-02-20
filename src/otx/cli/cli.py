@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
@@ -156,18 +157,19 @@ class OTXCLI:
             sub_configs=True,
         )
         # Optimizer & Scheduler Settings
-        from lightning.pytorch.cli import LRSchedulerTypeTuple
+        from lightning.pytorch.cli import ReduceLROnPlateau
         from torch.optim import Optimizer
+        from torch.optim.lr_scheduler import LRScheduler
 
         optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
         scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
         parser.add_subclass_arguments(
-            baseclass=(Optimizer,),
+            baseclass=(Optimizer, list),
             nested_key="optimizer",
             **optim_kwargs,
         )
         parser.add_subclass_arguments(
-            baseclass=LRSchedulerTypeTuple,
+            baseclass=(LRScheduler, ReduceLROnPlateau, list),
             nested_key="scheduler",
             **scheduler_kwargs,
         )
@@ -215,6 +217,7 @@ class OTXCLI:
 
             sub_parser.link_arguments("data_root", "engine.data_root")
             sub_parser.link_arguments("data_root", "data.config.data_root")
+            sub_parser.link_arguments("engine.device", "data.config.device")
 
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
@@ -231,6 +234,9 @@ class OTXCLI:
             if "callbacks" in added_arguments:
                 sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
                 sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
+            if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
+                # This is code for an OVModel that uses checkpoint in model.model_name.
+                sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
 
             # Load default subcommand config file
             default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
@@ -317,11 +323,10 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         from otx.core.model.entity.base import OTXModel
-        from otx.engine.utils.auto_configurator import get_num_classes_from_meta_info
 
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = get_num_classes_from_meta_info(task=self.datamodule.task, meta_info=self.datamodule.meta_info)
+            num_classes = self.datamodule.meta_info.num_classes
             if num_classes != model_config.init_args.num_classes:
                 warning_msg = (
                     f"The `num_classes` in dataset is {num_classes} "
@@ -336,14 +341,30 @@ class OTXCLI:
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
+        # Update tile config due to adaptive tiling
+        if self.datamodule.config.tile_config.enable_tiler:
+            if not hasattr(model, "tile_config"):
+                msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
+                raise AttributeError(msg)
+            model.tile_config = self.datamodule.config.tile_config
+            self.config[self.subcommand].data.config.tile_config.update(
+                Namespace(dataclasses.asdict(model.tile_config)),
+            )
+
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
 
-        optimizer_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "optimizer", Namespace()))
-        scheduler_kwargs = namespace_to_dict(self.get_config_value(self.config_init, "scheduler", Namespace()))
         from otx.core.utils.instantiators import partial_instantiate_class
 
-        return model, partial_instantiate_class(optimizer_kwargs), partial_instantiate_class(scheduler_kwargs)
+        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
+        optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
+        optimizers = partial_instantiate_class([_opt for _opt in optimizer_kwargs if _opt])
+
+        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
+        scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
+        schedulers = partial_instantiate_class([_sch for _sch in scheduler_kwargs if _sch])
+
+        return model, optimizers, schedulers
 
     def get_config_value(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Retrieves the value of a configuration key from the given config object.
@@ -355,8 +376,10 @@ class OTXCLI:
 
         Returns:
             Any: The value of the configuration key, or the default value if the key is not found.
+                if the value is a Namespace, it is converted to a dictionary.
         """
-        return config.get(str(self.subcommand), config).get(key, default)
+        result = config.get(str(self.subcommand), config).get(key, default)
+        return namespace_to_dict(result) if isinstance(result, Namespace) else result
 
     def get_subcommand_parser(self, subcommand: str | None) -> ArgumentParser:
         """Returns the argument parser for the specified subcommand.

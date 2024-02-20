@@ -16,10 +16,13 @@ from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
+    HlabelClsBatchPredEntityWithXAI,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
+    MulticlassClsBatchPredEntityWithXAI,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
+    MultilabelClsBatchPredEntityWithXAI,
 )
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
@@ -37,8 +40,8 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         self,
         otx_model: OTXMulticlassClsModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -83,7 +86,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MulticlassClsBatchPredEntity):
+        if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
         self.val_metric.update(
             **self._convert_pred_entity_to_compute_metric(preds, inputs),
@@ -91,7 +94,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: MulticlassClsBatchPredEntity,
+        preds: MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI,
         inputs: MulticlassClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         pred = torch.tensor(preds.labels)
@@ -110,7 +113,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MulticlassClsBatchPredEntity):
+        if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(
@@ -130,8 +133,8 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         self,
         otx_model: OTXMultilabelClsModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -172,7 +175,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MultilabelClsBatchPredEntity):
+        if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -181,7 +184,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: MultilabelClsBatchPredEntity,
+        preds: MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI,
         inputs: MultilabelClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         return {
@@ -198,7 +201,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, MultilabelClsBatchPredEntity):
+        if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(
@@ -218,8 +221,8 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self,
         otx_model: OTXHlabelClsModel,
         torch_compile: bool,
-        optimizer: OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -284,7 +287,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, HlabelClsBatchPredEntity):
+        if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.val_metric.update(
@@ -293,7 +296,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: HlabelClsBatchPredEntity,
+        preds: HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI,
         inputs: HlabelClsBatchDataEntity,
     ) -> dict[str, list[dict[str, Tensor]]]:
         if self.num_multilabel_classes > 0:
@@ -316,7 +319,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         """
         preds = self.model(inputs)
 
-        if not isinstance(preds, HlabelClsBatchPredEntity):
+        if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
         self.test_metric.update(

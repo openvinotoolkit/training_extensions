@@ -5,25 +5,37 @@
 
 from __future__ import annotations
 
+import copy
 import json
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
 import torch
 
-from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
+from otx.core.data.dataset.classification import HLabelMetaInfo
+from otx.core.data.entity.base import (
+    OTXBatchLossEntity,
+    T_OTXBatchDataEntity,
+    T_OTXBatchPredEntity,
+    T_OTXBatchPredEntityWithXAI,
+)
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
+    HlabelClsBatchPredEntityWithXAI,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
+    MulticlassClsBatchPredEntityWithXAI,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
+    MultilabelClsBatchPredEntityWithXAI,
 )
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
@@ -34,7 +46,9 @@ if TYPE_CHECKING:
     from otx.core.data.entity.classification import HLabelInfo
 
 
-class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
+class ExplainableOTXClsModel(
+    OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+):
     """OTX classification model which can attach a XAI hook."""
 
     @property
@@ -82,7 +96,12 @@ class ExplainableOTXClsModel(OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity
 
 
 class OTXMulticlassClsModel(
-    ExplainableOTXClsModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, T_OTXTileBatchDataEntity],
+    ExplainableOTXClsModel[
+        MulticlassClsBatchDataEntity,
+        MulticlassClsBatchPredEntity,
+        MulticlassClsBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """Base class for the classification models used in OTX."""
 
@@ -101,13 +120,6 @@ class OTXMulticlassClsModel(
         return parameters
 
 
-def _get_export_params_from_cls_mmconfig(config: DictConfig) -> dict[str, Any]:
-    return {
-        "mean": config["data_preprocessor"]["mean"],
-        "std": config["data_preprocessor"]["std"],
-    }
-
-
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     """Multi-class Classification model compatible for MMPretrain.
 
@@ -119,7 +131,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
@@ -163,7 +174,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
+    ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample
 
         if self.training:
@@ -185,6 +196,20 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             scores.append(output.pred_score)
             labels.append(output.pred_label)
 
+        if hasattr(self, "explain_hook"):
+            hook_records = self.explain_hook.records
+            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+
+            return MulticlassClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                labels=labels,
+                saliency_maps=explain_results,
+                feature_vectors=[],
+            )
+
         return MulticlassClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
@@ -196,17 +221,16 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
-
-        return parent_parameters
+        return export_params
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -219,7 +243,12 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
 
 class OTXMultilabelClsModel(
-    ExplainableOTXClsModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
+    ExplainableOTXClsModel[
+        MultilabelClsBatchDataEntity,
+        MultilabelClsBatchPredEntity,
+        MultilabelClsBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """Multi-label classification models used in OTX."""
 
@@ -250,7 +279,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
@@ -296,7 +324,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MultilabelClsBatchDataEntity,
-    ) -> MultilabelClsBatchPredEntity | OTXBatchLossEntity:
+    ) -> MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample
 
         if self.training:
@@ -318,6 +346,20 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             scores.append(output.pred_score)
             labels.append(output.pred_label)
 
+        if hasattr(self, "explain_hook"):
+            hook_records = self.explain_hook.records
+            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+
+            return MultilabelClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                labels=labels,
+                saliency_maps=explain_results,
+                feature_vectors=[],
+            )
+
         return MultilabelClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
@@ -329,17 +371,16 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
-
-        return parent_parameters
+        return export_params
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -348,7 +389,12 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
 
 class OTXHlabelClsModel(
-    ExplainableOTXClsModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity, T_OTXTileBatchDataEntity],
+    ExplainableOTXClsModel[
+        HlabelClsBatchDataEntity,
+        HlabelClsBatchPredEntity,
+        HlabelClsBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """H-label classification models used in OTX."""
 
@@ -357,8 +403,19 @@ class OTXHlabelClsModel(
         """Defines parameters required to export a particular model implementation."""
         parameters = super()._export_parameters
         hierarchical_config: dict = {}
-        hierarchical_config["cls_heads_info"] = {}
-        hierarchical_config["label_tree_edges"] = []
+
+        label_info: HLabelMetaInfo = self.label_info  # type: ignore[assignment]
+        hierarchical_config["cls_heads_info"] = {
+            "num_multiclass_heads": label_info.hlabel_info.num_multiclass_heads,
+            "num_multilabel_classes": label_info.hlabel_info.num_multilabel_classes,
+            "head_idx_to_logits_range": label_info.hlabel_info.head_idx_to_logits_range,
+            "num_single_label_classes": label_info.hlabel_info.num_single_label_classes,
+            "class_to_group_idx": label_info.hlabel_info.class_to_group_idx,
+            "all_groups": label_info.hlabel_info.all_groups,
+            "label_to_idx": label_info.hlabel_info.label_to_idx,
+            "empty_multiclass_head_indices": label_info.hlabel_info.empty_multiclass_head_indices,
+        }
+        hierarchical_config["label_tree_edges"] = label_info.hlabel_info.label_tree_edges
 
         parameters["metadata"].update(
             {
@@ -384,7 +441,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     def __init__(self, num_classes: int, config: DictConfig) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        self.export_params = _get_export_params_from_cls_mmconfig(config)
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(num_classes=num_classes)
@@ -438,7 +494,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: HlabelClsBatchDataEntity,
-    ) -> HlabelClsBatchPredEntity | OTXBatchLossEntity:
+    ) -> HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample
 
         if self.training:
@@ -460,6 +516,20 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             scores.append(output.pred_score)
             labels.append(output.pred_label)
 
+        if hasattr(self, "explain_hook"):
+            hook_records = self.explain_hook.records
+            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+
+            return HlabelClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                labels=labels,
+                saliency_maps=explain_results,
+                feature_vectors=[],
+            )
+
         return HlabelClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
@@ -471,17 +541,16 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
-        self.export_params["resize_mode"] = "standard"
-        self.export_params["pad_value"] = 0
-        self.export_params["swap_rgb"] = False
-        self.export_params["via_onnx"] = False
-        self.export_params["input_size"] = self.image_size
-        self.export_params["onnx_export_configuration"] = None
+        export_params = super()._export_parameters
+        export_params.update(get_mean_std_from_data_processing(self.config))
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["input_size"] = self.image_size
+        export_params["onnx_export_configuration"] = None
 
-        parent_parameters = super()._export_parameters
-        parent_parameters.update(self.export_params)
-
-        return parent_parameters
+        return export_params
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -490,7 +559,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
 
 class OVMulticlassClassificationModel(
-    OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity],
+    OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI],
 ):
     """Classification model compatible for OpenVINO IR inference.
 
@@ -498,13 +567,46 @@ class OVMulticlassClassificationModel(
     and create the OTX classification model compatible for OTX testing pipeline.
     """
 
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str = "Classification",
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = False,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+
     def _customize_outputs(
         self,
         outputs: list[ClassificationResult],
         inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity:
+    ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI:
         pred_labels = [torch.tensor(out.top_labels[0][0], dtype=torch.long) for out in outputs]
         pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
+
+        if outputs and outputs[0].saliency_map.size != 0:
+            predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
+            return MulticlassClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=pred_scores,
+                labels=pred_labels,
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
 
         return MulticlassClsBatchPredEntity(
             batch_size=len(outputs),
@@ -516,7 +618,7 @@ class OVMulticlassClassificationModel(
 
 
 class OVHlabelClassificationModel(
-    OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity],
+    OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI],
 ):
     """Hierarchical classification model compatible for OpenVINO IR inference.
 
@@ -528,7 +630,7 @@ class OVHlabelClassificationModel(
         self,
         num_classes: int,
         model_name: str,
-        model_type: str,
+        model_type: str = "Classification",
         async_inference: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
@@ -539,7 +641,7 @@ class OVHlabelClassificationModel(
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
         model_api_configuration = model_api_configuration if model_api_configuration else {}
-        model_api_configuration.update({"hierarchical": True, "confidence_threshold": 0.0})
+        model_api_configuration.update({"hierarchical": True, "output_raw_scores": True})
         super().__init__(
             num_classes,
             model_name,
@@ -554,7 +656,7 @@ class OVHlabelClassificationModel(
         """Set hierarchical information in model head.
 
         Since OV IR model consist of all required hierarchy information,
-        this method serves as placehloder
+        this method serves as placeholder
         """
         if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
             msg = "OpenVINO IR model should have hierarchical config embedded in rt_info of the model"
@@ -564,21 +666,59 @@ class OVHlabelClassificationModel(
         self,
         outputs: list[ClassificationResult],
         inputs: HlabelClsBatchDataEntity,
-    ) -> HlabelClsBatchPredEntity:
-        pred_labels = [torch.tensor([label[0] for label in out.top_labels], dtype=torch.long) for out in outputs]
-        pred_scores = [torch.tensor([label[2] for label in out.top_labels]) for out in outputs]
+    ) -> HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI:
+        all_pred_labels = []
+        all_pred_scores = []
+        for output in outputs:
+            logits = output.raw_scores
+            predicted_labels = []
+            predicted_scores = []
+            cls_heads_info = self.model.hierarchical_info["cls_heads_info"]
+            for i in range(cls_heads_info["num_multiclass_heads"]):
+                logits_begin, logits_end = cls_heads_info["head_idx_to_logits_range"][str(i)]
+                head_logits = logits[logits_begin:logits_end]
+                j = np.argmax(head_logits)
+                predicted_labels.append(j)
+                predicted_scores.append(head_logits[j])
+
+            if cls_heads_info["num_multilabel_classes"]:
+                logits_begin = cls_heads_info["num_single_label_classes"]
+                head_logits = logits[logits_begin:]
+
+                for i in range(head_logits.shape[0]):
+                    predicted_scores.append(head_logits[i])
+                    if head_logits[i] > self.model.confidence_threshold:
+                        predicted_labels.append(1)
+                    else:
+                        predicted_labels.append(0)
+
+            all_pred_labels.append(torch.tensor(predicted_labels, dtype=torch.long))
+            all_pred_scores.append(torch.tensor(predicted_scores))
+
+        if outputs and outputs[0].saliency_map.size != 1:
+            predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
+            return HlabelClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=all_pred_scores,
+                labels=all_pred_labels,
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
 
         return HlabelClsBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=pred_scores,
-            labels=pred_labels,
+            scores=all_pred_scores,
+            labels=all_pred_labels,
         )
 
 
 class OVMultilabelClassificationModel(
-    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity],
+    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI],
 ):
     """Multilabel classification model compatible for OpenVINO IR inference.
 
@@ -590,7 +730,7 @@ class OVMultilabelClassificationModel(
         self,
         num_classes: int,
         model_name: str,
-        model_type: str,
+        model_type: str = "Classification",
         async_inference: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
@@ -612,8 +752,21 @@ class OVMultilabelClassificationModel(
         self,
         outputs: list[ClassificationResult],
         inputs: MultilabelClsBatchDataEntity,
-    ) -> MultilabelClsBatchPredEntity:
+    ) -> MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI:
         pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
+
+        if outputs and outputs[0].saliency_map.size != 1:
+            predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_f_vectors = [out.feature_vector for out in outputs]
+            return MultilabelClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=pred_scores,
+                labels=[],
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
 
         return MultilabelClsBatchPredEntity(
             batch_size=len(outputs),

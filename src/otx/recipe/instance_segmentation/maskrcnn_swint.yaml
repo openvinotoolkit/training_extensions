@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNSwinT
   init_args:
     num_classes: 80
-    variant: swint
 
 optimizer:
   class_path: torch.optim.AdamW
@@ -11,13 +10,15 @@ optimizer:
     weight_decay: 0.05
 
 scheduler:
-  class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-  init_args:
-    warmup_steps: 100
-    mode: max
-    factor: 0.5
-    patience: 5
-    monitor: val/map_50
+  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 100
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.5
+      patience: 5
+      monitor: val/map_50
 
 engine:
   task: INSTANCE_SEGMENTATION
@@ -27,6 +28,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
+  max_epochs: 100
   data:
     task: INSTANCE_SEGMENTATION
     config:

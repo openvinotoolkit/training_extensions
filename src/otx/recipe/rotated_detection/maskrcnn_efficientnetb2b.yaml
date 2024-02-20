@@ -12,12 +12,15 @@ optimizer:
     weight_decay: 0.001
 
 scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
-  init_args:
-    mode: min
-    factor: 0.1
-    patience: 10
-    monitor: train/loss
+  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 100
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.1
+      patience: 10
+      monitor: val/map_50
 
 engine:
   task: ROTATED_DETECTION
@@ -27,6 +30,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
+  max_epochs: 100
   data:
     task: ROTATED_DETECTION
     config:
