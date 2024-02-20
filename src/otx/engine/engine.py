@@ -377,12 +377,15 @@ class Engine:
         elif self.checkpoint is not None:
             checkpoint_path = str(self.checkpoint)
 
-        return self.trainer.predict(
+        predict_result = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
             ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
+
+        lit_module.model.explain_mode = False
+        return predict_result
 
     def export(
         self,
@@ -426,30 +429,33 @@ class Engine:
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
 
-        if ckpt_path is not None:
-            self.model.eval()
-            lit_module = self._build_lightning_module(
-                model=self.model,
-                optimizer=self.optimizer,
-                scheduler=self.scheduler,
-            )
-            loaded_checkpoint = torch.load(ckpt_path)
-            lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            self.model.label_info = lit_module.meta_info
+        if ckpt_path is None:
+            msg = "To make export, checkpoint must be specified."
+            raise RuntimeError(msg)
 
-            lit_module.load_state_dict(loaded_checkpoint)
+        self.model.eval()
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
+        loaded_checkpoint = torch.load(ckpt_path)
+        lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
+        self.model.label_info = lit_module.meta_info
 
-            self.model.explain_mode = explain
+        lit_module.load_state_dict(loaded_checkpoint)
 
-            return self.model.export(
-                output_dir=Path(self.work_dir),
-                base_name=self._EXPORTED_MODEL_BASE_NAME,
-                export_format=export_format,
-                precision=export_precision,
-            )
+        self.model.explain_mode = explain
 
-        msg = "To make export, checkpoint must be specified."
-        raise RuntimeError(msg)
+        exported_model_path = self.model.export(
+            output_dir=Path(self.work_dir),
+            base_name=self._EXPORTED_MODEL_BASE_NAME,
+            export_format=export_format,
+            precision=export_precision,
+        )
+
+        self.model.explain_mode = False
+        return exported_model_path
 
     def optimize(
         self,
@@ -550,6 +556,8 @@ class Engine:
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
+
+        lit_module.model.explain_mode = False
 
         return get_processed_saliency_maps(
             predictions,
