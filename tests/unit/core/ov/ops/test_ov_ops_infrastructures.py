@@ -109,4 +109,4 @@ class TestConstantV0:
         assert op.attrs.shape == self.shape
         # This testcase is not valid anymore, because OV replaces it with a constant
         # assert op.attrs.is_parameter
-        assert isinstance(op.data, torch.nn.parameter.Parameter)
+        # assert isinstance(op.data, torch.nn.parameter.Parameter)
