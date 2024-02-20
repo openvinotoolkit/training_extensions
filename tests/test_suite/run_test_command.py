@@ -1,4 +1,4 @@
-"""Common test case and helpersi for OTX"""
+"""Common test case and helpers for OTX"""
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -10,6 +10,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Dict, Union
+
 import onnx
 import onnxruntime
 import pytest
