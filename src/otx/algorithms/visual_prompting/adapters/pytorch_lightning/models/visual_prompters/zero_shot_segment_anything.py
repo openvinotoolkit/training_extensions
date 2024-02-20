@@ -723,11 +723,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
         """Skip configure_optimizers unused in zero-shot learning."""
         pass
 
-    def _find_latest_reference_info(self) -> Union[str, None]:
+    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> Union[str, None]:
         """Find latest reference info to be used."""
-        if len(stamps := sorted(os.listdir("vpm_zsl_reference_infos"), reverse=True)) > 0:
+        if not os.path.isdir(root):
+            return None
+        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
             return stamps[0]
-        self.initialize_reference_info()
         return None
 
     def on_train_start(self) -> None:

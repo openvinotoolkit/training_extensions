@@ -73,9 +73,7 @@ class TestPromptGetter:
     )
     def test_get_prompt_candidates(self, mocker, prompt_getter, result_point_selection: torch.Tensor) -> None:
         """Test get_prompt_candidates."""
-        mocker.patch.object(
-            prompt_getter, "get_prompt_candidates", return_value=(result_point_selection, torch.zeros(1, 2))
-        )
+        mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
         image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feats = torch.rand(1, 1, 4)
         used_indices = torch.as_tensor([[0]])
@@ -88,8 +86,8 @@ class TestPromptGetter:
             original_size=original_size,
         )
 
-        assert total_points_scores.shape[0] == len(result_point_selection)
-        assert total_bg_coords.shape[0] == 1
+        assert total_points_scores[0].shape[0] == len(result_point_selection)
+        assert total_bg_coords[0].shape[0] == 1
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
@@ -426,3 +424,80 @@ class TestZeroShotSegmentAnything:
         _, result = zero_shot_segment_anything._postprocess_masks(masks, logits, scores)
 
         assert torch.equal(result, expected)
+
+    @e2e_pytest_unit
+    def test_find_latest_reference_info(self, mocker, set_zero_shot_segment_anything):
+        """Test _find_latest_reference_info."""
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.os.path.isdir",
+            return_value=True,
+        )
+
+        # there are some saved reference info
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.os.listdir",
+            return_value=["1", "2"],
+        )
+        results = zero_shot_segment_anything._find_latest_reference_info()
+        assert results == "2"
+
+        # there are no saved reference info
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.os.listdir",
+            return_value=[],
+        )
+        results = zero_shot_segment_anything._find_latest_reference_info()
+        assert results is None
+
+    @e2e_pytest_unit
+    def test_on_predict_start(self, mocker, set_zero_shot_segment_anything):
+        """Test on_predict_start."""
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.os.path.isdir",
+            return_value=True,
+        )
+
+        # get previously saved reference info
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.os.listdir",
+            return_value=["1", "2"],
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.torch.load",
+            return_value=torch.nn.ParameterDict(
+                {"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([[0.0]])}
+            ),
+        )
+        mocker.patch("builtins.open", return_value="Mocked data")
+
+        zero_shot_segment_anything.on_predict_start()
+        assert isinstance(zero_shot_segment_anything.reference_info, torch.nn.ParameterDict)
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (1, 1, 256)
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (1, 1)
+
+        # no saved reference info
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.os.listdir",
+            return_value=[],
+        )
+
+        zero_shot_segment_anything.set_empty_reference_info()
+        zero_shot_segment_anything.on_predict_start()
+
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (0,)
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (1, 0)
+
+    @e2e_pytest_unit
+    def test_expand_reference_info(self, set_zero_shot_segment_anything):
+        """Test expand_reference_info."""
+        zero_shot_segment_anything = set_zero_shot_segment_anything()
+        zero_shot_segment_anything.reference_info["reference_feats"] = torch.ones((3, 2, 2))
+        new_largest_label = 5
+
+        zero_shot_segment_anything.expand_reference_info(new_largest_label)
+
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (6, 2, 2)
+        assert torch.all(zero_shot_segment_anything.reference_info["reference_feats"][:3] == 1.0)
+        assert torch.all(zero_shot_segment_anything.reference_info["reference_feats"][3:] == 0.0)
