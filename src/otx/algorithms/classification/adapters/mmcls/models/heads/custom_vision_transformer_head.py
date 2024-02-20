@@ -34,15 +34,6 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
         losses["loss"] = loss
         return losses
 
-    def post_process(self, pred):
-        """Post processing."""
-        pred = cast_bf16_to_fp32(pred)
-        return super().post_process(pred)
-
-    def forward(self, x):
-        """Forward fuction of CustomVisionTransformerClsHead class."""
-        return self.simple_test(x)
-
     def forward_train(self, x, gt_label, **kwargs):
         """Forward_train fuction of CustomVisionTransformerClsHead class."""
         x = self.pre_logits(x)

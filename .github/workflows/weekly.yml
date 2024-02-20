@@ -10,41 +10,23 @@ on:
 permissions: read-all
 
 jobs:
-  Regression-Tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - toxenv_task: "iseg"
-            test_dir: "tests/regression/instance_segmentation/test_instance_segmentation.py"
-            task: "instance_segmentation"
-          - toxenv_task: "iseg_t"
-            test_dir: "tests/regression/instance_segmentation/test_tiling_instance_segmentation.py"
-            task: "instance_segmentation"
-          - toxenv_task: "seg"
-            test_dir: "tests/regression/semantic_segmentation"
-            task: "segmentation"
-          - toxenv_task: "det"
-            test_dir: "tests/regression/detection"
-            task: "detection"
-          - toxenv_task: "ano"
-            test_dir: "tests/regression/anomaly"
-            task: "anomaly"
-          - toxenv_task: "act"
-            test_dir: "tests/regression/action"
-            task: "action"
-          - toxenv_task: "cls"
-            test_dir: "tests/regression/classification"
-            task: "classification"
-    name: Regression-Test-py310-${{ matrix.toxenv_task }}
-    uses: ./.github/workflows/run_tests_in_tox.yml
+  Performance-Speed-Tests:
+    name: Performance-Speed-py310
+    uses: ./.github/workflows/perf-speed.yml
     with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: ${{ matrix.toxenv_task }}
-      tests-dir: ${{ matrix.test_dir }}
-      runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
-      task: ${{ matrix.task }}
-      timeout-minutes: 8640
-      upload-artifact: true
-      artifact-prefix: "weekly-test-results"
+      model-type: default
+      data-size: medium
+      num-repeat: 1
+      num-epoch: 3
+      eval-upto: optimize
+      artifact-prefix: weekly-perf-speed-benchmark
+  Performance-Accuracy-Tests:
+    name: Performance-Accuracy-py310
+    uses: ./.github/workflows/perf-accuracy.yml
+    with:
+      model-type: default
+      data-size: all
+      num-repeat: 0
+      num-epoch: 0
+      eval-upto: optimize
+      artifact-prefix: weekly-perf-accuracy-benchmark
