@@ -33,9 +33,10 @@ jobs:
           python-version: "3.10"
       - name: Install pypa/build
         run: |
-          pip install pip-tools==7.3.0
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
           pip-compile --generate-hashes -o /tmp/otx-publish-requirements.txt requirements/publish.txt
           pip install --require-hashes --no-deps -r /tmp/otx-publish-requirements.txt
+          rm /tmp/otx-publish-requirements.txt
       - name: Build sdist
         run: python -m build --sdist
       - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
