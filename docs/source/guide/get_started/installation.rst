@@ -96,7 +96,6 @@ Install OpenVINO™ Training Extensions by using Docker
 
     $ docker build \
         -t trainer \ # image tag, required
-        --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
         --build-arg PYTHON_VER=3.9 \ # default Python version, optional
         --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
         . # training_extensions/
