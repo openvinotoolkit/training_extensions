@@ -283,7 +283,8 @@ class OTXCLI:
             with (self.cache_dir / "latest_checkpoint.txt").open("r") as f:
                 latest_checkpoint = f.read()
             parser.set_defaults(checkpoint=latest_checkpoint)
-            warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)
+            if "--print_config" not in sys.argv:
+                warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)
 
     def _set_default_config(self) -> dict:
         parser_kwargs = {}
@@ -291,7 +292,8 @@ class OTXCLI:
             with (self.cache_dir / "configs.txt").open("r") as f:
                 config_file = f.read()
             parser_kwargs["default_config_files"] = [str(config_file)]
-            warn(f"Load default config from {config_file}.", stacklevel=0)
+            if "--print_config" not in sys.argv:
+                warn(f"Load default config from {config_file}.", stacklevel=0)
             return parser_kwargs
 
         data_root = None
@@ -481,9 +483,11 @@ class OTXCLI:
         with (cache_dir / "configs.txt").open("w") as f:
             f.write(str((work_dir / "configs.yaml").resolve()))
         checkpoint_dir = work_dir / "checkpoints"
-        latest_checkpoint_file = max(checkpoint_dir.glob("epoch_*.ckpt"), key=lambda p: p.stat().st_mtime)
-        with (cache_dir / "latest_checkpoint.txt").open("w") as f:
-            f.write(str(latest_checkpoint_file.resolve()))
+        ckpt_list = list(checkpoint_dir.glob("epoch_*.ckpt"))  # Convert generator to list
+        if ckpt_list:
+            latest_checkpoint_file = max(ckpt_list, key=lambda p: p.stat().st_mtime)
+            with (cache_dir / "latest_checkpoint.txt").open("w") as f:
+                f.write(str(latest_checkpoint_file.resolve()))
 
     def set_seed(self) -> None:
         """Set the random seed for reproducibility.
