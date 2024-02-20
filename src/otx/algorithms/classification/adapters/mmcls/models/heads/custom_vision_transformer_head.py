@@ -6,8 +6,6 @@
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import VisionTransformerClsHead
 
-from otx.algorithms.common.utils import cast_bf16_to_fp32
-
 
 @HEADS.register_module()
 class CustomVisionTransformerClsHead(VisionTransformerClsHead):
