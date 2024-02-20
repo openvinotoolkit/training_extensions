@@ -1,0 +1,39 @@
+model:
+  class_path: otx.core.model.entity.action_classification.OVActionClsModel
+  init_args:
+    num_classes: 400
+    model_name: x3d
+    async_inference: True
+    use_throughput_mode: True
+    model_type: Action Classification
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 1e-3
+    weight_decay: 0.0
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+
+engine:
+  task: ACTION_CLASSIFICATION
+  device: cpu
+
+callback_monitor: val/accuracy
+
+data: ../../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: ACTION_CLASSIFICATION
+    config:
+      image_color_channel: BGR
+      data_format: kinetics
+      test_subset:
+        batch_size: 1
+        num_workers: 0
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
+            init_args:
+              test_mode: true
+          - class_path: otx.core.data.transform_libs.torchvision.PackVideo

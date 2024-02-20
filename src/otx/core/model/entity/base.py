@@ -323,6 +323,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
             self.model_name,
             max_num_requests=self.num_requests,
             plugin_config=plugin_config,
+            model_parameters=self.model_parameters,
         )
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
@@ -448,3 +449,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    @property
+    def model_parameters(self) -> dict:
+        """Model parameters for export."""
+        return {}
