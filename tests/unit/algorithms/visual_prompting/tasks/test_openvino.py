@@ -201,12 +201,13 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             {"image_encoder": "", "prompt_getter": "", "decoder": ""},
         )
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
-            "otx.algorithms.visual_prompting.tasks.openvino.model_wrappers.Decoder", autospec=True,
+            "otx.algorithms.visual_prompting.tasks.openvino.model_wrappers.Decoder",
+            autospec=True,
         )
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].mask_threshold = 0.3
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"]._apply_coords.return_value = np.array([[1, 1]])
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].output_blob_name = "upscaled_masks"
-        
+
     @e2e_pytest_unit
     def test_learn(self, mocker):
         """Test learn."""
@@ -231,14 +232,19 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             "forward_image_encoder",
             return_value={"image_embeddings": np.empty((4, 2, 2))},
         )
-        mocker_generate_masked_features = mocker.patch.object(OpenVINOZeroShotVisualPromptingInferencer, "_generate_masked_features", return_value=torch.ones(1, 256))
+        mocker_generate_masked_features = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer, "_generate_masked_features", return_value=torch.ones(1, 256)
+        )
 
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"].infer_sync.return_value = {
-            "upscaled_masks": np.ones((1, 4, 4, 4), dtype=np.bool), "iou_predictions": np.array([[0.9, 0.7, 0.9, 0.8]]), "low_res_masks": np.ones((1, 4, 2, 2)),}        
+            "upscaled_masks": np.ones((1, 4, 4, 4), dtype=np.bool),
+            "iou_predictions": np.array([[0.9, 0.7, 0.9, 0.8]]),
+            "low_res_masks": np.ones((1, 4, 2, 2)),
+        }
         mocker_pickle_dump = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.pickle.dump")
         mocker.patch("builtins.open", return_value="Mocked data")
         self.zero_shot_visual_prompting_ov_inferencer.model["prompt_getter"].default_threshold_reference = 0.3
-        
+
         fake_input = mocker.Mock(spec=DatasetItemEntity)
         results = self.zero_shot_visual_prompting_ov_inferencer.learn(fake_input, reset_feat=True)
 
@@ -290,17 +296,20 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
     def test_forward_prompt_getter(self):
         """Test forward_prompt_getter."""
         self.zero_shot_visual_prompting_ov_inferencer.model["prompt_getter"].infer_sync.return_value = {
-            "points_scores": np.array([[1, 1, 0.5]]), "bg_coords": np.array([[0, 0]])}
-        
+            "points_scores": np.array([[1, 1, 0.5]]),
+            "bg_coords": np.array([[0, 0]]),
+        }
+
         total_points_scores, total_bg_coords = self.zero_shot_visual_prompting_ov_inferencer.forward_prompt_getter(
             image_embeddings={"image_embeddings": np.empty((4, 2, 2))},
             reference_feats=np.random.rand(1, 1, 1),
             used_indices=np.array([[0]]),
-            original_size=np.array([4, 4]))
-        
+            original_size=np.array([4, 4]),
+        )
+
         assert np.all(total_points_scores[0] == np.array([[1, 1, 0.5]]))
         assert np.all(total_bg_coords[0] == np.array([[0, 0]]))
-    
+
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "postprocess_output,infer_sync_output,expected",
@@ -490,7 +499,7 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         assert len(predicted_masks[1]) == 3
         assert all(np.array([2, 2, 0.5]) == used_points[0][0])
         assert all(np.array([0, 0, 0.7]) == used_points[1][2])
-        
+
     @e2e_pytest_unit
     def test_find_latest_reference_info(self, mocker):
         """Test _find_latest_reference_info."""
@@ -498,29 +507,32 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.listdir", return_value=["1", "2"])
         results = self.zero_shot_visual_prompting_ov_inferencer._find_latest_reference_info()
         assert results == "2"
-        
+
         # there are no saved reference info
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.listdir", return_value=[])
         results = self.zero_shot_visual_prompting_ov_inferencer._find_latest_reference_info()
         assert results is None
-        
+
     @e2e_pytest_unit
     def test_get_reference_info(self, mocker):
         """Test _get_reference_info."""
         # get previously saved reference info
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.listdir", return_value=["1", "2"])
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.pickle.load", return_value={"reference_feats": 1, "used_indices": 2})
+        mocker.patch(
+            "otx.algorithms.visual_prompting.tasks.openvino.pickle.load",
+            return_value={"reference_feats": 1, "used_indices": 2},
+        )
         mocker.patch("builtins.open", return_value="Mocked data")
-        
+
         results = self.zero_shot_visual_prompting_ov_inferencer._get_reference_info()
         assert results == (1, 2)
-        
+
         # no saved reference info
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.os.listdir", return_value=[])
-        
+
         results = self.zero_shot_visual_prompting_ov_inferencer._get_reference_info()
         assert results == (None, None)
-        
+
     @e2e_pytest_unit
     def test_expand_reference_info(self):
         """Test expand_reference_info."""
@@ -528,11 +540,11 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         new_largest_label = 5
 
         self.zero_shot_visual_prompting_ov_inferencer.expand_reference_info(new_largest_label)
-        
+
         assert self.zero_shot_visual_prompting_ov_inferencer.reference_feats.shape == (6, 2, 2)
         assert np.all(self.zero_shot_visual_prompting_ov_inferencer.reference_feats[:3] == 1.0)
         assert np.all(self.zero_shot_visual_prompting_ov_inferencer.reference_feats[3:] == 0.0)
-        
+
     @e2e_pytest_unit
     def test_generate_masked_features(self) -> None:
         """Test _generate_masked_features."""
@@ -542,10 +554,11 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         masks[4:12, 4:12] = 1.0
 
         masked_feat = self.zero_shot_visual_prompting_ov_inferencer._generate_masked_features(
-            feats=feats, masks=masks, threshold_mask=0.3)
+            feats=feats, masks=masks, threshold_mask=0.3
+        )
 
         assert masked_feat.shape == (1, 1)
-        
+
     @e2e_pytest_unit
     def test_pad_to_square(self) -> None:
         """Test _pad_to_square."""
@@ -557,7 +570,6 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         assert result[:8, 8:].sum() == 0
         assert result[8:, :8].sum() == 0
         assert result[8:, 8:].sum() == 0
-        
 
 
 class TestOTXOpenVinoDataLoader:

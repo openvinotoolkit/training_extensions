@@ -131,7 +131,7 @@ class VisualPromptingBaseConfig(BaseConfig):
             max_value=1024,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
-        
+
         default_threshold_reference = configurable_float(
             default_value=0.3,
             header="Default reference threshold",

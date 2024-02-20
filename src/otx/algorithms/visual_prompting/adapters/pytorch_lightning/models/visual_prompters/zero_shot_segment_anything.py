@@ -6,9 +6,9 @@
 import json
 import os
 import pickle
+import time
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
-import time
 from itertools import product
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Union
 
