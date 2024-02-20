@@ -236,11 +236,6 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                     _metric.update(cvt_preds["masks"], cvt_target["masks"])
 
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
-
 
 class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     """Base class for the lightning module used in OTX zero-shot visual prompting task."""

@@ -4,13 +4,12 @@
 """Class definition for action detection lightning module used in OTX."""
 from __future__ import annotations
 
+import inspect
 import logging as log
-from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.data.entity.action_detection import (
     ActionDetBatchDataEntity,
@@ -21,7 +20,9 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics import Metric
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+    from otx.algo.metrices import MetricCallable
 
 
 class OTXActionDetLitModule(OTXLitModule):
@@ -33,7 +34,7 @@ class OTXActionDetLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = MeanAveragePrecision,
+        metric: MetricCallable | None = None,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -43,30 +44,15 @@ class OTXActionDetLitModule(OTXLitModule):
             metric=metric,
         )
 
-        self.metric = (
-            metric(
-                box_format=metric.keywords["box_format"],
-                iou_type=metric.keywords["iou_type"],
-            )
-            if isinstance(metric, partial)
-            else metric
-        )
+        if metric:
+            sig = inspect.signature(metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                param_dict[name] = param.default
+            param_dict.pop("kwargs")
 
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.metric.reset()
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.metric, "test")
+            metric = metric(**param_dict)  # type: ignore[call-arg]
+        self.metric = metric
 
     def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
         results = meter.compute()
@@ -102,9 +88,10 @@ class OTXActionDetLitModule(OTXLitModule):
         if not isinstance(preds, ActionDetBatchPredEntity):
             raise TypeError(preds)
 
-        self.metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -146,6 +133,7 @@ class OTXActionDetLitModule(OTXLitModule):
         if not isinstance(preds, ActionDetBatchPredEntity):
             raise TypeError(preds)
 
-        self.metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )

@@ -8,15 +8,13 @@ from typing import TYPE_CHECKING
 
 import torch
 
-from otx.algo.instance_segmentation.otx_instseg_evaluation import (
-    OTXMaskRLEMeanAveragePrecision,
-)
 from otx.core.model.entity.rotated_detection import OTXRotatedDetModel
 from otx.core.model.module.instance_segmentation import OTXInstanceSegLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics import Metric
+
+    from otx.algo.metrices import MetricCallable
 
 
 class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
@@ -28,7 +26,7 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric = OTXMaskRLEMeanAveragePrecision,
+        metric: MetricCallable | None = None,
     ):
         super().__init__(
             otx_model=otx_model,
