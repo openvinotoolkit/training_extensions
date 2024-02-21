@@ -530,7 +530,7 @@ class TestOpenVINOVisualPromptingTask:
         self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.xml", b"decoder_xml")
         self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model", autospec=True)
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.serialize", new=patch_save_model)
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.save_model", new=patch_save_model)
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
         fake_quantize = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.nncf.quantize", autospec=True)
 
@@ -608,7 +608,7 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.xml", b"decoder_xml")
         self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model", autospec=True)
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.serialize", new=patch_save_model)
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.save_model", new=patch_save_model)
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
         fake_quantize = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.nncf.quantize", autospec=True)
 
