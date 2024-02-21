@@ -28,7 +28,7 @@ from anomalib.utils.callbacks import (
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.loggers.csv_logs import CSVLogger
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback, IterationTimer
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import IterationTimer, ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
