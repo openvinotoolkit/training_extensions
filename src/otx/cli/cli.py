@@ -17,6 +17,7 @@ from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_
 from rich.console import Console
 
 from otx import OTX_LOGO, __version__
+from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
@@ -35,19 +36,6 @@ try:
     register_configs()
 except ImportError:
     _ENGINE_AVAILABLE = False
-
-
-def absolute_path(path: str | Path | None) -> str | None:
-    """Returns the absolute path of the given path.
-
-    Args:
-        path (str | Path | None): The path to be resolved.
-
-    Returns:
-        str | None: The absolute path of the given path, or None if the path is None.
-
-    """
-    return str(Path(path).resolve()) if path is not None else None
 
 
 class OTXCLI:
@@ -289,7 +277,7 @@ class OTXCLI:
 
     def _set_default_config(self) -> dict:
         parser_kwargs = {}
-        if self.cache_dir.exists() and (self.cache_dir / "configs.txt").exists():
+        if (self.cache_dir / "configs.txt").exists():
             with (self.cache_dir / "configs.txt").open("r") as f:
                 config_file = f.read()
             parser_kwargs["default_config_files"] = [str(config_file)]
@@ -489,7 +477,6 @@ class OTXCLI:
 
         The configuration is saved as a YAML file in the engine's working directory.
         """
-        # Change all Path-related values to absolute paths.
         self.config[self.subcommand].pop("workspace", None)
         self.get_subcommand_parser(self.subcommand).save(
             cfg=self.config.get(str(self.subcommand), self.config),

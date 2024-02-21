@@ -13,8 +13,8 @@ class Workspace:
     """Represents a workspace for the OTX application.
 
     Args:
-        work_dir (str): The path to the workspace directory. Defaults to "./otx-workspace".
-        use_sub_dir (bool): Whether to use a subdirectory within the workspace. Defaults to True.
+        work_dir (Path | str | None, optional): The path to the workspace directory. Defaults to None.
+        use_sub_dir (bool, optional): Whether to use a subdirectory within the workspace. Defaults to True.
     """
 
     def __init__(self, work_dir: Path | str | None = None, use_sub_dir: bool = True):

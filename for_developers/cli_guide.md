@@ -328,7 +328,7 @@ otx-workspace/
 OTX considers the folder with .cache to be the root of the entire Workspace.
 So this uses `.cache/configs.txt` as the default config, and the ckpt pass from `.cache/latest_checkpoint.txt` as a checkpoint as needed.
 
-Case 1: If a user specify an output `work_dir` (An already existing workspace)
+Case 1: If a user specifies an output `work_dir` (An already existing workspace)
 
 ```console
 otx train --work_dir otx-workspace
