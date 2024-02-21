@@ -273,13 +273,14 @@ class AutoConfigurator:
         self,
         model_name: str,
         meta_info: LabelInfo,
-        datamodule_config: DataModuleConfig,
+        tile_config: TileConfig,
     ) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.
 
         Args:
             model_name (str): The name of the model.
             meta_info (LabelInfo): The label information.
+            tile_config (TileConfig): The tile configuration.
 
         Returns:
             OVModel: The OVModel instance.
@@ -297,7 +298,7 @@ class AutoConfigurator:
         return ov_model(
             model_name=model_name,
             num_classes=meta_info.num_classes,
-            datamodule_config=datamodule_config,
+            tile_config=tile_config,
         )
 
     def get_ov_datamodule(self, datamodule_config: DataModuleConfig) -> OTXDataModule:

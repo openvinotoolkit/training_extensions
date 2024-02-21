@@ -16,6 +16,7 @@ from jsonargparse import ArgumentParser
 from openvino.model_api.models import Model
 from torch import nn
 
+from otx.core.config.data import TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -294,6 +295,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        tile_config: TileConfig | None = None,
     ) -> None:
         self.model_name = model_name
         self.model_type = model_type
@@ -301,6 +303,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
         self.use_throughput_mode = use_throughput_mode
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
+        self.tile_config = tile_config if tile_config is not None else TileConfig()
         super().__init__(num_classes)
 
     def _create_model(self) -> Model:
@@ -342,8 +345,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             output_dict[idx] = result
 
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
-        # NOTE: tiler has its own async impl
-        if self.async_inference and not self.datamodule_config.tile_config.enable_tiler:
+        # NOTE: tiler has its own async implementation
+        if self.async_inference and not self.tile_config.enable_tiler:
             output_dict: dict[int, NamedTuple] = {}
             self.model.set_callback(_callback)
             for idx, im in enumerate(numpy_inputs):

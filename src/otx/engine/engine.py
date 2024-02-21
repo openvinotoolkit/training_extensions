@@ -286,7 +286,7 @@ class Engine:
             model = self._auto_configurator.get_ov_model(
                 model_name=str(checkpoint),
                 meta_info=datamodule.meta_info,
-                datamodule_config=self.datamodule.config,
+                tile_config=self.datamodule.config.tile_config,
             )
 
         lit_module = self._build_lightning_module(

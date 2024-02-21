@@ -13,7 +13,7 @@ import torch
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
-from otx.core.config.data import DataModuleConfig, TileConfig
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
@@ -303,7 +303,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        datamodule_config: DataModuleConfig | None = None,
+        tile_config: TileConfig | None = None,
     ) -> None:
         super().__init__(
             num_classes,
@@ -313,19 +313,19 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
             max_num_requests,
             use_throughput_mode,
             model_api_configuration,
+            tile_config,
         )
-        self.datamodule_config = datamodule_config
-        if self.datamodule_config is not None:
-            tile_config = self.datamodule_config.tile_config
-            if tile_config.enable_tiler:
-                log.info(f"Enable tiler with tile size: {tile_config.tile_size} and overlap: {tile_config.overlap}")
-                tiler_config = {
-                    "tile_size": tile_config.tile_size,
-                    "tiles_overlap": tile_config.overlap,
-                    "max_pred_number": tile_config.max_num_instances,
-                }
-                execution_mode = "async" if self.async_inference else "sync"
-                self.model = DetectionTiler(self.model, tiler_config, execution_mode)
+        if self.tile_config is not None and self.tile_config.enable_tiler:
+            log.info(
+                f"Enable tiler with tile size: {self.tile_config.tile_size} and overlap: {self.tile_config.overlap}",
+            )
+            ov_tile_config = {
+                "tile_size": self.tile_config.tile_size,
+                "tiles_overlap": self.tile_config.overlap,
+                "max_pred_number": self.tile_config.max_num_instances,
+            }
+            execution_mode = "async" if self.async_inference else "sync"
+            self.model = DetectionTiler(self.model, ov_tile_config, execution_mode)
 
     def _customize_outputs(
         self,
