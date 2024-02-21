@@ -9,7 +9,9 @@ import pytest
 from otx.cli.registry import Registry
 from typing import Callable
 from .benchmark import OTXBenchmark
+from otx.algorithms.common.utils import set_random_seed
 
+set_random_seed(42, deterministic=True)
 
 class TestPerfAnomalyClassification:
     """Benchmark anomaly classification."""
@@ -27,7 +29,7 @@ class TestPerfAnomalyClassification:
                 "anomaly/mvtec/bottle_small/2",
                 "anomaly/mvtec/bottle_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "medium": {
             "tags": {
@@ -36,7 +38,7 @@ class TestPerfAnomalyClassification:
             "datasets": [
                 "anomaly/mvtec/wood_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "large": {
             "tags": {

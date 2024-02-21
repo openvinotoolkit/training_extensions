@@ -9,11 +9,11 @@ import pytest
 from otx.cli.registry import Registry
 from typing import Callable
 from .benchmark import OTXBenchmark
-
+from otx.algorithms.common.utils import set_random_seed
 
 MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="DETECTION").templates
 MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
-
+set_random_seed(42, deterministic=True)
 
 class TestPerfDetection:
     """Benchmark basic object detection."""
@@ -28,7 +28,7 @@ class TestPerfDetection:
                 "detection/pothole_small/2",
                 "detection/pothole_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "medium": {
             "tags": {
@@ -37,7 +37,7 @@ class TestPerfDetection:
             "datasets": [
                 "detection/pothole_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "large": {
             "tags": {
@@ -45,6 +45,24 @@ class TestPerfDetection:
             },
             "datasets": [
                 "detection/vitens_large",
+            ],
+            "num_repeat": 1,
+        },
+        "pascal_tiny": {
+            "tags": {
+                "task": "detection",
+            },
+            "datasets": [
+                "pascal_tiny/coco_otx",
+            ],
+            "num_repeat": 1,
+        },
+        "cityscapes": {
+            "tags": {
+                "task": "detection",
+            },
+            "datasets": [
+                "CITY_COCO/coco_otx",
             ],
             "num_repeat": 1,
         },

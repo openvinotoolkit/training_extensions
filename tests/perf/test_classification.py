@@ -9,11 +9,13 @@ import pytest
 from otx.cli.registry import Registry
 from typing import Callable
 from .benchmark import OTXBenchmark
-
+from otx.algorithms.common.utils import set_random_seed
 
 MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
 MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
+
+set_random_seed(42, deterministic=True)
 
 class TestPerfSingleLabelClassification:
     """Benchmark single-label classification."""
@@ -24,11 +26,11 @@ class TestPerfSingleLabelClassification:
                 "task": "single_label_classification",
             },
             "datasets": [
-                "classification/single_label/multiclass_CUB_small/1",
-                "classification/single_label/multiclass_CUB_small/2",
-                "classification/single_label/multiclass_CUB_small/3",
+                "regression_datasets_byEmily/classification/single_label/multiclass_CUB_small/1",
+                "regression_datasets_byEmily/classification/single_label/multiclass_CUB_small/2",
+                "regression_datasets_byEmily/classification/single_label/multiclass_CUB_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "medium": {
             "tags": {
@@ -37,7 +39,7 @@ class TestPerfSingleLabelClassification:
             "datasets": [
                 "classification/single_label/multiclass_CUB_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "large": {
             "tags": {
@@ -45,6 +47,42 @@ class TestPerfSingleLabelClassification:
             },
             "datasets": [
                 "classification/single_label/multiclass_food101_large",
+            ],
+            "num_repeat": 1,
+        },
+        "cars": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "car_data/car_data",
+            ],
+            "num_repeat": 1,
+        },
+        "skin": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "skin",
+            ],
+            "num_repeat": 1,
+        },
+        "flowers": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "flowers",
+            ],
+            "num_repeat": 1,
+        },
+        "covid19": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "covid19",
             ],
             "num_repeat": 1,
         },
@@ -135,7 +173,7 @@ class TestPerfMultiLabelClassification:
                 "classification/multi_label/multilabel_CUB_small/2",
                 "classification/multi_label/multilabel_CUB_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "medium": {
             "tags": {
@@ -144,7 +182,7 @@ class TestPerfMultiLabelClassification:
             "datasets": [
                 "classification/multi_label/multilabel_CUB_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "large": {
             "tags": {
@@ -242,7 +280,7 @@ class TestPerfHierarchicalLabelClassification:
                 "classification/h_label/h_label_CUB_small/2",
                 "classification/h_label/h_label_CUB_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "medium": {
             "tags": {
@@ -251,7 +289,7 @@ class TestPerfHierarchicalLabelClassification:
             "datasets": [
                 "classification/h_label/h_label_CUB_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         # TODO: Add large dataset
         # "large": {
