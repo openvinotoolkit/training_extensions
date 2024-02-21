@@ -92,21 +92,46 @@ Then you may change code, and all fixes will be directly applied to the editable
 Install OpenVINO™ Training Extensions by using Docker
 *****************************************************
 
+To build a docker image with Python 3.9, run a command below from the working copy of the OpenVINO training extensions.
+
 .. code-block::
 
-    $ docker build \
-        -t trainer \ # image tag, required
-        --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
-        --build-arg PYTHON_VER=3.9 \ # default Python version, optional
-        --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
-        . # training_extensions/
+    # build a docker image (otx/cpu/python3.9:latest) with Python 3.9 (default)
+    training_extensions$ ./docker/build.sh
+    # or, with other version of Python e.g., 3.10
+    training_extensions$ ./docker/build.sh --python 3.10
+
+.. note::
+
+    When the docker image build script completed successfully, the image will be named and tagged as `otx/cpu/python<py-version-string>:latest`.
+    You can check it using the command `docker images` on the terminal.
+
+To start the OpenVINO training extensions container using the image built in above, run a command below.
+
+.. code-block::
+
+    # start a container from `otx/cpu/python3.9:latest' image.
     $ docker run \
         -it \ # enter interactive terminal
         --rm \ # remove container after use
-        -v "$(pwd)/shared:/mnt/shared:rw" \ # shared volume to host machine
+        -v "$(pwd):/mnt/shared:rw" \ # mount current folder on host machine to the container
         --shm-size=4g \ # increase mounted shared memory
-        trainer
-    trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
+        otx/cpu/python3.9:latest    # name of the docker image to be used to create container
+
+Enjoy OpenVINO training extensions!
+
+.. code-block::
+
+    # find all templates for the classification task
+    root@fc01132c3753:/training_extensions# otx find --task classification
+    +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
+    |      TASK      |                         ID                        |          NAME         |                                       BASE PATH                                       |
+    +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
+    | CLASSIFICATION |       Custom_Image_Classification_DeiT-Tiny       |       DeiT-Tiny       |           src/otx/algorithms/classification/configs/deit_tiny/template.yaml           |
+    | CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
+    | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   src/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
+    | CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
+    +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
 
 *********
 Run tests
@@ -126,7 +151,7 @@ the tool ``tox`` to your host and run all test codes inside of ``tests/`` folder
 .. code-block::
 
     $ pip install tox
-    $ tox -e tests-all-py310 -- tests/
+    $ tox -e tests-all-py310-pt1 -- tests/
 
 .. note::
 
