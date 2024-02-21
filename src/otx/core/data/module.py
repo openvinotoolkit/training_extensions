@@ -22,7 +22,9 @@ from otx.core.data.mem_cache import (
 )
 from otx.core.data.pre_filtering import pre_filtering
 from otx.core.data.tile_adaptor import adapt_tile_config
+from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
+from otx.core.utils.utils import get_adaptive_num_workers
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
@@ -65,6 +67,20 @@ class OTXDataModule(LightningDataModule):
             self.config.test_subset.subset_name: self.config.test_subset,
         }
 
+        if self.config.auto_num_workers:
+            if self.config.device not in [DeviceType.gpu, DeviceType.auto]:
+                log.warning(
+                    "Only GPU device type support auto_num_workers. "
+                    f"Current deveice type is {self.config.device!s}. auto_num_workers is skipped.",
+                )
+            elif (num_workers := get_adaptive_num_workers()) is not None:
+                for subset_name, subset_config in config_mapping.items():
+                    log.info(
+                        f"num_workers of {subset_name} subset is changed : "
+                        f"{subset_config.num_workers} -> {num_workers}",
+                    )
+                    subset_config.num_workers = num_workers
+
         mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
         mem_cache_mode = (
             "singleprocessing"
@@ -76,7 +92,7 @@ class OTXDataModule(LightningDataModule):
             mem_size=mem_size,
         )
 
-        meta_infos: list[LabelInfo] = []
+        label_infos: list[LabelInfo] = []
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -98,18 +114,18 @@ class OTXDataModule(LightningDataModule):
                 )
             self.subsets[name] = dataset
 
-            meta_infos += [self.subsets[name].meta_info]
+            label_infos += [self.subsets[name].label_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
-        if self._is_meta_info_valid(meta_infos) is False:
-            msg = "All data meta infos of subsets should be the same."
+        if self._is_label_info_valid(label_infos) is False:
+            msg = "All data label infos of subsets should be the same."
             raise ValueError(msg)
 
-        self.meta_info = next(iter(meta_infos))
+        self.label_info = next(iter(label_infos))
 
-    def _is_meta_info_valid(self, meta_infos: list[LabelInfo]) -> bool:
-        """Check whether there are mismatches in the metainfo for the all subsets."""
-        if all(meta_info == meta_infos[0] for meta_info in meta_infos):
+    def _is_label_info_valid(self, label_infos: list[LabelInfo]) -> bool:
+        """Check whether there are mismatches in the label info for the all subsets."""
+        if all(label_info == label_infos[0] for label_info in label_infos):
             return True
         return False
 

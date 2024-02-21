@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
 
 import numpy as np
 import openvino
@@ -56,6 +56,8 @@ class OTXModel(
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+        self.original_model_forward = None
+        self._explain_mode = False
 
     def setup_callback(self, trainer: Trainer) -> None:
         """Callback for setup OTX Model.
@@ -95,6 +97,16 @@ class OTXModel(
         """Returns model's number of classes. Can be redefined at the model's level."""
         return self.label_info.num_classes
 
+    @property
+    def explain_mode(self) -> bool:
+        """Get model explain mode."""
+        return self._explain_mode
+
+    @explain_mode.setter
+    def explain_mode(self, explain_mode: bool) -> None:
+        """Set model explain mode."""
+        self._explain_mode = explain_mode
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -131,6 +143,23 @@ class OTXModel(
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )
+
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward explain function."""
+        raise NotImplementedError
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
+        raise NotImplementedError
+
+    def _reset_model_forward(self) -> None:
+        pass
+
+    def _restore_model_forward(self) -> None:
+        pass
 
     def forward_tiles(
         self,
@@ -228,7 +257,10 @@ class OTXModel(
         Returns:
             Path: path to the exported model.
         """
-        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        self._reset_model_forward()
+        exported_model_path = self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        self._restore_model_forward()
+        return exported_model_path
 
     @property
     def _exporter(self) -> OTXModelExporter:
