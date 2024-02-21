@@ -1,4 +1,4 @@
-FROM ubuntu:20.04@sha256:a4fab1802f08df089c4b2e0a1c8f1a06f573bd1775687d07fef4076d3a2e4900
+FROM ubuntu:22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da
 
 ARG PYTHON_VER=3.9
 ARG SOURCE=https://download.pytorch.org/whl/cpu
