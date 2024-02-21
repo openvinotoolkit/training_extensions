@@ -28,5 +28,6 @@ otx.algorithms.anomaly.adapters.anomalib.callbacks
    :recursive:
 
    otx.algorithms.anomaly.adapters.anomalib.callbacks.inference
+   otx.algorithms.anomaly.adapters.anomalib.callbacks.iteration_timer
    otx.algorithms.anomaly.adapters.anomalib.callbacks.progress
 

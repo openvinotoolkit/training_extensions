@@ -263,8 +263,9 @@
     <span class="n">PostProcessingConfigurationCallback</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">seed_everything</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.loggers.csv_logs</span> <span class="kn">import</span> <span class="n">CSVLogger</span>
 
-<span class="kn">from</span> <span class="nn">otx.algorithms.anomaly.adapters.anomalib.callbacks</span> <span class="kn">import</span> <span class="n">ProgressCallback</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.anomaly.adapters.anomalib.callbacks</span> <span class="kn">import</span> <span class="n">IterationTimer</span><span class="p">,</span> <span class="n">ProgressCallback</span>
 <span class="kn">from</span> <span class="nn">otx.algorithms.anomaly.adapters.anomalib.data</span> <span class="kn">import</span> <span class="n">OTXAnomalyDataModule</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.model</span> <span class="kn">import</span> <span class="n">ModelEntity</span>
@@ -323,9 +324,10 @@
                 <span class="n">manual_image_threshold</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">manual_image</span><span class="p">,</span>
                 <span class="n">manual_pixel_threshold</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">manual_pixel</span><span class="p">,</span>
             <span class="p">),</span>
+            <span class="n">IterationTimer</span><span class="p">(</span><span class="n">on_step</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
         <span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">CSVLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">output_model</span><span class="p">)</span>
