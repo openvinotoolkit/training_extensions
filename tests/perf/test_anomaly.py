@@ -25,9 +25,9 @@ class TestPerfAnomalyClassification:
                 "task": "anomaly_classification",
             },
             "datasets": [
-                "anomaly/mvtec/bottle_small/1",
-                "anomaly/mvtec/bottle_small/2",
-                "anomaly/mvtec/bottle_small/3",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/1",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/2",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/3",
             ],
             "num_repeat": 1,
         },
@@ -36,7 +36,7 @@ class TestPerfAnomalyClassification:
                 "task": "anomaly_classification",
             },
             "datasets": [
-                "anomaly/mvtec/wood_medium",
+                "regression_datasets_byEmily/anomaly/mvtec/wood_medium",
             ],
             "num_repeat": 1,
         },
@@ -45,7 +45,7 @@ class TestPerfAnomalyClassification:
                 "task": "anomaly_classification",
             },
             "datasets": [
-                "anomaly/mvtec/hazelnut_large",
+                "regression_datasets_byEmily/anomaly/mvtec/hazelnut_large",
             ],
             "num_repeat": 1,
         },
@@ -115,9 +115,9 @@ class TestPerfAnomalyDetection:
                 "task": "anomaly_detection",
             },
             "datasets": [
-                "anomaly/mvtec/bottle_small/1",
-                "anomaly/mvtec/bottle_small/2",
-                "anomaly/mvtec/bottle_small/3",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/1",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/2",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/3",
             ],
             "num_repeat": 3,
         },
@@ -126,7 +126,7 @@ class TestPerfAnomalyDetection:
                 "task": "anomaly_detection",
             },
             "datasets": [
-                "anomaly/mvtec/wood_medium",
+                "regression_datasets_byEmily/anomaly/mvtec/wood_medium",
             ],
             "num_repeat": 3,
         },
@@ -135,7 +135,7 @@ class TestPerfAnomalyDetection:
                 "task": "anomaly_detection",
             },
             "datasets": [
-                "anomaly/mvtec/hazelnut_large",
+                "regression_datasets_byEmily/anomaly/mvtec/hazelnut_large",
             ],
             "num_repeat": 1,
         },
@@ -205,9 +205,9 @@ class TestPerfAnomalySegmentation:
                 "task": "anomaly_segmentation",
             },
             "datasets": [
-                "anomaly/mvtec/bottle_small/1",
-                "anomaly/mvtec/bottle_small/2",
-                "anomaly/mvtec/bottle_small/3",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/1",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/2",
+                "regression_datasets_byEmily/anomaly/mvtec/bottle_small/3",
             ],
             "num_repeat": 3,
         },
@@ -216,7 +216,7 @@ class TestPerfAnomalySegmentation:
                 "task": "anomaly_segmentation",
             },
             "datasets": [
-                "anomaly/mvtec/wood_medium",
+                "regression_datasets_byEmily/anomaly/mvtec/wood_medium",
             ],
             "num_repeat": 3,
         },
@@ -225,7 +225,7 @@ class TestPerfAnomalySegmentation:
                 "task": "anomaly_segmentation",
             },
             "datasets": [
-                "anomaly/mvtec/hazelnut_large",
+                "regression_datasets_byEmily/anomaly/mvtec/hazelnut_large",
             ],
             "num_repeat": 1,
         },

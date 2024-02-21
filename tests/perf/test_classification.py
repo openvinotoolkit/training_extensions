@@ -37,7 +37,7 @@ class TestPerfSingleLabelClassification:
                 "task": "single_label_classification",
             },
             "datasets": [
-                "classification/single_label/multiclass_CUB_medium",
+                "regression_datasets_byEmily/classification/single_label/multiclass_CUB_medium",
             ],
             "num_repeat": 1,
         },
@@ -46,7 +46,7 @@ class TestPerfSingleLabelClassification:
                 "task": "single_label_classification",
             },
             "datasets": [
-                "classification/single_label/multiclass_food101_large",
+                "regression_datasets_byEmily/classification/single_label/multiclass_food101_large",
             ],
             "num_repeat": 1,
         },
@@ -169,9 +169,9 @@ class TestPerfMultiLabelClassification:
                 "task": "multi_label_classification",
             },
             "datasets": [
-                "classification/multi_label/multilabel_CUB_small/1",
-                "classification/multi_label/multilabel_CUB_small/2",
-                "classification/multi_label/multilabel_CUB_small/3",
+                "regression_datasets_byEmily/classification/multi_label/multilabel_CUB_small/1",
+                "regression_datasets_byEmily/classification/multi_label/multilabel_CUB_small/2",
+                "regression_datasets_byEmily/classification/multi_label/multilabel_CUB_small/3",
             ],
             "num_repeat": 1,
         },
@@ -180,7 +180,7 @@ class TestPerfMultiLabelClassification:
                 "task": "multi_label_classification",
             },
             "datasets": [
-                "classification/multi_label/multilabel_CUB_medium",
+                "regression_datasets_byEmily/classification/multi_label/multilabel_CUB_medium",
             ],
             "num_repeat": 1,
         },
@@ -189,7 +189,7 @@ class TestPerfMultiLabelClassification:
                 "task": "multi_label_classification",
             },
             "datasets": [
-                "classification/multi_label/multilabel_food101_large",
+                "regression_datasets_byEmily/classification/multi_label/multilabel_food101_large",
             ],
             "num_repeat": 1,
         },
@@ -276,9 +276,9 @@ class TestPerfHierarchicalLabelClassification:
                 "task": "hierarchical_label_classification",
             },
             "datasets": [
-                "classification/h_label/h_label_CUB_small/1",
-                "classification/h_label/h_label_CUB_small/2",
-                "classification/h_label/h_label_CUB_small/3",
+                "regression_datasets_byEmily/classification/h_label/h_label_CUB_small/1",
+                "regression_datasets_byEmily/classification/h_label/h_label_CUB_small/2",
+                "regression_datasets_byEmily/classification/h_label/h_label_CUB_small/3",
             ],
             "num_repeat": 1,
         },
@@ -287,7 +287,7 @@ class TestPerfHierarchicalLabelClassification:
                 "task": "hierarchical_label_classification",
             },
             "datasets": [
-                "classification/h_label/h_label_CUB_medium",
+                "regression_datasets_byEmily/classification/h_label/h_label_CUB_medium",
             ],
             "num_repeat": 1,
         },

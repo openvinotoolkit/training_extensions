@@ -24,9 +24,9 @@ class TestPerfDetection:
                 "task": "detection",
             },
             "datasets": [
-                "detection/pothole_small/1",
-                "detection/pothole_small/2",
-                "detection/pothole_small/3",
+                "regression_datasets_byEmily/detection/pothole_small/1",
+                "regression_datasets_byEmily/detection/pothole_small/2",
+                "regression_datasets_byEmily/detection/pothole_small/3",
             ],
             "num_repeat": 1,
         },
@@ -35,7 +35,7 @@ class TestPerfDetection:
                 "task": "detection",
             },
             "datasets": [
-                "detection/pothole_medium",
+                "regression_datasets_byEmily/detection/pothole_medium",
             ],
             "num_repeat": 1,
         },
@@ -44,7 +44,7 @@ class TestPerfDetection:
                 "task": "detection",
             },
             "datasets": [
-                "detection/vitens_large",
+                "regression_datasets_byEmily/detection/vitens_large",
             ],
             "num_repeat": 1,
         },
