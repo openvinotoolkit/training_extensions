@@ -4,35 +4,30 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import cv2
 
-from otx.algo.hooks.recording_forward_hook import BaseRecordingForwardHook, MaskRCNNRecordingForwardHook
 from otx.core.config.explain import ExplainConfig
+from otx.core.data.entity.base import OTXBatchPredEntityWithXAI
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntityWithXAI
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 def get_processed_saliency_maps(
-    explain_hook: BaseRecordingForwardHook,
+    predictions: list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI] | None,
     explain_config: ExplainConfig,
-    predictions: list | None,
     work_dir: Path | None,
 ) -> list:
     """Implement saliency map filtering and post-processing."""
     # Optimize for memory <- TODO(negvet)
-    raw_saliency_maps = explain_hook.records
+    raw_saliency_maps: list = []
+    if predictions:
+        raw_saliency_maps = predictions[0].saliency_maps
 
-    if predictions is not None and isinstance(explain_hook, MaskRCNNRecordingForwardHook):
-        # TODO: It is a temporary workaround. This function will be removed after we # noqa: TD003, TD002
-        # refactor XAI logics into `OTXModel.forward_explain()`.
-
-        # Mask-RCNN case, receive saliency maps from predictions
-        raw_saliency_maps = explain_hook.func(predictions)
-
-    if work_dir:
+    if raw_saliency_maps and work_dir:
         # Temporary saving saliency map for image 0, class 0 (for tests)
         cv2.imwrite(str(work_dir / "saliency_map.tiff"), raw_saliency_maps[0][0])
 

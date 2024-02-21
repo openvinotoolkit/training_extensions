@@ -92,6 +92,8 @@ class TestModule:
         cfg.mem_cache_size = "1GB"
         cfg.tile_config = {}
         cfg.tile_config.enable_tiler = False
+        cfg.auto_num_workers = False
+        cfg.device = "auto"
         return cfg
 
     @patch("otx.core.data.module.OTXDatasetFactory")

@@ -14,9 +14,10 @@ from torchvision import tv_tensors
 from torchvision.ops import batched_nms
 
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
-from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
+from otx.core.data.entity.detection import DetBatchPredEntity, DetBatchPredEntityWithXAI, DetPredEntity
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchPredEntity,
+    InstanceSegBatchPredEntityWithXAI,
     InstanceSegPredEntity,
 )
 
@@ -93,7 +94,7 @@ class DetectionTileMerge(TileMerge):
 
     def merge(
         self,
-        batch_tile_preds: list[DetBatchPredEntity],
+        batch_tile_preds: list[DetBatchPredEntity | DetBatchPredEntityWithXAI],
         batch_tile_attrs: list[list[dict]],
     ) -> list[DetPredEntity]:
         """Merge batch tile predictions to a list of full-size prediction data entities.
@@ -186,7 +187,7 @@ class InstanceSegTileMerge(TileMerge):
 
     def merge(
         self,
-        batch_tile_preds: list[InstanceSegBatchPredEntity],
+        batch_tile_preds: list[InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI],
         batch_tile_attrs: list[list[dict]],
     ) -> list[InstanceSegPredEntity]:
         """Merge inst-seg tile predictions to one single prediction.

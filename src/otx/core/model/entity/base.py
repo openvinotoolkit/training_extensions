@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
 
 import numpy as np
 import openvino
@@ -22,6 +22,7 @@ from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
+    T_OTXBatchPredEntityWithXAI,
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -38,7 +39,10 @@ if TYPE_CHECKING:
     from otx.core.data.module import OTXDataModule
 
 
-class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
+class OTXModel(
+    nn.Module,
+    Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+):
     """Base class for the models used in OTX.
 
     Args:
@@ -53,6 +57,8 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+        self.original_model_forward = None
+        self._explain_mode = False
 
     def setup_callback(self, trainer: Trainer) -> None:
         """Callback for setup OTX Model.
@@ -92,6 +98,16 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         """Returns model's number of classes. Can be redefined at the model's level."""
         return self.label_info.num_classes
 
+    @property
+    def explain_mode(self) -> bool:
+        """Get model explain mode."""
+        return self._explain_mode
+
+    @explain_mode.setter
+    def explain_mode(self, explain_mode: bool) -> None:
+        """Set model explain mode."""
+        self._explain_mode = explain_mode
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -104,14 +120,14 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         self,
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         raise NotImplementedError
 
     def forward(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
         # If customize_inputs is overridden
         if isinstance(inputs, OTXTileBatchDataEntity):
@@ -129,7 +145,27 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
             else outputs
         )
 
-    def forward_tiles(self, inputs: T_OTXTileBatchDataEntity) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward explain function."""
+        raise NotImplementedError
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
+        raise NotImplementedError
+
+    def _reset_model_forward(self) -> None:
+        pass
+
+    def _restore_model_forward(self) -> None:
+        pass
+
+    def forward_tiles(
+        self,
+        inputs: T_OTXTileBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function for tile task."""
         raise NotImplementedError
 
@@ -222,7 +258,10 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         Returns:
             Path: path to the exported model.
         """
-        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        self._reset_model_forward()
+        exported_model_path = self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        self._restore_model_forward()
+        return exported_model_path
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -273,7 +312,7 @@ class OTXModel(nn.Module, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_
         return {}
 
 
-class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
+class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
@@ -331,14 +370,14 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         raise NotImplementedError
 
     def forward(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
 
         def _callback(result: NamedTuple, idx: int) -> None:
