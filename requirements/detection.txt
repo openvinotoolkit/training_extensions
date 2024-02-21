@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Detection Requirements.
 mmcv-full==1.7.0
-mmdet==2.28.1
+mmdet==3.3.0
 pytorchcv==0.0.67
 mmcls==0.25.0
 timm==0.6.12
