@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: /.ci
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /docker
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /src/otx/api/usecases/exportable_code/demo
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /requirements
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /docker
+    schedule:
+      interval: weekly
