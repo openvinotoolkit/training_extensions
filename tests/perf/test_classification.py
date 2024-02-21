@@ -55,13 +55,20 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         )
     ]
 
-    ACCURACY_METRICS = [
-        Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
-    ]
-
-    EFFICENCY_METRICS = [
-        Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
-        Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+    METRICS_TEST_CASES = [  # noqa: RUF012
+        {
+            "type": "accuracy",
+            "metrics": [
+                Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
+            ],
+        },
+        {
+            "type": "efficiency",
+            "metrics": [
+                Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
+                Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+            ]
+        }
     ]
 
     @pytest.mark.parametrize(
@@ -76,39 +83,20 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    def test_accuracy(self,
+    @pytest.mark.parametrize(
+        "fxt_benchmark",
+        METRICS_TEST_CASES,
+        ids=lambda metrics: metrics["type"],
+        indirect=True,
+    )
+    def test_perf(self,
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        self._test_accuracy(
+        self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
-            metrics=self.ACCURACY_METRICS,
-            benchmark=fxt_benchmark,
-        )
-
-    @pytest.mark.parametrize(
-        "fxt_model",
-        MODEL_TEST_CASES,
-        ids=lambda model: model.name,
-        indirect=True,
-    )
-    @pytest.mark.parametrize(
-        "fxt_dataset",
-        DATASET_TEST_CASES,
-        ids=lambda dataset: dataset.name,
-        indirect=True,
-    )
-    def test_efficiency(self,
-        fxt_model: Benchmark.Model,
-        fxt_dataset: Benchmark.Dataset,
-        fxt_benchmark: Benchmark,
-    ):
-        self._test_efficiency(
-            model=fxt_model,
-            dataset=fxt_dataset,
-            metrics=self.EFFICENCY_METRICS,
             benchmark=fxt_benchmark,
         )
 
@@ -155,13 +143,20 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         )
     ]
 
-    ACCURACY_METRICS = [
-        Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
-    ]
-
-    EFFICENCY_METRICS = [
-        Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
-        Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+    METRICS_TEST_CASES = [  # noqa: RUF012
+        {
+            "type": "accuracy",
+            "metrics": [
+                Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
+            ],
+        },
+        {
+            "type": "efficiency",
+            "metrics": [
+                Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
+                Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+            ]
+        }
     ]
 
     @pytest.mark.parametrize(
@@ -176,39 +171,20 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    def test_accuracy(self,
+    @pytest.mark.parametrize(
+        "fxt_benchmark",
+        METRICS_TEST_CASES,
+        ids=lambda metrics: metrics["type"],
+        indirect=True,
+    )
+    def test_perf(self,
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        self._test_accuracy(
+        self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
-            metrics=self.ACCURACY_METRICS,
-            benchmark=fxt_benchmark,
-        )
-
-    @pytest.mark.parametrize(
-        "fxt_model",
-        MODEL_TEST_CASES,
-        ids=lambda model: model.name,
-        indirect=True,
-    )
-    @pytest.mark.parametrize(
-        "fxt_dataset",
-        DATASET_TEST_CASES,
-        ids=lambda dataset: dataset.name,
-        indirect=True,
-    )
-    def test_efficiency(self,
-        fxt_model: Benchmark.Model,
-        fxt_dataset: Benchmark.Dataset,
-        fxt_benchmark: Benchmark,
-    ):
-        self._test_efficiency(
-            model=fxt_model,
-            dataset=fxt_dataset,
-            metrics=self.EFFICENCY_METRICS,
             benchmark=fxt_benchmark,
         )
 
@@ -253,13 +229,20 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         # TODO: Add large dataset
     ]
 
-    ACCURACY_METRICS = [
-        Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
-    ]
-
-    EFFICENCY_METRICS = [
-        Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
-        Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+    METRICS_TEST_CASES = [  # noqa: RUF012
+        {
+            "type": "accuracy",
+            "metrics": [
+                Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
+            ],
+        },
+        {
+            "type": "efficiency",
+            "metrics": [
+                Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
+                Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+            ]
+        }
     ]
 
     @pytest.mark.parametrize(
@@ -274,38 +257,19 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    def test_accuracy(self,
+    @pytest.mark.parametrize(
+        "fxt_benchmark",
+        METRICS_TEST_CASES,
+        ids=lambda metrics: metrics["type"],
+        indirect=True,
+    )
+    def test_perf(self,
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        self._test_accuracy(
+        self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
-            metrics=self.ACCURACY_METRICS,
-            benchmark=fxt_benchmark,
-        )
-
-    @pytest.mark.parametrize(
-        "fxt_model",
-        MODEL_TEST_CASES,
-        ids=lambda model: model.name,
-        indirect=True,
-    )
-    @pytest.mark.parametrize(
-        "fxt_dataset",
-        DATASET_TEST_CASES,
-        ids=lambda dataset: dataset.name,
-        indirect=True,
-    )
-    def test_efficiency(self,
-        fxt_model: Benchmark.Model,
-        fxt_dataset: Benchmark.Dataset,
-        fxt_benchmark: Benchmark,
-    ):
-        self._test_efficiency(
-            model=fxt_model,
-            dataset=fxt_dataset,
-            metrics=self.EFFICENCY_METRICS,
             benchmark=fxt_benchmark,
         )

@@ -30,6 +30,13 @@ log = logging.getLogger(__name__)
 def pytest_addoption(parser):
     """Add custom options for perf tests."""
     parser.addoption(
+        "--benchmark-type",
+        action="store",
+        default="accuracy",
+        choices=("accuracy", "efficiency", "all"),
+        help="Choose accuracy|efficiency|all. Defaults to accuracy.",
+    )
+    parser.addoption(
         "--model-type",
         action="store",
         default="all",
@@ -98,6 +105,15 @@ def pytest_addoption(parser):
         type=str,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
+
+
+@pytest.fixture(scope="session")
+def fxt_benchmark_type(request: pytest.FixtureRequest) -> str:
+    """Select benchmark type."""
+    benchmark_type: str = request.config.getoption("--benchmark-type")
+    msg = f"{benchmark_type = }"
+    log.info(msg)
+    return benchmark_type
 
 
 @pytest.fixture(scope="session")
@@ -258,6 +274,7 @@ def fxt_tags(fxt_user_name) -> dict[str, str]:
 @pytest.fixture
 def fxt_benchmark(
     request: pytest.FixtureRequest,
+    fxt_benchmark_type: str,
     fxt_data_root: Path,
     fxt_output_root: Path,
     fxt_num_epoch: int,
@@ -265,16 +282,33 @@ def fxt_benchmark(
     fxt_eval_upto: str,
     fxt_tags: dict[str, str],
     fxt_dry_run: bool,
+    fxt_accelerator: str,
 ) -> Benchmark:
     """Configure benchmark."""
+    benchmark_type: str = request.param["type"]
+    if fxt_benchmark_type != "all":
+        if benchmark_type != fxt_benchmark_type:
+            pytest.skip(f"{benchmark_type} benchmark")
+
+    num_epoch_override = fxt_num_epoch
+    if num_epoch_override == 0:  # 0: use default
+        if benchmark_type == "efficiency":
+            num_epoch_override = 2
+
+    benchmark_metrics: str = request.param["metrics"]
+    tags = fxt_tags.copy()
+    tags["benchmark_type"] = benchmark_type
+
     return Benchmark(
         data_root=fxt_data_root,
         output_root=fxt_output_root,
-        num_epoch=fxt_num_epoch,
+        metrics=benchmark_metrics,
+        num_epoch=num_epoch_override,
         num_repeat=fxt_num_repeat,
         eval_upto=fxt_eval_upto,
-        tags=fxt_tags,
-        dry_run=fxt_dry_run
+        tags=tags,
+        dry_run=fxt_dry_run,
+        accelerator=fxt_accelerator,
     )
 
 
@@ -435,58 +469,12 @@ def fxt_benchmark(
 class PerfTestBase:
     """Base perf test structure."""
 
-    def _test_accuracy(self,
+    def _test_perf(self,
         model: Benchmark.Model,
         dataset: Benchmark.Dataset,
-        metrics: list[Benchmark.Metric],
         benchmark: Benchmark,
     ):
         result = benchmark.run(
             model=model,
             dataset=dataset,
-            metrics=metrics,
-            tags={"benchmark": "accuarcy"},
         )
-
-    def _test_efficiency(self,
-        model: Benchmark.Model,
-        dataset: Benchmark.Dataset,
-        metrics: list[Benchmark.Metric],
-        benchmark: Benchmark,
-    ):
-        result = benchmark.run(
-            model=model,
-            dataset=dataset,
-            metrics=metrics,
-            tags={"benchmark": "efficiency"},
-        )
-
-    ## Options
-    #cfg: dict = request.param[1].copy()
-
-    #tags = cfg.get("tags", {})
-    #tags["data_size"] = data_size
-    #cfg["tags"] = tags
-
-    #num_epoch_override: int = int(request.config.getoption("--num-epoch"))
-    #if num_epoch_override > 0:  # 0: use default
-    #    cfg["num_epoch"] = num_epoch_override
-    #if "test_speed" in request.node.name:
-    #    if cfg.get("num_epoch", 0) == 0:  # No user options
-    #        cfg["num_epoch"] = 2
-
-    #num_repeat_override: int = int(request.config.getoption("--num-repeat"))
-    #if num_repeat_override > 0:  # 0: use default
-    #    cfg["num_repeat"] = num_repeat_override
-
-    #cfg["eval_upto"] = request.config.getoption("--eval-upto")
-    #cfg["data_root"] = request.config.getoption("--data-root")
-    #cfg["output_root"] = str(fxt_output_root)
-    #cfg["dry_run"] = request.config.getoption("--dry-run")
-
-    ## Create benchmark
-    #benchmark = OTXBenchmark(
-    #    **cfg,
-    #)
-
-    #return benchmark

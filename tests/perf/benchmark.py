@@ -5,6 +5,7 @@
 
 
 import os
+import gc
 import glob
 import pandas as pd
 import yaml
@@ -21,6 +22,7 @@ class Benchmark:
     Args:
         data_root (str): Path to the root of dataset directories. Defaults to './data'.
         output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
+        metrics (list[Metric]): Benchmark metric settings
         num_epoch (int): Overrides the per-model default number of epoch settings.
             Defaults to 0, which means no overriding.
         num_repeat (int): Number for trials with different random seed, which would be set
@@ -62,44 +64,107 @@ class Benchmark:
         self,
         data_root: Path = Path("data"),
         output_root: Path = Path("otx-benchmark"),
+        metrics: list[Metric] | None = None,
         num_epoch: int = 0,
         num_repeat: int = 1,
         eval_upto: str = "train",
         tags: dict[str,str] | None = None,
         dry_run: bool = False,
+        accelerator: str = "gpu",
     ):
         self.data_root = data_root
         self.output_root = output_root
+        self.metrics = metrics
         self.num_epoch = num_epoch
         self.num_repeat = num_repeat
         self.eval_upto = eval_upto
         self.tags = tags or {}
         self.dry_run = dry_run
+        self.accelerator = accelerator
 
     def run(
         self,
         model: Model,
         dataset: Dataset,
-        metrics: list[Metric],
-        tags: dict[str, str] | None = None,
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
         Args:
             model (Model): Target model settings
             dataset (Dataset): Target dataset settings
-            metrics (list[Metric]): Target metric settings
-            tags (dict): Overrides global benchmark tags
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
         """
 
-        all_tags = self.tags.copy()
-        all_tags.update(tags)
-        print(model, dataset, metrics, all_tags)
+        tags = {
+            "task": model.task,
+            "model": model.name,
+            "dataset": dataset.name,
+            **self.tags,
+        }
+
+        num_repeat = dataset.num_repeat
+        if self.num_repeat > 0:
+            num_repeat = self.num_repeat  # Override by global setting
+
+        for seed in range(num_repeat):
+            run_name = f"{model.task}/{model.name}/{dataset.name}/{seed}"
+            tags["seed"] = str(seed)
+            data_root = self.data_root / dataset.path
+            command_cfg = [
+                "otx", "train",
+                "--config", f"src/otx/recipe/{model.task}/{model.name}.yaml",
+                "--model.num_classes", str(dataset.num_classes),
+                "--data_root", str(data_root),
+                "--data.config.data_format", dataset.data_format,
+                "--engine.work_dir", str(self.output_root / run_name),
+                "--engine.device", self.accelerator,
+            ]
+            deterministic = dataset.extra_overrides.pop("deterministic", "False")
+            for key, value in dataset.extra_overrides.items():
+                command_cfg.append(f"--{key}")
+                command_cfg.append(str(value))
+            train_cfg = command_cfg.copy()
+            train_cfg.extend(["--seed", str(seed)])
+            train_cfg.extend(["--deterministic", deterministic])
+            #with patch("sys.argv", train_cfg):
+            #    cli = OTXCLI()
+            #    train_metrics = cli.engine.trainer.callback_metrics
+            #    checkpoint = cli.engine.checkpoint
+            print(" ".join(train_cfg))
+            command_cfg[1] = "test"
+            #command_cfg += ["--checkpoint", checkpoint]
+            print(" ".join(command_cfg))
+            #with patch("sys.argv", command_cfg):
+            #    cli = OTXCLI()
+            #    test_metrics = cli.engine.trainer.callback_metrics
+            #metrics = {**train_metrics, **test_metrics}
+            #print(run_name, tags)
         return None
 
+    ## Options
+    #cfg: dict = request.param[1].copy()
+
+    #tags = cfg.get("tags", {})
+    #tags["data_size"] = data_size
+    #cfg["tags"] = tags
+
+    #num_repeat_override: int = int(request.config.getoption("--num-repeat"))
+    #if num_repeat_override > 0:  # 0: use default
+    #    cfg["num_repeat"] = num_repeat_override
+
+    #cfg["eval_upto"] = request.config.getoption("--eval-upto")
+    #cfg["data_root"] = request.config.getoption("--data-root")
+    #cfg["output_root"] = str(fxt_output_root)
+    #cfg["dry_run"] = request.config.getoption("--dry-run")
+
+    ## Create benchmark
+    #benchmark = OTXBenchmark(
+    #    **cfg,
+    #)
+
+    #return benchmark
         # Build config file
         cfg = self._build_config(model_id, train_params, tags)
         cfg_dir = Path(cfg["output_path"])
