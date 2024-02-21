@@ -669,6 +669,7 @@ class OVMulticlassClassificationModel(
 
         if outputs and outputs[0].saliency_map.size != 0:
             predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_s_maps = [map[0] if map.size != 0 else map for map in predicted_s_maps]
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return MulticlassClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -769,6 +770,7 @@ class OVHlabelClassificationModel(
 
         if outputs and outputs[0].saliency_map.size != 1:
             predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_s_maps = [map[0] if map.size != 0 else map for map in predicted_s_maps]
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return HlabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -829,6 +831,7 @@ class OVMultilabelClassificationModel(
 
         if outputs and outputs[0].saliency_map.size != 1:
             predicted_s_maps = [out.saliency_map for out in outputs]
+            predicted_s_maps = [map[0] if map.size != 0 else map for map in predicted_s_maps]
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return MultilabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
