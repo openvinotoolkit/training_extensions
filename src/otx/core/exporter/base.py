@@ -64,6 +64,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        export_args: dict[str, Any] | None = None,
     ) -> Path:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
@@ -73,14 +74,15 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs
 
         Returns:
             Path: path to the exported model
         """
         if export_format == OTXExportFormatType.OPENVINO:
-            return self.to_openvino(model, output_dir, base_model_name, precision)
+            return self.to_openvino(model, output_dir, base_model_name, precision, export_args)
         if export_format == OTXExportFormatType.ONNX:
-            return self.to_onnx(model, output_dir, base_model_name, precision)
+            return self.to_onnx(model, output_dir, base_model_name, precision, export_args=export_args)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
             return self.to_exportable_code(model, output_dir, base_model_name, precision)
 

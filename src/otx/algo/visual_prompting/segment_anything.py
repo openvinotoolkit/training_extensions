@@ -67,6 +67,7 @@ class SegmentAnything(nn.Module):
         self.mask_threshold = mask_threshold
         self.image_size = image_size
         self.embed_dim = embed_dim
+        self.image_embedding_size = image_embedding_size
         self.use_stability_score = use_stability_score
         self.return_single_mask = return_single_mask
         self.return_extra_metrics = return_extra_metrics
@@ -135,7 +136,7 @@ class SegmentAnything(nn.Module):
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
             )
 
-    def forward(self, mode: str, *args, **kwargs) -> Any:  # noqa: ANN401
+    def forward(self, *args, mode: str = "infer", **kwargs) -> Any:  # noqa: ANN401
         """Forward method for visual prompting task."""
         assert mode in ["finetuning", "learn", "infer"]  # noqa: S101
         if mode == "finetuning":
@@ -418,6 +419,7 @@ class SegmentAnything(nn.Module):
         Returns:
             masks (Tensor): The postprocessed masks with shape Bx1xHxW.
         """
+        orig_size = orig_size.squeeze()
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
         prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
