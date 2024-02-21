@@ -535,20 +535,15 @@ class OTXCLI:
 
             list_models(print_table=True, **self.config[self.subcommand])
         elif self.subcommand in self.engine_subcommands():
-            result = None
             self.set_seed()
             self.instantiate_classes()
             fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
             try:
-                result = fn(**fn_kwargs)
+                fn(**fn_kwargs)
             except Exception:
                 self.console.print_exception(width=self.console.width)
-            output_dir = self.engine.work_dir
-            if isinstance(result, Path):
-                # Update for export subcommand
-                output_dir = result.parent
-            self.save_config(work_dir=Path(output_dir))
+            self.save_config(work_dir=Path(self.engine.work_dir))
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
