@@ -469,19 +469,39 @@ OpenVINO™ Training Extensions command line functionality.</p>
 </section>
 <section id="install-openvino-training-extensions-by-using-docker">
 <h2>Install OpenVINO™ Training Extensions by using Docker<a class="headerlink" href="#install-openvino-training-extensions-by-using-docker" title="Permalink to this heading">#</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker build \
-    -t trainer \ # image tag, required
-    --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
-    --build-arg PYTHON_VER=3.9 \ # default Python version, optional
-    --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
-    . # training_extensions/
+<p>To build a docker image with Python 3.9, run a command below from the working copy of the OpenVINO training extensions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># build a docker image (otx/cpu/python3.9:latest) with Python 3.9 (default)
+training_extensions$ ./docker/build.sh
+# or, with other version of Python e.g., 3.10
+training_extensions$ ./docker/build.sh --python 3.10
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the docker image build script completed successfully, the image will be named and tagged as <cite>otx/cpu/python&lt;py-version-string&gt;:latest</cite>.
+You can check it using the command <cite>docker images</cite> on the terminal.</p>
+</div>
+<p>To start the OpenVINO training extensions container using the image built in above, run a command below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># start a container from `otx/cpu/python3.9:latest&#39; image.
 $ docker run \
     -it \ # enter interactive terminal
     --rm \ # remove container after use
-    -v &quot;$(pwd)/shared:/mnt/shared:rw&quot; \ # shared volume to host machine
+    -v &quot;$(pwd):/mnt/shared:rw&quot; \ # mount current folder on host machine to the container
     --shm-size=4g \ # increase mounted shared memory
-    trainer
-trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
+    otx/cpu/python3.9:latest    # name of the docker image to be used to create container
+</pre></div>
+</div>
+<p>Enjoy OpenVINO training extensions!</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># find all templates for the classification task</span>
+<span class="n">root</span><span class="nd">@fc01132c3753</span><span class="p">:</span><span class="o">/</span><span class="n">training_extensions</span><span class="c1"># otx find --task classification</span>
+<span class="o">+----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+</span>
+<span class="o">|</span>      <span class="n">TASK</span>      <span class="o">|</span>                         <span class="n">ID</span>                        <span class="o">|</span>          <span class="n">NAME</span>         <span class="o">|</span>                                       <span class="n">BASE</span> <span class="n">PATH</span>                                       <span class="o">|</span>
+<span class="o">+----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">CLASSIFICATION</span> <span class="o">|</span>       <span class="n">Custom_Image_Classification_DeiT</span><span class="o">-</span><span class="n">Tiny</span>       <span class="o">|</span>       <span class="n">DeiT</span><span class="o">-</span><span class="n">Tiny</span>       <span class="o">|</span>           <span class="n">src</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">classification</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">deit_tiny</span><span class="o">/</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">CLASSIFICATION</span> <span class="o">|</span>    <span class="n">Custom_Image_Classification_EfficinetNet</span><span class="o">-</span><span class="n">B0</span>    <span class="o">|</span>    <span class="n">EfficientNet</span><span class="o">-</span><span class="n">B0</span>    <span class="o">|</span>    <span class="n">src</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">classification</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">efficientnet_b0_cls_incr</span><span class="o">/</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">CLASSIFICATION</span> <span class="o">|</span>   <span class="n">Custom_Image_Classification_EfficientNet</span><span class="o">-</span><span class="n">V2</span><span class="o">-</span><span class="n">S</span>   <span class="o">|</span>   <span class="n">EfficientNet</span><span class="o">-</span><span class="n">V2</span><span class="o">-</span><span class="n">S</span>   <span class="o">|</span>   <span class="n">src</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">classification</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">efficientnet_v2_s_cls_incr</span><span class="o">/</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">CLASSIFICATION</span> <span class="o">|</span> <span class="n">Custom_Image_Classification_MobileNet</span><span class="o">-</span><span class="n">V3</span><span class="o">-</span><span class="n">large</span><span class="o">-</span><span class="mi">1</span><span class="n">x</span> <span class="o">|</span> <span class="n">MobileNet</span><span class="o">-</span><span class="n">V3</span><span class="o">-</span><span class="n">large</span><span class="o">-</span><span class="mi">1</span><span class="n">x</span> <span class="o">|</span> <span class="n">src</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">classification</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">mobilenet_v3_large_1_cls_incr</span><span class="o">/</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span> <span class="o">|</span>
+<span class="o">+----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -496,7 +516,7 @@ $ pytest tests/
 <p>Another option to run the tests is using the testing automation tool <a class="reference external" href="https://tox.wiki/en/latest/index.html">tox</a>. Following commands will install
 the tool <code class="docutils literal notranslate"><span class="pre">tox</span></code> to your host and run all test codes inside of <code class="docutils literal notranslate"><span class="pre">tests/</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install tox
-$ tox -e tests-all-py310 -- tests/
+$ tox -e tests-all-py310-pt1 -- tests/
 </pre></div>
 </div>
 <div class="admonition note">
