@@ -5,7 +5,7 @@
 
 from collections import defaultdict
 from time import time
-from typing import Dict, Any
+from typing import Any, Dict
 
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.utilities.types import STEP_OUTPUT
