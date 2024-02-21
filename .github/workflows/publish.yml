@@ -76,12 +76,12 @@ jobs:
           file_glob: true
       - name: Publish package distributions to PyPI
         if: ${{ steps.check-tag.outputs.match != '' }}
-        uses: pypa/gh-action-pypi-publish@22b4d1f12511f2696162c08546dafbaa903448a2 # v1.7.1
+        uses: pypa/gh-action-pypi-publish@2f6f737ca5f74c637829c0f5c3acd0e29ea5e8bf # v1.8.11
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
       - name: Publish package distributions to TestPyPI
         if: ${{ steps.check-tag.outputs.match == '' }}
-        uses: pypa/gh-action-pypi-publish@22b4d1f12511f2696162c08546dafbaa903448a2 # v1.7.1
+        uses: pypa/gh-action-pypi-publish@2f6f737ca5f74c637829c0f5c3acd0e29ea5e8bf # v1.8.11
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
