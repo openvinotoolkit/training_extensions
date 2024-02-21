@@ -244,7 +244,7 @@
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
 
-<span class="kn">from</span> <span class="nn">openvino.runtime</span> <span class="kn">import</span> <span class="n">Core</span><span class="p">,</span> <span class="n">serialize</span>
+<span class="kn">from</span> <span class="nn">openvino.runtime</span> <span class="kn">import</span> <span class="n">Core</span><span class="p">,</span> <span class="n">save_model</span>
 
 
 <div class="viewcode-block" id="check_if_quantized"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.ir.html#otx.algorithms.common.utils.check_if_quantized">[docs]</a><span class="k">def</span> <span class="nf">check_if_quantized</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -271,7 +271,7 @@
 
     <span class="c1"># workaround for CVS-110054</span>
     <span class="n">tmp_xml_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">xml_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;tmp.xml&quot;</span>
-    <span class="n">serialize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">tmp_xml_path</span><span class="p">))</span>
+    <span class="n">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">tmp_xml_path</span><span class="p">),</span> <span class="n">compress_to_fp16</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">tmp_xml_path</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">xml_file</span><span class="p">)</span>
     <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tmp_xml_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">tmp_xml_path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
 </pre></div>
