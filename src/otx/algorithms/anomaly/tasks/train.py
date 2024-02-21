@@ -26,8 +26,9 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers.csv_logs import CSVLogger
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import IterationTimer, ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision import MixedPrecisionXPUPlugin
 from otx.algorithms.common.utils.utils import is_xpu_available
@@ -88,6 +89,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
                 manual_image_threshold=config.metrics.threshold.manual_image,
                 manual_pixel_threshold=config.metrics.threshold.manual_pixel,
             ),
+            IterationTimer(on_step=False),
         ]
 
         plugins = []
@@ -101,7 +103,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
             if config.trainer.precision == 16:
                 plugins.append(MixedPrecisionXPUPlugin())
 
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks, plugins=plugins)
+        self.trainer = Trainer(**config.trainer, logger=CSVLogger(self.project_path, name=""), callbacks=callbacks, plugins=plugins)
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)
