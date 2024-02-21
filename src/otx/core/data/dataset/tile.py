@@ -236,6 +236,8 @@ class OTXTileTrainDataset(OTXTileDataset):
             threshold_drop_ann=0.5,
         )
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
+        # Include original dataset for training
+        dm_dataset.update(dataset.dm_subset.as_dataset())
         dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
         dataset.dm_subset = dm_subset
         dataset.ids = [item.id for item in dm_subset]

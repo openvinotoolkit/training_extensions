@@ -319,7 +319,7 @@ class OVInstanceSegmentationModel(
                     f"Enable tiler with tile size: {tile_config.tile_size} and overlap: {tile_config.overlap}",
                 )
                 tiler_config = {
-                    "tile_size": tile_config.tile_size[0],
+                    "tile_size": tile_config.tile_size,
                     "tiles_overlap": tile_config.overlap,
                     "max_pred_number": tile_config.max_num_instances,
                 }

@@ -20,6 +20,7 @@ class YoloX(MMDetCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
         self.image_size = (1, 3, 640, 640)
+        self.tile_image_size = self.image_size
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -44,6 +45,7 @@ class YoloXTiny(YoloX):
     def __init__(self, num_classes: int) -> None:
         super().__init__(num_classes=num_classes, variant="tiny")
         self.image_size = (1, 3, 416, 416)
+        self.tile_image_size = (1, 3, 640, 640)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

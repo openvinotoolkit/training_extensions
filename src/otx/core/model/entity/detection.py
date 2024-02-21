@@ -320,11 +320,11 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
             if tile_config.enable_tiler:
                 log.info(f"Enable tiler with tile size: {tile_config.tile_size} and overlap: {tile_config.overlap}")
                 tiler_config = {
-                    "tile_size": tile_config.tile_size[0],
+                    "tile_size": tile_config.tile_size,
                     "tiles_overlap": tile_config.overlap,
                     "max_pred_number": tile_config.max_num_instances,
                 }
-                execution_mode = "sync" if self.async_inference else "async"
+                execution_mode = "async" if self.async_inference else "sync"
                 self.model = DetectionTiler(self.model, tiler_config, execution_mode)
 
     def _customize_outputs(
@@ -336,6 +336,16 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         bboxes = []
         scores = []
         labels = []
+
+        # some OMZ model requires to shift labels
+        first_label = (
+            self.model.model.get_label_name(0)
+            if isinstance(self.model, DetectionTiler)
+            else self.model.get_label_name(0)
+        )
+
+        label_shift = 1 if first_label == "background" else 0
+
         for output in outputs:
             output_objects = output.objects
             if len(output_objects):
@@ -350,12 +360,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 ),
             )
             scores.append(torch.tensor([output.score for output in output_objects]))
-
-            if self.model.get_label_name(0) == "background":
-                # some OMZ model requires to shift labeles
-                labels.append(torch.tensor([output.id - 1 for output in output_objects]))
-            else:
-                labels.append(torch.tensor([output.id for output in output_objects]))
+            labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
 
         return DetBatchPredEntity(
             batch_size=len(outputs),
