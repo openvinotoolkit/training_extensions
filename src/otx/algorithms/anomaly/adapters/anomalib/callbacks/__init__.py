@@ -16,5 +16,6 @@
 
 from .inference import AnomalyInferenceCallback
 from .progress import ProgressCallback
+from .iteration_timer import IterationTimer
 
 __all__ = ["AnomalyInferenceCallback", "ProgressCallback"]

@@ -26,8 +26,9 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers.csv_logs import CSVLogger
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback, IterationTimer
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
@@ -86,9 +87,10 @@ class TrainingTask(InferenceTask, ITrainingTask):
                 manual_image_threshold=config.metrics.threshold.manual_image,
                 manual_pixel_threshold=config.metrics.threshold.manual_pixel,
             ),
+            IterationTimer(on_step=False),
         ]
 
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
+        self.trainer = Trainer(**config.trainer, logger=CSVLogger(self.project_path, name=""), callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)
