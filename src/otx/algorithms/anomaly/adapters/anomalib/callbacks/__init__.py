@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 from .inference import AnomalyInferenceCallback
+from .iteration_timer import IterationTimer
 from .progress import ProgressCallback
 
-__all__ = ["AnomalyInferenceCallback", "ProgressCallback"]
+__all__ = ["AnomalyInferenceCallback", "IterationTimer", "ProgressCallback"]
