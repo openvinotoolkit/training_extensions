@@ -457,7 +457,3 @@ class OTXCLI:
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
-
-
-if __name__ == "__main__":
-    OTXCLI()
