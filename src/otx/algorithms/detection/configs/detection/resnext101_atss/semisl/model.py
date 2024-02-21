@@ -67,7 +67,7 @@ model = dict(
         ),
     ),
     train_cfg=dict(
-        assigner=dict(type="XPUATSSAssigner", topk=9),
+        assigner=dict(type="ATSSAssigner", topk=9),
         allowed_border=-1,
         pos_weight=-1,
         debug=False,
