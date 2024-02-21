@@ -4,6 +4,7 @@
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 import yaml
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
@@ -190,6 +191,41 @@ def test_otx_e2e(
     )
     assert latest_dir.exists()
 
+    # 5) otx export with XAI
+    if "_cls" not in task or "dino" in model_name or "deit" in model_name:
+        return
+
+    format_to_file = {
+        "ONNX": "exported_model.onnx",
+        "OPENVINO": "exported_model.xml",
+        "EXPORTABLE_CODE": "exportable_code.zip",
+    }
+
+    tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
+    for fmt in format_to_file:
+        command_cfg = [
+            "otx",
+            "export",
+            "--config",
+            recipe,
+            "--data_root",
+            fxt_target_dataset_per_task[task],
+            "--engine.work_dir",
+            str(tmp_path_test / "outputs"),
+            *fxt_cli_override_command_per_task[task],
+            "--checkpoint",
+            str(ckpt_files[-1]),
+            "--export_format",
+            f"{fmt}",
+            "--explain",
+            "True",
+        ]
+
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+        assert (tmp_path_test / "outputs").exists()
+        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
+
 
 @pytest.mark.parametrize(
     "recipe",
@@ -218,16 +254,15 @@ def test_otx_explain_e2e(
         pytest.skip("Explain is not supported for tiling yet.")
 
     import cv2
-    import numpy as np
 
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if ("_cls" not in task) and (task != "detection"):
-        pytest.skip("Supported only for classification and detection task.")
+    if "_cls" not in task:
+        pytest.skip("Supported only for classification.")
 
-    if "dino" in model_name:
-        pytest.skip("Dino is not supported.")
+    if "dino" in model_name or "deit" in model_name:
+        pytest.skip("Transformets are not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

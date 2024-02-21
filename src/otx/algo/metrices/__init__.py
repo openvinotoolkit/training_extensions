@@ -2,3 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Module for OTX custom metrices."""
+
+from typing import Callable
+
+from lightning.pytorch.cli import ArgsType
+from torchmetrics import Metric
+
+MetricCallable = Callable[[ArgsType], Metric]

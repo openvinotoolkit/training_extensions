@@ -4,12 +4,12 @@
 """Class definition for segmentation lightning module used in OTX."""
 from __future__ import annotations
 
+import inspect
 import logging as log
 from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics import Dice
 
 from otx.core.data.entity.segmentation import (
     SegBatchDataEntity,
@@ -21,6 +21,9 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Dice
+
+    from otx.algo.metrices import MetricCallable
 
 
 class OTXSegmentationLitModule(OTXLitModule):
@@ -32,12 +35,14 @@ class OTXSegmentationLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: MetricCallable | None = None,
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
         num_classes = otx_model.num_classes
         if num_classes is None:
@@ -45,30 +50,19 @@ class OTXSegmentationLitModule(OTXLitModule):
             Please, specify number of classes in config."""
             raise RuntimeError(msg)
 
-        metric_params = {
-            # a hack to use ignore_index in Dice metric
-            "num_classes": num_classes + 1,
-            "ignore_index": num_classes,
-        }
+        if metric:
+            sig = inspect.signature(metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                if name == "num_classes":
+                    param_dict[name] = self.model.num_classes + 1
+                    param_dict["ignore_index"] = self.model.num_classes
+                else:
+                    param_dict[name] = param.default
+            param_dict.pop("kwargs")
 
-        self.val_metric = Dice(**metric_params)
-        self.test_metric = Dice(**metric_params)
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
+            metric = metric(**param_dict)  # type: ignore[call-arg]
+        self.metric = metric
 
     def _log_metrics(self, meter: Dice, key: str) -> None:
         results = meter.compute()
@@ -102,8 +96,9 @@ class OTXSegmentationLitModule(OTXLitModule):
             raise TypeError(preds)
 
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for prediction in predictions:
-            self.val_metric.update(**prediction)
+        if self.metric:
+            for prediction in predictions:
+                self.metric.update(**prediction)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -129,10 +124,6 @@ class OTXSegmentationLitModule(OTXLitModule):
         if not isinstance(preds, (SegBatchPredEntity, SegBatchPredEntityWithXAI)):
             raise TypeError(preds)
         predictions = self._convert_pred_entity_to_compute_metric(preds, inputs)
-        for prediction in predictions:
-            self.test_metric.update(**prediction)
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/Dice"
+        if self.metric:
+            for prediction in predictions:
+                self.metric.update(**prediction)
