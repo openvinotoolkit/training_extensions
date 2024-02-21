@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
@@ -168,6 +169,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        tile_config: TileConfig | None = None,
     ) -> None:
         super().__init__(
             num_classes,
@@ -177,7 +179,11 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
             max_num_requests,
             use_throughput_mode,
             model_api_configuration,
+            tile_config,
         )
+        if self.tile_config is not None and self.tile_config.enable_tiler:
+            msg = "Tiling is not supported for segmentation models"
+            raise ValueError(msg)
 
     def _customize_outputs(
         self,
