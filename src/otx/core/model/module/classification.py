@@ -4,12 +4,11 @@
 """Class definition for classification lightning module used in OTX."""
 from __future__ import annotations
 
+import inspect
 from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics.classification import MultilabelAccuracy
-from torchmetrics.classification.accuracy import Accuracy
 
 from otx.algo.classification.metrics import HLabelAccuracy
 from otx.core.data.dataset.classification import HLabelMetaInfo
@@ -29,7 +28,9 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics.classification.accuracy import Accuracy
 
+    from otx.algo.metrices import MetricCallable
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -42,32 +43,26 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: MetricCallable | None = None,
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
-        num_classes = otx_model.num_classes
-        self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
 
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
+        if metric:
+            sig = inspect.signature(metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                param_dict[name] = param.default if name != "num_classes" else self.model.num_classes
+            param_dict.pop("kwargs")
 
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
+            metric = metric(**param_dict)  # type: ignore[call-arg]
 
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
+        self.metric = metric
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -88,9 +83,11 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
         if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -116,14 +113,10 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
 
 class OTXMultilabelClsLitModule(OTXLitModule):
@@ -135,32 +128,24 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: MetricCallable | None = None,
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
-        self.num_labels = otx_model.num_classes
-        self.val_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
-        self.test_metric = MultilabelAccuracy(num_labels=self.num_labels, threshold=0.5, average="micro")
+        if metric:
+            sig = inspect.signature(metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
+            param_dict.pop("kwargs")
 
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
+            metric = metric(**param_dict)  # type: ignore[call-arg]
+        self.metric = metric
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -178,9 +163,10 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -204,14 +190,10 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -223,13 +205,37 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: MetricCallable | None = None,
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
+
+        if metric:
+            sig = inspect.signature(metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                if name in ["num_multiclass_heads", "num_multilabel_classes"]:
+                    param_dict[name] = self.model.get(name)
+                else:
+                    param_dict[name] = param.default
+            param_dict.pop("kwargs")
+
+            metric = metric(**param_dict)  # type: ignore[call-arg]
+
+        # Temporary, TODO (sungmanc)
+        # OTX can't support the auto-configuration for the H-label classification
+        # Therefore, default metric can be None and it cause the error
+        # This is the workaround
+        else:
+            self.metric = HLabelAccuracy(
+                num_multiclass_heads=self.model.num_multiclass_heads,
+                num_multilabel_classes=self.model.num_multilabel_classes,
+            )
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
@@ -247,32 +253,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
-        self.val_metric = HLabelAccuracy(
-            num_multiclass_heads=self.num_multiclass_heads,
-            num_multilabel_classes=self.num_multilabel_classes,
-            head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
-        )
-        self.test_metric = HLabelAccuracy(
-            num_multiclass_heads=self.num_multiclass_heads,
-            num_multilabel_classes=self.num_multilabel_classes,
-            head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
-        )
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
+        if self.metric:
+            self.metric.num_multiclass_heads = self.num_multiclass_heads
+            self.metric.num_multilabel_classes = self.num_multilabel_classes
+            self.metric.set_hlabel_accuracy_from_head_logits_info(self.hlabel_info.head_idx_to_logits_range)
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -290,9 +274,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -322,14 +307,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/accuracy"
+        if self.metric:
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     @property
     def meta_info(self) -> LabelInfo:

@@ -23,6 +23,7 @@ from otx.core.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
     from typing_extensions import TypeAlias
 
     from otx.core.model.entity.base import OTXModel
@@ -268,6 +269,23 @@ class AutoConfigurator:
         scheduler_config = self.config.get("scheduler", None)
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
         return partial_instantiate_class(init=scheduler_config)
+
+    def get_metric(self) -> Metric | None:
+        """Returns the instantiated metric based on the configuration.
+
+        Returns:
+            Metric | None: The instantiated metric.
+        """
+        if self.task in DEFAULT_CONFIG_PER_TASK:
+            metric_config = self.config.get("metric", None)
+            logger.warning(f"Set Default Metric: {metric_config}")
+
+            # Currently, single metric only available.
+            if metric_config:
+                metric = partial_instantiate_class(init=metric_config)
+                return metric[0] if isinstance(metric, list) else metric
+
+        return None
 
     def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.

@@ -24,6 +24,7 @@ from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
+    from torchmetrics import Metric
 
 _ENGINE_AVAILABLE = True
 try:
@@ -295,11 +296,21 @@ class OTXCLI:
         If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
         """
         if self.subcommand in self.engine_subcommands():
-            # For num_classes update, Model is instantiated separately.
+            # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
+            metric_config = self.config[self.subcommand].pop("metric")
+
+            # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.datamodule = self.get_config_value(self.config_init, "data")
+
+            # Instantiate the model and needed components
             self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
+
+            # Instantiate the metric with changing the num_classes
+            metric = self.instantiate_metric(metric_config)
+            if metric:
+                self.config_init[self.subcommand]["metric"] = metric
 
             engine_kwargs = self.get_config_value(self.config_init, "engine")
             self.engine = Engine(
@@ -309,6 +320,25 @@ class OTXCLI:
                 datamodule=self.datamodule,
                 **engine_kwargs,
             )
+
+    def instantiate_metric(self, metric_config: Namespace) -> Metric | None:
+        """Instantiate the metric based on the metric_config.
+
+        It also pathces the num_classes according to the model classes information.
+
+        Args:
+            metric_config (Namespace): The metric configuration.
+        """
+        from otx.core.utils.instantiators import partial_instantiate_class
+
+        if metric_config and self.subcommand in ["train", "test"]:
+            metric_kwargs = self.get_config_value(metric_config, "metric")
+            metric = partial_instantiate_class(metric_kwargs)
+            return metric[0] if isinstance(metric, list) else metric
+
+        msg = "The configuration of metric is None."
+        warn(msg, stacklevel=2)
+        return None
 
     def instantiate_model(self, model_config: Namespace) -> tuple:
         """Instantiate the model based on the subcommand.

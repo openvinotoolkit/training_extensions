@@ -22,6 +22,7 @@ from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
     from otx.core.data.dataset.base import LabelInfo
 
@@ -36,6 +37,7 @@ class OTXLitModule(LightningModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric | None = None,
     ):
         super().__init__()
 
@@ -44,9 +46,11 @@ class OTXLitModule(LightningModule):
         self.scheduler = scheduler
         self.torch_compile = torch_compile
 
+        self.metric = metric
+
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False, ignore=["otx_model"])
+        self.save_hyperparameters(logger=False, ignore=["otx_model", "metric"])
 
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
@@ -82,6 +86,26 @@ class OTXLitModule(LightningModule):
             return total_train_loss
 
         raise TypeError(train_loss)
+
+    def on_validation_epoch_start(self) -> None:
+        """Callback triggered when the validation epoch starts."""
+        if self.metric:
+            self.metric.reset()
+
+    def on_test_epoch_start(self) -> None:
+        """Callback triggered when the test epoch starts."""
+        if self.metric:
+            self.metric.reset()
+
+    def on_validation_epoch_end(self) -> None:
+        """Callback triggered when the validation epoch ends."""
+        if self.metric:
+            self._log_metrics(self.metric, "val")
+
+    def on_test_epoch_end(self) -> None:
+        """Callback triggered when the test epoch ends."""
+        if self.metric:
+            self._log_metrics(self.metric, "test")
 
     def setup(self, stage: str) -> None:
         """Lightning hook that is called at the beginning of fit (train + validate), validate, test, or predict.
@@ -183,11 +207,6 @@ class OTXLitModule(LightningModule):
                 ckpt_meta_info.label_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/loss"
 
     @property
     def label_info(self) -> LabelInfo:

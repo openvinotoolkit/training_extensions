@@ -23,6 +23,12 @@ scheduler:
       patience: 1
       monitor: val/accuracy
 
+metric:
+  class_path: otx.algo.classification.metrics.hlabel_accuracy.HLabelAccuracy
+  init_args:
+    num_multiclass_heads: 0
+    num_multilabel_classes: 0
+
 engine:
   task: H_LABEL_CLS
   device: auto
