@@ -2,7 +2,7 @@
 # Classification Requirements.
 mmcv-full==1.7.0
 mmcls==0.25.0
-timm==0.6.12
+timm==0.9.16
 mmdeploy==0.14.0
 pytorchcv==0.0.67
 yapf<0.40.0  # it should be removed after https://github.com/google/yapf/issues/1118 is solved 
