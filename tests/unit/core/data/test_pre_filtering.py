@@ -35,13 +35,13 @@ def fxt_dm_dataset_with_unannotated() -> DmDataset:
     return DmDataset.from_iterable(dataset_items, categories=["0", "1", "2"])
 
 
-@pytest.mark.parametrize("unannotated_bg_ratio", [0.0, 0.1, 0.5, 1.0])
-def test_pre_filtering(fxt_dm_dataset_with_unannotated: DmDataset, unannotated_bg_ratio: float) -> None:
+@pytest.mark.parametrize("unannotated_items_ratio", [0.0, 0.1, 0.5, 1.0])
+def test_pre_filtering(fxt_dm_dataset_with_unannotated: DmDataset, unannotated_items_ratio: float) -> None:
     """Test function for pre_filtering.
 
     Args:
         fxt_dm_dataset_with_unannotated (DmDataset): The dataset to be filtered.
-        unannotated_bg_ratio (float): The ratio of unannotated background items to be added.
+        unannotated_items_ratio (float): The ratio of unannotated background items to be added.
 
     Returns:
         None
@@ -55,6 +55,6 @@ def test_pre_filtering(fxt_dm_dataset_with_unannotated: DmDataset, unannotated_b
     filtered_dataset = pre_filtering(
         dataset=fxt_dm_dataset_with_unannotated,
         data_format="datumaro",
-        unannotated_bg_ratio=unannotated_bg_ratio,
+        unannotated_items_ratio=unannotated_items_ratio,
     )
-    assert len(filtered_dataset) == 80 + int(len(empty_items) * unannotated_bg_ratio)
+    assert len(filtered_dataset) == 80 + int(len(empty_items) * unannotated_items_ratio)

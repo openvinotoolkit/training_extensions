@@ -6,7 +6,7 @@ config:
     - 500
     - 500
   image_color_channel: RGB
-  unannotated_bg_ratio: 0.0
+  unannotated_items_ratio: 0.0
   train_subset:
     subset_name: train
     transform_lib_type: MMACTION

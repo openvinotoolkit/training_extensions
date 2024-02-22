@@ -16,27 +16,24 @@ if TYPE_CHECKING:
     from datumaro.components.dataset_base import DatasetItem
 
 
-def pre_filtering(dataset: DmDataset, data_format: str, unannotated_bg_ratio: float) -> DmDataset:
+def pre_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio: float) -> DmDataset:
     """Pre-filtering function to filter the dataset based on certain criteria.
 
     Args:
         dataset (DmDataset): The input dataset to be filtered.
         data_format (str): The format of the dataset.
-        unannotated_bg_ratio (float): The ratio of background unannotated items to be used.
+        unannotated_items_ratio (float): The ratio of background unannotated items to be used.
             This must be a float between 0 and 1.
 
     Returns:
         DmDataset: The filtered dataset.
-
-    Raises:
-        None.
     """
-    used_background_items = []
-    msg = f"There are empty annotation items in train set, Of these, only {unannotated_bg_ratio*100}% are used."
+    used_background_items = set()
+    msg = f"There are empty annotation items in train set, Of these, only {unannotated_items_ratio*100}% are used."
     warnings.warn(msg, stacklevel=2)
-    if unannotated_bg_ratio > 0:
-        empty_items = [item for item in dataset if item.subset == "train" and len(item.annotations) == 0]
-        used_background_items = sample(empty_items, int(len(empty_items) * unannotated_bg_ratio))
+    if unannotated_items_ratio > 0:
+        empty_items = [item.id for item in dataset if item.subset == "train" and len(item.annotations) == 0]
+        used_background_items = set(sample(empty_items, int(len(empty_items) * unannotated_items_ratio)))
 
     dataset = DmDataset.filter(
         dataset,
