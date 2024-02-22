@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from torchmetrics import Metric
 
     from otx.core.data.dataset.base import LabelInfo
+    from otx.core.metrics import MetricCallable
 
 
 class OTXLitModule(LightningModule):
@@ -37,7 +38,7 @@ class OTXLitModule(LightningModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric | None = None,
+        metric: MetricCallable = lambda n: Metric(n),
     ):
         super().__init__()
 
@@ -45,7 +46,6 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
-
         self.metric = metric
 
         # this line allows to access init params with 'self.hparams' attribute
@@ -89,23 +89,21 @@ class OTXLitModule(LightningModule):
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.reset()
 
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        if self.metric:
-            self._log_metrics(self.metric, "val")
+        self._log_metrics(self.metric, "val")
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
-        if self.metric:
-            self._log_metrics(self.metric, "test")
+        self._log_metrics(self.metric, "test")
 
     def setup(self, stage: str) -> None:
         """Lightning hook that is called at the beginning of fit (train + validate), validate, test, or predict.
