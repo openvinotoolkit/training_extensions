@@ -166,19 +166,19 @@ class OTXCLI:
             sub_configs=True,
         )
         # Optimizer & Scheduler Settings
-        from lightning.pytorch.cli import ReduceLROnPlateau
+        from lightning.pytorch.cli import LRSchedulerTypeUnion, ReduceLROnPlateau
         from torch.optim import Optimizer
         from torch.optim.lr_scheduler import LRScheduler
 
         optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
         scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
         parser.add_subclass_arguments(
-            baseclass=(Optimizer, list),
+            baseclass=(Optimizer, list[Optimizer]),
             nested_key="optimizer",
             **optim_kwargs,
         )
         parser.add_subclass_arguments(
-            baseclass=(LRScheduler, ReduceLROnPlateau, list),
+            baseclass=(LRScheduler, ReduceLROnPlateau, list[LRSchedulerTypeUnion]),
             nested_key="scheduler",
             **scheduler_kwargs,
         )
