@@ -37,7 +37,9 @@ def pre_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio:
 
     dataset = DmDataset.filter(
         dataset,
-        lambda item: not (item.subset == "train" and len(item.annotations) == 0 and item not in used_background_items),
+        lambda item: not (
+            item.subset == "train" and len(item.annotations) == 0 and item.id not in used_background_items
+        ),
     )
     dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
 
