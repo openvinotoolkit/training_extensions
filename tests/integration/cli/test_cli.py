@@ -281,6 +281,9 @@ def test_otx_ov_test(
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
+    if task in ["action_classification"]:
+        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
+
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
     command_cfg = [
