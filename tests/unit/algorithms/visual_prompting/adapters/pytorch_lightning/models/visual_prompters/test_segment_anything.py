@@ -175,14 +175,10 @@ class TestSegmentAnything:
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
         )
-        mocker_load_state_dict = mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
-        )
 
         sam = SegmentAnything(self.base_config, state_dict=state_dict)
         sam_state_dict = sam.state_dict()
 
-        mocker_load_state_dict.assert_called_once()
         for k, v in state_dict.items():
             assert k in sam_state_dict
             assert torch.all(v == sam_state_dict[k])
