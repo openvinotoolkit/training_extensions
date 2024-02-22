@@ -85,7 +85,7 @@ class TestOTXCLI:
             "tests/assets/car_tree_bug",
             "--model.num_classes",
             "3",
-            "--engine.work_dir",
+            "--work_dir",
             str(tmpdir),
         ]
         monkeypatch.setattr("sys.argv", argv)

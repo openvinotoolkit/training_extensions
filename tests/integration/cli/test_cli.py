@@ -54,7 +54,7 @@ def test_otx_e2e(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -68,18 +68,23 @@ def test_otx_e2e(
     if task in ("zero_shot_visual_prompting"):
         pytest.skip("Full CLI test is not applicable to this task.")
 
+    outputs_dir = tmp_path_train / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
     # Currently, a simple output check
-    assert (tmp_path_train / "outputs").exists()
-    assert (tmp_path_train / "outputs" / "configs.yaml").exists()
+    assert latest_dir.exists()
+    assert (latest_dir / "configs.yaml").exists()
     # Check Configs file
-    with (tmp_path_train / "outputs" / "configs.yaml").open() as file:
+    with (latest_dir / "configs.yaml").open() as file:
         train_output_config = yaml.safe_load(file)
     assert "model" in train_output_config
     assert "data" in train_output_config
     assert "engine" in train_output_config
-    assert (tmp_path_train / "outputs" / "csv").exists()
-    assert (tmp_path_train / "outputs" / "checkpoints").exists()
-    ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
+    assert (latest_dir / "csv").exists()
+    assert (latest_dir / "checkpoints").exists()
+    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
 
     # 2) otx test
@@ -91,7 +96,7 @@ def test_otx_e2e(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -102,8 +107,13 @@ def test_otx_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "csv").exists()
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "csv").exists()
 
     # 3) otx export
     if any(
@@ -134,7 +144,7 @@ def test_otx_e2e(
             recipe,
             "--data_root",
             fxt_target_dataset_per_task[task],
-            "--engine.work_dir",
+            "--work_dir",
             str(tmp_path_test / "outputs"),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
@@ -145,8 +155,13 @@ def test_otx_e2e(
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
+        outputs_dir = tmp_path_test / "outputs"
+        latest_dir = max(
+            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+            key=lambda p: p.stat().st_mtime,
+        )
+        assert latest_dir.exists()
+        assert (latest_dir / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
     exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
@@ -158,7 +173,7 @@ def test_otx_e2e(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
@@ -169,7 +184,12 @@ def test_otx_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
 
     # 5) otx export with XAI
     if "_cls" not in task or "dino" in model_name or "deit" in model_name:
@@ -255,7 +275,7 @@ def test_otx_explain_e2e(
         "1000",
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -268,9 +288,14 @@ def test_otx_explain_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_explain / "outputs").exists()
-    assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
-    sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
+    outputs_dir = tmp_path_explain / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "saliency_map.tiff").exists()
+    sal_map = cv2.imread(str(latest_dir / "saliency_map.tiff"))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
@@ -325,7 +350,7 @@ def test_otx_ov_test(
         ov_recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
@@ -334,9 +359,14 @@ def test_otx_ov_test(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "csv").exists()
-    metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "csv").exists()
+    metric_result = list((latest_dir / "csv").glob(pattern="**/metrics.csv"))
     assert len(metric_result) > 0
 
 
@@ -375,7 +405,7 @@ def test_otx_hpo_e2e(
         task.upper(),
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_hpo),
         "--engine.device",
         fxt_accelerator,
@@ -394,6 +424,10 @@ def test_otx_hpo_e2e(
     if task in ("zero_shot_visual_prompting"):
         return
 
-    hpo_work_dor = tmp_path_hpo / "hpo"
+    latest_dir = max(
+        (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    hpo_work_dor = latest_dir / "hpo"
     assert hpo_work_dor.exists()
     assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
