@@ -75,7 +75,7 @@ class OTXCLI:
         return parser
 
     @staticmethod
-    def engine_subcommand_parser(**kwargs) -> ArgumentParser:
+    def engine_subcommand_parser(subcommand: str, **kwargs) -> tuple[ArgumentParser, list]:
         """Creates an ArgumentParser object for the engine subcommand.
 
         Args:
@@ -183,7 +183,38 @@ class OTXCLI:
             **scheduler_kwargs,
         )
 
-        return parser
+        parser.add_class_arguments(Workspace, "workspace")
+        parser.link_arguments("work_dir", "workspace.work_dir")
+
+        parser.link_arguments("data_root", "engine.data_root")
+        parser.link_arguments("data_root", "data.config.data_root")
+        parser.link_arguments("engine.device", "data.config.device")
+
+        added_arguments = parser.add_method_arguments(
+            Engine,
+            subcommand,
+            skip=set(OTXCLI.engine_subcommands()[subcommand]),
+            fail_untyped=False,
+        )
+
+        if "callbacks" in added_arguments:
+            parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
+            parser.link_arguments("workspace.work_dir", "callbacks.init_args.dirpath", apply_on="instantiate")
+        if "logger" in added_arguments:
+            parser.link_arguments("workspace.work_dir", "logger.init_args.save_dir", apply_on="instantiate")
+            parser.link_arguments("workspace.work_dir", "logger.init_args.log_dir", apply_on="instantiate")
+        if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
+            # This is code for an OVModel that uses checkpoint in model.model_name.
+            parser.link_arguments("checkpoint", "model.init_args.model_name")
+
+        # Load default subcommand config file
+        default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
+        if default_config_file.exists():
+            with Path(default_config_file).open() as f:
+                default_config = yaml.safe_load(f)
+            parser.set_defaults(**default_config)
+
+        return parser, added_arguments
 
     @staticmethod
     def engine_subcommands() -> dict[str, set[str]]:
@@ -226,43 +257,12 @@ class OTXCLI:
             self.cache_dir = root_dir / ".latest"
 
             parser_kwargs = self._set_default_config()
-            sub_parser = self.engine_subcommand_parser(**parser_kwargs)
-            sub_parser.add_class_arguments(Workspace, "workspace")
-            sub_parser.link_arguments("work_dir", "workspace.work_dir")
-
-            sub_parser.link_arguments("data_root", "engine.data_root")
-            sub_parser.link_arguments("data_root", "data.config.data_root")
-            sub_parser.link_arguments("engine.device", "data.config.device")
+            sub_parser, added_arguments = self.engine_subcommand_parser(subcommand=subcommand, **parser_kwargs)
+            if "checkpoint" in added_arguments and self.cache_dir.exists():
+                self._load_cache_ckpt(parser=sub_parser)
 
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
-
-            added_arguments = sub_parser.add_method_arguments(
-                Engine,
-                subcommand,
-                skip=set(self.engine_subcommands()[subcommand]),
-                fail_untyped=False,
-            )
-
-            if "callbacks" in added_arguments:
-                sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
-                sub_parser.link_arguments("workspace.work_dir", "callbacks.init_args.dirpath", apply_on="instantiate")
-            if "logger" in added_arguments:
-                sub_parser.link_arguments("workspace.work_dir", "logger.init_args.save_dir", apply_on="instantiate")
-                sub_parser.link_arguments("workspace.work_dir", "logger.init_args.log_dir", apply_on="instantiate")
-            if "checkpoint" in added_arguments:
-                if "--checkpoint" in sys.argv:
-                    # This is code for an OVModel that uses checkpoint in model.model_name.
-                    sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
-                elif self.cache_dir.exists():
-                    self._load_cache_ckpt(parser=sub_parser)
-
-            # Load default subcommand config file
-            default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
-            if default_config_file.exists():
-                with Path(default_config_file).open() as f:
-                    default_config = yaml.safe_load(f)
-                sub_parser.set_defaults(**default_config)
 
             self._subcommand_method_arguments[subcommand] = added_arguments
             self._subcommand_parsers[subcommand] = sub_parser
@@ -371,7 +371,7 @@ class OTXCLI:
         from otx.core.utils.instantiators import partial_instantiate_class
 
         if metric_config and self.subcommand in ["train", "test"]:
-            metric_kwargs = self.get_config_value(metric_config, "metric")
+            metric_kwargs = self.get_config_value(metric_config, "metric", namespace_to_dict(metric_config))
             metric = partial_instantiate_class(metric_kwargs)
             return metric[0] if isinstance(metric, list) else metric
 

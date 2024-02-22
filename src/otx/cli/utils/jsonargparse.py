@@ -282,7 +282,7 @@ def patch_update_configs() -> Iterator[None]:
         ArgumentParser.get_defaults = original_get_defaults
 
 
-def get_configuration(config_path: str | Path) -> dict:
+def get_configuration(config_path: str | Path, subcommand: str = "train", **kwargs) -> dict:
     """Get the configuration from the given path.
 
     Args:
@@ -294,8 +294,12 @@ def get_configuration(config_path: str | Path) -> dict:
     from otx.cli.cli import OTXCLI
 
     with patch_update_configs():
-        parser = OTXCLI.engine_subcommand_parser()
+        parser, _ = OTXCLI.engine_subcommand_parser(subcommand=subcommand)
+        if kwargs:
+            parser.set_defaults(**kwargs)
+
         args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)
+
     config = namespace_to_dict(args)
     logger.info(f"{config_path} is loaded.")
 

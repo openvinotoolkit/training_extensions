@@ -575,12 +575,19 @@ class Engine:
         )
 
     @classmethod
-    def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
+    def from_config(
+        cls,
+        config_path: PathLike,
+        data_root: PathLike | None = None,
+        work_dir: PathLike | None = None,
+        **kwargs,
+    ) -> Engine:
         """Builds the engine from a configuration file.
 
         Args:
             config_path (PathLike): The configuration file path.
             data_root (PathLike | None): Root directory for the data. Defaults to None.
+            work_dir (PathLike | None, optional): Working directory for the engine. Defaults to None.
             kwargs: Arguments that can override the engine's arguments.
 
         Returns:
@@ -594,9 +601,9 @@ class Engine:
         from lightning.pytorch.cli import instantiate_class
 
         from otx.cli.utils.jsonargparse import get_configuration
-        from otx.core.utils.instantiators import partial_instantiate_class
+        from otx.core.utils.instantiators import instantiate_callbacks, instantiate_loggers, partial_instantiate_class
 
-        config = get_configuration(str(config_path))
+        config = get_configuration(str(config_path), work_dir=work_dir)
         config.pop("config", None)  # Unnecessary config key
         # Datamodule
         data_config = config.pop("data")
@@ -619,6 +626,9 @@ class Engine:
         optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
         scheduler = partial_instantiate_class(init=config.pop("scheduler", None))
 
+        callbacks = instantiate_callbacks(config.pop("callbacks", []))
+        logger = instantiate_loggers(config.pop("logger", []))
+
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
         engine_config["data_root"] = data_root
@@ -629,6 +639,8 @@ class Engine:
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,
+            callbacks=callbacks,
+            logger=logger,
             **engine_config,
         )
 
