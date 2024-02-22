@@ -9,3 +9,7 @@ from lightning.pytorch.cli import ArgsType
 from torchmetrics import Metric
 
 MetricCallable = Callable[[ArgsType], Metric]
+
+from .accuracy import CustomAccuracy, HLabelAccuracy
+
+__all__ = ["CustomAccuracy", "HLabelAccuracy"]

@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
-from otx.algo.classification.metrics import HLabelAccuracy
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -23,6 +22,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
+from otx.core.metrics import HLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -30,8 +30,8 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics.classification.accuracy import Accuracy
 
-    from otx.algo.metrices import MetricCallable
     from otx.core.data.dataset.base import LabelInfo
+    from otx.core.metrics import MetricCallable
 
 
 class OTXMulticlassClsLitModule(OTXLitModule):
@@ -54,13 +54,16 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         )
 
         if metric:
-            sig = inspect.signature(metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default if name != "num_classes" else self.model.num_classes
-            param_dict.pop("kwargs")
-
-            metric = metric(**param_dict)  # type: ignore[call-arg]
+            if inspect.isclass(metric):
+                sig = inspect.signature(metric)
+                param_dict = {}
+                for name, param in sig.parameters.items():
+                    param_dict[name] = param.default if name != "num_classes" else self.model.num_classes
+                param_dict.pop("kwargs", {})
+                metric = metric(**param_dict)
+            else:
+                msg = "Function based metric not yet supported."
+                raise ValueError(msg)
 
         self.metric = metric
 
@@ -138,13 +141,16 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             metric=metric,
         )
         if metric:
-            sig = inspect.signature(metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
-            param_dict.pop("kwargs")
-
-            metric = metric(**param_dict)  # type: ignore[call-arg]
+            if inspect.isclass(metric):
+                sig = inspect.signature(metric)
+                param_dict = {}
+                for name, param in sig.parameters.items():
+                    param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
+                param_dict.pop("kwargs", {})
+                metric = metric(**param_dict)
+            else:
+                msg = "Function based metric not yet supported."
+                raise ValueError(msg)
         self.metric = metric
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
@@ -216,16 +222,19 @@ class OTXHlabelClsLitModule(OTXLitModule):
         )
 
         if metric:
-            sig = inspect.signature(metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                if name in ["num_multiclass_heads", "num_multilabel_classes"]:
-                    param_dict[name] = self.model.get(name)
-                else:
-                    param_dict[name] = param.default
-            param_dict.pop("kwargs")
-
-            metric = metric(**param_dict)  # type: ignore[call-arg]
+            if inspect.isclass(metric):
+                sig = inspect.signature(metric)
+                param_dict = {}
+                for name, param in sig.parameters.items():
+                    if name in ["num_multiclass_heads", "num_multilabel_classes"]:
+                        param_dict[name] = self.model.get(name)
+                    else:
+                        param_dict[name] = param.default
+                param_dict.pop("kwargs", {})
+                metric = metric(**param_dict)
+            else:
+                msg = "Function based metric not yet supported."
+                raise ValueError(msg)
 
         # Temporary, TODO (sungmanc)
         # OTX can't support the auto-configuration for the H-label classification

@@ -49,13 +49,17 @@ class OTXInstanceSegLitModule(OTXLitModule):
         )
 
         if metric:
-            sig = inspect.signature(metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default
-            param_dict.pop("kwargs")
+            if inspect.isclass(metric):
+                sig = inspect.signature(metric)
+                param_dict = {}
+                for name, param in sig.parameters.items():
+                    param_dict[name] = param.default
+                param_dict.pop("kwargs", {})
+                metric = metric(**param_dict)
+            else:
+                msg = "Function based metric not yet supported."
+                raise ValueError(msg)
 
-            metric = metric(**param_dict)  # type: ignore[call-arg]
         self.metric = metric
 
     def on_validation_epoch_end(self) -> None:
