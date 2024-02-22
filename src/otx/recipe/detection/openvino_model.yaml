@@ -25,7 +25,7 @@ engine:
   task: DETECTION
   device: cpu
 
-callback_monitor: val/f1-score
+callback_monitor: val/map_50
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:

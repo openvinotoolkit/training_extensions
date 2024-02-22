@@ -19,13 +19,16 @@ scheduler:
     monitor: train/loss
 
 metric:
-  class_path: otx.algo.metrices.fmeasure.FMeasure
+  class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: bbox
 
 engine:
   task: DETECTION
   device: auto
 
-callback_monitor: val/f1-score
+callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
