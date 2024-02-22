@@ -5,6 +5,7 @@ config:
   image_color_channel: RGB
   data_format: common_semantic_segmentation_with_subset_dirs
   include_polygons: true
+  unannotated_bg_ratio: 0.0
   train_subset:
     subset_name: train
     batch_size: 8

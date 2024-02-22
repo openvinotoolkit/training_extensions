@@ -19,8 +19,9 @@ from otx.core.data.module import (
 )
 
 
-def mock_data_filtering(dataset: DmDataset, data_format: str) -> DmDataset:
+def mock_data_filtering(dataset: DmDataset, data_format: str, unannotated_bg_ratio: float) -> DmDataset:
     del data_format
+    del unannotated_bg_ratio
     return dataset
 
 

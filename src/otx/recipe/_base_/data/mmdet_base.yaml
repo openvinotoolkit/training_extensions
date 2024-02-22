@@ -5,6 +5,7 @@ config:
   image_color_channel: RGB
   data_format: coco_instances
   include_polygons: false
+  unannotated_bg_ratio: 0.0
   train_subset:
     subset_name: train
     batch_size: 8
