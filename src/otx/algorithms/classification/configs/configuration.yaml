@@ -441,7 +441,7 @@ algo_backend:
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
-    default_value: 1000000000
+    default_value: 100000000
     description: Size of memory pool for caching decoded data to load data faster (bytes).
     editable: true
     header: Size of memory pool
@@ -453,7 +453,7 @@ algo_backend:
       operator: AND
       rules: []
       type: UI_RULES
-    visible_in_ui: false
+    visible_in_ui: true
     warning: null
   storage_cache_scheme:
     affects_outcome_of: TRAINING
