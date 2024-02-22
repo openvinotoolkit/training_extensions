@@ -97,10 +97,6 @@ class OTXLitModule(LightningModule):
         if isinstance(self.metric, Metric):
             self.metric.reset()
 
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.metric, "val")
-
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.metric, "test")

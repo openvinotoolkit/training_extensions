@@ -98,7 +98,7 @@ def test_otx_export_infer(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -113,7 +113,12 @@ def test_otx_export_infer(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
+    outputs_dir = tmp_path_train / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
 
     # 2) otx test
@@ -126,7 +131,7 @@ def test_otx_export_infer(
             test_recipe,
             "--data_root",
             fxt_target_dataset_per_task[task],
-            "--engine.work_dir",
+            "--work_dir",
             str(tmp_path_test / work_dir),
             "--engine.device",
             device,
@@ -154,7 +159,7 @@ def test_otx_export_infer(
             recipe,
             "--data_root",
             fxt_target_dataset_per_task[task],
-            "--engine.work_dir",
+            "--work_dir",
             str(tmp_path_test / "outputs"),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
@@ -165,8 +170,13 @@ def test_otx_export_infer(
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"exported_model.{format_to_ext[fmt]}").exists()
+        outputs_dir = tmp_path_test / "outputs"
+        latest_dir = max(
+            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+            key=lambda p: p.stat().st_mtime,
+        )
+        assert latest_dir.exists()
+        assert (latest_dir / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
     task = recipe.split("/")[-2]
@@ -175,7 +185,7 @@ def test_otx_export_infer(
         export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
     else:
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
-    exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
+    exported_model_path = str(latest_dir / "exported_model.xml")
 
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", "cpu")
     assert (tmp_path_test / "outputs").exists()
@@ -188,7 +198,7 @@ def test_otx_export_infer(
         export_test_recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
@@ -199,16 +209,36 @@ def test_otx_export_infer(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
-    exported_model_path = str(tmp_path_test / "outputs" / "optimized_model.xml")
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    exported_model_path = str(latest_dir / "optimized_model.xml")
 
     # 6) test optimized model
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", "cpu")
-    assert (tmp_path_test / "outputs").exists()
+    torch_outputs_dir = tmp_path_test / "outputs" / "torch"
+    torch_latest_dir = max(
+        (p for p in torch_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    openvino_outputs_dir = tmp_path_test / "outputs" / "openvino"
+    openvino_latest_dir = max(
+        (p for p in openvino_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    nncf_ptq_outputs_dir = tmp_path_test / "outputs" / "nncf_ptq"
+    nncf_ptq_latest_dir = max(
+        (p for p in nncf_ptq_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert nncf_ptq_latest_dir.exists()
 
-    df_torch = pd.read_csv(next((tmp_path_test / "outputs" / "torch").glob("**/metrics.csv")))
-    df_openvino = pd.read_csv(next((tmp_path_test / "outputs" / "openvino").glob("**/metrics.csv")))
-    df_nncf_ptq = pd.read_csv(next((tmp_path_test / "outputs" / "nncf_ptq").glob("**/metrics.csv")))
+    df_torch = pd.read_csv(next(torch_latest_dir.glob("**/metrics.csv")))
+    df_openvino = pd.read_csv(next(openvino_latest_dir.glob("**/metrics.csv")))
+    df_nncf_ptq = pd.read_csv(next(nncf_ptq_latest_dir.glob("**/metrics.csv")))
 
     metric_name = TASK_NAME_TO_MAIN_METRIC_NAME[task]
 
