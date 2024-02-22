@@ -138,26 +138,13 @@ class SegmentAnything(LightningModule):
         Args:
             state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
         """
-
-        def skip_unused_parameters(state_dict):
-            if self.config.model.backbone == "tiny_vit":
-                for key in [
-                    "image_encoder.norm_head.weight",
-                    "image_encoder.norm_head.bias",
-                    "image_encoder.head.weight",
-                    "image_encoder.head.bias",
-                ]:
-                    if key in state_dict:
-                        state_dict.pop(key)
-
         if state_dict:
             # state_dict from args.load_from
-            skip_unused_parameters(state_dict)
             self.load_state_dict(state_dict)
         elif self.config.model.checkpoint:
             if str(self.config.model.checkpoint).endswith(".ckpt"):
                 # load lightning checkpoint
-                self.load_from_checkpoint(self.config.model.checkpoint)
+                self.load_from_checkpoint(self.config.model.checkpoint, strict=False)
             else:
                 if str(self.config.model.checkpoint).startswith("http"):
                     # get checkpoint from url
@@ -167,8 +154,11 @@ class SegmentAnything(LightningModule):
                     with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
 
-                skip_unused_parameters(state_dict)
                 self.load_state_dict(state_dict, strict=False)
+        else:
+            # use default checkpoint
+            state_dict = torch.hub.load_state_dict_from_url(CKPT_PATHS[self.config.model.backbone])
+            self.load_state_dict(state_dict, strict=False)
 
     ##########################################################
     #     forward for inference (export/deploy/optimize)     #

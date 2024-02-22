@@ -153,37 +153,21 @@ class TestSegmentAnything:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
-        "is_backbone_arg,state_dict",
+        "state_dict",
         [
-            (
-                False,
-                OrderedDict(
-                    [
-                        ("image_encoder.weight", torch.ones(4, 4)),
-                        ("image_encoder.bias", torch.ones(4)),
-                        ("prompt_encoder.layer.weight", Tensor([[0.0]])),
-                        ("prompt_encoder.layer.bias", Tensor([0.0])),
-                        ("mask_decoder.layer.weight", Tensor([[0.0]])),
-                        ("mask_decoder.layer.bias", Tensor([0.0])),
-                    ]
-                ),
-            ),
-            (
-                True,
-                OrderedDict(
-                    [
-                        ("image_encoder.weight", torch.ones(4, 4)),
-                        ("image_encoder.bias", torch.ones(4)),
-                        ("prompt_encoder.layer.weight", Tensor([[1.0]])),
-                        ("prompt_encoder.layer.bias", Tensor([1.0])),
-                        ("mask_decoder.layer.weight", Tensor([[1.0]])),
-                        ("mask_decoder.layer.bias", Tensor([1.0])),
-                    ]
-                ),
+            OrderedDict(
+                [
+                    ("image_encoder.weight", torch.ones(4, 4)),
+                    ("image_encoder.bias", torch.ones(4)),
+                    ("prompt_encoder.layer.weight", Tensor([[1.0]])),
+                    ("prompt_encoder.layer.bias", Tensor([1.0])),
+                    ("mask_decoder.layer.weight", Tensor([[1.0]])),
+                    ("mask_decoder.layer.bias", Tensor([1.0])),
+                ]
             ),
         ],
     )
-    def test_load_checkpoint_with_state_dict(self, mocker, is_backbone_arg: bool, state_dict: OrderedDict):
+    def test_load_checkpoint_with_state_dict(self, mocker, state_dict: OrderedDict):
         """Test load_checkpoint with state_dict."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
@@ -191,29 +175,17 @@ class TestSegmentAnything:
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
         )
+        mocker_load_state_dict = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
+        )
 
         sam = SegmentAnything(self.base_config, state_dict=state_dict)
         sam_state_dict = sam.state_dict()
 
+        mocker_load_state_dict.assert_called_once()
         for k, v in state_dict.items():
             assert k in sam_state_dict
             assert torch.all(v == sam_state_dict[k])
-
-    @e2e_pytest_unit
-    def test_load_checkpoint_without_checkpoint(self, mocker):
-        """Test load_checkpoint without checkpoint."""
-        mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
-        )
-        mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
-        )
-        config = self.base_config.copy()
-        config.model.update(dict(checkpoint=None))
-
-        sam = SegmentAnything(config, state_dict=None)
-
-        assert True
 
     @e2e_pytest_unit
     def test_load_checkpoint_with_url(self, mocker):
@@ -228,12 +200,16 @@ class TestSegmentAnything:
         mocker_load_state_dict = mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
         )
+        mocker_load_from_checkpoint = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+        )
 
         config = self.base_config.copy()
         config.model.update(dict(checkpoint="http://checkpoint"))
 
         sam = SegmentAnything(config, state_dict=None)
 
+        mocker_load_from_checkpoint.assert_not_called()
         mocker_load_state_dict_from_url.assert_called_once()
         mocker_load_state_dict.assert_called_once()
 
@@ -263,8 +239,34 @@ class TestSegmentAnything:
 
         if checkpoint.endswith(".ckpt"):
             mocker_load_from_checkpoint.assert_called_once()
+            mocker_load_state_dict.assert_not_called()
         else:
+            mocker_load_from_checkpoint.assert_not_called()
             mocker_load_state_dict.assert_called_once()
+            
+    @e2e_pytest_unit
+    def test_load_checkpoint_without_checkpoint(self, mocker):
+        """Test load_checkpoint without checkpoint."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
+        mocker_load_from_checkpoint = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+        )
+        mocker_load_state_dict = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
+        )
+        mocker_load_state_dict_from_url = mocker.patch("torch.hub.load_state_dict_from_url", return_value=OrderedDict())
+
+        config = self.base_config.copy()
+        sam = SegmentAnything(config, state_dict=None)
+
+        mocker_load_from_checkpoint.assert_not_called()
+        mocker_load_state_dict_from_url.assert_called_once()
+        mocker_load_state_dict.assert_called_once()
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
