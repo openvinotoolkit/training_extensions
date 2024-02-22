@@ -54,8 +54,6 @@ class OTXDetectionLitModule(OTXLitModule):
             metric = metric(**param_dict)  # type: ignore[call-arg]
 
         self.metric = metric
-        if self.metric is not None:
-            self.metric.num_classes = otx_model.num_classes  # type: ignore[attr-defined]
 
     def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
         results = meter.compute()
