@@ -491,7 +491,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 )
                 has_mask_input = self.has_mask_inputs[0]
 
-            elif is_cascade and i == 1:
+            elif i == 1:
                 # Cascaded Post-refinement-1
                 mask_input, masks = self._postprocess_masks(masks, logits, scores, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
@@ -499,7 +499,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
                 has_mask_input = self.has_mask_inputs[1]
 
-            elif is_cascade and i == 2:
+            elif i == 2:
                 # Cascaded Post-refinement-2
                 mask_input, masks = self._postprocess_masks(masks, logits, scores)  # noqa: F821
                 if masks.sum() == 0:
