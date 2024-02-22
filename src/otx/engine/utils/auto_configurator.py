@@ -319,11 +319,8 @@ class AutoConfigurator:
             tile_config=tile_config,
         )
 
-    def get_ov_datamodule(self, datamodule_config: DataModuleConfig) -> OTXDataModule:
-        """Returns an instance of OTXDataModule with the configured data root.
-
-        Args:
-            datamodule_config (DataModuleConfig | None): The configuration for the data module.
+    def get_ov_datamodule(self) -> OTXDataModule:
+        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
 
         Returns:
             OTXDataModule: An instance of OTXDataModule.
@@ -331,9 +328,6 @@ class AutoConfigurator:
         config = self._load_default_config(model_name="openvino_model")
         config["data"]["config"]["data_root"] = self.data_root
         data_config = config["data"]["config"].copy()
-        # TODO(Eugene): why do I have to do this???
-        # https://github.com/openvinotoolkit/training_extensions/pull/2925
-        data_config["include_polygons"] = datamodule_config.include_polygons
         return OTXDataModule(
             task=config["data"]["task"],
             config=DataModuleConfig(

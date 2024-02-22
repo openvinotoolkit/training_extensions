@@ -300,7 +300,7 @@ class Engine:
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule(self.datamodule.config)
+            datamodule = self._auto_configurator.get_ov_datamodule()
             model = self._auto_configurator.get_ov_model(
                 model_name=str(checkpoint),
                 meta_info=datamodule.meta_info,
