@@ -67,7 +67,7 @@ class TestOTXTiling:
         height, width = first_item.media.data.shape[:2]
 
         rng = np.random.default_rng()
-        tile_size = rng.integers(low=100, high=500)
+        tile_size = rng.integers(low=100, high=500, size=(2,))
         overlap = rng.random(2)
         threshold_drop_ann = rng.random()
         tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
@@ -78,8 +78,8 @@ class TestOTXTiling:
             threshold_drop_ann=threshold_drop_ann,
         )
 
-        h_stride = int((1 - overlap[0]) * tile_size)
-        w_stride = int((1 - overlap[1]) * tile_size)
+        h_stride = int((1 - overlap[0]) * tile_size[0])
+        w_stride = int((1 - overlap[1]) * tile_size[1])
         num_tile_rows = (height + h_stride - 1) // h_stride
         num_tile_cols = (width + w_stride - 1) // w_stride
         assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
@@ -94,7 +94,7 @@ class TestOTXTiling:
         )
         tile_datamodule.prepare_data()
 
-        assert tile_datamodule.config.tile_config.tile_size == 6750, "Tile size should be [6750, 6750]"
+        assert tile_datamodule.config.tile_config.tile_size == (6750, 6750), "Tile size should be [6750, 6750]"
         assert (
             pytest.approx(tile_datamodule.config.tile_config.overlap, rel=1e-3) == 0.03608
         ), "Overlap should be 0.03608"

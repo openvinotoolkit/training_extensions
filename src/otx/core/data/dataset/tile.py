@@ -56,7 +56,7 @@ class OTXTileTransform(Tile):
 
     Args:
         extractor (DatasetSubset): Dataset subset to extract tiles from.
-        tile_size (int): Tile size.
+        tile_size (tuple[int, int]): Tile size.
         overlap (tuple[float, float]): Overlap ratio.
         threshold_drop_ann (float): Threshold to drop annotations.
     """
@@ -64,7 +64,7 @@ class OTXTileTransform(Tile):
     def __init__(
         self,
         extractor: DatasetSubset,
-        tile_size: int,
+        tile_size: tuple[int, int],
         overlap: tuple[float, float],
         threshold_drop_ann: float,
     ) -> None:
@@ -90,8 +90,9 @@ class OTXTileTransform(Tile):
             raise ValueError(msg)
 
         img_h, img_w = image.size
+        tile_h, tile_w = self._tile_size
         h_ovl, w_ovl = self._overlap
-        stride_h, stride_w = int(self._tile_size * (1 - h_ovl)), int(self._tile_size * (1 - w_ovl))
+        stride_h, stride_w = int(tile_h * (1 - h_ovl)), int(tile_w * (1 - w_ovl))
         n_row, n_col = (img_h + stride_h - 1) // stride_h, (img_w + stride_w - 1) // stride_w
 
         rois: list[BboxIntCoords] = []

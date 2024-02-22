@@ -337,7 +337,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
                 f"Enable tiler with tile size: {self.tile_config.tile_size} and overlap: {self.tile_config.overlap}",
             )
             ov_tile_config = {
-                "tile_size": self.tile_config.tile_size,
+                "tile_size": self.tile_config.tile_size[0],
                 "tiles_overlap": self.tile_config.overlap,
                 "max_pred_number": self.tile_config.max_num_instances,
             }
