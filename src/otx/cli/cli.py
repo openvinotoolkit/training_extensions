@@ -110,6 +110,7 @@ class OTXCLI:
         parser.add_argument(
             "--work_dir",
             type=absolute_path,
+            default=Path.cwd(),
             help="Path to work directory. The default is created as otx-workspace.",
         )
         parser.add_argument(
@@ -222,7 +223,7 @@ class OTXCLI:
         for subcommand in self.engine_subcommands():
             # If already have a workspace or run it from the root of a workspace, utilize config and checkpoint in cache
             root_dir = Path(sys.argv[sys.argv.index("--work_dir") + 1]) if "--work_dir" in sys.argv else Path.cwd()
-            self.cache_dir = root_dir / ".cache"
+            self.cache_dir = root_dir / ".latest"
 
             parser_kwargs = self._set_default_config()
             sub_parser = self.engine_subcommand_parser(**parser_kwargs)
@@ -268,23 +269,23 @@ class OTXCLI:
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)
 
     def _load_cache_ckpt(self, parser: ArgumentParser) -> None:
-        if (self.cache_dir / "latest_checkpoint.txt").exists():
-            with (self.cache_dir / "latest_checkpoint.txt").open("r") as f:
-                latest_checkpoint = f.read()
-            parser.set_defaults(checkpoint=latest_checkpoint)
-            if "--print_config" not in sys.argv:
-                warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)
+        checkpoint_dir = self.cache_dir / "checkpoints"
+        if not checkpoint_dir.exists():
+            return
+        latest_checkpoint = max(checkpoint_dir.glob("epoch_*.ckpt"), key=lambda p: p.stat().st_mtime)
+        parser.set_defaults(checkpoint=str(latest_checkpoint))
+        if "--print_config" not in sys.argv:
+            warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)
 
     def _set_default_config(self) -> dict:
         parser_kwargs = {}
-        if (self.cache_dir / "configs.txt").exists():
-            with (self.cache_dir / "configs.txt").open("r") as f:
-                config_file = f.read()
-            parser_kwargs["default_config_files"] = [str(config_file)]
+        if (self.cache_dir / "configs.yaml").exists():
+            parser_kwargs["default_config_files"] = [str(self.cache_dir / "configs.yaml")]
             if "--print_config" not in sys.argv:
-                warn(f"Load default config from {config_file}.", stacklevel=0)
+                warn(f"Load default config from {self.cache_dir / 'configs.yaml'}.", stacklevel=0)
             return parser_kwargs
 
+        # If don't use cache, use the default config from auto configuration.
         data_root = None
         task = None
         if "--data_root" in sys.argv:
@@ -485,26 +486,20 @@ class OTXCLI:
             multifile=False,
             skip_check=True,
         )
-        # if train -> Update `.cache` folder
+        # if train -> Update `.latest` folder
         if self.subcommand == "train":
-            self.update_cache(work_dir=work_dir)
+            self.update_latest(work_dir=work_dir)
 
-    def update_cache(self, work_dir: Path) -> None:
-        """Update the cache directory with the latest configurations and checkpoint file.
+    def update_latest(self, work_dir: Path) -> None:
+        """Update the latest cache directory with the latest configurations and checkpoint file.
 
         Args:
             work_dir (Path): The working directory where the configurations and checkpoint files are located.
         """
-        cache_dir = work_dir.parent / ".cache"
-        cache_dir.mkdir(exist_ok=True)
-        with (cache_dir / "configs.txt").open("w") as f:
-            f.write(str((work_dir / "configs.yaml").resolve()))
-        checkpoint_dir = work_dir / "checkpoints"
-        ckpt_list = list(checkpoint_dir.glob("epoch_*.ckpt"))  # Convert generator to list
-        if ckpt_list:
-            latest_checkpoint_file = max(ckpt_list, key=lambda p: p.stat().st_mtime)
-            with (cache_dir / "latest_checkpoint.txt").open("w") as f:
-                f.write(str(latest_checkpoint_file.resolve()))
+        cache_dir = work_dir.parent / ".latest"
+        if cache_dir.exists():
+            cache_dir.unlink()
+        cache_dir.symlink_to(work_dir)
 
     def set_seed(self) -> None:
         """Set the random seed for reproducibility.

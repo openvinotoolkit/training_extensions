@@ -320,13 +320,13 @@ If we run a typical Training example, we'll have a folder like the one below as 
 
 ```console
 otx-workspace/
-    .cache/                       # As of the last training, we have a .cache with path information for config and checkpoint.
+    .latest/                       # As of the last training, we have a .latest with path information for config and checkpoint.
     20240000_000000/              # Deliverables from OTX CLI
     20240000_000001/              # Deliverables from OTX CLI Second-Trial
 ```
 
-OTX considers the folder with .cache to be the root of the entire Workspace.
-So this uses `.cache/configs.txt` as the default config, and the ckpt pass from `.cache/latest_checkpoint.txt` as a checkpoint as needed.
+OTX considers the folder with .latest to be the root of the entire Workspace.
+`.latest` soft-links to the most recently trained output folder.
 
 Case 1: If a user specifies an output `work_dir` (An already existing workspace)
 
@@ -334,7 +334,7 @@ Case 1: If a user specifies an output `work_dir` (An already existing workspace)
 otx train --work_dir otx-workspace
 ```
 
-This will then use the .cache in the otx-workspace for training.
+This will then use the .latest in the otx-workspace for training.
 
 Case 2: if a user executes a command from within the otx-workspace
 

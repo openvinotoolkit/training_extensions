@@ -17,16 +17,14 @@ class Workspace:
         use_sub_dir (bool, optional): Whether to use a subdirectory within the workspace. Defaults to True.
     """
 
-    def __init__(self, work_dir: Path | str | None = None, use_sub_dir: bool = True):
-        if work_dir is None:
-            if not (Path.cwd() / ".cache").exists():
-                # Without work_dir input & no .cache directory in root
-                self.work_dir = Path.cwd() / "otx-workspace"
-            else:
-                # If Path.cwd is workspace
-                self.work_dir = Path.cwd()
-        else:
-            self.work_dir = Path(work_dir)
+    def __init__(self, work_dir: Path | str = Path.cwd(), use_sub_dir: bool = True):  # noqa: B008
+        work_dir = Path(work_dir)
+        self.work_dir = (
+            work_dir / "otx-workspace"
+            # Without work_dir input & no .latest directory in root
+            if work_dir == Path.cwd() and not (work_dir / ".latest").exists()
+            else work_dir
+        )
         if use_sub_dir:
             timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
             self.work_dir = self.work_dir / f"{timestamp}"

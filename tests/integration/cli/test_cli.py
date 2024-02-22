@@ -70,7 +70,7 @@ def test_otx_e2e(
 
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     # Currently, a simple output check
@@ -109,7 +109,7 @@ def test_otx_e2e(
 
     outputs_dir = tmp_path_test / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()
@@ -157,7 +157,7 @@ def test_otx_e2e(
 
         outputs_dir = tmp_path_test / "outputs"
         latest_dir = max(
-            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
         )
         assert latest_dir.exists()
@@ -186,7 +186,7 @@ def test_otx_e2e(
 
     outputs_dir = tmp_path_test / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()
@@ -290,7 +290,7 @@ def test_otx_explain_e2e(
 
     outputs_dir = tmp_path_explain / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()
@@ -361,7 +361,7 @@ def test_otx_ov_test(
 
     outputs_dir = tmp_path_test / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()
@@ -425,7 +425,7 @@ def test_otx_hpo_e2e(
         return
 
     latest_dir = max(
-        (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     hpo_work_dor = latest_dir / "hpo"

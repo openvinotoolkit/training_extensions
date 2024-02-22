@@ -57,7 +57,7 @@ def test_otx_cli_auto_configuration(
     # Currently, a simple output check
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()

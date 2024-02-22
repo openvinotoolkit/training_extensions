@@ -115,7 +115,7 @@ def test_otx_export_infer(
 
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
@@ -172,7 +172,7 @@ def test_otx_export_infer(
 
         outputs_dir = tmp_path_test / "outputs"
         latest_dir = max(
-            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
         )
         assert latest_dir.exists()
@@ -211,7 +211,7 @@ def test_otx_export_infer(
 
     outputs_dir = tmp_path_test / "outputs"
     latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()
@@ -221,17 +221,17 @@ def test_otx_export_infer(
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", "cpu")
     torch_outputs_dir = tmp_path_test / "outputs" / "torch"
     torch_latest_dir = max(
-        (p for p in torch_outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in torch_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     openvino_outputs_dir = tmp_path_test / "outputs" / "openvino"
     openvino_latest_dir = max(
-        (p for p in openvino_outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in openvino_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     nncf_ptq_outputs_dir = tmp_path_test / "outputs" / "nncf_ptq"
     nncf_ptq_latest_dir = max(
-        (p for p in nncf_ptq_outputs_dir.iterdir() if p.is_dir() and p.name != ".cache"),
+        (p for p in nncf_ptq_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
     assert nncf_ptq_latest_dir.exists()
