@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 from openvino.model_api.adapters.utils import RESIZE_TYPES, InputTransform
@@ -50,6 +50,7 @@ class OTXOVActionCls(Model):
 
         _, self.n, self.c, self.t, self.h, self.w = self.inputs[self.image_blob_name].shape
         self.resize = RESIZE_TYPES["standard"]
+        self.normalize = self._get_normalize_layer(model_adapter)
         self.input_transform = InputTransform(False, None, None)
 
         self.interval = 4
@@ -70,12 +71,32 @@ class OTXOVActionCls(Model):
                 layer_name = name
         return layer_name
 
+    @staticmethod
+    def _get_normalize_layer(model_adapter: OpenvinoAdapter) -> Callable | None:
+        model_info = None
+        for key in model_adapter.model.rt_info:
+            if key == "model_info":
+                model_info = model_adapter.model.rt_info["model_info"]
+        if model_info is None:
+            return None
+        scale_values = np.array(
+            model_adapter.model.rt_info["model_info"]["scale_values"].value.split(),
+            dtype=np.float64,
+        )
+        mean_values = np.array(
+            model_adapter.model.rt_info["model_info"]["mean_values"].value.split(),
+            dtype=np.float64,
+        )
+        return lambda x: (x - mean_values) / scale_values
+
     def preprocess(self, inputs: np.ndarray) -> tuple[dict, dict]:
         """Pre-process."""
         meta = {"original_shape": inputs[0].shape}
         frames = []
         for frame in inputs:
             resized_frame = self.resize(frame, (self.w, self.h))
+            if self.normalize:
+                resized_frame = self.normalize(resized_frame)
             frames.append(resized_frame)
         np_frames = self._reshape(frames)
         dict_inputs = {self.image_blob_name: np_frames}

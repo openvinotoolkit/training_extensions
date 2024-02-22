@@ -60,7 +60,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 1, 3, 8, 244, 244)
+        self.image_size = (1, 1, 3, 8, 224, 224)
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:
