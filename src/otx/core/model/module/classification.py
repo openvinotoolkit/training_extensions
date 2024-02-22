@@ -11,9 +11,9 @@ import torch
 from torch import Tensor
 from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.classification.accuracy import Accuracy as TorchAccuracy
-from otx.algo.metrices.accuracy import Accuracy
+from otx.core.metrics.accuracy import Accuracy
 
-from otx.algo.metrices.hlabel_accuracy import HLabelAccuracy
+from otx.core.metrics.hlabel_accuracy import HLabelAccuracy
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -31,9 +31,8 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics.classification.accuracy import Accuracy
 
-    from otx.algo.metrices import MetricCallable
+    from otx.core.metrics import MetricCallable
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -55,12 +54,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        num_classes = otx_model.num_classes
-        # self.val_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        # self.test_metric = Accuracy(task="multiclass", num_classes=num_classes)
-        
-        self.val_metric = Accuracy(average="MICRO", label_info=self.label_info) 
-        self.test_metric = Accuracy(average="MICRO", label_info=self.label_info) 
 
         if metric:
             sig = inspect.signature(metric)
@@ -72,14 +65,14 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             metric = metric(**param_dict)  # type: ignore[call-arg]
 
         self.metric = metric
-
+    
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
             raise RuntimeError(msg)
 
-        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results['accuracy'].item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MulticlassClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -127,7 +120,10 @@ class OTXMulticlassClsLitModule(OTXLitModule):
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
 
-
+    def on_fit_start(self) -> None:
+        self.metric = Accuracy(task="multiclass", average="MICRO", label_info=self.model.label_info)
+        
+        
 class OTXMultilabelClsLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX multi-label classification task."""
 
@@ -203,6 +199,9 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
+    
+    def on_fit_start(self) -> None:
+        self.metric = Accuracy(task="multilabel", average="MICRO", label_info=self.model.label_info)
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -273,24 +272,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         #     head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
         # )
         
-        self.val_metric = Accuracy(average="MICRO", label_info=self.label_info) 
-        self.test_metric = Accuracy(average="MICRO", label_info=self.label_info) 
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
+        self.metric = Accuracy(task="multiclass", average="MICRO", label_info=self.label_info) 
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -358,3 +340,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
     def label_info(self, label_info: LabelInfo) -> None:
         self._label_info = label_info
         self._set_hlabel_setup()
+
+    def on_fit_start(self) -> None:
+        self.metric = Accuracy(task="hlabel", average="MICRO", label_info=self.model.label_info)

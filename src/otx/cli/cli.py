@@ -356,7 +356,7 @@ class OTXCLI:
 
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = self.datamodule.meta_info.num_classes
+            num_classes = self.datamodule.label_info.num_classes
             if num_classes != model_config.init_args.num_classes:
                 warning_msg = (
                     f"The `num_classes` in dataset is {num_classes} "

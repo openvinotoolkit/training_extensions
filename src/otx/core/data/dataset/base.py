@@ -140,7 +140,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.max_refetch = max_refetch
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
-        self.meta_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
+        self.label_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
 
     def __len__(self) -> int:
         return len(self.ids)

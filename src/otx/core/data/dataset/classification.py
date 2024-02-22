@@ -118,13 +118,13 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         self.dm_categories = self.dm_subset.categories()[AnnotationType.label]
 
         # Hlabel classification used HLabelMetaInfo to insert the HLabelInfo.
-        self.meta_info = HLabelMetaInfo(
+        self.label_info = HLabelMetaInfo(
             label_names=[category.name for category in self.dm_categories],
             label_groups=[label_group.labels for label_group in self.dm_categories.label_groups],
             hlabel_info=HLabelInfo.from_dm_label_groups(self.dm_categories),
         )
 
-        if self.meta_info.hlabel_info.num_multiclass_heads == 0:
+        if self.label_info.hlabel_info.num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
 
@@ -171,12 +171,12 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         [Multilabel Head: [0, 1, 1]]
         2, 3, 4 indices = [0, 1, 1] -> ["Circle"(X), "Lion"(O), "Panda"(O)]
         """
-        if not isinstance(self.meta_info, HLabelMetaInfo):
-            msg = f"The type of meta_info should be HLabelMetaInfo, got {type(self.meta_info)}."
+        if not isinstance(self.label_info, HLabelMetaInfo):
+            msg = f"The type of label_info should be HLabelMetaInfo, got {type(self.label_info)}."
             raise TypeError(msg)
 
-        num_multiclass_heads = self.meta_info.hlabel_info.num_multiclass_heads
-        num_multilabel_classes = self.meta_info.hlabel_info.num_multilabel_classes
+        num_multiclass_heads = self.label_info.hlabel_info.num_multiclass_heads
+        num_multilabel_classes = self.label_info.hlabel_info.num_multilabel_classes
 
         class_indices = [0] * (num_multiclass_heads + num_multilabel_classes)
         for i in range(num_multiclass_heads):
@@ -184,7 +184,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         for ann in label_anns:
             ann_name = self.dm_categories.items[ann.label].name
-            group_idx, in_group_idx = self.meta_info.hlabel_info.class_to_group_idx[ann_name]
+            group_idx, in_group_idx = self.label_info.hlabel_info.class_to_group_idx[ann_name]
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
