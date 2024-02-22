@@ -264,6 +264,7 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
     return cfg
 
 
+# Workaround for https://github.com/omni-us/jsonargparse/issues/456
 def add_list_type_arguments(
     parser: ArgumentParser,
     baseclass: tuple[type, ...],
