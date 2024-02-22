@@ -35,7 +35,7 @@ def pre_filtering(dataset: DmDataset, data_format: str, unannotated_bg_ratio: fl
     msg = f"There are empty annotation items in train set, Of these, only {unannotated_bg_ratio*100}% are used."
     warnings.warn(msg, stacklevel=2)
     if unannotated_bg_ratio > 0:
-        empty_items = [item for item in dataset if len(item.annotations) == 0]
+        empty_items = [item for item in dataset if item.subset == "train" and len(item.annotations) == 0]
         used_background_items = sample(empty_items, int(len(empty_items) * unannotated_bg_ratio))
 
     dataset = DmDataset.filter(
