@@ -103,7 +103,9 @@ class TrainingTask(InferenceTask, ITrainingTask):
             if config.trainer.precision == 16:
                 plugins.append(MixedPrecisionXPUPlugin())
 
-        self.trainer = Trainer(**config.trainer, logger=CSVLogger(self.project_path, name=""), callbacks=callbacks, plugins=plugins)
+        self.trainer = Trainer(
+            **config.trainer, logger=CSVLogger(self.project_path, name=""), callbacks=callbacks, plugins=plugins
+        )
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)

@@ -14,15 +14,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
-import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
-from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import ImageModel, Model
 from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
+import nncf
+from nncf.common.quantization.structs import QuantizationPreset
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num

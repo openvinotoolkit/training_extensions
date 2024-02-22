@@ -27,14 +27,14 @@ from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Type, Union
 from zipfile import ZipFile
 
 import attr
-import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
-from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
+import nncf
+from nncf.common.quantization.structs import QuantizationPreset
 from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
