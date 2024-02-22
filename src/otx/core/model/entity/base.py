@@ -295,7 +295,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
     def __init__(
         self,
         num_classes: int,
-        model_name: str,
+        model_name: str | dict[str, str],
         model_type: str,
         async_inference: bool = True,
         max_num_requests: int | None = None,

@@ -5,10 +5,15 @@
 
 from __future__ import annotations
 
+import os
+import numpy as np
 from typing import Any, TYPE_CHECKING, Literal
 import torch
+import logging as log
+from openvino.model_api.models import Model
+from torchvision import tv_tensors
 
-from otx.core.data.entity.base import T_OTXBatchPredEntityWithXAI
+from otx.core.data.entity.base import T_OTXBatchPredEntityWithXAI, OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -16,11 +21,10 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.types.precision import OTXPrecisionType
-import openvino
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -125,12 +129,147 @@ class OTXVisualPromptingModel(
     def _export_parameters(self, module: Literal["image_encoder", "decoder"]) -> None:
         self.__export_parameters = super()._export_parameters
         self.__export_parameters.update(**self.parameters_for_export.get(module, {}))
-        # self.__export_parameters["metadata"].update(
-        #     {
-        #         ("model_info", "model_type"): "segment_anything",
-        #         ("model_info", "task_type"): "visual_prompting",
-        #     }
-        # )
+        self.__export_parameters["metadata"].update(
+            {
+                ("model_info", "model_type"): "segment_anything",
+                ("model_info", "task_type"): "visual_prompting",
+            }
+        )
+        
+        
+class OVVisualPromptingModel(OVModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
+    """Visual prompting model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX visual prompting model compatible for OTX testing pipeline.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str | dict[str, str],
+        model_type: str = "Visual_Prompting",
+        async_inference: bool = False,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+    ) -> None:
+        if async_inference:
+            log.warning("Async inference is not supported for visual prompting models. Setting async_inference to False.")
+            async_inference = False
+
+        basename: str = os.path.basename(model_name)
+        _model_name: dict[str, str] = {
+            module: model_name.replace(basename, f"visual_prompting_{module}.xml") for module in ["image_encoder", "decoder"]
+        }
+        super().__init__(
+            num_classes,
+            _model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+        
+    def _create_model(self) -> dict[str, Model]:
+        """Create a OV model with help of Model API."""
+        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        
+        ov_models: dict[str, Model] = {}
+        
+        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.use_throughput_mode:
+            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
+
+        model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
+        for module in ["image_encoder", "decoder"]:
+            model_adapter = OpenvinoAdapter(
+                core=create_core(),
+                model=self.model_name.get(module),
+                model_parameters=model_parameters.get(module, {}),
+                max_num_requests=self.num_requests,
+                plugin_config=plugin_config,
+            )
+            ov_models[module] = Model.create_model(model_adapter, module, configuration=self.model_api_configuration)
+        return ov_models
+
+    def forward(
+        self,
+        inputs: VisualPromptingBatchDataEntity,
+    ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward function."""
+        if self.async_inference:
+            log.warning("Async inference is not supported for visual prompting models yet. Running synchronous inference instead.")
+            
+        images, metas, batch_prompts = self._customize_inputs(inputs)
+        outputs: list[dict[str, Any]] = []
+        for image, meta, prompts in zip(images, metas, batch_prompts):
+            # forward image encoder
+            image_embeddings = self.model["image_encoder"].infer_sync(image)
+            
+            # forward decoder
+            for prompt in prompts:
+                label = prompt.pop("label")
+                prompt.update(**image_embeddings)
+                
+                 # forward decoder to get predicted mask
+                prediction = self.model["decoder"].infer_sync(prompt)
+                prediction["scores"] = prediction["iou_predictions"]
+                prediction["labels"] = label
+                processed_prediction = self.model["decoder"].postprocess(prediction, meta)
+                outputs.append(processed_prediction)
+
+        return self._customize_outputs(outputs, inputs)
+    
+    def _customize_inputs(self, entity: VisualPromptingBatchDataEntity) -> dict[str, Any]:
+        """Customize OTX input batch data entity."""
+        images: list[np.ndarray] = []
+        metas: list[dict[str, Any]] = []
+        prompts: list[dict[str, Any]] = []
+        for image, bbox, point, label, imgs_info in zip(entity.images, entity.bboxes, entity.points, entity.labels, entity.imgs_info):
+            # preprocess image encoder inputs
+            image = image.cpu().numpy().transpose(1, 2, 0)
+            image, meta = self.model["image_encoder"].preprocess(image)
+            images.append(image)
+            metas.append(meta)
+            
+            # preprocess decoder inputs
+            processed_prompts = self.model["decoder"].preprocess({
+                "bboxes": bbox.cpu().numpy() if bbox is not None else bbox,
+                "points": point.cpu().numpy() if point is not None else point,
+                "labels": label.cpu().numpy(),
+                "orig_size": imgs_info.ori_shape,
+            })
+            prompts.append(processed_prompts)
+        
+        return images, metas, prompts
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: VisualPromptingBatchDataEntity,
+    ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for model."""
+        masks: list[tv_tensors.Mask] = []
+        scores: list[torch.Tensor] = []
+        labels: list[torch.LongTensor] = []
+        for output in outputs:
+            masks.append(torch.as_tensor(output["hard_prediction"]))
+            scores.append(torch.as_tensor(output["scores"]))
+            labels.append(torch.tensor([output["labels"]]))
+
+        return VisualPromptingBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=[torch.cat(scores, dim=0)],
+            masks=[tv_tensors.Mask(torch.cat(masks, dim=0))],
+            polygons=[],
+            points=[],
+            bboxes=[],
+            labels=[torch.cat(labels)],
+        )
 
 
 class OTXZeroShotVisualPromptingModel(
