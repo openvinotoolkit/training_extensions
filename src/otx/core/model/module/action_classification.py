@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import inspect
+from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics.classification.accuracy import Accuracy
 
-    from otx.algo.metrices import MetricCallable
+    from otx.core.metrics import MetricCallable
 
 
 class OTXActionClsLitModule(OTXLitModule):
@@ -44,7 +45,7 @@ class OTXActionClsLitModule(OTXLitModule):
         )
 
         if metric:
-            if inspect.isclass(metric):
+            if isinstance(metric, partial):
                 sig = inspect.signature(metric)
                 param_dict = {}
                 for name, param in sig.parameters.items():

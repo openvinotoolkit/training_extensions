@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import inspect
 import logging as log
+from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -26,7 +27,7 @@ from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.algo.metrices import MetricCallable
+    from otx.core.metrics import MetricCallable
 
 
 class OTXInstanceSegLitModule(OTXLitModule):
@@ -49,7 +50,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         )
 
         if metric:
-            if inspect.isclass(metric):
+            if isinstance(metric, partial):
                 sig = inspect.signature(metric)
                 param_dict = {}
                 for name, param in sig.parameters.items():

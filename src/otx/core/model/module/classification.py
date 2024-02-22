@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import inspect
+from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -54,7 +55,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         )
 
         if metric:
-            if inspect.isclass(metric):
+            if isinstance(metric, partial):
                 sig = inspect.signature(metric)
                 param_dict = {}
                 for name, param in sig.parameters.items():
@@ -141,7 +142,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             metric=metric,
         )
         if metric:
-            if inspect.isclass(metric):
+            if isinstance(metric, partial):
                 sig = inspect.signature(metric)
                 param_dict = {}
                 for name, param in sig.parameters.items():
@@ -222,7 +223,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         )
 
         if metric:
-            if inspect.isclass(metric):
+            if isinstance(metric, partial):
                 sig = inspect.signature(metric)
                 param_dict = {}
                 for name, param in sig.parameters.items():
