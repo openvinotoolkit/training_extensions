@@ -842,8 +842,10 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         mocker.patch.object(
             OpenVINOZeroShotVisualPromptingTask, "load_inferencer", return_value=visual_prompting_ov_inferencer
         )
-        self.zero_shot_visual_prompting_ov_task = OpenVINOZeroShotVisualPromptingTask(task_environment=self.task_environment)
-        
+        self.zero_shot_visual_prompting_ov_task = OpenVINOZeroShotVisualPromptingTask(
+            task_environment=self.task_environment
+        )
+
     @e2e_pytest_unit
     def test_infer(self, mocker):
         """Test infer."""
@@ -855,7 +857,9 @@ class TestOpenVINOZeroShotVisualPromptingTask:
             )
         ]
 
-        mocker_predict = mocker.patch.object(OpenVINOZeroShotVisualPromptingInferencer, "predict", return_value=fake_annotation)
+        mocker_predict = mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer, "predict", return_value=fake_annotation
+        )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
 
         dataset = generate_visual_prompting_dataset()
@@ -883,10 +887,18 @@ class TestOpenVINOZeroShotVisualPromptingTask:
 
         dataset = generate_visual_prompting_dataset()
         output_model = deepcopy(self.task_environment.model)
-        self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_image_encoder.xml", b"image_encoder_xml")
-        self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_image_encoder.bin", b"image_encoder_bin")
-        self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_prompt_getter.xml", b"prompt_getter_xml")
-        self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_prompt_getter.bin", b"prompt_getter_bin")
+        self.zero_shot_visual_prompting_ov_task.model.set_data(
+            "visual_prompting_image_encoder.xml", b"image_encoder_xml"
+        )
+        self.zero_shot_visual_prompting_ov_task.model.set_data(
+            "visual_prompting_image_encoder.bin", b"image_encoder_bin"
+        )
+        self.zero_shot_visual_prompting_ov_task.model.set_data(
+            "visual_prompting_prompt_getter.xml", b"prompt_getter_xml"
+        )
+        self.zero_shot_visual_prompting_ov_task.model.set_data(
+            "visual_prompting_prompt_getter.bin", b"prompt_getter_bin"
+        )
         self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_decoder.xml", b"decoder_xml")
         self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model", autospec=True)
@@ -894,7 +906,9 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
         fake_quantize = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.nncf.quantize", autospec=True)
 
-        self.zero_shot_visual_prompting_ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
+        self.zero_shot_visual_prompting_ov_task.optimize(
+            OptimizationType.POT, dataset=dataset, output_model=output_model
+        )
 
         fake_quantize.assert_called()
         assert fake_quantize.call_count == 3
