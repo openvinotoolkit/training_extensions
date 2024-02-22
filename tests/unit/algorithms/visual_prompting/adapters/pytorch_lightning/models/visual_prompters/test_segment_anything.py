@@ -243,7 +243,7 @@ class TestSegmentAnything:
         else:
             mocker_load_from_checkpoint.assert_not_called()
             mocker_load_state_dict.assert_called_once()
-            
+
     @e2e_pytest_unit
     def test_load_checkpoint_without_checkpoint(self, mocker):
         """Test load_checkpoint without checkpoint."""
