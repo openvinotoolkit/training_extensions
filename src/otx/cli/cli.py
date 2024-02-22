@@ -110,7 +110,7 @@ class OTXCLI:
         parser.add_argument(
             "--work_dir",
             type=absolute_path,
-            default=Path.cwd(),
+            default=absolute_path(Path.cwd()),
             help="Path to work directory. The default is created as otx-workspace.",
         )
         parser.add_argument(
