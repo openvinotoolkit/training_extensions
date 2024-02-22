@@ -24,7 +24,7 @@ engine:
   task: INSTANCE_SEGMENTATION
   device: cpu
 
-callback_monitor: val/map_50
+callback_monitor: val/f1-score
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:

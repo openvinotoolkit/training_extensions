@@ -41,8 +41,8 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
     "h_label_cls": "test/accuracy",
-    "detection": "test/map_50",
-    "instance_segmentation": "test/map_50",
+    "detection": "test/f1-score",
+    "instance_segmentation": "test/f1-score",
 }
 
 

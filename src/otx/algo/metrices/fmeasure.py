@@ -632,7 +632,6 @@ class FMeasure(Metric):
     to True.
 
     Args:
-        num_classes (int): Number of classes of dataset.
         vary_confidence_threshold (bool): if True the maximal F-measure is determined by optimizing for different
             confidence threshold values Defaults to False.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
@@ -643,7 +642,6 @@ class FMeasure(Metric):
 
     def __init__(
         self,
-        num_classes: int,
         vary_confidence_threshold: bool = True,
         vary_nms_threshold: bool = False,
         cross_class_nms: bool = False,
@@ -654,7 +652,7 @@ class FMeasure(Metric):
         self.cross_class_nms = cross_class_nms
         self.preds: list[list[tuple]] = []
         self.targets: list[list[tuple]] = []
-        self.classes = [str(idx) for idx in range(num_classes)]
+        self.num_classes: int | None = None
 
         self._f_measure_per_confidence: dict | None = None
         self._f_measure_per_nms: dict | None = None
@@ -736,3 +734,11 @@ class FMeasure(Metric):
     def best_nms_threshold(self) -> None | float:
         """Returns the best NMS threshold as ScoreMetric if exists."""
         return self._best_nms_threshold
+
+    @property
+    def classes(self) -> list[str]:
+        """Class information of dataset."""
+        if self.num_classes is None:
+            msg = "classes is called before num_classes is set."
+            raise ValueError(msg)
+        return [str(idx) for idx in range(self.num_classes)]

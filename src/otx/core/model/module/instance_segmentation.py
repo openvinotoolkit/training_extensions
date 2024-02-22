@@ -53,10 +53,12 @@ class OTXInstanceSegLitModule(OTXLitModule):
             param_dict = {}
             for name, param in sig.parameters.items():
                 param_dict[name] = param.default
-            param_dict.pop("kwargs")
+            param_dict.pop("kwargs", {})
 
             metric = metric(**param_dict)  # type: ignore[call-arg]
         self.metric = metric
+        if self.metric is not None:
+            self.metric.num_classes = otx_model.num_classes  # type: ignore[attr-defined]
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""

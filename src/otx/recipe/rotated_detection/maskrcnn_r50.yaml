@@ -20,19 +20,16 @@ scheduler:
       mode: max
       factor: 0.1
       patience: 10
-      monitor: val/map_50
+      monitor: val/f1-score
 
 metric:
-  class_path: otx.algo.instance_segmentation.otx_instseg_evaluation.OTXMaskRLEMeanAveragePrecision
-  init_args:
-    box_format: xyxy
-    iou_type: segm
+  class_path: otx.algo.metrices.fmeasure.FMeasure
 
 engine:
   task: ROTATED_DETECTION
   device: auto
 
-callback_monitor: val/map_50
+callback_monitor: val/f1-score
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
