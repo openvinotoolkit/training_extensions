@@ -46,7 +46,9 @@ def test_pre_filtering(fxt_dm_dataset_with_unannotated: DmDataset, unannotated_b
     Returns:
         None
     """
-    empty_items = [item for item in fxt_dm_dataset_with_unannotated if len(item.annotations) == 0]
+    empty_items = [
+        item for item in fxt_dm_dataset_with_unannotated if item.subset == "train" and len(item.annotations) == 0
+    ]
     assert len(fxt_dm_dataset_with_unannotated) == 100
     assert len(empty_items) == 20
 
