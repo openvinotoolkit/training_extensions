@@ -152,7 +152,10 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         """Load annotations and fill the results dict."""
         if self._load_ann_op is None:
             return results
-        return self._load_ann_op(results)
+        ann_results = self._load_ann_op(results)
+        if ann_results is None:
+            return results
+        return ann_results
 
     def _resize_img_ann_if_any(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Resize image and annotations if needed and fill the results dict."""
