@@ -5,10 +5,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Callable, Sequence
+from typing import TYPE_CHECKING, Callable, Literal, Sequence
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torchmetrics import Metric
 from torchmetrics.classification.accuracy import Accuracy, MultilabelAccuracy
 
@@ -30,6 +30,7 @@ class CustomAccuracy(Metric):
 
     def _compute_unnormalized_confusion_metrices_from_preds(self, preds: Tensor) -> None:
         """Compute an (unnormalized) confusion matriix for every label group."""
+
 
 class HLabelAccuracy(Metric):
     """Custom accuracy metric for h-label classification.
