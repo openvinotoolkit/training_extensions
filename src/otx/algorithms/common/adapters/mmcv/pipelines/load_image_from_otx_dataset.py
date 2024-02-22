@@ -152,10 +152,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         """Load annotations and fill the results dict."""
         if self._load_ann_op is None:
             return results
-        ann_results = self._load_ann_op(results)
-        if ann_results is None:
-            return results
-        return ann_results
+        return self._load_ann_op(results)
 
     def _resize_img_ann_if_any(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Resize image and annotations if needed and fill the results dict."""
@@ -207,6 +204,8 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
             return cached_results
         results = self._load_img(results)
         results = self._load_ann_if_any(results)
+        if results is None:
+            return None
         results.pop("dataset_item", None)  # Prevent deepcopy or caching
         results = self._resize_img_ann_if_any(results)
         self._save_cache(results)
