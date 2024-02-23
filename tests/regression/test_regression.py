@@ -74,7 +74,7 @@ class BaseTest:
                     "--model.num_classes", str(test_case.dataset.num_classes),
                     "--data_root", str(data_root),
                     "--data.config.data_format", test_case.dataset.data_format,
-                    "--engine.work_dir", str(test_case.output_dir),
+                    "--work_dir", str(test_case.output_dir),
                     "--engine.device", fxt_accelerator,
                 ]
                 deterministic = test_case.dataset.extra_overrides.pop("deterministic", "False")
