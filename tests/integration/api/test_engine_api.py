@@ -57,16 +57,24 @@ def test_engine_from_config(
         OTXTaskType.ACTION_DETECTION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
-        OTXTaskType.VISUAL_PROMPTING,
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING,
     ]:
         return
 
     # Export IR Model
-    exported_model_path = engine.export()
-    assert exported_model_path.exists()
+    exported_model_path: Path | dict[str, Path] = engine.export()
+    if isinstance(exported_model_path, Path):
+        assert exported_model_path.exists()
+    elif isinstance(exported_model_path, dict):
+        for key, value in exported_model_path.items():
+            assert value.exists(), f"{value} for {key} doesn't exist."
+    else:
+        assert False, f"Exported model path is not a Path or a dictionary of Paths: {exported_model_path}"
 
     # Test with IR Model
     if task in OVMODEL_PER_TASK:
-        test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
+        if task.lower() in ["visual_prompting"]:
+            test_metric_from_ov_model = engine.test(checkpoint=exported_model_path["decoder"], accelerator="cpu")
+        else:
+            test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
         assert len(test_metric_from_ov_model) > 0

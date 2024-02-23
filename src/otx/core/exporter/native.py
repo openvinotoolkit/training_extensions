@@ -50,6 +50,9 @@ class OTXNativeModelExporter(OTXModelExporter):
         In this implementation the export is done only via standard OV/ONNX tools.
         """
         if self.via_onnx:
+            if export_args is None:
+                export_args = {"args": torch.rand(self.input_size).to(next(model.parameters()).device)}
+                
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_dir = Path(tmpdirname)
 
@@ -61,9 +64,11 @@ class OTXNativeModelExporter(OTXModelExporter):
                     False,
                     export_args,
                 )
+                
+                ov_input = tuple(openvino.runtime.PartialShape(x.shape) for x in export_args["args"]) if isinstance(export_args["args"], tuple) else (openvino.runtime.PartialShape(export_args["args"].shape),)
                 exported_model = openvino.convert_model(
                     tmp_dir / (base_model_name + ".onnx"),
-                    input=tuple(x.shape for x in export_args["args"]),
+                    input=ov_input,
                 )
         else:
             if export_args is None:

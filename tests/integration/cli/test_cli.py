@@ -276,7 +276,7 @@ def test_otx_ov_test(
     task = ov_recipe.split("/")[-2]
     model_name = ov_recipe.split("/")[-1].split(".")[0]
 
-    if task in ["multi_label_cls", "instance_segmentation", "h_label_cls"]:
+    if task in ["multi_label_cls", "instance_segmentation", "h_label_cls", "visual_prompting"]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")

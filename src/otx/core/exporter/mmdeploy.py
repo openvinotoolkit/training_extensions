@@ -10,7 +10,7 @@ import logging as log
 from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterator, Literal
+from typing import TYPE_CHECKING, Callable, Iterator, Literal, Any
 
 import numpy as np
 import onnx
@@ -87,6 +87,7 @@ class MMdeployExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        export_args: dict[str, Any] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -96,14 +97,18 @@ class MMdeployExporter(OTXModelExporter):
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str], str] | None, optional): metadata to embed to the exported model.
+            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: path to the exported model.
         """
+        if export_args is None:
+            export_args = {"input": (openvino.runtime.PartialShape(self.input_size),)}
+
         onnx_path = self._cvt2onnx(model, output_dir, base_model_name)
         exported_model = openvino.convert_model(
             str(onnx_path),
-            input=(openvino.runtime.PartialShape(self.input_size),),
+            **export_args
         )
         exported_model = self._postprocess_openvino_model(exported_model)
 
@@ -121,6 +126,7 @@ class MMdeployExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
+        export_args: dict[str, Any] | None = None, # TODO (sungchul): how to apply this argument?
     ) -> Path:
         """Export to ONNX format.
 
@@ -130,6 +136,7 @@ class MMdeployExporter(OTXModelExporter):
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
+            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: path to the exported model.
