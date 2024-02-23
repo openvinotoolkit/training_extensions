@@ -38,6 +38,7 @@ jobs:
       - name: Code quality checks
         run: tox -vv -e pre-commit-all-py310-pt1
   Unit-Test:
+    if: ${{ vars.CI_NODE_TYPE != 'internal'}}
     needs: Code-Quality-Checks
     strategy:
       fail-fast: false
@@ -62,7 +63,33 @@ jobs:
       upload-artifact: true
       artifact-prefix: "unit-test-results"
       runs-on: "['otx-gpu-v100-1']"
+  Unit-Test-tmp:
+    if: ${{ vars.CI_NODE_TYPE == 'internal'}}
+    needs: Code-Quality-Checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.9"
+            tox-env: "py39"
+          - python-version: "3.10"
+            tox-env: "py310"
+    name: Unit-Test-with-Python${{ matrix.python-version }}
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/run_tests_in_tox.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      toxenv-pyver: ${{ matrix.tox-env }}
+      toxenv-task: all
+      tests-dir: tests/unit
+      timeout-minutes: 120
+      upload-artifact: true
+      artifact-prefix: "unit-test-results"
   Coverage-Test:
+    if: ${{ vars.CI_NODE_TYPE != 'internal'}}
     needs: Code-Quality-Checks
     concurrency:
       group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}}
@@ -109,8 +136,54 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
+  Coverage-Test-tmp:
+    if: ${{ vars.CI_NODE_TYPE == 'internal'}}
+    needs: Code-Quality-Checks
+    concurrency:
+      group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}}
+      cancel-in-progress: true
+    runs-on: [self-hosted, Linux, X64, dev]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install Python
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
+      - name: Run unit test
+        run: tox -vv -e unittest-all-py38-pt1
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        with:
+          name: coverage
+          path: .tox/coverage.xml
+      - name: Upload coverage reports to Codecov
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          # current version of codecov-action does not support uploading reports through the proxy
+          # so we use the latest version of codecov uploader binary
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
   Integration-Test:
-    needs: [Unit-Test, Coverage-Test]
+    if: ${{ success() || canceled() }}
+    needs: [Unit-Test, Coverage-Test, Unit-Test-tmp, Coverage-Test-tmp]
     strategy:
       fail-fast: false
       matrix:
