@@ -223,7 +223,7 @@ class OTXCLI:
         for subcommand in self.engine_subcommands():
             # If already have a workspace or run it from the root of a workspace, utilize config and checkpoint in cache
             root_dir = Path(sys.argv[sys.argv.index("--work_dir") + 1]) if "--work_dir" in sys.argv else Path.cwd()
-            self.cache_dir = root_dir / ".latest"
+            self.cache_dir = root_dir / ".latest" / "train"  # The config and checkpoint used in the latest training.
 
             parser_kwargs = self._set_default_config()
             sub_parser = self.engine_subcommand_parser(**parser_kwargs)
@@ -487,8 +487,7 @@ class OTXCLI:
             skip_check=True,
         )
         # if train -> Update `.latest` folder
-        if self.subcommand == "train":
-            self.update_latest(work_dir=work_dir)
+        self.update_latest(work_dir=work_dir)
 
     def update_latest(self, work_dir: Path) -> None:
         """Update the latest cache directory with the latest configurations and checkpoint file.
@@ -496,7 +495,9 @@ class OTXCLI:
         Args:
             work_dir (Path): The working directory where the configurations and checkpoint files are located.
         """
-        cache_dir = work_dir.parent / ".latest"
+        latest_dir = work_dir.parent / ".latest"
+        latest_dir.mkdir(exist_ok=True)
+        cache_dir = latest_dir / self.subcommand
         if cache_dir.exists():
             cache_dir.unlink()
         cache_dir.symlink_to(work_dir)
