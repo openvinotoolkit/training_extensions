@@ -111,9 +111,9 @@ class OTXInstanceSegModel(
         if self.tile_config.enable_tiler:
             parameters["metadata"].update(
                 {
-                    ("tile_config", "tile_size"): str(self.tile_config.tile_size[0]),
-                    ("tile_config", "tiles_overlap"): str(self.tile_config.overlap),
-                    ("tile_config", "max_pred_number"): str(self.tile_config.max_num_instances),
+                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
+                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
+                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
                 },
             )
 
@@ -327,25 +327,16 @@ class OVInstanceSegmentationModel(
             model_api_configuration,
         )
 
-    def _setup_tiler(self, tile_config: dict) -> None:
-        """Setup tiler for tile task.
-
-        Args:
-            tile_config (dict): Tile configuration.
-        """
-        log.info(
-            f"Enable tiler with tile size: {tile_config['tile_size'].value} \
-                and overlap: {tile_config['tiles_overlap'].value}",
-        )
-        ov_tile_config = {
-            "tile_size": int(tile_config["tile_size"].value),
-            "tiles_overlap": float(tile_config["tiles_overlap"].value),
-            "max_pred_number": int(tile_config["max_pred_number"].value),
-        }
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
         execution_mode = "async" if self.async_inference else "sync"
         # Note: Disable async_inference as tiling has its own sync/async implementation
         self.async_inference = False
-        self.model = InstanceSegmentationTiler(self.model, ov_tile_config, execution_mode)
+        self.model = InstanceSegmentationTiler(self.model, execution_mode=execution_mode)
+        log.info(
+            f"Enable tiler with tile size: {self.model.tile_size} \
+                and overlap: {self.model.tiles_overlap}",
+        )
 
     def _customize_outputs(
         self,
