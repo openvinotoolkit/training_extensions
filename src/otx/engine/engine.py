@@ -5,19 +5,21 @@
 
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Literal
+from warnings import warn
 
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
+from otx.core.types import PathLike
 from otx.core.types.device import DeviceType
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
@@ -25,7 +27,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .utils.auto_configurator import AutoConfigurator, PathLike
+from .utils.auto_configurator import AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -586,8 +588,10 @@ class Engine:
 
         Args:
             config_path (PathLike): The configuration file path.
-            data_root (PathLike | None): Root directory for the data. Defaults to None.
-            work_dir (PathLike | None, optional): Working directory for the engine. Defaults to None.
+            data_root (PathLike | None): Root directory for the data.
+                Defaults to None. If data_root is None, use the data_root from the configuration file.
+            work_dir (PathLike | None, optional): Working directory for the engine.
+                Defaults to None. If work_dir is None, use the work_dir from the configuration file.
             kwargs: Arguments that can override the engine's arguments.
 
         Returns:
@@ -598,50 +602,39 @@ class Engine:
             ...     config="config.yaml",
             ... )
         """
-        from lightning.pytorch.cli import instantiate_class
+        from otx.cli.utils.jsonargparse import get_instantiated_classes
 
-        from otx.cli.utils.jsonargparse import get_configuration
-        from otx.core.utils.instantiators import instantiate_callbacks, instantiate_loggers, partial_instantiate_class
-
-        config = get_configuration(str(config_path), work_dir=work_dir)
-        config.pop("config", None)  # Unnecessary config key
-        # Datamodule
-        data_config = config.pop("data")
-        if data_root is not None:
-            data_config["config"]["data_root"] = data_root
-        datamodule = OTXDataModule(
-            task=data_config["task"],
-            config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
-                val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
-                test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
-                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
-                **data_config["config"],
-            ),
+        instantiated_config, train_kwargs = get_instantiated_classes(
+            config=config_path,
+            data_root=data_root,
+            work_dir=work_dir,
+            **kwargs,
         )
-        # Model
-        num_classes = datamodule.meta_info.num_classes
-        config["model"]["init_args"]["num_classes"] = num_classes
-        model = instantiate_class(args=(), init=config.pop("model"))
-        optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
-        scheduler = partial_instantiate_class(init=config.pop("scheduler", None))
+        engine_kwargs = {**instantiated_config.get("engine", {}), **train_kwargs}
 
-        callbacks = instantiate_callbacks(config.pop("callbacks", []))
-        logger = instantiate_loggers(config.pop("logger", []))
-
-        engine_config = {**config.pop("engine"), **config}
-        engine_config.update(kwargs)
-        engine_config["data_root"] = data_root
-        engine_config.pop("metric", None)  # Remove the metric config
+        # Remove any input that is not currently available in Engine and print a warning message.
+        set_valid_args = TrainerArgumentsCache.get_trainer_constructor_args().union(
+            set(inspect.signature(Engine.__init__).parameters.keys()),
+        )
+        removed_args = []
+        for engine_key in list(engine_kwargs.keys()):
+            if engine_key not in set_valid_args:
+                engine_kwargs.pop(engine_key)
+                removed_args.append(engine_key)
+        if removed_args:
+            msg = (
+                f"Warning: {removed_args} -> not available in Engine constructor. "
+                "It will be ignored. Use what need in the right places."
+            )
+            warn(msg, stacklevel=1)
 
         return cls(
-            datamodule=datamodule,
-            model=model,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            callbacks=callbacks,
-            logger=logger,
-            **engine_config,
+            work_dir=instantiated_config.get("work_dir", work_dir),
+            datamodule=instantiated_config.get("datamodule"),
+            model=instantiated_config.get("model"),
+            optimizer=instantiated_config.get("optimizer"),
+            scheduler=instantiated_config.get("scheduler"),
+            **engine_kwargs,
         )
 
     # ------------------------------------------------------------------------ #

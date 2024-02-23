@@ -25,6 +25,8 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
+    from functools import partial
+
     from jsonargparse._actions import _ActionSubCommands
     from torchmetrics import Metric
 
@@ -41,17 +43,18 @@ except ImportError:
 class OTXCLI:
     """OTX CLI entrypoint."""
 
-    def __init__(self) -> None:
+    def __init__(self, args: list[str] | None = None, run: bool = True) -> None:
         """Initialize OTX CLI."""
         self.console = Console()
         self._subcommand_method_arguments: dict[str, list[str]] = {}
         with patch_update_configs():
             self.parser = self.init_parser()
             self.add_subcommands()
-            self.config = self.parser.parse_args(_skip_check=True)
+            self.config = self.parser.parse_args(args=args, _skip_check=True)
 
         self.subcommand = self.config["subcommand"]
-        self.run()
+        if run:
+            self.run()
 
     def init_parser(self) -> ArgumentParser:
         """Initialize the argument parser for the OTX CLI.
@@ -335,7 +338,7 @@ class OTXCLI:
         if self.subcommand in self.engine_subcommands():
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
-            metric_config = self.config[self.subcommand].pop("metric")
+            metric_config = self.config[self.subcommand].get("metric")
 
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
@@ -360,7 +363,7 @@ class OTXCLI:
                 **engine_kwargs,
             )
 
-    def instantiate_metric(self, metric_config: Namespace) -> Metric | None:
+    def instantiate_metric(self, metric_config: Namespace) -> Metric | partial | None:
         """Instantiate the metric based on the metric_config.
 
         It also pathces the num_classes according to the model classes information.
@@ -409,6 +412,7 @@ class OTXCLI:
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+        self.config_init[self.subcommand]["model"] = model
 
         # Update tile config due to adaptive tiling
         if self.datamodule.config.tile_config.enable_tiler:
@@ -428,10 +432,16 @@ class OTXCLI:
         optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
         optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
         optimizers = partial_instantiate_class([_opt for _opt in optimizer_kwargs if _opt])
+        if optimizers:
+            # Updates the instantiated optimizer.
+            self.config_init[self.subcommand]["optimizer"] = optimizers
 
         scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
         scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
         schedulers = partial_instantiate_class([_sch for _sch in scheduler_kwargs if _sch])
+        if schedulers:
+            # Updates the instantiated scheduler.
+            self.config_init[self.subcommand]["scheduler"] = schedulers
 
         return model, optimizers, schedulers
 
@@ -464,7 +474,7 @@ class OTXCLI:
         # return the subcommand parser for the subcommand passed
         return self._subcommand_parsers[subcommand]
 
-    def _prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
+    def prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
         return {
             k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
@@ -532,7 +542,7 @@ class OTXCLI:
         elif self.subcommand in self.engine_subcommands():
             self.set_seed()
             self.instantiate_classes()
-            fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
+            fn_kwargs = self.prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
             try:
                 fn(**fn_kwargs)
