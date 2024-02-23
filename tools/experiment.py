@@ -51,18 +51,23 @@ def parse_time_delta_fmt(time_str: str, format: str) -> timedelta:
     return datetime.strptime(time_str, format) - datetime(1900, 1, 1)
 
 
-def find_latest_file(root_dir: Union[Path, str], file_name: str) -> Union[None, Path]:
+def find_latest_file(root_dir: Union[Path, str], file_name: str, recursive: bool = False) -> Union[None, Path]:
     """Find a latest file of matched files.
 
     Args:
         root_dir (Union[Path, str]): Root directory for searching.
         file_name (str): File name to search. It can constain shell style wild card.
+        recursive (bool): If it's true, find a file from not only root_dir but also child directories.
 
     Returns:
         Union[None, Path]: Latest file path. If file can't be found, return None.
     """
     root_dir = Path(root_dir)
-    train_record_files = sorted((root_dir).glob(file_name), reverse=True, key=lambda x: x.stat().st_mtime)
+    train_record_files = sorted(
+        (root_dir).rglob(file_name) if recursive else (root_dir).glob(file_name),
+        reverse=True,
+        key=lambda x: x.stat().st_mtime
+    )
     if not train_record_files:
         return None
     return train_record_files[0]
@@ -382,7 +387,6 @@ class MMCVExpParser(BaseExpParser):
 
         self._iter_time_arr.extend(iter_time)
         self._data_time_arr.extend(data_time)
-
         self._exp_result.epoch = last_epoch
 
 
@@ -406,6 +410,11 @@ class AnomalibExpParser(BaseExpParser):
                 if cli_report_files:
                     self._parse_cli_report(cli_report_files[0])
 
+                # iter, data time, epoch
+                train_record_file = find_latest_file(task_dir / "logs", "metrics.csv", recursive=True)
+                if train_record_file is not None:
+                    self._parse_train_record(train_record_file)
+
                 # get resource info
                 resource_file = task_dir / "resource_usage.yaml"
                 if resource_file.exists():
@@ -416,6 +425,32 @@ class AnomalibExpParser(BaseExpParser):
                 if eval_files:
                     self._parse_eval_output(eval_files[0])
 
+    def _parse_train_record(self, file_path: Path):
+        with file_path.open("r") as f:
+            rows = list(csv.reader(f))
+
+        iter_idx = rows[0].index("train/iter_time")
+        data_idx = rows[0].index("train/data_time")
+        epoch_idx = rows[0].index("epoch")
+
+        last_epoch = 0
+        iter_time = []
+        data_time = []
+        # breakpoint()
+        for row in rows[1:]:
+            if row[epoch_idx] and last_epoch < int(row[epoch_idx]) + 1:
+                last_epoch = int(row[epoch_idx]) + 1
+                if last_epoch <= 2:  # if epoch >= 2, first epcoh is excluded from the calcuation
+                    iter_time = []
+                    data_time = []
+            if row[iter_idx]:
+                iter_time.append(float(row[iter_idx]))
+            if row[data_idx]:
+                data_time.append(float(row[data_idx]))
+
+        self._iter_time_arr.extend(iter_time)
+        self._data_time_arr.extend(data_time)
+        self._exp_result.epoch = last_epoch
 
 def get_exp_parser(workspace: Path) -> Union[BaseExpParser, None]:
     """Get experiment parser depending on framework.

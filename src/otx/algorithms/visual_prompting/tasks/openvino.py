@@ -1032,7 +1032,7 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             with tempfile.TemporaryDirectory() as tempdir:
                 xml_path = os.path.join(tempdir, f"visual_prompting_{module_name}.xml")
                 bin_path = os.path.join(tempdir, f"visual_prompting_{module_name}.bin")
-                ov.serialize(compressed_model, xml_path)
+                ov.save_model(compressed_model, xml_path)
                 with open(xml_path, "rb") as f:
                     output_model.set_data(f"visual_prompting_{module_name}.xml", f.read())
                 with open(bin_path, "rb") as f:
