@@ -145,7 +145,7 @@ def test_otx_e2e(
             "--data_root",
             fxt_target_dataset_per_task[task],
             "--work_dir",
-            str(tmp_path_test / "outputs"),
+            str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
             str(ckpt_files[-1]),
@@ -155,7 +155,7 @@ def test_otx_e2e(
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        outputs_dir = tmp_path_test / "outputs"
+        outputs_dir = tmp_path_test / "outputs" / fmt
         latest_dir = max(
             (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
@@ -164,7 +164,12 @@ def test_otx_e2e(
         assert (latest_dir / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
-    exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
+    ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
+    ov_latest_dir = max(
+        (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
     command_cfg = [
         "otx",
@@ -211,7 +216,7 @@ def test_otx_e2e(
             "--data_root",
             fxt_target_dataset_per_task[task],
             "--work_dir",
-            str(tmp_path_test / "outputs"),
+            str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
             str(ckpt_files[-1]),
@@ -223,8 +228,13 @@ def test_otx_e2e(
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
+        fmt_dir = tmp_path_test / "outputs" / fmt
+        assert fmt_dir.exists()
+        fmt_latest_dir = max(
+            (p for p in fmt_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+            key=lambda p: p.stat().st_mtime,
+        )
+        assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
 
 
 @pytest.mark.parametrize(
