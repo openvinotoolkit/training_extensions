@@ -46,7 +46,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda: Accuracy(task="multiclass"),
+        metric: MetricCallable = lambda num_classes: Accuracy(task="multiclass", num_classes=num_classes),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -120,7 +120,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda: Accuracy(task="multilabel"),
+        metric: MetricCallable = lambda num_classes: Accuracy(task="multilabel", num_classes=num_classes),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -129,10 +129,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-
-    def configure_metric(self, cond: str = "num_labels") -> None:
-        """Configure the metric."""
-        super().configure_metric(cond=cond)
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
