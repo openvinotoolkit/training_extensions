@@ -50,25 +50,38 @@ class Accuracy(Metric):
         self.preds.extend(preds)
         self.targets.extend(target)
 
+    def _compute_preds_targets_for_multilabel(self, label_group: list[list[str]]) -> dict[str, torch.tensor]:
+        targets = 
+        
+    def _compute_preds_targets_for_multiclass(self, label_group: list[list[str]]) -> dict[str, torch.tensor]:
+        label_to_idx = {label: index for index, label in enumerate(self.label_names)}
+        group_indices = [label_to_idx[label] for label in label_group]
+        
+        mask = torch.tensor([t.item() in group_indices for t in self.targets])
+        filtered_preds = torch.tensor(self.preds)[mask]
+        filtered_targets = torch.tensor(self.targets)[mask]
+
+        for i, index in enumerate(group_indices):
+            filtered_preds[filtered_preds == index] = i
+            filtered_targets[filtered_targets == index] = i
+        
+        return {
+            "preds": filtered_preds,
+            "targets": filtered_targets
+        }
+    
     def _compute_unnormalized_confusion_matrics(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         conf_matrics = []
         for i, label_group in enumerate(self.label_groups):
-            label_to_idx = {label: index for index, label in enumerate(self.label_names)}
-            group_indices = [label_to_idx[label] for label in label_group]
-            
-            mask = torch.tensor([t.item() in group_indices for t in self.targets])
-            filtered_preds = torch.tensor(self.preds)[mask]
-            filtered_targets = torch.tensor(self.targets)[mask]
-
-            for i, index in enumerate(group_indices):
-                filtered_preds[filtered_preds == index] = i
-                filtered_targets[filtered_targets == index] = i
-            
+            if len(label_group) == 1:
+                compute_results = self._compute_preds_targets_for_multilabel(label_group)
+            else:
+                compute_results = self._compute_preds_targets_for_multiclass(label_group)
             num_classes = len(label_group)
             confmat = NamedConfusionMatrix(task=self.task, num_classes=num_classes, 
                                            row_names=label_group, col_names=label_group)
-            conf_matrics.append(confmat(filtered_preds, filtered_targets))
+            conf_matrics.append(confmat(compute_results["preds"], compute_results["targets"]))
         return conf_matrics
 
     def _compute_accuracy_from_conf_matrics(self, conf_matrics: list[NamedConfusionMatrix]):
