@@ -4,9 +4,7 @@
 """Class definition for action detection lightning module used in OTX."""
 from __future__ import annotations
 
-import inspect
 import logging as log
-from functools import partial
 from typing import TYPE_CHECKING
 
 import torch
@@ -45,34 +43,6 @@ class OTXActionDetLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-
-    def configure_metric(self) -> None:
-        """Configure the metric."""
-        if isinstance(self.metric, partial):
-            sig = inspect.signature(self.metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default
-            param_dict.pop("kwargs", {})
-            self.metric = self.metric(**param_dict)
-        elif isinstance(self.metric, Metric):
-            self.metric = self.metric
-
-        if not isinstance(self.metric, Metric):
-            msg = "Metric should be the instance of torchmetrics.Metric."
-            raise TypeError(msg)
-
-        # Since the metric is not initialized at the init phase,
-        # Need to manually correct the device setting.
-        self.metric.to(self.device)
-
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
 
     def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
         results = meter.compute()

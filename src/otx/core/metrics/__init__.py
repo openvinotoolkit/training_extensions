@@ -7,8 +7,8 @@ from typing import Callable
 
 from torchmetrics import Metric
 
-from .accuracy import CustomAccuracy, HLabelAccuracy
+from .accuracy import HLabelAccuracy
 
-MetricCallable = Callable[[], Metric]
+MetricCallable = Callable[[], Metric] | Callable[[int], Metric]
 
-__all__ = ["CustomAccuracy", "HLabelAccuracy"]
+__all__ = ["HLabelAccuracy"]

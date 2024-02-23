@@ -5,31 +5,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Literal, Sequence
+from typing import Callable, Sequence
 
 import torch
 from torch import nn
 from torchmetrics import Metric
 from torchmetrics.classification.accuracy import Accuracy, MultilabelAccuracy
-
-if TYPE_CHECKING:
-    from torch import Tensor
-
-
-class CustomAccuracy(Metric):
-    """Skleton code for future implementation."""
-
-    def __init__(self, average: Literal["MICRO", "MACRO"]):
-        self.average = average
-
-    def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets."""
-
-    def compute(self) -> Tensor:
-        """Compute the metric."""
-
-    def _compute_unnormalized_confusion_metrices_from_preds(self, preds: Tensor) -> None:
-        """Compute an (unnormalized) confusion matriix for every label group."""
 
 
 class HLabelAccuracy(Metric):

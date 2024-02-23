@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 from torchmetrics import Metric
-from torchmetrics.classification.accuracy import Accuracy, MultilabelAccuracy
+from torchmetrics.classification.accuracy import Accuracy
 
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
@@ -55,31 +55,6 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-
-    def configure_metric(self) -> None:
-        """Configure the metric."""
-        if isinstance(self.metric, partial):
-            sig = inspect.signature(self.metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default if name != "num_classes" else self.model.num_classes
-            param_dict.pop("kwargs", {})
-            self.metric = self.metric(**param_dict)
-        elif isinstance(self.metric, Metric):
-            self.metric = self.metric
-
-        if not isinstance(self.metric, Metric):
-            msg = "Metric should be the instance of torchmetrics.Metric."
-            raise TypeError(msg)
-        self.metric.to(self.device)
-
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
@@ -145,7 +120,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda: MultilabelAccuracy(num_labels=1),
+        metric: MetricCallable = lambda: Accuracy(task="multilabel"),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -155,30 +130,9 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             metric=metric,
         )
 
-    def configure_metric(self) -> None:
+    def configure_metric(self, cond: str = "num_labels") -> None:
         """Configure the metric."""
-        if isinstance(self.metric, partial):
-            sig = inspect.signature(self.metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
-            param_dict.pop("kwargs", {})
-            self.metric = self.metric(**param_dict)
-        elif isinstance(self.metric, Metric):
-            self.metric = self.metric
-
-        if not isinstance(self.metric, Metric):
-            msg = "Metric should be the instance of torchmetrics.Metric."
-            raise TypeError(msg)
-        self.metric.to(self.device)
-
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
+        super().configure_metric(cond=cond)
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
@@ -254,10 +208,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
         )
         self.hlabel_info: HLabelInfo
 
-    def configure_metric(self) -> None:
+    def configure_metric(self, cond: str = "") -> None:
         """Configure the metric."""
-        if isinstance(self.metric, partial):
-            sig = inspect.signature(self.metric)
+        if isinstance(self.metric_callable, partial):
+            sig = inspect.signature(self.metric_callable)
             param_dict = {}
             for name, param in sig.parameters.items():
                 if name in ["num_multiclass_heads", "num_multilabel_classes"]:
@@ -267,9 +221,9 @@ class OTXHlabelClsLitModule(OTXLitModule):
                 else:
                     param_dict[name] = param.default
             param_dict.pop("kwargs", {})
-            self.metric = self.metric(**param_dict)
-        elif isinstance(self.metric, Metric):
-            self.metric = self.metric
+            self.metric = self.metric_callable(**param_dict)
+        elif isinstance(self.metric_callable, Metric):
+            self.metric = self.metric_callable
 
         if not isinstance(self.metric, Metric):
             msg = "Metric should be the instance of torchmetrics.Metric."

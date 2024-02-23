@@ -46,10 +46,10 @@ class OTXSegmentationLitModule(OTXLitModule):
             metric=metric,
         )
 
-    def configure_metric(self) -> None:
+    def configure_metric(self, cond: str = "") -> None:
         """Configure the metric."""
-        if isinstance(self.metric, partial):
-            sig = inspect.signature(self.metric)
+        if isinstance(self.metric_callable, partial):
+            sig = inspect.signature(self.metric_callable)
             param_dict = {}
             for name, param in sig.parameters.items():
                 if name == "num_classes":
@@ -58,9 +58,9 @@ class OTXSegmentationLitModule(OTXLitModule):
                 else:
                     param_dict[name] = param.default
             param_dict.pop("kwargs", {})
-            self.metric = self.metric(**param_dict)
-        elif isinstance(self.metric, Metric):
-            self.metric = self.metric
+            self.metric = self.metric_callable(**param_dict)
+        elif isinstance(self.metric_callable, Metric):
+            self.metric = self.metric_callable
 
         if not isinstance(self.metric, Metric):
             msg = "Metric should be the instance of torchmetrics.Metric."
@@ -69,14 +69,6 @@ class OTXSegmentationLitModule(OTXLitModule):
         # Since the metric is not initialized at the init phase,
         # Need to manually correct the device setting.
         self.metric.to(self.device)
-
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
 
     def _log_metrics(self, meter: Dice, key: str) -> None:
         results = meter.compute()
