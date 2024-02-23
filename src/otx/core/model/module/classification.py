@@ -67,7 +67,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         self.metric = metric
     
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
-        results = meter.compute()
+        results = meter.compute()["accuracy"]
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
             raise RuntimeError(msg)
@@ -121,7 +121,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             )
 
     def on_fit_start(self) -> None:
-        self.metric = Accuracy(task="multiclass", average="MICRO", label_info=self.model.label_info)
+        self.metric = Accuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
         
         
 class OTXMultilabelClsLitModule(OTXLitModule):
@@ -153,7 +153,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         self.metric = metric
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
-        results = meter.compute()
+        results = meter.compute()["accuracy"]
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:
@@ -201,7 +201,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             )
     
     def on_fit_start(self) -> None:
-        self.metric = Accuracy(task="multilabel", average="MICRO", label_info=self.model.label_info)
+        self.metric = Accuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -272,10 +272,10 @@ class OTXHlabelClsLitModule(OTXLitModule):
         #     head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
         # )
         
-        self.metric = Accuracy(task="multiclass", average="MICRO", label_info=self.label_info) 
+        self.metric = Accuracy(average="MICRO", label_info=self.label_info) 
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
-        results = meter.compute()
+        results = meter.compute()["accuracy"]
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: HlabelClsBatchDataEntity, batch_idx: int) -> None:
@@ -342,4 +342,4 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self._set_hlabel_setup()
 
     def on_fit_start(self) -> None:
-        self.metric = Accuracy(task="hlabel", average="MICRO", label_info=self.model.label_info)
+        self.metric = Accuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
