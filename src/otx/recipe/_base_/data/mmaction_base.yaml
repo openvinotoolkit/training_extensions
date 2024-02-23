@@ -5,7 +5,7 @@ config:
   mem_cache_img_max_size:
     - 500
     - 500
-  image_color_channel: BGR
+  image_color_channel: RGB
   train_subset:
     subset_name: train
     transform_lib_type: MMACTION
