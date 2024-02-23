@@ -5,11 +5,10 @@
 
 from typing import Callable
 
-from lightning.pytorch.cli import ArgsType
 from torchmetrics import Metric
 
 from .accuracy import CustomAccuracy, HLabelAccuracy
 
-MetricCallable = Callable[[ArgsType], Metric]
+MetricCallable = Callable[[], Metric]
 
 __all__ = ["CustomAccuracy", "HLabelAccuracy"]

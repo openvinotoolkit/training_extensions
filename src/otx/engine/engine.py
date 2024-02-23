@@ -743,14 +743,14 @@ class Engine:
         class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
         module = __import__(class_module, fromlist=[class_name])
         lightning_module = getattr(module, class_name)
-        
+
         lightning_kwargs = {
             "otx_model": model,
             "optimizer": optimizer,
             "scheduler": scheduler,
             "torch_compile": False,
-        } 
+        }
         if metric:
-            lightning_kwargs['metric'] = metric
-            
+            lightning_kwargs["metric"] = metric
+
         return lightning_module(**lightning_kwargs)

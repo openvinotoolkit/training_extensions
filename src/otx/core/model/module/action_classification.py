@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
+from torchmetrics.classification.accuracy import Accuracy
 
 from otx.core.data.entity.action_classification import (
     ActionClsBatchDataEntity,
@@ -20,7 +22,6 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics.classification.accuracy import Accuracy
 
     from otx.core.metrics import MetricCallable
 
@@ -34,7 +35,7 @@ class OTXActionClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable | None = None,
+        metric: MetricCallable = lambda: Accuracy(task="multiclass"),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -44,19 +45,30 @@ class OTXActionClsLitModule(OTXLitModule):
             metric=metric,
         )
 
-        if metric:
-            if isinstance(metric, partial):
-                sig = inspect.signature(metric)
-                param_dict = {}
-                for name, param in sig.parameters.items():
-                    param_dict[name] = param.default if name != "num_classes" else self.model.num_classes
-                param_dict.pop("kwargs", {})
-                metric = metric(**param_dict)
-            else:
-                msg = "Function based metric not yet supported."
-                raise ValueError(msg)
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if isinstance(self.metric, partial):
+            sig = inspect.signature(self.metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                param_dict[name] = param.default if name != "num_classes" else self.model.num_classes
+            param_dict.pop("kwargs", {})
+            self.metric = self.metric(**param_dict)
+        elif isinstance(self.metric, Metric):
+            self.metric = self.metric
 
-        self.metric = metric
+        if not isinstance(self.metric, Metric):
+            msg = "Metric should be the instance of torchmetrics.Metric."
+            raise TypeError(msg)
+        self.metric.to(self.device)
+
+    def on_validation_start(self) -> None:
+        """Called at the beginning of validation."""
+        self.configure_metric()
+
+    def on_test_start(self) -> None:
+        """Called at the beginning of testing."""
+        self.configure_metric()
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -78,7 +90,7 @@ class OTXActionClsLitModule(OTXLitModule):
         if not isinstance(preds, ActionClsBatchPredEntity):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -107,7 +119,7 @@ class OTXActionClsLitModule(OTXLitModule):
         if not isinstance(preds, ActionClsBatchPredEntity):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )

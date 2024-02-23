@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.data.entity.detection import (
     DetBatchDataEntity,
@@ -22,7 +24,6 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
     from otx.core.metrics import MetricCallable
 
@@ -36,7 +37,7 @@ class OTXDetectionLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable | None = None,
+        metric: MetricCallable = lambda: MeanAveragePrecision(),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -46,19 +47,33 @@ class OTXDetectionLitModule(OTXLitModule):
             metric=metric,
         )
 
-        if metric:
-            if isinstance(metric, partial):
-                sig = inspect.signature(metric)
-                param_dict = {}
-                for name, param in sig.parameters.items():
-                    param_dict[name] = param.default
-                param_dict.pop("kwargs", {})
-                metric = metric(**param_dict)
-            else:
-                msg = "Function based metric not yet supported."
-                raise ValueError(msg)
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if isinstance(self.metric, partial):
+            sig = inspect.signature(self.metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                param_dict[name] = param.default
+            param_dict.pop("kwargs", {})
+            self.metric = self.metric(**param_dict)
+        elif isinstance(self.metric, Metric):
+            self.metric = self.metric
 
-        self.metric = metric
+        if not isinstance(self.metric, Metric):
+            msg = "Metric should be the instance of torchmetrics.Metric."
+            raise TypeError(msg)
+
+        # Since the metric is not initialized at the init phase,
+        # Need to manually correct the device setting.
+        self.metric.to(self.device)
+
+    def on_validation_start(self) -> None:
+        """Called at the beginning of validation."""
+        self.configure_metric()
+
+    def on_test_start(self) -> None:
+        """Called at the beginning of testing."""
+        self.configure_metric()
 
     def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
         results = meter.compute()
@@ -93,7 +108,7 @@ class OTXDetectionLitModule(OTXLitModule):
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -137,7 +152,7 @@ class OTXDetectionLitModule(OTXLitModule):
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
