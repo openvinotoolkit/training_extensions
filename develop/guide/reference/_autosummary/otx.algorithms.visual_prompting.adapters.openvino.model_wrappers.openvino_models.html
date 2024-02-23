@@ -430,26 +430,6 @@ initialization. If <cite>preload=False</cite>, the model must be loaded via <cit
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.get_padded_size">
-<span class="sig-name descname"><span class="pre">get_padded_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">longest_side</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#Decoder.get_padded_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.get_padded_size" title="Permalink to this definition">#</a></dt>
-<dd><p>Get padded size from original size and longest side of the image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>original_size</strong> (<em>np.ndarray</em>) – The original image size with shape Bx2.</p></li>
-<li><p><strong>longest_side</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The size of the longest side.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The transformed image size with shape Bx2.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>transformed_size (np.ndarray)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.parameters">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#Decoder.parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.parameters" title="Permalink to this definition">#</a></dt>
 <dd><p>Defines the description and type of configurable data parameters for the wrapper.</p>
@@ -487,7 +467,7 @@ the type, default value and description must be provided.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The hard prediction.
-soft_prediction (np.ndarray): Resized, cropped, and normalized soft prediction.</p>
+soft_prediction (np.ndarray): The soft prediction.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>hard_prediction (np.ndarray)</p>
@@ -499,26 +479,6 @@ soft_prediction (np.ndarray): Resized, cropped, and normalized soft prediction.<
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.preprocess">
 <span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#Decoder.preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.preprocess" title="Permalink to this definition">#</a></dt>
 <dd><p>Preprocess prompts.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.resize_and_crop">
-<span class="sig-name descname"><span class="pre">resize_and_crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">soft_prediction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#Decoder.resize_and_crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.resize_and_crop" title="Permalink to this definition">#</a></dt>
-<dd><p>Resize and crop soft prediction.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>soft_prediction</strong> (<em>np.ndarray</em>) – Predicted soft prediction with HxW shape.</p></li>
-<li><p><strong>original_size</strong> (<em>np.ndarray</em>) – The original image size.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Resized and cropped soft prediction for the original image.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>final_soft_prediction (np.ndarray)</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -579,7 +539,7 @@ the type, default value and description must be provided.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.</span></span><span class="sig-name descname"><span class="pre">PromptGetter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inference_adapter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#PromptGetter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.</span></span><span class="sig-name descname"><span class="pre">PromptGetter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inference_adapter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html#PromptGetter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.PromptGetter" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ImageModel</span></code></p>
 <p>PromptGetter class for zero-shot visual prompting of openvino model wrapper.</p>
 <p>Image model constructor</p>
@@ -675,15 +635,6 @@ the type, default value and description must be provided.</p>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.get_padded_size">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       Decoder.get_padded_size()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.parameters">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -706,15 +657,6 @@ the type, default value and description must be provided.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        Decoder.preprocess()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models.Decoder.resize_and_crop">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       Decoder.resize_and_crop()
       </span>
      </code>
     </a>

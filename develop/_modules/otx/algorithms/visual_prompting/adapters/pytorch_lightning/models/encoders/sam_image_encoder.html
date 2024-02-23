@@ -242,7 +242,7 @@
 <span class="c1">#</span>
 
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
 <span class="kn">from</span> <span class="nn">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">build_tiny_vit</span><span class="p">,</span>
@@ -257,28 +257,16 @@
 <span class="sd">        config (DictConfig): Config for image encoder.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize SAM image encoder to the target backbone.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;tiny_vit&quot;</span> <span class="o">==</span> <span class="n">config</span><span class="o">.</span><span class="n">backbone</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">build_tiny_vit</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">build_tiny_vit</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
         <span class="k">elif</span> <span class="s2">&quot;vit&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">backbone</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">build_vit</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">build_vit</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">backbone</span><span class="si">}</span><span class="s2"> for image encoder of SAM is not implemented yet. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Use vit_b, l, or h.&quot;</span><span class="p">)</span>
-            <span class="p">)</span>
-
-<div class="viewcode-block" id="SAMImageEncoder.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders.sam_image_encoder.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders.sam_image_encoder.SAMImageEncoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of image encoder.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            images (Tensor): Input tensor.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            image_embeddings (Tensor): Output tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">image_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">image_embeddings</span></div></div>
+            <span class="p">)</span></div>
 </pre></div>
 
             </article>

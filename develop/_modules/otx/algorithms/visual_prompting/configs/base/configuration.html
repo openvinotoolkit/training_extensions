@@ -369,6 +369,15 @@
             <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">INFERENCE</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="n">default_threshold_reference</span> <span class="o">=</span> <span class="n">configurable_float</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Default reference threshold&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The threshold to get target area in the mask for reference features.&quot;</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">INFERENCE</span><span class="p">,</span>
+        <span class="p">)</span>
+
     <span class="nd">@attrs</span>
     <span class="k">class</span> <span class="nc">__POTParameter</span><span class="p">(</span><span class="n">BaseConfig</span><span class="o">.</span><span class="n">BasePOTParameter</span><span class="p">):</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">string_attribute</span><span class="p">(</span><span class="s2">&quot;POT Parameters&quot;</span><span class="p">)</span>

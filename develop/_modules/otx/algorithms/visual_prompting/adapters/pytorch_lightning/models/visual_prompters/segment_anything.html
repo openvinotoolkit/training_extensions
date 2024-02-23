@@ -243,11 +243,10 @@
 
 <span class="c1"># Copyright (c) Meta Platforms, Inc. and affiliates.</span>
 <span class="c1"># All rights reserved.</span>
-<span class="c1">#</span>
 
-<span class="kn">import</span> <span class="nn">re</span>
+
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
@@ -370,37 +369,19 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="SegmentAnything.load_checkpoint"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OrderedDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">revise_keys</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[(</span><span class="sa">r</span><span class="s2">&quot;^image_encoder.&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;image_encoder.backbone.&quot;</span><span class="p">)],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="SegmentAnything.load_checkpoint"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OrderedDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load checkpoint for SAM.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.</span>
-<span class="sd">            revise_keys (List, optional): List of tuples of regex patterns to revise keys of state_dict.</span>
-<span class="sd">                Defaults to [(r&#39;^image_encoder.&#39;, r&#39;image_encoder.backbone.&#39;)].</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">def</span> <span class="nf">replace_state_dict_keys</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">revise_keys</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">revise_keys</span><span class="p">:</span>
-                <span class="n">state_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">else</span> <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
-                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">return</span> <span class="n">state_dict</span>
-
         <span class="k">if</span> <span class="n">state_dict</span><span class="p">:</span>
             <span class="c1"># state_dict from args.load_from</span>
-            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">replace_state_dict_keys</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">revise_keys</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.ckpt&quot;</span><span class="p">):</span>
                 <span class="c1"># load lightning checkpoint</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">):</span>
                     <span class="c1"># get checkpoint from url</span>
@@ -409,8 +390,12 @@
                     <span class="c1"># load checkpoint from local</span>
                     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                         <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                <span class="n">state_dict</span> <span class="o">=</span> <span class="n">replace_state_dict_keys</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">revise_keys</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># use default checkpoint</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">CKPT_PATHS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
     <span class="c1">##########################################################</span>
     <span class="c1">#     forward for inference (export/deploy/optimize)     #</span>
@@ -423,7 +408,7 @@
         <span class="n">point_labels</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">mask_input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">has_mask_input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="c1"># orig_size: Tensor,</span>
+        <span class="n">orig_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward method for SAM inference (export/deploy).</span>
 
@@ -465,18 +450,16 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">return_single_mask</span><span class="p">:</span>
             <span class="n">masks</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_masks</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">point_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">scores</span><span class="p">,</span> <span class="n">masks</span></div>
-        <span class="c1"># TODO (sungchul): apply inner postprocessing</span>
-        <span class="c1"># upscaled_masks = self.mask_postprocessing(masks, orig_size[0])</span>
+        <span class="n">upscaled_masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="c1"># if self.config.model.return_extra_metrics:</span>
-        <span class="c1">#     stability_scores = self.calculate_stability_score(</span>
-        <span class="c1">#         upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset</span>
-        <span class="c1">#     )</span>
-        <span class="c1">#     areas = (upscaled_masks &gt; self.config.model.mask_threshold).sum(-1).sum(-1)</span>
-        <span class="c1">#     return upscaled_masks, scores, stability_scores, areas, masks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">return_extra_metrics</span><span class="p">:</span>
+            <span class="n">stability_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_stability_score</span><span class="p">(</span>
+                <span class="n">upscaled_masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mask_threshold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">stability_score_offset</span>
+            <span class="p">)</span>
+            <span class="n">areas</span> <span class="o">=</span> <span class="p">(</span><span class="n">upscaled_masks</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mask_threshold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">upscaled_masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">stability_scores</span><span class="p">,</span> <span class="n">areas</span><span class="p">,</span> <span class="n">masks</span>
 
-        <span class="c1"># return upscaled_masks, scores, masks</span>
+        <span class="k">return</span> <span class="n">upscaled_masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">masks</span></div>
 
     <span class="k">def</span> <span class="nf">_embed_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_coords</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">point_labels</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Embed sparse input prompts.</span>
@@ -571,9 +554,9 @@
 
         <span class="k">return</span> <span class="n">masks</span><span class="p">,</span> <span class="n">iou_preds</span></div>
 
-<div class="viewcode-block" id="SegmentAnything.mask_postprocessing"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.mask_postprocessing">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">mask_postprocessing</span><span class="p">(</span><span class="n">masks</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">orig_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Postprocesses the predicted masks.</span>
+<div class="viewcode-block" id="SegmentAnything.postprocess_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">postprocess_masks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">orig_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Postprocess the predicted masks.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            masks (Tensor): A batch of predicted masks with shape Bx1xHxW.</span>
@@ -584,22 +567,20 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            masks (Tensor): The postprocessed masks with shape Bx1xHxW.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">def</span> <span class="nf">resize_longest_image_size</span><span class="p">(</span><span class="n">input_image_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">longest_side</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-            <span class="n">scale</span> <span class="o">=</span> <span class="n">longest_side</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">input_image_size</span><span class="p">)</span>
-            <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">input_image_size</span>
-            <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">transformed_size</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">transformed_size</span>
-
         <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">prepadded_size</span> <span class="o">=</span> <span class="n">resize_longest_image_size</span><span class="p">(</span><span class="n">orig_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">)</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="n">prepadded_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span> <span class="n">prepadded_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>  <span class="c1"># type: ignore</span>
+        <span class="n">prepadded_size</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_prepadded_size</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">orig_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="n">prepadded_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span> <span class="n">prepadded_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
 
         <span class="n">orig_size</span> <span class="o">=</span> <span class="n">orig_size</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">masks</span></div>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SegmentAnything.get_prepadded_size"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.get_prepadded_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_prepadded_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_image_size</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">longest_side</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get pre-padded size.&quot;&quot;&quot;</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">longest_side</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">input_image_size</span><span class="p">)</span>
+        <span class="n">transformed_size</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">input_image_size</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">transformed_size</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span></div>
 
     <span class="c1">######################################################</span>
     <span class="c1">#     forward for training/validation/prediction     #</span>
@@ -632,23 +613,32 @@
         <span class="n">image_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_encoder</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
         <span class="n">pred_masks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">ious</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">image_embeddings</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">):</span>
-            <span class="n">sparse_embeddings</span><span class="p">,</span> <span class="n">dense_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="p">(</span>
-                <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
-                <span class="n">boxes</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
-                <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">embedding</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_embeddings</span><span class="p">):</span>
+            <span class="n">low_res_masks</span><span class="p">,</span> <span class="n">iou_predictions</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx_prompt</span><span class="p">,</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">bboxes</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">idx</span><span class="p">]]):</span>
+                <span class="k">if</span> <span class="n">prompt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
 
-            <span class="n">low_res_masks</span><span class="p">,</span> <span class="n">iou_predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_decoder</span><span class="p">(</span>
-                <span class="n">image_embeddings</span><span class="o">=</span><span class="n">embedding</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-                <span class="n">image_pe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="o">.</span><span class="n">get_dense_pe</span><span class="p">(),</span>
-                <span class="n">sparse_prompt_embeddings</span><span class="o">=</span><span class="n">sparse_embeddings</span><span class="p">,</span>
-                <span class="n">dense_prompt_embeddings</span><span class="o">=</span><span class="n">dense_embeddings</span><span class="p">,</span>
-                <span class="n">multimask_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># when given multiple prompts. if there is single prompt True would be better.</span>
-            <span class="p">)</span>
+                <span class="n">sparse_embeddings</span><span class="p">,</span> <span class="n">dense_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="p">(</span>
+                    <span class="n">points</span><span class="o">=</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prompt</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">prompt</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">idx_prompt</span> <span class="o">==</span> <span class="mi">1</span>
+                    <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">boxes</span><span class="o">=</span><span class="n">prompt</span> <span class="k">if</span> <span class="n">idx_prompt</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
 
-            <span class="n">pred_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">low_res_masks</span><span class="p">)</span>
-            <span class="n">ious</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iou_predictions</span><span class="p">)</span>
+                <span class="n">_low_res_masks</span><span class="p">,</span> <span class="n">_iou_predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_decoder</span><span class="p">(</span>
+                    <span class="n">image_embeddings</span><span class="o">=</span><span class="n">embedding</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="n">image_pe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="o">.</span><span class="n">get_dense_pe</span><span class="p">(),</span>
+                    <span class="n">sparse_prompt_embeddings</span><span class="o">=</span><span class="n">sparse_embeddings</span><span class="p">,</span>
+                    <span class="n">dense_prompt_embeddings</span><span class="o">=</span><span class="n">dense_embeddings</span><span class="p">,</span>
+                    <span class="n">multimask_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># when given multiple prompts. if there is single prompt True would be better. # noqa: E501</span>
+                <span class="p">)</span>
+                <span class="n">low_res_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_low_res_masks</span><span class="p">)</span>
+                <span class="n">iou_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_iou_predictions</span><span class="p">)</span>
+
+            <span class="n">pred_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">low_res_masks</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">ious</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">iou_predictions</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">pred_masks</span><span class="p">,</span> <span class="n">ious</span></div>
 
@@ -678,10 +668,8 @@
 
         <span class="n">num_masks</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred_mask</span> <span class="ow">in</span> <span class="n">pred_masks</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">gt_mask</span><span class="p">,</span> <span class="n">iou_prediction</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pred_masks</span><span class="p">,</span> <span class="n">gt_masks</span><span class="p">,</span> <span class="n">iou_predictions</span><span class="p">)):</span>
-            <span class="n">pred_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span>
-                <span class="n">pred_mask</span><span class="p">,</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-            <span class="n">pred_mask</span> <span class="o">=</span> <span class="n">pred_mask</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span>
+            <span class="n">pred_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">pred_mask</span> <span class="o">=</span> <span class="n">pred_mask</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">train_metrics</span><span class="p">[</span><span class="s2">&quot;train_IoU&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">gt_mask</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">train_metrics</span><span class="p">[</span><span class="s2">&quot;train_F1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">gt_mask</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">train_metrics</span><span class="p">[</span><span class="s2">&quot;train_Dice&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">gt_mask</span><span class="p">)</span>
@@ -736,10 +724,8 @@
 
         <span class="n">pred_masks</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_train</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">gt_mask</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pred_masks</span><span class="p">,</span> <span class="n">gt_masks</span><span class="p">)):</span>
-            <span class="n">pred_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span>
-                <span class="n">pred_mask</span><span class="p">,</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-            <span class="n">pred_mask</span> <span class="o">=</span> <span class="n">pred_mask</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span>
+            <span class="n">pred_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">pred_mask</span> <span class="o">=</span> <span class="n">pred_mask</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">v</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">gt_mask</span><span class="p">)</span>
 
@@ -769,40 +755,14 @@
 
         <span class="n">masks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pred_mask</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pred_masks</span><span class="p">):</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocess_masks</span><span class="p">(</span><span class="n">pred_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;original_size&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">return_logits</span><span class="p">:</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mask_threshold</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span>
-            <span class="n">masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span> <span class="n">iou_predictions</span><span class="o">=</span><span class="n">iou_predictions</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">])</span></div>
-
-<div class="viewcode-block" id="SegmentAnything.postprocess_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">postprocess_masks</span><span class="p">(</span>
-        <span class="n">masks</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">input_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">padding</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">original_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove padding and upscale masks to the original image size.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            masks (Tensor): Predicted masks from the mask_decoder with (N, 1, H/downsized_ratio, W/downsized_ratio).</span>
-<span class="sd">            input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.</span>
-<span class="sd">                Used to remove padding.</span>
-<span class="sd">            padding (tuple(int, int, int, int), Tensor): The padding applied to the image before input to the model,</span>
-<span class="sd">                in (left, top, right, bottom) format.</span>
-<span class="sd">            original_size (tuple(int, int), Tensor): The original size of the image before resizing</span>
-<span class="sd">                for input to the model, in (H, W) format.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="p">:</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">padding</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">original_size</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">masks</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SegmentAnything.configure_optimizers"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.html#otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.configure_optimizers">[docs]</a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">optim</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the optimizer for SAM.</span>

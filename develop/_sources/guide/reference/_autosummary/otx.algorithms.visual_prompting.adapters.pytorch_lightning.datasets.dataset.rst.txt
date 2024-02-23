@@ -16,7 +16,6 @@ otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.datasets.dataset
       convert_polygon_to_mask
       generate_bbox
       generate_bbox_from_mask
-      generate_point_from_mask
       get_transform
    
    

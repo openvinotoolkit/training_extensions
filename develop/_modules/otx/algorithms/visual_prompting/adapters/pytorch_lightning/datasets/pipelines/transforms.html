@@ -271,16 +271,15 @@
 <span class="sd">            List: List of batch data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;gt_masks&quot;</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span>
-        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
-        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">items</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">items</span>
 
     <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
     <span class="n">images</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">])</span>
     <span class="n">bboxes</span> <span class="o">=</span> <span class="n">_convert_empty_to_none</span><span class="p">(</span><span class="s2">&quot;bboxes&quot;</span><span class="p">)</span>
-    <span class="n">points</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># TBD</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">_convert_empty_to_none</span><span class="p">(</span><span class="s2">&quot;points&quot;</span><span class="p">)</span>
     <span class="n">gt_masks</span> <span class="o">=</span> <span class="n">_convert_empty_to_none</span><span class="p">(</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">original_size</span> <span class="o">=</span> <span class="n">_convert_empty_to_none</span><span class="p">(</span><span class="s2">&quot;original_size&quot;</span><span class="p">)</span>
-    <span class="n">padding</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
     <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">gt_masks</span><span class="p">:</span>
@@ -293,7 +292,6 @@
             <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="n">original_size</span><span class="p">,</span>
             <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
             <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">,</span>
-            <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="n">padding</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
@@ -304,7 +302,6 @@
         <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="p">}</span></div>
 
 
@@ -326,7 +323,6 @@
         <span class="n">pad_h</span> <span class="o">=</span> <span class="n">max_dim</span> <span class="o">-</span> <span class="n">h</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pad_w</span><span class="p">,</span> <span class="n">pad_h</span><span class="p">)</span>
 
-        <span class="n">item</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">padding</span>
         <span class="n">item</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">],</span> <span class="n">padding</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding_mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">item</span></div></div>
