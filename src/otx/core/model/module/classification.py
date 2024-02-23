@@ -24,7 +24,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
-from otx.core.metrics.accuracy import HLabelAccuracy
+from otx.core.metrics import HLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -45,7 +45,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda n: Accuracy(n),
+        metric: MetricCallable = lambda m: Accuracy(),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -56,13 +56,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         )
         self.metric = metric
 
-    def _configure_metric(self) -> None:
-        """Configure the metric. 
-        
-        Similar with the lighning configure_optimizer, construct the metric object in this function.
-        For the CLI side, self.metric always set to Partial, however, to consider the API users
-        Need to check the class instance.
-        """
+    def configure_metric(self):
         if isinstance(self.metric, partial):
             sig = inspect.signature(self.metric)
             param_dict = {}
@@ -74,16 +68,15 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             self.metric = self.metric
         else:
             msg = "Function based metric not yet supported."
-            raise TypeError(msg)
-
+            raise ValueError(msg)
+        self.metric.to(self.device)
+        
     def on_validation_start(self) -> None:
-        """Validation start."""
-        self._configure_metric()
-
+        self.configure_metric()
+    
     def on_test_start(self) -> None:
-        """Test start."""
-        self._configure_metric()
-
+        self.configure_metric()
+    
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
         if results is None:
@@ -104,7 +97,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if isinstance(self.metric, Metric):
+        if self.metric:
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -133,7 +126,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         if not isinstance(preds, (MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if isinstance(self.metric, Metric):
+        if self.metric:
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -148,7 +141,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda n: MultilabelAccuracy(n),
+        metric: MetricCallable = lambda m: MultilabelAccuracy(),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -157,30 +150,27 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        self.metric = metric
-
-    def _configure_metric(self) -> None:
-        """Configure the metric."""
+    
+    def configure_metric(self):
         if isinstance(self.metric, partial):
             sig = inspect.signature(self.metric)
             param_dict = {}
             for name, param in sig.parameters.items():
-                param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
+                    param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
             param_dict.pop("kwargs", {})
             self.metric = self.metric(**param_dict)
         elif isinstance(self.metric, Metric):
             self.metric = self.metric
         else:
             msg = "Function based metric not yet supported."
-            raise TypeError(msg)
-
+            raise ValueError(msg)
+        self.metric.to(self.device)
+        
     def on_validation_start(self) -> None:
-        """Validation start."""
-        self._configure_metric()
-
+        self.configure_metric()
+    
     def on_test_start(self) -> None:
-        """Test start."""
-        self._configure_metric()
+        self.configure_metric()
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -198,7 +188,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if isinstance(self.metric, Metric):
+        if self.metric:
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -225,7 +215,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if isinstance(self.metric, Metric):
+        if self.metric:
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -240,7 +230,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = partial(HLabelAccuracy),  # noqa: B008
+        metric: MetricCallable = partial(HLabelAccuracy), # noqa: B008
     ):
         super().__init__(
             otx_model=otx_model,
@@ -250,13 +240,36 @@ class OTXHlabelClsLitModule(OTXLitModule):
             metric=metric,
         )
 
-        # Temporary, TODO (sungmanc)
-        # This is the workaround for the HlabelAccuracy
-        # Need to find solution to make the HLabelAccuracy at the configuration level.
+        # TODO(sungmanc)
+        # For the Hlabel classification, this is the workaround
         self.metric = HLabelAccuracy(
             num_multiclass_heads=self.model.num_multiclass_heads,
             num_multilabel_classes=self.model.num_multilabel_classes,
         )
+    
+    def configure_metric(self):
+        if isinstance(self.metric, partial):
+            sig = inspect.signature(self.metric)
+            param_dict = {}
+            for name, param in sig.parameters.items():
+                    param_dict[name] = param.default if name != "num_labels" else self.model.num_classes
+            param_dict.pop("kwargs", {})
+            self.metric = self.metric(**param_dict)
+        elif isinstance(self.metric, Metric):
+            self.metric = self.metric
+        else:
+            msg = "Function based metric not yet supported."
+            raise ValueError(msg)
+        
+        self.metric.num_multiclass_heads = self.num_multiclass_heads
+        self.metric.num_multilabel_classes = self.num_multilabel_classes
+        self.metric.set_hlabel_accuracy_from_head_logits_info(self.hlabel_info.head_idx_to_logits_range)
+        
+    def on_validation_start(self) -> None:
+        self.configure_metric()
+    
+    def on_test_start(self) -> None:
+        self.configure_metric()
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
@@ -274,8 +287,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
-        if isinstance(self.metric, HLabelAccuracy):
-            self.metric.set_hlabel_accuracy_from_head_logits_info(self.hlabel_info.head_idx_to_logits_range)
 
     def _log_metrics(self, meter: Accuracy, key: str) -> None:
         results = meter.compute()
@@ -293,7 +304,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if isinstance(self.metric, Metric):
+        if self.metric:
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -326,7 +337,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         if not isinstance(preds, (HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if isinstance(self.metric, Metric):
+        if self.metric:
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
