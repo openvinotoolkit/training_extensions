@@ -379,7 +379,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
 
         label_shift = 1 if first_label == "background" else 0
         if label_shift:
-            log.warn(f"label_shift: {label_shift}")
+            log.warning(f"label_shift: {label_shift}")
 
         for output in outputs:
             output_objects = output.objects
