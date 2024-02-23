@@ -16,6 +16,7 @@ from otx.algo.visual_prompting.zero_shot_segment_anything import (
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import ZeroShotVisualPromptingBatchPredEntity
 from torch import Tensor
+from torch.nn import Parameter
 from torchvision import tv_tensors
 
 
@@ -169,8 +170,10 @@ class TestZeroShotSegmentAnything:
         for param in zero_shot_segment_anything.mask_decoder.parameters():
             assert not param.requires_grad
 
-        assert zero_shot_segment_anything.reference_info["reference_feats"] is None
-        assert zero_shot_segment_anything.reference_info["used_indices"] is None
+        assert len(zero_shot_segment_anything.reference_info["reference_feats"]) == 0
+        assert zero_shot_segment_anything.reference_info["reference_feats"].ndim == 3
+        assert len(zero_shot_segment_anything.reference_info["used_indices"]) == 0
+        assert zero_shot_segment_anything.reference_info["used_indices"].ndim == 1
 
     @pytest.mark.parametrize(
         "kwargs",
@@ -212,15 +215,18 @@ class TestZeroShotSegmentAnything:
         """Test initialize_reference_info and expand_reference_info."""
         zero_shot_segment_anything = build_zero_shot_segment_anything()
 
-        zero_shot_segment_anything.initialize_reference_info(largest_label=0)
+        zero_shot_segment_anything.expand_reference_info(new_largest_label=0)
 
-        assert isinstance(zero_shot_segment_anything.reference_info["reference_feats"], Tensor)
+        assert isinstance(zero_shot_segment_anything.reference_info["reference_feats"], Parameter)
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
-        assert isinstance(zero_shot_segment_anything.reference_info["used_indices"], set)
+        assert isinstance(zero_shot_segment_anything.reference_info["used_indices"], Parameter)
+        # used_indices will be updated after each learn loop per label
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == torch.Size((0,))
 
         zero_shot_segment_anything.expand_reference_info(new_largest_label=3)
 
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((4, 1, 256))
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == torch.Size((0,))
 
     def test_learn(self, mocker, build_zero_shot_segment_anything) -> None:
         """Test learn."""
@@ -246,7 +252,6 @@ class TestZeroShotSegmentAnything:
             images=images,
             processed_prompts=processed_prompts,
             ori_shapes=ori_shapes,
-            return_outputs=True,
         )
 
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
@@ -271,7 +276,6 @@ class TestZeroShotSegmentAnything:
             images=images,
             processed_prompts=new_processed_prompts,
             ori_shapes=ori_shapes,
-            return_outputs=True,
         )
 
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
@@ -283,10 +287,7 @@ class TestZeroShotSegmentAnything:
         """Test infer."""
         mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
         zero_shot_segment_anything = build_zero_shot_segment_anything()
-        zero_shot_segment_anything.prompt_getter = MagicMock(
-            spec=PromptGetter,
-            return_value=(torch.tensor([[[0, 0, 0.5], [1000, 1000, 0.7]]]), torch.tensor([[[500, 500]]])),
-        )
+        mocker.patch.object(zero_shot_segment_anything.prompt_getter, "get_prompt_candidates", return_value=({0: torch.tensor([[0, 0, 0.5], [1000, 1000, 0.7]])}, {0: torch.tensor([[500, 500]])}))
 
         def _patch_predict_masks(**kwargs) -> Tensor:
             point_coords = kwargs.get("point_coords")
@@ -436,6 +437,68 @@ class TestZeroShotSegmentAnything:
         _, result = zero_shot_segment_anything._decide_cascade_results(masks, logits, scores)
 
         assert torch.equal(result, expected)
+        
+    def test_find_latest_reference_info(self, mocker, build_zero_shot_segment_anything):
+        """Test _find_latest_reference_info."""
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.path.isdir",
+            return_value=True,
+        )
+
+        # there are some saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
+            return_value=["1", "2"],
+        )
+        results = zero_shot_segment_anything._find_latest_reference_info()
+        assert results == "2"
+
+        # there are no saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
+            return_value=[],
+        )
+        results = zero_shot_segment_anything._find_latest_reference_info()
+        assert results is None
+        
+    def test_load_latest_reference_info(self, mocker, build_zero_shot_segment_anything):
+        """Test _load_latest_reference_info."""
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.path.isdir",
+            return_value=True,
+        )
+
+        # get previously saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
+            return_value=["1", "2"],
+        )
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.torch.load",
+            return_value=torch.nn.ParameterDict(
+                {"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])}
+            ),
+        )
+        mocker.patch("builtins.open", return_value="Mocked data")
+
+        zero_shot_segment_anything._load_latest_reference_info()
+        assert isinstance(zero_shot_segment_anything.reference_info, torch.nn.ParameterDict)
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (1, 1, 256)
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (1,)
+
+        # no saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
+            return_value=[],
+        )
+
+        zero_shot_segment_anything.initialize_reference_info()
+        zero_shot_segment_anything._load_latest_reference_info()
+
+        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (0, 1, 256)
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (0,)
 
 
 class TestOTXZeroShotSegmentAnything:
@@ -464,8 +527,8 @@ class TestOTXZeroShotSegmentAnything:
     def test_customize_inputs_infer(self, model: OTXZeroShotSegmentAnything, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_inputs with training=False."""
         model.training = False
-        model.model.reference_info["reference_feats"] = torch.rand(1, 1, 1, 256)
-        model.model.reference_info["used_indices"] = {0: [0]}
+        model.model.reference_info["reference_feats"] = torch.rand(1, 1, 256)
+        model.model.reference_info["used_indices"] = torch.tensor([0.])
         output_data = model._customize_inputs(fxt_zero_shot_vpm_data_entity[1])
 
         assert output_data is not None

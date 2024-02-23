@@ -9,6 +9,10 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+import time
+import os
+import pickle
+from torch.nn import Parameter
 from torchmetrics.aggregation import MeanMetric
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 from torchmetrics.collections import MetricCollection
@@ -252,12 +256,37 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                 "mAP": MeanAveragePrecision(iou_type="segm"),
             },
         )
+        
+    def on_train_start(self) -> None:
+        """Initialize reference infos before learn."""
+        self.model.model.initialize_reference_info()
+        
+    def on_test_start(self) -> None:
+        """Load previously saved reference info."""
+        self.model.model._load_latest_reference_info()
+        
+    def on_predict_start(self) -> None:
+        """Load previously saved reference info."""
+        self.model.model._load_latest_reference_info()
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
 
     def on_train_epoch_end(self) -> None:
         """Skip on_train_epoch_end unused in zero-shot visual prompting."""
+        self.model.model.reference_info["used_indices"] = Parameter(
+            self.model.model.reference_info["used_indices"].unique().unsqueeze(0), requires_grad=False
+        )
+        if self.model.model.save_outputs:
+            # save reference info
+            path_reference_info = self.model.model.path_reference_info.format(time.strftime("%Y%m%d_%H%M%S"))
+            os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)
+            torch.save(self.model.model.reference_info, path_reference_info)
+            pickle.dump(
+                {k: v.numpy() for k, v in self.model.model.reference_info.items()},
+                open(path_reference_info.replace(".pt", ".pickle"), "wb"),
+            )
+            log.info(f"Saved reference info at {path_reference_info}.")
 
     def on_validation_epoch_start(self) -> None:
         """Skip on_validation_epoch_start unused in zero-shot visual prompting."""

@@ -9,6 +9,7 @@ model:
     default_threshold_reference: 0.3
     default_threshold_target: 0.65
     is_cascade: False
+    save_outputs: True
     # options
     use_stability_score: False
     return_single_mask: False

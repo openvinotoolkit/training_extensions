@@ -6,12 +6,14 @@
 from __future__ import annotations
 
 import logging as log
+import os
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 from typing import Any, Literal
 
 import torch
+from torch.nn import Parameter, ParameterDict
 from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
 from torch.nn import functional as F  # noqa: N812
@@ -67,7 +69,7 @@ class PromptGetter(nn.Module):
 
         total_points_scores: dict[int, Tensor] = {}
         total_bg_coords: dict[int, Tensor] = {}
-        for label in map(int, used_indices[0]):
+        for label in map(int, used_indices):
             points_scores, bg_coords = self(
                 image_embeddings=image_embeddings,
                 reference_feat=reference_feats[label],
@@ -127,14 +129,14 @@ class PromptGetter(nn.Module):
     ) -> tuple[Tensor, Tensor]:
         """Select point used as point prompts."""
         if threshold is None:
-            threshold = torch.tensor([[0.0]], dtype=torch.float32)
+            threshold = torch.tensor([0.0], dtype=torch.float32)
         if num_bg_points is None:
-            num_bg_points = torch.tensor([[1]], dtype=torch.int64)
+            num_bg_points = torch.tensor(1, dtype=torch.int64)
 
         _, w_sim = mask_sim.shape
 
         # Top-last point selection
-        bg_indices = mask_sim.flatten().topk(num_bg_points[0, 0], largest=False)[1]
+        bg_indices = mask_sim.flatten().topk(num_bg_points.item(), largest=False)[1]
         bg_x = (bg_indices // w_sim).unsqueeze(0)
         bg_y = bg_indices - bg_x * w_sim
         bg_coords = torch.cat((bg_y, bg_x), dim=0).permute(1, 0)
@@ -206,7 +208,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 kwargs[condition] = True
 
         self.is_cascade = kwargs.pop("is_cascade", True)
+        self.save_outputs = kwargs.pop("save_outputs", True)
+        self.path_reference_info = kwargs.pop("path_reference_info", "vpm_zsl_reference_infos/{}/reference_info.pt")
         super().__init__(*args, **kwargs)
+        
+        self.reference_info: ParameterDict = ParameterDict()
+        self.initialize_reference_info()
 
         self.prompt_getter = PromptGetter(image_size=self.image_size)
         self.prompt_getter.set_default_thresholds(
@@ -216,8 +223,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
         self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
-
-        self.set_empty_reference_info()
 
     def set_default_config(self, **kwargs) -> dict[str, Any]:
         """Set default config when using independently."""
@@ -233,33 +238,17 @@ class ZeroShotSegmentAnything(SegmentAnything):
         )
         return kwargs
 
-    def set_empty_reference_info(self) -> None:
-        """Set empty reference information."""
-        reference_feats: Tensor | None = None
-        used_indices: set | None = None
-        self.reference_info = nn.ParameterDict(
-            {
-                "reference_feats": reference_feats,
-                "used_indices": used_indices,
-            },
-        )
-        self.is_reference_info_empty = True
-
-    def initialize_reference_info(self, largest_label: int) -> None:
+    def initialize_reference_info(self) -> None:
         """Initialize reference information."""
-        self.reference_info["reference_feats"] = torch.zeros(largest_label + 1, 1, self.embed_dim)
-        self.reference_info["used_indices"] = set()
-        self.is_reference_info_empty = False
+        self.reference_info["reference_feats"] = Parameter(torch.zeros(0, 1, self.embed_dim), requires_grad=False)
+        self.reference_info["used_indices"] = Parameter(torch.tensor([], dtype=torch.int64), requires_grad=False)
 
     def expand_reference_info(self, new_largest_label: int) -> None:
-        """Expand reference info dimensions if newly given processed prompts have more lables."""
+        """Expand reference info dimensions if newly given processed prompts have more lables."""            
         if new_largest_label > (cur_largest_label := len(self.reference_info["reference_feats"]) - 1):
             diff = new_largest_label - cur_largest_label
-            self.reference_info["reference_feats"] = F.pad(
-                self.reference_info["reference_feats"],
-                (0, 0, 0, 0, 0, diff),
-                value=0.0,
-            )
+            padded_reference_feats = F.pad(self.reference_info["reference_feats"], (0, 0, 0, 0, 0, diff), value=0.0)
+            self.reference_info["reference_feats"] = Parameter(padded_reference_feats, requires_grad=False)
 
     @torch.no_grad()
     def learn(
@@ -267,7 +256,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         images: list[tv_tensors.Image],
         processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]],
         ori_shapes: list[Tensor],
-        return_outputs: bool = False,
+        reset_feat: bool = False,
     ) -> tuple[nn.ParameterDict, list[Tensor]] | None:
         """Get reference features.
 
@@ -278,27 +267,24 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Args:
             images (list[tv_tensors.Image]): List of given images for reference features.
             processed_prompts (dict[int, list[tv_tensors.TVTensor]]): The class-wise prompts
-                processed at _preprocess_prompts.
+                processed at OTXZeroShotSegmentAnything._gather_prompts_with_labels.
             ori_shapes (List[Tensor]): List of original shapes per image.
-            return_outputs (bool): Whether return reference features and masks.
-                If True, `learn` operation will output reference features and masks.
-                If False, `learn` operation will insert reference features and masks to save them with the model.
-                Defaults to False.
+            reset_feat (bool): Whether reset reference_info.
+                For OTX standalone, resetting reference_info will be conducted in on_train_start.
+                For other frameworks, setting it to True is required to reset reference_info. Defaults to False.
         """
-        assert len(images) == 1, "Only single batch is supported."  # noqa: S101
+        if reset_feat:
+            self.initialize_reference_info()
 
         # initialize tensors to contain reference features and prompts
         largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
-        if self.is_reference_info_empty:
-            self.initialize_reference_info(largest_label)
-        else:
-            self.expand_reference_info(largest_label)
-            # TODO(sungchul): consider who to handle multiple reference features, currently replace it # noqa: TD003
+        self.expand_reference_info(largest_label)
+        # TODO(sungchul): consider who to handle multiple reference features, currently replace it # noqa: TD003
 
         reference_masks: list[Tensor] = []
         for image, prompts, ori_shape in zip(images, processed_prompts, ori_shapes):
-            image_embedding = self.image_encoder(image)
-            processed_embedding = image_embedding.squeeze().permute(1, 2, 0)
+            image_embeddings = self.image_encoder(image)
+            processed_embedding = image_embeddings.squeeze().permute(1, 2, 0)
 
             ref_masks = torch.zeros(largest_label + 1, *map(int, ori_shape))
             for label, input_prompts in prompts.items():
@@ -330,17 +316,16 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                         masks = self._predict_masks(
                             mode="learn",
-                            image_embedding=image_embedding,
+                            image_embeddings=image_embeddings,
                             point_coords=point_coords,
                             point_labels=point_labels,
                             ori_shape=ori_shape,
                             is_cascade=False,
                         )
                         ref_mask[masks] += 1
-
                 ref_mask = torch.clip(ref_mask, 0, 1).to(torch.float32)
 
-                ref_feat = None
+                ref_feat: Tensor | None = None
                 default_threshold_reference = deepcopy(self.prompt_getter.default_threshold_reference)
                 while ref_feat is None:
                     log.info(f"[*] default_threshold_reference : {default_threshold_reference:.4f}")
@@ -352,20 +337,20 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     default_threshold_reference -= 0.05
 
                 self.reference_info["reference_feats"][label] = ref_feat.detach().cpu()
-                self.reference_info["used_indices"].add(int(label))
+                self.reference_info["used_indices"] = Parameter(
+                    torch.cat((self.reference_info["used_indices"], torch.tensor([label])), dim=0),
+                    requires_grad=False,
+                )
                 ref_masks[label] = ref_mask.detach().cpu()
             reference_masks.append(ref_masks)
-
-        if return_outputs:
-            return self.reference_info, reference_masks
-        return None
+        return self.reference_info, reference_masks
 
     @torch.no_grad()
     def infer(
         self,
         images: list[tv_tensors.Image],
         reference_feats: Tensor,
-        used_indices: set[int],
+        used_indices: Tensor,
         ori_shapes: list[Tensor],
         is_cascade: bool = False,
     ) -> list[list[defaultdict[int, list[Tensor]]]]:
@@ -376,35 +361,33 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Args:
             images (list[tv_tensors.Image]): Given images for target results.
             reference_feats (Tensor): Reference features for target prediction.
-            used_indices (set[int]): To check which indices of reference features are validate.
+            used_indices (Tensor): To check which indices of reference features are validate.
             ori_shapes (list[Tensor]): Original image size.
             is_cascade (bool): Whether use cascade inference. Defaults to False.
 
         Returns:
             (list[list[defaultdict[int, list[Tensor]]]]): List of predicted masks and used points.
         """
-        assert len(images) == 1, "Only single batch is supported."  # noqa: S101
-
         total_results = []
         for image, ori_shape in zip(images, ori_shapes):
             if image.ndim == 3:
                 image = image.unsqueeze(0)  # noqa: PLW2901
 
-            image_embedding = self.image_encoder(image)
+            # get image embeddings
+            image_embeddings = self.image_encoder(image)
 
-            total_points_scores, total_bg_coords = self.prompt_getter(
-                image_embedding=image_embedding,
+            total_points_scores, total_bg_coords = self.prompt_getter.get_prompt_candidates(
+                image_embeddings=image_embeddings,
                 reference_feats=reference_feats,
                 used_indices=used_indices,
                 ori_shape=ori_shape,
+                device=image_embeddings.device,
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
-            for label in used_indices:
+            for label in total_points_scores:
                 points_scores, bg_coords = total_points_scores[label], total_bg_coords[label]
                 for point_score in points_scores:
-                    if point_score[-1] == -1:
-                        continue
                     x, y = point_score[:2]
                     is_done = False
                     for pm in predicted_masks.get(label, []):
@@ -424,7 +407,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     ).unsqueeze(0)
                     mask = self._predict_masks(
                         mode="infer",
-                        image_embedding=image_embedding,
+                        image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
                         ori_shape=ori_shape,
@@ -476,27 +459,29 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def _predict_masks(
         self,
         mode: str,
-        image_embedding: Tensor,
+        image_embeddings: Tensor,
         point_coords: Tensor,
         point_labels: Tensor,
         ori_shape: Tensor,
         is_cascade: bool = True,
     ) -> Tensor:
         """Predict target masks."""
+        masks: Tensor
         logits: Tensor
         scores: Tensor
-        for i in range(3):
+        num_iter = 3 if is_cascade else 1
+        for i in range(num_iter):
             if i == 0:
                 # First-step prediction
                 mask_input = torch.zeros(
                     1,
                     1,
-                    *(x * 4 for x in image_embedding.shape[2:]),
-                    device=image_embedding.device,
+                    *(x * 4 for x in image_embeddings.shape[2:]),
+                    device=image_embeddings.device,
                 )
                 has_mask_input = self.has_mask_inputs[0].to(mask_input.device)
 
-            elif is_cascade and i == 1:
+            elif i == 1:
                 # Cascaded Post-refinement-1
                 mask_input, best_masks = self._decide_cascade_results(masks, logits, scores, is_single=True)  # noqa: F821
                 if best_masks.sum() == 0:
@@ -504,7 +489,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                 has_mask_input = self.has_mask_inputs[1].to(mask_input.device)
 
-            elif is_cascade and i == 2:
+            elif i == 2:
                 # Cascaded Post-refinement-2
                 mask_input, best_masks = self._decide_cascade_results(masks, logits, scores)  # noqa: F821
                 if best_masks.sum() == 0:
@@ -523,15 +508,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             high_res_masks, scores, logits = self(
                 mode=mode,
-                image_embeddings=image_embedding,
+                image_embeddings=image_embeddings,
                 point_coords=point_coords,
                 point_labels=point_labels,
                 mask_input=mask_input,
                 has_mask_input=has_mask_input,
                 ori_shape=ori_shape,
             )
-            masks: Tensor = high_res_masks > self.mask_threshold
-
+            masks = high_res_masks > self.mask_threshold
         _, best_masks = self._decide_cascade_results(masks, logits, scores)
         return best_masks
 
@@ -631,6 +615,21 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]
+    
+    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
+        """Find latest reference info to be used."""
+        if not os.path.isdir(root):
+            return None
+        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
+            return stamps[0]
+        return None
+    
+    def _load_latest_reference_info(self) -> None:
+        """Load latest reference info to be used."""
+        if (latest_stamp := self._find_latest_reference_info()) is not None:
+            latest_reference_info = self.path_reference_info.format(latest_stamp)
+            self.reference_info = torch.load(latest_reference_info)
+            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
 
 
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
@@ -680,7 +679,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for you model."""
-        if self.training:
+        if self.training:            
             return outputs
 
         masks: list[tv_tensors.Mask] = []
@@ -719,11 +718,11 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         labels: list[Tensor],
     ) -> list[dict[int, list[tv_tensors.TVTensor]]]:
         """Gather prompts according to labels."""
-        total_processed_prompts = []
+        total_processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]] = []
         for prompt, label in zip(prompts, labels):
             processed_prompts = defaultdict(list)
             for _prompt, _label in zip(prompt, label):
                 processed_prompts[int(_label)].append(_prompt)
             sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(sorted_processed_prompts)
-        return total_processed_prompts  # type: ignore[return-value]
+        return total_processed_prompts
