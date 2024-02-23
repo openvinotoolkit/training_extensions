@@ -210,7 +210,7 @@ def test_otx_e2e(
             recipe,
             "--data_root",
             fxt_target_dataset_per_task[task],
-            "--engine.work_dir",
+            "--work_dir",
             str(tmp_path_test / "outputs"),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
