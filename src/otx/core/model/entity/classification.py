@@ -668,8 +668,9 @@ class OVMulticlassClassificationModel(
         pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
 
         if outputs and outputs[0].saliency_map.size != 0:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_s_maps = [s_map[0] if s_map.size != 0 else s_map for s_map in predicted_s_maps]
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return MulticlassClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -769,8 +770,9 @@ class OVHlabelClassificationModel(
             all_pred_scores.append(torch.tensor(predicted_scores))
 
         if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_s_maps = [s_map[0] if s_map.size != 0 else s_map for s_map in predicted_s_maps]
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return HlabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -830,8 +832,9 @@ class OVMultilabelClassificationModel(
         pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
 
         if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_s_maps = [s_map[0] if s_map.size != 0 else s_map for s_map in predicted_s_maps]
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return MultilabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
