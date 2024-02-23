@@ -19,7 +19,7 @@ from rich.console import Console
 from otx import OTX_LOGO, __version__
 from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
-from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
+from otx.cli.utils.jsonargparse import add_list_type_arguments, get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
@@ -166,21 +166,21 @@ class OTXCLI:
             sub_configs=True,
         )
         # Optimizer & Scheduler Settings
-        from lightning.pytorch.cli import ReduceLROnPlateau
+        from lightning.pytorch.cli import LRSchedulerTypeUnion, ReduceLROnPlateau
         from torch.optim import Optimizer
         from torch.optim.lr_scheduler import LRScheduler
 
-        optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
-        scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
-        parser.add_subclass_arguments(
-            baseclass=(Optimizer, list),
+        add_list_type_arguments(
+            parser,
+            baseclass=(Optimizer, list[Optimizer]),
             nested_key="optimizer",
-            **optim_kwargs,
+            skip={"params"},
         )
-        parser.add_subclass_arguments(
-            baseclass=(LRScheduler, ReduceLROnPlateau, list),
+        add_list_type_arguments(
+            parser,
+            baseclass=(LRScheduler, ReduceLROnPlateau, list[LRSchedulerTypeUnion]),
             nested_key="scheduler",
-            **scheduler_kwargs,
+            skip={"optimizer"},
         )
 
         return parser
@@ -223,7 +223,7 @@ class OTXCLI:
         for subcommand in self.engine_subcommands():
             # If already have a workspace or run it from the root of a workspace, utilize config and checkpoint in cache
             root_dir = Path(sys.argv[sys.argv.index("--work_dir") + 1]) if "--work_dir" in sys.argv else Path.cwd()
-            self.cache_dir = root_dir / ".latest"
+            self.cache_dir = root_dir / ".latest" / "train"  # The config and checkpoint used in the latest training.
 
             parser_kwargs = self._set_default_config()
             sub_parser = self.engine_subcommand_parser(**parser_kwargs)
@@ -487,8 +487,7 @@ class OTXCLI:
             skip_check=True,
         )
         # if train -> Update `.latest` folder
-        if self.subcommand == "train":
-            self.update_latest(work_dir=work_dir)
+        self.update_latest(work_dir=work_dir)
 
     def update_latest(self, work_dir: Path) -> None:
         """Update the latest cache directory with the latest configurations and checkpoint file.
@@ -496,7 +495,9 @@ class OTXCLI:
         Args:
             work_dir (Path): The working directory where the configurations and checkpoint files are located.
         """
-        cache_dir = work_dir.parent / ".latest"
+        latest_dir = work_dir.parent / ".latest"
+        latest_dir.mkdir(exist_ok=True)
+        cache_dir = latest_dir / self.subcommand
         if cache_dir.exists():
             cache_dir.unlink()
         cache_dir.symlink_to(work_dir)
