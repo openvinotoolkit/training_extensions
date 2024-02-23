@@ -17,19 +17,9 @@ if TYPE_CHECKING:
     from openvino.model_api.adapters import OpenvinoAdapter
 
 
-def softmax_numpy(x: np.ndarray) -> np.ndarray:
-    """Softmax numpy."""
-    x = np.exp(x - np.max(x))
-    x /= np.sum(x)
-    return x
-
-
-def get_multiclass_predictions(logits: np.ndarray, activate: bool = False) -> ClassificationResult:
+def get_multiclass_predictions(logits: np.ndarray) -> ClassificationResult:
     """Get multiclass predictions."""
     index = np.argmax(logits)
-    if activate:
-        logits = softmax_numpy(logits)
-
     return ClassificationResult([(index, index, logits[index])], np.ndarray(0), np.ndarray(0), np.ndarray(0))
 
 
