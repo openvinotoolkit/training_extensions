@@ -20,76 +20,84 @@ from torchvision import tv_tensors
 
 
 class TestPromptGetter:
-    @pytest.fixture(autouse=True)
-    def setup(self) -> None:
-        self.prompt_getter = PromptGetter(image_size=3, downsizing=1)
+    @pytest.fixture()
+    def prompt_getter(self) -> PromptGetter:
+        return PromptGetter(image_size=3, downsizing=1)
 
-    def test_set_default_thresholds(self) -> None:
+    def test_set_default_thresholds(self, prompt_getter) -> None:
         """Test set_default_thresholds."""
-        assert self.prompt_getter.default_threshold_reference == 0.3
-        assert self.prompt_getter.default_threshold_target == 0.65
+        assert prompt_getter.default_threshold_reference == 0.3
+        assert prompt_getter.default_threshold_target == 0.65
 
-        self.prompt_getter.set_default_thresholds(default_threshold_reference=0.5, default_threshold_target=0.7)
+        prompt_getter.set_default_thresholds(default_threshold_reference=0.5, default_threshold_target=0.7)
 
-        assert self.prompt_getter.default_threshold_reference == 0.5
-        assert self.prompt_getter.default_threshold_target == 0.7
+        assert prompt_getter.default_threshold_reference == 0.5
+        assert prompt_getter.default_threshold_target == 0.7
 
-    def test_forward(self, mocker) -> None:
+    @pytest.mark.parametrize(
+        "result_point_selection",
+        [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])],
+    )
+    def test_forward(self, mocker, prompt_getter, result_point_selection: Tensor) -> None:
         """Test forward."""
-        mocker.patch.object(
-            self.prompt_getter,
-            "_get_prompt_candidates",
-            return_value=(torch.tensor([[0, 0, 0.5], [1, 1, 0.7]]), torch.tensor([[2, 2]])),
-        )
-        image_embedding = torch.ones(1, 4, 4, 4)
-        reference_feats = torch.rand(1, 1, 4)
-        used_indices = [0]
-        ori_shape = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
+        mocker.patch("otx.algo.visual_prompting.zero_shot_segment_anything.ZeroShotSegmentAnything")
+        mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
 
-        total_points_scores, total_bg_coords = self.prompt_getter(
-            image_embedding=image_embedding,
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        reference_feat = torch.rand(1, 4)
+        ori_shape = torch.tensor((prompt_getter.image_size, prompt_getter.image_size), dtype=torch.int64)
+
+        points_scores, bg_coords = prompt_getter(
+            image_embeddings=image_embeddings,
+            reference_feat=reference_feat,
+            ori_shape=ori_shape,
+        )
+
+        assert torch.all(points_scores == result_point_selection)
+        assert torch.all(bg_coords == torch.zeros(1, 2))
+
+    @pytest.mark.parametrize(
+        "result_point_selection",
+        [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])],
+    )
+    def test_get_prompt_candidates(self, mocker, prompt_getter, result_point_selection: Tensor) -> None:
+        """Test get_prompt_candidates."""
+        mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        reference_feats = torch.rand(1, 1, 4)
+        used_indices = torch.as_tensor([[0]])
+        ori_shape = torch.tensor([prompt_getter.image_size, prompt_getter.image_size], dtype=torch.int64)
+
+        total_points_scores, total_bg_coords = prompt_getter.get_prompt_candidates(
+            image_embeddings=image_embeddings,
             reference_feats=reference_feats,
             used_indices=used_indices,
             ori_shape=ori_shape,
         )
 
-        assert total_points_scores.shape == torch.Size((1, 2, 3))
-        assert total_bg_coords.shape == torch.Size((1, 1, 2))
+        assert total_points_scores[0].shape[0] == len(result_point_selection)
+        assert total_bg_coords[0].shape[0] == 1
 
-    def test_get_prompt_candidates(self, mocker) -> None:
-        """Test _get_prompt_candidates."""
-        mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
-        image_embedding = torch.ones(1, 4, 4, 4)
-        reference_feat = torch.rand(1, 4)
-        ori_shape = torch.tensor(
-            [self.prompt_getter.image_size, self.prompt_getter.image_size],
-            dtype=torch.int64,
-        )
-
-        points_scores, bg_coords = self.prompt_getter._get_prompt_candidates(
-            image_embedding=image_embedding,
-            reference_feat=reference_feat,
-            ori_shape=ori_shape,
-            threshold=torch.tensor([[0.0]], dtype=torch.float32),
-            num_bg_points=torch.tensor([[1]], dtype=torch.int64),
-        )
-
-        assert points_scores == "points_scores"
-        assert bg_coords == "bg_coords"
-
-    def test_point_selection(self) -> None:
+    @pytest.mark.parametrize(
+        ("mask_sim", "expected"),
+        [
+            (
+                torch.arange(0.1, 1.0, 0.1).reshape(3, 3),
+                torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]),
+            ),
+            (torch.zeros(3, 3), torch.tensor([[-1, -1, -1]])),
+        ],
+    )
+    def test_point_selection(self, prompt_getter, mask_sim: torch.Tensor, expected: torch.Tensor) -> None:
         """Test _point_selection."""
-        mask_sim = torch.arange(0.1, 1.0, 0.1).reshape(self.prompt_getter.image_size, self.prompt_getter.image_size)
-
-        points_scores, bg_coords = self.prompt_getter._point_selection(
+        points_scores, bg_coords = prompt_getter._point_selection(
             mask_sim=mask_sim,
-            ori_shape=torch.tensor([self.prompt_getter.image_size, self.prompt_getter.image_size]),
+            ori_shape=torch.tensor([prompt_getter.image_size, prompt_getter.image_size]),
             threshold=torch.tensor([[0.5]]),
             num_bg_points=torch.tensor([[1]], dtype=torch.int64),
         )
 
-        assert torch.equal(points_scores, torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]))
-        assert torch.equal(bg_coords, torch.tensor([[0, 0]]))
+        assert torch.equal(points_scores, expected)
 
 
 class TestZeroShotSegmentAnything:

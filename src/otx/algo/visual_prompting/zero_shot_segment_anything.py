@@ -47,66 +47,64 @@ class PromptGetter(nn.Module):
         self.default_threshold_reference = default_threshold_reference
         self.default_threshold_target = default_threshold_target
 
-    def forward(
+    def get_prompt_candidates(
         self,
-        image_embedding: Tensor,
+        image_embeddings: Tensor,
         reference_feats: Tensor,
-        used_indices: list[int],
+        used_indices: Tensor,
         ori_shape: Tensor,
         threshold: Tensor | None = None,
         num_bg_points: Tensor | None = None,
-    ) -> tuple[Tensor, Tensor]:
+        device: str | torch.device = "cpu",
+    ) -> tuple[dict[int, Tensor], dict[int, Tensor]]:
         """Get prompt candidates."""
         if threshold is None:
             threshold = torch.tensor([[0.0]], dtype=torch.float32)
         if num_bg_points is None:
             num_bg_points = torch.tensor([[1]], dtype=torch.int64)
 
-        device = image_embedding.device
         threshold = threshold.to(device)
 
-        total_points_scores: Tensor = torch.zeros(max(used_indices) + 1, 0, 3, device=device)
-        total_bg_coords: Tensor = torch.zeros(max(used_indices) + 1, num_bg_points, 2, device=device)
-        for label in used_indices:
-            points_scores, bg_coords = self._get_prompt_candidates(
-                image_embedding=image_embedding,
+        total_points_scores: dict[int, Tensor] = {}
+        total_bg_coords: dict[int, Tensor] = {}
+        for label in map(int, used_indices[0]):
+            points_scores, bg_coords = self(
+                image_embeddings=image_embeddings,
                 reference_feat=reference_feats[label],
                 ori_shape=ori_shape,
                 threshold=threshold,
                 num_bg_points=num_bg_points,
-                device=device,
             )
-
-            pad_size = torch.tensor(points_scores.shape[0] - total_points_scores.shape[1])
-            pad_tot = torch.max(self.zero_tensor, pad_size)
-            pad_cur = torch.max(self.zero_tensor, -pad_size)
-
-            total_points_scores = F.pad(total_points_scores, (0, 0, 0, pad_tot, 0, 0), value=-1)
-            points_scores = F.pad(points_scores, (0, 0, 0, pad_cur), value=-1)
 
             total_points_scores[label] = points_scores
             total_bg_coords[label] = bg_coords
 
         return total_points_scores, total_bg_coords
 
-    def _get_prompt_candidates(
+    def forward(
         self,
-        image_embedding: Tensor,
+        image_embeddings: Tensor,
         reference_feat: Tensor,
         ori_shape: Tensor,
-        threshold: Tensor,
-        num_bg_points: Tensor,
-        device: torch.device | str = "cpu",
+        threshold: Tensor | None = None,
+        num_bg_points: Tensor | None = None,
     ) -> tuple[Tensor, Tensor]:
         """Get prompt candidates from given reference and target features."""
-        assert threshold.dim() == 2 and num_bg_points.dim() == 2  # noqa: PT018, S101
+        if threshold is None:
+            threshold = torch.tensor([[0.0]], dtype=torch.float32)
+        if num_bg_points is None:
+            num_bg_points = torch.tensor([[1]], dtype=torch.int64)
 
-        target_feat = image_embedding.squeeze()
+        ori_shape = ori_shape.squeeze()
+        threshold = threshold.squeeze()
+        num_bg_points = num_bg_points.squeeze()
+
+        target_feat = image_embeddings.squeeze()
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
 
-        sim = reference_feat.to(device) @ target_feat
+        sim = reference_feat @ target_feat
         sim = sim.reshape(1, 1, h_feat, w_feat)
         sim = ZeroShotSegmentAnything.postprocess_masks(sim, self.image_size, ori_shape)
 
@@ -124,10 +122,15 @@ class PromptGetter(nn.Module):
         self,
         mask_sim: Tensor,
         ori_shape: Tensor,
-        threshold: Tensor,
-        num_bg_points: Tensor,
+        threshold: Tensor | None = None,
+        num_bg_points: Tensor | None = None,
     ) -> tuple[Tensor, Tensor]:
         """Select point used as point prompts."""
+        if threshold is None:
+            threshold = torch.tensor([[0.0]], dtype=torch.float32)
+        if num_bg_points is None:
+            num_bg_points = torch.tensor([[1]], dtype=torch.int64)
+
         _, w_sim = mask_sim.shape
 
         # Top-last point selection
@@ -162,11 +165,12 @@ class PromptGetter(nn.Module):
         # sample fg_coords_scores matched by matched_matrix
         matched_grid = fg_coords_scores.unsqueeze(1) * matched_matrix.unsqueeze(-1)
 
-        # sample the highest score one of the samples that are in the same grid
-        points_scores = matched_grid[matched_grid[..., -1].argsort(dim=0, descending=True)[0]].diagonal().T
+        matched_indices = matched_grid[..., -1].topk(k=1, dim=0, largest=True)[1][0].to(torch.int64)
+        points_scores = matched_grid[matched_indices].diagonal().T
 
         # sort by the highest score
-        points_scores = points_scores[torch.argsort(points_scores[:, -1], descending=True)]
+        sorted_points_scores_indices = torch.argsort(points_scores[:, -1], descending=True).to(torch.int64)
+        points_scores = points_scores[sorted_points_scores_indices]
 
         return points_scores, bg_coords
 
