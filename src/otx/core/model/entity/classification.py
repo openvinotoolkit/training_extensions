@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any, Callable
 import numpy as np
 import torch
 
-from otx.core.config.data import TileConfig
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -651,7 +650,6 @@ class OVMulticlassClassificationModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = False,
         model_api_configuration: dict[str, Any] | None = None,
-        tile_config: TileConfig | None = None,
     ) -> None:
         super().__init__(
             num_classes,
@@ -661,11 +659,7 @@ class OVMulticlassClassificationModel(
             max_num_requests,
             use_throughput_mode,
             model_api_configuration,
-            tile_config,
         )
-        if self.tile_config is not None and self.tile_config.enable_tiler:
-            msg = "Tiling is not supported for classification models"
-            raise ValueError(msg)
 
     def _customize_outputs(
         self,
@@ -717,7 +711,6 @@ class OVHlabelClassificationModel(
         model_api_configuration: dict[str, Any] | None = None,
         num_multiclass_heads: int = 1,
         num_multilabel_classes: int = 0,
-        tile_config: TileConfig | None = None,
     ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
@@ -731,11 +724,7 @@ class OVHlabelClassificationModel(
             max_num_requests,
             use_throughput_mode,
             model_api_configuration,
-            tile_config,
         )
-        if self.tile_config is not None and self.tile_config.enable_tiler:
-            msg = "Tiling is not supported for classification models"
-            raise ValueError(msg)
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
@@ -820,7 +809,6 @@ class OVMultilabelClassificationModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        tile_config: TileConfig | None = None,
     ) -> None:
         model_api_configuration = model_api_configuration if model_api_configuration else {}
         model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
@@ -832,12 +820,7 @@ class OVMultilabelClassificationModel(
             max_num_requests,
             use_throughput_mode,
             model_api_configuration,
-            tile_config,
         )
-
-        if self.tile_config is not None and self.tile_config.enable_tiler:
-            msg = "Tiling is not supported for classification models"
-            raise ValueError(msg)
 
     def _customize_outputs(
         self,

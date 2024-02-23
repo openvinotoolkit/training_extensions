@@ -107,6 +107,16 @@ class OTXInstanceSegModel(
 
         parameters["metadata"][("model_info", "labels")] = all_labels.strip()
         parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
+
+        if self.tile_config.enable_tiler:
+            parameters["metadata"].update(
+                {
+                    ("tile_config", "tile_size"): str(self.tile_config.tile_size[0]),
+                    ("tile_config", "tiles_overlap"): str(self.tile_config.overlap),
+                    ("tile_config", "max_pred_number"): str(self.tile_config.max_num_instances),
+                },
+            )
+
         return parameters
 
 
@@ -306,7 +316,6 @@ class OVInstanceSegmentationModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        tile_config: TileConfig | None = None,
     ) -> None:
         super().__init__(
             num_classes,
@@ -316,19 +325,27 @@ class OVInstanceSegmentationModel(
             max_num_requests,
             use_throughput_mode,
             model_api_configuration,
-            tile_config,
         )
-        if self.tile_config is not None and self.tile_config.enable_tiler:
-            log.info(
-                f"Enable tiler with tile size: {self.tile_config.tile_size} and overlap: {self.tile_config.overlap}",
-            )
-            ov_tile_config = {
-                "tile_size": self.tile_config.tile_size[0],
-                "tiles_overlap": self.tile_config.overlap,
-                "max_pred_number": self.tile_config.max_num_instances,
-            }
-            execution_mode = "async" if self.async_inference else "sync"
-            self.model = InstanceSegmentationTiler(self.model, ov_tile_config, execution_mode)
+
+    def _setup_tiler(self, tile_config: dict) -> None:
+        """Setup tiler for tile task.
+
+        Args:
+            tile_config (dict): Tile configuration.
+        """
+        log.info(
+            f"Enable tiler with tile size: {tile_config['tile_size'].value} \
+                and overlap: {tile_config['tiles_overlap'].value}",
+        )
+        ov_tile_config = {
+            "tile_size": int(tile_config["tile_size"].value),
+            "tiles_overlap": float(tile_config["tiles_overlap"].value),
+            "max_pred_number": int(tile_config["max_pred_number"].value),
+        }
+        execution_mode = "async" if self.async_inference else "sync"
+        # Note: Disable async_inference as tiling has its own sync/async implementation
+        self.async_inference = False
+        self.model = InstanceSegmentationTiler(self.model, ov_tile_config, execution_mode)
 
     def _customize_outputs(
         self,
