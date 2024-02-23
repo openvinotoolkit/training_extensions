@@ -22,38 +22,22 @@ class MockBackbone(nn.Module):
 
 
 class TestSAMImageEncoder:
-    @pytest.fixture(autouse=True)
-    def setup(self, mocker) -> None:
-        self.mocker_backbone = mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders.sam_image_encoder.build_vit",
-            return_value=MockBackbone(),
-        )
-
-        self.base_config = DictConfig(dict(backbone="vit_b", image_size=1024))
+    @pytest.fixture()
+    def config(self, mocker) -> DictConfig:
+        return DictConfig(dict(image_size=1024))
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("backbone", ["vit_b", "resnet"])
-    def test_init(self, backbone: str):
-        """Test init."""
-        self.mocker_backbone.reset_mock()
+    @pytest.mark.parametrize(
+        "backbone,expected",
+        [
+            ("tiny_vit", "TinyViT"),
+            ("vit_b", "ViT"),
+        ],
+    )
+    def test_new(self, config: DictConfig, backbone: str, expected: str) -> None:
+        """Test __new__."""
+        config.update({"backbone": backbone})
 
-        config = self.base_config.copy()
-        config.update(dict(backbone=backbone))
+        sam_image_encoder = SAMImageEncoder(config)
 
-        if backbone == "resnet":
-            with pytest.raises(NotImplementedError):
-                sam_image_encoder = SAMImageEncoder(config)
-        else:
-            sam_image_encoder = SAMImageEncoder(config)
-            self.mocker_backbone.assert_called_once()
-
-    @e2e_pytest_unit
-    def test_forward(self, mocker):
-        """Test forward."""
-        self.mocker_backbone.reset_mock()
-
-        sam_image_encoder = SAMImageEncoder(self.base_config)
-        mocker_forward = mocker.patch.object(sam_image_encoder.backbone, "forward")
-        sam_image_encoder.forward(torch.Tensor([1.0]))
-
-        mocker_forward.assert_called_once()
+        assert sam_image_encoder.__class__.__name__ == expected

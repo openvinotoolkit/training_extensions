@@ -76,7 +76,7 @@ class TestSegmentAnything:
             # backbone == vit_b
             sam = SegmentAnything(config)
 
-            assert isinstance(sam.image_encoder, MockImageEncoder)
+            assert isinstance(sam.image_encoder, nn.Linear)
             assert isinstance(sam.prompt_encoder, MockPromptEncoder)
             assert isinstance(sam.mask_decoder, MockMaskDecoder)
 
@@ -153,37 +153,21 @@ class TestSegmentAnything:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
-        "is_backbone_arg,state_dict",
+        "state_dict",
         [
-            (
-                False,
-                OrderedDict(
-                    [
-                        ("image_encoder.weight", Tensor([[0.0]])),
-                        ("image_encoder.bias", Tensor([0.0])),
-                        ("prompt_encoder.layer.weight", Tensor([[0.0]])),
-                        ("prompt_encoder.layer.bias", Tensor([0.0])),
-                        ("mask_decoder.layer.weight", Tensor([[0.0]])),
-                        ("mask_decoder.layer.bias", Tensor([0.0])),
-                    ]
-                ),
-            ),
-            (
-                True,
-                OrderedDict(
-                    [
-                        ("image_encoder.backbone.weight", Tensor([[1.0]])),
-                        ("image_encoder.backbone.bias", Tensor([1.0])),
-                        ("prompt_encoder.layer.weight", Tensor([[1.0]])),
-                        ("prompt_encoder.layer.bias", Tensor([1.0])),
-                        ("mask_decoder.layer.weight", Tensor([[1.0]])),
-                        ("mask_decoder.layer.bias", Tensor([1.0])),
-                    ]
-                ),
+            OrderedDict(
+                [
+                    ("image_encoder.weight", torch.ones(4, 4)),
+                    ("image_encoder.bias", torch.ones(4)),
+                    ("prompt_encoder.layer.weight", Tensor([[1.0]])),
+                    ("prompt_encoder.layer.bias", Tensor([1.0])),
+                    ("mask_decoder.layer.weight", Tensor([[1.0]])),
+                    ("mask_decoder.layer.bias", Tensor([1.0])),
+                ]
             ),
         ],
     )
-    def test_load_checkpoint_with_state_dict(self, mocker, is_backbone_arg: bool, state_dict: OrderedDict):
+    def test_load_checkpoint_with_state_dict(self, mocker, state_dict: OrderedDict):
         """Test load_checkpoint with state_dict."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
@@ -196,26 +180,8 @@ class TestSegmentAnything:
         sam_state_dict = sam.state_dict()
 
         for k, v in state_dict.items():
-            if not is_backbone_arg:
-                k = k.replace("image_encoder", "image_encoder.backbone")
             assert k in sam_state_dict
-            assert v == sam_state_dict[k]
-
-    @e2e_pytest_unit
-    def test_load_checkpoint_without_checkpoint(self, mocker):
-        """Test load_checkpoint without checkpoint."""
-        mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
-        )
-        mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
-        )
-        config = self.base_config.copy()
-        config.model.update(dict(checkpoint=None))
-
-        sam = SegmentAnything(config, state_dict=None)
-
-        assert True
+            assert torch.all(v == sam_state_dict[k])
 
     @e2e_pytest_unit
     def test_load_checkpoint_with_url(self, mocker):
@@ -230,12 +196,16 @@ class TestSegmentAnything:
         mocker_load_state_dict = mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
         )
+        mocker_load_from_checkpoint = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+        )
 
         config = self.base_config.copy()
         config.model.update(dict(checkpoint="http://checkpoint"))
 
         sam = SegmentAnything(config, state_dict=None)
 
+        mocker_load_from_checkpoint.assert_not_called()
         mocker_load_state_dict_from_url.assert_called_once()
         mocker_load_state_dict.assert_called_once()
 
@@ -265,8 +235,34 @@ class TestSegmentAnything:
 
         if checkpoint.endswith(".ckpt"):
             mocker_load_from_checkpoint.assert_called_once()
+            mocker_load_state_dict.assert_not_called()
         else:
+            mocker_load_from_checkpoint.assert_not_called()
             mocker_load_state_dict.assert_called_once()
+
+    @e2e_pytest_unit
+    def test_load_checkpoint_without_checkpoint(self, mocker):
+        """Test load_checkpoint without checkpoint."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
+        mocker_load_from_checkpoint = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+        )
+        mocker_load_state_dict = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
+        )
+        mocker_load_state_dict_from_url = mocker.patch("torch.hub.load_state_dict_from_url", return_value=OrderedDict())
+
+        config = self.base_config.copy()
+        sam = SegmentAnything(config, state_dict=None)
+
+        mocker_load_from_checkpoint.assert_not_called()
+        mocker_load_state_dict_from_url.assert_called_once()
+        mocker_load_state_dict.assert_called_once()
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
@@ -347,23 +343,13 @@ class TestSegmentAnything:
         assert iou_preds[:, -1] == selected_iou_pred
 
     @e2e_pytest_unit
-    def test_mask_postprocessing(self, mocker) -> None:
-        """Test mask_postprocessing."""
-        masks = torch.empty(1, 1, 2, 2)
-        orig_size = Tensor((8, 8))
-
-        results = SegmentAnything.mask_postprocessing(masks, 6, orig_size)
-
-        assert results[0, 0].shape == tuple(orig_size)
-
-    @e2e_pytest_unit
     def test_forward_train(self) -> None:
         """Test forward."""
         sam = SegmentAnything(config=self.base_config)
-        images = torch.zeros((1))
+        images = torch.zeros((1, 3, 4, 4))
         bboxes = torch.zeros((1))
 
-        results = sam.forward_train(images=images, bboxes=bboxes, points=None)
+        results = sam.forward_train(images=images, bboxes=bboxes, points=[None])
         pred_masks, ious = results
 
         assert len(bboxes) == len(pred_masks) == len(ious)
@@ -390,7 +376,7 @@ class TestSegmentAnything:
             images=torch.ones((1, 3, 4, 4)),
             gt_masks=[torch.Tensor([[0, 1, 1, 0] for _ in range(4)]).to(torch.int32)],
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
-            points=[],
+            points=[None],
             padding=[[0, 0, 0, 0]],
             original_size=[[4, 4]],
         )
@@ -432,7 +418,7 @@ class TestSegmentAnything:
             images=torch.ones((1, 3, 4, 4)),
             gt_masks=[torch.Tensor([[0, 1, 1, 0] for _ in range(4)]).to(torch.int32)],
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
-            points=[],
+            points=[None],
             path=None,
             labels=None,
             padding=[0],
@@ -483,7 +469,7 @@ class TestSegmentAnything:
         batch = dict(
             images=torch.zeros((1, 3, 4, 4)),
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
-            points=[],
+            points=[None],
             path=None,
             labels=None,
             padding=[0],
@@ -496,22 +482,38 @@ class TestSegmentAnything:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
-        "input_size,original_size,padding,expected",
+        "input_size,original_size,expected",
         [
-            ((6, 6), (8, 8), (0, 0, 0, 0), (8, 8)),
-            ((6, 6), (8, 8), (0, 0, 2, 2), (8, 8)),
+            (6, torch.tensor((8, 8)), (1, 8, 8)),
+            (6, torch.tensor((8, 8)), (1, 8, 8)),
         ],
     )
-    def test_postprocess_masks(
-        self, input_size: Tuple[int], original_size: Tuple[int], padding: Tuple[int], expected: Tuple[int]
-    ) -> None:
+    def test_postprocess_masks(self, input_size: int, original_size: Tuple[int], expected: Tuple[int]) -> None:
         """Test postprocess_masks."""
         sam = SegmentAnything(config=self.base_config)
         masks = torch.zeros((1, 1, 4, 4))
 
-        results = sam.postprocess_masks(masks, input_size, padding, original_size)
+        results = sam.postprocess_masks(masks, input_size, original_size)
 
         assert results.shape[1:] == expected
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "input_image_size,expected",
+        [
+            (torch.tensor((2, 4)), torch.tensor((3, 6))),
+            (torch.tensor((4, 2)), torch.tensor((6, 3))),
+        ],
+    )
+    def test_get_prepadded_size(self, input_image_size: Tensor, expected: Tensor) -> None:
+        """Test get_prepadded_size."""
+        sam = SegmentAnything(config=self.base_config)
+
+        longest_side = 6
+
+        results = sam.get_prepadded_size(input_image_size, longest_side)
+
+        assert torch.all(results == expected)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(

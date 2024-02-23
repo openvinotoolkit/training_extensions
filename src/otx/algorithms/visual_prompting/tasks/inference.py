@@ -179,7 +179,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                         SegmentAnything as VisualPrompter,
                     )
                 elif train_type == TrainType.Zeroshot:
-                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (  # type: ignore[assignment] # noqa: E501
                         ZeroShotSegmentAnything as VisualPrompter,
                     )
 
@@ -305,8 +305,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
                     "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float32),
                     "has_mask_input": torch.tensor([[1]], dtype=torch.float32),
+                    "orig_size": torch.randint(low=256, high=2048, size=(1, 2), dtype=torch.int64),
                 }
-                output_names = ["iou_predictions", "low_res_masks"]
+                output_names = ["upscaled_masks", "iou_predictions", "low_res_masks"]
                 model_to_export = self.model
 
             with warnings.catch_warnings():
@@ -640,16 +641,19 @@ class ZeroShotTask(InferenceTask):
                 model_to_export = self.model.image_encoder
 
             elif module == "visual_prompting_prompt_getter":
+                reference_feat = torch.randn(1, 256, dtype=torch.float32)
+                reference_feat /= reference_feat.norm(dim=-1, keepdim=True)
                 dummy_inputs = {
                     "image_embeddings": torch.randn(1, embed_dim, *embed_size, dtype=torch.float32),
+                    "reference_feat": reference_feat,
                     "original_size": torch.randint(low=0, high=image_size * 2, size=(1, 2), dtype=torch.int64),
-                    "threshold": torch.tensor([[0.1]], dtype=torch.float32),
+                    "threshold": torch.tensor([[0.0]], dtype=torch.float32),
                     "num_bg_points": torch.randint(low=1, high=image_size, size=(1, 1), dtype=torch.int64),
                 }
-                output_names = ["total_points_scores", "total_bg_coords"]
+                output_names = ["points_scores", "bg_coords"]
                 dynamic_axes = {
-                    "total_points_scores": {0: "num_labels", 1: "num_points"},
-                    "total_bg_coords": {0: "num_labels", 1: "num_points"},
+                    "points_scores": {0: "num_points"},
+                    "bg_coords": {0: "num_points"},
                 }
                 model_to_export = self.model.prompt_getter
 
@@ -666,8 +670,9 @@ class ZeroShotTask(InferenceTask):
                     "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
                     "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float32),
                     "has_mask_input": torch.tensor([[1]], dtype=torch.float32),
+                    "orig_size": torch.randint(low=256, high=2048, size=(1, 2), dtype=torch.int64),
                 }
-                output_names = ["iou_predictions", "low_res_masks"]
+                output_names = ["upscaled_masks", "iou_predictions", "low_res_masks"]
                 model_to_export = self.model
 
             else:
@@ -704,13 +709,8 @@ class ZeroShotTask(InferenceTask):
         logger.info("Saving the model weights and reference features.")
 
         model_info = self.model.state_dict()
-        # TODO (sungchul): is there more efficient way not to manually add properties?
-        model_info.update(
-            {
-                "prompt_getter.reference_feats": self.model.prompt_getter.reference_feats,
-                "prompt_getter.reference_prompts": self.model.prompt_getter.reference_prompts,
-            }
-        )
+        model_info.pop("reference_info.reference_feats")
+        model_info.pop("reference_info.used_indices")
 
         buffer = io.BytesIO()
         torch.save(model_info, buffer)

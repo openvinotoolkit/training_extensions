@@ -1,0 +1,66 @@
+{
+  "licenses": [{ "name": "", "id": 0, "url": "" }],
+  "info": {
+    "contributor": "",
+    "date_created": "",
+    "description": "",
+    "url": "",
+    "version": "",
+    "year": ""
+  },
+  "categories": [
+    { "id": 1, "name": "car", "supercategory": "" },
+    { "id": 2, "name": "tree", "supercategory": "" },
+    { "id": 3, "name": "bug", "supercategory": "" }
+  ],
+  "images": [
+    {
+      "id": 6,
+      "width": 1280,
+      "height": 720,
+      "file_name": "Slide4.PNG",
+      "license": 0,
+      "flickr_url": "",
+      "coco_url": "",
+      "date_captured": 0
+    }
+  ],
+  "annotations": [
+    {
+      "id": 16,
+      "image_id": 6,
+      "category_id": 3,
+      "segmentation": [
+        [251.2, 150.5, 372.47, 47.31, 596.99, 231.4, 455.05, 376.77]
+      ],
+      "area": 53610.0,
+      "bbox": [251.2, 47.31, 345.79, 329.46],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 17,
+      "image_id": 6,
+      "category_id": 2,
+      "segmentation": [
+        [641.72, 255.48, 731.18, 87.74, 848.17, 144.52, 746.67, 311.4]
+      ],
+      "area": 23927.0,
+      "bbox": [641.72, 87.74, 206.45, 223.66],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 18,
+      "image_id": 6,
+      "category_id": 1,
+      "segmentation": [
+        [791.4, 443.9, 984.95, 183.23, 1112.26, 273.55, 910.97, 536.77]
+      ],
+      "area": 50412.0,
+      "bbox": [791.4, 183.23, 320.86, 353.54],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    }
+  ]
+}
