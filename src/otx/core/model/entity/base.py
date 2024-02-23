@@ -226,7 +226,8 @@ class OTXModel(
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
-            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs
+            export_args (dict, optional): manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs
 
         Returns:
             Path: path to the exported model.

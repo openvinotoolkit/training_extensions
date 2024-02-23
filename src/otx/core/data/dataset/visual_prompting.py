@@ -9,7 +9,6 @@ from collections import defaultdict
 from typing import Callable
 
 import torch
-import random
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from datumaro import Bbox as dmBbox
 from datumaro import DatasetSubset
@@ -78,7 +77,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     # skip very small region
                     continue
 
-                if random.random() < self.prob:  # noqa: NPY002
+                if torch.rand(1) < self.prob:
                     # get bbox
                     bbox = tv_tensors.BoundingBoxes(
                         annotation.get_bbox(),
@@ -95,7 +94,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     # get point
                     if self.dm_subset.name == "train":
                         # get random point from the mask
-                        idx_chosen = torch.randperm(len(mask_points[0]))[0]  # noqa: NPY002
+                        idx_chosen = torch.randperm(len(mask_points[0]))[0]
                         point = Points(
                             (mask_points[1][idx_chosen], mask_points[0][idx_chosen]),
                             canvas_size=img_shape,
@@ -196,7 +195,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                     # skip very small region
                     continue
 
-                if random.random() < self.prob:  # noqa: NPY002
+                if torch.rand(1) < self.prob:
                     # get bbox
                     bbox = tv_tensors.BoundingBoxes(
                         annotation.get_bbox(),

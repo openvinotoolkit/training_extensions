@@ -10,7 +10,7 @@ import logging as log
 from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterator, Literal, Any
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import onnx
@@ -97,7 +97,8 @@ class MMdeployExporter(OTXModelExporter):
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str], str] | None, optional): metadata to embed to the exported model.
-            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs.
+            export_args (dict, optional): manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: path to the exported model.
@@ -108,7 +109,7 @@ class MMdeployExporter(OTXModelExporter):
         onnx_path = self._cvt2onnx(model, output_dir, base_model_name)
         exported_model = openvino.convert_model(
             str(onnx_path),
-            **export_args
+            **export_args,
         )
         exported_model = self._postprocess_openvino_model(exported_model)
 
@@ -126,7 +127,7 @@ class MMdeployExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
-        export_args: dict[str, Any] | None = None, # TODO (sungchul): how to apply this argument?
+        export_args: dict[str, Any] | None = None,  # TODO (sungchul): how to apply this argument? # noqa: TD003
     ) -> Path:
         """Export to ONNX format.
 
@@ -136,7 +137,8 @@ class MMdeployExporter(OTXModelExporter):
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
-            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs.
+            export_args (dict, optional): manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: path to the exported model.

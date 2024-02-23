@@ -52,7 +52,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         if self.via_onnx:
             if export_args is None:
                 export_args = {"args": torch.rand(self.input_size).to(next(model.parameters()).device)}
-                
+
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_dir = Path(tmpdirname)
 
@@ -64,8 +64,12 @@ class OTXNativeModelExporter(OTXModelExporter):
                     False,
                     export_args,
                 )
-                
-                ov_input = tuple(openvino.runtime.PartialShape(x.shape) for x in export_args["args"]) if isinstance(export_args["args"], tuple) else (openvino.runtime.PartialShape(export_args["args"].shape),)
+
+                ov_input = (
+                    tuple(openvino.runtime.PartialShape(x.shape) for x in export_args["args"])
+                    if isinstance(export_args["args"], tuple)
+                    else (openvino.runtime.PartialShape(export_args["args"].shape),)
+                )
                 exported_model = openvino.convert_model(
                     tmp_dir / (base_model_name + ".onnx"),
                     input=ov_input,
@@ -74,7 +78,7 @@ class OTXNativeModelExporter(OTXModelExporter):
             if export_args is None:
                 export_args = {
                     "input": (openvino.runtime.PartialShape(self.input_size),),
-                    "example_input": torch.rand(self.input_size).to(next(model.parameters()).device)
+                    "example_input": torch.rand(self.input_size).to(next(model.parameters()).device),
                 }
             export_args.update({"input_model": model})
             exported_model = openvino.convert_model(**export_args)
@@ -104,7 +108,8 @@ class OTXNativeModelExporter(OTXModelExporter):
             precision (OTXPrecisionType, optional): The precision type for the exported model.
             Defaults to OTXPrecisionType.FP32.
             embed_metadata (bool, optional): Whether to embed metadata in the ONNX model. Defaults to True.
-            export_args (dict, optional): Manual arguments for the export function. If not provided, the exporter will set dummy inputs.
+            export_args (dict, optional): Manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: The path to the saved ONNX model.

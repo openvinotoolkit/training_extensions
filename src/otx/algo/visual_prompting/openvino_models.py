@@ -3,13 +3,17 @@
 
 """Openvino Model Wrappers for the OTX visual prompting."""
 
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from openvino.model_api.adapters.inference_adapter import InferenceAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
-from openvino.model_api.models.types import NumericalValue, StringValue, BooleanValue
+from openvino.model_api.models.types import BooleanValue, NumericalValue, StringValue
+
+if TYPE_CHECKING:
+    from openvino.model_api.adapters.inference_adapter import InferenceAdapter
 
 
 class ImageEncoder(ImageModel):
@@ -17,7 +21,12 @@ class ImageEncoder(ImageModel):
 
     __model__ = "image_encoder"
 
-    def __init__(self, inference_adapter, configuration=None, preload=False):
+    def __init__(
+        self,
+        inference_adapter: InferenceAdapter,
+        configuration: dict[str, Any] | None = None,
+        preload: bool = False,
+    ):
         super().__init__(inference_adapter, configuration, preload)
 
     @classmethod
@@ -27,7 +36,7 @@ class ImageEncoder(ImageModel):
             {
                 "resize_type": StringValue(default_value="fit_to_window"),
                 "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
-            }
+            },
         )
         return parameters
 
@@ -36,7 +45,7 @@ class ImageEncoder(ImageModel):
         dict_inputs, meta = super().preprocess(inputs)
         meta["resize_type"] = self.resize_type
         return dict_inputs, meta
-    
+
     def postprocess(self, outputs: dict[str, np.ndarray], meta: dict[str, Any]) -> dict[str, np.ndarray]:
         """Postprocess the model outputs."""
         return outputs
@@ -47,7 +56,12 @@ class PromptGetter(ImageModel):
 
     __model__ = "prompt_getter"
 
-    def __init__(self, inference_adapter, configuration=None, preload=False):
+    def __init__(
+        self,
+        inference_adapter: InferenceAdapter,
+        configuration: dict[str, Any] | None = None,
+        preload: bool = False,
+    ):
         super().__init__(inference_adapter, configuration, preload)
 
     @classmethod
@@ -57,11 +71,11 @@ class PromptGetter(ImageModel):
         parameters.update({"sim_threshold": NumericalValue(value_type=float, default_value=0.5, min=0, max=1)})
         parameters.update({"num_bg_points": NumericalValue(value_type=int, default_value=1, min=0, max=1024)})
         parameters.update(
-            {"default_threshold_reference": NumericalValue(value_type=float, default_value=0.3, min=-1.0, max=1.0)}
+            {"default_threshold_reference": NumericalValue(value_type=float, default_value=0.3, min=-1.0, max=1.0)},
         )
         return parameters
 
-    def _get_inputs(self):
+    def _get_inputs(self) -> tuple[list[str], list[str]]:
         """Defines the model inputs for images and additional info."""
         image_blob_names, image_info_blob_names = [], []
         for name, metadata in self.inputs.items():
@@ -91,19 +105,19 @@ class Decoder(SegmentationModel):
         self.has_mask_input = np.zeros((1, 1), dtype=np.float32)
 
     @classmethod
-    def parameters(cls):  # noqa: D102
+    def parameters(cls) -> dict[str, Any]:  # noqa: D102
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         parameters.update({"mask_threshold": NumericalValue(value_type=float, default_value=0.0, min=0, max=1)})
         parameters.update({"embedded_processing": BooleanValue(default_value=True)})
         return parameters
 
-    def _get_outputs(self):
+    def _get_outputs(self) -> str:
         return "upscaled_masks"
 
     def preprocess(self, inputs: dict[str, Any]) -> list[dict[str, Any]]:
         """Preprocess prompts."""
-        processed_prompts = []
+        processed_prompts: list[dict[str, Any]] = []
         idx: int = 0
         for prompt_name in ["bboxes", "points"]:
             prompts = inputs.get(prompt_name, None)
@@ -126,7 +140,7 @@ class Decoder(SegmentationModel):
                         "has_mask_input": self.has_mask_input,
                         "orig_size": np.array(inputs["orig_size"], dtype=np.int64).reshape(-1, 2),
                         "label": label,
-                    }
+                    },
                 )
                 idx += 1
         return processed_prompts
@@ -148,16 +162,16 @@ class Decoder(SegmentationModel):
         new_h = int(new_h + 0.5)
         return (new_h, new_w)
 
-    def _check_io_number(self, number_of_inputs, number_of_outputs):
+    def _check_io_number(self, number_of_inputs: int | tuple[int], number_of_outputs: int | tuple[int]) -> None:
         pass
 
-    def _get_inputs(self):
+    def _get_inputs(self) -> tuple[list[str], list[str]]:
         """Get input layer name and shape."""
-        image_blob_names = [name for name in self.inputs.keys()]
-        image_info_blob_names = []
+        image_blob_names = list(self.inputs.keys())
+        image_info_blob_names: list = []
         return image_blob_names, image_info_blob_names
 
-    def postprocess(self, outputs: dict[str, np.ndarray], meta: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
+    def postprocess(self, outputs: dict[str, np.ndarray], meta: dict[str, Any]) -> dict[str, np.ndarray]:
         """Postprocess to convert soft prediction to hard prediction.
 
         Args:
@@ -170,7 +184,7 @@ class Decoder(SegmentationModel):
         probability = max(min(float(outputs["scores"]), 1.0), 0.0)
         hard_prediction = outputs[self.output_blob_name].squeeze(1) > self.mask_threshold
         soft_prediction = hard_prediction * probability
-        
+
         outputs["hard_prediction"] = hard_prediction
         outputs["soft_prediction"] = soft_prediction
 

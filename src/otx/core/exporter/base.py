@@ -74,7 +74,8 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            export_args (dict, optional): manual arguments for the export function. If not provided, the exporter will set dummy inputs
+            export_args (dict, optional): manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs
 
         Returns:
             Path: path to the exported model
@@ -96,6 +97,7 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        export_args: dict[str, Any] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -104,6 +106,8 @@ class OTXModelExporter:
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            export_args (dict, optional): manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs
 
         Returns:
             Path: path to the exported model.
@@ -117,6 +121,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
+        export_args: dict[str, Any] | None = None,
     ) -> Path:
         """Abstract method for ONNX export.
 
@@ -129,6 +134,8 @@ class OTXModelExporter:
             precision (OTXPrecisionType, optional): The precision type for the exported model.
             Defaults to OTXPrecisionType.FP32.
             embed_metadata (bool, optional): Flag to embed metadata in the exported ONNX model. Defaults to True.
+            export_args (dict, optional): manual arguments for the export function.
+                If not provided, the exporter will set dummy inputs
 
         Returns:
             Path: The file path where the ONNX model is saved.

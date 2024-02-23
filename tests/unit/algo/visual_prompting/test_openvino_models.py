@@ -3,14 +3,13 @@
 
 from __future__ import annotations
 
-from typing import Tuple, Dict, Any
+from typing import Any
 
 import numpy as np
 import pytest
 from openvino.model_api.adapters.openvino_adapter import OpenvinoAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
 from openvino.model_api.models.types import NumericalValue
-
 from otx.algo.visual_prompting.openvino_models import (
     Decoder,
     ImageEncoder,
@@ -90,10 +89,10 @@ class TestDecoder:
         """Test _get_outputs."""
         results = self.decoder._get_outputs()
 
-        assert "upscaled_masks" == results
+        assert results == "upscaled_masks"
 
     @pytest.mark.parametrize(
-        "prompts,expected",
+        ("prompts", "expected"),
         [
             (
                 {
@@ -116,7 +115,7 @@ class TestDecoder:
             ),
         ],
     )
-    def test_preprocess(self, prompts: Dict[str, Any], expected: Dict[str, Any]):
+    def test_preprocess(self, prompts: dict[str, Any], expected: dict[str, Any]):
         """Test preprocess"""
         results = self.decoder.preprocess(prompts)
 
@@ -140,13 +139,13 @@ class TestDecoder:
         assert np.all(results == np.array([[[0.5, 0.5], [1.0, 1.0]]]))
 
     @pytest.mark.parametrize(
-        "old_h,old_w,image_size,expected",
+        ("old_h", "old_w", "image_size", "expected"),
         [
             (4, 3, 6, (6, 5)),
             (3, 4, 6, (5, 6)),
         ],
     )
-    def test_get_preprocess_shape(self, old_h: int, old_w: int, image_size: int, expected: Tuple[int]):
+    def test_get_preprocess_shape(self, old_h: int, old_w: int, image_size: int, expected: tuple[int]):
         """Test _get_preprocess_shape."""
         result = self.decoder._get_preprocess_shape(old_h, old_w, image_size)
 

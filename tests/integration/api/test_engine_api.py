@@ -1,6 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -69,7 +71,7 @@ def test_engine_from_config(
         for key, value in exported_model_path.items():
             assert value.exists(), f"{value} for {key} doesn't exist."
     else:
-        assert False, f"Exported model path is not a Path or a dictionary of Paths: {exported_model_path}"
+        AssertionError(f"Exported model path is not a Path or a dictionary of Paths: {exported_model_path}")
 
     # Test with IR Model
     if task in OVMODEL_PER_TASK:
