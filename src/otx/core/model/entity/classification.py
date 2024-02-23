@@ -100,7 +100,7 @@ class ExplainableOTXClsModel(
         data_samples: list[DataSample] | None = None,
         mode: str = "tensor",
     ) -> dict:
-        """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
+        """Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model."""
         x = self.backbone(inputs)
         backbone_feat = x
 

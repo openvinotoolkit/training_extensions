@@ -330,22 +330,22 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         # Should be switched off for tiling
         self.use_cls_softmax = use_cls_softmax
 
-    @classmethod
-    def create_and_register_hook(
-        cls,
-        backbone: torch.nn.Module,
-        cls_head_forward_fn: Callable,
-        num_classes: int,
-        num_anchors: list[int],
-    ) -> BaseRecordingForwardHook:
-        """Create this object and register it to the module forward hook."""
-        hook = cls(
-            cls_head_forward_fn,
-            num_classes=num_classes,
-            num_anchors=num_anchors,
-        )
-        hook.handle = backbone.register_forward_hook(hook.recording_forward)
-        return hook
+    # @classmethod
+    # def create_and_register_hook(
+    #     cls,
+    #     backbone: torch.nn.Module,
+    #     cls_head_forward_fn: Callable,
+    #     num_classes: int,
+    #     num_anchors: list[int],
+    # ) -> BaseRecordingForwardHook:
+    #     """Create this object and register it to the module forward hook."""
+    #     hook = cls(
+    #         cls_head_forward_fn,
+    #         num_classes=num_classes,
+    #         num_anchors=num_anchors,
+    #     )
+    #     hook.handle = backbone.register_forward_hook(hook.recording_forward)
+    #     return hook
 
     def func(
         self,
@@ -361,7 +361,8 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        cls_scores = self._head_forward_fn(feature_map) if self._head_forward_fn else feature_map
+        # cls_scores = self._head_forward_fn(feature_map) if self._head_forward_fn else feature_map
+        cls_scores = feature_map
 
         middle_idx = len(cls_scores) // 2
         # resize to the middle feature map

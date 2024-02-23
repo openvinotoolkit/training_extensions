@@ -63,6 +63,7 @@ class MMdeployExporter(OTXModelExporter):
         swap_rgb: bool = False,
         metadata: dict[tuple[str, str], str] | None = None,
         max_num_detections: int = 0,
+        additional_output_names: list[str] = [],
     ) -> None:
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata)
         self._model_builder = model_builder
@@ -71,6 +72,8 @@ class MMdeployExporter(OTXModelExporter):
         self._deploy_cfg = deploy_cfg if isinstance(deploy_cfg, MMConfig) else load_mmconfig_from_pkg(deploy_cfg)
 
         patch_input_shape(self._deploy_cfg, input_size[3], input_size[2])
+        self._deploy_cfg.ir_config.output_names.extend(additional_output_names)
+    
         if max_num_detections > 0:
             self._set_max_num_detections(max_num_detections)
 

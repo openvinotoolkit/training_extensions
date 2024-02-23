@@ -20,6 +20,20 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
+from otx.core.data.entity.base import (
+    OTXBatchLossEntity,
+    T_OTXBatchDataEntity,
+    T_OTXBatchPredEntity,
+)
+
+from typing import TYPE_CHECKING, Any, Callable
+import types
+from mmdet.structures import OptSampleList
+
+from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
+from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+
+
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from omegaconf import DictConfig
@@ -84,32 +98,12 @@ class OTXDetectionModel(
                 ("model_info", "iou_threshold"): str(0.5),
             },
         )
+        parameters["additional_output_names"] = ["saliency_map"] if self.explain_mode else []
         return parameters
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI hook."""
-
-    def register_explain_hook(self) -> None:
-        """Register explain hook at the model backbone output."""
-        from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
-        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
-
-        # SSD-like heads also have background class
-        background_class = isinstance(self.model.bbox_head, CustomSSDHead)
-        self.explain_hook = DetClassProbabilityMapHook.create_and_register_hook(
-            self.backbone,
-            self.cls_head_forward_fn,
-            num_classes=self.num_classes + background_class,
-            num_anchors=self.get_num_anchors(),
-        )
-
-    @property
-    def backbone(self) -> nn.Module:
-        """Returns model's backbone. Can be redefined at the model's level."""
-        if backbone := getattr(self.model, "backbone", None):
-            return backbone
-        raise ValueError
 
     @torch.no_grad()
     def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
@@ -120,12 +114,109 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         if (head := getattr(self.model, "bbox_head", None)) is None:
             raise ValueError
 
-        if (neck := getattr(self.model, "neck", None)) is not None:
-            x = neck(x)
+        # if (neck := getattr(self.model, "neck", None)) is not None:
+        #     x = neck(x)
 
         head_out = head(x)
         # Return the first output form detection head: classification scores
         return head_out[0]
+
+
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        self.model.explain_fn = self.get_explain_fn()
+
+        # If customize_inputs is overridden
+        outputs = (
+            self._forward_explain_detection(self.model, **self._customize_inputs(inputs))
+            if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
+            else self.model(inputs)
+        )
+
+        return (
+            self._customize_outputs(outputs, inputs)
+            if self._customize_outputs != ExplainableOTXDetModel._customize_outputs
+            else outputs
+        )
+
+    
+    @staticmethod
+    def _forward_explain_detection(self,
+                inputs: torch.Tensor,
+                data_samples: OptSampleList = None,
+                mode: str = 'tensor'):
+        """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
+
+        # Hack to remove grads for model parameters, since after class patching 
+        # convolutions are failing since thay can't process gradients
+        for param in self.parameters():
+            param.requires_grad = False
+        
+        backbone_feat = self.extract_feat(inputs)
+        bbox_head_feat = self.bbox_head.forward(backbone_feat)
+    
+        # Return the first output form detection head: classification scores
+        saliency_map = self.explain_fn(bbox_head_feat[0])
+
+        if mode == 'loss':
+            predictions = self.bbox_head.loss(backbone_feat, data_samples)
+        elif mode == 'predict':
+            predictions = self.bbox_head.predict(backbone_feat, data_samples)
+        elif mode == 'tensor':
+            predictions = bbox_head_feat
+        else:
+            raise RuntimeError(f'Invalid mode "{mode}". '
+                               'Only supports loss, predict and tensor mode')
+
+        return {
+            "predictions": predictions,
+            "saliency_map": saliency_map,
+        }
+
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function. Lox"""
+
+        # SSD-like heads also have background class
+        background_class = isinstance(self.model.bbox_head, CustomSSDHead)
+        explainer = DetClassProbabilityMapHook(
+            self.cls_head_forward_fn,
+            num_classes=self.num_classes + background_class,
+            num_anchors=self.get_num_anchors(),
+        )
+        return explainer.func
+
+    
+    def _reset_model_forward(self) -> None:
+
+        if not self.explain_mode:
+            return
+
+        self.model.explain_fn = self.get_explain_fn()
+        forward_with_explain = self._forward_explain_detection
+
+        self.original_model_forward = self.model.forward
+
+        func_type = types.MethodType
+        # Patch class method
+        model_class = type(self.model)
+        model_class.forward = func_type(forward_with_explain, self.model)
+
+    def _restore_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
+
+        if not self.original_model_forward:
+            msg = "Original model forward was not saved."
+            raise RuntimeError(msg)
+
+        func_type = types.MethodType
+        self.model.forward = func_type(self.original_model_forward, self.model)
+        self.original_model_forward = None
+
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""
@@ -137,15 +228,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             )
 
         return [1] * 10
-
-    def remove_explain_hook_handle(self) -> None:
-        """Removes explain hook from the model."""
-        if self.explain_hook.handle is not None:
-            self.explain_hook.handle.remove()
-
-    def reset_explain_hook(self) -> None:
-        """Clear all history of explain records."""
-        self.explain_hook.reset()
 
 
 class MMDetCompatibleModel(ExplainableOTXDetModel):
@@ -257,7 +339,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         bboxes = []
         labels = []
 
-        for output in outputs:
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for output in predictions:
             if not isinstance(output, DetDataSample):
                 raise TypeError(output)
             scores.append(output.pred_instances.scores)
@@ -270,23 +353,26 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             )
             labels.append(output.pred_instances.labels)
 
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+        if self.explain_mode:
+            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
 
             return DetBatchPredEntityWithXAI(
-                batch_size=len(outputs),
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 bboxes=bboxes,
                 labels=labels,
-                saliency_maps=explain_results,
+                saliency_maps=saliency_maps,
                 feature_vectors=[],
             )
 
         return DetBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,

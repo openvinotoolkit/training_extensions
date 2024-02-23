@@ -170,8 +170,11 @@ def test_otx_e2e(
     assert (tmp_path_test / "outputs").exists()
 
     # 5) otx export with XAI
-    if "_cls" not in task or "dino" in model_name or "deit" in model_name:
-        return
+    if ("_cls" not in task) and (task != "detection"):
+        pytest.skip("Supported only for classification and detection task.")
+    
+    if "dino" in model_name or "deit" in model_name:
+        pytest.skip("Dino is not supported.")
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
