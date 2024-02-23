@@ -33,6 +33,6 @@ class TestHLabelAccuracy:
             HLabelAccuracy(
                 num_multiclass_heads=0,
                 num_multilabel_classes=3,
-            head_logits_info={"head1": (0, 5), "head2": (5, 10)},
+                head_logits_info={"head1": (0, 5), "head2": (5, 10)},
                 threshold_multilabel=0.5,
             )
