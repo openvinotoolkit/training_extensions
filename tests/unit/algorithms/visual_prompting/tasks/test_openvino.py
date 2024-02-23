@@ -847,8 +847,20 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         )
 
     @e2e_pytest_unit
-    def test_infer(self, mocker):
-        """Test infer."""
+    def test_infer_without_reference_info(self):
+        """Test infer without reference_info."""
+        dataset = generate_visual_prompting_dataset()
+
+        updated_dataset = self.zero_shot_visual_prompting_ov_task.infer(
+            dataset, InferenceParameters(enable_async_inference=False)
+        )
+
+        for updated in updated_dataset:
+            assert len(updated.annotation_scene.annotations) == 0
+
+    @e2e_pytest_unit
+    def test_infer_with_reference_info(self, mocker):
+        """Test infer with reference_info."""
         fake_annotation = [
             Annotation(
                 Polygon(points=[Point(0, 0)]),
@@ -861,6 +873,9 @@ class TestOpenVINOZeroShotVisualPromptingTask:
             OpenVINOZeroShotVisualPromptingInferencer, "predict", return_value=fake_annotation
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
+        mocker.patch.object(
+            self.zero_shot_visual_prompting_ov_task.inferencer, "_get_reference_info", return_value=({}, {})
+        )
 
         dataset = generate_visual_prompting_dataset()
 
