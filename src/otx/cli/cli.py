@@ -371,7 +371,7 @@ class OTXCLI:
         from otx.core.utils.instantiators import partial_instantiate_class
 
         if metric_config and self.subcommand in ["train", "test"]:
-            metric_kwargs = self.get_config_value(metric_config, "metric")
+            metric_kwargs = self.get_config_value(metric_config, "metric", namespace_to_dict(metric_config))
             metric = partial_instantiate_class(metric_kwargs)
             return metric[0] if isinstance(metric, list) else metric
 
