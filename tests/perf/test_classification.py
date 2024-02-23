@@ -17,10 +17,10 @@ class TestPerfSingleLabelClassification(PerfTestBase):
     """Benchmark single-label classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="single_label_classification", name="efficientnet_b0_light", type="speed",),
-        Benchmark.Model(task="single_label_classification", name="efficientnet_v2_light", type="balance",),
-        Benchmark.Model(task="single_label_classification", name="mobilenet_v3_large_light", type="accuracy",),
-        Benchmark.Model(task="single_label_classification", name="otx_deit_tiny", type="other",),
+        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_light", type="speed",),
+        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_light", type="balance",),
+        Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_light", type="accuracy",),
+        Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", type="other",),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -105,10 +105,10 @@ class TestPerfMultiLabelClassification(PerfTestBase):
     """Benchmark multi-label classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="multi_label_classification", name="efficientnet_b0_light", type="speed",),
-        Benchmark.Model(task="multi_label_classification", name="efficientnet_v2_light", type="balance",),
-        Benchmark.Model(task="multi_label_classification", name="mobilenet_v3_large_light", type="accuracy",),
-        Benchmark.Model(task="multi_label_classification", name="otx_deit_tiny", type="other",),
+        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_b0_light", type="speed",),
+        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_v2_light", type="balance",),
+        Benchmark.Model(task="classification/multi_label_cls", name="mobilenet_v3_large_light", type="accuracy",),
+        Benchmark.Model(task="classification/multi_label_cls", name="otx_deit_tiny", type="other",),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -193,10 +193,10 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
     """Benchmark hierarchical-label classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="hierarchical_label_classification", name="efficientnet_b0_light", type="speed",),
-        Benchmark.Model(task="hierarchical_label_classification", name="efficientnet_v2_light", type="balance",),
-        Benchmark.Model(task="hierarchical_label_classification", name="otx_mobilenet_v3_large_light", type="accuracy",),
-        Benchmark.Model(task="hierarchical_label_classification", name="otx_deit_tiny", type="other",),
+        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_b0_light", type="speed",),
+        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_v2_light", type="balance",),
+        Benchmark.Model(task="classification/h_label_cls", name="mobilenet_v3_large_light", type="accuracy",),
+        Benchmark.Model(task="classification/h_label_cls", name="otx_deit_tiny", type="other",),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012

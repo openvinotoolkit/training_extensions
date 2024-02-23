@@ -3,7 +3,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
+import csv
+import logging
 import os
 import gc
 import glob
@@ -11,9 +14,11 @@ import pandas as pd
 import yaml
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Any
+from otx.cli.cli import OTXCLI
+from unittest.mock import patch
 
-#from tests.test_suite.run_test_command import check_run
+log = logging.getLogger(__name__)
 
 
 class Benchmark:
@@ -70,6 +75,7 @@ class Benchmark:
         eval_upto: str = "train",
         tags: dict[str,str] | None = None,
         dry_run: bool = False,
+        deterministic: bool = False,
         accelerator: str = "gpu",
     ):
         self.data_root = data_root
@@ -80,6 +86,7 @@ class Benchmark:
         self.eval_upto = eval_upto
         self.tags = tags or {}
         self.dry_run = dry_run
+        self.deterministic = deterministic
         self.accelerator = accelerator
 
     def run(
@@ -110,81 +117,67 @@ class Benchmark:
 
         for seed in range(num_repeat):
             run_name = f"{model.task}/{model.name}/{dataset.name}/{seed}"
+            log.info(f"{run_name = }")
+            work_dir = self.output_root / run_name
             tags["seed"] = str(seed)
             data_root = self.data_root / dataset.path
-            command_cfg = [
+
+            # Train & test
+            command = [
                 "otx", "train",
                 "--config", f"src/otx/recipe/{model.task}/{model.name}.yaml",
-                "--model.num_classes", str(dataset.num_classes),
                 "--data_root", str(data_root),
+                "--work_dir", str(work_dir),
+                "--model.num_classes", str(dataset.num_classes),
                 "--data.config.data_format", dataset.data_format,
-                "--engine.work_dir", str(self.output_root / run_name),
                 "--engine.device", self.accelerator,
             ]
-            deterministic = dataset.extra_overrides.pop("deterministic", "False")
             for key, value in dataset.extra_overrides.items():
-                command_cfg.append(f"--{key}")
-                command_cfg.append(str(value))
-            train_cfg = command_cfg.copy()
-            train_cfg.extend(["--seed", str(seed)])
-            train_cfg.extend(["--deterministic", deterministic])
-            #with patch("sys.argv", train_cfg):
-            #    cli = OTXCLI()
-            #    train_metrics = cli.engine.trainer.callback_metrics
-            #    checkpoint = cli.engine.checkpoint
-            print(" ".join(train_cfg))
-            command_cfg[1] = "test"
-            #command_cfg += ["--checkpoint", checkpoint]
-            print(" ".join(command_cfg))
-            #with patch("sys.argv", command_cfg):
-            #    cli = OTXCLI()
-            #    test_metrics = cli.engine.trainer.callback_metrics
-            #metrics = {**train_metrics, **test_metrics}
-            #print(run_name, tags)
+                command.append(f"--{key}")
+                command.append(str(value))
+            command.extend(["--seed", str(seed)])
+            command.extend(["--deterministic", str(self.deterministic)])
+            if self.num_epoch > 0:
+                command.extend(["--max_epochs", str(self.num_epoch)])
+            train_metrics = self._run_command(command)
+
+            command = [
+                "otx", "test",
+                "--work_dir", str(work_dir),
+            ]
+            test_metrics = self._run_command(command)
+
+            self._log_raw_csv(
+                path=work_dir / "perf.train.csv",
+                data={**tags, **train_metrics, **test_metrics}
+            )
+
+            # TODO: Export & test
+            # TODO: Optimize & test
+
+            # Force memory clean up
+            gc.collect()
+
         return None
 
-    ## Options
-    #cfg: dict = request.param[1].copy()
-
-    #tags = cfg.get("tags", {})
-    #tags["data_size"] = data_size
-    #cfg["tags"] = tags
-
-    #num_repeat_override: int = int(request.config.getoption("--num-repeat"))
-    #if num_repeat_override > 0:  # 0: use default
-    #    cfg["num_repeat"] = num_repeat_override
-
-    #cfg["eval_upto"] = request.config.getoption("--eval-upto")
-    #cfg["data_root"] = request.config.getoption("--data-root")
-    #cfg["output_root"] = str(fxt_output_root)
-    #cfg["dry_run"] = request.config.getoption("--dry-run")
-
-    ## Create benchmark
-    #benchmark = OTXBenchmark(
-    #    **cfg,
-    #)
-
-    #return benchmark
-        # Build config file
-        cfg = self._build_config(model_id, train_params, tags)
-        cfg_dir = Path(cfg["output_path"])
-        cfg_dir.mkdir(parents=True, exist_ok=True)
-        cfg_path = cfg_dir / "cfg.yaml"
-        with open(cfg_path, "w") as cfg_file:
-            yaml.dump(cfg, cfg_file, indent=2)
-        cmd = [
-            "python",
-            "tools/experiment.py",
-            "-f",
-            cfg_path,
-        ]
+    def _run_command(self, command: list[str]) -> dict[str, Any]:
         if self.dry_run:
-            cmd.append("-d")
-        # Run benchmark
-        #check_run(cmd)
-        # Load result
-        result = self.load_result(cfg_dir)
-        return result
+            print(" ".join(command))
+            return {}
+        with patch("sys.argv", command):
+            log.info(f"{command = }")
+            cli = OTXCLI()
+        return cli.engine.trainer.callback_metrics
+
+    def _log_raw_csv(self, path: Path, data: dict[str, Any]):
+        data = {
+            k: v if isinstance(v, str) else float(v)
+            for k, v in data.items()
+        }
+        with open(path, "w") as f:
+            writer = csv.DictWriter(f, data.keys())
+            writer.writeheader()
+            writer.writerow(data)
 
     @staticmethod
     def load_result(result_path: str) -> pd.DataFrame | None:
@@ -225,64 +218,3 @@ class Benchmark:
             return aggregated
         else:
             return None
-
-    def _build_config(
-        self,
-        model_id: str,
-        train_params: dict = {},
-        tags: dict = {},
-    ) -> dict:
-        """Build config for tools/expeirment.py."""
-        all_train_params = self.train_params.copy()
-        all_train_params.update(train_params)
-        all_tags = self.tags.copy()
-        all_tags.update(tags)
-
-        cfg = {}
-        cfg["tags"] = all_tags  # metadata
-        cfg["output_path"] = os.path.abspath(Path(self.output_root) / "-".join(list(all_tags.values()) + [model_id]))
-        cfg["constants"] = {
-            "dataroot": os.path.abspath(self.data_root),
-        }
-        cfg["variables"] = {
-            "model": [model_id],
-            "data": self.datasets,
-        }
-        cfg["repeat"] = self.num_repeat
-        cfg["command"] = []
-        resource_param = ""
-        if self.track_resources:
-            resource_param = "--track-resource-usage all"
-        if self.num_epoch > 0:
-            self._set_num_epoch(model_id, all_train_params, self.num_epoch)
-        params_str = " ".join([f"--{k} {v}" for k, v in all_train_params.items()])
-        cfg["command"].append(
-            "otx train ${model}"
-            " --train-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['train']}"
-            " --val-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['val']}"
-            " --deterministic"
-            f" {resource_param}"
-            f" params {params_str}"
-        )
-        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['test']}")
-        if self.eval_upto == "train":
-            return cfg
-
-        cfg["command"].append("otx export")
-        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['test']}")
-        if self.eval_upto == "export":
-            return cfg
-
-        cfg["command"].append("otx optimize")
-        cfg["command"].append("otx eval --test-data-roots ${dataroot}/${data}" + f"/{self.subset_dir_names['test']}")
-        return cfg
-
-    @staticmethod
-    def _set_num_epoch(model_id: str, train_params: dict, num_epoch: int):
-        """Set model specific num_epoch parameter."""
-        if "padim" in model_id:
-            return  # No configurable parameter for num_epoch
-        elif "stfpm" in model_id:
-            train_params["learning_parameters.max_epochs"] = num_epoch
-        else:
-            train_params["learning_parameters.num_iters"] = num_epoch

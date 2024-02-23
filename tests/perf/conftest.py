@@ -95,6 +95,12 @@ def pytest_addoption(parser):
         help="Print OTX commands without execution.",
     )
     parser.addoption(
+        "--deterministic",
+        action="store_true",
+        default=False,
+        help="Turn on deterministic training.",
+    )
+    parser.addoption(
         "--user-name",
         type=str,
         default="anonymous",
@@ -205,6 +211,15 @@ def fxt_dry_run(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> str:
+    """Option to turn on deterministic training."""
+    deterministic = request.config.getoption("--deterministic")
+    msg = f"{deterministic = }"
+    log.info(msg)
+    return deterministic
+
+
+@pytest.fixture(scope="session")
 def fxt_user_name(request: pytest.FixtureRequest) -> str:
     """User name to sign off the regression test execution."""
     user_name = request.config.getoption("--user-name")
@@ -282,6 +297,7 @@ def fxt_benchmark(
     fxt_eval_upto: str,
     fxt_tags: dict[str, str],
     fxt_dry_run: bool,
+    fxt_deterministic: bool,
     fxt_accelerator: str,
 ) -> Benchmark:
     """Configure benchmark."""
@@ -308,6 +324,7 @@ def fxt_benchmark(
         eval_upto=fxt_eval_upto,
         tags=tags,
         dry_run=fxt_dry_run,
+        deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
     )
 
