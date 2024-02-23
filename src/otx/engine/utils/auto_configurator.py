@@ -287,17 +287,12 @@ class AutoConfigurator:
 
         return None
 
-    def get_ov_model(
-        self,
-        model_name: str,
-        meta_info: LabelInfo,
-    ) -> OVModel:
+    def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.
 
         Args:
             model_name (str): The name of the model.
             meta_info (LabelInfo): The label information.
-            tile_config (TileConfig): The tile configuration.
 
         Returns:
             OVModel: The OVModel instance.
