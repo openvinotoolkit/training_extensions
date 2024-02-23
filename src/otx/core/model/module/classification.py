@@ -238,11 +238,13 @@ class OTXHlabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda: HLabelAccuracy(
-            num_multiclass_heads=1,
-            num_multilabel_classes=1,
-            head_logits_info={"default": (0, 1)},
-        ),
+        metric: MetricCallable = partial(  # noqa: B008
+            HLabelAccuracy(  # noqa: B008
+                num_multiclass_heads=2,
+                num_multilabel_classes=2,
+                head_logits_info={"default": (0, 2)},
+            ),
+        ),  # lambda: HLabelAccuracy() doesn't return the partial class. So, use the partial() directly.
     ):
         super().__init__(
             otx_model=otx_model,
@@ -252,7 +254,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
             metric=metric,
         )
         self.hlabel_info: HLabelInfo
-        self.metric = metric
 
     def configure_metric(self) -> None:
         """Configure the metric."""
