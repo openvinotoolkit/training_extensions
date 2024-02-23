@@ -594,7 +594,7 @@ class Engine:
                 Defaults to None. If work_dir is None, use the work_dir from the configuration file.
             kwargs: Arguments that can override the engine's arguments.
 
-        Returns:
+        Returns:s
             Engine: An instance of the Engine class.
 
         Example:
@@ -604,6 +604,11 @@ class Engine:
         """
         from otx.cli.utils.jsonargparse import get_instantiated_classes
 
+        # For the Engine argument, prepend 'engine.' for CLI parser
+        filter_kwargs = ["device", "checkpoint", "task"]
+        for key in filter_kwargs:
+            if key in kwargs:
+                kwargs[f"engine.{key}"] = kwargs.pop(key)
         instantiated_config, train_kwargs = get_instantiated_classes(
             config=config_path,
             data_root=data_root,
