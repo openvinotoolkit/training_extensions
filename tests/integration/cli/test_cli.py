@@ -197,7 +197,7 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
-    if "_cls" not in task or "dino" in model_name or "deit" in model_name:
+    if "_cls" not in task or "dino" in model_name:
         return
 
     format_to_file = {
@@ -271,8 +271,8 @@ def test_otx_explain_e2e(
     if "_cls" not in task:
         pytest.skip("Supported only for classification.")
 
-    if "dino" in model_name or "deit" in model_name:
-        pytest.skip("Transformets are not supported.")
+    if "dino" in model_name:
+        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
