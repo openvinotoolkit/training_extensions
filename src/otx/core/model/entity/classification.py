@@ -448,6 +448,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
+        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
@@ -622,6 +623,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
+        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
