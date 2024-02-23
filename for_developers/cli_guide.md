@@ -320,7 +320,10 @@ If we run a typical Training example, we'll have a folder like the one below as 
 
 ```console
 otx-workspace/
-    .latest/                       # As of the last training, we have a .latest with path information for config and checkpoint.
+    .latest/                      # Gather the most recent information.
+        train/                    # Link to the output_dir where the most recent train was performed.
+        export/                   # Link to the output_dir where the most recent export was performed.
+        .../
     20240000_000000/              # Deliverables from OTX CLI
     20240000_000001/              # Deliverables from OTX CLI Second-Trial
 ```
