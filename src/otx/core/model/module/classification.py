@@ -129,7 +129,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-    
+
     def configure_metric(self) -> None:
         """Configure the metric."""
         if isinstance(self.metric_callable, partial):
@@ -147,7 +147,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             msg = "Metric should be the instance of torchmetrics.Metric."
             raise TypeError(msg)
         self.metric.to(self.device)
-        
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()

@@ -48,7 +48,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        
+
         self.train_metric = MetricCollection(
             {
                 "loss": MeanMetric(),
@@ -69,7 +69,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             },
         )
         self.val_metric.to(self.device)
-        
+
         self.test_metric = MetricCollection(
             {
                 "IoU": BinaryJaccardIndex(),
