@@ -215,27 +215,14 @@ class OTXHlabelClsLitModule(OTXLitModule):
             metric=metric,
         )
 
-        if metric:
-            sig = inspect.signature(metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                if name in ["num_multiclass_heads", "num_multilabel_classes"]:
-                    param_dict[name] = self.model.get(name)
-                else:
-                    param_dict[name] = param.default
-            param_dict.pop("kwargs")
-
-            metric = metric(**param_dict)  # type: ignore[call-arg]
-
         # Temporary, TODO (sungmanc)
         # OTX can't support the auto-configuration for the H-label classification
         # Therefore, default metric can be None and it cause the error
         # This is the workaround
-        else:
-            self.metric = HLabelAccuracy(
-                num_multiclass_heads=self.model.num_multiclass_heads,
-                num_multilabel_classes=self.model.num_multilabel_classes,
-            )
+        self.metric = HLabelAccuracy(
+            num_multiclass_heads=self.model.num_multiclass_heads,
+            num_multilabel_classes=self.model.num_multilabel_classes,
+        )
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.meta_info, HLabelMetaInfo):
