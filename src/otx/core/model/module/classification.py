@@ -120,7 +120,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda num_classes: Accuracy(task="multilabel", num_classes=num_classes),
+        metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -129,6 +129,25 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
+    
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if isinstance(self.metric_callable, partial):
+            num_classes_augmented_params = {
+                name: param.default if name != "num_labels" else self.model.num_classes
+                for name, param in inspect.signature(self.metric_callable).parameters.items()
+                if name != "kwargs"
+            }
+            self.metric = self.metric_callable(**num_classes_augmented_params)
+
+        if isinstance(self.metric_callable, Metric):
+            self.metric = self.metric_callable
+
+        if not isinstance(self.metric, Metric):
+            msg = "Metric should be the instance of torchmetrics.Metric."
+            raise TypeError(msg)
+        self.metric.to(self.device)
+        
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
@@ -204,7 +223,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         )
         self.hlabel_info: HLabelInfo
 
-    def configure_metric(self, cond: str = "") -> None:
+    def configure_metric(self) -> None:
         """Configure the metric."""
         if isinstance(self.metric_callable, partial):
             sig = inspect.signature(self.metric_callable)

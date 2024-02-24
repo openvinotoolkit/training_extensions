@@ -46,7 +46,7 @@ class OTXSegmentationLitModule(OTXLitModule):
             metric=metric,
         )
 
-    def configure_metric(self, cond: str = "") -> None:
+    def configure_metric(self) -> None:
         """Configure the metric."""
         if isinstance(self.metric_callable, partial):
             sig = inspect.signature(self.metric_callable)

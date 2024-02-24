@@ -159,11 +159,11 @@ class OTXLitModule(LightningModule):
 
         return optimizers, lr_schedulers
 
-    def configure_metric(self, cond: str = "num_classes") -> None:
+    def configure_metric(self) -> None:
         """Configure the metric."""
         if isinstance(self.metric_callable, partial):
             num_classes_augmented_params = {
-                name: param.default if name != cond else getattr(self.model, cond)
+                name: param.default if name != "num_classes" else self.model.num_classes
                 for name, param in inspect.signature(self.metric_callable).parameters.items()
                 if name != "kwargs"
             }
