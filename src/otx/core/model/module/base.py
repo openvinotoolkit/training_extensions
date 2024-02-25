@@ -17,7 +17,7 @@ from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     OTXBatchPredEntity,
 )
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
@@ -222,6 +222,6 @@ class OTXLitModule(LightningModule):
 
     def forward(self, *args, **kwargs) -> OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward pass."""
-        if self.model.explain_mode:
+        if self.model.explain_mode and not isinstance(self.model, OVModel):
             return self.model.forward_explain(*args, **kwargs)
         return self.model.forward(*args, **kwargs)
