@@ -15,6 +15,9 @@ class EfficientNetB0ForHLabelCls(MMPretrainHlabelClsModel):
     """EfficientNetB0 Model for hierarchical label classification task."""
 
     def __init__(self, num_classes: int, num_multiclass_heads: int, num_multilabel_classes: int) -> None:
+        self.num_multiclass_heads = num_multiclass_heads
+        self.num_multilabel_classes = num_multilabel_classes
+
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="hlabel_classification")
         config.head.num_multiclass_heads = num_multiclass_heads
         config.head.num_multilabel_classes = num_multilabel_classes

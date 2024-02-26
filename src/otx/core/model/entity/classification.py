@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import json
 import types
 from typing import TYPE_CHECKING, Any, Callable
@@ -73,7 +72,7 @@ class ExplainableOTXClsModel(
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
         self.model.explain_fn = self.get_explain_fn()
 
@@ -83,9 +82,6 @@ class ExplainableOTXClsModel(
             if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
             else self.model(inputs)
         )
-
-        # before merging https://github.com/openvinotoolkit/training_extensions/pull/2913
-        outputs = outputs["logits"]
 
         return (
             self._customize_outputs(outputs, inputs)
@@ -249,32 +245,36 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
                 losses[k] = v
             return losses
 
+        predictions = outputs["logits"] if isinstance(outputs, dict) else outputs
         scores = []
         labels = []
 
-        for output in outputs:
+        for output in predictions:
             if not isinstance(output, DataSample):
                 raise TypeError(output)
 
             scores.append(output.pred_score)
             labels.append(output.pred_label)
 
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+        if self.explain_mode:
+            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
 
             return MulticlassClsBatchPredEntityWithXAI(
-                batch_size=len(outputs),
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                saliency_maps=explain_results,
+                saliency_maps=list(saliency_maps),
                 feature_vectors=[],
             )
 
         return MulticlassClsBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
@@ -400,32 +400,36 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                 losses[k] = v
             return losses
 
+        predictions = outputs["logits"] if isinstance(outputs, dict) else outputs
         scores = []
         labels = []
 
-        for output in outputs:
+        for output in predictions:
             if not isinstance(output, DataSample):
                 raise TypeError(output)
 
             scores.append(output.pred_score)
             labels.append(output.pred_label)
 
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+        if self.explain_mode:
+            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
 
             return MultilabelClsBatchPredEntityWithXAI(
-                batch_size=len(outputs),
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                saliency_maps=explain_results,
+                saliency_maps=list(saliency_maps),
                 feature_vectors=[],
             )
 
         return MultilabelClsBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
@@ -443,6 +447,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
+        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
@@ -570,19 +575,23 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 losses[k] = v
             return losses
 
+        predictions = outputs["logits"] if isinstance(outputs, dict) else outputs
         scores = []
         labels = []
 
-        for output in outputs:
+        for output in predictions:
             if not isinstance(output, DataSample):
                 raise TypeError(output)
 
             scores.append(output.pred_score)
             labels.append(output.pred_label)
 
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+        if self.explain_mode:
+            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
 
             return HlabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -590,7 +599,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                saliency_maps=explain_results,
+                saliency_maps=list(saliency_maps),
                 feature_vectors=[],
             )
 
@@ -613,6 +622,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
+        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
@@ -660,7 +670,9 @@ class OVMulticlassClassificationModel(
         pred_scores = [torch.tensor(out.top_labels[0][2]) for out in outputs]
 
         if outputs and outputs[0].saliency_map.size != 0:
-            predicted_s_maps = [out.saliency_map for out in outputs]
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return MulticlassClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -759,8 +771,10 @@ class OVHlabelClassificationModel(
             all_pred_labels.append(torch.tensor(predicted_labels, dtype=torch.long))
             all_pred_scores.append(torch.tensor(predicted_scores))
 
-        if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
+        if outputs and outputs[0].saliency_map.size != 0:
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return HlabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -819,8 +833,10 @@ class OVMultilabelClassificationModel(
     ) -> MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI:
         pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
 
-        if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
+        if outputs and outputs[0].saliency_map.size != 0:
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return MultilabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),

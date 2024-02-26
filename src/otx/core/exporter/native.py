@@ -37,7 +37,8 @@ class OTXNativeModelExporter(OTXModelExporter):
         super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata, output_names)
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
-        self.onnx_export_configuration.update({"output_names": output_names})
+        if output_names is not None:
+            self.onnx_export_configuration.update({"output_names": output_names})
 
     def to_openvino(
         self,

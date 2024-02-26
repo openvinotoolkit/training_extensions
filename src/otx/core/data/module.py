@@ -22,7 +22,9 @@ from otx.core.data.mem_cache import (
 )
 from otx.core.data.pre_filtering import pre_filtering
 from otx.core.data.tile_adaptor import adapt_tile_config
+from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
+from otx.core.utils.utils import get_adaptive_num_workers
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
@@ -55,7 +57,7 @@ class OTXDataModule(LightningDataModule):
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
         if self.task != "H_LABEL_CLS":
-            dataset = pre_filtering(dataset, self.config.data_format)
+            dataset = pre_filtering(dataset, self.config.data_format, self.config.unannotated_items_ratio)
         if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
             adapt_tile_config(config.tile_config, dataset=dataset)
 
@@ -64,6 +66,20 @@ class OTXDataModule(LightningDataModule):
             self.config.val_subset.subset_name: self.config.val_subset,
             self.config.test_subset.subset_name: self.config.test_subset,
         }
+
+        if self.config.auto_num_workers:
+            if self.config.device not in [DeviceType.gpu, DeviceType.auto]:
+                log.warning(
+                    "Only GPU device type support auto_num_workers. "
+                    f"Current deveice type is {self.config.device!s}. auto_num_workers is skipped.",
+                )
+            elif (num_workers := get_adaptive_num_workers()) is not None:
+                for subset_name, subset_config in config_mapping.items():
+                    log.info(
+                        f"num_workers of {subset_name} subset is changed : "
+                        f"{subset_config.num_workers} -> {num_workers}",
+                    )
+                    subset_config.num_workers = num_workers
 
         mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
         mem_cache_mode = (

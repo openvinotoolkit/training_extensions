@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from otx.core.types.device import DeviceType
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -102,3 +103,7 @@ class DataModuleConfig:
     stack_images: bool = True
 
     include_polygons: bool = False
+    unannotated_items_ratio: float = 0.0
+
+    auto_num_workers: bool = False
+    device: DeviceType = DeviceType.auto

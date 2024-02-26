@@ -9,7 +9,7 @@ import ast
 import logging
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator, TypeVar
+from typing import Any, Iterator, TypeVar, Union
 
 import docstring_parser
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace, namespace_to_dict
@@ -262,6 +262,63 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
     ActionTypeHint.add_sub_defaults(self, cfg)
 
     return cfg
+
+
+# Workaround for https://github.com/omni-us/jsonargparse/issues/456
+def add_list_type_arguments(
+    parser: ArgumentParser,
+    baseclass: tuple[type, ...],
+    nested_key: str,
+    skip: set[str] | None = None,
+) -> None:
+    """Add list type arguments to the given ArgumentParser.
+
+    From python >= 3.11, add_subclass_arguments no longer allows adding arguments of the form list[Class].
+    Modify it to bypass class checking, allowing you to use the list argument.
+    Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.
+
+    Args:
+        parser (ArgumentParser): The ArgumentParser to add the arguments to.
+        baseclass (tuple[type, ...]): A tuple of base classes for the subclasses.
+        nested_key (str): The nested key for the arguments.
+        skip (set[str] | None, optional): A set of arguments to skip. Defaults to None.
+    """
+    from argparse import SUPPRESS
+
+    from jsonargparse._parameter_resolvers import ParamData
+    from jsonargparse._util import get_import_path, iter_to_set_str
+
+    group = parser._create_group_if_requested(  # noqa: SLF001
+        baseclass,
+        nested_key,
+        True,
+        None,
+        config_load=False,
+        required=False,
+        instantiate=False,
+    )
+    added_args: list[str] = []
+    if skip is not None:
+        skip = {f"{nested_key}.init_args." + s for s in skip}
+    param = ParamData(name=nested_key, annotation=Union[baseclass], component=baseclass)
+    str_baseclass = iter_to_set_str(get_import_path(x) for x in baseclass)
+    kwargs = {
+        "metavar": "CONFIG | CLASS_PATH_OR_NAME | .INIT_ARG_NAME VALUE",
+        "help": (
+            f"One or more arguments specifying 'class_path' and 'init_args' for any subclass of {str_baseclass}s."
+        ),
+    }
+    kwargs["default"] = SUPPRESS
+    parser._add_signature_parameter(  # noqa: SLF001
+        group,
+        None,
+        param,
+        added_args,
+        skip,
+        sub_configs=True,
+        instantiate=False,
+        fail_untyped=False,
+    )
 
 
 @contextmanager

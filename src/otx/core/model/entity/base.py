@@ -57,7 +57,7 @@ class OTXModel(
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self.original_model_forward = None
-        self.explain_mode = False
+        self._explain_mode = False
 
     def setup_callback(self, trainer: Trainer) -> None:
         """Callback for setup OTX Model.
@@ -97,6 +97,16 @@ class OTXModel(
         """Returns model's number of classes. Can be redefined at the model's level."""
         return self.label_info.num_classes
 
+    @property
+    def explain_mode(self) -> bool:
+        """Get model explain mode."""
+        return self._explain_mode
+
+    @explain_mode.setter
+    def explain_mode(self, explain_mode: bool) -> None:
+        """Set model explain mode."""
+        self._explain_mode = explain_mode
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -135,6 +145,23 @@ class OTXModel(
         )
 
     def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward explain function."""
+        raise NotImplementedError
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
+        raise NotImplementedError
+
+    def _reset_model_forward(self) -> None:
+        pass
+
+    def _restore_model_forward(self) -> None:
+        pass
+
+    def forward_tiles(
         self,
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
@@ -342,6 +369,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
             self.model_name,
             max_num_requests=self.num_requests,
             plugin_config=plugin_config,
+            model_parameters=self.model_adapter_parameters,
         )
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
@@ -467,3 +495,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    @property
+    def model_adapter_parameters(self) -> dict:
+        """Model parameters for export."""
+        return {}
