@@ -45,6 +45,11 @@ def test_otx_e2e(
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
+    # H-Label-CLS need to add --metric
+    if task in ("h_label_cls"):
+        fxt_cli_override_command_per_task[task].extend(["--metric.num_multiclass_heads", "2"])
+        fxt_cli_override_command_per_task[task].extend(["--metric.num_multilabel_classes", "3"])
+
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
