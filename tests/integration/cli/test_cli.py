@@ -2,24 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import importlib
-import inspect
 from pathlib import Path
 
+import numpy as np
 import pytest
 import yaml
+from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.integration.cli.utils import run_main
 
-# This assumes have OTX installed in environment.
-otx_module = importlib.import_module("otx")
-RECIPE_PATH = Path(inspect.getfile(otx_module)).parent / "recipe"
-RECIPE_LIST = [str(p) for p in RECIPE_PATH.glob("**/*.yaml") if "_base_" not in p.parts]
-RECIPE_OV_LIST = [str(p) for p in RECIPE_PATH.glob("**/openvino_model.yaml") if "_base_" not in p.parts]
-RECIPE_LIST = set(RECIPE_LIST) - set(RECIPE_OV_LIST)
 
-
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_e2e(
     recipe: str,
     tmp_path: Path,
@@ -44,7 +41,6 @@ def test_otx_e2e(
         None
     """
     task = recipe.split("/")[-2]
-    tile_param = fxt_cli_override_command_per_task["tile"] if "tile" in recipe else []
     model_name = recipe.split("/")[-1].split(".")[0]
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
@@ -58,14 +54,13 @@ def test_otx_e2e(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
         "2",
         *fxt_cli_override_command_per_task[task],
-        *tile_param,
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
@@ -73,18 +68,23 @@ def test_otx_e2e(
     if task in ("zero_shot_visual_prompting"):
         pytest.skip("Full CLI test is not applicable to this task.")
 
+    outputs_dir = tmp_path_train / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
     # Currently, a simple output check
-    assert (tmp_path_train / "outputs").exists()
-    assert (tmp_path_train / "outputs" / "configs.yaml").exists()
+    assert latest_dir.exists()
+    assert (latest_dir / "configs.yaml").exists()
     # Check Configs file
-    with (tmp_path_train / "outputs" / "configs.yaml").open() as file:
+    with (latest_dir / "configs.yaml").open() as file:
         train_output_config = yaml.safe_load(file)
     assert "model" in train_output_config
     assert "data" in train_output_config
     assert "engine" in train_output_config
-    assert (tmp_path_train / "outputs" / "csv").exists()
-    assert (tmp_path_train / "outputs" / "checkpoints").exists()
-    ckpt_files = list((tmp_path_train / "outputs" / "checkpoints").glob(pattern="epoch_*.ckpt"))
+    assert (latest_dir / "csv").exists()
+    assert (latest_dir / "checkpoints").exists()
+    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
     assert len(ckpt_files) > 0
 
     # 2) otx test
@@ -96,7 +96,7 @@ def test_otx_e2e(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -107,8 +107,13 @@ def test_otx_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "csv").exists()
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "csv").exists()
 
     # 3) otx export
     if any(
@@ -139,8 +144,8 @@ def test_otx_e2e(
             recipe,
             "--data_root",
             fxt_target_dataset_per_task[task],
-            "--engine.work_dir",
-            str(tmp_path_test / "outputs"),
+            "--work_dir",
+            str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
             str(ckpt_files[-1]),
@@ -150,11 +155,21 @@ def test_otx_e2e(
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
+        outputs_dir = tmp_path_test / "outputs" / fmt
+        latest_dir = max(
+            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+            key=lambda p: p.stat().st_mtime,
+        )
+        assert latest_dir.exists()
+        assert (latest_dir / f"{format_to_file[fmt]}").exists()
 
     # 4) infer of the exported models
-    exported_model_path = str(tmp_path_test / "outputs" / "exported_model.xml")
+    ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
+    ov_latest_dir = max(
+        (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
     command_cfg = [
         "otx",
@@ -163,7 +178,7 @@ def test_otx_e2e(
         recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
@@ -174,10 +189,59 @@ def test_otx_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+
+    # 5) otx export with XAI
+    if "_cls" not in task or "dino" in model_name:
+        return
+
+    format_to_file = {
+        "ONNX": "exported_model.onnx",
+        "OPENVINO": "exported_model.xml",
+        "EXPORTABLE_CODE": "exportable_code.zip",
+    }
+
+    tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
+    for fmt in format_to_file:
+        command_cfg = [
+            "otx",
+            "export",
+            "--config",
+            recipe,
+            "--data_root",
+            fxt_target_dataset_per_task[task],
+            "--work_dir",
+            str(tmp_path_test / "outputs" / fmt),
+            *fxt_cli_override_command_per_task[task],
+            "--checkpoint",
+            str(ckpt_files[-1]),
+            "--export_format",
+            f"{fmt}",
+            "--explain",
+            "True",
+        ]
+
+        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+        fmt_dir = tmp_path_test / "outputs" / fmt
+        assert fmt_dir.exists()
+        fmt_latest_dir = max(
+            (p for p in fmt_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+            key=lambda p: p.stat().st_mtime,
+        )
+        assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
 
 
-@pytest.mark.parametrize("recipe", RECIPE_LIST)
+@pytest.mark.parametrize(
+    "recipe",
+    pytest.RECIPE_LIST,
+    ids=lambda x: "/".join(Path(x).parts[-2:]),
+)
 def test_otx_explain_e2e(
     recipe: str,
     tmp_path: Path,
@@ -196,17 +260,19 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+    if "tile" in recipe:
+        pytest.skip("Explain is not supported for tiling yet.")
+
     import cv2
-    import numpy as np
 
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if ("_cls" not in task) and (task != "detection"):
-        pytest.skip("Supported only for classification and detection task.")
+    if "_cls" not in task:
+        pytest.skip("Supported only for classification.")
 
     if "dino" in model_name:
-        pytest.skip("Dino is not supported.")
+        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
@@ -219,7 +285,7 @@ def test_otx_explain_e2e(
         "1000",
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
         fxt_accelerator,
@@ -232,9 +298,14 @@ def test_otx_explain_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_explain / "outputs").exists()
-    assert (tmp_path_explain / "outputs" / "saliency_map.tiff").exists()
-    sal_map = cv2.imread(str(tmp_path_explain / "outputs" / "saliency_map.tiff"))
+    outputs_dir = tmp_path_explain / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "saliency_map.tiff").exists()
+    sal_map = cv2.imread(str(latest_dir / "saliency_map.tiff"))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
@@ -249,9 +320,13 @@ def test_otx_explain_e2e(
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
 
 
-@pytest.mark.parametrize("recipe", RECIPE_OV_LIST)
+# @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
+@pytest.mark.parametrize(
+    "ov_recipe",
+    pytest.RECIPE_OV_LIST,
+)
 def test_otx_ov_test(
-    recipe: str,
+    ov_recipe: str,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,
     fxt_open_subprocess: bool,
@@ -268,13 +343,16 @@ def test_otx_ov_test(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    task = ov_recipe.split("/")[-2]
+    model_name = ov_recipe.split("/")[-1].split(".")[0]
 
     if task in ["multi_label_cls", "instance_segmentation", "h_label_cls"]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
+
+    if task in ["action_classification"]:
+        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
 
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
@@ -282,10 +360,10 @@ def test_otx_ov_test(
         "otx",
         "test",
         "--config",
-        recipe,
+        ov_recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
-        "--engine.work_dir",
+        "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
@@ -294,7 +372,75 @@ def test_otx_ov_test(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    assert (tmp_path_test / "outputs").exists()
-    assert (tmp_path_test / "outputs" / "csv").exists()
-    metric_result = list((tmp_path_test / "outputs" / "csv").glob(pattern="**/metrics.csv"))
+    outputs_dir = tmp_path_test / "outputs"
+    latest_dir = max(
+        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    assert latest_dir.exists()
+    assert (latest_dir / "csv").exists()
+    metric_result = list((latest_dir / "csv").glob(pattern="**/metrics.csv"))
     assert len(metric_result) > 0
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+def test_otx_hpo_e2e(
+    task: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+) -> None:
+    """
+    Test HPO e2e commands with default template of each task.
+
+    Args:
+        task (OTXTaskType): The task to run HPO with.
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    if task in ("action_classification"):
+        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+
+    task = task.lower()
+    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    tmp_path_hpo.mkdir(parents=True)
+
+    command_cfg = [
+        "otx",
+        "train",
+        "--task",
+        task.upper(),
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--work_dir",
+        str(tmp_path_hpo),
+        "--engine.device",
+        fxt_accelerator,
+        "--max_epochs",
+        "2",
+        "--run_hpo",
+        "true",
+        "--hpo_config.expected_time_ratio",
+        "2",
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
+    if task in ("zero_shot_visual_prompting"):
+        return
+
+    latest_dir = max(
+        (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    hpo_work_dor = latest_dir / "hpo"
+    assert hpo_work_dor.exists()
+    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2

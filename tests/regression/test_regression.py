@@ -74,7 +74,7 @@ class BaseTest:
                     "--model.num_classes", str(test_case.dataset.num_classes),
                     "--data_root", str(data_root),
                     "--data.config.data_format", test_case.dataset.data_format,
-                    "--engine.work_dir", str(test_case.output_dir),
+                    "--work_dir", str(test_case.output_dir),
                     "--engine.device", fxt_accelerator,
                 ]
                 deterministic = test_case.dataset.extra_overrides.pop("deterministic", "False")
@@ -264,7 +264,7 @@ class TestHlabelCls(BaseTest):
                 "model.num_multilabel_classes": "0",
             },
         )
-        
+
     ]
 
     @pytest.mark.parametrize(
@@ -316,7 +316,12 @@ class TestObjectDetection(BaseTest):
             data_root=Path("detection/pothole_small") / f"{idx}",
             data_format="coco",
             num_classes=1,
-            extra_overrides={"deterministic": "True"},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
         )
         for idx in range(1, 4)
     ] + [
@@ -325,14 +330,24 @@ class TestObjectDetection(BaseTest):
             data_root=Path("detection/pothole_medium"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"deterministic": "True"}
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
         ),
         DatasetTestCase(
             name="vitens_large",
             data_root=Path("detection/vitens_large"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"deterministic": "True"}
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
         )
     ]
 
@@ -448,7 +463,12 @@ class TestInstanceSegmentation(BaseTest):
             data_root=Path("instance_seg/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={"deterministic": "True"},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
         )
         for idx in range(1, 4)
     ] + [
@@ -457,14 +477,24 @@ class TestInstanceSegmentation(BaseTest):
             data_root=Path("instance_seg/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={"deterministic": "True"}
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root=Path("instance_seg/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={"deterministic": "True"}
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
         )
     ]
 
@@ -560,8 +590,8 @@ class TestVisualPrompting(BaseTest):
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
-        
-        
+
+
 class TestZeroShotVisualPrompting(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012

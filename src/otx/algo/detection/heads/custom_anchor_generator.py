@@ -34,10 +34,10 @@ class SSDAnchorGeneratorClustered(AnchorGenerator):
         self.centers = [(stride / 2.0, stride / 2.0) for stride in strides]
 
         self.center_offset = 0
-        self.base_anchors = self.gen_base_anchors()
+        self.gen_base_anchors()
         self.use_box_type = False
 
-    def gen_base_anchors(self) -> list[torch.Tensor]:
+    def gen_base_anchors(self) -> None:
         """Generate base anchor for SSD."""
         multi_level_base_anchors = []
         for widths, heights, centers in zip(self.widths, self.heights, self.centers):
@@ -47,7 +47,7 @@ class SSDAnchorGeneratorClustered(AnchorGenerator):
                 center=torch.Tensor(centers),
             )
             multi_level_base_anchors.append(base_anchors)
-        return multi_level_base_anchors
+        self.base_anchors = multi_level_base_anchors
 
     def gen_single_level_base_anchors(
         self,

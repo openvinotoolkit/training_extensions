@@ -27,6 +27,7 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
 
 
 class OTXVisualPromptingLitModule(OTXLitModule):
@@ -38,12 +39,14 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: Metric = MeanMetric,  # TODO (sungmanc): dictionary metric will be supported # noqa: TD003
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
         self.set_metrics()
 
@@ -232,11 +235,6 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 # BinaryJaccardIndex, BinaryF1Score, Dice
                 for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                     _metric.update(cvt_preds["masks"], cvt_target["masks"])
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "train/loss"
 
 
 class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):

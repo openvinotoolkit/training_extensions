@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from otx.core.types.device import DeviceType
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -61,12 +62,17 @@ class SubsetConfig:
 
 
 @dataclass
-class TilerConfig:
+class TileConfig:
     """DTO for tiler configuration."""
 
     enable_tiler: bool = False
-    grid_size: tuple[int, int] = (2, 2)
-    overlap: float = 0.0
+    enable_adaptive_tiling: bool = True
+    tile_size: tuple[int, int] = (400, 400)
+    overlap: float = 0.2
+    iou_threshold: float = 0.45
+    max_num_instances: int = 1500
+    object_tile_ratio: float = 0.03
+    sampling_ratio: float = 1.0
 
 
 @dataclass
@@ -88,7 +94,7 @@ class DataModuleConfig:
     val_subset: SubsetConfig
     test_subset: SubsetConfig
 
-    tile_config: TilerConfig = field(default_factory=lambda: TilerConfig())
+    tile_config: TileConfig = field(default_factory=lambda: TileConfig())
     vpm_config: VisualPromptingConfig = field(default_factory=lambda: VisualPromptingConfig())
 
     mem_cache_size: str = "1GB"
@@ -97,3 +103,7 @@ class DataModuleConfig:
     stack_images: bool = True
 
     include_polygons: bool = False
+    unannotated_items_ratio: float = 0.0
+
+    auto_num_workers: bool = False
+    device: DeviceType = DeviceType.auto

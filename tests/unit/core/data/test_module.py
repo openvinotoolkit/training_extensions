@@ -11,7 +11,7 @@ from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
-    TilerConfig,
+    TileConfig,
 )
 from otx.core.data.module import (
     OTXDataModule,
@@ -19,8 +19,9 @@ from otx.core.data.module import (
 )
 
 
-def mock_data_filtering(dataset: DmDataset, data_format: str) -> DmDataset:
+def mock_data_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio: float) -> DmDataset:
     del data_format
+    del unannotated_items_ratio
     return dataset
 
 
@@ -37,7 +38,7 @@ class TestModule:
         mock.val_subset.num_workers = 0
         mock.test_subset = MagicMock(spec=SubsetConfig)
         mock.test_subset.num_workers = 0
-        mock.tile_config = MagicMock(spec=TilerConfig)
+        mock.tile_config = MagicMock(spec=TileConfig)
         mock.tile_config.enable_tiler = False
 
         return mock
@@ -92,6 +93,8 @@ class TestModule:
         cfg.mem_cache_size = "1GB"
         cfg.tile_config = {}
         cfg.tile_config.enable_tiler = False
+        cfg.auto_num_workers = False
+        cfg.device = "auto"
         return cfg
 
     @patch("otx.core.data.module.OTXDatasetFactory")

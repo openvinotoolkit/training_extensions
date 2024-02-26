@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Union
 import datumaro
 from lightning.pytorch.cli import instantiate_class
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OVModel
@@ -23,6 +23,7 @@ from otx.core.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torchmetrics import Metric
     from typing_extensions import TypeAlias
 
     from otx.core.model.entity.base import OTXModel
@@ -76,6 +77,7 @@ OVMODEL_PER_TASK = {
     OTXTaskType.ROTATED_DETECTION: "otx.core.model.entity.rotated_detection.OVRotatedDetectionModel",
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.entity.segmentation.OVSegmentationModel",
+    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.entity.action_classification.OVActionClsModel",
 }
 
 
@@ -214,7 +216,7 @@ class AutoConfigurator:
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),
                 test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )
@@ -272,6 +274,23 @@ class AutoConfigurator:
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
         return partial_instantiate_class(init=scheduler_config)
 
+    def get_metric(self) -> Metric | None:
+        """Returns the instantiated metric based on the configuration.
+
+        Returns:
+            Metric | None: The instantiated metric.
+        """
+        if self.task in DEFAULT_CONFIG_PER_TASK:
+            metric_config = self.config.get("metric", None)
+            logger.warning(f"Set Default Metric: {metric_config}")
+
+            # Currently, single metric only available.
+            if metric_config:
+                metric = partial_instantiate_class(init=metric_config)
+                return metric[0] if isinstance(metric, list) else metric
+
+        return None
+
     def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.
 
@@ -312,7 +331,7 @@ class AutoConfigurator:
                 train_subset=SubsetConfig(**data_config.pop("train_subset")),
                 val_subset=SubsetConfig(**data_config.pop("val_subset")),
                 test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TilerConfig(**data_config.pop("tile_config", {})),
+                tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )

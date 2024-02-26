@@ -11,9 +11,10 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
@@ -23,6 +24,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
+from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import AutoConfigurator, PathLike
 
 if TYPE_CHECKING:
@@ -31,6 +33,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
+    from torchmetrics import Metric
 
 
 LITMODULE_PER_TASK = {
@@ -105,15 +108,10 @@ class Engine:
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
-        self.work_dir = work_dir
+        self._cache = TrainerArgumentsCache(**kwargs)
         self.checkpoint = checkpoint
-        self.device = DeviceConfig(accelerator=device)
-        self._cache = TrainerArgumentsCache(
-            default_root_dir=self.work_dir,
-            accelerator=self.device.accelerator,
-            devices=self.device.devices,
-            **kwargs,
-        )
+        self.work_dir = work_dir
+        self.device = device  # type: ignore[assignment]
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
@@ -156,6 +154,9 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
+        metric: Metric | None = None,
+        run_hpo: bool = False,
+        hpo_config: HpoConfig | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -171,6 +172,9 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
+            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
+            hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -206,10 +210,22 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
+        metric = metric if metric is not None else self._auto_configurator.get_metric()
+        if run_hpo:
+            if hpo_config is None:
+                hpo_config = HpoConfig()
+            best_config, best_trial_weight = execute_hpo(engine=self, **locals())
+            if best_config is not None:
+                update_hyper_parameter(self, best_config)
+            if best_trial_weight is not None:
+                self.checkpoint = best_trial_weight
+                resume = True
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
+            metric=metric,
         )
         lit_module.meta_info = self.datamodule.meta_info
 
@@ -245,6 +261,7 @@ class Engine:
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
+        metric: Metric | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -253,6 +270,7 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
+            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -285,10 +303,12 @@ class Engine:
             datamodule = self._auto_configurator.get_ov_datamodule()
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
 
+        metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
             model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
+            metric=metric,
         )
         lit_module.meta_info = datamodule.meta_info
 
@@ -312,6 +332,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         return_predictions: bool | None = None,
+        explain: bool = False,
         **kwargs,
     ) -> list | None:
         """Run predictions using the specified model and data.
@@ -320,6 +341,7 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             return_predictions (bool | None, optional): Whether to return the predictions or not.
+            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -330,6 +352,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ...     return_predictions=True,
+            ...     explain=True,
             ... )
 
         CLI Usage:
@@ -353,6 +376,8 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
+        lit_module.model.explain_mode = explain
+
         self._build_trainer(**kwargs)
 
         checkpoint_path: str | None = None
@@ -361,18 +386,22 @@ class Engine:
         elif self.checkpoint is not None:
             checkpoint_path = str(self.checkpoint)
 
-        return self.trainer.predict(
+        predict_result = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule if datamodule is not None else self.datamodule,
             ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
 
+        lit_module.model.explain_mode = False
+        return predict_result
+
     def export(
         self,
         checkpoint: str | Path | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        explain: bool = False,
     ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
@@ -380,6 +409,7 @@ class Engine:
             checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
+            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
 
         Returns:
             Path: Path to the exported model.
@@ -389,6 +419,7 @@ class Engine:
             ...     checkpoint=<checkpoint/path>,
             ...     export_format=OTXExportFormatType.OPENVINO,
             ...     export_precision=OTXExportPrecisionType.FP32,
+            ...     explain=True,
             ... )
 
         CLI Usage:
@@ -407,28 +438,33 @@ class Engine:
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
 
-        if ckpt_path is not None:
-            self.model.eval()
-            lit_module = self._build_lightning_module(
-                model=self.model,
-                optimizer=self.optimizer,
-                scheduler=self.scheduler,
-            )
-            loaded_checkpoint = torch.load(ckpt_path)
-            lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-            self.model.label_info = lit_module.meta_info
+        if ckpt_path is None:
+            msg = "To make export, checkpoint must be specified."
+            raise RuntimeError(msg)
 
-            lit_module.load_state_dict(loaded_checkpoint)
+        self.model.eval()
+        lit_module = self._build_lightning_module(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+        )
+        loaded_checkpoint = torch.load(ckpt_path)
+        lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
+        self.model.label_info = lit_module.meta_info
 
-            return lit_module.export(
-                output_dir=Path(self.work_dir),
-                base_name=self._EXPORTED_MODEL_BASE_NAME,
-                export_format=export_format,
-                precision=export_precision,
-            )
+        lit_module.load_state_dict(loaded_checkpoint)
 
-        msg = "To make export, checkpoint must be specified."
-        raise RuntimeError(msg)
+        self.model.explain_mode = explain
+
+        exported_model_path = lit_module.export(
+            output_dir=Path(self.work_dir),
+            base_name=self._EXPORTED_MODEL_BASE_NAME,
+            export_format=export_format,
+            precision=export_precision,
+        )
+
+        self.model.explain_mode = False
+        return exported_model_path
 
     def optimize(
         self,
@@ -520,7 +556,7 @@ class Engine:
             datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
 
-        lit_module.model.register_explain_hook()
+        lit_module.model.explain_mode = True
 
         self._build_trainer(**kwargs)
 
@@ -530,12 +566,11 @@ class Engine:
             ckpt_path=ckpt_path,
         )
 
-        explain_hook = self.trainer.model.model.explain_hook
+        lit_module.model.explain_mode = False
 
         return get_processed_saliency_maps(
-            explain_hook,
-            explain_config,
             predictions,
+            explain_config,
             Path(self.work_dir),
         )
 
@@ -573,7 +608,7 @@ class Engine:
                 train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
                 val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
                 test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
-                tile_config=TilerConfig(**data_config["config"].pop("tile_config", {})),
+                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
                 **data_config["config"],
             ),
         )
@@ -587,6 +622,8 @@ class Engine:
         engine_config = {**config.pop("engine"), **config}
         engine_config.update(kwargs)
         engine_config["data_root"] = data_root
+        engine_config.pop("metric", None)  # Remove the metric config
+
         return cls(
             datamodule=datamodule,
             model=model,
@@ -598,6 +635,26 @@ class Engine:
     # ------------------------------------------------------------------------ #
     # Property and setter functions provided by Engine.
     # ------------------------------------------------------------------------ #
+
+    @property
+    def work_dir(self) -> PathLike:
+        """Work directory."""
+        return self._work_dir
+
+    @work_dir.setter
+    def work_dir(self, work_dir: PathLike) -> None:
+        self._work_dir = work_dir
+        self._cache.update(default_root_dir=work_dir)
+
+    @property
+    def device(self) -> DeviceConfig:
+        """Device engine uses."""
+        return self._device
+
+    @device.setter
+    def device(self, device: DeviceType) -> None:
+        self._device = DeviceConfig(accelerator=device)
+        self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 
     @property
     def trainer(self) -> Trainer:
@@ -670,13 +727,15 @@ class Engine:
         model: OTXModel,
         optimizer: list[OptimizerCallable] | OptimizerCallable | None,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-    ) -> OTXLitModule | OTXModel:
+        metric: Metric | None = None,
+    ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
         Args:
             model (OTXModel): The OTXModel instance.
             optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
+            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
 
         Returns:
             OTXLitModule | OTXModel: The built LightningModule instance.
@@ -696,6 +755,7 @@ class Engine:
                 optimizer=optimizer,
                 scheduler=scheduler,
                 torch_compile=False,
+                metric=metric,
             )
         return model
 
