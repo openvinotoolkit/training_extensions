@@ -59,6 +59,7 @@ class SubsetConfig:
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
+    sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
 
 
 @dataclass
@@ -107,3 +108,14 @@ class DataModuleConfig:
 
     auto_num_workers: bool = False
     device: DeviceType = DeviceType.auto
+
+
+@dataclass
+class SamplerConfig:
+    """Configuration class for defining the sampler used in the data loading process.
+
+    This is passed in the form of a dataclass, which is instantiated when the dataloader is created.
+    """
+
+    class_path: str = "torch.utils.data.RandomSampler"
+    init_args: dict[str, Any] = field(default_factory=dict)

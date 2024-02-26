@@ -19,6 +19,8 @@ config:
         scale: 224
         type: RandomResizedCrop
       - type: PackInputs
+    sampler:
+      class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
   val_subset:
     subset_name: val
     num_workers: 2

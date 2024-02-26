@@ -272,7 +272,10 @@ class OTXCLI:
         checkpoint_dir = self.cache_dir / "checkpoints"
         if not checkpoint_dir.exists():
             return
-        latest_checkpoint = max(checkpoint_dir.glob("epoch_*.ckpt"), key=lambda p: p.stat().st_mtime)
+        ckpt_files = list(checkpoint_dir.glob("epoch_*.ckpt"))
+        if not ckpt_files:
+            return
+        latest_checkpoint = max(ckpt_files, key=lambda p: p.stat().st_mtime)
         parser.set_defaults(checkpoint=str(latest_checkpoint))
         if "--print_config" not in sys.argv:
             warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)

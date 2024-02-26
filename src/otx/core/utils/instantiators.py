@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import inspect
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,9 @@ from . import pylogger
 if TYPE_CHECKING:
     from lightning import Callback
     from lightning.pytorch.loggers import Logger
+    from torch.utils.data import Dataset, Sampler
+
+    from otx.core.config.data import SamplerConfig
 
 
 log = pylogger.get_pylogger(__name__)
@@ -92,3 +96,27 @@ def partial_instantiate_class(init: list | dict | None) -> list[partial] | None:
         args_class = getattr(module, class_name)
         items.append(partial(args_class, **kwargs))
     return items
+
+
+def instantiate_sampler(sampler_config: SamplerConfig, dataset: Dataset, batch_size: int, **kwargs) -> Sampler:
+    """Instantiate a sampler object based on the provided configuration.
+
+    Args:
+        sampler_config (SamplerConfig): The configuration object for the sampler.
+        dataset (Dataset): The dataset object to be sampled.
+        batch_size (int): The batch size for the sampler.
+        **kwargs: Additional keyword arguments to be passed to the sampler's constructor.
+
+    Returns:
+        Sampler: The instantiated sampler object.
+    """
+    class_module, class_name = sampler_config.class_path.rsplit(".", 1)
+    module = __import__(class_module, fromlist=[class_name])
+    sampler_class = getattr(module, class_name)
+    sampler_kwargs = {**sampler_config.init_args, **kwargs}
+
+    init_signature = list(inspect.signature(sampler_class.__init__).parameters.keys())
+    if "samples_per_gpu" in init_signature:
+        sampler_kwargs["samples_per_gpu"] = batch_size
+
+    return sampler_class(dataset, **sampler_kwargs)

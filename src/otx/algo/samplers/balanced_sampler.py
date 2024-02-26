@@ -12,7 +12,7 @@ import numpy as np
 from .base_sampler import BaseSampler
 
 if TYPE_CHECKING:
-    from torch.utils.data import Dataset
+    from otx.core.data.dataset.base import OTXDataset
 
 
 class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attributes
@@ -42,7 +42,7 @@ class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attribu
 
     def __init__(
         self,
-        dataset: Dataset,
+        dataset: OTXDataset,
         samples_per_gpu: int,
         efficient_mode: bool = False,
         num_replicas: int = 1,
@@ -57,7 +57,8 @@ class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attribu
 
         super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
-        self.img_indices = {k: v for k, v in self.dataset.img_indices.items() if len(v) > 0}
+        # img_indices: dict[label: list[idx]]
+        self.img_indices: dict = {label: [] for label in self.dataset.meta_info.label_names}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
         self.num_trials = int(self.data_length / self.num_cls)

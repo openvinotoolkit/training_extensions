@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
@@ -24,11 +24,11 @@ from otx.core.data.pre_filtering import pre_filtering
 from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
+from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
-    from torch.utils.data import Sampler
 
     from otx.core.config.data import DataModuleConfig
     from otx.core.data.dataset.base import OTXDataset
@@ -41,14 +41,12 @@ class OTXDataModule(LightningDataModule):
         self,
         task: OTXTaskType,
         config: DataModuleConfig,
-        sampler: Callable[[OTXDataset], Sampler] | None = None,
     ) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
         self.config = config
         self.subsets: dict[str, OTXDataset] = {}
-        self.sampler = sampler
         self.save_hyperparameters()
 
         # TODO (Jaeguk): This is workaround for a bug in Datumaro.
@@ -142,7 +140,7 @@ class OTXDataModule(LightningDataModule):
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
-        sampler = self.sampler(dataset) if self.sampler is not None else None
+        sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
 
         common_args = {
             "dataset": dataset,
