@@ -45,11 +45,6 @@ def test_otx_e2e(
     if task in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
-    # H-Label-CLS need to add --metric
-    if task in ("h_label_cls"):
-        fxt_cli_override_command_per_task[task].extend(["--metric.num_multiclass_heads", "2"])
-        fxt_cli_override_command_per_task[task].extend(["--metric.num_multilabel_classes", "3"])
-
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -67,6 +62,10 @@ def test_otx_e2e(
         "2",
         *fxt_cli_override_command_per_task[task],
     ]
+    # H-Label-CLS need to add --metric
+    if task in ("h_label_cls"):
+        command_cfg.extend(["--metric.num_multiclass_heads", "2"])
+        command_cfg.extend(["--metric.num_multilabel_classes", "3"])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -109,6 +108,10 @@ def test_otx_e2e(
         "--checkpoint",
         str(ckpt_files[-1]),
     ]
+    # H-Label-CLS need to add --metric
+    if task in ("h_label_cls"):
+        command_cfg.extend(["--metric.num_multiclass_heads", "2"])
+        command_cfg.extend(["--metric.num_multilabel_classes", "3"])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
