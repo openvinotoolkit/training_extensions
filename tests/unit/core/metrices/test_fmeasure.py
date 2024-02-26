@@ -4,11 +4,7 @@
 """Test of Module for OTX custom metrices."""
 
 import torch
-<<<<<<<< HEAD:tests/unit/core/metrices/test_fmeasure.py
 from otx.core.metrices.fmeasure import FMeasure
-========
-from otx.core.metrics.fmeasure import FMeasure
->>>>>>>> bedffac9eddfe3863e49fc899f7f18a04c865fe5:tests/unit/core/metrics/test_fmeasure.py
 
 
 class TestFMeasure:

@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from operator import itemgetter
 from typing import TYPE_CHECKING, Any
 
 import torch

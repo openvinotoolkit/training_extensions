@@ -32,6 +32,7 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
     from otx.core.data.dataset.base import LabelInfo
     from otx.core.metrics import MetricCallable
 
@@ -61,7 +62,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
             raise RuntimeError(msg)
 
-        self.log(f"{key}/accuracy", results['accuracy'].item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results["accuracy"].item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MulticlassClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -109,10 +110,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
 
-    def on_fit_start(self) -> None:
-        self.metric = CustomMulticlassAccuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
-        
-        
+
 class OTXMultilabelClsLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX multi-label classification task."""
 
@@ -152,7 +150,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
-        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results["accuracy"].item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -197,9 +195,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
-    
-    def on_fit_start(self) -> None:
-        self.metric = CustomMultilabelAccuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -278,7 +273,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
-        self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
+        self.log(f"{key}/accuracy", results["accuracy"].item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: HlabelClsBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -342,6 +337,3 @@ class OTXHlabelClsLitModule(OTXLitModule):
     def label_info(self, label_info: LabelInfo) -> None:
         self.model.label_info = label_info
         self._set_hlabel_setup()
-
-    def on_fit_start(self) -> None:
-        self.metric = CustomHlabelAccuracy(average="MICRO", label_info=self.model.label_info).to(self.device)

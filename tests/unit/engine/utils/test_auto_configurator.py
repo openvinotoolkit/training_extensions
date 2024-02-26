@@ -114,10 +114,10 @@ class TestAutoConfigurator:
         assert isinstance(model, OTXModel)
         assert model.num_classes == 1000
 
-        # With meta_info
+        # With label_info
         label_names = ["class1", "class2", "class3"]
-        meta_info = LabelInfo(label_names=label_names, label_groups=[label_names])
-        model = auto_configurator.get_model(meta_info=meta_info)
+        label_info = LabelInfo(label_names=label_names, label_groups=[label_names])
+        model = auto_configurator.get_model(label_info=label_info)
         assert isinstance(model, OTXModel)
         assert model.num_classes == 3
 
