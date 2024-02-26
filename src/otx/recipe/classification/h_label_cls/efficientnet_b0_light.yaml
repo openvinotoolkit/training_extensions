@@ -19,7 +19,7 @@ scheduler:
     monitor: val/accuracy
 
 metric:
-  class_path: otx.core.metrics.hlabel_accuracy.HLabelAccuracy
+  class_path: otx.core.metrics.HLabelAccuracy
   init_args:
     num_multiclass_heads: 0
     num_multilabel_classes: 0
