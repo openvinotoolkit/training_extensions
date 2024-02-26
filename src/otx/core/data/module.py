@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
@@ -28,6 +28,7 @@ from otx.core.utils.utils import get_adaptive_num_workers
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
+    from torch.utils.data import Sampler
 
     from otx.core.config.data import DataModuleConfig
     from otx.core.data.dataset.base import OTXDataset
@@ -40,12 +41,14 @@ class OTXDataModule(LightningDataModule):
         self,
         task: OTXTaskType,
         config: DataModuleConfig,
+        sampler: Callable[[OTXDataset], Sampler] | None = None,
     ) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
         self.config = config
         self.subsets: dict[str, OTXDataset] = {}
+        self.sampler = sampler
         self.save_hyperparameters()
 
         # TODO (Jaeguk): This is workaround for a bug in Datumaro.
@@ -139,7 +142,7 @@ class OTXDataModule(LightningDataModule):
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
-        sampler = config.sampler(dataset) if config.sampler is not None else None
+        sampler = self.sampler(dataset) if self.sampler is not None else None
 
         common_args = {
             "dataset": dataset,
@@ -149,6 +152,7 @@ class OTXDataModule(LightningDataModule):
             "collate_fn": dataset.collate_fn,
             "persistent_workers": config.num_workers > 0,
             "sampler": sampler,
+            "shuffle": sampler is None,
         }
 
         tile_config = self.config.tile_config
@@ -161,22 +165,18 @@ class OTXDataModule(LightningDataModule):
                     "sampler": RandomSampler(dataset, num_samples=num_samples),
                 },
             )
-        else:
-            common_args["shuffle"] = True
         return DataLoader(**common_args)
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
         config = self.config.val_subset
         dataset = self._get_dataset(config.subset_name)
-        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         return DataLoader(
             dataset=dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
-            sampler=sampler,
             pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
@@ -186,14 +186,12 @@ class OTXDataModule(LightningDataModule):
         """Get test dataloader."""
         config = self.config.test_subset
         dataset = self._get_dataset(config.subset_name)
-        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         return DataLoader(
             dataset=dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
-            sampler=sampler,
             pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
@@ -203,14 +201,12 @@ class OTXDataModule(LightningDataModule):
         """Get test dataloader."""
         config = self.config.test_subset
         dataset = self._get_dataset(config.subset_name)
-        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         return DataLoader(
             dataset=dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
-            sampler=sampler,
             pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
