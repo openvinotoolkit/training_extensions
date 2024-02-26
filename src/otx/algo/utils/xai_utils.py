@@ -53,7 +53,7 @@ def process_saliency_maps(
     elif explain_config.target_explain_group == TargetExplainGroup.PREDICTIONS:
         processed_saliency_maps = convert_maps_to_dict_predictions(saliency_maps, pred_labels)
     elif explain_config.target_explain_group == TargetExplainGroup.IMAGE:
-        processed_saliency_maps = convert_maps_to_dict_predictions_image(saliency_maps)
+        processed_saliency_maps = convert_maps_to_dict_image(saliency_maps)
     else:
         msg = f"Target explain group {explain_config.target_explain_group} is not supported."
         raise ValueError(msg)
@@ -68,7 +68,8 @@ def process_saliency_maps(
 def convert_maps_to_dict_all(saliency_maps: np.array) -> list[dict[Any, np.array]]:
     """Convert salincy maps to dict for TargetExplainGroup.ALL."""
     if saliency_maps[0].ndim != 3:
-        raise ValueError
+        msg = "Shape mismatch."
+        raise ValueError(msg)
 
     processed_saliency_maps = []
     for maps_per_image in saliency_maps:
@@ -80,7 +81,8 @@ def convert_maps_to_dict_all(saliency_maps: np.array) -> list[dict[Any, np.array
 def convert_maps_to_dict_predictions(saliency_maps: np.array, pred_labels: list | None) -> list[dict[Any, np.array]]:
     """Convert salincy maps to dict for TargetExplainGroup.PREDICTIONS."""
     if saliency_maps[0].ndim != 3:
-        raise ValueError
+        msg = "Shape mismatch."
+        raise ValueError(msg)
     if not pred_labels:
         return []
 
@@ -91,10 +93,11 @@ def convert_maps_to_dict_predictions(saliency_maps: np.array, pred_labels: list 
     return processed_saliency_maps
 
 
-def convert_maps_to_dict_predictions_image(saliency_maps: np.array) -> list[dict[Any, np.array]]:
+def convert_maps_to_dict_image(saliency_maps: np.array) -> list[dict[Any, np.array]]:
     """Convert salincy maps to dict for TargetExplainGroup.IMAGE."""
     if saliency_maps[0].ndim != 2:
-        raise ValueError
+        msg = "Shape mismatch."
+        raise ValueError(msg)
     return [{"map_per_image": map_per_image} for map_per_image in saliency_maps]
 
 
