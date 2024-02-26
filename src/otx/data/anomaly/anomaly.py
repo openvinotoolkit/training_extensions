@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TilerConfig
+from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.data import OTXDataModule
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
@@ -38,7 +38,7 @@ class AnomalyDataModule(OTXDataModule):
         test_transform_lib_type: TransformLibType = TransformLibType.TORCHVISION,
         # Tiler args.
         enable_tiler: bool = False,
-        grid_size: tuple[int, int] = (2, 2),
+        tile_size: tuple[int, int] = (400, 400),
         overlap: float = 0.0,
     ) -> None:
         # Create the train subset.
@@ -68,9 +68,9 @@ class AnomalyDataModule(OTXDataModule):
         )
 
         # Create the tiler config.
-        tiler_config = TilerConfig(
+        tiler_config = TileConfig(
             enable_tiler=enable_tiler,
-            grid_size=grid_size,
+            tile_size=tile_size,
             overlap=overlap,
         )
 
