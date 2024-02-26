@@ -9,11 +9,13 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from torchmetrics.classification import MultilabelAccuracy
-from torchmetrics.classification.accuracy import Accuracy as TorchAccuracy
-from otx.core.metrics.accuracy import Accuracy
+from otx.core.metrices.accuracy import (
+    CustomMulticlassAccuracy,
+    CustomMultilabelAccuracy,
+    CustomHlabelAccuracy
+)
 
-from otx.core.metrics.hlabel_accuracy import HLabelAccuracy
+from otx.core.metrices.hlabel_accuracy import HLabelAccuracy
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -31,8 +33,9 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
+    from torchmetrics import Metric
+    
+    from otx.core.metrices import MetricCallable
     from otx.core.data.dataset.base import LabelInfo
 
 
@@ -66,7 +69,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
         self.metric = metric
     
-    def _log_metrics(self, meter: Accuracy, key: str) -> None:
+    def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()["accuracy"]
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -121,7 +124,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             )
 
     def on_fit_start(self) -> None:
-        self.metric = Accuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
+        self.metric = CustomMulticlassAccuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
         
         
 class OTXMultilabelClsLitModule(OTXLitModule):
@@ -152,7 +155,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             metric = metric(**param_dict)  # type: ignore[call-arg]
         self.metric = metric
 
-    def _log_metrics(self, meter: Accuracy, key: str) -> None:
+    def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()["accuracy"]
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
@@ -201,7 +204,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             )
     
     def on_fit_start(self) -> None:
-        self.metric = Accuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
+        self.metric = CustomMultilabelAccuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
 
 
 class OTXHlabelClsLitModule(OTXLitModule):
@@ -233,17 +236,17 @@ class OTXHlabelClsLitModule(OTXLitModule):
         )
 
     def _set_hlabel_setup(self) -> None:
-        if not isinstance(self.label_info, HLabelMetaInfo):
+        if not isinstance(self.model.label_info, HLabelMetaInfo):
             msg = f"The type of self.label_info should be HLabelMetaInfo, got {type(self.label_info)}."
             raise TypeError(msg)
 
-        self.hlabel_info = self.label_info.hlabel_info
+        self.hlabel_info = self.model.label_info.hlabel_info
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
         self.model.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
-        self.num_labels = len(self.label_info.label_names)
+        self.num_labels = len(self.model.label_info.label_names)
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
@@ -259,9 +262,9 @@ class OTXHlabelClsLitModule(OTXLitModule):
         #     head_idx_to_logits_range=self.hlabel_info.head_idx_to_logits_range,
         # )
         
-        self.metric = Accuracy(average="MICRO", label_info=self.label_info) 
+        self.metric = CustomHlabelAccuracy(average="MICRO", label_info=self.label_info) 
 
-    def _log_metrics(self, meter: Accuracy, key: str) -> None:
+    def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()["accuracy"]
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
@@ -318,15 +321,12 @@ class OTXHlabelClsLitModule(OTXLitModule):
     @property
     def label_info(self) -> LabelInfo:
         """Meta information of OTXLitModule."""
-        if self._label_info is None:
-            err_msg = "label_info is referenced before assignment"
-            raise ValueError(err_msg)
-        return self._label_info
+        return self.model.label_info
 
     @label_info.setter
     def label_info(self, label_info: LabelInfo) -> None:
-        self._label_info = label_info
+        self.model.label_info = label_info
         self._set_hlabel_setup()
 
     def on_fit_start(self) -> None:
-        self.metric = Accuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
+        self.metric = CustomHlabelAccuracy(average="MICRO", label_info=self.model.label_info).to(self.device)
