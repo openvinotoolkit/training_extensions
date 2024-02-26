@@ -25,19 +25,20 @@ def process_saliency_maps_in_pred_entity(
     work_dir: Path | None = None,
 ) -> list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI]:
     """Process saliency maps in PredEntity."""
-    saliency_maps = predict_result[0].saliency_maps
-    pred_labels = predict_result[0].labels  # type: ignore[union-attr]
-    if pred_labels:
-        pred_labels = [pred.tolist() for pred in pred_labels]
+    for batch_id in range(len(predict_result)):
+        saliency_maps = predict_result[batch_id].saliency_maps
+        pred_labels = predict_result[batch_id].labels  # type: ignore[union-attr]
+        if pred_labels:
+            pred_labels = [pred.tolist() for pred in pred_labels]
 
-    processed_saliency_maps = process_saliency_maps(saliency_maps, explain_config, pred_labels)
+        processed_saliency_maps = process_saliency_maps(saliency_maps, explain_config, pred_labels)
 
-    if processed_saliency_maps and work_dir:
-        # Temporary saving random saliency map for image 0 (for tests)
-        s_map_to_save = next(iter(processed_saliency_maps[0].values()))
-        cv2.imwrite(str(work_dir / "saliency_map.tiff"), s_map_to_save)
+        if processed_saliency_maps and work_dir:
+            # Temporary saving random saliency map for image 0 (for tests)
+            s_map_to_save = next(iter(processed_saliency_maps[0].values()))
+            cv2.imwrite(str(work_dir / "saliency_map.tiff"), s_map_to_save)
 
-    predict_result[0].saliency_maps = processed_saliency_maps
+        predict_result[batch_id].saliency_maps = processed_saliency_maps
     return predict_result
 
 
@@ -46,13 +47,13 @@ def process_saliency_maps(
     explain_config: ExplainConfig,
     pred_labels: list | None,
 ) -> list[dict[Any, Any]]:
-    """Perform saliency map selection and post-processing."""
+    """Perform saliency map convertion to dict and post-processing."""
     if explain_config.target_explain_group == TargetExplainGroup.ALL:
-        processed_saliency_maps = select_saliency_maps_all(saliency_maps)
+        processed_saliency_maps = convert_maps_to_dict_all(saliency_maps)
     elif explain_config.target_explain_group == TargetExplainGroup.PREDICTIONS:
-        processed_saliency_maps = select_saliency_maps_predictions(saliency_maps, pred_labels)
+        processed_saliency_maps = convert_maps_to_dict_predictions(saliency_maps, pred_labels)
     elif explain_config.target_explain_group == TargetExplainGroup.IMAGE:
-        processed_saliency_maps = select_saliency_maps_image(saliency_maps)
+        processed_saliency_maps = convert_maps_to_dict_predictions_image(saliency_maps)
     else:
         msg = f"Target explain group {explain_config.target_explain_group} is not supported."
         raise ValueError(msg)
@@ -64,8 +65,8 @@ def process_saliency_maps(
     return processed_saliency_maps
 
 
-def select_saliency_maps_all(saliency_maps: np.array) -> list[dict[Any, np.array]]:
-    """Select salincy maps for TargetExplainGroup.ALL."""
+def convert_maps_to_dict_all(saliency_maps: np.array) -> list[dict[Any, np.array]]:
+    """Convert salincy maps to dict for TargetExplainGroup.ALL."""
     if saliency_maps[0].ndim != 3:
         raise ValueError
 
@@ -76,8 +77,8 @@ def select_saliency_maps_all(saliency_maps: np.array) -> list[dict[Any, np.array
     return processed_saliency_maps
 
 
-def select_saliency_maps_predictions(saliency_maps: np.array, pred_labels: list | None) -> list[dict[Any, np.array]]:
-    """Select salincy maps for TargetExplainGroup.PREDICTIONS."""
+def convert_maps_to_dict_predictions(saliency_maps: np.array, pred_labels: list | None) -> list[dict[Any, np.array]]:
+    """Convert salincy maps to dict for TargetExplainGroup.PREDICTIONS."""
     if saliency_maps[0].ndim != 3:
         raise ValueError
     if not pred_labels:
@@ -90,8 +91,8 @@ def select_saliency_maps_predictions(saliency_maps: np.array, pred_labels: list 
     return processed_saliency_maps
 
 
-def select_saliency_maps_image(saliency_maps: np.array) -> list[dict[Any, np.array]]:
-    """Select salincy maps for TargetExplainGroup.IMAGE."""
+def convert_maps_to_dict_predictions_image(saliency_maps: np.array) -> list[dict[Any, np.array]]:
+    """Convert salincy maps to dict for TargetExplainGroup.IMAGE."""
     if saliency_maps[0].ndim != 2:
         raise ValueError
     return [{"map_per_image": map_per_image} for map_per_image in saliency_maps]
