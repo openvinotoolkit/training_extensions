@@ -416,7 +416,7 @@ def get_instantiated_classes(
     )
 
     otx_cli.set_seed()
-    otx_cli.instantiate_classes()
+    otx_cli.instantiate_classes(instantiate_engine=False)
     instantiated_config = namespace_to_dict(otx_cli.config_init["train"])
 
     return instantiated_config, otx_cli.prepare_subcommand_kwargs("train")

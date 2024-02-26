@@ -329,11 +329,14 @@ class OTXCLI:
             )
             parser_subcommands.add_subcommand("find", find_parser, help="This shows the model provided by OTX.")
 
-    def instantiate_classes(self) -> None:
+    def instantiate_classes(self, instantiate_engine: bool = True) -> None:
         """Instantiate the necessary classes based on the subcommand.
 
         This method checks if the subcommand is one of the engine subcommands.
         If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
+
+        Args:
+            instantiate_engine (bool, optional): Whether to instantiate the engine. Defaults to True.
         """
         if self.subcommand in self.engine_subcommands():
             # For num_classes update, Model and Metric are instantiated separately.
@@ -346,22 +349,31 @@ class OTXCLI:
             self.datamodule = self.get_config_value(self.config_init, "data")
 
             # Instantiate the model and needed components
-            self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
+            self.model, self.optimizer, self.scheduler = self.instantiate_model(model_config=model_config)
 
             # Instantiate the metric with changing the num_classes
             metric = self.instantiate_metric(metric_config)
             if metric:
                 self.config_init[self.subcommand]["metric"] = metric
 
-            engine_kwargs = self.get_config_value(self.config_init, "engine")
-            self.engine = Engine(
-                model=self.model,
-                optimizer=optimizer,
-                scheduler=scheduler,
-                datamodule=self.datamodule,
-                work_dir=self.workspace.work_dir,
-                **engine_kwargs,
-            )
+            if instantiate_engine:
+                self.engine = self.instantiate_engine()
+
+    def instantiate_engine(self) -> Engine:
+        """Instantiate an Engine object with the specified parameters.
+
+        Returns:
+            An instance of the Engine class.
+        """
+        engine_kwargs = self.get_config_value(self.config_init, "engine")
+        return Engine(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            datamodule=self.datamodule,
+            work_dir=self.workspace.work_dir,
+            **engine_kwargs,
+        )
 
     def instantiate_metric(self, metric_config: Namespace) -> Metric | partial | None:
         """Instantiate the metric based on the metric_config.
