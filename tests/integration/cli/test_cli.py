@@ -197,7 +197,7 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
-    if "_cls" not in task or "dino" in model_name or "deit" in model_name:
+    if "_cls" not in task or "dino" in model_name:
         return
 
     format_to_file = {
@@ -271,8 +271,8 @@ def test_otx_explain_e2e(
     if "_cls" not in task:
         pytest.skip("Supported only for classification.")
 
-    if "dino" in model_name or "deit" in model_name:
-        pytest.skip("Transformets are not supported.")
+    if "dino" in model_name:
+        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
@@ -350,6 +350,9 @@ def test_otx_ov_test(
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
+
+    if task in ["action_classification"]:
+        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
 
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
