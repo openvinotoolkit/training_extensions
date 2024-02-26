@@ -55,18 +55,23 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         )
     ]
 
-    METRICS_TEST_CASES = [  # noqa: RUF012
+    BENCHMARK_TEST_CASES = [  # noqa: RUF012
         {
             "type": "accuracy",
-            "metrics": [
-                Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
+            "criteria": [
+                Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
             ],
         },
         {
             "type": "efficiency",
-            "metrics": [
-                Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
-                Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+            "criteria": [
+                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
             ]
         }
     ]
@@ -85,8 +90,8 @@ class TestPerfSingleLabelClassification(PerfTestBase):
     )
     @pytest.mark.parametrize(
         "fxt_benchmark",
-        METRICS_TEST_CASES,
-        ids=lambda metrics: metrics["type"],
+        BENCHMARK_TEST_CASES,
+        ids=lambda benchmark: benchmark["type"],
         indirect=True,
     )
     def test_perf(self,
@@ -143,18 +148,23 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         )
     ]
 
-    METRICS_TEST_CASES = [  # noqa: RUF012
+    BENCHMARK_TEST_CASES = [  # noqa: RUF012
         {
             "type": "accuracy",
-            "metrics": [
-                Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
+            "criteria": [
+                Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
             ],
         },
         {
             "type": "efficiency",
-            "metrics": [
-                Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
-                Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+            "criteria": [
+                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
             ]
         }
     ]
@@ -173,8 +183,8 @@ class TestPerfMultiLabelClassification(PerfTestBase):
     )
     @pytest.mark.parametrize(
         "fxt_benchmark",
-        METRICS_TEST_CASES,
-        ids=lambda metrics: metrics["type"],
+        BENCHMARK_TEST_CASES,
+        ids=lambda benchmark: benchmark["type"],
         indirect=True,
     )
     def test_perf(self,
@@ -229,18 +239,23 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         # TODO: Add large dataset
     ]
 
-    METRICS_TEST_CASES = [  # noqa: RUF012
+    BENCHMARK_TEST_CASES = [  # noqa: RUF012
         {
             "type": "accuracy",
-            "metrics": [
-                Benchmark.Metric(name="test/accuracy", op=">", margin=0.1),
+            "criteria": [
+                Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+                Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
             ],
         },
         {
             "type": "efficiency",
-            "metrics": [
-                Benchmark.Metric(name="train/iter_time", op="<", margin=0.1),
-                Benchmark.Metric(name="test/iter_time", op="<", margin=0.1),
+            "criteria": [
+                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
             ]
         }
     ]
@@ -259,8 +274,8 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
     )
     @pytest.mark.parametrize(
         "fxt_benchmark",
-        METRICS_TEST_CASES,
-        ids=lambda metrics: metrics["type"],
+        BENCHMARK_TEST_CASES,
+        ids=lambda benchmark: benchmark["type"],
         indirect=True,
     )
     def test_perf(self,

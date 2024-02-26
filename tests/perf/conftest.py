@@ -245,7 +245,7 @@ def fxt_working_branch() -> str:
     working_branch = os.environ.get("GH_CTX_REF_NAME", "unknown")
     msg = f"{working_branch = }"
     log.info(msg)
-    return branch
+    return working_branch
 
 
 @pytest.fixture
@@ -306,23 +306,15 @@ def fxt_benchmark(
         if benchmark_type != fxt_benchmark_type:
             pytest.skip(f"{benchmark_type} benchmark")
 
-    num_epoch_override = fxt_num_epoch
-    if num_epoch_override == 0:  # 0: use default
-        if benchmark_type == "efficiency":
-            num_epoch_override = 2
-
-    benchmark_metrics: str = request.param["metrics"]
-    tags = fxt_tags.copy()
-    tags["benchmark_type"] = benchmark_type
-
     return Benchmark(
+        benchmark_type=benchmark_type,
         data_root=fxt_data_root,
         output_root=fxt_output_root,
-        metrics=benchmark_metrics,
-        num_epoch=num_epoch_override,
+        criteria=request.param["criteria"],
+        num_epoch=fxt_num_epoch,
         num_repeat=fxt_num_repeat,
         eval_upto=fxt_eval_upto,
-        tags=tags,
+        tags=fxt_tags,
         dry_run=fxt_dry_run,
         deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
@@ -403,19 +395,25 @@ def fxt_benchmark(
 #                    mlflow.log_metric(k, v, step=step, synchronous=True)
 #
 #
-#@pytest.fixture(scope="session", autouse=True)
-#def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_working_branch, fxt_mlflow_client):
-#    """Summarize all results at the end of test session."""
-#    yield
-#    all_results = OTXBenchmark.load_result(fxt_output_root)
-#    if all_results is not None:
-#        print("=" * 20, "[Benchmark summary]")
-#        print(all_results)
-#        output_path = request.config.getoption("--summary-csv")
-#        if not output_path:
-#            output_path = fxt_output_root / "benchmark-summary.csv"
-#        all_results.to_csv(output_path)
-#        print(f"  -> Saved to {output_path}.")
+@pytest.fixture(scope="session", autouse=True)
+def fxt_benchmark_summary(
+    request: pytest.FixtureRequest,
+    fxt_output_root: Path,
+    fxt_summary_csv: Path,
+    fxt_working_branch: str,
+    # fxt_mlflow_client,
+):
+    """Summarize all results at the end of test session."""
+    yield
+    all_results = Benchmark.load_result(fxt_output_root)
+    if all_results is not None:
+        print("=" * 20, "[Benchmark summary]")
+        print(all_results)
+        output_path = request.config.getoption("--summary-csv")
+        if not output_path:
+            output_path = fxt_output_root / "benchmark.summary.csv"
+        all_results.to_csv(output_path)
+        print(f"  -> Saved to {output_path}.")
 #
 #        if fxt_mlflow_client is None:
 #            print(
@@ -495,3 +493,4 @@ class PerfTestBase:
             model=model,
             dataset=dataset,
         )
+        print(result)

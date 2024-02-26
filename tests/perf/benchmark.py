@@ -11,12 +11,12 @@ import os
 import gc
 import glob
 import pandas as pd
+import subprocess
 import yaml
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from otx.cli.cli import OTXCLI
-from unittest.mock import patch
 
 log = logging.getLogger(__name__)
 
@@ -25,9 +25,10 @@ class Benchmark:
     """Benchmark runner for OTX2.x.
 
     Args:
+        benchmark_type (str): 'accuracy' or 'efficiency'
         data_root (str): Path to the root of dataset directories. Defaults to './data'.
         output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
-        metrics (list[Metric]): Benchmark metric settings
+        criteria (list[Criterion]): Benchmark criteria settings
         num_epoch (int): Overrides the per-model default number of epoch settings.
             Defaults to 0, which means no overriding.
         num_repeat (int): Number for trials with different random seed, which would be set
@@ -38,6 +39,8 @@ class Benchmark:
             Default to 'train'.
         tags (dict, optional): Key-values pair metadata for the experiment.
         dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
+        deterministic (bool): Whether to turn on deterministic training mode. Defaults to False.
+        accelerator (str): Accelerator device on which to run benchmark. Defaults to gpu.
     """
 
     @dataclass
@@ -59,17 +62,19 @@ class Benchmark:
         extra_overrides: dict | None = None
 
     @dataclass
-    class Metric:
-        """Benchmark metric."""
+    class Criterion:
+        """Benchmark criterion."""
         name: str
-        op: str
+        summary: str
+        compare: str
         margin: float
 
     def __init__(
         self,
+        benchmark_type: str = "accuracy",
         data_root: Path = Path("data"),
         output_root: Path = Path("otx-benchmark"),
-        metrics: list[Metric] | None = None,
+        criteria: list[Criterion] | None = None,
         num_epoch: int = 0,
         num_repeat: int = 1,
         eval_upto: str = "train",
@@ -78,9 +83,10 @@ class Benchmark:
         deterministic: bool = False,
         accelerator: str = "gpu",
     ):
+        self.benchmark_type = benchmark_type
         self.data_root = data_root
         self.output_root = output_root
-        self.metrics = metrics
+        self.criteria = criteria
         self.num_epoch = num_epoch
         self.num_repeat = num_repeat
         self.eval_upto = eval_upto
@@ -88,6 +94,10 @@ class Benchmark:
         self.dry_run = dry_run
         self.deterministic = deterministic
         self.accelerator = accelerator
+
+        if num_epoch == 0:  # 0: use default
+            if benchmark_type == "efficiency":
+                self.num_epoch = 2
 
     def run(
         self,
@@ -104,8 +114,15 @@ class Benchmark:
             pd.DataFrame | None: Table with benchmark metrics
         """
 
+        run_name = f"{self.benchmark_type}/{model.task}/{model.name}/{dataset.name}"
+        log.info(f"{run_name = }")
+        work_dir = self.output_root / run_name
+        data_root = self.data_root / dataset.path
+
         tags = {
+            "benchmark": self.benchmark_type,
             "task": model.task,
+            "data_size": dataset.size,
             "model": model.name,
             "dataset": dataset.name,
             **self.tags,
@@ -116,18 +133,15 @@ class Benchmark:
             num_repeat = self.num_repeat  # Override by global setting
 
         for seed in range(num_repeat):
-            run_name = f"{model.task}/{model.name}/{dataset.name}/{seed}"
-            log.info(f"{run_name = }")
-            work_dir = self.output_root / run_name
+            sub_work_dir = work_dir / str(seed)
             tags["seed"] = str(seed)
-            data_root = self.data_root / dataset.path
 
             # Train & test
             command = [
                 "otx", "train",
                 "--config", f"src/otx/recipe/{model.task}/{model.name}.yaml",
                 "--data_root", str(data_root),
-                "--work_dir", str(work_dir),
+                "--work_dir", str(sub_work_dir),
                 "--model.num_classes", str(dataset.num_classes),
                 "--data.config.data_format", dataset.data_format,
                 "--engine.device", self.accelerator,
@@ -139,82 +153,97 @@ class Benchmark:
             command.extend(["--deterministic", str(self.deterministic)])
             if self.num_epoch > 0:
                 command.extend(["--max_epochs", str(self.num_epoch)])
-            train_metrics = self._run_command(command)
+            self._run_command(command)
 
             command = [
                 "otx", "test",
-                "--work_dir", str(work_dir),
+                "--work_dir", str(sub_work_dir),
             ]
-            test_metrics = self._run_command(command)
-
-            self._log_raw_csv(
-                path=work_dir / "perf.train.csv",
-                data={**tags, **train_metrics, **test_metrics}
-            )
+            self._run_command(command)
 
             # TODO: Export & test
             # TODO: Optimize & test
 
+            self._log_metrics(work_dir=sub_work_dir, tags=tags)
+
             # Force memory clean up
             gc.collect()
 
-        return None
+        return self.load_result(work_dir)
 
-    def _run_command(self, command: list[str]) -> dict[str, Any]:
+    def _run_command(self, command: list[str]):
         if self.dry_run:
             print(" ".join(command))
-            return {}
-        with patch("sys.argv", command):
-            log.info(f"{command = }")
-            cli = OTXCLI()
-        return cli.engine.trainer.callback_metrics
+        else:
+            subprocess.run(command, check=True)
 
-    def _log_raw_csv(self, path: Path, data: dict[str, Any]):
-        data = {
-            k: v if isinstance(v, str) else float(v)
-            for k, v in data.items()
-        }
-        with open(path, "w") as f:
-            writer = csv.DictWriter(f, data.keys())
-            writer.writeheader()
-            writer.writerow(data)
+    def _log_metrics(self, work_dir: Path, tags: dict[str, str]):
+        if not work_dir.exists():
+            return
+        # Load raw metrics
+        csv_files = glob.glob(f"{work_dir}/**/metrics.csv", recursive=True)
+        raw_data = []
+        for csv_file in csv_files:
+            raw_data.append(pd.read_csv(csv_file))
+        raw_data = pd.concat(raw_data, ignore_index=True)
+        # Summarize
+        metrics = []
+        for criterion in self.criteria:
+            if criterion.name not in raw_data:
+                continue
+            column = raw_data[criterion.name].dropna()
+            if len(column) == 0:
+                continue
+            if criterion.summary == "mean":
+                value = column[(len(column)-1):].mean()  # Drop 1st epoch if possible
+            elif criterion.summary == "max":
+                value = column.max()
+            elif criterion.summary == "min":
+                value = column.min()
+            else:
+                value = 0.0
+            metrics.append(pd.Series([value], name=criterion.name))
+        if len(metrics) == 0:
+            return
+        metrics = pd.concat(metrics, axis=1)
+        # Write csv w/ tags
+        for k, v in tags.items():
+            metrics[k] = v
+        metrics.to_csv(work_dir / "benchmark.raw.csv", index=False)
 
     @staticmethod
-    def load_result(result_path: str) -> pd.DataFrame | None:
+    def load_result(result_path: Path) -> pd.DataFrame | None:
         """Load benchmark results recursively and merge as pd.DataFrame.
 
         Args:
-            result_path (str): Result directory or speicific file.
+            result_path (Path): Result directory or speicific file.
 
         Retruns:
             pd.DataFrame: Table with benchmark metrics & options
         """
         # Search csv files
-        if os.path.isdir(result_path):
-            csv_file_paths = glob.glob(f"{result_path}/**/exp_summary.csv", recursive=True)
+        if not result_path.exists():
+            return None
+        if result_path.is_dir():
+            csv_files = glob.glob(f"{result_path}/**/benchmark.raw.csv", recursive=True)
         else:
-            csv_file_paths = [result_path]
+            csv_files = [result_path]
         results = []
         # Load csv data
-        for csv_file_path in csv_file_paths:
-            result = pd.read_csv(csv_file_path)
-            # Append metadata if any
-            cfg_file_path = Path(csv_file_path).parent / "cfg.yaml"
-            if cfg_file_path.exists():
-                with cfg_file_path.open("r") as cfg_file:
-                    tags = yaml.safe_load(cfg_file).get("tags", {})
-                    for k, v in tags.items():
-                        result[k] = v
+        for csv_file in csv_files:
+            result = pd.read_csv(csv_file)
             results.append(result)
+        # Merge data
         if len(results) > 0:
-            # Merge experiments
             data = pd.concat(results, ignore_index=True)
-            data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
             # Average by unique group
             grouped = data.groupby(["benchmark", "task", "data_size", "model"])
             aggregated = grouped.mean(numeric_only=True)
-            # ["data/1", "data/2", "data/3"] -> "data/"
-            aggregated["data"] = grouped["data"].agg(lambda x: os.path.commonprefix(x.tolist()))
+            # Merge tag columns (non-numeric & non-index)
+            tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
+            for col in tag_columns:
+                # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
+                aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
             return aggregated
         else:
             return None
