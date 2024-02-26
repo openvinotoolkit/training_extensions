@@ -6,7 +6,7 @@ pytest==7.4.*
 coverage==7.3.*
 pytest-timeout==2.2.*
 pytest-mock==3.12.*
-onnx==1.13.0
+onnx==1.15.0
 onnxruntime==1.14.1
 pytest-csv==3.0.*
 tox==4.11.*
