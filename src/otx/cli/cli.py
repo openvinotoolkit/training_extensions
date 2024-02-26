@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     from functools import partial
 
     from jsonargparse._actions import _ActionSubCommands
-    from torchmetrics import Metric
 
 _ENGINE_AVAILABLE = True
 try:
@@ -375,7 +374,7 @@ class OTXCLI:
             **engine_kwargs,
         )
 
-    def instantiate_metric(self, metric_config: Namespace) -> Metric | partial | None:
+    def instantiate_metric(self, metric_config: Namespace) -> partial | None:
         """Instantiate the metric based on the metric_config.
 
         It also pathces the num_classes according to the model classes information.
