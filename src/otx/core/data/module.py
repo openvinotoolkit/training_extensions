@@ -139,6 +139,7 @@ class OTXDataModule(LightningDataModule):
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
+        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         common_args = {
             "dataset": dataset,
@@ -147,6 +148,7 @@ class OTXDataModule(LightningDataModule):
             "pin_memory": True,
             "collate_fn": dataset.collate_fn,
             "persistent_workers": config.num_workers > 0,
+            "sampler": sampler,
         }
 
         tile_config = self.config.tile_config
@@ -167,12 +169,14 @@ class OTXDataModule(LightningDataModule):
         """Get val dataloader."""
         config = self.config.val_subset
         dataset = self._get_dataset(config.subset_name)
+        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         return DataLoader(
             dataset=dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
+            sampler=sampler,
             pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
@@ -182,12 +186,14 @@ class OTXDataModule(LightningDataModule):
         """Get test dataloader."""
         config = self.config.test_subset
         dataset = self._get_dataset(config.subset_name)
+        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         return DataLoader(
             dataset=dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
+            sampler=sampler,
             pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
@@ -197,12 +203,14 @@ class OTXDataModule(LightningDataModule):
         """Get test dataloader."""
         config = self.config.test_subset
         dataset = self._get_dataset(config.subset_name)
+        sampler = config.sampler(dataset) if config.sampler is not None else None
 
         return DataLoader(
             dataset=dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
+            sampler=sampler,
             pin_memory=True,
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,

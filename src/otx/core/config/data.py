@@ -8,11 +8,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
+from otx.core.data.dataset.base import OTXDataset
 from otx.core.types.device import DeviceType
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
+
+if TYPE_CHECKING:
+    from torch.utils.data import Sampler
 
 
 @dataclass
@@ -59,6 +63,7 @@ class SubsetConfig:
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
+    sampler: Callable[[OTXDataset], Sampler] | None = None
 
 
 @dataclass
