@@ -2,15 +2,16 @@
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import onnx
 import openvino
 import torch
-from anomalib import TaskType
+from anomalib import TaskType as AnomalibTaskType
 from anomalib.callbacks.metrics import _MetricsCallback
 from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
 from anomalib.callbacks.post_processor import _PostProcessorCallback
@@ -44,13 +45,21 @@ if TYPE_CHECKING:
     from torchvision.transforms.v2 import Transform
 
 
+AnomalyModelInputs: TypeAlias = (
+    AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch
+)
+AnomalyModelOutputs: TypeAlias = (
+    AnomalyClassificationBatchPrediction | AnomalySegmentationBatchPrediction | AnomalyDetectionBatchPrediction
+)
+
+
 class _AnomalyModelExporter(OTXModelExporter):
     def __init__(
         self,
         image_shape: tuple[int, int] = (256, 256),
         image_threshold: float = 0.5,
         pixel_threshold: float = 0.5,
-        task: TaskType = TaskType.CLASSIFICATION,
+        task: AnomalibTaskType = AnomalibTaskType.CLASSIFICATION,
         # the actual values for mean and scale should be in range 0-255
         mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0),
         scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0),
@@ -120,7 +129,7 @@ class _AnomalyModelExporter(OTXModelExporter):
 
 
 class OTXAnomaly:
-    """Mixin to make OTX model compatible with the Anomalib model."""
+    """Methods used to make OTX model compatible with the Anomalib model."""
 
     def __init__(self) -> None:
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
@@ -139,7 +148,7 @@ class OTXAnomaly:
         self.pixel_metrics: AnomalibMetricCollection
 
     @property
-    def task(self) -> TaskType:
+    def task(self) -> AnomalibTaskType:
         """Return the task type of the model."""
         if self._task_type:
             return self._task_type
@@ -149,11 +158,11 @@ class OTXAnomaly:
     @task.setter
     def task(self, value: OTXTaskType) -> None:
         if value == OTXTaskType.ANOMALY_CLASSIFICATION:
-            self._task_type = TaskType.CLASSIFICATION
+            self._task_type = AnomalibTaskType.CLASSIFICATION
         elif value == OTXTaskType.ANOMALY_DETECTION:
-            self._task_type = TaskType.DETECTION
+            self._task_type = AnomalibTaskType.DETECTION
         elif value == OTXTaskType.ANOMALY_SEGMENTATION:
-            self._task_type = TaskType.SEGMENTATION
+            self._task_type = AnomalibTaskType.SEGMENTATION
         else:
             msg = f"Unexpected task type: {value}"
             raise ValueError(msg)
@@ -213,7 +222,7 @@ class OTXAnomaly:
     def configure_callbacks(self) -> list[Callback]:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
         image_metrics = ["AUROC", "F1Score"]
-        pixel_metrics = image_metrics if self.task != TaskType.CLASSIFICATION else None
+        pixel_metrics = image_metrics if self.task != AnomalibTaskType.CLASSIFICATION else None
         return [
             _PostProcessorCallback(),
             _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
@@ -227,7 +236,7 @@ class OTXAnomaly:
 
     def training_step(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch | dict,
+        inputs: AnomalyModelInputs | dict,
         batch_idx: int = 0,
     ) -> STEP_OUTPUT:
         """Call training step of the anomalib model."""
@@ -237,7 +246,7 @@ class OTXAnomaly:
 
     def validation_step(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch | dict,
+        inputs: AnomalyModelInputs | dict,
         batch_idx: int = 0,
     ) -> STEP_OUTPUT:
         """Call validation step of the anomalib model."""
@@ -247,7 +256,7 @@ class OTXAnomaly:
 
     def test_step(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch | dict,
+        inputs: AnomalyModelInputs | dict,
         batch_idx: int = 0,
         **kwargs,
     ) -> STEP_OUTPUT:
@@ -259,7 +268,7 @@ class OTXAnomaly:
     def on_test_batch_end(
         self,
         outputs: dict,
-        batch: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch | dict,
+        batch: AnomalyModelInputs | dict,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -278,7 +287,7 @@ class OTXAnomaly:
 
     def predict_step(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch | dict,
+        inputs: AnomalyModelInputs | dict,
         batch_idx: int = 0,
         **kwargs,
     ) -> dict:
@@ -290,7 +299,7 @@ class OTXAnomaly:
     def on_predict_batch_end(
         self,
         outputs: dict,
-        batch: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch,
+        batch: AnomalyModelInputs,
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
@@ -344,8 +353,8 @@ class OTXAnomaly:
 
     def forward(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch,
-    ) -> AnomalyClassificationBatchPrediction | AnomalySegmentationBatchPrediction | AnomalyDetectionBatchPrediction:
+        inputs: AnomalyModelInputs,
+    ) -> AnomalyModelOutputs:
         """Wrap forward method of the Anomalib model."""
         _inputs: dict = self._customize_inputs(inputs)
         outputs = self.model.model.forward(_inputs)
@@ -353,7 +362,7 @@ class OTXAnomaly:
 
     def _customize_inputs(
         self,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch,
+        inputs: AnomalyModelInputs,
     ) -> dict[str, Any]:
         """Customize inputs for the model."""
         if isinstance(inputs, AnomalyClassificationDataBatch):
@@ -373,9 +382,9 @@ class OTXAnomaly:
     def _customize_outputs(
         self,
         outputs: dict,
-        inputs: AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch,
-    ) -> AnomalyClassificationBatchPrediction | AnomalySegmentationBatchPrediction | AnomalyDetectionBatchPrediction:
-        if self.task == TaskType.CLASSIFICATION:
+        inputs: AnomalyModelInputs,
+    ) -> AnomalyModelOutputs:
+        if self.task == AnomalibTaskType.CLASSIFICATION:
             return AnomalyClassificationBatchPrediction(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -385,7 +394,7 @@ class OTXAnomaly:
                 scores=outputs["pred_scores"],
                 anomaly_maps=outputs["anomaly_maps"],
             )
-        if self.task == TaskType.SEGMENTATION:
+        if self.task == AnomalibTaskType.SEGMENTATION:
             return AnomalySegmentationBatchPrediction(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -396,7 +405,7 @@ class OTXAnomaly:
                 anomaly_maps=outputs["anomaly_maps"],
                 masks=outputs["mask"],
             )
-        if self.task == TaskType.DETECTION:
+        if self.task == AnomalibTaskType.DETECTION:
             return AnomalyDetectionBatchPrediction(
                 batch_size=len(outputs),
                 images=inputs.images,

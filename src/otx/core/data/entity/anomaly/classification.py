@@ -19,10 +19,6 @@ from otx.core.data.entity.base import (
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
-# ---------------------------------------------------------------------------- #
-# Data Objects.                                                                #
-# ---------------------------------------------------------------------------- #
-
 
 @register_pytree_node  # Ideally, we should not use this decorator
 @dataclass
@@ -70,11 +66,6 @@ class AnomalyClassificationDataBatch(OTXBatchDataEntity):
         super().pin_memory()
         self.labels = [label.pin_memory() for label in self.labels]
         return self
-
-
-# ---------------------------------------------------------------------------- #
-# Prediction Objects.                                                          #
-# ---------------------------------------------------------------------------- #
 
 
 @dataclass

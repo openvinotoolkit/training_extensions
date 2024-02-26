@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.anomaly.stfpm.STFPM
+  class_path: otx.algo.anomaly.stfpm.Stfpm
   init_args:
     input_size:
       - 256
@@ -33,9 +33,6 @@ overrides:
     task: ANOMALY_DETECTION
     config:
       data_format: mvtec
-      vpm_config:
-        use_bbox: True
-        use_point: False
       train_subset:
         batch_size: 32
         num_workers: 4

@@ -4,6 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .padim import Padim
-from .stfpm import STFPM
+from .stfpm import Stfpm
 
-__all__ = ["Padim", "STFPM"]
+__all__ = ["Padim", "Stfpm"]

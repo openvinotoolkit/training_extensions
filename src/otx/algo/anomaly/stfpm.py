@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class STFPM(OTXAnomaly, OTXModel, AnomalibStfpm):
+class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
     """OTX STFPM model.
 
     Args:
@@ -27,8 +27,8 @@ class STFPM(OTXAnomaly, OTXModel, AnomalibStfpm):
 
     def __init__(
         self,
-        layers: Sequence[str],
-        input_size: tuple[int, int],
+        layers: Sequence[str] = ["layer1", "layer2", "layer3"],
+        input_size: tuple[int, int] = (256, 256),
         backbone: str = "resnet18",
     ) -> None:
         OTXAnomaly.__init__(self)
