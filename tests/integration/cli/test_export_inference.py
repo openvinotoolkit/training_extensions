@@ -144,7 +144,7 @@ def test_otx_export_infer(
             checkpoint_path,
         ]
         # H-Label-CLS need to add --metric
-        if task in ("h_label_cls"):
+        if task in ("h_label_cls") and not test_recipe.endswith("openvino_model.yaml"):
             command_cfg.extend(["--metric.num_multiclass_heads", "2"])
             command_cfg.extend(["--metric.num_multilabel_classes", "3"])
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
